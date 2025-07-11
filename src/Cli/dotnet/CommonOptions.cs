@@ -132,19 +132,19 @@ internal static class CommonOptions
         }.ForwardAsSingle(o => $"-verbosity:{o}");
 
     public static Option<VerbosityOptions?> VerbosityOption() =>
-        new ForwardedOption<VerbosityOptions?>("--verbosity", "-v")
+        new ForwardedOption<VerbosityOptions?>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
         {
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName
-        }.ForwardAsSingle(o => $"-verbosity:{o}");
+        }.ForwardAsSingle(o => $"--verbosity:{o}");
 
     public static Option<VerbosityOptions> HiddenVerbosityOption =
-        new ForwardedOption<VerbosityOptions>("--verbosity", "-v")
+        new ForwardedOption<VerbosityOptions>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
         {
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName,
             Hidden = true
-        }.ForwardAsSingle(o => $"-verbosity:{o}");
+        }.ForwardAsSingle(o => $"--verbosity:{o}");
 
     public static Option<string> FrameworkOption(string description) =>
         new DynamicForwardedOption<string>("--framework", "-f")

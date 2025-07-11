@@ -329,7 +329,7 @@ public class RunCommand
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([..MSBuildArgs.OtherMSBuildArgs], "dotnet-run");
         var project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
         ValidatePreconditions(project);
-        InvokeRunArgumentsTarget(project, logger, MSBuildArgs);
+        InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs);
         logger?.ReallyShutdown();
         var runProperties = ReadRunPropertiesFromProject(project, ApplicationArgs);
         var command = CreateCommandFromRunProperties(project, runProperties);
@@ -392,10 +392,10 @@ public class RunCommand
             return command;
         }
 
-        static void InvokeRunArgumentsTarget(ProjectInstance project, FacadeLogger? binaryLogger, MSBuildArgs buildArgs)
+        static void InvokeRunArgumentsTarget(ProjectInstance project, bool noBuild, FacadeLogger? binaryLogger, MSBuildArgs buildArgs)
         {
             List<ILogger> loggersForBuild = [
-                MakeTerminalLogger(buildArgs)
+                TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..buildArgs.OtherMSBuildArgs])
             ];
             if (binaryLogger is not null)
             {
@@ -407,13 +407,6 @@ public class RunCommand
                 throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, ComputeRunArgumentsTarget);
             }
         }
-    }
-
-    private static ILogger MakeTerminalLogger(MSBuildArgs buildArgs)
-    {
-        var msbuildVerbosity = ToLoggerVerbosity(buildArgs.Verbosity ?? VerbosityOptions.quiet);
-        var thing = TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{msbuildVerbosity}", ..buildArgs.OtherMSBuildArgs]);
-        return thing;
     }
 
     static readonly string ComputeRunArgumentsTarget = "ComputeRunArguments";
