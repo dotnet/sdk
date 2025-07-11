@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using Microsoft.DotNet.Cli.Commands.Workload.Clean;
 using Microsoft.DotNet.Cli.Commands.Workload.Config;
 using Microsoft.DotNet.Cli.Commands.Workload.Elevate;
@@ -21,7 +22,6 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.TemplateEngine.Cli.Commands;
 using IReporter = Microsoft.DotNet.Cli.Utils.IReporter;
 using Command = System.CommandLine.Command;
-using System.CommandLine.Invocation;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload;
 
