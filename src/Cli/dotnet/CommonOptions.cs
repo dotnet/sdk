@@ -129,7 +129,7 @@ internal static class CommonOptions
             HelpName = CliStrings.LevelArgumentName,
             DefaultValueFactory = _ => defaultVerbosity
         }
-        .ForwardAsSingle(o => $"-verbosity:{o}")
+        .ForwardAsSingle(o => $"--verbosity:{o}")
         .AggregateRepeatedTokens();
 
     public static Option<VerbosityOptions?> VerbosityOption() =>

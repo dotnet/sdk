@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenDotnetRunInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        private static readonly string[] ConstantRestoreArgs = ["-nologo", "-verbosity:quiet"];
+        private static readonly string[] ConstantRestoreArgs = ["-nologo", "--verbosity:quiet"];
         private static readonly string NuGetDisabledProperty = "--property:NuGetInteractive=false";
 
         public ITestOutputHelper Log { get; }

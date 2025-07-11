@@ -715,7 +715,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         }
 
         [Fact]
-        public void ItShowImportantLevelMessageWhenPassInteractive()
+        public void ItDoesNotShowImportantLevelMessageWhenPassInteractive()
         {
             var testAppName = "MSBuildTestApp";
             var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
@@ -727,8 +727,26 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute("--interactive");
 
             result.Should().Pass()
+                .And.NotHaveStdOutContaining("Important text");
+        }
+
+        
+        [Fact]
+        public void ItShowsImportantLevelMessageWhenPassInteractiveAndVerbose()
+        {
+            var testAppName = "MSBuildTestApp";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                .WithSource()
+                .WithProjectChanges(ProjectModification.AddDisplayMessageBeforeRestoreToProject);
+
+            var result = new DotnetCommand(Log, "run", "/v", "d")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("--interactive");
+
+            result.Should().Pass()
                 .And.HaveStdOutContaining("Important text");
         }
+
 
         [Fact]
         public void ItPrintsDuplicateArguments()
