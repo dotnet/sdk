@@ -9,6 +9,12 @@ namespace Microsoft.NET.TestFramework.Utilities
 {
     public static class MachOSignature
     {
+        /// <summary>
+        /// Calls the 'codesign' utility to verify if the file has a valid Mach-O signature.
+        /// </summary>
+        /// <param name="file">The Mach Object file to check.</param>
+        /// <param name="log">The output helper for logging.</param>
+        /// <returns>True if the file has a valid Mach-O signature, otherwise false.</returns>
 #if NET
         [SupportedOSPlatform("osx")]
 #endif
@@ -19,7 +25,11 @@ namespace Microsoft.NET.TestFramework.Utilities
                 .Execute().ExitCode == 0;
         }
 
-        // Reads the Mach-O load commands and returns true if an LC_CODE_SIGNATURE command is found, otherwise returns false
+        /// <summary>
+        ///  Reads the Mach-O load commands and returns true if an LC_CODE_SIGNATURE command is found, otherwise returns false. Does not validate the signature.
+        /// </summary>
+        /// <param name="file">The Mach Object file to check.</param>
+        /// <returns>True if the file has a Mach-O signature load command, otherwise false.</returns>
         public static bool HasMachOSignatureLoadCommand(FileInfo file)
         {
             /* Mach-O files have the following structure:
