@@ -108,7 +108,7 @@
     <Copy SourceFiles="@(ManifestContent)"
           DestinationFolder="$(RedistInstallerLayoutPath)sdk-manifests/%(DestinationPath)" />
 
-    <MSBuild Projects="$(RepoRoot)src\Workloads\Manifests\manifest-packages.proj"
+    <MSBuild Projects="$(RepoRoot)src\Workloads\Manifests\manifest-packages.csproj"
              Targets="LayoutBuiltinManifests"
              Properties="ManifestDirectory=$(RedistInstallerLayoutPath)sdk-manifests\" />
   </Target>

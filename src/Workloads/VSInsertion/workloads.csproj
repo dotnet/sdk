@@ -28,7 +28,7 @@
 
   <ItemGroup>
     <!-- In .NET product build mode in the second build pass, there's no need to build the manifests since they're already downloaded from another vertical -->
-    <ProjectReference Include="$(RepoRoot)\src\Workloads\Manifests\manifest-packages.proj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuild)' != 'true'" />
+    <ProjectReference Include="$(RepoRoot)\src\Workloads\Manifests\manifest-packages.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuild)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(BuildWorkloads)' == 'true'">

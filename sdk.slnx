@@ -271,7 +271,7 @@
   </Folder>
   <Folder Name="/src/Workloads/" />
   <Folder Name="/src/Workloads/Manifests/">
-    <Project Path="src/Workloads/Manifests/manifest-packages.proj" Type="C#" />
+    <Project Path="src/Workloads/Manifests/manifest-packages.csproj" />
   </Folder>
   <Folder Name="/src/Workloads/VSInsertion/">
     <Project Path="src/Workloads/VSInsertion/workloads.csproj" />

@@ -37,4 +37,6 @@
     <Using Include="Microsoft.Build.Utilities.Task" Alias="Task" />
   </ItemGroup>
 
+  <Target Name="GetTargetPath" />
+
 </Project>

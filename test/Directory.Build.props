@@ -10,11 +10,11 @@
 
   <PropertyGroup>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
-    <NoWarn>$(NoWarn);NU5125</NoWarn>
 
-    <!-- Don't warn about long filenames in packages, we bundle test assets that have long paths
+    <!-- NU5125 The licenseUrl element is being replaced by the license element. -->
+    <!-- NU5123 Don't warn about long filenames in packages, we bundle test assets that have long paths
          (ie HelloWorldWithSubDirs) -->
-    <NoWarn>$(NoWarn);NU5123</NoWarn>
+    <NoWarn>$(NoWarn);NU5125;NU5123</NoWarn>
 
     <GenerateProgramFile>false</GenerateProgramFile>
 
