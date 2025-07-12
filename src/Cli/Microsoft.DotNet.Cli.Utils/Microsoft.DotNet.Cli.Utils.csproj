@@ -47,6 +47,7 @@
         Condition="'$([MSBuild]::GetTargetFrameworkIdentifier($(TargetFramework)))' == '.NETCoreApp'"
         GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource"/>
     <PackageReference Include="NuGet.Versioning" />
     <PackageReference Include="NuGet.Packaging" />
     <PackageReference Include="NuGet.Frameworks" />

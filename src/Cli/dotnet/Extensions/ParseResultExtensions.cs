@@ -15,21 +15,21 @@ namespace Microsoft.DotNet.Cli.Extensions;
 
 public static class ParseResultExtensions
 {
-    ///<summary>
+    /// <summary>
     /// Finds the command of the parse result and invokes help for that command.
     /// If no command is specified, invokes help for the application.
-    ///<summary>
-    ///<remarks>
+    /// <summary>
+    /// <remarks>
     /// This is accomplished by finding a set of tokens that should be valid and appending a help token
     /// to that list, then re-parsing the list of tokens. This is not ideal - either we should have a direct way
     /// of invoking help for a ParseResult, or we should eliminate this custom, ad-hoc help invocation by moving
     /// more situations that want to show help into Parsing Errors (which trigger help in the default System.CommandLine pipeline)
     /// or custom Invocation Middleware, so we can more easily create our version of a HelpResult type.
-    ///</remarks>
+    /// </remarks>
     public static void ShowHelp(this ParseResult parseResult)
     {
-        // take from the start of the list until we hit an option/--/unparsed token
-        // since commands can have arguments, we must take those as well in order to get accurate help
+        // Take from the start of the list until we hit an option/--/unparsed token.
+        // Since commands can have arguments, we must take those as well in order to get accurate help.
         var tokenList = parseResult.Tokens.TakeWhile(token => token.Type == TokenType.Argument || token.Type == TokenType.Command || token.Type == TokenType.Directive).Select(t => t.Value).ToList();
         tokenList.Add("-h");
         Instance.Parse(tokenList).Invoke();
@@ -55,14 +55,17 @@ public static class ParseResultExtensions
             }
         }
 
-        ///<summary>Splits a .NET format string by the format placeholders (the {N} parts) to get an array of the literal parts, to be used in message-checking</summary>
+        /// <summary>
+        /// Splits a .NET format string by the format placeholders (the {N} parts) to get an array of the literal parts, to be used in message-checking.
+        /// </summary>
         static string[] DistinctFormatStringParts(string formatString)
         {
             return Regex.Split(formatString, @"{[0-9]+}"); // match the literal '{', followed by any of 0-9 one or more times, followed by the literal '}'
         }
 
-
-        /// <summary>given a string and a series of parts, ensures that all parts are present in the string in sequential order</summary>
+        /// <summary>
+        /// Given a string and a series of parts, ensures that all parts are present in the string in sequential order.
+        /// </summary>
         static bool ErrorContainsAllParts(ReadOnlySpan<char> error, string[] parts)
         {
             foreach (var part in parts)
@@ -84,9 +87,12 @@ public static class ParseResultExtensions
 
     public static string RootSubCommandResult(this ParseResult parseResult)
     {
-        return parseResult.RootCommandResult.Children?
-            .Select(child => GetSymbolResultValue(parseResult, child))
-            .FirstOrDefault(subcommand => !string.IsNullOrEmpty(subcommand)) ?? string.Empty;
+        CommandResult commandResult = parseResult.CommandResult;
+        while (commandResult != parseResult.RootCommandResult && commandResult.Parent is CommandResult parentCommand)
+        {
+            commandResult = parentCommand;
+        }
+        return commandResult.Command.Name;
     }
 
     public static bool IsDotnetBuiltInCommand(this ParseResult parseResult)
@@ -100,12 +106,7 @@ public static class ParseResultExtensions
         return parseResult.CommandResult.Command.Equals(Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
     }
 
-    public static bool CanBeInvoked(this ParseResult parseResult)
-    {
-        return GetBuiltInCommand(parseResult.RootSubCommandResult()) != null ||
-            parseResult.Tokens.Any(token => token.Type == TokenType.Directive) ||
-            (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(DotnetSubCommand)));
-    }
+    public static bool CanBeInvoked(this ParseResult parseResult) => parseResult.Action is not null;
 
     public static int HandleMissingCommand(this ParseResult parseResult)
     {
@@ -162,13 +163,6 @@ public static class ParseResultExtensions
         return false;
     }
 
-    private static string? GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
-    {
-        CommandResult commandResult => commandResult.Command.Name,
-        ArgumentResult argResult => argResult.Tokens.FirstOrDefault()?.Value,
-        _ => parseResult.GetResult(DotnetSubCommand)?.GetValueOrDefault<string>()
-    };
-
     public static bool BothArchAndOsOptionsSpecified(this ParseResult parseResult) =>
         (parseResult.HasOption(CommonOptions.ArchitectureOption) ||
         parseResult.HasOption(CommonOptions.LongFormArchitectureOption)) &&
@@ -189,7 +183,7 @@ public static class ParseResultExtensions
 
     public static bool UsingRunCommandShorthandProjectOption(this ParseResult parseResult)
     {
-        if (parseResult.HasOption(RunCommandParser.PropertyOption) && parseResult.GetValue(RunCommandParser.PropertyOption)!.Any())
+        if (parseResult.HasOption(RunCommandParser.PropertyOption) && (parseResult.GetValue(RunCommandParser.PropertyOption)?.Any() ?? false))
         {
             var projVals = parseResult.GetRunCommandShorthandProjectValues();
             if (projVals?.Any() is true)
@@ -252,7 +246,7 @@ public static class ParseResultExtensions
 
     /// <summary>
     /// Only returns the value for this option if the option is present and there are no parse errors for that option.
-    /// This allows cross-cutting code like the telemetry filters to safely get the value without throwing on null-ref errors.
+    /// This allows cross-cutting code like the _telemetry filters to safely get the value without throwing on null-ref errors.
     /// If you are inside a command handler or 'normal' System.CommandLine code then you don't need this - the parse error handling
     /// will have covered these cases.
     /// </summary>
