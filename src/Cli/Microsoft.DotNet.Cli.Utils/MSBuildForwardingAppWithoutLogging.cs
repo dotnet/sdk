@@ -121,17 +121,6 @@ internal class MSBuildForwardingAppWithoutLogging
         {
             _msbuildRequiredEnvironmentVariables.Add(name, value);
         }
-
-        if (value == string.Empty || value == "\0")
-        {
-            // Unlike ProcessStartInfo.EnvironmentVariables, Environment.SetEnvironmentVariable can't set a variable
-            // to an empty value, so we just fall back to calling MSBuild out-of-proc if we encounter this case.
-            // https://github.com/dotnet/runtime/issues/50554
-            InitializeForOutOfProcForwarding();
-
-            // Disable MSBUILDUSESERVER if any env vars are null as those are not properly transferred to build nodes
-            _msbuildRequiredEnvironmentVariables["MSBUILDUSESERVER"] = "0";
-        }
     }
 
     public int Execute()
