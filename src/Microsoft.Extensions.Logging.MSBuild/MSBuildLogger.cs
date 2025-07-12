@@ -47,7 +47,16 @@ public sealed class MSBuildLogger : ILogger
 
     IDisposable ILogger.BeginScope<TState>(TState state) => _scopeProvider?.Push(state) ?? Scope;
 
-    public bool IsEnabled(LogLevel logLevel) => true;
+    public bool IsEnabled(LogLevel logLevel) =>
+        logLevel switch
+        {
+            LogLevel.Trace => _loggingHelper.LogsMessagesOfImportance(MessageImportance.Low),
+            LogLevel.Debug => _loggingHelper.LogsMessagesOfImportance(MessageImportance.Normal),
+            LogLevel.Information => _loggingHelper.LogsMessagesOfImportance(MessageImportance.High),
+            LogLevel.Warning or LogLevel.Error or LogLevel.Critical => true,
+            LogLevel.None => false,
+            _ => throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, null)
+        };
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
