@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             return matchingPackages.MaxBy(p => new NuGetVersion(p.Version));
         }
 
-        protected override void CreateAssetFile(PackageId packageId, NuGetVersion version, DirectoryPath packagesRootPath, string assetFilePath, string runtimeJsonGraph, VerbosityOptions verbosity, string? targetFramework = null)
+        protected override void CreateAssetFile(PackageId packageId, NuGetVersion version, DirectoryPath packagesRootPath, string assetFilePath, string runtimeJsonGraph, Cli.Utils.VerbosityOptions verbosity, string? targetFramework = null)
         {
             var mockPackage = GetPackage(packageId, version);
             if (mockPackage == null)
@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
             _fileSystem.File.WriteAllText(assetFilePath, assetFileContents);
         }
-        protected override INuGetPackageDownloader CreateNuGetPackageDownloader(bool verifySignatures, VerbosityOptions verbosity, RestoreActionConfig? restoreActionConfig)
+        protected override INuGetPackageDownloader CreateNuGetPackageDownloader(bool verifySignatures, Cli.Utils.VerbosityOptions verbosity, RestoreActionConfig? restoreActionConfig)
         {
             List<NuGetVersion> packageVersions;
             if (_packages == null)
@@ -112,7 +112,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         }
 
         protected override NuGetVersion DownloadAndExtractPackage(PackageId packageId, INuGetPackageDownloader nugetPackageDownloader, string packagesRootPath,
-            NuGetVersion packageVersion, PackageSourceLocation packageSourceLocation, VerbosityOptions verbosity, bool includeUnlisted = false)
+            NuGetVersion packageVersion, PackageSourceLocation packageSourceLocation, Cli.Utils.VerbosityOptions verbosity, bool includeUnlisted = false)
         {
 
             var package = GetPackage(packageId, packageVersion);

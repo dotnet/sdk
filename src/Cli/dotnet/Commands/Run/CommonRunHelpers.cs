@@ -24,7 +24,7 @@ internal static class CommonRunHelpers
             { Constants.MSBuildExtensionsPath, AppContext.BaseDirectory }
         };
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(args, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption());
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(args, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.VerbosityOption());
         if (msbuildArgs.GlobalProperties is null)
         {
             return globalProperties;

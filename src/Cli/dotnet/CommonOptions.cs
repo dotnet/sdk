@@ -122,29 +122,34 @@ internal static class CommonOptions
         return allTargets.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
     }
 
-
     public static Option<VerbosityOptions> VerbosityOption(VerbosityOptions defaultVerbosity) =>
         new ForwardedOption<VerbosityOptions>("--verbosity", "-v")
         {
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName,
             DefaultValueFactory = _ => defaultVerbosity
-        }.ForwardAsSingle(o => $"-verbosity:{o}");
+        }
+        .ForwardAsSingle(o => $"--verbosity:{o}")
+        .AggregateRepeatedTokens();
 
     public static Option<VerbosityOptions?> VerbosityOption() =>
-        new ForwardedOption<VerbosityOptions?>("--verbosity", "-v")
+        new ForwardedOption<VerbosityOptions?>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
         {
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName
-        }.ForwardAsSingle(o => $"-verbosity:{o}");
+        }
+        .ForwardAsSingle(o => $"--verbosity:{o}")
+        .AggregateRepeatedTokens();
 
     public static Option<VerbosityOptions> HiddenVerbosityOption =
-        new ForwardedOption<VerbosityOptions>("--verbosity", "-v")
+        new ForwardedOption<VerbosityOptions>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
         {
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName,
             Hidden = true
-        }.ForwardAsSingle(o => $"-verbosity:{o}");
+        }
+        .ForwardAsSingle(o => $"--verbosity:{o}")
+        .AggregateRepeatedTokens();
 
     public static Option<string> FrameworkOption(string description) =>
         new DynamicForwardedOption<string>("--framework", "-f")
@@ -468,20 +473,6 @@ internal static class CommonOptions
         option.CompletionSources.Add(completionSource);
         return option;
     }
-}
-
-public enum VerbosityOptions
-{
-    quiet,
-    q,
-    minimal,
-    m,
-    normal,
-    n,
-    detailed,
-    d,
-    diagnostic,
-    diag
 }
 
 public class DynamicOption<T>(string name, params string[] aliases) : Option<T>(name, aliases), IDynamicOption

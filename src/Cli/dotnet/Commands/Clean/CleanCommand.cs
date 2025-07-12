@@ -34,7 +34,7 @@ public class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = null) :
                 NoBuildMarkers = true,
             },
             static (msbuildArgs, msbuildPath) => new CleanCommand(msbuildArgs, msbuildPath),
-            [ CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CleanCommandParser.TargetOption ],
+            [ CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CleanCommandParser.TargetOption, CleanCommandParser.VerbosityOption ],
             result,
             msbuildPath
         );

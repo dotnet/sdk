@@ -41,7 +41,7 @@ internal class MSBuildForwardingAppWithoutLogging
 
     private readonly Dictionary<string, string> _msbuildRequiredEnvironmentVariables = GetMSBuildRequiredEnvironmentVariables();
 
-    private readonly List<string> _msbuildRequiredParameters = [ "-maxcpucount", "-verbosity:m" ];
+    private readonly List<string> _msbuildRequiredParameters = [ "-maxcpucount", "--verbosity:m" ];
 
     public MSBuildForwardingAppWithoutLogging(MSBuildArgs msbuildArgs, string? msbuildPath = null, bool includeLogo = false, bool isRestoring = true)
     {
@@ -100,6 +100,7 @@ internal class MSBuildForwardingAppWithoutLogging
         .. msbuildArgs.GlobalProperties?.Select(kvp => EmitProperty(kvp)) ?? [],
         .. msbuildArgs.RestoreGlobalProperties?.Select(kvp => EmitProperty(kvp, "restoreProperty")) ?? [],
         .. msbuildArgs.RequestedTargets?.Select(target => $"--target:{target}") ?? [],
+        .. msbuildArgs.Verbosity is not null ? new string[1] { $"--verbosity:{msbuildArgs.Verbosity}" } : [],
         .. msbuildArgs.OtherMSBuildArgs
     ];
 

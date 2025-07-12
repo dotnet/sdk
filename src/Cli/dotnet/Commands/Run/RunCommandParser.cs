@@ -62,7 +62,7 @@ internal static class RunCommandParser
 
     public static readonly Option NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
 
-    public static readonly Option<VerbosityOptions?> VerbosityOption = CommonOptions.VerbosityOption();
+    public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.VerbosityOption();
 
     public static readonly Argument<string[]> ApplicationArguments = new("applicationArguments")
     {

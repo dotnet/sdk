@@ -197,7 +197,7 @@ public class CliSchemaTests : SdkTest
         "-v"
       ],
       "helpName": "LEVEL",
-      "valueType": "Microsoft.DotNet.Cli.VerbosityOptions",
+      "valueType": "Microsoft.DotNet.Cli.Utils.VerbosityOptions",
       "hasDefaultValue": true,
       "defaultValue": "normal",
       "arity": {
@@ -548,7 +548,7 @@ public class CliSchemaTests : SdkTest
         "-v"
       ],
       "helpName": "LEVEL",
-      "valueType": "Microsoft.DotNet.Cli.VerbosityOptions",
+      "valueType": "Microsoft.DotNet.Cli.Utils.VerbosityOptions",
       "hasDefaultValue": true,
       "defaultValue": "normal",
       "arity": {
@@ -979,10 +979,14 @@ public class CliSchemaTests : SdkTest
       "description": "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].",
       "hidden": false,
       "aliases": [
-        "-v"
+        "--v",
+        "-v",
+        "-verbosity",
+        "/v",
+        "/verbosity"
       ],
       "helpName": "LEVEL",
-      "valueType": "System.Nullable<Microsoft.DotNet.Cli.VerbosityOptions>",
+      "valueType": "System.Nullable<Microsoft.DotNet.Cli.Utils.VerbosityOptions>",
       "hasDefaultValue": false,
       "arity": {
         "minimum": 1,

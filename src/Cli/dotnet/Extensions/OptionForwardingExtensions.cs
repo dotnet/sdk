@@ -94,9 +94,25 @@ public static class OptionForwardingExtensions
         return func?.Invoke(parseResult) ?? [];
     }
 
-    public static Option<T> AllowSingleArgPerToken<T>(this Option<T> option)
+    /// <summary>
+    /// Forces an option that represents a collection-type to only allow a single
+    /// argument per instance of the option. This means that you'd have to
+    /// use the option multiple times to pass multiple values.
+    /// This prevents ambiguity in parsing when argument tokens may appear after the option.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="option"></param>
+    /// <returns></returns>
+    public static T AllowSingleArgPerToken<T>(this T option) where T : Option
     {
         option.AllowMultipleArgumentsPerToken = false;
+        return option;
+    }
+
+
+    public static T AggregateRepeatedTokens<T>(this T option) where T : Option
+    {
+        option.AllowMultipleArgumentsPerToken = true;
         return option;
     }
 

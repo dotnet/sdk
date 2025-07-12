@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenDotnetRestoreInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo", "--target:Restore"];
+        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "-nologo", "--target:Restore"];
         private static readonly string NuGetDisabledProperty = "--property:NuGetInteractive=false";
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetRestoreInvocation));
@@ -30,8 +30,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "--no-http-cache" }, new string[] { "--property:RestoreNoHttpCache=true" })]
         [InlineData(new string[] { "--ignore-failed-sources" }, new string[] { "--property:RestoreIgnoreFailedSources=true" })]
         [InlineData(new string[] { "--no-dependencies" }, new string[] { "--property:RestoreRecursive=false" })]
-        [InlineData(new string[] { "-v", "minimal" }, new string[] { "-verbosity:minimal" })]
-        [InlineData(new string[] { "--verbosity", "minimal" }, new string[] { "-verbosity:minimal" })]
+        [InlineData(new string[] { "-v", "minimal" }, new string[] { "--verbosity:minimal" })]
+        [InlineData(new string[] { "--verbosity", "minimal" }, new string[] { "--verbosity:minimal" })]
         [InlineData(new string[] { "--use-lock-file" }, new string[] { "--property:RestorePackagesWithLockFile=true" })]
         [InlineData(new string[] { "--locked-mode" }, new string[] { "--property:RestoreLockedMode=true" })]
         [InlineData(new string[] { "--force-evaluate" }, new string[] { "--property:RestoreForceEvaluate=true" })]

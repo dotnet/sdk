@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenDotnetRunInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        private static readonly string[] ConstantRestoreArgs = ["-nologo", "-verbosity:quiet"];
+        private static readonly string[] ConstantRestoreArgs = ["-nologo", "--verbosity:quiet"];
         private static readonly string NuGetDisabledProperty = "--property:NuGetInteractive=false";
 
         public ITestOutputHelper Log { get; }
@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     var command = RunCommand.FromArgs(args);
                     command.MSBuildArgs
                         .Should()
-                        .BeEquivalentTo(MSBuildArgs.AnalyzeMSBuildArguments([.. ConstantRestoreArgs, .. expectedArgs, NuGetDisabledProperty ], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption()));
+                        .BeEquivalentTo(MSBuildArgs.AnalyzeMSBuildArguments([.. ConstantRestoreArgs, .. expectedArgs, NuGetDisabledProperty ], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), RunCommandParser.VerbosityOption));
                 });
             }
             finally

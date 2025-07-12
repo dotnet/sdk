@@ -24,7 +24,7 @@ internal static class ToolExecuteCommandParser
     public static readonly Option<string[]> AddSourceOption = ToolInstallCommandParser.AddSourceOption;
     public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption();
     public static readonly Option<bool> YesOption = CommonOptions.YesOption;
-    public static readonly Option<VerbosityOptions> VerbosityOption = ToolInstallCommandParser.VerbosityOption;
+    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = ToolInstallCommandParser.VerbosityOption;
 
 
     public static readonly Command Command = ConstructCommand();

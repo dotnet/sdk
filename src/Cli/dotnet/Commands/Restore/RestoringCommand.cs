@@ -126,8 +126,12 @@ public class RestoringCommand : MSBuildForwardingApp
         var restoreMSBuildArgs =
             MSBuildArgs.FromProperties(RestoreOptimizationProperties)
                        .CloneWithAdditionalTarget("Restore")
-                       .CloneWithExplicitArgs([..newArgumentsToAdd, ..existingArgumentsToForward])
+                       .CloneWithExplicitArgs([.. newArgumentsToAdd, .. existingArgumentsToForward])
                        .CloneWithAdditionalProperties(restoreProperties);
+        if (msbuildArgs.Verbosity is {} verbosity)
+        {
+            restoreMSBuildArgs = restoreMSBuildArgs.CloneWithVerbosity(verbosity);
+        }
         return RestoreCommand.CreateForwarding(restoreMSBuildArgs, msbuildPath);
     }
 
@@ -203,7 +207,7 @@ public class RestoringCommand : MSBuildForwardingApp
                     newArgumentsToAdd.Add("-nologo");
                     hasSetNologo = true;
                 }
-                newArgumentsToAdd.Add("-verbosity:quiet");
+                newArgumentsToAdd.Add("--verbosity:quiet");
             }
         }
         return (newArgumentsToAdd.ToArray(), existingArgumentsToForward.ToArray());
