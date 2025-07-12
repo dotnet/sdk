@@ -39,7 +39,7 @@ internal class MSBuildForwardingAppWithoutLogging
     // True if, given current state of the class, MSBuild would be executed in its own process.
     public bool ExecuteMSBuildOutOfProc => _forwardingApp != null;
 
-    private readonly Dictionary<string, string> _msbuildRequiredEnvironmentVariables = GetMSBuildRequiredEnvironmentVariables();
+    private readonly Dictionary<string, string?> _msbuildRequiredEnvironmentVariables = GetMSBuildRequiredEnvironmentVariables();
 
     private readonly List<string> _msbuildRequiredParameters = [ "-maxcpucount", "--verbosity:m" ];
 
@@ -112,7 +112,7 @@ internal class MSBuildForwardingAppWithoutLogging
             : $"--{label}:{property.Key}={property.Value}";
     }
 
-    public void EnvironmentVariable(string name, string value)
+    public void EnvironmentVariable(string name, string? value)
     {
         if (_forwardingApp != null)
         {
@@ -153,7 +153,7 @@ internal class MSBuildForwardingAppWithoutLogging
         Dictionary<string, string?> savedEnvironmentVariables = [];
         try
         {
-            foreach (KeyValuePair<string, string> kvp in _msbuildRequiredEnvironmentVariables)
+            foreach (KeyValuePair<string, string?> kvp in _msbuildRequiredEnvironmentVariables)
             {
                 savedEnvironmentVariables[kvp.Key] = Environment.GetEnvironmentVariable(kvp.Key);
                 Environment.SetEnvironmentVariable(kvp.Key, kvp.Value);
@@ -218,7 +218,7 @@ internal class MSBuildForwardingAppWithoutLogging
         return new Muxer().MuxerPath;
     }
 
-    internal static Dictionary<string, string> GetMSBuildRequiredEnvironmentVariables()
+    internal static Dictionary<string, string?> GetMSBuildRequiredEnvironmentVariables()
     {
         return new()
         {
