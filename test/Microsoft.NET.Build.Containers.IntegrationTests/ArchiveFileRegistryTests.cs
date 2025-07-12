@@ -14,9 +14,9 @@ public class ArchiveFileRegistryTests
         string expectedCreatedFilePath = Path.Combine(TestSettings.TestArtifactsDirectory, "repository.tar.gz");
 
         await CreateRegistryAndCallLoadAsync(archiveOutputPath);
-        
-        Assert.True(File.Exists(expectedCreatedFilePath));    
-    }  
+
+        Assert.True(File.Exists(expectedCreatedFilePath));
+    }
 
     [Theory]
     [InlineData(true)]
@@ -29,8 +29,8 @@ public class ArchiveFileRegistryTests
         string expectedCreatedFilePath = Path.Combine(archiveOutputPath, "repository.tar.gz");
 
         await CreateRegistryAndCallLoadAsync(archiveOutputPath);
-        
-        Assert.True(File.Exists(expectedCreatedFilePath));    
+
+        Assert.True(File.Exists(expectedCreatedFilePath));
     }
 
     [Fact]
@@ -40,8 +40,8 @@ public class ArchiveFileRegistryTests
         string expectedCreatedFilePath = archiveOutputPath;
 
         await CreateRegistryAndCallLoadAsync(archiveOutputPath);
-        
-        Assert.True(File.Exists(expectedCreatedFilePath));    
+
+        Assert.True(File.Exists(expectedCreatedFilePath));
     }
 
     [Fact]
@@ -51,8 +51,8 @@ public class ArchiveFileRegistryTests
         string expectedCreatedFilePath = archiveOutputPath;
 
         await CreateRegistryAndCallLoadAsync(archiveOutputPath);
-        
-        Assert.True(File.Exists(expectedCreatedFilePath));    
+
+        Assert.True(File.Exists(expectedCreatedFilePath));
     }
 
     private async Task CreateRegistryAndCallLoadAsync(string archiveOutputPath)
@@ -65,7 +65,8 @@ public class ArchiveFileRegistryTests
             new SourceImageReference(),
             destinationImageReference,
             CancellationToken.None,
-            async (img, srcRef, destRef, stream, token) =>
+            async ((string img, SourceImageReference srcRef, DestinationImageReference destRef) pushData, Stream stream, CancellationToken token) =>
+
             {
                 await Task.CompletedTask;
             });
