@@ -274,6 +274,35 @@ Paths searched: '{1}', '{2}'.</value>
   <data name="CleanRuntimeOptionDescription" xml:space="preserve">
     <value>The target runtime to clean for.</value>
   </data>
+  <data name="CleanFileBasedAppArtifactsCommandDescription" xml:space="preserve">
+    <value>Removes artifacts created for file-based apps</value>
+  </data>
+  <data name="CleanFileBasedAppArtifactsDryRun" xml:space="preserve">
+    <value>Determines changes without actually modifying the file system</value>
+  </data>
+  <data name="CleanFileBasedAppArtifactsDays" xml:space="preserve">
+    <value>How many days an artifact folder needs to be unused in order to be removed</value>
+  </data>
+  <data name="CleanFileBasedAppArtifactsErrorRemovingFolder" xml:space="preserve">
+    <value>Error removing folder '{0}': {1}</value>
+    <comment>{0} is folder path. {1} is inner error message.</comment>
+  </data>
+  <data name="CleanFileBasedAppArtifactsWouldRemoveFolders" xml:space="preserve">
+    <value>Would remove folders: {0}</value>
+    <comment>{0} is count.</comment>
+  </data>
+  <data name="CleanFileBasedAppArtifactsTotalFoldersRemoved" xml:space="preserve">
+    <value>Total folders removed: {0}</value>
+    <comment>{0} is count.</comment>
+  </data>
+  <data name="CleanFileBasedAppArtifactsDirectoryNotFound" xml:space="preserve">
+    <value>Warning: Artifacts directory does not exist: {0}</value>
+    <comment>{0} is directory path.</comment>
+  </data>
+  <data name="CleanFileBasedAppArtifactsScanning" xml:space="preserve">
+    <value>Scanning for folders to remove in: {0}</value>
+    <comment>{0} is directory path.</comment>
+  </data>
   <data name="CmdBlameCrashCollectAlwaysDescription" xml:space="preserve">
     <value>Enables collecting crash dump on expected as well as unexpected testhost exit.</value>
   </data>
