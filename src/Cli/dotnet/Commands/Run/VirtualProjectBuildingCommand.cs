@@ -155,7 +155,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     {
         Debug.Assert(!(NoRestore && NoBuild));
         var verbosity = MSBuildArgs.Verbosity ?? VerbosityOptions.quiet;
-        var consoleLogger = TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{verbosity.ToString().ToLowerInvariant()}", .. MSBuildArgs.OtherMSBuildArgs]);
+        var consoleLogger = TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]);
         var binaryLogger = GetBinaryLogger(MSBuildArgs.OtherMSBuildArgs);
 
         RunFileBuildCacheEntry? cacheEntry = null;

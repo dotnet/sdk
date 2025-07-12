@@ -7,7 +7,6 @@ namespace Microsoft.DotNet.Cli.Utils;
 /// default enum parsing.
 /// </summary>
 public enum VerbosityOptions
-
 {
     quiet,
     q,

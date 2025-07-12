@@ -714,6 +714,10 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.NotHaveStdOutContaining("Important text");
         }
 
+        /// <summary>
+        /// default verbosity for `run` is as quiet as possible, so it does not show important messages.
+        /// NuGet authentication messages _are_ shown, but all other non-warning/-error messages are not.
+        /// </summary>
         [Fact]
         public void ItDoesNotShowImportantLevelMessageWhenPassInteractive()
         {
@@ -730,7 +734,6 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.NotHaveStdOutContaining("Important text");
         }
 
-        
         [Fact]
         public void ItShowsImportantLevelMessageWhenPassInteractiveAndVerbose()
         {

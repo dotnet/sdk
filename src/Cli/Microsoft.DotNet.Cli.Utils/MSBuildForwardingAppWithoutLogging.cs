@@ -100,7 +100,7 @@ internal class MSBuildForwardingAppWithoutLogging
         .. msbuildArgs.GlobalProperties?.Select(kvp => EmitProperty(kvp)) ?? [],
         .. msbuildArgs.RestoreGlobalProperties?.Select(kvp => EmitProperty(kvp, "restoreProperty")) ?? [],
         .. msbuildArgs.RequestedTargets?.Select(target => $"--target:{target}") ?? [],
-        .. msbuildArgs.Verbosity is not null ? new string[1] { $"--verbosity:{msbuildArgs.Verbosity?.ToString().ToLowerInvariant()}" } : [],
+        .. msbuildArgs.Verbosity is not null ? new string[1] { $"--verbosity:{msbuildArgs.Verbosity}" } : [],
         .. msbuildArgs.OtherMSBuildArgs
     ];
 
