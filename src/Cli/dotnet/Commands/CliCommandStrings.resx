@@ -1501,6 +1501,37 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   <data name="ProjectConvertAppFullName" xml:space="preserve">
     <value>Convert a file-based program to a project-based program.</value>
   </data>
+  <data name="ProjectConvertAskForOutputDirectory" xml:space="preserve">
+    <value>Specify the output directory ({0}):</value>
+    <comment>{0} is the default value</comment>
+  </data>
+  <data name="ProjectConvertDryRun" xml:space="preserve">
+    <value>Determines changes without actually modifying the file system</value>
+  </data>
+  <data name="ProjectConvertWouldCreateDirectory" xml:space="preserve">
+    <value>Dry run: would create directory: {0}</value>
+    <comment>{0} is the directory full path.</comment>
+  </data>
+  <data name="ProjectConvertWouldCopyFile" xml:space="preserve">
+    <value>Dry run: would copy file '{0}' to '{1}'.</value>
+    <comment>{0} and {1} are file full paths.</comment>
+  </data>
+  <data name="ProjectConvertWouldConvertFile" xml:space="preserve">
+    <value>Dry run: would remove file-level directives from file: {0}</value>
+    <comment>{0} is the file full path.</comment>
+  </data>
+  <data name="ProjectConvertWouldMoveFile" xml:space="preserve">
+    <value>Dry run: would move file '{0}' to '{1}'.</value>
+    <comment>{0} and {1} are file full paths.</comment>
+  </data>
+  <data name="ProjectConvertWouldDeleteFile" xml:space="preserve">
+    <value>Dry run: would delete file: {0}</value>
+    <comment>{0} is the file full path.</comment>
+  </data>
+  <data name="ProjectConvertWouldCreateFile" xml:space="preserve">
+    <value>Dry run: would create file: {0}</value>
+    <comment>{0} is the file full path.</comment>
+  </data>
   <data name="ProjectManifest" xml:space="preserve">
     <value>PROJECT_MANIFEST</value>
   </data>
