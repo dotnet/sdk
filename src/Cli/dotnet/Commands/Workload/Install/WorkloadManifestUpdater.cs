@@ -1,18 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 using Microsoft.DotNet.Cli.Commands.Workload.List;
-using Microsoft.DotNet.Cli.Configuration;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Configurer;
-using Microsoft.Extensions.Configuration.DotnetCli.Services;
+using Microsoft.Extensions.Configuration.DotnetCli;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
@@ -30,8 +27,8 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
     private readonly INuGetPackageDownloader _nugetPackageDownloader;
     private readonly SdkFeatureBand _sdkFeatureBand;
     private readonly string _userProfileDir;
-    private readonly PackageSourceLocation _packageSourceLocation;
-    private readonly Func<string, string> _getEnvironmentVariable;
+    private readonly PackageSourceLocation? _packageSourceLocation;
+    private readonly Func<string, string?> _getEnvironmentVariable;
     private readonly IWorkloadInstallationRecordRepository _workloadRecordRepo;
     private readonly IWorkloadManifestInstaller _workloadManifestInstaller;
     private readonly bool _displayManifestUpdates;
@@ -42,8 +39,8 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         string userProfileDir,
         IWorkloadInstallationRecordRepository workloadRecordRepo,
         IWorkloadManifestInstaller workloadManifestInstaller,
-        PackageSourceLocation packageSourceLocation = null,
-        Func<string, string> getEnvironmentVariable = null,
+        PackageSourceLocation? packageSourceLocation = null,
+        Func<string, string?>? getEnvironmentVariable = null,
         bool displayManifestUpdates = true,
         SdkFeatureBand? sdkFeatureBand = null)
     {
@@ -62,7 +59,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
     private static WorkloadManifestUpdater GetInstance(string userProfileDir)
     {
         var reporter = new NullReporter();
-        var dotnetPath = Path.GetDirectoryName(Environment.ProcessPath);
+        var dotnetPath = Path.GetDirectoryName(Environment.ProcessPath)!;
         var sdkVersion = Product.Version;
         var workloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(dotnetPath, sdkVersion, userProfileDir, SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory));
         var workloadResolver = WorkloadResolver.Create(workloadManifestProvider, dotnetPath, sdkVersion, userProfileDir);
@@ -89,7 +86,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         }
         else
         {
-            // this updates all the manifests 
+            // this updates all the manifests
             var manifests = _workloadResolver.GetInstalledManifests();
             await Task.WhenAll(manifests.Select(manifest => UpdateAdvertisingManifestAsync(manifest, includePreviews, offlineCache))).ConfigureAwait(false);
             WriteUpdatableWorkloadsFile();
@@ -143,7 +140,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         var jsonContent = JsonSerializer.Serialize(updatableWorkloads.Select(workload => workload.ToString()).ToArray());
         if (Directory.Exists(Path.GetDirectoryName(filePath)))
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
         }
         File.WriteAllText(filePath, jsonContent);
     }
@@ -180,7 +177,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         }
     }
 
-    public string GetAdvertisedWorkloadSetVersion()
+    public string? GetAdvertisedWorkloadSetVersion()
     {
         var advertisedPath = GetAdvertisingManifestPath(_sdkFeatureBand, new ManifestId(WorkloadSetManifestId));
         var workloadSetVersionFilePath = Path.Combine(advertisedPath, Constants.workloadSetVersionFileName);
@@ -237,7 +234,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         }
     }
 
-    public IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath, WorkloadHistoryRecorder recorder = null)
+    public IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath, WorkloadHistoryRecorder? recorder = null)
     {
         var currentManifestIds = GetInstalledManifestIds();
         var manifestRollbacks = ParseRollbackDefinitionFile(rollbackDefinitionFilePath, _sdkFeatureBand);
@@ -312,10 +309,10 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
 
     private IEnumerable<ManifestId> GetInstalledManifestIds() => _workloadResolver.GetInstalledManifests().Select(manifest => new ManifestId(manifest.Id));
 
-    private async Task<bool> UpdateManifestWithVersionAsync(string id, bool includePreviews, SdkFeatureBand band, NuGetVersion packageVersion = null, DirectoryPath? offlineCache = null)
+    private async Task<bool> UpdateManifestWithVersionAsync(string id, bool includePreviews, SdkFeatureBand band, NuGetVersion? packageVersion = null, DirectoryPath? offlineCache = null)
     {
         var manifestId = new ManifestId(id);
-        string packagePath = null;
+        string? packagePath = null;
         try
         {
             var manifestPackageId = _workloadManifestInstaller.GetManifestPackageId(manifestId, band);

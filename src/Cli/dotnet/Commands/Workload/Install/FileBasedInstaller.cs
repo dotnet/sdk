@@ -1,19 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands.Workload.Config;
 using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
-using Microsoft.DotNet.Cli.Configuration;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
-using Microsoft.Extensions.Configuration.DotnetCli.Services;
+using Microsoft.Extensions.Configuration.DotnetCli;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
@@ -32,15 +30,15 @@ internal class FileBasedInstaller : IInstaller
     private const string InstalledWorkloadSetsDir = "InstalledWorkloadSets";
     private const string HistoryDir = "history";
     protected readonly string _dotnetDir;
-    protected readonly string _userProfileDir;
+    protected readonly string? _userProfileDir;
     protected readonly string _workloadRootDir;
     protected readonly DirectoryPath _tempPackagesDir;
     private readonly INuGetPackageDownloader _nugetPackageDownloader;
     private IWorkloadResolver _workloadResolver;
     private readonly SdkFeatureBand _sdkFeatureBand;
     private readonly FileBasedInstallationRecordRepository _installationRecordRepository;
-    private readonly PackageSourceLocation _packageSourceLocation;
-    private readonly RestoreActionConfig _restoreActionConfig;
+    private readonly PackageSourceLocation? _packageSourceLocation;
+    private readonly RestoreActionConfig? _restoreActionConfig;
 
     public int ExitCode => 0;
 
@@ -48,24 +46,24 @@ internal class FileBasedInstaller : IInstaller
         SdkFeatureBand sdkFeatureBand,
         IWorkloadResolver workloadResolver,
         string userProfileDir,
-        INuGetPackageDownloader nugetPackageDownloader = null,
-        string dotnetDir = null,
-        string tempDirPath = null,
+        INuGetPackageDownloader? nugetPackageDownloader = null,
+        string? dotnetDir = null,
+        string? tempDirPath = null,
         VerbosityOptions verbosity = VerbosityOptions.normal,
-        PackageSourceLocation packageSourceLocation = null,
-        RestoreActionConfig restoreActionConfig = null,
+        PackageSourceLocation? packageSourceLocation = null,
+        RestoreActionConfig? restoreActionConfig = null,
         VerbosityOptions nugetPackageDownloaderVerbosity = VerbosityOptions.normal)
     {
         _userProfileDir = userProfileDir;
-        _dotnetDir = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
+        _dotnetDir = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath)!;
         _tempPackagesDir = new DirectoryPath(tempDirPath ?? PathUtilities.CreateTempSubdirectory());
         ILogger logger = verbosity.IsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger();
         _restoreActionConfig = restoreActionConfig;
         _nugetPackageDownloader = nugetPackageDownloader ??
-                                  new NuGetPackageDownloader.NuGetPackageDownloader(_tempPackagesDir, 
+                                  new NuGetPackageDownloader.NuGetPackageDownloader(_tempPackagesDir,
                                       DotNetConfigurationFactory.Create(),
                                       filePermissionSetter: null,
-                                      firstPartyNuGetPackageSigningVerifier: new FirstPartyNuGetPackageSigningVerifier(), 
+                                      firstPartyNuGetPackageSigningVerifier: new FirstPartyNuGetPackageSigningVerifier(),
                                       verboseLogger: logger,
                                       restoreActionConfig: _restoreActionConfig,
                                       verbosityOptions: nugetPackageDownloaderVerbosity);
@@ -97,10 +95,10 @@ internal class FileBasedInstaller : IInstaller
             .Select(packId => _workloadResolver.TryGetPackInfo(packId))
             .Where(pack => pack != null);
 
-        return packs;
+        return packs!;
     }
 
-    public WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache = null)
+    public WorkloadSet? InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache = null)
     {
         string workloadSetPackageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out SdkFeatureBand workloadSetFeatureBand);
         var workloadSetPackageId = GetManifestPackageId(new ManifestId(WorkloadManifestUpdater.WorkloadSetManifestId), workloadSetFeatureBand);
@@ -128,9 +126,9 @@ internal class FileBasedInstaller : IInstaller
         return WorkloadSet.FromWorkloadSetFolder(workloadSetPath, workloadSetVersion, _sdkFeatureBand);
     }
 
-    public WorkloadSet GetWorkloadSetContents(string workloadSetVersion) => GetWorkloadSetContentsAsync(workloadSetVersion).GetAwaiter().GetResult();
+    public WorkloadSet? GetWorkloadSetContents(string workloadSetVersion) => GetWorkloadSetContentsAsync(workloadSetVersion).GetAwaiter().GetResult();
 
-    public async Task<WorkloadSet> GetWorkloadSetContentsAsync(string workloadSetVersion)
+    public async Task<WorkloadSet?> GetWorkloadSetContentsAsync(string workloadSetVersion)
     {
         string workloadSetPackageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out var workloadSetFeatureBand);
         var packagePath = await _nugetPackageDownloader.DownloadPackageAsync(GetManifestPackageId(new ManifestId(WorkloadManifestUpdater.WorkloadSetManifestId), workloadSetFeatureBand),
@@ -196,7 +194,7 @@ internal class FileBasedInstaller : IInstaller
                 {
                     if (!Directory.Exists(Path.GetDirectoryName(packInfo.Path)))
                     {
-                        Directory.CreateDirectory(Path.GetDirectoryName(packInfo.Path));
+                        Directory.CreateDirectory(Path.GetDirectoryName(packInfo.Path)!);
                     }
 
                     if (IsSingleFilePack(packInfo))
@@ -277,6 +275,8 @@ internal class FileBasedInstaller : IInstaller
 
     public void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
     {
+        Debug.Assert(manifestUpdate.NewFeatureBand is not null, "Manifest update must have a feature band");
+        Debug.Assert(manifestUpdate.NewVersion is not null, "Manifest update must have a version");
         var newManifestPath = Path.Combine(GetManifestInstallDirForFeatureBand(manifestUpdate.NewFeatureBand), manifestUpdate.ManifestId.ToString(), manifestUpdate.NewVersion.ToString());
 
         _reporter.WriteLine(string.Format(CliCommandStrings.InstallingWorkloadManifest, manifestUpdate.ManifestId, manifestUpdate.NewVersion));
@@ -305,8 +305,8 @@ internal class FileBasedInstaller : IInstaller
 
     void InstallPackage(PackageId packageId, string packageVersion, string targetFolder, ITransactionContext transactionContext, DirectoryPath? offlineCache)
     {
-        string packagePath = null;
-        string tempBackupDir = null;
+        string? packagePath = null;
+        string? tempBackupDir = null;
         bool directoryExists = Directory.Exists(targetFolder) && Directory.GetFileSystemEntries(targetFolder).Any();
 
         transactionContext.Run(
@@ -408,7 +408,8 @@ internal class FileBasedInstaller : IInstaller
 
         var featureBandsWithWorkloadInstallRecords = _installationRecordRepository.GetFeatureBandsWithInstallationRecords();
 
-        var installedSdkFeatureBands = NETCoreSdkResolverNativeWrapper.GetAvailableSdks(_dotnetDir).Select(sdkDir => new SdkFeatureBand(Path.GetFileName(sdkDir))).ToHashSet();
+        //  If we can't get SDKs, something has gone _very_ wrong. That's why we ! here.
+        var installedSdkFeatureBands = NETCoreSdkResolverNativeWrapper.GetAvailableSdks(_dotnetDir)!.Select(sdkDir => new SdkFeatureBand(Path.GetFileName(sdkDir))).ToHashSet();
 
         //  Tests will often use a dotnet folder without any SDKs installed.  To work around this, always add the current feature band to the list of installed feature bands
         installedSdkFeatureBands.Add(_sdkFeatureBand);
@@ -423,8 +424,7 @@ internal class FileBasedInstaller : IInstaller
             //  Get the feature band of the workload set
             WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out var workloadSetFeatureBand);
 
-            List<SdkFeatureBand> referencingFeatureBands;
-            if (!workloadSetInstallRecords.TryGetValue((workloadSetVersion, workloadSetFeatureBand), out referencingFeatureBands))
+            if (!workloadSetInstallRecords.TryGetValue((workloadSetVersion, workloadSetFeatureBand), out List<SdkFeatureBand>? referencingFeatureBands))
             {
                 //  If there are no install records for a workload set that is on disk, then ignore it.  It is probably a baseline workload set.
                 continue;
@@ -540,18 +540,18 @@ internal class FileBasedInstaller : IInstaller
                 File.Delete(GetPackInstallRecordPath(packId, packVersion, featureBand));
             }
 
-            var installationRecordDirectory = Path.GetDirectoryName(GetPackInstallRecordPath(packId, packVersion, featureBandsToRemove.First()));
+            var installationRecordDirectory = Path.GetDirectoryName(GetPackInstallRecordPath(packId, packVersion, featureBandsToRemove.First()))!;
             if (!Directory.GetFileSystemEntries(installationRecordDirectory).Any())
             {
                 //  There are no installation records for the workload pack anymore, so we can delete the pack
-                var packToDelete = JsonSerializer.Deserialize<PackInfo>(jsonPackInfo);
+                var packToDelete = JsonSerializer.Deserialize<PackInfo>(jsonPackInfo)!;
                 DeletePack(packToDelete);
 
                 //  Delete now-empty pack installation record directory
                 Directory.Delete(installationRecordDirectory);
 
                 //  And delete the parent directory if it's also empty
-                string packIdDirectory = Path.GetDirectoryName(installationRecordDirectory);
+                string packIdDirectory = Path.GetDirectoryName(installationRecordDirectory)!;
                 if (!Directory.GetFileSystemEntries(packIdDirectory).Any())
                 {
                     Directory.Delete(packIdDirectory);
@@ -592,7 +592,7 @@ internal class FileBasedInstaller : IInstaller
     private void UpdateInstallState(SdkFeatureBand sdkFeatureBand, Action<InstallStateContents> update)
     {
         string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _workloadRootDir), "default.json");
-        Directory.CreateDirectory(Path.GetDirectoryName(path));
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         var installStateContents = InstallStateContents.FromPath(path);
         update(installStateContents);
         File.WriteAllText(path, installStateContents.ToString());
@@ -647,7 +647,7 @@ internal class FileBasedInstaller : IInstaller
     public void Shutdown()
     {
         // Perform any additional cleanup here that's intended to run at the end of the command, regardless
-        // of success or failure. For file based installs, there shouldn't be any additional work to 
+        // of success or failure. For file based installs, there shouldn't be any additional work to
         // perform.
     }
 
@@ -679,7 +679,7 @@ internal class FileBasedInstaller : IInstaller
             {
                 Directory.Delete(targetPath, true);
             }
-            Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
             FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(Path.Combine(extractionPath, "data"), targetPath));
         }
         finally
@@ -715,7 +715,7 @@ internal class FileBasedInstaller : IInstaller
             else
             {
                 Directory.Delete(packInfo.Path, true);
-                var packIdDir = Path.GetDirectoryName(packInfo.Path);
+                var packIdDir = Path.GetDirectoryName(packInfo.Path)!;
                 if (!Directory.EnumerateFileSystemEntries(packIdDir).Any())
                 {
                     Directory.Delete(packIdDir, true);
@@ -733,7 +733,7 @@ internal class FileBasedInstaller : IInstaller
     void WriteWorkloadSetInstallationRecord(string workloadSetVersion, SdkFeatureBand workloadSetFeatureBand, SdkFeatureBand referencingFeatureBand)
     {
         var path = GetWorkloadSetInstallRecordPath(workloadSetVersion, workloadSetFeatureBand, referencingFeatureBand);
-        Directory.CreateDirectory(Path.GetDirectoryName(path));
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 
         using var _ = File.Create(path);
     }
@@ -784,7 +784,7 @@ internal class FileBasedInstaller : IInstaller
     void WriteManifestInstallationRecord(ManifestId manifestId, ManifestVersion manifestVersion, SdkFeatureBand featureBand, SdkFeatureBand referencingFeatureBand)
     {
         var path = GetManifestInstallRecordPath(manifestId, manifestVersion, featureBand, referencingFeatureBand);
-        Directory.CreateDirectory(Path.GetDirectoryName(path));
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 
         using var _ = File.Create(path);
     }
@@ -877,7 +877,7 @@ internal class FileBasedInstaller : IInstaller
         var path = GetPackInstallRecordPath(new WorkloadPackId(packInfo.ResolvedPackageId), packInfo.Version, featureBand);
         if (!Directory.Exists(Path.GetDirectoryName(path)))
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         }
         File.WriteAllText(path, JsonSerializer.Serialize(packInfo));
     }
@@ -889,12 +889,12 @@ internal class FileBasedInstaller : IInstaller
         {
             File.Delete(packInstallRecord);
 
-            var packRecordVersionDir = Path.GetDirectoryName(packInstallRecord);
+            var packRecordVersionDir = Path.GetDirectoryName(packInstallRecord)!;
             if (!Directory.GetFileSystemEntries(packRecordVersionDir).Any())
             {
                 Directory.Delete(packRecordVersionDir);
 
-                var packRecordIdDir = Path.GetDirectoryName(packRecordVersionDir);
+                var packRecordIdDir = Path.GetDirectoryName(packRecordVersionDir)!;
                 if (!Directory.GetFileSystemEntries(packRecordIdDir).Any())
                 {
                     Directory.Delete(packRecordIdDir);

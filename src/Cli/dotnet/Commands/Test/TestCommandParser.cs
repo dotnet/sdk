@@ -5,8 +5,7 @@ using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.Extensions.Configuration;
-using Microsoft.DotNet.Cli.Configuration;
-using Microsoft.Extensions.Configuration.DotnetCli.Services;
+using Microsoft.Extensions.Configuration.DotnetCli;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -166,11 +165,7 @@ internal static class TestCommandParser
         return Command;
     }
 
-    public static string GetTestRunnerName()
-    {
-        var configurationService = DotNetConfigurationFactory.Create();
-        return configurationService.Test.RunnerName;
-    }
+    public static string GetTestRunnerName() => DotNetConfigurationFactory.Create().Test.RunnerName;
 
     private static Command ConstructCommand()
     {

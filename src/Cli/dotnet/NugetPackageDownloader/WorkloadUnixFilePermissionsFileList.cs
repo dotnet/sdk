@@ -7,7 +7,7 @@ using System.ComponentModel;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace Microsoft.DotNet.Cli.NugetPackageDownloader;
+namespace Microsoft.DotNet.Cli.NuGetPackageDownloader;
 
 [Serializable]
 [DesignerCategory("code")]

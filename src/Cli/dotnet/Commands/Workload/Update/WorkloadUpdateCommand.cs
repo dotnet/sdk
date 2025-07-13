@@ -1,16 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
-using Microsoft.DotNet.Cli.Configuration;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.Extensions.Configuration.DotnetCli.Services;
+using Microsoft.Extensions.Configuration.DotnetCli;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
@@ -28,14 +25,14 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
     private readonly bool _shouldShutdownInstaller;
     public WorkloadUpdateCommand(
         ParseResult parseResult,
-        IReporter reporter = null,
-        IWorkloadResolverFactory workloadResolverFactory = null,
-        IInstaller workloadInstaller = null,
-        INuGetPackageDownloader nugetPackageDownloader = null,
-        IWorkloadManifestUpdater workloadManifestUpdater = null,
-        string tempDirPath = null,
+        IReporter? reporter = null,
+        IWorkloadResolverFactory? workloadResolverFactory = null,
+        IInstaller? workloadInstaller = null,
+        INuGetPackageDownloader? nugetPackageDownloader = null,
+        IWorkloadManifestUpdater? workloadManifestUpdater = null,
+        string? tempDirPath = null,
         bool isRestoring = false,
-        WorkloadHistoryRecorder recorder = null,
+        WorkloadHistoryRecorder? recorder = null,
         bool? shouldUseWorkloadSetsFromGlobalJson = null)
         : base(parseResult, reporter: reporter, workloadResolverFactory: workloadResolverFactory, workloadInstaller: workloadInstaller,
               nugetPackageDownloader: nugetPackageDownloader, workloadManifestUpdater: workloadManifestUpdater,
@@ -57,12 +54,15 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
 
         _workloadManifestUpdater = _workloadManifestUpdaterFromConstructor ?? new WorkloadManifestUpdater(resolvedReporter, _workloadResolver, PackageDownloader, _userProfileDir,
             _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, sdkFeatureBand: _sdkFeatureBand);
-        _recorder = recorder;
-        if (_recorder is null)
+
+        if (recorder is null)
         {
             _recorder = new(_workloadResolver, _workloadInstaller, () => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, null));
             _recorder.HistoryRecord.CommandName = "update";
-
+        }
+        else
+        {
+            _recorder = recorder;
         }
 
         _fromHistorySpecified = parseResult.GetValue(WorkloadUpdateCommandParser.FromHistoryOption);
@@ -207,7 +207,7 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
         await GetDownloads(GetUpdatableWorkloads(), skipManifestUpdate: false, includePreviews, offlineCache.Value);
     }
 
-    private async Task<IEnumerable<string>> GetUpdatablePackageUrlsAsync(bool includePreview, IReporter reporter = null, INuGetPackageDownloader packageDownloader = null)
+    private async Task<IEnumerable<string>> GetUpdatablePackageUrlsAsync(bool includePreview, IReporter? reporter = null, INuGetPackageDownloader? packageDownloader = null)
     {
         reporter ??= Reporter;
         packageDownloader ??= PackageDownloader;
@@ -222,7 +222,7 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
         return urls;
     }
 
-    private IEnumerable<WorkloadId> GetUpdatableWorkloads(IReporter reporter = null)
+    private IEnumerable<WorkloadId>? GetUpdatableWorkloads(IReporter? reporter = null)
     {
         reporter ??= Reporter;
         var workloads = FromHistory ? _WorkloadHistoryRecord.InstalledWorkloads.Select(s => new WorkloadId(s)) : GetInstalledWorkloads(_fromPreviousSdk);

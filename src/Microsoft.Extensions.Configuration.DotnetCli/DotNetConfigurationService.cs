@@ -3,12 +3,12 @@
 
 using Microsoft.Extensions.Configuration.DotnetCli.Models;
 
-namespace Microsoft.Extensions.Configuration.DotnetCli.Services;
+namespace Microsoft.Extensions.Configuration.DotnetCli;
 
 /// <summary>
-/// Strongly-typed configuration service for .NET CLI with lazy initialization.
+/// Strongly-typed configuration for .NET CLI with lazy initialization.
 /// </summary>
-public class DotNetConfigurationService : IDotNetConfigurationService
+public class DotNetCliConfiguration
 {
     private readonly IConfiguration _configuration;
 
@@ -38,7 +38,7 @@ public class DotNetConfigurationService : IDotNetConfigurationService
     public NuGetConfiguration NuGet => _nuget.Value;
     public TestConfiguration Test => _test.Value;
 
-    public DotNetConfigurationService(IConfiguration configuration)
+    public DotNetCliConfiguration(IConfiguration configuration)
     {
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
 

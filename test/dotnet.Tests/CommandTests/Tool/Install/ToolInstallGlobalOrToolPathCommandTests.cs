@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
@@ -79,8 +77,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 fileSystem: _fileSystem);
 
             _createToolPackageStoreDownloaderUninstaller = (location, forwardArguments, workingDirectory) => (_toolPackageStore, _toolPackageStoreQuery, _toolPackageDownloader, _toolPackageUninstallerMock);
-
-
             _parseResult = Parser.Instance.Parse($"dotnet tool install -g {PackageId}");
         }
 
@@ -121,7 +117,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 nugetConfig: new FilePath(Path.Combine(testAsset.Path, "NuGet.config")),
                 rootConfigDirectory: new DirectoryPath(testAsset.Path),
                 additionalSourceFeeds: [duplicateSource]);
-            var nuGetPackageDownloader = new NuGetPackageDownloader(new DirectoryPath(testAsset.Path));
+            var nuGetPackageDownloader = new NuGetPackageDownloader(
+                packageInstallDir: new DirectoryPath(testAsset.Path));
 
             var sources = nuGetPackageDownloader.LoadNuGetSources(new Cli.ToolPackage.PackageId(PackageId), packageSourceLocation);
             // There should only be one source
@@ -148,7 +145,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             // It is hard to simulate shell behavior. Only Assert shim can point to executable dll
             _fileSystem.File.Exists(ExpectedCommandPath()).Should().BeTrue();
             var deserializedFakeShim = JsonSerializer.Deserialize<AppHostShellShimMakerMock.FakeShim>(
-                _fileSystem.File.ReadAllText(ExpectedCommandPath()));
+                _fileSystem.File.ReadAllText(ExpectedCommandPath()))!;
 
             _fileSystem.File.Exists(deserializedFakeShim.ExecutablePath).Should().BeTrue();
         }
@@ -215,7 +212,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             .Should().BeTrue();
             var deserializedFakeShim =
                 JsonSerializer.Deserialize<AppHostShellShimMakerMock.FakeShim>(
-                    _fileSystem.File.ReadAllText(ExpectedCommandPath()));
+                    _fileSystem.File.ReadAllText(ExpectedCommandPath()))!;
             _fileSystem.File.Exists(deserializedFakeShim.ExecutablePath).Should().BeTrue();
         }
 
@@ -558,7 +555,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void WhenInstallWithLowerVersionItShouldFail()
         {
             AddLowerToolPackageVersionToFeed();
-            
+
             ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version {PackageVersion}");
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
@@ -640,7 +637,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     return (toolPackageStore, toolPackageStore, toolPackageDownloader, toolPackageUninstaller);
                 },
                 createShellShimRepository: _createShellShimRepository,
-                nugetPackageDownloader: new NuGetPackageDownloader(new DirectoryPath(PathUtilities.CreateTempSubdirectory()), verifySignatures: false, currentWorkingDirectory: testDir),
+                nugetPackageDownloader: new NuGetPackageDownloader(
+                    packageInstallDir: new DirectoryPath(PathUtilities.CreateTempSubdirectory()),
+                    verifySignatures: false,
+                    currentWorkingDirectory: testDir),
                 currentWorkingDirectory: testDir,
                 verifySignatures: false);
 
@@ -753,7 +753,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             });
         }
 
-        
+
         private void AddHigherToolPackageVersionToFeed()
         {
             _toolPackageDownloader.AddMockPackage(new MockFeedPackage

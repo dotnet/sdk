@@ -1,17 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using System.Text.Json;
-using Microsoft.DotNet.Cli.Configuration;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.Extensions.Configuration.DotnetCli.Services;
+using Microsoft.Extensions.Configuration.DotnetCli;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
@@ -29,21 +26,21 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
 
     public WorkloadInstallCommand(
         ParseResult parseResult,
-        IReporter reporter = null,
-        IWorkloadResolverFactory workloadResolverFactory = null,
-        IInstaller workloadInstaller = null,
-        INuGetPackageDownloader nugetPackageDownloader = null,
-        IWorkloadManifestUpdater workloadManifestUpdater = null,
-        string tempDirPath = null,
-        IReadOnlyCollection<string> workloadIds = null,
+        IReporter? reporter = null,
+        IWorkloadResolverFactory? workloadResolverFactory = null,
+        IInstaller? workloadInstaller = null,
+        INuGetPackageDownloader? nugetPackageDownloader = null,
+        IWorkloadManifestUpdater? workloadManifestUpdater = null,
+        string? tempDirPath = null,
+        IReadOnlyCollection<string>? workloadIds = null,
         bool? skipWorkloadManifestUpdate = null)
         : base(parseResult, reporter: reporter, workloadResolverFactory: workloadResolverFactory, workloadInstaller: workloadInstaller,
               nugetPackageDownloader: nugetPackageDownloader, workloadManifestUpdater: workloadManifestUpdater,
               tempDirPath: tempDirPath, verbosityOptions: WorkloadInstallCommandParser.VerbosityOption)
     {
         _skipManifestUpdate = skipWorkloadManifestUpdate ?? parseResult.GetValue(WorkloadInstallCommandParser.SkipManifestUpdateOption);
-        var unprocessedWorkloadIds = workloadIds ?? parseResult.GetValue(WorkloadInstallCommandParser.WorkloadIdArgument);
-        if (unprocessedWorkloadIds?.Any(id => id.Contains('@')) == true)
+        IEnumerable<string> unprocessedWorkloadIds = workloadIds ?? parseResult.GetRequiredValue(WorkloadInstallCommandParser.WorkloadIdArgument);
+        if (unprocessedWorkloadIds.Any(id => id.Contains('@')) == true)
         {
             _workloadIds = unprocessedWorkloadIds.Select(id => id.Split('@')[0]).ToList().AsReadOnly();
             if (SpecifiedWorkloadSetVersionOnCommandLine)
@@ -209,7 +206,7 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
         return _workloadInstaller.ExitCode;
     }
 
-    private void InstallWorkloads(WorkloadHistoryRecorder recorder, IReadOnlyCollection<string> filteredWorkloadIds)
+    private void InstallWorkloads(WorkloadHistoryRecorder? recorder, IReadOnlyCollection<string> filteredWorkloadIds)
     {
         //  Normally we want to validate that the workload IDs specified were valid.  However, if there is a global.json file with a workload
         //  set version specified, and we might install that workload version, then we don't do that check here, because we might not have the right
@@ -310,7 +307,7 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
     }
 
     private async Task<IEnumerable<string>> GetPackageDownloadUrlsAsync(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview,
-        IReporter reporter = null, INuGetPackageDownloader packageDownloader = null)
+        IReporter? reporter = null, INuGetPackageDownloader? packageDownloader = null)
     {
         reporter ??= Reporter;
         packageDownloader ??= PackageDownloader;
