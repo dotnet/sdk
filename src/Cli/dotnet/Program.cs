@@ -10,6 +10,7 @@ using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Workload;
+using Microsoft.DotNet.Cli.Configuration;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.Telemetry;
@@ -177,7 +178,9 @@ public class Program
             {
                 PerformanceLogEventSource.Log.FirstTimeConfigurationStart();
 
-                var environmentProvider = new EnvironmentProvider();
+                // Initialize the new configuration-based environment provider
+                var configurationService = DotNetConfigurationFactory.Create();
+                var environmentProvider = new ConfigurationBasedEnvironmentProvider(configurationService);
 
                 bool generateAspNetCertificate = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_GENERATE_ASPNET_CERTIFICATE, defaultValue: true);
                 bool telemetryOptout = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, defaultValue: CompileOptions.TelemetryOptOutDefault);
