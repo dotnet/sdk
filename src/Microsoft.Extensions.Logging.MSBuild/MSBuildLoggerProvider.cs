@@ -22,15 +22,15 @@ public class MSBuildLoggerProvider : ILoggerProvider, ISupportExternalScope
 
     public ILogger CreateLogger(string categoryName)
     {
-        if (!_loggers.TryGetValue(categoryName, out var logger))
+        lock (_loggers)
         {
-            logger = new MSBuildLogger(categoryName, _loggingHelper, _scopeProvider);
-            lock (_loggers)
+            if (!_loggers.TryGetValue(categoryName, out var logger))
             {
+                logger = new MSBuildLogger(categoryName, _loggingHelper, _scopeProvider);
                 _loggers[categoryName] = logger;
             }
+            return logger;
         }
-        return logger;
     }
 
     public void Dispose() { }
