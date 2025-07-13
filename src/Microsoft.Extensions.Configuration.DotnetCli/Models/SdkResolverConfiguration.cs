@@ -12,7 +12,7 @@ public sealed class SdkResolverConfiguration
     /// Gets or sets whether to enable SDK resolver logging.
     /// Mapped from DOTNET_MSBUILD_SDK_RESOLVER_ENABLE_LOG environment variable.
     /// </summary>
-    public bool EnableLog { get; set; } = false;
+    public FlexibleBool EnableLog { get; set; } = false;
 
     /// <summary>
     /// Gets or sets the directory containing SDKs.

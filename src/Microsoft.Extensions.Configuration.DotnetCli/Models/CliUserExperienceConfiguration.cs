@@ -14,19 +14,19 @@ public sealed class CliUserExperienceConfiguration
     /// Gets or sets whether telemetry collection is disabled.
     /// Mapped from DOTNET_CLI_TELEMETRY_OPTOUT environment variable.
     /// </summary>
-    public bool TelemetryOptOut { get; set; } = CompileOptions.TelemetryOptOutDefault;
+    public FlexibleBool TelemetryOptOut { get; set; } = CompileOptions.TelemetryOptOutDefault;
 
     /// <summary>
     /// Gets or sets whether to suppress the .NET logo on startup.
     /// Mapped from DOTNET_NOLOGO environment variable.
     /// </summary>
-    public bool NoLogo { get; set; } = false;
+    public FlexibleBool NoLogo { get; set; } = false;
 
     /// <summary>
     /// Gets or sets whether to force UTF-8 encoding for console output.
     /// Mapped from DOTNET_CLI_FORCE_UTF8_ENCODING environment variable.
     /// </summary>
-    public bool ForceUtf8Encoding { get; set; } = false;
+    public FlexibleBool ForceUtf8Encoding { get; set; } = false;
 
     /// <summary>
     /// Gets or sets the UI language for the CLI.

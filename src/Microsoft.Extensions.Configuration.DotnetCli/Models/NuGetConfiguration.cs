@@ -13,5 +13,5 @@ public sealed class NuGetConfiguration
     /// Mapped from DOTNET_NUGET_SIGNATURE_VERIFICATION environment variable.
     /// Defaults to true on Windows and Linux, false elsewhere.
     /// </summary>
-    public bool SignatureVerificationEnabled { get; set; } = OperatingSystem.IsWindows() || OperatingSystem.IsLinux();
+    public FlexibleBool SignatureVerificationEnabled { get; set; } = OperatingSystem.IsWindows() || OperatingSystem.IsLinux();
 }
