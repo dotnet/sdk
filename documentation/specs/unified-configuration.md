@@ -35,11 +35,14 @@ The new unified configuration system will follow this precedence order (highest 
 
 ### Phase 1: Infrastructure
 
-#### 1.1 Core Configuration Builder with Key Mapping
+#### 1.1 Core Configuration Builder with Strongly-Typed Configuration
 
-Create a centralized configuration builder that consolidates all configuration sources with key mapping:
+Create a centralized configuration builder in the Microsoft.Extensions.Configuration.DotnetCli project:
 
 ```csharp
+// src/Microsoft.Extensions.Configuration.DotnetCli/Services/DotNetConfiguration.cs
+namespace Microsoft.Extensions.Configuration.DotnetCli.Services;
+
 public class DotNetConfiguration
 {
     public static IConfiguration Create(string workingDirectory = null)
@@ -69,14 +72,41 @@ public class DotNetConfiguration
 
         return builder.Build();
     }
+
+    public static DotNetConfigurationRoot CreateTyped(string workingDirectory = null)
+    {
+        var configuration = Create(workingDirectory);
+        return new DotNetConfigurationRoot(configuration);
+    }
+
+    // Lightweight factory for scenarios that only need basic configuration access
+    public static DotNetConfigurationRoot CreateMinimal(string workingDirectory = null)
+    {
+        var builder = new ConfigurationBuilder();
+        workingDirectory ??= Directory.GetCurrentDirectory();
+
+        // Only add environment variables for minimal overhead
+        builder.Add(new DotNetEnvironmentConfigurationSource());
+
+        var configuration = builder.Build();
+        return new DotNetConfigurationRoot(configuration);
+    }
 }
 ```
+
+**Performance Considerations:**
+- **Lazy Initialization**: All strongly-typed configuration properties use `Lazy<T>` to defer expensive binding operations until first access
+- **Minimal Factory**: `CreateMinimal()` provides a lightweight option that only loads environment variables
+- **Provider Ordering**: Most expensive providers (global.json file I/O) are added last to minimize impact when not needed
 
 #### 1.2 Enhanced Global.json Configuration Provider
 
 Create a custom configuration provider for global.json files with key mapping:
 
 ```csharp
+// src/Microsoft.Extensions.Configuration.DotnetCli/Providers/GlobalJsonConfigurationProvider.cs
+namespace Microsoft.Extensions.Configuration.DotnetCli.Providers;
+
 public class GlobalJsonConfigurationProvider : ConfigurationProvider
 {
     private readonly string _path;
@@ -186,6 +216,9 @@ public class GlobalJsonConfigurationProvider : ConfigurationProvider
 Create a custom environment variable provider that maps DOTNET_ variables to canonical keys:
 
 ```csharp
+// src/Microsoft.Extensions.Configuration.DotnetCli/Providers/DotNetEnvironmentConfigurationProvider.cs
+namespace Microsoft.Extensions.Configuration.DotnetCli.Providers;
+
 public class DotNetEnvironmentConfigurationProvider : ConfigurationProvider
 {
     private static readonly Dictionary<string, string> EnvironmentKeyMappings = new()
@@ -228,40 +261,77 @@ public class DotNetEnvironmentConfigurationSource : IConfigurationSource
 }
 ```
 
-#### 1.4 Updated Configuration Service with Key Lookup Helper
+#### 1.4 Strongly-Typed Configuration Root with Lazy Initialization
 
-Update the configuration service to provide helper methods for common lookups:
+Create a strongly-typed configuration service that uses lazy initialization and the configuration binding source generator:
 
 ```csharp
-public interface IConfigurationService
+// src/Microsoft.Extensions.Configuration.DotnetCli/Services/DotNetConfigurationRoot.cs
+namespace Microsoft.Extensions.Configuration.DotnetCli.Services;
+
+using Microsoft.Extensions.Configuration.DotnetCli.Models;
+
+public class DotNetConfigurationRoot
 {
-    IConfiguration Configuration { get; }
+    private readonly IConfiguration _configuration;
 
-    // Generic value access using canonical keys
-    string GetValue(string canonicalKey, string defaultValue = null);
-    T GetValue<T>(string canonicalKey, T defaultValue = default);
-    bool GetBoolValue(string canonicalKey, bool defaultValue = false);
+    // Lazy initialization for each configuration section
+    private readonly Lazy<CliUserExperienceConfiguration> _cliUserExperience;
+    private readonly Lazy<RuntimeHostConfiguration> _runtimeHost;
+    private readonly Lazy<BuildConfiguration> _build;
+    private readonly Lazy<SdkResolverConfiguration> _sdkResolver;
+    private readonly Lazy<WorkloadConfiguration> _workload;
+    private readonly Lazy<FirstTimeUseConfiguration> _firstTimeUse;
+    private readonly Lazy<DevelopmentConfiguration> _development;
+    private readonly Lazy<ToolConfiguration> _tool;
 
-    // Helper methods for common configuration values
-    bool IsTelemetryOptOut();
-    bool IsNoLogo();
-    string GetHostPath();
-    string GetSdkVersion();
+    public DotNetConfigurationRoot(IConfiguration configuration)
+    {
+        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+
+        // Initialize lazy factories - configuration binding only happens on first access
+        _cliUserExperience = new Lazy<CliUserExperienceConfiguration>(() =>
+            GetConfigurationSection<CliUserExperienceConfiguration>("CliUserExperience") ?? new());
+        _runtimeHost = new Lazy<RuntimeHostConfiguration>(() =>
+            GetConfigurationSection<RuntimeHostConfiguration>("RuntimeHost") ?? new());
+        _build = new Lazy<BuildConfiguration>(() =>
+            GetConfigurationSection<BuildConfiguration>("Build") ?? new());
+        _sdkResolver = new Lazy<SdkResolverConfiguration>(() =>
+            GetConfigurationSection<SdkResolverConfiguration>("SdkResolver") ?? new());
+        _workload = new Lazy<WorkloadConfiguration>(() =>
+            GetConfigurationSection<WorkloadConfiguration>("Workload") ?? new());
+        _firstTimeUse = new Lazy<FirstTimeUseConfiguration>(() =>
+            GetConfigurationSection<FirstTimeUseConfiguration>("FirstTimeUse") ?? new());
+        _development = new Lazy<DevelopmentConfiguration>(() =>
+            GetConfigurationSection<DevelopmentConfiguration>("Development") ?? new());
+        _tool = new Lazy<ToolConfiguration>(() =>
+            GetConfigurationSection<ToolConfiguration>("Tool") ?? new());
+    }
+
+    public IConfiguration RawConfiguration => _configuration;
+
+    // Lazy-loaded strongly-typed configuration properties
+    public CliUserExperienceConfiguration CliUserExperience => _cliUserExperience.Value;
+    public RuntimeHostConfiguration RuntimeHost => _runtimeHost.Value;
+    public BuildConfiguration Build => _build.Value;
+    public SdkResolverConfiguration SdkResolver => _sdkResolver.Value;
+    public WorkloadConfiguration Workload => _workload.Value;
+    public FirstTimeUseConfiguration FirstTimeUse => _firstTimeUse.Value;
+    public DevelopmentConfiguration Development => _development.Value;
+    public ToolConfiguration Tool => _tool.Value;
+
+    // Generic value access for backward compatibility
+    public string? GetValue(string key, string? defaultValue = null) => _configuration[key] ?? defaultValue;
+    public T GetValue<T>(string key, T defaultValue = default) => _configuration.GetValue<T>(key, defaultValue);
+
+    private T? GetConfigurationSection<T>(string sectionName) where T : class, new()
+    {
+        var section = _configuration.GetSection(sectionName);
+        // Uses configuration binding source generator for AOT-friendly binding
+        return section.Exists() ? section.Get<T>() : null;
+    }
 }
-
-public class ConfigurationService : IConfigurationService
-{
-    public IConfiguration Configuration { get; }
-
-    public ConfigurationService(IConfiguration configuration)
-    {
-        Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-    }
-
-    public string GetValue(string canonicalKey, string defaultValue = null)
-    {
-        return Configuration[canonicalKey] ?? defaultValue;
-    }
+```
 
     public T GetValue<T>(string canonicalKey, T defaultValue = default)
     {
@@ -479,7 +549,71 @@ The following NuGet package references will need to be added to relevant project
 - `Microsoft.Extensions.Configuration.Ini`
 - `Microsoft.Extensions.Configuration.Binder`
 
-**Note:** We will create a custom environment variable provider that only processes DOTNET_ prefixed variables and maps them to canonical keys. The `Microsoft.Extensions.Configuration.Ini` package is needed for future dotnet.config support.
+### Microsoft.Extensions.Configuration.DotnetCli Project
+
+Create a new project `src/Microsoft.Extensions.Configuration.DotnetCli/Microsoft.Extensions.Configuration.DotnetCli.csproj`:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Ini" />
+  </ItemGroup>
+
+</Project>
+```
+
+**Key Features:**
+- **Configuration Binding Source Generator**: `EnableConfigurationBindingGenerator=true` enables AOT and trim-friendly configuration binding
+- **Strongly-typed Configuration**: Uses `ConfigurationBinder.Get<T>()` for type-safe configuration access
+- **.NET 8+ Features**: Takes advantage of C# 12 interceptors for source generation
+
+**Note:** The configuration binding source generator provides Native AOT and trim-friendly configuration binding without reflection. This is essential for performance and compatibility with .NET's trimming and AOT compilation features.
+
+### Project Structure
+
+The Microsoft.Extensions.Configuration.DotnetCli project will be organized as follows:
+
+```
+src/Microsoft.Extensions.Configuration.DotnetCli/
+├── Microsoft.Extensions.Configuration.DotnetCli.csproj
+├── Models/
+│   ├── CliUserExperienceConfiguration.cs
+│   ├── RuntimeHostConfiguration.cs
+│   ├── BuildConfiguration.cs
+│   ├── SdkResolverConfiguration.cs
+│   ├── WorkloadConfiguration.cs
+│   ├── FirstTimeUseConfiguration.cs
+│   ├── DevelopmentConfiguration.cs
+│   └── ToolConfiguration.cs
+├── Providers/
+│   ├── GlobalJsonConfigurationProvider.cs
+│   ├── GlobalJsonConfigurationSource.cs
+│   ├── DotNetEnvironmentConfigurationProvider.cs
+│   └── DotNetEnvironmentConfigurationSource.cs
+└── Services/
+    ├── DotNetConfiguration.cs
+    ├── DotNetConfigurationRoot.cs
+    ├── IDotNetConfigurationService.cs
+    └── DotNetConfigurationService.cs
+```
+
+This structure separates concerns into logical groupings:
+- **Models/**: Strongly-typed configuration model classes optimized for source generator
+- **Providers/**: Custom configuration providers for global.json and DOTNET_ environment variables
+- **Services/**: Main configuration services and builders for consumer applications
 
 ## Key Mapping Reference
 
@@ -526,6 +660,10 @@ Maps to canonical keys:
 
 ## Typed Configuration Models
 
+### Configuration Binding Source Generator Compatibility
+
+All configuration model classes are designed to work with the configuration binding source generator, providing AOT and trim-friendly configuration binding through `ConfigurationBinder.Get<T>()` calls.
+
 ### Functional Configuration Groupings
 
 Based on analysis of the existing codebase, the following functional groupings have been identified for typed configuration models:
@@ -534,7 +672,10 @@ Based on analysis of the existing codebase, the following functional groupings h
 Settings that control the CLI's user interface and interaction behavior:
 
 ```csharp
-public class CliUserExperienceConfiguration
+// src/Microsoft.Extensions.Configuration.DotnetCli/Models/CliUserExperienceConfiguration.cs
+namespace Microsoft.Extensions.Configuration.DotnetCli.Models;
+
+public sealed class CliUserExperienceConfiguration
 {
     public bool TelemetryOptOut { get; set; } = false;
     public bool NoLogo { get; set; } = false;
@@ -555,7 +696,10 @@ public class CliUserExperienceConfiguration
 Settings that control .NET runtime host behavior:
 
 ```csharp
-public class RuntimeHostConfiguration
+// src/Microsoft.Extensions.Configuration.DotnetCli/Models/RuntimeHostConfiguration.cs
+namespace Microsoft.Extensions.Configuration.DotnetCli.Models;
+
+public sealed class RuntimeHostConfiguration
 {
     public string? HostPath { get; set; }
     public bool MultilevelLookup { get; set; } = true;
@@ -578,7 +722,10 @@ public class RuntimeHostConfiguration
 Settings that control build system behavior:
 
 ```csharp
-public class BuildConfiguration
+// src/Microsoft.Extensions.Configuration.DotnetCli/Models/BuildConfiguration.cs
+namespace Microsoft.Extensions.Configuration.DotnetCli.Models;
+
+public sealed class BuildConfiguration
 {
     public bool RunMSBuildOutOfProc { get; set; } = false;
     public bool UseMSBuildServer { get; set; } = false;
@@ -599,7 +746,10 @@ public class BuildConfiguration
 Settings that control SDK resolution and discovery:
 
 ```csharp
-public class SdkResolverConfiguration
+// src/Microsoft.Extensions.Configuration.DotnetCli/Models/SdkResolverConfiguration.cs
+namespace Microsoft.Extensions.Configuration.DotnetCli.Models;
+
+public sealed class SdkResolverConfiguration
 {
     public bool EnableLog { get; set; } = false;
     public string? SdksDirectory { get; set; }
@@ -618,7 +768,10 @@ public class SdkResolverConfiguration
 Settings that control workload management and behavior:
 
 ```csharp
-public class WorkloadConfiguration
+// src/Microsoft.Extensions.Configuration.DotnetCli/Models/WorkloadConfiguration.cs
+namespace Microsoft.Extensions.Configuration.DotnetCli.Models;
+
+public sealed class WorkloadConfiguration
 {
     public bool UpdateNotifyDisable { get; set; } = false;
     public int UpdateNotifyIntervalHours { get; set; } = 24;
@@ -643,7 +796,10 @@ public class WorkloadConfiguration
 Settings that control first-time user experience setup:
 
 ```csharp
-public class FirstTimeUseConfiguration
+// src/Microsoft.Extensions.Configuration.DotnetCli/Models/FirstTimeUseConfiguration.cs
+namespace Microsoft.Extensions.Configuration.DotnetCli.Models;
+
+public sealed class FirstTimeUseConfiguration
 {
     public bool GenerateAspNetCertificate { get; set; } = true;
     public bool AddGlobalToolsToPath { get; set; } = true;
@@ -660,7 +816,10 @@ public class FirstTimeUseConfiguration
 Settings that control development tools and debugging features:
 
 ```csharp
-public class DevelopmentConfiguration
+// src/Microsoft.Extensions.Configuration.DotnetCli/Models/DevelopmentConfiguration.cs
+namespace Microsoft.Extensions.Configuration.DotnetCli.Models;
+
+public sealed class DevelopmentConfiguration
 {
     public bool PerfLogEnabled { get; set; } = false;
     public string? PerfLogCount { get; set; }
@@ -681,7 +840,10 @@ public class DevelopmentConfiguration
 Settings that control global tools behavior:
 
 ```csharp
-public class ToolConfiguration
+// src/Microsoft.Extensions.Configuration.DotnetCli/Models/ToolConfiguration.cs
+namespace Microsoft.Extensions.Configuration.DotnetCli.Models;
+
+public sealed class ToolConfiguration
 {
     public bool AllowManifestInRoot { get; set; } = false;
 }
@@ -690,14 +852,19 @@ public class ToolConfiguration
 **Environment Variables Mapped:**
 - `DOTNET_TOOLS_ALLOW_MANIFEST_IN_ROOT` → `AllowManifestInRoot`
 
-### Typed Configuration Service Interface
+### Strongly-Typed Configuration Service with Source Generator
 
 ```csharp
-public interface ITypedConfigurationService
+// src/Microsoft.Extensions.Configuration.DotnetCli/Services/IDotNetConfigurationService.cs
+namespace Microsoft.Extensions.Configuration.DotnetCli.Services;
+
+using Microsoft.Extensions.Configuration.DotnetCli.Models;
+
+public interface IDotNetConfigurationService
 {
     IConfiguration RawConfiguration { get; }
 
-    // Typed configuration access
+    // Strongly-typed configuration access
     CliUserExperienceConfiguration CliUserExperience { get; }
     RuntimeHostConfiguration RuntimeHost { get; }
     BuildConfiguration Build { get; }
@@ -706,33 +873,59 @@ public interface ITypedConfigurationService
     FirstTimeUseConfiguration FirstTimeUse { get; }
     DevelopmentConfiguration Development { get; }
     ToolConfiguration Tool { get; }
-
-    // Event for configuration changes (if we support hot reload)
-    event EventHandler<ConfigurationChangedEventArgs>? ConfigurationChanged;
 }
 
-public class TypedConfigurationService : ITypedConfigurationService
+// src/Microsoft.Extensions.Configuration.DotnetCli/Services/DotNetConfigurationService.cs
+public class DotNetConfigurationService : IDotNetConfigurationService
 {
-    public IConfiguration RawConfiguration { get; }
+    private readonly IConfiguration _configuration;
 
-    public CliUserExperienceConfiguration CliUserExperience { get; }
-    public RuntimeHostConfiguration RuntimeHost { get; }
-    public BuildConfiguration Build { get; }
-    public SdkResolverConfiguration SdkResolver { get; }
-    public WorkloadConfiguration Workload { get; }
-    public FirstTimeUseConfiguration FirstTimeUse { get; }
-    public DevelopmentConfiguration Development { get; }
-    public ToolConfiguration Tool { get; }
+    // Lazy initialization for each configuration section
+    private readonly Lazy<CliUserExperienceConfiguration> _cliUserExperience;
+    private readonly Lazy<RuntimeHostConfiguration> _runtimeHost;
+    private readonly Lazy<BuildConfiguration> _build;
+    private readonly Lazy<SdkResolverConfiguration> _sdkResolver;
+    private readonly Lazy<WorkloadConfiguration> _workload;
+    private readonly Lazy<FirstTimeUseConfiguration> _firstTimeUse;
+    private readonly Lazy<DevelopmentConfiguration> _development;
+    private readonly Lazy<ToolConfiguration> _tool;
 
-    public event EventHandler<ConfigurationChangedEventArgs>? ConfigurationChanged;
+    public IConfiguration RawConfiguration => _configuration;
 
-    public TypedConfigurationService(IConfiguration configuration)
+    // Lazy-loaded strongly-typed configuration properties
+    public CliUserExperienceConfiguration CliUserExperience => _cliUserExperience.Value;
+    public RuntimeHostConfiguration RuntimeHost => _runtimeHost.Value;
+    public BuildConfiguration Build => _build.Value;
+    public SdkResolverConfiguration SdkResolver => _sdkResolver.Value;
+    public WorkloadConfiguration Workload => _workload.Value;
+    public FirstTimeUseConfiguration FirstTimeUse => _firstTimeUse.Value;
+    public DevelopmentConfiguration Development => _development.Value;
+    public ToolConfiguration Tool => _tool.Value;
+
+    public DotNetConfigurationService(IConfiguration configuration)
     {
-        RawConfiguration = configuration;
+        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
-        // Bind configuration sections to typed models
-        CliUserExperience = new CliUserExperienceConfiguration();
-        configuration.GetSection("dotnet:cli").Bind(CliUserExperience);
+        // Initialize lazy factories - configuration binding only happens on first access
+        _cliUserExperience = new Lazy<CliUserExperienceConfiguration>(() =>
+            _configuration.GetSection("CliUserExperience").Get<CliUserExperienceConfiguration>() ?? new());
+        _runtimeHost = new Lazy<RuntimeHostConfiguration>(() =>
+            _configuration.GetSection("RuntimeHost").Get<RuntimeHostConfiguration>() ?? new());
+        _build = new Lazy<BuildConfiguration>(() =>
+            _configuration.GetSection("Build").Get<BuildConfiguration>() ?? new());
+        _sdkResolver = new Lazy<SdkResolverConfiguration>(() =>
+            _configuration.GetSection("SdkResolver").Get<SdkResolverConfiguration>() ?? new());
+        _workload = new Lazy<WorkloadConfiguration>(() =>
+            _configuration.GetSection("Workload").Get<WorkloadConfiguration>() ?? new());
+        _firstTimeUse = new Lazy<FirstTimeUseConfiguration>(() =>
+            _configuration.GetSection("FirstTimeUse").Get<FirstTimeUseConfiguration>() ?? new());
+        _development = new Lazy<DevelopmentConfiguration>(() =>
+            _configuration.GetSection("Development").Get<DevelopmentConfiguration>() ?? new());
+        _tool = new Lazy<ToolConfiguration>(() =>
+            _configuration.GetSection("Tool").Get<ToolConfiguration>() ?? new());
+    }
+}
+```
 
         RuntimeHost = new RuntimeHostConfiguration();
         configuration.GetSection("dotnet:host").Bind(RuntimeHost);
@@ -758,33 +951,49 @@ public class TypedConfigurationService : ITypedConfigurationService
 }
 ```
 
-### Benefits of Typed Configuration Models
+### Benefits of Strongly-Typed Configuration with Lazy Initialization
 
-1. **Intellisense and Compile-time Safety**: Developers get full IDE support and compile-time checking
-2. **Logical Grouping**: Related settings are grouped together functionally
-3. **Type Safety**: Boolean values are actual booleans, integers are integers, etc.
-4. **Default Values**: Clear default values are defined in the model classes
-5. **Discoverability**: Developers can explore configuration options through the object model
-6. **Validation**: Can add data annotations for validation
-7. **Documentation**: Each property can have XML documentation
+1. **Minimal Startup Cost**: Lazy initialization means configuration binding only happens when properties are actually accessed
+2. **Native AOT and Trim-Friendly**: Source generator eliminates reflection, making the code compatible with Native AOT compilation and trimming
+3. **Performance**: Generated code is faster than reflection-based binding at runtime, and lazy loading reduces unnecessary work
+4. **Memory Efficiency**: Configuration sections are only allocated when needed, reducing memory pressure during startup
+5. **Intellisense and Compile-time Safety**: Developers get full IDE support and compile-time checking
+6. **Logical Grouping**: Related settings are grouped together functionally
+7. **Type Safety**: Boolean values are actual booleans, integers are integers, etc.
+8. **Default Values**: Clear default values are defined in the model classes
+9. **Discoverability**: Developers can explore configuration options through the object model
+10. **Validation**: Can add data annotations for validation
+11. **Documentation**: Each property can have XML documentation
+12. **Source Generation**: Using `ConfigurationBinder.Get<T>()` with `EnableConfigurationBindingGenerator=true` generates efficient binding code
 
-### Usage Examples
+### Usage Examples with Lazy Initialization
 
 ```csharp
-// Instead of:
-bool telemetryOptOut = configService.GetBoolValue("dotnet:cli:telemetry:optout", false);
-bool noLogo = configService.GetBoolValue("dotnet:cli:nologo", false);
+// Fast startup - configuration service creation is very lightweight
+var config = DotNetConfiguration.CreateTyped();
 
-// Developers can write:
-var cliConfig = typedConfigService.CliUserExperience;
-bool telemetryOptOut = cliConfig.TelemetryOptOut;
-bool noLogo = cliConfig.NoLogo;
-
-// Or for the common case:
-if (typedConfigService.CliUserExperience.TelemetryOptOut)
+// First access triggers lazy binding of only the CliUserExperience section
+if (config.CliUserExperience.TelemetryOptOut)
 {
-    // Skip telemetry
+    // Skip telemetry - only this section is bound, others remain uninitialized
 }
+
+// Subsequent access to the same section is fast (cached)
+bool noLogo = config.CliUserExperience.NoLogo;
+
+// Other sections are only bound when first accessed
+string? hostPath = config.RuntimeHost.HostPath; // RuntimeHost section bound here
+bool enableLogs = config.SdkResolver.EnableLog; // SdkResolver section bound here
+
+// For scenarios that only need environment variables (fastest startup):
+var minimalConfig = DotNetConfiguration.CreateMinimal();
+if (minimalConfig.CliUserExperience.TelemetryOptOut)
+{
+    // Only environment variable provider was initialized
+}
+
+// Instead of error-prone string-based access:
+// bool telemetryOptOut = configService.GetBoolValue("dotnet:cli:telemetry:optout", false);
 ```
 
 This approach eliminates the need to remember canonical key names and provides a much more developer-friendly API.
@@ -834,13 +1043,19 @@ This refactoring should not introduce any breaking changes as it maintains backw
 
 ## Success Criteria
 
+- [ ] **Microsoft.Extensions.Configuration.DotnetCli project created with proper structure**
+- [ ] **Configuration binding source generator enabled (`EnableConfigurationBindingGenerator=true`)**
+- [ ] **All configuration models are `sealed` classes optimized for source generator**
+- [ ] **Lazy initialization implemented for all configuration sections**
+- [ ] **Unused configuration sections have zero runtime cost**
+- [ ] **Strongly-typed configuration binding using `ConfigurationBinder.Get<T>()` throughout**
 - [ ] All direct `Environment.GetEnvironmentVariable()` calls for DOTNET_ prefixed variables replaced
 - [ ] All direct global.json reading replaced with configuration providers
 - [ ] System environment variables continue to work through existing providers
-- [ ] **Key mapping system implemented and tested for all configuration sources**
-- [ ] **Canonical key format consistently used throughout the codebase**
-- [ ] **Helper methods available for common configuration lookups**
-- [ ] Comprehensive test coverage for new configuration system including key mapping
+- [ ] **Functional grouping of configuration settings implemented**
+- [ ] **Type-safe configuration access with compile-time checking**
+- [ ] **AOT and trim-friendly configuration system (no reflection)**
+- [ ] Comprehensive test coverage for new configuration system including source generator scenarios
 - [ ] All existing functionality preserved (backward compatibility)
-- [ ] Performance impact is negligible
-- [ ] Documentation updated to reflect new configuration system and canonical key format
+- [ ] **Performance improved due to lazy loading and source generation**
+- [ ] Documentation updated to reflect strongly-typed configuration system
