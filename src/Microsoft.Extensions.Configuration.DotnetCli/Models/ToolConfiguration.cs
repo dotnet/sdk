@@ -12,5 +12,5 @@ public sealed class ToolConfiguration
     /// Gets or sets whether to allow tool manifests in the repository root.
     /// Mapped from DOTNET_TOOLS_ALLOW_MANIFEST_IN_ROOT environment variable.
     /// </summary>
-    public bool AllowManifestInRoot { get; set; } = false;
+    public FlexibleBool AllowManifestInRoot { get; set; } = false;
 }
