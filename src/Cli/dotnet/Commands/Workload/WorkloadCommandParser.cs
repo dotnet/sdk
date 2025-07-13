@@ -78,11 +78,11 @@ internal static class WorkloadCommandParser
                 reporter.WriteLine(indent + CliCommandStrings.ShouldInstallAWorkloadSet);
             }
         }
-        
+
         if (showVersion)
         {
             reporter.WriteLine($" Workload version: {GetWorkloadsVersion()}");
-            
+
             WriteUpdateModeAndAnyError(indent: " ");
             reporter.WriteLine();
         }
@@ -172,7 +172,7 @@ internal static class WorkloadCommandParser
 
         command.Validators.Add(commandResult =>
         {
-            if (commandResult.GetResult(InfoOption) is null && commandResult.GetResult(VersionOption) is null && !commandResult.Children.Any(child => child is System.CommandLine.Parsing.CommandResult))
+            if (commandResult.HasOption(InfoOption) && commandResult.HasOption(VersionOption) && !commandResult.Children.Any(child => child is System.CommandLine.Parsing.CommandResult))
             {
                 commandResult.AddError(CliStrings.RequiredCommandNotPassed);
             }

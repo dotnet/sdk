@@ -16,8 +16,7 @@ public class PackCommand(
 {
     public static PackCommand FromArgs(string[] args, string? msbuildPath = null)
     {
-        var parser = Parser.Instance;
-        var parseResult = parser.ParseFrom("dotnet pack", args);
+        var parseResult = Parser.Parse(["dotnet", "pack", ..args]);
         return FromParseResult(parseResult, msbuildPath);
     }
 

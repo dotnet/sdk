@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -12,8 +12,7 @@ public static class BuildCommand
 {
     public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
-        var parser = Parser.Instance;
-        var parseResult = parser.ParseFrom("dotnet build", args);
+        var parseResult = Parser.Parse(["dotnet", "build", ..args]);
         return FromParseResult(parseResult, msbuildPath);
     }
 
@@ -22,10 +21,10 @@ public static class BuildCommand
         parseResult.ShowHelpOrErrorIfAppropriate();
 
         CommonOptions.ValidateSelfContainedOptions(
-            parseResult.GetResult(BuildCommandParser.SelfContainedOption) is not null,
-            parseResult.GetResult(BuildCommandParser.NoSelfContainedOption) is not null);
+            parseResult.HasOption(BuildCommandParser.SelfContainedOption),
+            parseResult.HasOption(BuildCommandParser.NoSelfContainedOption));
 
-        bool noRestore = parseResult.GetResult(BuildCommandParser.NoRestoreOption) is not null;
+        bool noRestore = parseResult.HasOption(BuildCommandParser.NoRestoreOption);
 
         return CommandFactory.CreateVirtualOrPhysicalCommand(
             BuildCommandParser.GetCommand(),

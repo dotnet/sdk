@@ -86,13 +86,13 @@ internal static class TestCommandParser
     {
         Description = CliCommandStrings.CmdBlameDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:VSTestBlame=true");
+    }.ForwardIfEnabled("-property:VSTestBlame=true");
 
     public static readonly Option<bool> BlameCrashOption = new ForwardedOption<bool>("--blame-crash")
     {
         Description = CliCommandStrings.CmdBlameCrashDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:VSTestBlameCrash=true");
+    }.ForwardIfEnabled("-property:VSTestBlameCrash=true");
 
     public static readonly Option<string> BlameCrashDumpOption = CreateBlameCrashDumpOption();
 
@@ -112,7 +112,7 @@ internal static class TestCommandParser
     {
         Description = CliCommandStrings.CmdBlameCrashCollectAlwaysDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAsMany(o => ["-property:VSTestBlameCrash=true", "-property:VSTestBlameCrashCollectAlways=true"]);
+    }.ForwardIfEnabled(["-property:VSTestBlameCrash=true", "-property:VSTestBlameCrashCollectAlways=true"]);
 
     public static readonly Option<bool> BlameHangOption = new ForwardedOption<bool>("--blame-hang")
     {
@@ -144,7 +144,7 @@ internal static class TestCommandParser
     {
         Description = CliCommandStrings.TestCmdNoLogo,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:VSTestNoLogo=true");
+    }.ForwardIfEnabled("-property:VSTestNoLogo=true");
 
     public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
