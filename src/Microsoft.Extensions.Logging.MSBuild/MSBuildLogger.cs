@@ -73,11 +73,11 @@ public sealed class MSBuildLogger : ILogger
                 _loggingHelper.LogMessage(message.subcategory, message.code, message.helpKeyword, message.file, message.lineNumber ?? 0, message.columnNumber ?? 0, message.endLineNumber ?? 0, message.endColumnNumber ?? 0, MessageImportance.High, message.message);
                 break;
             case LogLevel.Warning:
-                _loggingHelper.LogWarning(message.subcategory, message.code, message.helpKeyword, message.file, message.lineNumber ?? 0, message.columnNumber ?? 0, message.endLineNumber ?? 0, message.endColumnNumber ?? 0, message.message);
+                _loggingHelper.LogWarning(message.subcategory, message.code, message.helpKeyword, message.helpLink, message.file, message.lineNumber ?? 0, message.columnNumber ?? 0, message.endLineNumber ?? 0, message.endColumnNumber ?? 0, message.message);
                 break;
             case LogLevel.Error:
             case LogLevel.Critical:
-                _loggingHelper.LogError(message.subcategory, message.code, message.helpKeyword, message.file, message.lineNumber ?? 0, message.columnNumber ?? 0, message.endLineNumber ?? 0, message.endColumnNumber ?? 0, message.message);
+                _loggingHelper.LogError(message.subcategory, message.code, message.helpKeyword, message.helpLink, message.file, message.lineNumber ?? 0, message.columnNumber ?? 0, message.endLineNumber ?? 0, message.endColumnNumber ?? 0, message.message);
                 break;
             case LogLevel.None:
                 break;
@@ -124,6 +124,9 @@ public sealed class MSBuildLogger : ILogger
                             continue;
                         case "HelpKeyword":
                             message.helpKeyword = kvp.Value as string;
+                            continue;
+                        case "HelpLink":
+                            message.helpLink = kvp.Value as string;
                             continue;
                         case "File":
                             message.file = kvp.Value as string;
@@ -179,6 +182,9 @@ public sealed class MSBuildLogger : ILogger
                             case "HelpKeyword":
                                 message.helpKeyword = kvp.Value as string;
                                 continue;
+                            case "HelpLink":
+                                message.helpLink = kvp.Value as string;
+                                continue;
                             case "File":
                                 message.file = kvp.Value as string;
                                 continue;
@@ -230,20 +236,12 @@ public sealed class MSBuildLogger : ILogger
 
     
     /// <summary>
-    /// a struct that maps to the parameters of the MSBuild LogX methods. We'll extract this from M.E.ILogger state/scope information so that we can be maximally compatible with the MSBuild logging system.
+    /// A struct that maps to the parameters of the MSBuild LogX methods. We'll extract this from M.E.ILogger state/scope information so that we can be maximally compatible with the MSBuild logging system.
     /// </summary>
-    /// <param name="subcategory"></param>
-    /// <param name="code"></param>
-    /// <param name="helpKeyword"></param>
-    /// <param name="file"></param>
-    /// <param name="lineNumber"></param>
-    /// <param name="columnNumber"></param>
-    /// <param name="endLineNumber"></param>
-    /// <param name="endColumnNumber"></param>
-    /// <param name="message"></param>
     private record struct MSBuildMessageParameters(string? subcategory,
             string? code,
             string? helpKeyword,
+            string? helpLink,
             string? file,
             int? lineNumber,
             int? columnNumber,
