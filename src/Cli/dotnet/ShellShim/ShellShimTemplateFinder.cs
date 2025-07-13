@@ -1,14 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
-using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.ShellShim;
 
@@ -21,7 +18,7 @@ internal class ShellShimTemplateFinder(
     private readonly INuGetPackageDownloader _nugetPackageDownloader = nugetPackageDownloader;
     private readonly PackageSourceLocation _packageSourceLocation = packageSourceLocation;
 
-    public async Task<string> ResolveAppHostSourceDirectoryAsync(string archOption, NuGetFramework targetFramework, Architecture arch)
+    public async Task<string> ResolveAppHostSourceDirectoryAsync(string? archOption, NuGetFramework? targetFramework, Architecture arch)
     {
         string rid;
         var validRids = new string[] { "win-x64", "win-arm64", "osx-x64", "osx-arm64" };
@@ -51,8 +48,7 @@ internal class ShellShimTemplateFinder(
         }
 
         var packageId = new PackageId($"microsoft.netcore.app.host.{rid}");
-        NuGetVersion packageVersion = null;
-        var packagePath = await _nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation: _packageSourceLocation);
+        var packagePath = await _nugetPackageDownloader.DownloadPackageAsync(packageId, null, packageSourceLocation: _packageSourceLocation);
         _ = await _nugetPackageDownloader.ExtractPackageAsync(packagePath, _tempDir);
 
         return Path.Combine(_tempDir.Value, "runtimes", rid, "native");

@@ -4,9 +4,9 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.DotNet.Cli.Configuration;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.Configuration.DotnetCli;
 
 namespace Microsoft.DotNet.Cli.Commands.Publish;
 
@@ -56,13 +56,12 @@ public class PublishCommand : RestoringCommand
                 NoCache = true,
             },
             (msbuildArgs, msbuildPath) => {
-                var configurationService = DotNetConfigurationFactory.Create();
                 var options = new ReleasePropertyProjectLocator.DependentCommandOptions(
                         nonBinLogArgs,
                         parseResult.HasOption(PublishCommandParser.ConfigurationOption) ? parseResult.GetValue(PublishCommandParser.ConfigurationOption) : null,
                         parseResult.HasOption(PublishCommandParser.FrameworkOption) ? parseResult.GetValue(PublishCommandParser.FrameworkOption) : null
                     );
-                var projectLocator = new ReleasePropertyProjectLocator(parseResult, MSBuildPropertyNames.PUBLISH_RELEASE, options, configurationService);
+                var projectLocator = new ReleasePropertyProjectLocator(parseResult, MSBuildPropertyNames.PUBLISH_RELEASE, options);
                 var releaseModeProperties = projectLocator.GetCustomDefaultConfigurationValueIfSpecified();
                 return new PublishCommand(
                     msbuildArgs: msbuildArgs.CloneWithAdditionalProperties(releaseModeProperties),

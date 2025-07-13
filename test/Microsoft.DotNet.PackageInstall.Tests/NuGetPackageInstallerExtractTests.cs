@@ -1,10 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
+using Microsoft.Extensions.Configuration.DotnetCli;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 
@@ -12,8 +11,11 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 {
     public class NuGetPackageInstallerExtractTests : SdkTest
     {
+        private readonly DotNetCliConfiguration _config;
+
         public NuGetPackageInstallerExtractTests(ITestOutputHelper log) : base(log)
         {
+            _config = DotNetConfigurationFactory.CreateMinimal();
         }
 
         [Fact]
@@ -23,8 +25,10 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             string packageVersion = ToolsetInfo.GetNewtonsoftJsonPackageVersion();
             NuGetTestLogger logger = new(Log);
             NuGetPackageDownloader installer =
-                new(new DirectoryPath(Directory.GetCurrentDirectory()), null,
-                    new MockFirstPartyNuGetPackageSigningVerifier(), logger, restoreActionConfig: new RestoreActionConfig(NoCache: true));
+                new(new DirectoryPath(Directory.GetCurrentDirectory()),
+                    firstPartyNuGetPackageSigningVerifier: new MockFirstPartyNuGetPackageSigningVerifier(),
+                    verboseLogger: logger,
+                    restoreActionConfig: new RestoreActionConfig(NoCache: true));
             string packagePath =
                 await installer.DownloadPackageAsync(new PackageId(packageId), new NuGetVersion(packageVersion));
             string targetPath = Path.Combine(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()),
@@ -44,8 +48,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             NuGetPackageDownloader installer =
                 new(
                     new DirectoryPath(Directory.GetCurrentDirectory()),
-                    null,
-                    new MockFirstPartyNuGetPackageSigningVerifier(), logger, restoreActionConfig: new RestoreActionConfig(NoCache: true));
+                    firstPartyNuGetPackageSigningVerifier: new MockFirstPartyNuGetPackageSigningVerifier(),
+                    verboseLogger: logger,
+                    restoreActionConfig: new RestoreActionConfig(NoCache: true));
             var allFiles = new List<string>()
             {
                 "/ExtractedPackage/Microsoft.Android.Sdk.Darwin.nuspec",
@@ -67,7 +72,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             NuGetTestLogger logger = new(Log);
             NuGetPackageDownloader installer =
                 new(new DirectoryPath(Directory.GetCurrentDirectory()), null,
-                    new MockFirstPartyNuGetPackageSigningVerifier(), logger, restoreActionConfig: new RestoreActionConfig(NoCache: true));
+                    firstPartyNuGetPackageSigningVerifier: new MockFirstPartyNuGetPackageSigningVerifier(),
+                    verboseLogger: logger,
+                    restoreActionConfig: new RestoreActionConfig(NoCache: true));
             var allFiles = new List<string>()
             {
                 "/ExtractedPackage/Not.In.Allow.List.nuspec",

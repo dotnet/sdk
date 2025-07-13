@@ -3,9 +3,9 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
-using Microsoft.DotNet.Cli.Configuration;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.Configuration.DotnetCli;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
@@ -27,13 +27,11 @@ public class PackCommand(
 
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(PackCommandParser.GetCommand()).Concat(parseResult.GetValue(PackCommandParser.SlnOrProjectArgument) ?? []);
 
-        var configurationService = DotNetConfigurationFactory.Create();
         ReleasePropertyProjectLocator projectLocator = new(parseResult, MSBuildPropertyNames.PACK_RELEASE,
             new ReleasePropertyProjectLocator.DependentCommandOptions(
                     parseResult.GetValue(PackCommandParser.SlnOrProjectArgument),
                     parseResult.HasOption(PackCommandParser.ConfigurationOption) ? parseResult.GetValue(PackCommandParser.ConfigurationOption) : null
-                ), configurationService
-        );
+                ));
 
         bool noRestore = parseResult.HasOption(PackCommandParser.NoRestoreOption) || parseResult.HasOption(PackCommandParser.NoBuildOption);
         var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(

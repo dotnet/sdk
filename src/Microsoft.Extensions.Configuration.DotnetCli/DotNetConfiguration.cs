@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Configuration.DotnetCli.Providers;
 
-namespace Microsoft.Extensions.Configuration.DotnetCli.Services;
+namespace Microsoft.Extensions.Configuration.DotnetCli;
 
 /// <summary>
 /// Factory for creating .NET CLI configuration instances.
@@ -44,10 +44,10 @@ public static class DotNetConfiguration
     /// </summary>
     /// <param name="workingDirectory">The working directory to search for configuration files. Defaults to current directory.</param>
     /// <returns>A strongly-typed configuration service.</returns>
-    public static IDotNetConfigurationService CreateTyped(string? workingDirectory = null)
+    public static DotNetCliConfiguration CreateTyped(string? workingDirectory = null)
     {
         var configuration = Create(workingDirectory);
-        return new DotNetConfigurationService(configuration);
+        return new DotNetCliConfiguration(configuration);
     }
 
     /// <summary>
@@ -56,7 +56,7 @@ public static class DotNetConfiguration
     /// </summary>
     /// <param name="workingDirectory">The working directory (unused for minimal configuration).</param>
     /// <returns>A minimal strongly-typed configuration service.</returns>
-    public static IDotNetConfigurationService CreateMinimal(string? workingDirectory = null)
+    public static DotNetCliConfiguration CreateMinimal(string? workingDirectory = null)
     {
         var builder = new ConfigurationBuilder();
 
@@ -64,6 +64,6 @@ public static class DotNetConfiguration
         builder.Add(new DotNetEnvironmentConfigurationSource());
 
         var configuration = builder.Build();
-        return new DotNetConfigurationService(configuration);
+        return new DotNetCliConfiguration(configuration);
     }
 }

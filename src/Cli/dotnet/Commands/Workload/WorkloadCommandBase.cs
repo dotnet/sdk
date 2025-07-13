@@ -3,11 +3,9 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
-using Microsoft.DotNet.Cli.Configuration;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.Extensions.Configuration.DotnetCli.Services;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 
@@ -122,7 +120,6 @@ internal abstract class WorkloadCommandBase : CommandBase
             IsPackageDownloaderProvided = false;
             PackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
                 TempPackagesDirectory,
-                DotNetConfigurationFactory.Create(),
                 filePermissionSetter: null,
                 firstPartyNuGetPackageSigningVerifier: new FirstPartyNuGetPackageSigningVerifier(),
                 verboseLogger: nugetLogger,

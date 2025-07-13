@@ -606,7 +606,7 @@ src/Microsoft.Extensions.Configuration.DotnetCli/
 └── Services/
     ├── DotNetConfiguration.cs
     ├── DotNetConfigurationRoot.cs
-    ├── IDotNetConfigurationService.cs
+    ├── DotNetConfigurationService.cs
     └── DotNetConfigurationService.cs
 ```
 
@@ -855,12 +855,12 @@ public sealed class ToolConfiguration
 ### Strongly-Typed Configuration Service with Source Generator
 
 ```csharp
-// src/Microsoft.Extensions.Configuration.DotnetCli/Services/IDotNetConfigurationService.cs
+// src/Microsoft.Extensions.Configuration.DotnetCli/Services/DotNetConfigurationService.cs
 namespace Microsoft.Extensions.Configuration.DotnetCli.Services;
 
 using Microsoft.Extensions.Configuration.DotnetCli.Models;
 
-public interface IDotNetConfigurationService
+public interface DotNetConfigurationService
 {
     IConfiguration RawConfiguration { get; }
 
@@ -876,7 +876,7 @@ public interface IDotNetConfigurationService
 }
 
 // src/Microsoft.Extensions.Configuration.DotnetCli/Services/DotNetConfigurationService.cs
-public class DotNetConfigurationService : IDotNetConfigurationService
+public class DotNetConfigurationService : DotNetConfigurationService
 {
     private readonly IConfiguration _configuration;
 

@@ -1,19 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Globalization;
 using System.Runtime.Versioning;
 using Microsoft.DotNet.Cli.Commands.Workload.Config;
 using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
-using Microsoft.DotNet.Cli.Configuration;
 using Microsoft.DotNet.Cli.Installer.Windows;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.Extensions.Configuration.DotnetCli.Services;
+using Microsoft.Extensions.Configuration.DotnetCli;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32.Msi;
@@ -34,7 +31,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
 
     private bool _shutdown;
 
-    private readonly PackageSourceLocation _packageSourceLocation;
+    private readonly PackageSourceLocation? _packageSourceLocation;
 
     private readonly string _dependent;
 
@@ -45,10 +42,10 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         bool verifySignatures,
         IWorkloadResolver workloadResolver,
         SdkFeatureBand sdkFeatureBand,
-        INuGetPackageDownloader nugetPackageDownloader = null,
+        INuGetPackageDownloader nugetPackageDownloader,
         VerbosityOptions verbosity = VerbosityOptions.normal,
-        PackageSourceLocation packageSourceLocation = null,
-        IReporter reporter = null) : base(elevationContext, logger, verifySignatures, reporter)
+        PackageSourceLocation? packageSourceLocation = null,
+        IReporter? reporter = null) : base(elevationContext, logger, verifySignatures, reporter)
     {
         _packageSourceLocation = packageSourceLocation;
         _nugetPackageDownloader = nugetPackageDownloader;
@@ -104,16 +101,16 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     }
 
     //  Wrap the setup logger in an IReporter so it can be passed to the garbage collector
-    private class SetupLogReporter(ISetupLogger setupLogger) : IReporter
+    private class SetupLogReporter(ISetupLogger? setupLogger) : IReporter
     {
-        private readonly ISetupLogger _setupLogger = setupLogger;
+        private readonly ISetupLogger? _setupLogger = setupLogger;
 
         //  SetupLogger doesn't have a way of writing a message that shouldn't include a newline.  So if this method is used a message may be split across multiple lines,
         //  but that's probably better than not writing a message at all or throwing an exception
-        public void Write(string message) => _setupLogger.LogMessage(message);
-        public void WriteLine(string message) => _setupLogger.LogMessage(message);
-        public void WriteLine() => _setupLogger.LogMessage("");
-        public void WriteLine(string format, params object[] args) => _setupLogger.LogMessage(string.Format(format, args));
+        public void Write(string message) => _setupLogger?.LogMessage(message);
+        public void WriteLine(string message) => _setupLogger?.LogMessage(message);
+        public void WriteLine() => _setupLogger?.LogMessage("");
+        public void WriteLine(string format, params object?[] args) => _setupLogger?.LogMessage(string.Format(format, args));
     }
 
     /// <summary>
@@ -306,7 +303,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         }
     }
 
-    public WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache)
+    public WorkloadSet? InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache)
     {
         ReportPendingReboot();
 
@@ -315,7 +312,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         context.Run(
             action: () =>
             {
-                DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
+                DetectState state = DetectPackage(msi.ProductCode, out Version? installedVersion);
                 InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Install, installedVersion);
 
                 if (plannedAction == InstallAction.Install)
@@ -330,7 +327,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
             },
             rollback: () =>
             {
-                DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
+                DetectState state = DetectPackage(msi.ProductCode, out Version? installedVersion);
                 InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Uninstall, installedVersion);
 
                 if (plannedAction == InstallAction.Uninstall)
@@ -428,7 +425,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     {
         foreach (WorkloadSetRecord record in workloadSetsToRemove)
         {
-            DetectState state = DetectPackage(record.ProductCode, out Version _);
+            DetectState state = DetectPackage(record.ProductCode, out Version? _);
             if (state == DetectState.Present)
             {
                 string msiNuGetPackageId = $"Microsoft.NET.Workloads.{record.WorkloadSetFeatureBand}.Msi.{HostArchitecture}";
@@ -454,7 +451,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     {
         foreach (WorkloadManifestRecord record in manifestToRemove)
         {
-            DetectState state = DetectPackage(record.ProductCode, out Version _);
+            DetectState state = DetectPackage(record.ProductCode, out Version? _);
             if (state == DetectState.Present)
             {
                 string msiNuGetPackageId = $"{record.ManifestId}.Manifest-{record.ManifestFeatureBand}.Msi.{HostArchitecture}";
@@ -484,7 +481,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
             // if a previous removal was interrupted. We can't safely clean up orphaned records because it's too expensive
             // to query all installed components and determine the product codes associated with the component that
             // created the record.
-            DetectState state = DetectPackage(record.ProductCode, out Version _);
+            DetectState state = DetectPackage(record.ProductCode, out Version? _);
 
             if (state == DetectState.Present)
             {
@@ -577,7 +574,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         // Retrieve the payload from the MSI package cache.
         MsiPayload msi = GetCachedMsiPayload(msiPackageId, msiPackageVersion, offlineCache);
         VerifyPackage(msi);
-        DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
+        DetectState state = DetectPackage(msi.ProductCode, out Version? installedVersion);
         InstallAction plannedAction = PlanPackage(msi, state, action, installedVersion);
 
         ExecutePackage(msi, plannedAction, msiPackageId);
@@ -597,7 +594,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
                 // Retrieve the payload from the MSI package cache.
                 MsiPayload msi = GetCachedMsiPayload(aquirableMsi.NuGetPackageId, aquirableMsi.NuGetPackageVersion, offlineCache);
                 VerifyPackage(msi);
-                DetectState state = DetectPackage(msi, out Version installedVersion);
+                DetectState state = DetectPackage(msi, out Version? installedVersion);
                 InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Repair, installedVersion);
                 ExecutePackage(msi, plannedAction, aquirableMsi.NuGetPackageId);
 
@@ -629,7 +626,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
                     // Retrieve the payload from the MSI package cache.
                     MsiPayload msi = GetCachedMsiPayload(msiToInstall.NuGetPackageId, msiToInstall.NuGetPackageVersion, offlineCache);
                     VerifyPackage(msi);
-                    DetectState state = DetectPackage(msi, out Version installedVersion);
+                    DetectState state = DetectPackage(msi, out Version? installedVersion);
                     InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Install, installedVersion);
                     if (plannedAction == InstallAction.Install)
                     {
@@ -690,7 +687,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
             }
 
             // Make sure the MSI is actually installed.
-            DetectState state = DetectPackage(msi, out Version installedVersion);
+            DetectState state = DetectPackage(msi, out Version? installedVersion);
             InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Uninstall, installedVersion);
 
             // The previous steps would have logged the final action. If the verdict is not to uninstall we can exit.
@@ -728,7 +725,10 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
 
         Log?.LogMessage("Shutdown completed.");
         Log?.LogMessage($"Restart required: {Restart}");
-        ((TimestampedFileLogger)Log).Dispose();
+        if (Log is TimestampedFileLogger t)
+        {
+            t.Dispose();
+        }
         _shutdown = true;
     }
 
@@ -764,7 +764,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
             if (Directory.Exists(extractedManifestPath))
             {
                 Log?.LogMessage($"ExtractManifestAsync: Copying manifest from '{extractionPath}' to '{targetPath}'");
-                Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
+                Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
                 FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(extractedManifestPath, targetPath));
             }
             else
@@ -796,8 +796,8 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
 
                 var manifestsFolder = Path.Combine(msiExtractionPath, "dotnet", "sdk-manifests");
 
-                string manifestFolder = null;
-                string manifestsFeatureBandFolder = Directory.GetDirectories(manifestsFolder).SingleOrDefault();
+                string? manifestFolder = null;
+                string? manifestsFeatureBandFolder = Directory.GetDirectories(manifestsFolder).SingleOrDefault();
                 if (manifestsFeatureBandFolder != null)
                 {
                     manifestFolder = Directory.GetDirectories(manifestsFeatureBandFolder).SingleOrDefault();
@@ -831,7 +831,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     /// <param name="productCode">The product code of the MSI to detect.</param>
     /// <param name="installedVersion">If detected, contains the version of the installed MSI.</param>
     /// <returns>The detect state of the specified MSI.</returns>
-    private DetectState DetectPackage(string productCode, out Version installedVersion)
+    private DetectState DetectPackage(string productCode, out Version? installedVersion)
     {
         installedVersion = default;
         uint error = WindowsInstaller.GetProductInfo(productCode, InstallProperty.VERSIONSTRING, out string versionValue);
@@ -861,7 +861,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     /// <param name="msi">The MSI package to detect.</param>
     /// <param name="installedVersion">If detected, contains the version of the installed MSI.</param>
     /// <returns>The detect state of the specified MSI.</returns>
-    private DetectState DetectPackage(MsiPayload msi, out Version installedVersion)
+    private DetectState DetectPackage(MsiPayload msi, out Version? installedVersion)
     {
         return DetectPackage(msi.ProductCode, out installedVersion);
     }
@@ -873,7 +873,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     /// <param name="state">The detected state of the package.</param>
     /// <param name="requestedAction">The requested action to perform.</param>
     /// <returns>The action that will be performed.</returns>
-    private InstallAction PlanPackage(MsiPayload msi, DetectState state, InstallAction requestedAction, Version installedVersion)
+    private InstallAction PlanPackage(MsiPayload msi, DetectState state, InstallAction requestedAction, Version? installedVersion)
     {
         InstallAction plannedAction = InstallAction.None;
 
@@ -966,7 +966,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     /// Gets a set of all the installed SDK feature bands.
     /// </summary>
     /// <returns>A List of all the installed SDK feature bands.</returns>
-    private static IEnumerable<SdkFeatureBand> GetInstalledFeatureBands(ISetupLogger log = null)
+    private static IEnumerable<SdkFeatureBand> GetInstalledFeatureBands(ISetupLogger? log = null)
     {
         HashSet<SdkFeatureBand> installedFeatureBands = [];
         foreach (string sdkVersion in GetInstalledSdkVersions())
@@ -1020,7 +1020,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     /// <param name="action">The action to perform.</param>
     /// <param name="displayName">A friendly name to display to the user when reporting progress. If no value is provided, the MSI
     /// filename will be used.</param>
-    private void ExecutePackage(MsiPayload msi, InstallAction action, string displayName = null)
+    private void ExecutePackage(MsiPayload msi, InstallAction action, string? displayName = null)
     {
         uint error = Error.SUCCESS;
         string logFile = GetMsiLogName(msi, action);
@@ -1073,7 +1073,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         if (installTask.IsFaulted)
         {
             Reporter.WriteLine(" Failed");
-            throw installTask.Exception.InnerException;
+            throw installTask.Exception.InnerException ?? installTask.Exception;
         }
 
         error = installTask.Result;
@@ -1112,12 +1112,12 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         bool verifySignatures,
         SdkFeatureBand sdkFeatureBand,
         IWorkloadResolver workloadResolver,
-        INuGetPackageDownloader nugetPackageDownloader = null,
+        INuGetPackageDownloader? nugetPackageDownloader = null,
         VerbosityOptions verbosity = VerbosityOptions.normal,
-        PackageSourceLocation packageSourceLocation = null,
-        IReporter reporter = null,
-        string tempDirPath = null,
-        RestoreActionConfig restoreActionConfig = null,
+        PackageSourceLocation? packageSourceLocation = null,
+        IReporter? reporter = null,
+        string? tempDirPath = null,
+        RestoreActionConfig? restoreActionConfig = null,
         bool shouldLog = true)
     {
         ISynchronizingLogger logger =
@@ -1131,9 +1131,9 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
 
             nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(tempPackagesDir,
                 DotNetConfigurationFactory.Create(),
-                filePermissionSetter: null, 
+                filePermissionSetter: null,
                 firstPartyNuGetPackageSigningVerifier: new FirstPartyNuGetPackageSigningVerifier(),
-                verboseLogger: new NullLogger(), 
+                verboseLogger: new NullLogger(),
                 restoreActionConfig: restoreActionConfig);
         }
 
@@ -1152,7 +1152,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         }
     }
 
-    private void OnProcessExit(object sender, EventArgs e)
+    private void OnProcessExit(object? sender, EventArgs e)
     {
         if (!_shutdown)
         {

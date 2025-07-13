@@ -6,7 +6,7 @@ using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.Extensions.Configuration.DotnetCli.Services;
+using Microsoft.Extensions.Configuration.DotnetCli;
 using Microsoft.NET.Build.Tasks;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 
@@ -32,7 +32,7 @@ internal class ReleasePropertyProjectLocator
 
     private readonly ParseResult _parseResult;
     private readonly string _propertyToCheck;
-    private readonly IDotNetConfigurationService _configurationService;
+    private readonly DotNetCliConfiguration _configurationService;
     DependentCommandOptions _options;
 
     private readonly IEnumerable<string> _slnOrProjectArgs;
@@ -48,9 +48,9 @@ internal class ReleasePropertyProjectLocator
         ParseResult parseResult,
         string propertyToCheck,
         DependentCommandOptions commandOptions,
-        IDotNetConfigurationService configurationService
+        DotNetCliConfiguration? configurationService = null
      )
-     => (_parseResult, _propertyToCheck, _options, _slnOrProjectArgs, _configurationService) = (parseResult, propertyToCheck, commandOptions, commandOptions.SlnOrProjectArgs, configurationService);
+     => (_parseResult, _propertyToCheck, _options, _slnOrProjectArgs, _configurationService) = (parseResult, propertyToCheck, commandOptions, commandOptions.SlnOrProjectArgs, configurationService ?? DotNetConfigurationFactory.Create());
 
     /// <summary>
     /// Return dotnet CLI command-line parameters (or an empty list) to change configuration based on ...
