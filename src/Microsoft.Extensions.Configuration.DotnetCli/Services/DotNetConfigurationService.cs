@@ -22,6 +22,7 @@ public class DotNetConfigurationService : IDotNetConfigurationService
     private readonly Lazy<DevelopmentConfiguration> _development;
     private readonly Lazy<ToolConfiguration> _tool;
     private readonly Lazy<NuGetConfiguration> _nuget;
+    private readonly Lazy<TestConfiguration> _test;
 
     public IConfiguration RawConfiguration => _configuration;
 
@@ -35,6 +36,7 @@ public class DotNetConfigurationService : IDotNetConfigurationService
     public DevelopmentConfiguration Development => _development.Value;
     public ToolConfiguration Tool => _tool.Value;
     public NuGetConfiguration NuGet => _nuget.Value;
+    public TestConfiguration Test => _test.Value;
 
     public DotNetConfigurationService(IConfiguration configuration)
     {
@@ -59,5 +61,7 @@ public class DotNetConfigurationService : IDotNetConfigurationService
             _configuration.GetSection("Tool").Get<ToolConfiguration>() ?? new());
         _nuget = new Lazy<NuGetConfiguration>(() =>
             _configuration.GetSection("NuGet").Get<NuGetConfiguration>() ?? new());
+        _test = new Lazy<TestConfiguration>(() =>
+            _configuration.GetSection("Test").Get<TestConfiguration>() ?? new());
     }
 }
