@@ -6,11 +6,13 @@
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 using Microsoft.DotNet.Cli.Commands.Workload.List;
+using Microsoft.DotNet.Cli.Configuration;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Configurer;
+using Microsoft.Extensions.Configuration.DotnetCli.Services;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
@@ -66,10 +68,11 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         var workloadResolver = WorkloadResolver.Create(workloadManifestProvider, dotnetPath, sdkVersion, userProfileDir);
         var tempPackagesDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
         var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(tempPackagesDir,
+                                      DotNetConfigurationFactory.Create(),
                                       filePermissionSetter: null,
-                                      new FirstPartyNuGetPackageSigningVerifier(),
-                                      new NullLogger(),
-                                      reporter,
+                                      firstPartyNuGetPackageSigningVerifier: new FirstPartyNuGetPackageSigningVerifier(),
+                                      verboseLogger: new NullLogger(),
+                                      reporter: reporter,
                                       verifySignatures: SignCheck.IsDotNetSigned());
         var installer = WorkloadInstallerFactory.GetWorkloadInstaller(reporter, new SdkFeatureBand(sdkVersion),
             workloadResolver, VerbosityOptions.normal, userProfileDir, verifySignatures: false);

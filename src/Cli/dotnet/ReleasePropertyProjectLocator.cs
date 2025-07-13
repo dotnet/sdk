@@ -6,6 +6,7 @@ using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.Configuration.DotnetCli.Services;
 using Microsoft.NET.Build.Tasks;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 
@@ -31,6 +32,7 @@ internal class ReleasePropertyProjectLocator
 
     private readonly ParseResult _parseResult;
     private readonly string _propertyToCheck;
+    private readonly IDotNetConfigurationService _configurationService;
     DependentCommandOptions _options;
 
     private readonly IEnumerable<string> _slnOrProjectArgs;
@@ -45,9 +47,10 @@ internal class ReleasePropertyProjectLocator
     public ReleasePropertyProjectLocator(
         ParseResult parseResult,
         string propertyToCheck,
-        DependentCommandOptions commandOptions
+        DependentCommandOptions commandOptions,
+        IDotNetConfigurationService configurationService
      )
-     => (_parseResult, _propertyToCheck, _options, _slnOrProjectArgs) = (parseResult, propertyToCheck, commandOptions, commandOptions.SlnOrProjectArgs);
+     => (_parseResult, _propertyToCheck, _options, _slnOrProjectArgs, _configurationService) = (parseResult, propertyToCheck, commandOptions, commandOptions.SlnOrProjectArgs, configurationService);
 
     /// <summary>
     /// Return dotnet CLI command-line parameters (or an empty list) to change configuration based on ...
@@ -58,7 +61,7 @@ internal class ReleasePropertyProjectLocator
     {
         // Setup
         Debug.Assert(_propertyToCheck == MSBuildPropertyNames.PUBLISH_RELEASE || _propertyToCheck == MSBuildPropertyNames.PACK_RELEASE, "Only PackRelease or PublishRelease are currently expected.");
-        if (string.Equals(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DISABLE_PUBLISH_AND_PACK_RELEASE), "true", StringComparison.OrdinalIgnoreCase))
+        if (_configurationService.Build.DisablePublishAndPackRelease)
         {
             return null;
         }
@@ -160,7 +163,7 @@ internal class ReleasePropertyProjectLocator
         HashSet<string> configValues = [];
         object projectDataLock = new();
 
-        if (string.Equals(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS), "true", StringComparison.OrdinalIgnoreCase))
+        if (_configurationService.Build.LazyPublishAndPackReleaseForSolutions)
         {
             // Evaluate only one project for speed if this environment variable is used. Will break more customers if enabled (adding 8.0 project to SLN with other project TFMs with no Publish or PackRelease.)
             return GetSingleProjectFromSolution(sln, slnFullPath, globalProps);

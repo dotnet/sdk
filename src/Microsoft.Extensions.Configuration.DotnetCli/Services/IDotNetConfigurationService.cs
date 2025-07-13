@@ -54,4 +54,9 @@ public interface IDotNetConfigurationService
     /// Gets global tools configuration settings.
     /// </summary>
     ToolConfiguration Tool { get; }
+
+    /// <summary>
+    /// Gets NuGet package management configuration settings.
+    /// </summary>
+    NuGetConfiguration NuGet { get; }
 }

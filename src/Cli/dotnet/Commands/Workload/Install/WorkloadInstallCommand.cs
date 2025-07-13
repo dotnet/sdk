@@ -5,11 +5,13 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Configuration;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.Extensions.Configuration.DotnetCli.Services;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
@@ -112,10 +114,11 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
         {
             var packageDownloader = IsPackageDownloaderProvided ? PackageDownloader : new NuGetPackageDownloader.NuGetPackageDownloader(
                 TempPackagesDirectory,
+                DotNetConfigurationFactory.Create(),
                 filePermissionSetter: null,
-                new FirstPartyNuGetPackageSigningVerifier(),
-                new NullLogger(),
-                NullReporter.Instance,
+                firstPartyNuGetPackageSigningVerifier: new FirstPartyNuGetPackageSigningVerifier(),
+                verboseLogger: new NullLogger(),
+                reporter: NullReporter.Instance,
                 restoreActionConfig: RestoreActionConfiguration,
                 verifySignatures: VerifySignatures);
 
