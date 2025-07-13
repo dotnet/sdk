@@ -7,11 +7,13 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands.Workload.Config;
 using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
+using Microsoft.DotNet.Cli.Configuration;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
+using Microsoft.Extensions.Configuration.DotnetCli.Services;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
@@ -60,8 +62,11 @@ internal class FileBasedInstaller : IInstaller
         ILogger logger = verbosity.IsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger();
         _restoreActionConfig = restoreActionConfig;
         _nugetPackageDownloader = nugetPackageDownloader ??
-                                  new NuGetPackageDownloader.NuGetPackageDownloader(_tempPackagesDir, filePermissionSetter: null,
-                                      new FirstPartyNuGetPackageSigningVerifier(), logger,
+                                  new NuGetPackageDownloader.NuGetPackageDownloader(_tempPackagesDir, 
+                                      DotNetConfigurationFactory.Create(),
+                                      filePermissionSetter: null,
+                                      firstPartyNuGetPackageSigningVerifier: new FirstPartyNuGetPackageSigningVerifier(), 
+                                      verboseLogger: logger,
                                       restoreActionConfig: _restoreActionConfig,
                                       verbosityOptions: nugetPackageDownloaderVerbosity);
         bool userLocal = WorkloadFileBasedInstall.IsUserLocal(_dotnetDir, sdkFeatureBand.ToString());

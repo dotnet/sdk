@@ -6,7 +6,9 @@
 using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.Configuration;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.Extensions.Configuration.DotnetCli.Services;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 
@@ -115,7 +117,7 @@ public static class PackageAddCommandParser
     {
         try
         {
-            var downloader = new NuGetPackageDownloader.NuGetPackageDownloader(packageInstallDir: new DirectoryPath());
+            var downloader = new NuGetPackageDownloader.NuGetPackageDownloader(packageInstallDir: new DirectoryPath(), configurationService: DotNetConfigurationFactory.Create());
             var versions = await downloader.GetPackageIdsAsync(packageStem, allowPrerelease, cancellationToken: cancellationToken);
             return versions;
         }
@@ -129,7 +131,7 @@ public static class PackageAddCommandParser
     {
         try
         {
-            var downloader = new NuGetPackageDownloader.NuGetPackageDownloader(packageInstallDir: new DirectoryPath());
+            var downloader = new NuGetPackageDownloader.NuGetPackageDownloader(packageInstallDir: new DirectoryPath(), configurationService: DotNetConfigurationFactory.Create());
             var versions = await downloader.GetPackageVersionsAsync(new(packageId), versionFragment, allowPrerelease, cancellationToken: cancellationToken);
             return versions;
         }

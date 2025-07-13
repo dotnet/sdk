@@ -46,6 +46,7 @@ public class DotNetEnvironmentConfigurationProvider : ConfigurationProvider
         ["DOTNET_ADD_GLOBAL_TOOLS_TO_PATH"] = "FirstTimeUse:AddGlobalToolsToPath",
         ["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "FirstTimeUse:SkipFirstTimeExperience",
         ["DOTNET_TOOLS_ALLOW_MANIFEST_IN_ROOT"] = "Tool:AllowManifestInRoot",
+        ["DOTNET_NUGET_SIGNATURE_VERIFICATION"] = "NuGet:SignatureVerificationEnabled",
     };
 
     public override void Load()

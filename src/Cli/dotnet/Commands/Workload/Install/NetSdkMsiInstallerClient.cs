@@ -7,11 +7,13 @@ using System.Globalization;
 using System.Runtime.Versioning;
 using Microsoft.DotNet.Cli.Commands.Workload.Config;
 using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
+using Microsoft.DotNet.Cli.Configuration;
 using Microsoft.DotNet.Cli.Installer.Windows;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.Extensions.Configuration.DotnetCli.Services;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32.Msi;
@@ -1128,8 +1130,11 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
             DirectoryPath tempPackagesDir = new(string.IsNullOrWhiteSpace(tempDirPath) ? PathUtilities.CreateTempSubdirectory() : tempDirPath);
 
             nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(tempPackagesDir,
-                filePermissionSetter: null, new FirstPartyNuGetPackageSigningVerifier(),
-                new NullLogger(), restoreActionConfig: restoreActionConfig);
+                DotNetConfigurationFactory.Create(),
+                filePermissionSetter: null, 
+                firstPartyNuGetPackageSigningVerifier: new FirstPartyNuGetPackageSigningVerifier(),
+                verboseLogger: new NullLogger(), 
+                restoreActionConfig: restoreActionConfig);
         }
 
         return new NetSdkMsiInstallerClient(elevationContext, logger, verifySignatures, workloadResolver, sdkFeatureBand, nugetPackageDownloader,

@@ -5,9 +5,11 @@
 
 using System.CommandLine;
 using System.Transactions;
+using Microsoft.DotNet.Cli.Configuration;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.Configuration.DotnetCli.Services;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -96,7 +98,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
             NoCache: parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption),
             IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
             Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
-        nugetPackageDownloader ??= new NuGetPackageDownloader.NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: restoreActionConfig, verbosityOptions: _verbosity, verifySignatures: verifySignatures ?? true);
+        nugetPackageDownloader ??= new NuGetPackageDownloader.NuGetPackageDownloader(tempDir, DotNetConfigurationFactory.Create(), verboseLogger: new NullLogger(), restoreActionConfig: restoreActionConfig, verbosityOptions: _verbosity, verifySignatures: verifySignatures ?? true);
         _shellShimTemplateFinder = new ShellShimTemplateFinder(nugetPackageDownloader, tempDir, packageSourceLocation);
         _store = store;
 

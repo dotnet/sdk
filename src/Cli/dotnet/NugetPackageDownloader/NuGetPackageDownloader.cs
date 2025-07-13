@@ -4,9 +4,11 @@
 #nullable disable
 
 using System.Collections.Concurrent;
+using Microsoft.DotNet.Cli.Configuration;
 using Microsoft.DotNet.Cli.NugetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.Configuration.DotnetCli.Services;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -51,6 +53,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
 
     public NuGetPackageDownloader(
         DirectoryPath packageInstallDir,
+        IDotNetConfigurationService configurationService,
         IFilePermissionSetter filePermissionSetter = null,
         IFirstPartyNuGetPackageSigningVerifier firstPartyNuGetPackageSigningVerifier = null,
         ILogger verboseLogger = null,
@@ -72,9 +75,8 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         _restoreActionConfig = restoreActionConfig ?? new RestoreActionConfig();
         _retryTimer = timer;
         _sourceRepositories = new();
-        // If windows or env variable is set, verify signatures
-        _verifySignatures = verifySignatures && (OperatingSystem.IsWindows() ? true 
-            : bool.TryParse(Environment.GetEnvironmentVariable(NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification), out var shouldVerifySignature) ? shouldVerifySignature : OperatingSystem.IsLinux());
+        // Use configuration service for signature verification
+        _verifySignatures = verifySignatures && configurationService.NuGet.SignatureVerificationEnabled;
 
         _cacheSettings = new SourceCacheContext
         {

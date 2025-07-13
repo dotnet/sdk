@@ -1,9 +1,11 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.DotNet.Cli.Configuration;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.Configuration.DotnetCli.Services;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.TemplateEngine.Utils;
 using NuGet.Client;
@@ -41,8 +43,10 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
             verboseLogger = new NuGetConsoleLogger();
         }
 
+        var configurationService = DotNetConfigurationFactory.Create();
         return new NuGetPackageDownloader.NuGetPackageDownloader(
             new DirectoryPath(),
+            configurationService,
             verboseLogger: verboseLogger,
             verifySignatures: verifySignatures,
             shouldUsePackageSourceMapping: true,
