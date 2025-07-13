@@ -59,4 +59,9 @@ public interface IDotNetConfigurationService
     /// Gets NuGet package management configuration settings.
     /// </summary>
     NuGetConfiguration NuGet { get; }
+
+    /// <summary>
+    /// Gets test runner configuration settings.
+    /// </summary>
+    TestConfiguration Test { get; }
 }

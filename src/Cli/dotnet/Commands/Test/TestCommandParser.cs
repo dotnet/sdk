@@ -5,6 +5,8 @@ using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.Extensions.Configuration;
+using Microsoft.DotNet.Cli.Configuration;
+using Microsoft.Extensions.Configuration.DotnetCli.Services;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -166,48 +168,8 @@ internal static class TestCommandParser
 
     public static string GetTestRunnerName()
     {
-        var builder = new ConfigurationBuilder();
-
-        string? dotnetConfigPath = GetDotnetConfigPath(Environment.CurrentDirectory);
-        if (!File.Exists(dotnetConfigPath))
-        {
-            return CliConstants.VSTest;
-        }
-
-        builder.AddIniFile(dotnetConfigPath);
-
-        IConfigurationRoot config = builder.Build();
-        var testSection = config.GetSection("dotnet.test.runner");
-
-        if (!testSection.Exists())
-        {
-            return CliConstants.VSTest;
-        }
-
-        string? runnerNameSection = testSection["name"];
-
-        if (string.IsNullOrEmpty(runnerNameSection))
-        {
-            return CliConstants.VSTest;
-        }
-
-        return runnerNameSection;
-    }
-
-    private static string? GetDotnetConfigPath(string? startDir)
-    {
-        string? directory = startDir;
-        while (directory != null)
-        {
-            string dotnetConfigPath = Path.Combine(directory, "dotnet.config");
-            if (File.Exists(dotnetConfigPath))
-            {
-                return dotnetConfigPath;
-            }
-
-            directory = Path.GetDirectoryName(directory);
-        }
-        return null;
+        var configurationService = DotNetConfigurationFactory.Create();
+        return configurationService.Test.RunnerName;
     }
 
     private static Command ConstructCommand()

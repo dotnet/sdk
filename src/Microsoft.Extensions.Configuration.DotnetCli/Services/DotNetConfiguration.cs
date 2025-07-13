@@ -27,12 +27,8 @@ public static class DotNetConfiguration
 
         workingDirectory ??= Directory.GetCurrentDirectory();
 
-        // Add dotnet.config if it exists (future enhancement)
-        var dotnetConfigPath = Path.Combine(workingDirectory, "dotnet.config");
-        if (File.Exists(dotnetConfigPath))
-        {
-            builder.AddIniFile(dotnetConfigPath, optional: true, reloadOnChange: false);
-        }
+        // Add dotnet.config with custom key mapping
+        builder.Add(new DotNetConfigurationSource(workingDirectory));
 
         // Add global.json with a custom configuration provider that maps keys
         builder.Add(new GlobalJsonConfigurationSource(workingDirectory));

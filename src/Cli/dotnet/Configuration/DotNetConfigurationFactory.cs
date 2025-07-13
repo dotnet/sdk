@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration.DotnetCli.Services;
 using Microsoft.Extensions.Configuration.DotnetCli.Models;
 using Microsoft.Extensions.Configuration.DotnetCli.Providers;
 using Microsoft.Extensions.Configuration;
+using System.Collections.Concurrent;
 using System.IO;
 
 namespace Microsoft.DotNet.Cli.Configuration
@@ -15,14 +16,44 @@ namespace Microsoft.DotNet.Cli.Configuration
     /// </summary>
     public static class DotNetConfigurationFactory
     {
+        // Cache for the default configuration service instance
+        private static readonly Lazy<IDotNetConfigurationService> _defaultInstance = new(() => CreateInternal(null), LazyThreadSafetyMode.ExecutionAndPublication);
+        
+        // Cache for configuration services by working directory
+        private static readonly ConcurrentDictionary<string, Lazy<IDotNetConfigurationService>> _instancesByDirectory = new();
+
         /// <summary>
         /// Creates and configures the .NET CLI configuration service with default providers.
         /// This method follows the layered configuration approach: environment variables override global.json,
         /// and configuration is loaded lazily for performance.
+        /// Results are cached to avoid repeated expensive configuration building.
         /// </summary>
         /// <param name="workingDirectory">The working directory to search for global.json files. Defaults to current directory.</param>
         /// <returns>A configured IDotNetConfigurationService instance</returns>
         public static IDotNetConfigurationService Create(string? workingDirectory = null)
+        {
+            if (workingDirectory == null)
+            {
+                // Use the default cached instance for null working directory
+                return _defaultInstance.Value;
+            }
+
+            // Normalize the working directory path for consistent caching
+            var normalizedPath = Path.GetFullPath(workingDirectory);
+            
+            // Get or create a cached instance for this specific working directory
+            var lazyInstance = _instancesByDirectory.GetOrAdd(normalizedPath, 
+                path => new Lazy<IDotNetConfigurationService>(() => CreateInternal(path), LazyThreadSafetyMode.ExecutionAndPublication));
+            
+            return lazyInstance.Value;
+        }
+
+        /// <summary>
+        /// Internal method that performs the actual configuration creation without caching.
+        /// </summary>
+        /// <param name="workingDirectory">The working directory to search for configuration files.</param>
+        /// <returns>A configured IDotNetConfigurationService instance</returns>
+        private static IDotNetConfigurationService CreateInternal(string? workingDirectory)
         {
             workingDirectory ??= Directory.GetCurrentDirectory();
 
@@ -31,10 +62,13 @@ namespace Microsoft.DotNet.Cli.Configuration
             // Configuration sources are added in reverse precedence order
             // Last added has highest precedence
 
-            // 1. global.json (custom provider with key mapping) - lowest precedence
+            // 1. dotnet.config (custom provider with key mapping) - lowest precedence  
+            configurationBuilder.Add(new DotNetConfigurationSource(workingDirectory));
+
+            // 2. global.json (custom provider with key mapping) - medium precedence
             configurationBuilder.Add(new GlobalJsonConfigurationSource(workingDirectory));
 
-            // 2. Environment variables (custom provider with key mapping) - highest precedence
+            // 3. Environment variables (custom provider with key mapping) - highest precedence
             configurationBuilder.Add(new DotNetEnvironmentConfigurationSource());
 
             var configuration = configurationBuilder.Build();
