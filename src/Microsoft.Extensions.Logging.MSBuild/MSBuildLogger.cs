@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
 
+using System.Diagnostics;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.NET.StringTools;
@@ -95,146 +96,163 @@ public sealed class MSBuildLogger : ILogger
         var formatted = formatter(state, exception);
         builder.Append(formatted);
 
-        if (scopeProvider is not null)
-        {
-            // state will be a FormattedLogValues instance
-            // scope will be our dictionary thing we need to probe into
-            scopeProvider.ForEachScope((scope, state) =>
-            {
-                var stateItems = (state as IReadOnlyList<KeyValuePair<string, object?>>)!;
-                string originalFormat = null!;
+        // any unprocessed state items will be appended to the message after scope processing 
+        var unprocessedKeyValues = ProcessState(state, ref message, out string? originalFormat);
 
-                foreach (var kvp in stateItems)
-                {
-                    switch (kvp.Key)
-                    {
-                        case "{OriginalFormat}":
-                            // If the key is {OriginalFormat}, we will use it to set the originalFormat variable.
-                            // This is used to avoid appending the same key again in the message.
-                            if (kvp.Value is string format)
-                            {
-                                originalFormat = format;
-                            }
-                            continue;
-                        case "Subcategory":
-                            message.subcategory = kvp.Value as string;
-                            continue;
-                        case "Code":
-                            message.code = kvp.Value as string;
-                            continue;
-                        case "HelpKeyword":
-                            message.helpKeyword = kvp.Value as string;
-                            continue;
-                        case "HelpLink":
-                            message.helpLink = kvp.Value as string;
-                            continue;
-                        case "File":
-                            message.file = kvp.Value as string;
-                            continue;
-                        case "LineNumber":
-                            if (kvp.Value is int lineNumber)
-                                message.lineNumber = lineNumber;
-                            continue;
-                        case "ColumnNumber":
-                            if (kvp.Value is int columnNumber)
-                                message.columnNumber = columnNumber;
-                            continue;
-                        case "EndLineNumber":
-                            if (kvp.Value is int endLineNumber)
-                                message.endLineNumber = endLineNumber;
-                            continue;
-                        case "EndColumnNumber":
-                            if (kvp.Value is int endColumnNumber)
-                                message.endColumnNumber = endColumnNumber;
-                            continue;
-                        default:
-                            var wrappedKey = "{" + kvp.Key + "}";
-                            if (originalFormat.Contains(wrappedKey))
-                            {
-                                // If the key is part of the format string of the original format, we don't need to append it again.
-                                continue;
-                            }
+        // scope will be our dictionary thing we need to probe into
+        scopeProvider?.ForEachScope((scope, state) => ProcessScope(scope, ref message, ref originalFormat, unprocessedKeyValues), state);
 
-                            // Otherwise, append the key and value to the message.
-                            // if MSbuild had a property bag concept on the message APIs,
-                            // we could use that instead of appending to the message.
+        Debug.Assert(originalFormat is not null, "Original format should not be null at this point - either state or scope should have provided it.");
 
-                            builder.Append($" {kvp.Key}={kvp.Value}");
-                            continue;
-                    }
-                }
-
-                if (scope is IDictionary<string, object> dict)
-                {
-                    foreach (var kvp in dict)
-                    {
-                        switch (kvp.Key)
-                        {
-                            // map all of the keys we decide are special and map to MSbuild message concepts
-                            case "{OriginalFormat}":
-                                continue;
-                            case "Subcategory":
-                                message.subcategory = kvp.Value as string;
-                                continue;
-                            case "Code":
-                                message.code = kvp.Value as string;
-                                continue;
-                            case "HelpKeyword":
-                                message.helpKeyword = kvp.Value as string;
-                                continue;
-                            case "HelpLink":
-                                message.helpLink = kvp.Value as string;
-                                continue;
-                            case "File":
-                                message.file = kvp.Value as string;
-                                continue;
-                            case "LineNumber":
-                                if (kvp.Value is int lineNumber)
-                                    message.lineNumber = lineNumber;
-                                continue;
-                            case "ColumnNumber":
-                                if (kvp.Value is int columnNumber)
-                                    message.columnNumber = columnNumber;
-                                continue;
-                            case "EndLineNumber":
-                                if (kvp.Value is int endLineNumber)
-                                    message.endLineNumber = endLineNumber;
-                                continue;
-                            case "EndColumnNumber":
-                                if (kvp.Value is int endColumnNumber)
-                                    message.endColumnNumber = endColumnNumber;
-                                continue;
-                            default:
-                                var wrappedKey = "{" + kvp.Key + "}";
-                                if (originalFormat.Contains(wrappedKey))
-                                {
-                                    // If the key is part of the format string of the original format, we don't need to append it again.
-                                    continue;
-                                }
-
-                                // Otherwise, append the key and value to the message.
-                                // if MSbuild had a property bag concept on the message APIs,
-                                // we could use that instead of appending to the message.
-
-                                builder.Append($" {kvp.Key}={kvp.Value}");
-                                continue;
-                        }
-                    }
-                }
-                else if (scope is string s)
-                {
-                    builder.Append($" {s}");
-                }
-
-
-            }, state);
-        }
+        ApplyUnprocessedItemsToMessage(unprocessedKeyValues, originalFormat, builder);
 
         message.message = builder.ToString();
         return message;
     }
 
-    
+    private static void ProcessScope(object? scope, ref MSBuildMessageParameters message, ref string? originalFormat, List<KeyValuePair<string, object?>>? unprocessedKeyValues)
+    {
+        if (scope is IDictionary<string, object?> dict)
+        {
+            foreach (var kvp in dict)
+            {
+                switch (kvp.Key)
+                {
+                    case "{OriginalFormat}":
+                        if (originalFormat is null && kvp.Value is string format)
+                        {
+                            originalFormat = format;
+                        }
+                        continue;
+                    case "Subcategory":
+                        message.subcategory = kvp.Value as string;
+                        continue;
+                    case "Code":
+                        message.code = kvp.Value as string;
+                        continue;
+                    case "HelpKeyword":
+                        message.helpKeyword = kvp.Value as string;
+                        continue;
+                    case "HelpLink":
+                        message.helpLink = kvp.Value as string;
+                        continue;
+                    case "File":
+                        message.file = kvp.Value as string;
+                        continue;
+                    case "LineNumber":
+                        if (kvp.Value is int lineNumber)
+                            message.lineNumber = lineNumber;
+                        continue;
+                    case "ColumnNumber":
+                        if (kvp.Value is int columnNumber)
+                            message.columnNumber = columnNumber;
+                        continue;
+                    case "EndLineNumber":
+                        if (kvp.Value is int endLineNumber)
+                            message.endLineNumber = endLineNumber;
+                        continue;
+                    case "EndColumnNumber":
+                        if (kvp.Value is int endColumnNumber)
+                            message.endColumnNumber = endColumnNumber;
+                        continue;
+                    default:
+                        unprocessedKeyValues ??= [];
+                        unprocessedKeyValues.Add(kvp);
+                        continue;
+                }
+            }
+        }
+        else if (scope is string s)
+        {
+            unprocessedKeyValues ??= [];
+            // If the scope is a string, we treat it as an unprocessed item
+            unprocessedKeyValues.Add(new KeyValuePair<string, object?>("Scope", s));
+        }
+    }
+
+    private static void ApplyUnprocessedItemsToMessage(List<KeyValuePair<string, object?>>? unprocessedStateItems, string originalFormat, SpanBasedStringBuilder builder)
+    {
+        // foreach unprocessed item, if the format string does not contain the key, append it to the message
+        // in key=value format using the builder
+        if (unprocessedStateItems is not null)
+        {
+            foreach (var kvp in unprocessedStateItems)
+            {
+                var wrappedKey = "{" + kvp.Key + "}";
+                if (!originalFormat.Contains(wrappedKey))
+                {
+                    builder.Append($" {kvp.Key}={kvp.Value}");
+                }
+            }
+        }
+    }
+
+    private static List<KeyValuePair<string, object?>>? ProcessState<TState>(TState state, ref MSBuildMessageParameters message, out string? originalFormat)
+    {
+        originalFormat = null;
+        List<KeyValuePair<string, object?>>? unmappedStateItems = null;
+        if (state is IReadOnlyList<KeyValuePair<string, object?>> stateItems)
+        {
+            foreach (var kvp in stateItems)
+            {
+                switch (kvp.Key)
+                {
+                    case "{OriginalFormat}":
+                        // If the key is {OriginalFormat}, we will use it to set the originalFormat variable.
+                        // This is used to avoid appending the same key again in the message.
+                        if (kvp.Value is string format)
+                        {
+                            originalFormat = format;
+                        }
+                        continue;
+                    case "Subcategory":
+                        message.subcategory = kvp.Value as string;
+                        continue;
+                    case "Code":
+                        message.code = kvp.Value as string;
+                        continue;
+                    case "HelpKeyword":
+                        message.helpKeyword = kvp.Value as string;
+                        continue;
+                    case "HelpLink":
+                        message.helpLink = kvp.Value as string;
+                        continue;
+                    case "File":
+                        message.file = kvp.Value as string;
+                        continue;
+                    case "LineNumber":
+                        if (kvp.Value is int lineNumber)
+                            message.lineNumber = lineNumber;
+                        continue;
+                    case "ColumnNumber":
+                        if (kvp.Value is int columnNumber)
+                            message.columnNumber = columnNumber;
+                        continue;
+                    case "EndLineNumber":
+                        if (kvp.Value is int endLineNumber)
+                            message.endLineNumber = endLineNumber;
+                        continue;
+                    case "EndColumnNumber":
+                        if (kvp.Value is int endColumnNumber)
+                            message.endColumnNumber = endColumnNumber;
+                        continue;
+                    default:
+                        unmappedStateItems ??= [];
+                        unmappedStateItems.Add(kvp);
+                        continue;
+                }
+            }
+            return unmappedStateItems;
+        }
+        else
+        {
+            // If the state is not a list, we just create an empty message.
+            message = new MSBuildMessageParameters();
+        }
+        return null;
+    }
+
+
     /// <summary>
     /// A struct that maps to the parameters of the MSBuild LogX methods. We'll extract this from M.E.ILogger state/scope information so that we can be maximally compatible with the MSBuild logging system.
     /// </summary>
