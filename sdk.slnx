@@ -27,6 +27,7 @@
     <Project Path="src/Microsoft.Net.Sdk.Compilers.Toolset/Microsoft.Net.Sdk.Compilers.Toolset.csproj" />
     <Project Path="src/Microsoft.Win32.Msi/Microsoft.Win32.Msi.csproj" />
     <Project Path="src/System.CommandLine.StaticCompletions/System.CommandLine.StaticCompletions.csproj" />
+    <Project Path="src/Microsoft.Extensions.Configuration.DotnetCli/Microsoft.Extensions.Configuration.DotnetCli.csproj" />
   </Folder>
   <Folder Name="/src/BlazorWasmSdk/">
     <Project Path="src/BlazorWasmSdk/Tasks/Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.csproj" />
