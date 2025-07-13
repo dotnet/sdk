@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli;
+
 namespace Microsoft.Extensions.Configuration.DotnetCli.Models;
 
 /// <summary>
@@ -12,7 +14,7 @@ public sealed class CliUserExperienceConfiguration
     /// Gets or sets whether telemetry collection is disabled.
     /// Mapped from DOTNET_CLI_TELEMETRY_OPTOUT environment variable.
     /// </summary>
-    public bool TelemetryOptOut { get; set; } = false;
+    public bool TelemetryOptOut { get; set; } = CompileOptions.TelemetryOptOutDefault;
 
     /// <summary>
     /// Gets or sets whether to suppress the .NET logo on startup.
