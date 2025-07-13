@@ -35,9 +35,9 @@ The new unified configuration system will follow this precedence order (highest 
 
 ### Phase 1: Infrastructure
 
-#### 1.1 Core Configuration Builder
+#### 1.1 Core Configuration Builder with Key Mapping
 
-Create a centralized configuration builder that consolidates all configuration sources:
+Create a centralized configuration builder that consolidates all configuration sources with key mapping:
 
 ```csharp
 public class DotNetConfiguration
@@ -45,59 +45,68 @@ public class DotNetConfiguration
     public static IConfiguration Create(string workingDirectory = null)
     {
         var builder = new ConfigurationBuilder();
-        
+
         // Priority order (last wins):
-        // 1. dotnet.config (if it exists)
-        // 2. global.json (custom provider)
-        // 3. Environment variables with DOTNET_ prefix
+        // 1. dotnet.config (if it exists) - with section-based key mapping
+        // 2. global.json (custom provider with key mapping)
+        // 3. Environment variables with DOTNET_ prefix (with key mapping)
         // 4. Command line arguments (handled separately)
-        
+
         workingDirectory ??= Directory.GetCurrentDirectory();
-        
+
         // Add dotnet.config if it exists (future enhancement)
         var dotnetConfigPath = Path.Combine(workingDirectory, "dotnet.config");
         if (File.Exists(dotnetConfigPath))
         {
             builder.AddIniFile(dotnetConfigPath, optional: true, reloadOnChange: false);
         }
-        
-        // Add global.json with a custom configuration provider
+
+        // Add global.json with a custom configuration provider that maps keys
         builder.Add(new GlobalJsonConfigurationSource(workingDirectory));
-        
-        // Add only DOTNET_ prefixed environment variables
-        builder.AddEnvironmentVariables("DOTNET_");
-        
+
+        // Add DOTNET_ prefixed environment variables with key mapping
+        builder.Add(new DotNetEnvironmentConfigurationSource());
+
         return builder.Build();
     }
 }
 ```
 
-#### 1.2 Global.json Configuration Provider
+#### 1.2 Enhanced Global.json Configuration Provider
 
-Create a custom configuration provider for global.json files:
+Create a custom configuration provider for global.json files with key mapping:
 
 ```csharp
 public class GlobalJsonConfigurationProvider : ConfigurationProvider
 {
     private readonly string _path;
-    
+
+    private static readonly Dictionary<string, string> GlobalJsonKeyMappings = new()
+    {
+        ["sdk:version"] = "sdk:version",
+        ["sdk:rollForward"] = "sdk:rollforward",
+        ["sdk:allowPrerelease"] = "sdk:allowprerelease",
+        ["msbuild-sdks"] = "msbuild:sdks",
+        // Add more mappings as the global.json schema evolves
+    };
+
     public GlobalJsonConfigurationProvider(string workingDirectory)
     {
         _path = FindGlobalJson(workingDirectory);
     }
-    
+
     public override void Load()
     {
         Data.Clear();
-        
+
         if (_path == null || !File.Exists(_path))
             return;
-            
+
         try
         {
             var json = File.ReadAllText(_path);
             var document = JsonDocument.Parse(json);
-            
+
             LoadGlobalJsonData(document.RootElement, "");
         }
         catch (Exception ex)
@@ -105,34 +114,58 @@ public class GlobalJsonConfigurationProvider : ConfigurationProvider
             throw new InvalidOperationException($"Error parsing global.json at {_path}", ex);
         }
     }
-    
+
     private void LoadGlobalJsonData(JsonElement element, string prefix)
     {
         foreach (var property in element.EnumerateObject())
         {
-            var key = string.IsNullOrEmpty(prefix) 
-                ? property.Name 
+            var rawKey = string.IsNullOrEmpty(prefix)
+                ? property.Name
                 : $"{prefix}:{property.Name}";
-                
+
             switch (property.Value.ValueKind)
             {
                 case JsonValueKind.Object:
-                    LoadGlobalJsonData(property.Value, key);
+                    LoadGlobalJsonData(property.Value, rawKey);
                     break;
                 case JsonValueKind.String:
-                    Data[key] = property.Value.GetString();
-                    break;
                 case JsonValueKind.Number:
-                    Data[key] = property.Value.GetRawText();
-                    break;
                 case JsonValueKind.True:
                 case JsonValueKind.False:
-                    Data[key] = property.Value.GetBoolean().ToString();
+                    // Map to canonical key format
+                    var canonicalKey = MapGlobalJsonKey(rawKey);
+                    Data[canonicalKey] = GetValueAsString(property.Value);
                     break;
             }
         }
     }
-    
+
+    private string MapGlobalJsonKey(string rawKey)
+    {
+        // Check for exact mapping first
+        if (GlobalJsonKeyMappings.TryGetValue(rawKey, out var mapped))
+            return mapped;
+
+        // For msbuild-sdks, convert to msbuild:sdks:packagename format
+        if (rawKey.StartsWith("msbuild-sdks:"))
+            return rawKey.Replace("msbuild-sdks:", "msbuild:sdks:");
+
+        // Default: convert to lowercase and normalize separators
+        return rawKey.ToLowerInvariant().Replace("-", ":");
+    }
+
+    private string GetValueAsString(JsonElement element)
+    {
+        return element.ValueKind switch
+        {
+            JsonValueKind.String => element.GetString(),
+            JsonValueKind.Number => element.GetRawText(),
+            JsonValueKind.True => "true",
+            JsonValueKind.False => "false",
+            _ => element.GetRawText()
+        };
+    }
+
     private string FindGlobalJson(string startDirectory)
     {
         var current = new DirectoryInfo(startDirectory);
@@ -146,61 +179,101 @@ public class GlobalJsonConfigurationProvider : ConfigurationProvider
         return null;
     }
 }
+```
 
-public class GlobalJsonConfigurationSource : IConfigurationSource
+#### 1.3 Environment Variable Configuration Provider with Key Mapping
+
+Create a custom environment variable provider that maps DOTNET_ variables to canonical keys:
+
+```csharp
+public class DotNetEnvironmentConfigurationProvider : ConfigurationProvider
 {
-    private readonly string _workingDirectory;
-    
-    public GlobalJsonConfigurationSource(string workingDirectory)
+    private static readonly Dictionary<string, string> EnvironmentKeyMappings = new()
     {
-        _workingDirectory = workingDirectory;
+        ["DOTNET_HOST_PATH"] = "dotnet:host:path",
+        ["DOTNET_CLI_TELEMETRY_OPTOUT"] = "dotnet:cli:telemetry:optout",
+        ["DOTNET_NOLOGO"] = "dotnet:cli:nologo",
+        ["DOTNET_CLI_PERF_LOG"] = "dotnet:cli:perf:log",
+        ["DOTNET_MULTILEVEL_LOOKUP"] = "dotnet:host:multilevel:lookup",
+        ["DOTNET_ROLL_FORWARD"] = "dotnet:runtime:rollforward",
+        ["DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX"] = "dotnet:runtime:rollforward:onnocandidate",
+        ["DOTNET_CLI_HOME"] = "dotnet:cli:home",
+        ["DOTNET_CLI_CONTEXT_VERBOSE"] = "dotnet:cli:context:verbose",
+        ["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "dotnet:cli:firsttime:skip",
+        ["DOTNET_ADD_GLOBAL_TOOLS_TO_PATH"] = "dotnet:tools:addtopath",
+        // Add more mappings as needed
+    };
+
+    public override void Load()
+    {
+        Data.Clear();
+
+        foreach (var mapping in EnvironmentKeyMappings)
+        {
+            var value = Environment.GetEnvironmentVariable(mapping.Key);
+            if (!string.IsNullOrEmpty(value))
+            {
+                Data[mapping.Value] = value;
+            }
+        }
     }
-    
+}
+
+public class DotNetEnvironmentConfigurationSource : IConfigurationSource
+{
     public IConfigurationProvider Build(IConfigurationBuilder builder)
     {
-        return new GlobalJsonConfigurationProvider(_workingDirectory);
+        return new DotNetEnvironmentConfigurationProvider();
     }
 }
 ```
 
-#### 1.3 Configuration Service Abstraction
+#### 1.4 Updated Configuration Service with Key Lookup Helper
 
-Create a service interface for configuration access:
+Update the configuration service to provide helper methods for common lookups:
 
 ```csharp
 public interface IConfigurationService
 {
     IConfiguration Configuration { get; }
-    string GetValue(string key, string defaultValue = null);
-    T GetValue<T>(string key, T defaultValue = default);
-    bool GetBoolValue(string key, bool defaultValue = false);
+
+    // Generic value access using canonical keys
+    string GetValue(string canonicalKey, string defaultValue = null);
+    T GetValue<T>(string canonicalKey, T defaultValue = default);
+    bool GetBoolValue(string canonicalKey, bool defaultValue = false);
+
+    // Helper methods for common configuration values
+    bool IsTelemetryOptOut();
+    bool IsNoLogo();
+    string GetHostPath();
+    string GetSdkVersion();
 }
 
 public class ConfigurationService : IConfigurationService
 {
     public IConfiguration Configuration { get; }
-    
+
     public ConfigurationService(IConfiguration configuration)
     {
         Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
     }
-    
-    public string GetValue(string key, string defaultValue = null)
+
+    public string GetValue(string canonicalKey, string defaultValue = null)
     {
-        return Configuration[key] ?? defaultValue;
+        return Configuration[canonicalKey] ?? defaultValue;
     }
-    
-    public T GetValue<T>(string key, T defaultValue = default)
+
+    public T GetValue<T>(string canonicalKey, T defaultValue = default)
     {
-        return Configuration.GetValue<T>(key, defaultValue);
+        return Configuration.GetValue<T>(canonicalKey, defaultValue);
     }
-    
-    public bool GetBoolValue(string key, bool defaultValue = false)
+
+    public bool GetBoolValue(string canonicalKey, bool defaultValue = false)
     {
-        var value = Configuration[key];
+        var value = Configuration[canonicalKey];
         if (string.IsNullOrEmpty(value))
             return defaultValue;
-            
+
         return value.ToLowerInvariant() switch
         {
             "true" or "1" or "yes" => true,
@@ -208,6 +281,12 @@ public class ConfigurationService : IConfigurationService
             _ => defaultValue
         };
     }
+
+    // Helper methods for common configuration values
+    public bool IsTelemetryOptOut() => GetBoolValue("dotnet:cli:telemetry:optout", false);
+    public bool IsNoLogo() => GetBoolValue("dotnet:cli:nologo", false);
+    public string GetHostPath() => GetValue("dotnet:host:path");
+    public string GetSdkVersion() => GetValue("sdk:version");
 }
 ```
 
@@ -215,29 +294,30 @@ public class ConfigurationService : IConfigurationService
 
 #### 2.1 Update Program.cs
 
-Update the main entry point to initialize configuration early:
+Update the main entry point to initialize configuration early with canonical key access:
 
 ```csharp
 public class Program
 {
     public static IConfiguration GlobalConfiguration { get; private set; }
     public static IConfigurationService ConfigurationService { get; private set; }
-    
+
     public static int Main(string[] args)
     {
         // Initialize configuration early
         GlobalConfiguration = DotNetConfiguration.Create();
         ConfigurationService = new ConfigurationService(GlobalConfiguration);
-        
-        // Replace direct env var calls with configuration
-        bool perfLogEnabled = ConfigurationService.GetBoolValue("DOTNET_CLI_PERF_LOG", false);
-        
+
+        // Replace direct env var calls with configuration using canonical keys
+        bool perfLogEnabled = ConfigurationService.GetBoolValue("dotnet:cli:perf:log", false);
+        bool noLogo = ConfigurationService.IsNoLogo();
+
         // Continue with existing logic...
     }
 }
 ```
 
-#### 2.2 Configuration-Based Environment Provider
+#### 2.2 Configuration-Based Environment Provider with Key Mapping
 
 Create a bridge between the new configuration system and existing `IEnvironmentProvider` interface:
 
@@ -246,56 +326,71 @@ public class ConfigurationBasedEnvironmentProvider : IEnvironmentProvider
 {
     private readonly IConfigurationService _configurationService;
     private readonly IEnvironmentProvider _fallbackProvider;
-    
+
+    // Reverse mapping from environment variable names to canonical keys
+    private static readonly Dictionary<string, string> EnvironmentToCanonicalMappings = new()
+    {
+        ["DOTNET_HOST_PATH"] = "dotnet:host:path",
+        ["DOTNET_CLI_TELEMETRY_OPTOUT"] = "dotnet:cli:telemetry:optout",
+        ["DOTNET_NOLOGO"] = "dotnet:cli:nologo",
+        ["DOTNET_CLI_PERF_LOG"] = "dotnet:cli:perf:log",
+        ["DOTNET_MULTILEVEL_LOOKUP"] = "dotnet:host:multilevel:lookup",
+        ["DOTNET_ROLL_FORWARD"] = "dotnet:runtime:rollforward",
+        ["DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX"] = "dotnet:runtime:rollforward:onnocandidate",
+        // Add more mappings as needed
+    };
+
     public ConfigurationBasedEnvironmentProvider(
-        IConfigurationService configurationService, 
+        IConfigurationService configurationService,
         IEnvironmentProvider fallbackProvider = null)
     {
         _configurationService = configurationService;
         _fallbackProvider = fallbackProvider ?? new EnvironmentProvider();
     }
-    
+
     public string GetEnvironmentVariable(string name)
     {
-        // For DOTNET_ prefixed variables, try configuration service first
-        if (name.StartsWith("DOTNET_", StringComparison.OrdinalIgnoreCase))
+        // For DOTNET_ prefixed variables, try configuration service first using canonical key
+        if (name.StartsWith("DOTNET_", StringComparison.OrdinalIgnoreCase) &&
+            EnvironmentToCanonicalMappings.TryGetValue(name, out var canonicalKey))
         {
-            var configValue = _configurationService.GetValue(name);
+            var configValue = _configurationService.GetValue(canonicalKey);
             if (configValue != null)
                 return configValue;
         }
-        
+
         // For all other variables or if not found in config, use fallback provider
         return _fallbackProvider.GetEnvironmentVariable(name);
     }
-    
+
     public bool GetEnvironmentVariableAsBool(string name, bool defaultValue)
     {
-        // For DOTNET_ prefixed variables, use configuration service
-        if (name.StartsWith("DOTNET_", StringComparison.OrdinalIgnoreCase))
+        // For DOTNET_ prefixed variables, use configuration service with canonical key
+        if (name.StartsWith("DOTNET_", StringComparison.OrdinalIgnoreCase) &&
+            EnvironmentToCanonicalMappings.TryGetValue(name, out var canonicalKey))
         {
-            return _configurationService.GetBoolValue(name, defaultValue);
+            return _configurationService.GetBoolValue(canonicalKey, defaultValue);
         }
-        
+
         // For all other variables, use fallback provider
         return _fallbackProvider.GetEnvironmentVariableAsBool(name, defaultValue);
     }
-    
+
     // Implement other members as pass-through to fallback provider
     public IEnumerable<string> ExecutableExtensions => _fallbackProvider.ExecutableExtensions;
-    
+
     public string GetCommandPath(string commandName, params string[] extensions)
         => _fallbackProvider.GetCommandPath(commandName, extensions);
-    
+
     public string GetCommandPathFromRootPath(string rootPath, string commandName, params string[] extensions)
         => _fallbackProvider.GetCommandPathFromRootPath(rootPath, commandName, extensions);
-    
+
     public string GetCommandPathFromRootPath(string rootPath, string commandName, IEnumerable<string> extensions)
         => _fallbackProvider.GetCommandPathFromRootPath(rootPath, commandName, extensions);
-    
+
     public string GetEnvironmentVariable(string variable, EnvironmentVariableTarget target)
         => _fallbackProvider.GetEnvironmentVariable(variable, target);
-    
+
     public void SetEnvironmentVariable(string variable, string value, EnvironmentVariableTarget target)
         => _fallbackProvider.SetEnvironmentVariable(variable, value, target);
 }
@@ -305,19 +400,33 @@ public class ConfigurationBasedEnvironmentProvider : IEnvironmentProvider
 
 #### 3.1 Systematic Replacement
 
-Replace direct environment variable access patterns:
+Replace direct environment variable access patterns using canonical keys:
 
 **Before:**
 ```csharp
 var value = Environment.GetEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT");
-bool optOut = !string.IsNullOrEmpty(value) && 
-              (value.Equals("true", StringComparison.OrdinalIgnoreCase) || 
+bool optOut = !string.IsNullOrEmpty(value) &&
+              (value.Equals("true", StringComparison.OrdinalIgnoreCase) ||
                value.Equals("1"));
 ```
 
-**After:**
+**After (using canonical key):**
 ```csharp
-bool optOut = ConfigurationService.GetBoolValue("DOTNET_CLI_TELEMETRY_OPTOUT", false);
+bool optOut = ConfigurationService.GetBoolValue("dotnet:cli:telemetry:optout", false);
+// Or using the helper method:
+bool optOut = ConfigurationService.IsTelemetryOptOut();
+```
+
+**Before:**
+```csharp
+var hostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+```
+
+**After (using canonical key):**
+```csharp
+var hostPath = ConfigurationService.GetValue("dotnet:host:path");
+// Or using the helper method:
+var hostPath = ConfigurationService.GetHostPath();
 ```
 
 #### 3.2 Update Direct global.json Readers
@@ -370,25 +479,19 @@ The following NuGet package references will need to be added to relevant project
 - `Microsoft.Extensions.Configuration.Ini`
 - `Microsoft.Extensions.Configuration.Binder`
 
-**Note:** We will only add the `Microsoft.Extensions.Configuration.EnvironmentVariables` package but configure it to only process DOTNET_ prefixed variables. The `Microsoft.Extensions.Configuration.Ini` package is needed for future dotnet.config support.
+**Note:** We will create a custom environment variable provider that only processes DOTNET_ prefixed variables and maps them to canonical keys. The `Microsoft.Extensions.Configuration.Ini` package is needed for future dotnet.config support.
 
-## Configuration Key Mapping
+## Key Mapping Reference
 
-### DOTNET_ Prefixed Environment Variables
+### Environment Variables → Canonical Keys
+- `DOTNET_CLI_TELEMETRY_OPTOUT` → `dotnet:cli:telemetry:optout`
+- `DOTNET_NOLOGO` → `dotnet:cli:nologo`
+- `DOTNET_HOST_PATH` → `dotnet:host:path`
+- `DOTNET_CLI_PERF_LOG` → `dotnet:cli:perf:log`
+- `DOTNET_MULTILEVEL_LOOKUP` → `dotnet:host:multilevel:lookup`
+- `DOTNET_ROLL_FORWARD` → `dotnet:runtime:rollforward`
 
-Only DOTNET_ prefixed environment variables will be included in the unified configuration system:
-- `DOTNET_CLI_TELEMETRY_OPTOUT` → `DOTNET_CLI_TELEMETRY_OPTOUT`
-- `DOTNET_NOLOGO` → `DOTNET_NOLOGO`
-- `DOTNET_CLI_PERF_LOG` → `DOTNET_CLI_PERF_LOG`
-
-### System Environment Variables
-
-System-level environment variables without the DOTNET_ prefix (e.g., `PATH`, `HOME`, `TEMP`, `USER`) will continue to be accessed directly through the existing `IEnvironmentProvider` interface and will not be part of the unified configuration system.
-
-### Global.json Structure
-
-Global.json properties will be flattened using colon notation:
-
+### Global.json → Canonical Keys
 ```json
 {
   "sdk": {
@@ -400,9 +503,291 @@ Global.json properties will be flattened using colon notation:
 }
 ```
 
-Maps to:
+Maps to canonical keys:
 - `sdk:version` → `"6.0.100"`
-- `msbuild-sdks:Microsoft.Build.Traversal` → `"1.0.0"`
+- `msbuild:sdks:Microsoft.Build.Traversal` → `"1.0.0"`
+
+### INI Configuration → Canonical Keys
+```ini
+[dotnet.cli]
+telemetryOptOut=true
+nologo=true
+
+[sdk]
+version=6.0.100
+```
+
+Maps to canonical keys:
+- `dotnet:cli:telemetry:optout` → `"true"`
+- `dotnet:cli:nologo` → `"true"`
+- `sdk:version` → `"6.0.100"`
+
+**Note:** System-level environment variables without the DOTNET_ prefix (e.g., `PATH`, `HOME`, `TEMP`, `USER`) will continue to be accessed directly through the existing `IEnvironmentProvider` interface and will not be part of the unified configuration system.
+
+## Typed Configuration Models
+
+### Functional Configuration Groupings
+
+Based on analysis of the existing codebase, the following functional groupings have been identified for typed configuration models:
+
+#### 1. **CLI User Experience Configuration**
+Settings that control the CLI's user interface and interaction behavior:
+
+```csharp
+public class CliUserExperienceConfiguration
+{
+    public bool TelemetryOptOut { get; set; } = false;
+    public bool NoLogo { get; set; } = false;
+    public bool ForceUtf8Encoding { get; set; } = false;
+    public string? UILanguage { get; set; }
+    public string? TelemetryProfile { get; set; }
+}
+```
+
+**Environment Variables Mapped:**
+- `DOTNET_CLI_TELEMETRY_OPTOUT` → `TelemetryOptOut`
+- `DOTNET_NOLOGO` → `NoLogo`
+- `DOTNET_CLI_FORCE_UTF8_ENCODING` → `ForceUtf8Encoding`
+- `DOTNET_CLI_UI_LANGUAGE` → `UILanguage`
+- `DOTNET_CLI_TELEMETRY_PROFILE` → `TelemetryProfile`
+
+#### 2. **Runtime Host Configuration**
+Settings that control .NET runtime host behavior:
+
+```csharp
+public class RuntimeHostConfiguration
+{
+    public string? HostPath { get; set; }
+    public bool MultilevelLookup { get; set; } = true;
+    public string? RollForward { get; set; }
+    public string? RollForwardOnNoCandidateFx { get; set; }
+    public string? Root { get; set; }
+    public string? RootX86 { get; set; }
+}
+```
+
+**Environment Variables Mapped:**
+- `DOTNET_HOST_PATH` → `HostPath`
+- `DOTNET_MULTILEVEL_LOOKUP` → `MultilevelLookup`
+- `DOTNET_ROLL_FORWARD` → `RollForward`
+- `DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX` → `RollForwardOnNoCandidateFx`
+- `DOTNET_ROOT` → `Root`
+- `DOTNET_ROOT(x86)` → `RootX86`
+
+#### 3. **Build and MSBuild Configuration**
+Settings that control build system behavior:
+
+```csharp
+public class BuildConfiguration
+{
+    public bool RunMSBuildOutOfProc { get; set; } = false;
+    public bool UseMSBuildServer { get; set; } = false;
+    public string? ConfigureMSBuildTerminalLogger { get; set; }
+    public bool DisablePublishAndPackRelease { get; set; } = false;
+    public bool LazyPublishAndPackReleaseForSolutions { get; set; } = false;
+}
+```
+
+**Environment Variables Mapped:**
+- `DOTNET_CLI_RUN_MSBUILD_OUTOFPROC` → `RunMSBuildOutOfProc`
+- `DOTNET_CLI_USE_MSBUILD_SERVER` → `UseMSBuildServer`
+- `DOTNET_CLI_CONFIGURE_MSBUILD_TERMINAL_LOGGER` → `ConfigureMSBuildTerminalLogger`
+- `DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE` → `DisablePublishAndPackRelease`
+- `DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS` → `LazyPublishAndPackReleaseForSolutions`
+
+#### 4. **SDK Resolver Configuration**
+Settings that control SDK resolution and discovery:
+
+```csharp
+public class SdkResolverConfiguration
+{
+    public bool EnableLog { get; set; } = false;
+    public string? SdksDirectory { get; set; }
+    public string? SdksVersion { get; set; }
+    public string? CliDirectory { get; set; }
+}
+```
+
+**Environment Variables Mapped:**
+- `DOTNET_MSBUILD_SDK_RESOLVER_ENABLE_LOG` → `EnableLog`
+- `DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR` → `SdksDirectory`
+- `DOTNET_MSBUILD_SDK_RESOLVER_SDKS_VER` → `SdksVersion`
+- `DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR` → `CliDirectory`
+
+#### 5. **Workload Configuration**
+Settings that control workload management and behavior:
+
+```csharp
+public class WorkloadConfiguration
+{
+    public bool UpdateNotifyDisable { get; set; } = false;
+    public int UpdateNotifyIntervalHours { get; set; } = 24;
+    public bool DisablePackGroups { get; set; } = false;
+    public bool SkipIntegrityCheck { get; set; } = false;
+    public string[]? ManifestRoots { get; set; }
+    public string[]? PackRoots { get; set; }
+    public bool ManifestIgnoreDefaultRoots { get; set; } = false;
+}
+```
+
+**Environment Variables Mapped:**
+- `DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE` → `UpdateNotifyDisable`
+- `DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_INTERVAL_HOURS` → `UpdateNotifyIntervalHours`
+- `DOTNET_CLI_WORKLOAD_DISABLE_PACK_GROUPS` → `DisablePackGroups`
+- `DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK` → `SkipIntegrityCheck`
+- `DOTNETSDK_WORKLOAD_MANIFEST_ROOTS` → `ManifestRoots`
+- `DOTNETSDK_WORKLOAD_PACK_ROOTS` → `PackRoots`
+- `DOTNETSDK_WORKLOAD_MANIFEST_IGNORE_DEFAULT_ROOTS` → `ManifestIgnoreDefaultRoots`
+
+#### 6. **First Time Use Configuration**
+Settings that control first-time user experience setup:
+
+```csharp
+public class FirstTimeUseConfiguration
+{
+    public bool GenerateAspNetCertificate { get; set; } = true;
+    public bool AddGlobalToolsToPath { get; set; } = true;
+    public bool SkipFirstTimeExperience { get; set; } = false;
+}
+```
+
+**Environment Variables Mapped:**
+- `DOTNET_GENERATE_ASPNET_CERTIFICATE` → `GenerateAspNetCertificate`
+- `DOTNET_ADD_GLOBAL_TOOLS_TO_PATH` → `AddGlobalToolsToPath`
+- `DOTNET_SKIP_FIRST_TIME_EXPERIENCE` → `SkipFirstTimeExperience`
+
+#### 7. **Development and Debugging Configuration**
+Settings that control development tools and debugging features:
+
+```csharp
+public class DevelopmentConfiguration
+{
+    public bool PerfLogEnabled { get; set; } = false;
+    public string? PerfLogCount { get; set; }
+    public string? CliHome { get; set; }
+    public bool ContextVerbose { get; set; } = false;
+    public bool AllowTargetingPackCaching { get; set; } = false;
+}
+```
+
+**Environment Variables Mapped:**
+- `DOTNET_CLI_PERF_LOG` → `PerfLogEnabled`
+- `DOTNET_PERF_LOG_COUNT` → `PerfLogCount`
+- `DOTNET_CLI_HOME` → `CliHome`
+- `DOTNET_CLI_CONTEXT_VERBOSE` → `ContextVerbose`
+- `DOTNETSDK_ALLOW_TARGETING_PACK_CACHING` → `AllowTargetingPackCaching`
+
+#### 8. **Tool and Global Tool Configuration**
+Settings that control global tools behavior:
+
+```csharp
+public class ToolConfiguration
+{
+    public bool AllowManifestInRoot { get; set; } = false;
+}
+```
+
+**Environment Variables Mapped:**
+- `DOTNET_TOOLS_ALLOW_MANIFEST_IN_ROOT` → `AllowManifestInRoot`
+
+### Typed Configuration Service Interface
+
+```csharp
+public interface ITypedConfigurationService
+{
+    IConfiguration RawConfiguration { get; }
+
+    // Typed configuration access
+    CliUserExperienceConfiguration CliUserExperience { get; }
+    RuntimeHostConfiguration RuntimeHost { get; }
+    BuildConfiguration Build { get; }
+    SdkResolverConfiguration SdkResolver { get; }
+    WorkloadConfiguration Workload { get; }
+    FirstTimeUseConfiguration FirstTimeUse { get; }
+    DevelopmentConfiguration Development { get; }
+    ToolConfiguration Tool { get; }
+
+    // Event for configuration changes (if we support hot reload)
+    event EventHandler<ConfigurationChangedEventArgs>? ConfigurationChanged;
+}
+
+public class TypedConfigurationService : ITypedConfigurationService
+{
+    public IConfiguration RawConfiguration { get; }
+
+    public CliUserExperienceConfiguration CliUserExperience { get; }
+    public RuntimeHostConfiguration RuntimeHost { get; }
+    public BuildConfiguration Build { get; }
+    public SdkResolverConfiguration SdkResolver { get; }
+    public WorkloadConfiguration Workload { get; }
+    public FirstTimeUseConfiguration FirstTimeUse { get; }
+    public DevelopmentConfiguration Development { get; }
+    public ToolConfiguration Tool { get; }
+
+    public event EventHandler<ConfigurationChangedEventArgs>? ConfigurationChanged;
+
+    public TypedConfigurationService(IConfiguration configuration)
+    {
+        RawConfiguration = configuration;
+
+        // Bind configuration sections to typed models
+        CliUserExperience = new CliUserExperienceConfiguration();
+        configuration.GetSection("dotnet:cli").Bind(CliUserExperience);
+
+        RuntimeHost = new RuntimeHostConfiguration();
+        configuration.GetSection("dotnet:host").Bind(RuntimeHost);
+
+        Build = new BuildConfiguration();
+        configuration.GetSection("dotnet:build").Bind(Build);
+
+        SdkResolver = new SdkResolverConfiguration();
+        configuration.GetSection("dotnet:sdkresolver").Bind(SdkResolver);
+
+        Workload = new WorkloadConfiguration();
+        configuration.GetSection("dotnet:workload").Bind(Workload);
+
+        FirstTimeUse = new FirstTimeUseConfiguration();
+        configuration.GetSection("dotnet:firsttime").Bind(FirstTimeUse);
+
+        Development = new DevelopmentConfiguration();
+        configuration.GetSection("dotnet:development").Bind(Development);
+
+        Tool = new ToolConfiguration();
+        configuration.GetSection("dotnet:tool").Bind(Tool);
+    }
+}
+```
+
+### Benefits of Typed Configuration Models
+
+1. **Intellisense and Compile-time Safety**: Developers get full IDE support and compile-time checking
+2. **Logical Grouping**: Related settings are grouped together functionally
+3. **Type Safety**: Boolean values are actual booleans, integers are integers, etc.
+4. **Default Values**: Clear default values are defined in the model classes
+5. **Discoverability**: Developers can explore configuration options through the object model
+6. **Validation**: Can add data annotations for validation
+7. **Documentation**: Each property can have XML documentation
+
+### Usage Examples
+
+```csharp
+// Instead of:
+bool telemetryOptOut = configService.GetBoolValue("dotnet:cli:telemetry:optout", false);
+bool noLogo = configService.GetBoolValue("dotnet:cli:nologo", false);
+
+// Developers can write:
+var cliConfig = typedConfigService.CliUserExperience;
+bool telemetryOptOut = cliConfig.TelemetryOptOut;
+bool noLogo = cliConfig.NoLogo;
+
+// Or for the common case:
+if (typedConfigService.CliUserExperience.TelemetryOptOut)
+{
+    // Skip telemetry
+}
+```
+
+This approach eliminates the need to remember canonical key names and provides a much more developer-friendly API.
 
 ## Error Handling
 
@@ -446,21 +831,16 @@ This refactoring should not introduce any breaking changes as it maintains backw
 - All existing global.json file structures and locations
 - All existing APIs and interfaces (through adapter patterns)
 
-## Implementation Timeline
-
-1. **Phase 1** (Infrastructure): 1-2 weeks
-2. **Phase 2** (Integration): 1 week  
-3. **Phase 3** (Migration): 2-3 weeks (incremental, can be spread across multiple PRs)
-4. **Phase 4** (Testing): 1 week
-
-Total estimated effort: 5-7 weeks
 
 ## Success Criteria
 
 - [ ] All direct `Environment.GetEnvironmentVariable()` calls for DOTNET_ prefixed variables replaced
 - [ ] All direct global.json reading replaced with configuration providers
 - [ ] System environment variables continue to work through existing providers
-- [ ] Comprehensive test coverage for new configuration system
+- [ ] **Key mapping system implemented and tested for all configuration sources**
+- [ ] **Canonical key format consistently used throughout the codebase**
+- [ ] **Helper methods available for common configuration lookups**
+- [ ] Comprehensive test coverage for new configuration system including key mapping
 - [ ] All existing functionality preserved (backward compatibility)
 - [ ] Performance impact is negligible
-- [ ] Documentation updated to reflect new configuration system
+- [ ] Documentation updated to reflect new configuration system and canonical key format
