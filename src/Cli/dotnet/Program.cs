@@ -182,13 +182,14 @@ public class Program
                 var configurationService = DotNetConfigurationFactory.Create();
                 var environmentProvider = new ConfigurationBasedEnvironmentProvider(configurationService);
 
-                bool generateAspNetCertificate = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_GENERATE_ASPNET_CERTIFICATE, defaultValue: true);
-                bool telemetryOptout = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, defaultValue: CompileOptions.TelemetryOptOutDefault);
-                bool addGlobalToolsToPath = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_ADD_GLOBAL_TOOLS_TO_PATH, defaultValue: true);
-                bool nologo = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_NOLOGO, defaultValue: false);
-                bool skipWorkloadIntegrityCheck = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK,
+                // Use typed configuration directly instead of environment variable calls
+                bool generateAspNetCertificate = configurationService.FirstTimeUse.GenerateAspNetCertificate;
+                bool telemetryOptout = configurationService.CliUserExperience.TelemetryOptOut;
+                bool addGlobalToolsToPath = configurationService.FirstTimeUse.AddGlobalToolsToPath;
+                bool nologo = configurationService.CliUserExperience.NoLogo;
+                bool skipWorkloadIntegrityCheck = configurationService.Workload.SkipIntegrityCheck || 
                     // Default the workload integrity check skip to true if the command is being ran in CI. Otherwise, false.
-                    defaultValue: new CIEnvironmentDetectorForTelemetry().IsCIEnvironment());
+                    new CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
 
                 ReportDotnetHomeUsage(environmentProvider);
 

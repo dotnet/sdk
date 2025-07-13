@@ -18,7 +18,7 @@ public sealed class WorkloadConfiguration
     /// Gets or sets the interval in hours between workload update notifications.
     /// Mapped from DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_INTERVAL_HOURS environment variable.
     /// </summary>
-    public int UpdateNotifyIntervalHours { get; set; } = 24;
+    public int UpdateNotifyIntervalHours { get; set; } = 24; // Default to check once per day
 
     /// <summary>
     /// Gets or sets whether to disable workload pack groups.
