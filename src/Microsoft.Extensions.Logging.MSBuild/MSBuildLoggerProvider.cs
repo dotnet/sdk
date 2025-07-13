@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Logging.MSBuild;
 public class MSBuildLoggerProvider : ILoggerProvider, ISupportExternalScope
 {
     private readonly TaskLoggingHelper _loggingHelper;
-    private List<MSBuildLogger> _loggers = new List<MSBuildLogger>();
+    private readonly Dictionary<string, MSBuildLogger> _loggers = [];
     private IExternalScopeProvider? _scopeProvider;
 
     public MSBuildLoggerProvider(TaskLoggingHelper loggingHelperToWrap)
@@ -22,8 +22,14 @@ public class MSBuildLoggerProvider : ILoggerProvider, ISupportExternalScope
 
     public ILogger CreateLogger(string categoryName)
     {
-        var logger = new MSBuildLogger(categoryName, _loggingHelper, _scopeProvider);
-        _loggers.Add(logger);
+        if (!_loggers.TryGetValue(categoryName, out var logger))
+        {
+            logger = new MSBuildLogger(categoryName, _loggingHelper, _scopeProvider);
+            lock (_loggers)
+            {
+                _loggers[categoryName] = logger;
+            }
+        }
         return logger;
     }
 
@@ -32,9 +38,12 @@ public class MSBuildLoggerProvider : ILoggerProvider, ISupportExternalScope
     public void SetScopeProvider(IExternalScopeProvider scopeProvider)
     {
         _scopeProvider = scopeProvider;
-        foreach (var logger in _loggers)
+        lock (_loggers)
         {
-            logger.SetScopeProvider(scopeProvider);
+            foreach (var logger in _loggers.Values)
+            {
+                logger.SetScopeProvider(scopeProvider);
+            }
         }
     }
 }
