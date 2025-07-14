@@ -57,7 +57,7 @@ internal static class ToolInstallCommandParser
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(VerbosityOptions.normal);
+    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal);
 
     // Don't use the common options version as we don't want this to be a forwarded option
     public static readonly Option<string> ArchitectureOption = new("--arch", "-a")

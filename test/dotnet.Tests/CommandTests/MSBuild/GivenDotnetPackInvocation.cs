@@ -8,8 +8,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenDotnetPackInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo", "-restore", "--target:Pack"];
-        private static readonly string[] ExpectedNoBuildPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo", "--target:Pack"];
+        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "-nologo", "-restore", "--target:Pack"];
+        private static readonly string[] ExpectedNoBuildPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "-nologo", "--target:Pack"];
         private readonly string[] ExpectedProperties = ["--property:_IsPacking=true", "--property:NuGetInteractive=false"];
 
         private static readonly string WorkingDirectory =
@@ -28,8 +28,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "--version-suffix", "<versionsuffix>" }, new string[] { "--property:VersionSuffix=<versionsuffix>" })]
         [InlineData(new string[] { "-s" }, new string[] { "--property:Serviceable=true" })]
         [InlineData(new string[] { "--serviceable" }, new string[] { "--property:Serviceable=true" })]
-        [InlineData(new string[] { "-v", "diag" }, new string[] { "-verbosity:diag" })]
-        [InlineData(new string[] { "--verbosity", "diag" }, new string[] { "-verbosity:diag" })]
+        [InlineData(new string[] { "-v", "diag" }, new string[] { "--verbosity:diag" })]
+        [InlineData(new string[] { "--verbosity", "diag" }, new string[] { "--verbosity:diag" })]
         [InlineData(new string[] { "<project>" }, new string[] { "<project>" })]
         [InlineData(new string[] { "--disable-build-servers" }, new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
         public void MsbuildInvocationIsCorrect(string[] args, string[] expectedAdditionalArgs)
