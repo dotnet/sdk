@@ -52,7 +52,7 @@ public class CreateNewImageTests
         task.BaseImageTag = "7.0";
 
         task.OutputRegistry = "localhost:5010";
-        task.LocalRegistry = DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")Attribute.LocalRegistry;
+        task.LocalRegistry = DockerAvailableFactAttribute.Attribute.LocalRegistry;
         task.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "linux-arm64", "publish");
         task.Repository = "dotnet/create-new-image-baseline";
         task.ImageTags = new[] { "latest" };
@@ -133,7 +133,7 @@ public class CreateNewImageTests
     /// <summary>
     /// Creates a console app that outputs the environment variable added to the image.
     /// </summary>
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")()]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public void Tasks_EndToEnd_With_EnvironmentVariable_Validation()
     {
         DirectoryInfo newProjectDir = new(GetTestDirectoryName());
@@ -198,7 +198,7 @@ public class CreateNewImageTests
         cni.ContainerEnvironmentVariables = pcp.NewContainerEnvironmentVariables;
         cni.ContainerRuntimeIdentifier = "linux-x64";
         cni.RuntimeIdentifierGraphPath = ToolsetUtils.GetRuntimeGraphFilePath();
-        cni.LocalRegistry = DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")Attribute.LocalRegistry;
+        cni.LocalRegistry = DockerAvailableFactAttribute.Attribute.LocalRegistry;
 
         Assert.True(cni.Execute(), FormatBuildMessages(errors));
 
