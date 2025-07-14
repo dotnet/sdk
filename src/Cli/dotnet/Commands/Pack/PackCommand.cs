@@ -111,21 +111,29 @@ public class PackCommand(
             var packArgs = new PackArgs()
             {
                 Path = nuspecPath,
-                BasePath = Directory.GetCurrentDirectory(),
+                BasePath = Path.GetDirectoryName(nuspecPath),
                 Logger = new NuGetConsoleLogger(),
                 Exclude = new List<string>()
             };
 
-           /* var properties = parseResult.GetValue(PackCommandParser.PropertiesOption);
+            var properties = parseResult.GetValue(PackCommandParser.PropertiesOption);
+            string? idOverride = null;
             if (properties != null)
             {
                 foreach (var prop in properties)
                 {
                     var split = prop.Split('=', 2);
                     if (split.Length == 2)
+                    {
+                        if (split[0].Equals("Id", StringComparison.OrdinalIgnoreCase) ||
+                            split[0].Equals("PackageId", StringComparison.OrdinalIgnoreCase))
+                            {
+                            idOverride = split[1]; 
+                        }
+                    }
                         packArgs.Properties[split[0]] = split[1];
                 }
-            }*/
+            }
 
             var version = parseResult.GetValue(PackCommandParser.VersionOption);
             if (!string.IsNullOrEmpty(version))

@@ -6,4 +6,7 @@
     <authors>kalebfikadu</authors>
     <description>Test pack with no csproj</description>
   </metadata>
+  <files>
+      <file src="content\one.txt" target="content\one.txt" />
+  </files>
 </package>

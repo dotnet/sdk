@@ -67,12 +67,12 @@ internal static class PackCommandParser
         Hidden = false
     }.ForwardAsSingle(o => $"-Version={o}");
 
-   /* public static readonly Option<string[]> PropertiesOption = new ForwardedOption<string[]>("--property")
+    public static readonly Option<string[]> PropertiesOption = new ForwardedOption<string[]>("--property")
     {
         Description = CliCommandStrings.PackCmdPropertiesDescription,
         HelpName = CliCommandStrings.PackCmdProperties,
         Hidden = false
-    };*/
+    };
 
 
     public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
@@ -92,7 +92,7 @@ internal static class PackCommandParser
         var command = new DocumentedCommand("pack", DocsLink, CliCommandStrings.PackAppFullName);
 
         command.Arguments.Add(SlnOrProjectArgument);
-        command.Options.Add(CommonOptions.PropertiesOption);
+        //command.Options.Add(CommonOptions.PropertiesOption);
         command.Options.Add(OutputOption);
         command.Options.Add(CommonOptions.ArtifactsPathOption);
         command.Options.Add(NoBuildOption);

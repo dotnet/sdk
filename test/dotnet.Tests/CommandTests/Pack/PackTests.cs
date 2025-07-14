@@ -294,10 +294,16 @@ namespace Microsoft.DotNet.Pack.Tests
         {
             var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
                 .WithSource();
+            string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
             var result = new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute("--nuspec");
+                .Execute("--nuspec", nuspecPath, "--property", "id=CustomID");
+
             result.Should().Pass();
+
+            var outputDir = new DirectoryInfo(Path.Combine(testInstance.Path, "Debug"));
+            outputDir.Should().Exist()
+                .And.HaveFile("CustomID.1.0.0.nupkg");
         }
 
         [Fact]
@@ -305,11 +311,28 @@ namespace Microsoft.DotNet.Pack.Tests
         {
             var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
                 .WithSource();
+            string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
             var result = new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute("--nuspec", "--version", "1.2.3");
+                .Execute("--nuspec", nuspecPath,  "--version", "1.2.3");
 
             result.Should().Pass();
+        }
+
+        [Fact]
+        public void DotnetPack_ThrowsForMissingNuspecFile()
+        {
+            var testInstace = _testAssetsManager.CopyTestAsset("TestNuspecProject")
+                .WithSource();
+
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+                new DotnetPackCommand(Log)
+                    .WithWorkingDirectory(testInstace.Path)
+                    .Execute("--nuspec");
+            });
+
+            Assert.Contains("You must specify a .nuspec file as the positional argument when using --nuspec.", ex.Message);
         }
     }
 }
