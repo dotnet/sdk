@@ -21,6 +21,8 @@ internal static class SdkUpdateCommandParser
         Arity = ArgumentArity.Zero
     };
 
+    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption();
+
     private static readonly Command SdkUpdateCommand = ConstructCommand();
 
     public static Command GetSdkUpdateCommand()
@@ -28,8 +30,7 @@ internal static class SdkUpdateCommandParser
         return SdkUpdateCommand;
     }
 
-    //  Trying to use the same command object for both "dotnet udpate" and "dotnet sdk update" causes the following exception:
-    //  System.InvalidOperationException: Command install has more than one child named "versionOrChannel".
+    //  Trying to use the same command object for both "dotnet udpate" and "dotnet sdk update" causes an InvalidOperationException
     //  So we create a separate instance for each case
     private static readonly Command RootUpdateCommand = ConstructCommand();
 
@@ -44,6 +45,8 @@ internal static class SdkUpdateCommandParser
 
         command.Options.Add(UpdateAllOption);
         command.Options.Add(UpdateGlobalJsonOption);
+
+        command.Options.Add(InteractiveOption);
 
         command.SetAction(parseResult => 0);
 

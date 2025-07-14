@@ -10,10 +10,10 @@ internal static class SdkInstallCommandParser
 {
     
 
-    public static readonly DynamicArgument<string?> VersionOrChannelArgument = new("versionOrChannel")
+    public static readonly DynamicArgument<string?> ChannelArgument = new("channel")
     {
-        HelpName = "VERSION|CHANNEL",
-        Description = "The version or channel of the .NET SDK to install.  For example: latest, 10, 9.0.3xx, 9.0.304",
+        HelpName = "CHANNEL",
+        Description = "The channel of the .NET SDK to install.  For example: latest, 10, or 9.0.3xx.  A specific version (for example 9.0.304) can also be specified.",
         Arity = ArgumentArity.ZeroOrOne,
     };
 
@@ -30,6 +30,8 @@ internal static class SdkInstallCommandParser
         Description = "Add installation path to PATH and set DOTNET_ROOT",
         Arity = ArgumentArity.Zero
     };
+
+    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption();
 
     private static readonly Command SdkInstallCommand = ConstructCommand();
 
@@ -57,7 +59,9 @@ internal static class SdkInstallCommandParser
         command.Options.Add(InstallPathOption);
         command.Options.Add(SetDefaultRootOption);
 
-        command.SetAction(parseResult => 0);
+        command.Options.Add(InteractiveOption);
+
+        command.SetAction(parseResult => new SdkInstallCommand(parseResult).Execute());
 
         return command;
     }
