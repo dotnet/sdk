@@ -58,6 +58,7 @@ sdk-options:
   store             {CliCommandStrings.StoreDefinition}
   test              {CliCommandStrings.TestDefinition}
   tool              {CliCommandStrings.ToolDefinition}
+  update            Updates the .NET SDK
   vstest            {CliCommandStrings.VsTestDefinition}
   workload          {CliCommandStrings.WorkloadDefinition}
 
