@@ -12,7 +12,7 @@ public sealed class WorkloadConfiguration
     /// Gets or sets whether to disable workload update notifications.
     /// Mapped from DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE environment variable.
     /// </summary>
-    public FlexibleBool UpdateNotifyDisable { get; set; } = false;
+    public bool UpdateNotifyDisable { get; set; } = false;
 
     /// <summary>
     /// Gets or sets the interval in hours between workload update notifications.
@@ -24,13 +24,13 @@ public sealed class WorkloadConfiguration
     /// Gets or sets whether to disable workload pack groups.
     /// Mapped from DOTNET_CLI_WORKLOAD_DISABLE_PACK_GROUPS environment variable.
     /// </summary>
-    public FlexibleBool DisablePackGroups { get; set; } = false;
+    public bool DisablePackGroups { get; set; } = false;
 
     /// <summary>
     /// Gets or sets whether to skip workload integrity checks.
     /// Mapped from DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK environment variable.
     /// </summary>
-    public FlexibleBool SkipIntegrityCheck { get; set; } = false;
+    public bool SkipIntegrityCheck { get; set; } = false;
 
     /// <summary>
     /// Gets or sets the manifest root directories for workloads.
@@ -48,5 +48,5 @@ public sealed class WorkloadConfiguration
     /// Gets or sets whether to ignore default manifest roots.
     /// Mapped from DOTNETSDK_WORKLOAD_MANIFEST_IGNORE_DEFAULT_ROOTS environment variable.
     /// </summary>
-    public FlexibleBool ManifestIgnoreDefaultRoots { get; set; } = false;
+    public bool ManifestIgnoreDefaultRoots { get; set; } = false;
 }

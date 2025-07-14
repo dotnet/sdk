@@ -18,7 +18,7 @@ public sealed class RuntimeHostConfiguration
     /// Gets or sets whether to enable multilevel lookup for shared frameworks.
     /// Mapped from DOTNET_MULTILEVEL_LOOKUP environment variable.
     /// </summary>
-    public FlexibleBool MultilevelLookup { get; set; } = false;
+    public bool MultilevelLookup { get; set; } = false;
 
     /// <summary>
     /// Gets or sets the roll-forward policy for framework version selection.

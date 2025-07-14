@@ -12,13 +12,13 @@ public sealed class BuildConfiguration
     /// Gets or sets whether to run MSBuild out of process.
     /// Mapped from DOTNET_CLI_RUN_MSBUILD_OUTOFPROC environment variable.
     /// </summary>
-    public FlexibleBool RunMSBuildOutOfProc { get; set; } = false;
+    public bool RunMSBuildOutOfProc { get; set; } = false;
 
     /// <summary>
     /// Gets or sets whether to use the MSBuild server for builds.
     /// Mapped from DOTNET_CLI_USE_MSBUILD_SERVER environment variable.
     /// </summary>
-    public FlexibleBool UseMSBuildServer { get; set; } = false;
+    public bool UseMSBuildServer { get; set; } = false;
 
     /// <summary>
     /// Gets or sets the configuration for the MSBuild terminal logger.
@@ -30,11 +30,11 @@ public sealed class BuildConfiguration
     /// Gets or sets whether to disable publish and pack release configuration.
     /// Mapped from DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE environment variable.
     /// </summary>
-    public FlexibleBool DisablePublishAndPackRelease { get; set; } = false;
+    public bool DisablePublishAndPackRelease { get; set; } = false;
 
     /// <summary>
     /// Gets or sets whether to enable lazy publish and pack release for solutions.
     /// Mapped from DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS environment variable.
     /// </summary>
-    public FlexibleBool LazyPublishAndPackReleaseForSolutions { get; set; } = false;
+    public bool LazyPublishAndPackReleaseForSolutions { get; set; } = false;
 }

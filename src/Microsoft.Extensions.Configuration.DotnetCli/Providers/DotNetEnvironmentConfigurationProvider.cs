@@ -48,6 +48,29 @@ public class DotNetEnvironmentConfigurationProvider : ConfigurationProvider
         ["DOTNET_TOOLS_ALLOW_MANIFEST_IN_ROOT"] = "Tool:AllowManifestInRoot",
         ["DOTNET_NUGET_SIGNATURE_VERIFICATION"] = "NuGet:SignatureVerificationEnabled",
     };
+    private static readonly HashSet<string> ConfigKeysToTreatAsBooleans = [
+        "CliUserExperience:TelemetryOptOut",
+        "CliUserExperience:NoLogo",
+        "CliUserExperience:ForceUtf8Encoding",
+        "Development:PerfLogEnabled",
+        "Development:ContextVerbose",
+        "Development:AllowTargetingPackCaching",
+        "RuntimeHost:MultilevelLookup",
+        "Build:RunMSBuildOutOfProc",
+        "Build:UseMSBuildServer",
+        "Build:DisablePublishAndPackRelease",
+        "Build:LazyPublishAndPackReleaseForSolutions",
+        "SdkResolver:EnableLog",
+        "Workload:UpdateNotifyDisable",
+        "Workload:DisablePackGroups",
+        "Workload:SkipIntegrityCheck",
+        "Workload:ManifestIgnoreDefaultRoots",
+        "FirstTimeUse:GenerateAspNetCertificate",
+        "FirstTimeUse:AddGlobalToolsToPath",
+        "FirstTimeUse:SkipFirstTimeExperience",
+        "Tool:AllowManifestInRoot",
+        "NuGet:SignatureVerificationEnabled"
+    ];
 
     public override void Load()
     {
@@ -58,7 +81,7 @@ public class DotNetEnvironmentConfigurationProvider : ConfigurationProvider
             var value = Environment.GetEnvironmentVariable(mapping.Key);
             if (!string.IsNullOrEmpty(value))
             {
-                Data[mapping.Value] = value;
+                Data[mapping.Value] = CoerceValueIfNecessary(mapping.Value, value);
             }
         }
 
@@ -66,6 +89,21 @@ public class DotNetEnvironmentConfigurationProvider : ConfigurationProvider
         HandleArrayEnvironmentVariable("DOTNETSDK_WORKLOAD_MANIFEST_ROOTS", "Workload:ManifestRoots");
         HandleArrayEnvironmentVariable("DOTNETSDK_WORKLOAD_PACK_ROOTS", "Workload:PackRoots");
     }
+
+    private string CoerceValueIfNecessary(string configKey, string envValue) => ConfigKeysToTreatAsBooleans.Contains(configKey)
+        ? GetFlexibleBool(envValue).ToString()
+        : envValue;
+
+    private bool GetFlexibleBool(string envValue) =>
+        bool.TryParse(envValue, out var boolValue)
+        ? boolValue
+        : int.TryParse(envValue, out var intValue) ? intValue > 0
+        : envValue switch
+        {
+            "yes" or "y" => true,
+            "no" or "n" => false,
+            _ => throw new FormatException($"Invalid boolean value: {envValue}")
+        };
 
     private void HandleArrayEnvironmentVariable(string envVar, string configKey)
     {
