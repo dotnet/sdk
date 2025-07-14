@@ -552,6 +552,7 @@ public class RunCommand
         string? projectFilePath = DiscoverProjectFilePath(projectOption, readCodeFromStdin, ref args, out string? entryPointFilePath);
 
         bool noBuild = parseResult.HasOption(RunCommandParser.NoBuildOption);
+        string launchProfile = parseResult.GetValue(RunCommandParser.LaunchProfileOption) ?? string.Empty;
 
         if (readCodeFromStdin && entryPointFilePath != null)
         {
@@ -560,6 +561,11 @@ public class RunCommand
             if (noBuild)
             {
                 throw new GracefulException(CliCommandStrings.InvalidOptionForStdin, RunCommandParser.NoBuildOption.Name);
+            }
+
+            if (!string.IsNullOrWhiteSpace(launchProfile))
+            {
+                throw new GracefulException(CliCommandStrings.InvalidOptionForStdin, RunCommandParser.LaunchProfileOption.Name);
             }
 
             // If '-' is specified as the input file, read all text from stdin into a temporary file and use that as the entry point.
@@ -584,7 +590,7 @@ public class RunCommand
             noBuild: noBuild,
             projectFileFullPath: projectFilePath,
             entryPointFileFullPath: entryPointFilePath,
-            launchProfile: parseResult.GetValue(RunCommandParser.LaunchProfileOption) ?? string.Empty,
+            launchProfile: launchProfile,
             noLaunchProfile: parseResult.HasOption(RunCommandParser.NoLaunchProfileOption),
             noLaunchProfileArguments: parseResult.HasOption(RunCommandParser.NoLaunchProfileArgumentsOption),
             noRestore: parseResult.HasOption(RunCommandParser.NoRestoreOption) || parseResult.HasOption(RunCommandParser.NoBuildOption),

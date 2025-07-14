@@ -365,6 +365,15 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, RunCommandParser.NoBuildOption.Name));
     }
 
+    [Fact]
+    public void ReadFromStdin_LaunchProfile()
+    {
+        new DotnetCommand(Log, "run", "-", "--launch-profile=test")
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, RunCommandParser.LaunchProfileOption.Name));
+    }
+
     /// <summary>
     /// <c>dotnet run -- -</c> should NOT read the C# file from stdin,
     /// the hyphen should be considred an app argument instead since it's after <c>--</c>.
