@@ -1858,7 +1858,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                       <PropertyGroup>
                         <OutputType>Exe</OutputType>
-                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
