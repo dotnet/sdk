@@ -299,11 +299,8 @@ namespace Microsoft.DotNet.Watch
 
         private LaunchSettingsProfile GetLaunchProfile(ProjectOptions projectOptions)
         {
-            var projectDirectory = Path.GetDirectoryName(projectOptions.ProjectPath);
-            Debug.Assert(projectDirectory != null);
-
             return (projectOptions.NoLaunchProfile == true
-                ? null : LaunchSettingsProfile.ReadLaunchProfile(projectDirectory, projectOptions.LaunchProfileName, context.Reporter)) ?? new();
+                ? null : LaunchSettingsProfile.ReadLaunchProfile(projectOptions.ProjectPath, projectOptions.LaunchProfileName, context.Reporter)) ?? new();
         }
     }
 }

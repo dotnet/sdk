@@ -200,13 +200,9 @@ public class RunCommand
             return true;
         }
 
-        var launchSettingsPath = ReadCodeFromStdin ? null : TryFindLaunchSettings(ProjectFileFullPath ?? EntryPointFileFullPath!);
-        if (!File.Exists(launchSettingsPath))
+        var launchSettingsPath = ReadCodeFromStdin ? null : TryFindLaunchSettings(projectOrEntryPointFilePath: ProjectFileFullPath ?? EntryPointFileFullPath!, launchProfile: LaunchProfile);
+        if (launchSettingsPath is null)
         {
-            if (!string.IsNullOrEmpty(LaunchProfile))
-            {
-                Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile, launchSettingsPath).Bold().Red());
-            }
             return true;
         }
 
@@ -219,8 +215,7 @@ public class RunCommand
 
         try
         {
-            var launchSettingsFileContents = File.ReadAllText(launchSettingsPath);
-            var applyResult = LaunchSettingsManager.TryApplyLaunchSettings(launchSettingsFileContents, LaunchProfile);
+            var applyResult = LaunchSettingsManager.TryApplyLaunchSettings(launchSettingsPath, LaunchProfile);
             if (!applyResult.Success)
             {
                 Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, applyResult.FailureReason).Bold().Red());
@@ -239,13 +234,9 @@ public class RunCommand
 
         return true;
 
-        static string? TryFindLaunchSettings(string projectOrEntryPointFilePath)
+        static string? TryFindLaunchSettings(string projectOrEntryPointFilePath, string? launchProfile)
         {
-            var buildPathContainer = File.Exists(projectOrEntryPointFilePath) ? Path.GetDirectoryName(projectOrEntryPointFilePath) : projectOrEntryPointFilePath;
-            if (buildPathContainer is null)
-            {
-                return null;
-            }
+            var buildPathContainer = File.Exists(projectOrEntryPointFilePath) ? Path.GetDirectoryName(projectOrEntryPointFilePath)! : projectOrEntryPointFilePath;
 
             string propsDirectory;
 
@@ -261,8 +252,28 @@ public class RunCommand
                 propsDirectory = "Properties";
             }
 
-            var launchSettingsPath = Path.Combine(buildPathContainer, propsDirectory, "launchSettings.json");
-            return launchSettingsPath;
+            var launchSettingsPath = CommonRunHelpers.GetPropertiesLaunchSettingsPath(buildPathContainer, propsDirectory);
+            if (File.Exists(launchSettingsPath))
+            {
+                return launchSettingsPath;
+            }
+
+            string appName = Path.GetFileNameWithoutExtension(projectOrEntryPointFilePath);
+            string runJsonPath = CommonRunHelpers.GetFlatLaunchSettingsPath(buildPathContainer, appName);
+            if (File.Exists(runJsonPath))
+            {
+                return runJsonPath;
+            }
+
+            if (!string.IsNullOrEmpty(launchProfile))
+            {
+                Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile, launchProfile, $"""
+                    {launchSettingsPath}
+                    {runJsonPath}
+                    """).Red());
+            }
+
+            return null;
         }
     }
 

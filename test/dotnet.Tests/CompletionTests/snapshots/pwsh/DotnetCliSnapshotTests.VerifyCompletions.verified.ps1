@@ -825,7 +825,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "The path to the project file to run (defaults to the current directory if there is only one project).")
                 [CompletionResult]::new('--launch-profile', '--launch-profile', [CompletionResultType]::ParameterName, "The name of the launch profile (if any) to use when launching the application.")
                 [CompletionResult]::new('--launch-profile', '-lp', [CompletionResultType]::ParameterName, "The name of the launch profile (if any) to use when launching the application.")
-                [CompletionResult]::new('--no-launch-profile', '--no-launch-profile', [CompletionResultType]::ParameterName, "Do not attempt to use launchSettings.json to configure the application.")
+                [CompletionResult]::new('--no-launch-profile', '--no-launch-profile', [CompletionResultType]::ParameterName, "Do not attempt to use launchSettings.json or [app].run.json to configure the application.")
                 [CompletionResult]::new('--no-build', '--no-build', [CompletionResultType]::ParameterName, "Do not build the project before running. Implies --no-restore.")
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--no-restore', '--no-restore', [CompletionResultType]::ParameterName, "Do not restore the project before building.")
