@@ -40,7 +40,7 @@ public static class RestoreCommand
             {
                 return CreateForwarding(msbuildArgs, msbuildPath);
             },
-            [CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, RestoreCommandParser.TargetOption],
+            [CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, RestoreCommandParser.TargetOption, RestoreCommandParser.VerbosityOption],
             result,
             msbuildPath
         );

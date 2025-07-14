@@ -38,7 +38,8 @@ public class PackCommand(
             msbuildArgs,
             CommonOptions.PropertiesOption,
             CommonOptions.RestorePropertiesOption,
-            PackCommandParser.TargetOption);
+            PackCommandParser.TargetOption,
+            PackCommandParser.VerbosityOption);
         return new PackCommand(
             parsedMSBuildArgs.CloneWithAdditionalProperties(projectLocator.GetCustomDefaultConfigurationValueIfSpecified()),
             noRestore,

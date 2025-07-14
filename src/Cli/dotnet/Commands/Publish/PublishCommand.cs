@@ -68,7 +68,7 @@ public class PublishCommand : RestoringCommand
                     msbuildPath: msbuildPath
                 );
             },
-            [CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, PublishCommandParser.TargetOption],
+            [CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, PublishCommandParser.TargetOption, PublishCommandParser.VerbosityOption],
             parseResult,
             msbuildPath
         );

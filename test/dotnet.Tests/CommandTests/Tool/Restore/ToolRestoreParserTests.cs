@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Tool;
 using Microsoft.DotNet.Cli.Commands.Tool.Restore;
@@ -24,7 +22,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Parse("dotnet tool restore --tool-manifest folder/my-manifest.format");
 
-            result.GetValue<string>(ToolRestoreCommandParser.ToolManifestOption).Should().Be("folder/my-manifest.format");
+            result.GetRequiredValue(ToolRestoreCommandParser.ToolManifestOption).Should().Be("folder/my-manifest.format");
         }
 
         [Fact]
@@ -34,7 +32,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
                 Parser.Parse(
                     @"dotnet tool restore --configfile C:\TestAssetLocalNugetFeed");
 
-            result.GetValue<string>(ToolRestoreCommandParser.ConfigOption).Should().Be(@"C:\TestAssetLocalNugetFeed");
+            result.GetRequiredValue(ToolRestoreCommandParser.ConfigOption).Should().Be(@"C:\TestAssetLocalNugetFeed");
         }
 
         [Fact]
@@ -45,7 +43,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Parse($"dotnet tool restore --add-source {expectedSourceValue}");
 
-            result.GetValue<string[]>(ToolRestoreCommandParser.AddSourceOption).First().Should().Be(expectedSourceValue);
+            result.GetRequiredValue(ToolRestoreCommandParser.AddSourceOption).First().Should().Be(expectedSourceValue);
         }
 
         [Fact]
@@ -60,8 +58,8 @@ namespace Microsoft.DotNet.Tests.ParserTests
                     $"--add-source {expectedSourceValue1} " +
                     $"--add-source {expectedSourceValue2}");
 
-            result.GetValue<string[]>(ToolRestoreCommandParser.AddSourceOption)[0].Should().Be(expectedSourceValue1);
-            result.GetValue<string[]>(ToolRestoreCommandParser.AddSourceOption)[1].Should().Be(expectedSourceValue2);
+            result.GetRequiredValue(ToolRestoreCommandParser.AddSourceOption)[0].Should().Be(expectedSourceValue1);
+            result.GetRequiredValue(ToolRestoreCommandParser.AddSourceOption)[1].Should().Be(expectedSourceValue2);
         }
 
         [Fact]
@@ -71,7 +69,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             var result = Parser.Parse($"dotnet tool restore --verbosity {expectedVerbosityLevel}");
 
-            Enum.GetName(result.GetValue<VerbosityOptions>(ToolRestoreCommandParser.VerbosityOption)).Should().Be(expectedVerbosityLevel);
+            Enum.GetName(result.GetRequiredValue(ToolRestoreCommandParser.VerbosityOption)).Should().Be(expectedVerbosityLevel);
         }
 
         [Fact]
@@ -80,7 +78,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Parse(@"dotnet tool restore --no-cache");
 
-            result.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption).Should().BeTrue();
+            result.GetRequiredValue(ToolCommandRestorePassThroughOptions.NoCacheOption).Should().BeTrue();
         }
 
         [Fact]
@@ -89,7 +87,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Parse(@"dotnet tool restore --no-http-cache");
 
-            result.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption).Should().BeTrue();
+            result.GetRequiredValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption).Should().BeTrue();
         }
 
         [Fact]
@@ -98,7 +96,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Parse(@"dotnet tool restore --ignore-failed-sources");
 
-            result.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption).Should().BeTrue();
+            result.GetRequiredValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption).Should().BeTrue();
         }
 
         [Fact]
@@ -107,7 +105,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Parse(@"dotnet tool restore --disable-parallel");
 
-            result.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption).Should().BeTrue();
+            result.GetRequiredValue(ToolCommandRestorePassThroughOptions.DisableParallelOption).Should().BeTrue();
         }
 
         [Fact]
@@ -116,7 +114,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Parse(@"dotnet tool restore --interactive");
 
-            result.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption).Should().BeTrue();
+            result.GetRequiredValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption).Should().BeTrue();
         }
     }
 }

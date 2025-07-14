@@ -223,7 +223,8 @@ public class TestCommand(
             msbuildArgs,
             CommonOptions.PropertiesOption,
             CommonOptions.RestorePropertiesOption,
-            TestCommandParser.VsTestTargetOption);
+            TestCommandParser.VsTestTargetOption,
+            TestCommandParser.VerbosityOption);
 
         TestCommand testCommand = new(
             parsedMSBuildArgs,
