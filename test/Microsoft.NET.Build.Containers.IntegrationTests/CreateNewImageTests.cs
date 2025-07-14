@@ -20,7 +20,7 @@ public class CreateNewImageTests
         _testOutput = testOutput;
     }
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public void CreateNewImage_Baseline()
     {
         DirectoryInfo newProjectDir = new(GetTestDirectoryName());
@@ -52,7 +52,7 @@ public class CreateNewImageTests
         task.BaseImageTag = "7.0";
 
         task.OutputRegistry = "localhost:5010";
-        task.LocalRegistry = DockerAvailableFactAttribute.LocalRegistry;
+        task.LocalRegistry = DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")Attribute.LocalRegistry;
         task.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "linux-arm64", "publish");
         task.Repository = "dotnet/create-new-image-baseline";
         task.ImageTags = new[] { "latest" };
@@ -70,7 +70,7 @@ public class CreateNewImageTests
         return new(task.GeneratedContainerConfiguration);
     }
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public void ParseContainerProperties_EndToEnd()
     {
         DirectoryInfo newProjectDir = new(GetTestDirectoryName());
@@ -133,7 +133,7 @@ public class CreateNewImageTests
     /// <summary>
     /// Creates a console app that outputs the environment variable added to the image.
     /// </summary>
-    [DockerAvailableFact()]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")()]
     public void Tasks_EndToEnd_With_EnvironmentVariable_Validation()
     {
         DirectoryInfo newProjectDir = new(GetTestDirectoryName());
@@ -198,7 +198,7 @@ public class CreateNewImageTests
         cni.ContainerEnvironmentVariables = pcp.NewContainerEnvironmentVariables;
         cni.ContainerRuntimeIdentifier = "linux-x64";
         cni.RuntimeIdentifierGraphPath = ToolsetUtils.GetRuntimeGraphFilePath();
-        cni.LocalRegistry = DockerAvailableFactAttribute.LocalRegistry;
+        cni.LocalRegistry = DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")Attribute.LocalRegistry;
 
         Assert.True(cni.Execute(), FormatBuildMessages(errors));
 
@@ -216,7 +216,7 @@ public class CreateNewImageTests
             .And.HaveStdOut("Foo");
     }
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public async System.Threading.Tasks.Task CreateNewImage_RootlessBaseImage()
     {
         const string RootlessBase = "dotnet/rootlessbase";
@@ -297,7 +297,7 @@ public class CreateNewImageTests
     }
 
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public void CanOverrideContainerImageFormat()
     {
         DirectoryInfo newProjectDir = new(GetTestDirectoryName());
