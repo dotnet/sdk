@@ -48,7 +48,7 @@
     <PackageReference Include="System.Text.Json" ExcludeAssets="runtime">
       <!-- For the net472 flavor, lock back to a System.Text.Json equal to or older than MSBuild will provide
            so it doesn't have to be redistributed. -->
-      <VersionOverride Condition="'$(TargetFramework)' == 'net472'">8.0.3</VersionOverride>
+      <VersionOverride Condition="'$(TargetFramework)' == 'net472'">8.0.5</VersionOverride>
     </PackageReference>
   </ItemGroup>
 
