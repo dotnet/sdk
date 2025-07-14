@@ -12,7 +12,7 @@ public sealed class DevelopmentConfiguration
     /// Gets or sets whether performance logging is enabled.
     /// Mapped from DOTNET_CLI_PERF_LOG environment variable.
     /// </summary>
-    public FlexibleBool PerfLogEnabled { get; set; } = false;
+    public bool PerfLogEnabled { get; set; } = false;
 
     /// <summary>
     /// Gets or sets the number of performance log entries to collect.
@@ -30,11 +30,11 @@ public sealed class DevelopmentConfiguration
     /// Gets or sets whether to enable verbose context logging.
     /// Mapped from DOTNET_CLI_CONTEXT_VERBOSE environment variable.
     /// </summary>
-    public FlexibleBool ContextVerbose { get; set; } = false;
+    public bool ContextVerbose { get; set; } = false;
 
     /// <summary>
     /// Gets or sets whether to allow targeting pack caching.
     /// Mapped from DOTNETSDK_ALLOW_TARGETING_PACK_CACHING environment variable.
     /// </summary>
-    public FlexibleBool AllowTargetingPackCaching { get; set; } = false;
+    public bool AllowTargetingPackCaching { get; set; } = false;
 }
