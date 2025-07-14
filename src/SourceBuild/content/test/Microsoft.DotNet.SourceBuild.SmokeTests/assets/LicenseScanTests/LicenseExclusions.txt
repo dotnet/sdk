@@ -13,8 +13,9 @@
 #
 
 # False positive
-src/arcade/Documentation/UnifiedBuild/VMR-Permissible-Sources.md|free-unknown
-src/arcade/src/Microsoft.DotNet.XUnitAssert/src/README.md|free-unknown
+src/arcade/Documentation/UnifiedBuild/VMR-Permissible-Sources.md|free-unknown,unknown-license-reference
+src/arcade/src/Microsoft.DotNet.Build.Tasks.Installers/build/deb-package-tool/templates/debian/copyright|unknown-license-reference
+src/arcade/src/Microsoft.DotNet.Build.Tasks.Installers/build/rpm_templates/copyright|unknown-license-reference
 
 # Doesn't apply to code
 src/arcade/eng/xcopy-msbuild/msbuild.nuspec|ms-visual-2015-sdk
@@ -27,6 +28,9 @@ src/arcade/src/Microsoft.DotNet.Build.Tasks.Installers/build/wix/eula.rtf
 # aspnetcore
 #
 
+# False positive
+src/aspnetcore/src/Installers/Debian/tools/templates/debian/copyright|unknown-license-reference
+
 # A generic statement about license applicability that is being detected as "unknown"
 src/aspnetcore/src/Components/THIRD-PARTY-NOTICES.txt|unknown
 src/aspnetcore/THIRD-PARTY-NOTICES.txt|unknown
@@ -37,7 +41,6 @@ src/aspnetcore/src/Installers/Windows/**/*.wxs|unknown-license-reference
 
 # License reference used in configuration, but not applying to code
 src/aspnetcore/src/Mvc/Settings.StyleCop|unknown-license-reference
-src/aspnetcore/src/submodules/MessagePack-CSharp/stylecop.json|unknown
 
 #
 # command-line-api
@@ -90,17 +93,20 @@ src/msbuild/src/Directory.Build.props|ms-net-library-2018-11
 # False positive
 src/msbuild/documentation/specs/BuildCheck/interactive-package-references.md|unknown-license-reference
 src/msbuild/src/Build/Instance/ProjectItemInstance.cs|generic-exception
+src/msbuild/src/Tasks/XamlRules/ProjectItemsSchema.xaml|unknown-license-reference
 
 #
 # nuget-client
 #
 
 # False positive
+src/nuget-client/.editorconfig|unknown-license-reference
 src/nuget-client/README.md|unknown-license-reference
 src/nuget-client/src/NuGet.Clients/NuGet.PackageManagement.UI/Resources.Designer.cs|unknown-license-reference
 src/nuget-client/src/NuGet.Clients/NuGet.PackageManagement.UI/Actions/UIActionEngine.cs|unknown-license-reference
 src/nuget-client/src/NuGet.Clients/NuGet.VisualStudio.Internal.Contracts/Formatters/LicenseMetadataFormatter.cs|proprietary-license
 src/nuget-client/src/NuGet.Core/NuGet.Packaging/Rules/DefaultManifestValuesRule.cs|unknown-license-reference
+src/nuget-client/scripts/utils/UpdateNuGetLicenseSPDXList.ps1|json
 src/nuget-client/test/TestExtensions/GenerateLicenseList/Program.cs|json
 
 # Test data
@@ -111,6 +117,7 @@ src/nuget-client/test/NuGet.Core.Tests/NuGet.Packaging.Test/DefaultManifestValue
 src/nuget-client/test/NuGet.Core.Tests/NuGet.Packaging.Test/LicensesTests/LicenseExpressionTokenizerTests.cs
 src/nuget-client/test/NuGet.Core.Tests/NuGet.Packaging.Test/LicensesTests/NuGetLicenseExpressionParserTests.cs
 src/nuget-client/test/NuGet.Core.Tests/NuGet.Packaging.Test/LicensesTests/NuGetLicenseTests.cs
+src/nuget-client/test/NuGet.Core.Tests/NuGet.Packaging.Test/NuspecReaderTests.cs|unknown-license-reference
 src/nuget-client/test/NuGet.Core.FuncTests/Dotnet.Integration.Test/PackCommandTests.cs|389-exception
 src/nuget-client/test/TestUtilities/Test.Utility/JsonData.cs
 
@@ -126,7 +133,7 @@ src/roslyn-analyzers/assets/EULA.txt|ms-net-library
 #
 
 # Test data
-src/roslyn/src/Analyzers/VisualBasic/Tests/FileHeaders/FileHeaderTests.vb|unknown-license-reference
+src/roslyn/src/Analyzers/*/Tests/FileHeaders/FileHeaderTests.*|unknown-license-reference
 src/roslyn/src/EditorFeatures/CSharpTest2/EmbeddedLanguages/RegularExpressions/Regex_RealWorldPatterns.json
 
 # Applicable to installer, not source
@@ -153,20 +160,19 @@ src/runtime/src/libraries/System.Net.Sockets/tests/FunctionalTests/Connect.cs|ot
 src/runtime/src/libraries/System.Net.Sockets/tests/FunctionalTests/SendReceive/SendReceive.cs|other-permissive
 src/runtime/src/libraries/System.Reflection.Metadata/tests/Resources/README.md|unknown-license-reference
 src/runtime/src/libraries/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/XmlLicenseTransform.cs|proprietary-license
-src/runtime/src/libraries/System.ServiceModel.Syndication/tests/BasicScenarioTests.cs|unknown-license-reference
 src/runtime/src/mono/mono/mini/mini-posix.c|unknown-license-reference
 src/runtime/src/mono/mono/mini/mini-windows.c|unknown-license-reference
 src/runtime/src/native/external/libunwind/doc/libunwind-ia64.*|generic-exception
-src/runtime/src/native/external/zlib-ng/cmake/detect-arch.cmake|unknown-license-reference
-src/runtime/src/native/external/zlib-ng/cmake/detect-coverage.cmake|other-permissive,tsl-2020,unknown-license-reference
-src/runtime/src/native/external/zlib-ng/cmake/detect-sanitizer.cmake|unknown-license-reference
+src/runtime/src/native/external/zlib-ng/cmake/detect-*|unknown-license-reference
+src/runtime/src/native/external/zlib-ng/cmake/detect-install-dirs.cmake|proprietary-license
+src/runtime/src/native/external/zlib-ng/cmake/fallback-macros.cmake|unknown-license-reference
 src/runtime/src/tests/JIT/Performance/CodeQuality/V8/Crypto/Crypto.cs|unknown-license-reference
+src/runtime/src/tools/illink/.editorconfig|unknown-license-reference
 
 # Test data
 src/runtime/src/libraries/System.Private.Xml.Linq/tests/XDocument.Common/InputSpace.cs|other-permissive
 src/runtime/src/libraries/System.Private.Xml.Linq/tests/XDocument.Common/THIRD-PARTY-NOTICE|other-permissive
 src/runtime/src/libraries/System.Runtime/tests/System.Runtime.Tests/TestModule/README.md|unknown-license-reference
-src/runtime/src/libraries/System.ServiceModel.Syndication/tests/TestFeeds/AtomFeeds/*.xml
 
 # Reference to a license, not applicable to source
 src/runtime/src/libraries/System.Text.Json/roadmap/images/core-components.txt|unknown-license-reference
@@ -178,6 +184,9 @@ src/runtime/src/libraries/System.Text.Json/roadmap/images/higher-level-component
 
 # False positive
 src/sdk/THIRD-PARTY-NOTICES.TXT|unknown-license-reference
+src/sdk/src/Installer/redist-installer/packaging/deb/dotnet-debian_config.json|commercial-license
+src/sdk/src/Installer/redist-installer/packaging/rpm/dotnet-config.json|commercial-license
+src/sdk/src/Installer/redist-installer/packaging/rpm/templates/copyright|unknown-license-reference
 
 # Configuration, doesn't apply to source directly
 src/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt
@@ -187,14 +196,12 @@ src/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt
 #
 
 # False positive
-src/source-build-externals/src/abstractions-xunit/README.md|free-unknown
-src/source-build-externals/src/application-insights/NETCORE/ThirdPartyNotices.txt|unknown
+src/source-build-externals/src/application-insights/NETCORE/ThirdPartyNotices.txt|unknown-license-reference
+src/source-build-externals/src/application-insights/WEB/ThirdPartyNotices.txt|unknown-license-reference
+src/source-build-externals/src/azure-activedirectory-identitymodel-extensions-for-dotnet/src/Microsoft.IdentityModel.Validators/AadIssuerValidator/AadIssuerValidatorConstants.cs|cpl-1.0
 src/source-build-externals/src/humanizer/NuSpecs/*.nuspec*
-src/source-build-externals/src/xunit/README.md|free-unknown
-src/source-build-externals/src/xunit/src/xunit.assert/Asserts/README.md|free-unknown
 
 # Configuration, doesn't apply to source directly
-src/source-build-externals/src/vs-solutionpersistence/stylecop.json
 
 # Scanner is identifying the https://github.com/SixLabors/ImageSharp/blob/master/LICENSE license as unknown. But this license is not applicable because we're
 # relying on the Spectre.Console distribution.
@@ -231,6 +238,7 @@ src/sourcelink/docs/GitSpec/GitSpec.md|unknown-license-reference
 
 # Not applicable to source
 src/test-templates/Templates/**/*.vstemplate
+src/test-templates/template_feed/Microsoft.DotNet.Test.ProjectTemplates.9.0/content/*/.template.config/localize/templatestrings.fr.json|proprietary-license
 
 #
 # vstest
@@ -238,9 +246,9 @@ src/test-templates/Templates/**/*.vstemplate
 
 # False positive
 src/vstest/src/Microsoft.TestPlatform.Extensions.BlameDataCollector/ProcDumpArgsBuilder.cs|proprietary-license
+src/vstest/src/Microsoft.TestPlatform.ObjectModel/Nuget.Frameworks/.editorconfig|unknown-license-reference
 
 # Build asset, but not applying to code
-src/vstest/src/package/Microsoft.VisualStudio.TestTools.TestPlatform.V2.CLI/License.rtf
 
 #
 # wpf
@@ -260,3 +268,4 @@ src/wpf/src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Styles/
 src/wpf/src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Styles/*.xaml|mpl-2.0
 src/wpf/src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Themes/*.xaml|bsd-2-clause-views
 src/wpf/src/Microsoft.DotNet.Wpf/src/WindowsBase/MS/Internal/IO/Packaging/CompoundFile/RightsManagementEncryptionTransform.cs|proprietary-license
+src/wpf/src/Microsoft.DotNet.Wpf/src/WindowsBase/MS/Internal/IO/Packaging/CompoundFile/UserUseLicenseDictionaryLoader.cs|proprietary-license
