@@ -20,5 +20,18 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_MTPBuild">
     <CallTarget Targets="Build" Condition="'$(ShouldRunBuild)' == 'true'"  />
     <CallTarget Targets="ComputeRunArguments" />
+    <CallTarget Targets="CollectDotNetTestProperties"></CallTarget>
+  </Target>
+
+  <Target Name="CollectDotNetTestProperties"
+         AfterTargets="Build"
+         Condition="'$(IsTestProject)' == 'true' OR '$(IsTestingPlatformApplication)' == 'true'">
+
+    <PropertyGroup>
+      <_TestPropsMessage>DOTNET_TEST_PROPS: MSBuildProjectFullPath=$(MSBuildProjectFullPath)|TargetFramework=$(TargetFramework)|TargetFrameworks=$(TargetFrameworks)|IsTestProject=$(IsTestProject)|IsTestingPlatformApplication=$(IsTestingPlatformApplication)|TargetPath=$(TargetPath)|RunCommand=$(RunCommand)|RunArguments=$(RunArguments)|RunWorkingDirectory=$(RunWorkingDirectory)|AppDesignerFolder=$(AppDesignerFolder)|TestTfmsInParallel=$(TestTfmsInParallel)|BuildInParallel=$(BuildInParallel)</_TestPropsMessage>
+    </PropertyGroup>
+
+    <Message Text="$(_TestPropsMessage)" Importance="high" />
+
   </Target>
 </Project>
