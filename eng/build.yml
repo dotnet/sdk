@@ -60,7 +60,6 @@ jobs:
           - name: _HelixApiToken
             value: $(HelixApiAccessToken)
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          - group: dotnet-benchview
           - name: _OfficialBuildIdArgs
             value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
           - name: _SignArgs
