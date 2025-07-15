@@ -77,7 +77,7 @@ namespace Microsoft.DotNet.Watch
 
                 using var currentRunCancellationSource = new CancellationTokenSource();
                 using var combinedCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, currentRunCancellationSource.Token);
-                using var fileSetWatcher = new FileWatcher(context.Reporter);
+                using var fileSetWatcher = new FileWatcher(context.Reporter, context.EnvironmentOptions);
 
                 fileSetWatcher.WatchContainingDirectories(evaluationResult.Files.Keys, includeSubdirectories: true);
 

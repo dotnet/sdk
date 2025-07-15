@@ -426,7 +426,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [InlineData(new[] { "--sc" }, new[] { NugetInteractiveProperty, "--property:SelfContained=True", "--property:_CommandLineDefinedSelfContained=true" })]
         [InlineData(new[] { "--self-contained" }, new[] { NugetInteractiveProperty, "--property:SelfContained=True", "--property:_CommandLineDefinedSelfContained=true" })]
         [InlineData(new[] { "--no-self-contained" }, new[] { NugetInteractiveProperty, "--property:SelfContained=False", "--property:_CommandLineDefinedSelfContained=true" })]
-        [InlineData(new[] { "--verbosity", "q" }, new[] { NugetInteractiveProperty, "-verbosity:q" })]
+        [InlineData(new[] { "--verbosity", "q" }, new[] { NugetInteractiveProperty, "--verbosity:q" })]
         [InlineData(new[] { "--arch", "arm", "--os", "win" }, new[] { NugetInteractiveProperty, "--property:RuntimeIdentifier=win-arm" })]
         [InlineData(new[] { "--disable-build-servers" }, new[] { NugetInteractiveProperty, "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
         public void ForwardedBuildOptions(string[] args, string[] buildArgs)

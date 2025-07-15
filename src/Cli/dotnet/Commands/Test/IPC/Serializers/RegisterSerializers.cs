@@ -28,7 +28,6 @@ internal static class RegisterSerializers
     {
         namedPipeBase.RegisterSerializer(new VoidResponseSerializer(), typeof(VoidResponse));
         namedPipeBase.RegisterSerializer(new CommandLineOptionMessagesSerializer(), typeof(CommandLineOptionMessages));
-        namedPipeBase.RegisterSerializer(new ModuleMessageSerializer(), typeof(ModuleMessage));
         namedPipeBase.RegisterSerializer(new DiscoveredTestMessagesSerializer(), typeof(DiscoveredTestMessages));
         namedPipeBase.RegisterSerializer(new TestResultMessagesSerializer(), typeof(TestResultMessages));
         namedPipeBase.RegisterSerializer(new FileArtifactMessagesSerializer(), typeof(FileArtifactMessages));
