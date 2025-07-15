@@ -91,10 +91,6 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
     /// </remarks>
     internal string GenerateCommandLineCommandsInt()
     {
-        if (string.IsNullOrWhiteSpace(PublishDirectory))
-        {
-            throw new InvalidOperationException(Resource.FormatString(nameof(Strings.RequiredPropertyNotSetOrEmpty), nameof(PublishDirectory)));
-        }
         if (string.IsNullOrWhiteSpace(BaseRegistry))
         {
             throw new InvalidOperationException(Resource.FormatString(nameof(Strings.RequiredPropertyNotSetOrEmpty), nameof(BaseRegistry)));
@@ -116,7 +112,11 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
 
         //mandatory options
         builder.AppendFileNameIfNotNull(Path.Combine(ContainerizeDirectory, "containerize.dll"));
-        builder.AppendFileNameIfNotNull(PublishDirectory.TrimEnd(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }));
+        foreach (ITaskItem inputFile in PublishFiles)
+        {
+            var relPath = inputFile.GetMetadata("TargetPath") is string tp && !string.IsNullOrEmpty(tp) ? tp : inputFile.GetMetadata("RelativePath");
+            builder.AppendSwitchIfNotNull("--input-file", $"{inputFile.ItemSpec}={relPath}");
+        }
         builder.AppendSwitchIfNotNull("--baseregistry ", BaseRegistry);
         builder.AppendSwitchIfNotNull("--baseimagename ", BaseImageName);
         builder.AppendSwitchIfNotNull("--repository ", Repository);
@@ -200,16 +200,6 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         string[] readyEnvVariables = sanitizedEnvVariables.Select(i => i.ItemSpec + "=" + i.GetMetadata("Value")).ToArray();
         builder.AppendSwitchIfNotNull("--environmentvariables ", readyEnvVariables, delimiter: " ");
 
-        if (!string.IsNullOrWhiteSpace(ContainerRuntimeIdentifier))
-        {
-            builder.AppendSwitchIfNotNull("--rid ", ContainerRuntimeIdentifier);
-        }
-
-        if (!string.IsNullOrWhiteSpace(RuntimeIdentifierGraphPath))
-        {
-            builder.AppendSwitchIfNotNull("--ridgraphpath ", RuntimeIdentifierGraphPath);
-        }
-
         if (!string.IsNullOrWhiteSpace(ContainerUser))
         {
             builder.AppendSwitchIfNotNull("--container-user ", ContainerUser);
@@ -229,6 +219,13 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         {
             builder.AppendSwitch("--generate-digest-label");
         }
+
+        builder.AppendSwitchIfNotNull("--base-image-manifest", BaseImageManifestPath);
+        builder.AppendSwitchIfNotNull("--base-image-config", BaseImageConfigurationPath);
+
+        builder.AppendSwitchIfNotNull("--generated-manifest", GeneratedManifestPath);
+        builder.AppendSwitchIfNotNull("--generated-configuration", GeneratedConfigurationPath);
+        builder.AppendSwitchIfNotNull("--generated-layer", GeneratedLayerPath);
 
         return builder.ToString();
 

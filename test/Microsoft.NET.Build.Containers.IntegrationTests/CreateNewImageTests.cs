@@ -53,16 +53,28 @@ public class CreateNewImageTests
 
         task.OutputRegistry = "localhost:5010";
         task.LocalRegistry = DockerAvailableFactAttribute.LocalRegistry;
-        task.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "linux-arm64", "publish");
+        var baseDir = Path.Combine(newProjectDir.FullName, "bin", "Release");
+        task.PublishFiles = MakeItemsForPublishDir(baseDir);
         task.Repository = "dotnet/create-new-image-baseline";
         task.ImageTags = new[] { "latest" };
         task.WorkingDirectory = "app/";
-        task.ContainerRuntimeIdentifier = "linux-arm64";
         task.Entrypoint = new TaskItem[] { new("dotnet"), new("build") };
-        task.RuntimeIdentifierGraphPath = ToolsetUtils.GetRuntimeGraphFilePath();
-
+        
         Assert.True(task.Execute(), FormatBuildMessages(errors));
         newProjectDir.Delete(true);
+    }
+
+    private static ITaskItem[] MakeItemsForPublishDir(string publishDir)
+    {
+        var files = Directory.GetFiles(publishDir, "*", new EnumerationOptions()
+        {
+            RecurseSubdirectories=true
+        });
+
+        return files.Select(f => new TaskItem(f, new Dictionary<string, string>
+        {
+            ["RelativePath"] = Path.GetRelativePath(publishDir, f)
+        })).ToArray();
     }
 
     private static ImageConfig GetImageConfigFromTask(CreateNewImage task)
@@ -119,12 +131,10 @@ public class CreateNewImageTests
         cni.BaseImageTag = pcp.ParsedContainerTag;
         cni.Repository = pcp.NewContainerRepository;
         cni.OutputRegistry = "localhost:5010";
-        cni.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework);
+        cni.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework));
         cni.WorkingDirectory = "app/";
         cni.Entrypoint = new TaskItem[] { new(newProjectDir.Name) };
         cni.ImageTags = pcp.NewContainerTags;
-        cni.ContainerRuntimeIdentifier = "linux-x64";
-        cni.RuntimeIdentifierGraphPath = ToolsetUtils.GetRuntimeGraphFilePath();
 
         Assert.True(cni.Execute(), FormatBuildMessages(errors));
         newProjectDir.Delete(true);
@@ -193,13 +203,11 @@ public class CreateNewImageTests
         cni.BaseImageTag = pcp.ParsedContainerTag;
         cni.Repository = pcp.NewContainerRepository;
         cni.OutputRegistry = pcp.NewContainerRegistry;
-        cni.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "release", EndToEndTests._oldFramework, "linux-x64");
+        cni.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "release", EndToEndTests._oldFramework, "linux-x64"));
         cni.WorkingDirectory = "/app";
         cni.Entrypoint = new TaskItem[] { new($"/app/{newProjectDir.Name}") };
         cni.ImageTags = pcp.NewContainerTags;
         cni.ContainerEnvironmentVariables = pcp.NewContainerEnvironmentVariables;
-        cni.ContainerRuntimeIdentifier = "linux-x64";
-        cni.RuntimeIdentifierGraphPath = ToolsetUtils.GetRuntimeGraphFilePath();
         cni.LocalRegistry = DockerAvailableFactAttribute.LocalRegistry;
 
         Assert.True(cni.Execute(), FormatBuildMessages(errors));
@@ -276,13 +284,11 @@ public class CreateNewImageTests
         task.BaseImageTag = "latest";
 
         task.OutputRegistry = "localhost:5010";
-        task.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "linux-x64", "publish");
+        task.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "linux-x64", "publish"));
         task.Repository = AppImage;
         task.ImageTags = new[] { "latest" };
         task.WorkingDirectory = "app/";
-        task.ContainerRuntimeIdentifier = "linux-x64";
         task.Entrypoint = new TaskItem[] { new("dotnet"), new("build") };
-        task.RuntimeIdentifierGraphPath = ToolsetUtils.GetRuntimeGraphFilePath();
 
         Assert.True(task.Execute());
         newProjectDir.Delete(true);
@@ -348,12 +354,10 @@ public class CreateNewImageTests
         cni.BaseImageTag = pcp.ParsedContainerTag;
         cni.Repository = pcp.NewContainerRepository;
         cni.OutputRegistry = "localhost:5010";
-        cni.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework);
+        cni.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework));
         cni.WorkingDirectory = "app/";
         cni.Entrypoint = new TaskItem[] { new(newProjectDir.Name) };
         cni.ImageTags = pcp.NewContainerTags;
-        cni.ContainerRuntimeIdentifier = "linux-x64";
-        cni.RuntimeIdentifierGraphPath = ToolsetUtils.GetRuntimeGraphFilePath();
 
         cni.ImageFormat = KnownImageFormats.OCI.ToString();
 
