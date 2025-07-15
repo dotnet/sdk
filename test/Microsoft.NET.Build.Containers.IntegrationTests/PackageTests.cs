@@ -68,12 +68,13 @@ public class PackageTests
     {
         string ignoredZipFileEntriesPrefix = "package/services/metadata";
         var netTFM = ToolsetInfo.CurrentTargetFramework;
-        IReadOnlyList<string> packageContents = new List<string>()
+        var expectedPackageContents = new List<string>
         {
               "_rels/.rels",
               "[Content_Types].xml",
               "build/Microsoft.NET.Build.Containers.props",
               "build/Microsoft.NET.Build.Containers.targets",
+              "containerize/containerize.deps.json",
               "containerize/containerize.dll",
               "containerize/containerize.runtimeconfig.json",
               "containerize/Microsoft.DotNet.Cli.Utils.dll",
@@ -102,6 +103,9 @@ public class PackageTests
               "containerize/NuGet.Protocol.dll",
               "containerize/NuGet.Versioning.dll",
               "containerize/System.CommandLine.dll",
+              "containerize/System.IO.Hashing.dll",
+              "containerize/System.Security.Cryptography.Pkcs.dll",
+              "containerize/System.Security.Cryptography.ProtectedData.dll",
               "containerize/Valleysoft.DockerCredsProvider.dll",
               "Icon.png",
               "Microsoft.NET.Build.Containers.nuspec",
@@ -129,18 +133,22 @@ public class PackageTests
               $"tasks/{netTFM}/NuGet.Packaging.dll",
               $"tasks/{netTFM}/NuGet.Versioning.dll",
               $"tasks/{netTFM}/Valleysoft.DockerCredsProvider.dll"
-        };
+        }.ToHashSet();
 
         (string? packageFilePath, string? packageVersion) = ToolsetUtils.GetContainersPackagePath();
         using ZipArchive archive = new(File.OpenRead(packageFilePath ?? string.Empty), ZipArchiveMode.Read, false);
 
-        IEnumerable<string> actualEntries = archive.Entries
+        var actualEntries = archive.Entries
             .Select(e => e.FullName)
             .Where(e => !e.StartsWith(ignoredZipFileEntriesPrefix, StringComparison.InvariantCultureIgnoreCase))
-            .OrderBy(e => e);
+            .ToHashSet();
 
-        actualEntries
+        expectedPackageContents.Except(actualEntries)
                 .Should()
-                .BeEquivalentTo(packageContents, $"{Path.GetFileName(packageFilePath)} content differs from expected. Please add the entry to the list, if the addition is expected.");
+                .BeEmpty($"{Path.GetFileName(packageFilePath)} is missing expected entries. Please add the entry to the list, if the addition is expected.");
+
+        actualEntries.Except(expectedPackageContents)
+                .Should()
+                .BeEmpty($"{Path.GetFileName(packageFilePath)} contains unexpected entries. Please remove the entry from the list, if the removal is expected.");
     }
 }
