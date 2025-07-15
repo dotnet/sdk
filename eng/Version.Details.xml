@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.303">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.304">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>f207089d6b559bede41540cc5b2eb35debca17dc</Sha>
+      <Sha>349a1a14fad0af1a3b455c694da7fdc0cec63d60</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.303-servicing.25353.9">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.304-servicing.25364.1">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>f207089d6b559bede41540cc5b2eb35debca17dc</Sha>
+      <Sha>349a1a14fad0af1a3b455c694da7fdc0cec63d60</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.300-preview.25209.5">
@@ -83,14 +83,14 @@
       <Sha>5d8159c5fa474b60b0c1e5159b0dd054a102ee8a</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.FSharp.Compiler" Version="13.9.300-beta.25228.3">
+    <Dependency Name="Microsoft.FSharp.Compiler" Version="13.9.303-beta.25361.1">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>c1ce3cebbbf5e46205dd5c60a0d379a412703eae</Sha>
+      <Sha>14987c804f33917bf15f4c25e0cd16ecd01807f4</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="9.0.300-beta.25228.3">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="9.0.303-beta.25361.1">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>c1ce3cebbbf5e46205dd5c60a0d379a412703eae</Sha>
+      <Sha>14987c804f33917bf15f4c25e0cd16ecd01807f4</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.14.0-3.25359.3">
