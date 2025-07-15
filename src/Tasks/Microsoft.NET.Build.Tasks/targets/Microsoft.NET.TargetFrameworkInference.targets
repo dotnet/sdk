@@ -65,6 +65,17 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup Condition="'$(TargetFramework)' != '' and ('$(TargetPlatformIdentifier)' == '' or '$(TargetPlatformVersion)' == '')">
     <TargetPlatformIdentifier Condition="'$(TargetPlatformIdentifier)' == ''">$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</TargetPlatformIdentifier>
     <TargetPlatformVersion Condition="'$(TargetPlatformIdentifier)' == 'Windows'" >$([MSBuild]::GetTargetPlatformVersion('$(TargetFramework)', 4))</TargetPlatformVersion>
+
+    <!--
+      In order to support multi-targeting between CsWinRT 2.x and CsWinRT 3.0, we use the revision number of the Windows SDK to indicate the CsWinRT version.
+      Specifically, '.0' indicates CsWinRT 2.x, and '.1' indicates CsWinRT 3.0. Because we want the rest of the tooling to still always see the '.0' version
+      for the Windows SDK (as the '.1' only has meaning for the .NET SDK), here we check if we're using CsWinRT 3.0, and if so we store that result and then
+      immediately reset the revision number back to '.0' so that the rest of the tooling continues to see the same version as before.
+    -->
+    <_TargetPlatformVersionUsesCsWinRT3>false</_TargetPlatformVersionUsesCsWinRT3>
+    <_TargetPlatformVersionUsesCsWinRT3 Condition="'$(TargetPlatformIdentifier)' == 'Windows' and $([System.Version]::Parse('$(TargetPlatformVersion)').Revision) == 1">true</_TargetPlatformVersionUsesCsWinRT3>
+    <TargetPlatformVersion Condition="'$(TargetPlatformIdentifier)' == 'Windows' and '$(_TargetPlatformVersionUsesCsWinRT3)' == 'true'" >$([MSBuild]::GetTargetPlatformVersion('$(TargetFramework)', 3)).0</TargetPlatformVersion>
+
     <TargetPlatformVersion Condition="'$(TargetPlatformVersion)' == '' or ('$(TargetPlatformIdentifier)' == 'Windows' and !$([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), 10.0)))" >$([MSBuild]::GetTargetPlatformVersion('$(TargetFramework)', 2))</TargetPlatformVersion>
     <TargetPlatformVersion Condition="$([MSBuild]::VersionEquals($(TargetPlatformVersion), 0.0))" ></TargetPlatformVersion>
     <!-- Normalize casing of windows to Windows -->
