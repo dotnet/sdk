@@ -174,7 +174,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!--
       Running 'cswinrtgen' is required for CsWinRT 3.0, and it is currently in preview.
       So the switch for it is currently opt-in. It can be changed to opt-out in the future.
+      We only enable this automatically if the project is explicitly targeting CsWinRT 3.0.
     -->
+    <CsWinRTGenerateInteropAssembly Condition="'$(CsWinRTGenerateInteropAssembly)' == '' and '$(_TargetPlatformVersionUsesCsWinRT3)' == 'true'">true</CsWinRTGenerateInteropAssembly>
     <CsWinRTGenerateInteropAssembly Condition="'$(CsWinRTGenerateInteropAssembly)' == ''">false</CsWinRTGenerateInteropAssembly>
 
     <!-- Default property values for 'cswinrtgen' -->
