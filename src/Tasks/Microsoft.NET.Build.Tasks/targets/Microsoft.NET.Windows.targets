@@ -169,14 +169,14 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <!--
-    Emit a warning if using CsWinRT 3.0, which is selected when targeting a Windows SDK with '1' as the patch version.
+    Emit a warning if using CsWinRT 3.0, which is selected when targeting a Windows SDK with '1' as the revision version.
     NOTE: remove this target when CsWinRT 3.0 is released as a stable version and becomes officially supported.
   -->
   <Target Name="_WarnForCsWinRT3_0PreviewFeatureEnabled"
           AfterTargets="ResolvePackageAssets"
             Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true'
-                        and $([System.Version]::Parse('$(TargetPlatformVersion)').Build) == 1">
+                        and '$(_TargetPlatformVersionUsesCsWinRT3)' == 'true' ">
     <NETSdkWarning ResourceName="UsingPreviewCsWinRT3_0Feature"
-                   FormatArguments="$(TargetPlatformVersion)" />
+                   FormatArguments="$(_OriginalWindowsTargetPlatformVersion)" />
   </Target>
 </Project>
