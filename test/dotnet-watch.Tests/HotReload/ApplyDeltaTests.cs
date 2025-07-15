@@ -237,6 +237,77 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         [Fact]
+        public async Task ProjectChange_AddProjectReference()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    foreach (var r in project.Root!.Descendants().Where(e => e.Name.LocalName == "ProjectReference").ToArray())
+                    {
+                        r.Remove();
+                    }
+                });
+
+            var appProjDir = Path.Combine(testAsset.Path, "AppWithDeps");
+            var appProjFile = Path.Combine(appProjDir, "App.WithDeps.csproj");
+            var appFile = Path.Combine(appProjDir, "Program.cs");
+
+            UpdateSourceFile(appFile, code => code.Replace("Lib.Print();", "// Lib.Print();"));
+
+            App.Start(testAsset, [], "AppWithDeps");
+
+            await App.AssertWaitingForChanges();
+
+            UpdateSourceFile(appProjFile, src => src.Replace("""
+                <ItemGroup />
+                """, """
+                <ItemGroup>
+                    <ProjectReference Include="..\Dependency\Dependency.csproj" />
+                </ItemGroup>
+                """));
+
+            UpdateSourceFile(appFile, code => code.Replace("// Lib.Print();", "Lib.Print();"));
+
+            await App.WaitUntilOutputContains("<Lib>");
+
+            App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, $"AppWithDeps ({ToolsetInfo.CurrentTargetFramework})");
+            App.AssertOutputContains(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
+        }
+
+        [Fact]
+        public async Task ProjectChange_AddPackageReference()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+                .WithSource();
+
+            var projFilePath = Path.Combine(testAsset.Path, "WatchHotReloadApp.csproj");
+            var programFilePath = Path.Combine(testAsset.Path, "Program.cs");
+
+            App.Start(testAsset, []);
+
+            await App.AssertWaitingForChanges();
+            App.Process.ClearOutput();
+
+            UpdateSourceFile(projFilePath, source => source.Replace("""
+                <!-- items placeholder -->
+                """, """
+                <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+                """));
+
+            UpdateSourceFile(programFilePath, source => source.Replace("Console.WriteLine(\".\");", "Console.WriteLine(typeof(Newtonsoft.Json.Linq.JToken));"));
+
+            await App.WaitUntilOutputContains("Newtonsoft.Json.Linq.JToken");
+
+            var binDirDll = Path.Combine(testAsset.Path, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "Newtonsoft.Json.dll");
+
+            App.AssertOutputContains($"Deploying project dependency '{binDirDll}'");
+            App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, $"WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})");
+            App.AssertOutputContains(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
+            App.AssertOutputContains("Resolving Newtonsoft.Json");
+        }
+
+        [Fact]
         public async Task DefaultItemExcludes_DefaultItemsEnabled()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
