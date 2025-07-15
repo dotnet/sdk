@@ -3101,7 +3101,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                         
                         public partial class TestClass
                         {
-                            public void TestMethod([MyAttribute] string param1) { }
+                            public void TestMethod([My] string param1) { }
                         }
                     }
                     """,
