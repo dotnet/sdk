@@ -21,7 +21,7 @@ public class RestoringCommand : MSBuildForwardingApp
         new(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             // note that we do not disable all default items - Razor at least needs Content
-            // in order to do implicit PackageReferences if js files are present
+            // in order to do implicit PackageReferences if Razor files are present
             { Constants.EnableDefaultCompileItems, "false" },
             { Constants.EnableDefaultEmbeddedResourceItems, "false" },
             { Constants.EnableDefaultNoneItems, "false" },
