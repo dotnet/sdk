@@ -52,7 +52,6 @@ public class CreateNewImageTests
         task.BaseImageTag = "7.0";
 
         task.OutputRegistry = "localhost:5010";
-        task.LocalRegistry = DockerAvailableFactAttribute.Attribute.LocalRegistry;
         task.LocalRegistry = DockerAvailableFactAttribute.LocalRegistry;
         task.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "linux-arm64", "publish");
         task.Repository = "dotnet/create-new-image-baseline";
@@ -199,7 +198,6 @@ public class CreateNewImageTests
         cni.ContainerEnvironmentVariables = pcp.NewContainerEnvironmentVariables;
         cni.ContainerRuntimeIdentifier = "linux-x64";
         cni.RuntimeIdentifierGraphPath = ToolsetUtils.GetRuntimeGraphFilePath();
-        cni.LocalRegistry = DockerAvailableFactAttribute.Attribute.LocalRegistry;
         cni.LocalRegistry = DockerAvailableFactAttribute.LocalRegistry;
 
         Assert.True(cni.Execute(), FormatBuildMessages(errors));
