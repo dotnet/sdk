@@ -28,10 +28,6 @@
                           SetTargetFramework="TargetFramework=$(TargetFramework)"
                           OutputItemType="ContainerLibraryOutput"/>
 
-        <ProjectReference Include="../../Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj"
-                          SetTargetFramework="TargetFramework=$(ResolverTargetFramework)"
-                          OutputItemType="DotNetCliUtilsLibraryOutput"/>
-
         <ProjectReference Include="../Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj"
                           SetTargetFramework="TargetFramework=$(VSCompatTargetFramework)"
                           OutputItemType="ContainerLibraryOutputNet472" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
@@ -86,7 +82,7 @@
                                 $([MSBuild]::ValueOrDefault('%(_AllNetContainerTaskDependencies.NuGetPackageId)', '').Contains('Microsoft.Extensions'))
                             ) and
                             %(_AllNetContainerTaskDependencies.NuGetIsFrameworkReference) != true" />
-
+             <NecessaryNetContainerTaskDependencies Include="@(_AllNetContainerTaskDependencies)" Condition="'%(_AllNetContainerTaskDependencies.ReferenceSourceTarget)' == 'ProjectReference'" />
             <!-- root folder -->
             <Content Include="README.md" Pack="true" PackagePath="" />
 
@@ -94,7 +90,6 @@
             <!-- net7.0 tasks -->
             <!-- dependencies -->
             <Content Include="@(NecessaryNetContainerTaskDependencies)" Pack="true" PackagePath="tasks/$(TargetFramework)/" />
-            <Content Include="@(DotNetCliUtilsLibraryOutput)" Pack="true" PackagePath="tasks/$(TargetFramework)/" />
 
             <!-- runtime deps json -->
             <Content Include="$(ArtifactsDir)bin/Microsoft.NET.Build.Containers/$(Configuration)/$(TargetFramework)/Microsoft.NET.Build.Containers.deps.json" Pack="true" PackagePath="tasks/$(TargetFramework)" />
