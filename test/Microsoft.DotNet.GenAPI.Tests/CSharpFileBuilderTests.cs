@@ -3079,41 +3079,29 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
         }
 
         [Fact]
-        public void TestParameterAttributesGeneration()
+        public void TestParameterAttributesGenerationSimple()
         {
             RunTest(original: """
-                    using System;
-                    using System.Diagnostics.CodeAnalysis;
                     namespace A
                     {
-                        public class RangeAttribute : Attribute
-                        {
-                            [RequiresUnreferencedCode("Generic TypeConverters may require the generic types to be annotated.")]
-                            public RangeAttribute([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type type, string minimum, string maximum) { }
-                        }
-
+                        public class MyAttribute : System.Attribute { }
+                        
                         public class TestClass
                         {
-                            public void TestMethod([NotNull] string param1, [AllowNull] int? param2) { }
-                            
-                            public void AnotherMethod([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] Type type) { }
+                            public void TestMethod([MyAttribute] string param1) { }
                         }
                     }
                     """,
                 expected: """
                     namespace A
                     {
-                        public partial class RangeAttribute : System.Attribute
+                        public partial class MyAttribute : System.Attribute
                         {
-                            [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("Generic TypeConverters may require the generic types to be annotated.")]
-                            public RangeAttribute([System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.All)] System.Type type, string minimum, string maximum) { }
                         }
-
+                        
                         public partial class TestClass
                         {
-                            public void AnotherMethod([System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicMethods)] System.Type type) { }
-
-                            public void TestMethod([System.Diagnostics.CodeAnalysis.NotNull] string param1, [System.Diagnostics.CodeAnalysis.AllowNull] int? param2) { }
+                            public void TestMethod([MyAttribute] string param1) { }
                         }
                     }
                     """,

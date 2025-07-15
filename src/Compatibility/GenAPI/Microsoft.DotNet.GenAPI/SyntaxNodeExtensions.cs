@@ -1,8 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
@@ -18,6 +20,7 @@ namespace Microsoft.DotNet.GenAPI
             ISymbol member,
             ISymbolFilter attributeDataSymbolFilter)
         {
+            // Add attributes to the member itself
             foreach (AttributeData attribute in member.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(attributeDataSymbolFilter))
             {
                 // The C# compiler emits the DefaultMemberAttribute on any type containing an indexer.
@@ -35,7 +38,93 @@ namespace Microsoft.DotNet.GenAPI
                 node = syntaxGenerator.AddAttributes(node, syntaxGenerator.Attribute(attribute));
             }
 
+            // Add attributes to parameters for methods, constructors, indexers, and delegates that have parameters
+            node = AddParameterAttributes(node, syntaxGenerator, member, attributeDataSymbolFilter);
+
             return node;
+        }
+
+        private static SyntaxNode AddParameterAttributes(SyntaxNode node,
+            SyntaxGenerator syntaxGenerator,
+            ISymbol member,
+            ISymbolFilter attributeDataSymbolFilter)
+        {
+            // Get the parameters from the symbol based on the member type
+            ImmutableArray<IParameterSymbol> parameters = GetParametersFromSymbol(member);
+            if (parameters.IsEmpty)
+            {
+                return node;
+            }
+
+            // Get the parameter syntax nodes from the declaration
+            SeparatedSyntaxList<ParameterSyntax>? parameterSyntaxList = GetParameterSyntaxList(node);
+            if (parameterSyntaxList == null || parameterSyntaxList.Value.Count != parameters.Length)
+            {
+                // If we can't match parameters between symbol and syntax, skip adding parameter attributes
+                return node;
+            }
+
+            // Apply attributes to each parameter
+            SeparatedSyntaxList<ParameterSyntax> updatedParameters = parameterSyntaxList.Value;
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                IParameterSymbol parameterSymbol = parameters[i];
+                ParameterSyntax parameterSyntax = updatedParameters[i];
+
+                // Add attributes to this parameter
+                foreach (AttributeData attribute in parameterSymbol.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(attributeDataSymbolFilter))
+                {
+                    if (attribute.IsReserved())
+                    {
+                        continue;
+                    }
+
+                    parameterSyntax = (ParameterSyntax)syntaxGenerator.AddAttributes(parameterSyntax, syntaxGenerator.Attribute(attribute));
+                }
+
+                updatedParameters = updatedParameters.Replace(updatedParameters[i], parameterSyntax);
+            }
+
+            // Update the node with the modified parameters
+            return UpdateNodeWithParameters(node, updatedParameters);
+        }
+
+        private static ImmutableArray<IParameterSymbol> GetParametersFromSymbol(ISymbol member)
+        {
+            return member switch
+            {
+                IMethodSymbol method => method.Parameters,
+                IPropertySymbol property when property.IsIndexer => property.Parameters,
+                _ => ImmutableArray<IParameterSymbol>.Empty
+            };
+        }
+
+        private static SeparatedSyntaxList<ParameterSyntax>? GetParameterSyntaxList(SyntaxNode node)
+        {
+            return node switch
+            {
+                MethodDeclarationSyntax method => method.ParameterList.Parameters,
+                ConstructorDeclarationSyntax constructor => constructor.ParameterList.Parameters,
+                IndexerDeclarationSyntax indexer => indexer.ParameterList.Parameters,
+                DelegateDeclarationSyntax delegateDecl => delegateDecl.ParameterList.Parameters,
+                OperatorDeclarationSyntax operatorDecl => operatorDecl.ParameterList.Parameters,
+                ConversionOperatorDeclarationSyntax conversionOp => conversionOp.ParameterList.Parameters,
+                _ => null
+            };
+        }
+
+        private static SyntaxNode UpdateNodeWithParameters(SyntaxNode node, SeparatedSyntaxList<ParameterSyntax> updatedParameters)
+        {
+            return node switch
+            {
+                MethodDeclarationSyntax method => method.WithParameterList(method.ParameterList.WithParameters(updatedParameters)),
+                ConstructorDeclarationSyntax constructor => constructor.WithParameterList(constructor.ParameterList.WithParameters(updatedParameters)),
+                IndexerDeclarationSyntax indexer => indexer.WithParameterList(indexer.ParameterList.WithParameters(updatedParameters)),
+                DelegateDeclarationSyntax delegateDecl => delegateDecl.WithParameterList(delegateDecl.ParameterList.WithParameters(updatedParameters)),
+                OperatorDeclarationSyntax operatorDecl => operatorDecl.WithParameterList(operatorDecl.ParameterList.WithParameters(updatedParameters)),
+                ConversionOperatorDeclarationSyntax conversionOp => conversionOp.WithParameterList(conversionOp.ParameterList.WithParameters(updatedParameters)),
+                _ => node
+            };
         }
     }
 }
