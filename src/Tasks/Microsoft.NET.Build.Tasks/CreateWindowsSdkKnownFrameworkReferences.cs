@@ -17,6 +17,8 @@ namespace Microsoft.NET.Build.Tasks
     {
         public bool UseWindowsSDKPreview { get; set; }
 
+        public bool UseCsWinRT3 { get; set; }
+
         public string WindowsSdkPackageVersion { get; set; }
 
         public string TargetFrameworkIdentifier { get; set; }
@@ -75,6 +77,21 @@ namespace Microsoft.NET.Build.Tasks
                         {
                             continue;
                         }
+
+                        // If we're using CsWinRT 3.0, filter to only items with '1' as the revision number.
+                        // Otherwise, if we're using CsWinRT 2.0, exclude all of them and pick '0' revisions.
+                        if ((UseCsWinRT3 && windowsSdkVersionParsed.Revision == 0) ||
+                            (!UseCsWinRT3 && windowsSdkVersionParsed.Revision == 1))
+                        {
+                            continue;
+                        }
+
+                        // Normalize the revision back to '0' now, as that matches the actual Windows SDK version
+                        windowsSdkVersionParsed = new Version(
+                            windowsSdkVersionParsed.Major,
+                            windowsSdkVersionParsed.Minor,
+                            windowsSdkVersionParsed.Build,
+                            revision: 0);
 
                         if (!knownFrameworkReferencesByWindowsSdkVersion.ContainsKey(windowsSdkVersionParsed))
                         {
