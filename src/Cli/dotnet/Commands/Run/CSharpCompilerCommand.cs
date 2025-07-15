@@ -238,7 +238,8 @@ internal sealed partial class CSharpCompilerCommand
             HostWriter.CreateAppHost(
                 appHostSourceFilePath: apphostSource,
                 appHostDestinationFilePath: apphostTarget,
-                appBinaryFilePath: $"{fileNameWithoutExtension}.dll");
+                appBinaryFilePath: $"{fileNameWithoutExtension}.dll",
+                enableMacOSCodeSign: OperatingSystem.IsMacOS());
         }
 
         var runtimeConfig = Path.Join(binDir, $"{fileNameWithoutExtension}{FileNameSuffixes.RuntimeConfigJson}");
