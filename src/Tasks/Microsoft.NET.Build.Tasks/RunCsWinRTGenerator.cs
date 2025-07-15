@@ -72,6 +72,11 @@ public sealed class RunCsWinRTGenerator : ToolTask
     public bool ValidateWinRTRuntimeAssemblyVersion { get; init; } = true;
 
     /// <summary>
+    /// Gets whether to validate that any references to <c>WinRT.Runtime.dll</c> version 2 are present across any assemblies.
+    /// </summary>
+    public bool ValidateWinRTRuntimeDllVersion2References { get; init; } = true;
+
+    /// <summary>
     /// Gets whether to treat warnings coming from 'cswinrtgen' as errors (regardless of the global 'TreatWarningsAsErrors' setting).
     /// </summary>
     public bool TreatWarningsAsErrors { get; init; } = false;
@@ -207,6 +212,7 @@ public sealed class RunCsWinRTGenerator : ToolTask
         AppendResponseFileOptionalCommand(args, "--debug-repro-directory", DebugReproDirectory);
         AppendResponseFileCommand(args, "--use-windows-ui-xaml-projections", UseWindowsUIXamlProjections.ToString());
         AppendResponseFileCommand(args, "--validate-winrt-runtime-assembly-version", ValidateWinRTRuntimeAssemblyVersion.ToString());
+        AppendResponseFileCommand(args, "--validate-winrt-runtime-dll-version-2-references", ValidateWinRTRuntimeDllVersion2References.ToString());
         AppendResponseFileCommand(args, "--treat-warnings-as-errors", TreatWarningsAsErrors.ToString());
         AppendResponseFileCommand(args, "--max-degrees-of-parallelism", MaxDegreesOfParallelism.ToString());
 

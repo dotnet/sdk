@@ -183,7 +183,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CsWinRTToolsDirectory Condition="'$(CsWinRTToolsDirectory)' == ''"></CsWinRTToolsDirectory>
     <CsWinRTToolsArchitecture Condition="'$(CsWinRTToolsArchitecture)' == ''"></CsWinRTToolsArchitecture>
     <CsWinRTGeneratorInteropAssemblyDirectory Condition="'$(CsWinRTGeneratorInteropAssemblyDirectory)' == ''">$(IntermediateOutputPath)</CsWinRTGeneratorInteropAssemblyDirectory>
-    <CsWinRTGeneratorValidateWinRTRuntimeAssemblyVersion Condition="'$(ValidateWinRTRuntimeAssemblyVersion)' == ''">true</CsWinRTGeneratorValidateWinRTRuntimeAssemblyVersion>
+    <CsWinRTGeneratorValidateWinRTRuntimeAssemblyVersion Condition="'$(CsWinRTGeneratorValidateWinRTRuntimeAssemblyVersion)' == ''">true</CsWinRTGeneratorValidateWinRTRuntimeAssemblyVersion>
+    <CsWinRTGeneratorValidateWinRTRuntimeDllVersion2References Condition="'$(CsWinRTGeneratorValidateWinRTRuntimeDllVersion2References)' == ''">true</CsWinRTGeneratorValidateWinRTRuntimeDllVersion2References>
     <CsWinRTGeneratorTreatWarningsAsErrors Condition="'$(CsWinRTGeneratorTreatWarningsAsErrors)' == ''">false</CsWinRTGeneratorTreatWarningsAsErrors>
     <CsWinRTGeneratorMaxDegreesOfParallelism Condition="'$(CsWinRTGeneratorMaxDegreesOfParallelism)' == ''">-1</CsWinRTGeneratorMaxDegreesOfParallelism>
     <CsWinRTGeneratorStandardOutputImportance Condition="'$(CsWinRTGeneratorStandardOutputImportance)' == ''">High</CsWinRTGeneratorStandardOutputImportance>
@@ -246,6 +247,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorDebugReproDirectory)" />
       <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTUseWindowsUIXamlProjections)" />
       <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorValidateWinRTRuntimeAssemblyVersion)" />
+      <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorValidateWinRTRuntimeDllVersion2References)" />
       <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorTreatWarningsAsErrors)" />
       <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorMaxDegreesOfParallelism)" />
       <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorLogStandardErrorAsError)" />
@@ -291,6 +293,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       CsWinRTToolsArchitecture="$(CsWinRTToolsArchitecture)"
       UseWindowsUIXamlProjections="$(CsWinRTUseWindowsUIXamlProjections)"
       ValidateWinRTRuntimeAssemblyVersion="$(CsWinRTGeneratorValidateWinRTRuntimeAssemblyVersion)"
+      ValidateWinRTRuntimeDllVersion2References="$(CsWinRTGeneratorValidateWinRTRuntimeDllVersion2References)"
       TreatWarningsAsErrors="$(CsWinRTGeneratorTreatWarningsAsErrors)"
       MaxDegreesOfParallelism="$(CsWinRTGeneratorMaxDegreesOfParallelism)"
       AdditionalArguments="@(CsWinRTGeneratorAdditionalArgument)"
