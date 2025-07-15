@@ -52,7 +52,6 @@ jobs:
           - group: DotNet-HelixApi-Access
           - _HelixApiToken: $(HelixApiAccessToken)
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          - group: dotnet-benchview
           - _OfficialBuildIdArgs: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
           - _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
           - _PerfIterations: 25
@@ -234,7 +233,6 @@ jobs:
           - group: DotNet-HelixApi-Access
           - _HelixApiToken: $(HelixApiAccessToken)
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          - group: dotnet-benchview
           - _OfficialBuildIdArgs: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
           - _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
           - _PerfIterations: 25
@@ -367,7 +365,6 @@ jobs:
           - group: DotNet-HelixApi-Access
           - _HelixApiToken: $(HelixApiAccessToken)
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          - group: dotnet-benchview
           - _OfficialBuildIdArgs: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
           - _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
           - _PerfIterations: 25
