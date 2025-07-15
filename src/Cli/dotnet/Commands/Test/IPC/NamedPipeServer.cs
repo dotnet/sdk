@@ -53,11 +53,11 @@ internal sealed class NamedPipeServer : NamedPipeBase, IServer
     }
 
     public NamedPipeServer(
-    PipeNameDescription pipeNameDescription,
-    Func<IRequest, Task<IResponse>> callback,
-    int maxNumberOfServerInstances,
-    CancellationToken cancellationToken,
-    bool skipUnknownMessages)
+        PipeNameDescription pipeNameDescription,
+        Func<IRequest, Task<IResponse>> callback,
+        int maxNumberOfServerInstances,
+        CancellationToken cancellationToken,
+        bool skipUnknownMessages)
     {
         _namedPipeServerStream = new((PipeName = pipeNameDescription).Name, PipeDirection.InOut, maxNumberOfServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
         _callback = callback;

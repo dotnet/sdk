@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             this.output = output;
         }
 
-        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo"];
+        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "-nologo"];
         private static readonly string[] ExpectedProperties = ["--property:_IsPublishing=true"];
         private static readonly string NuGetDisabledProperty = "--property:NuGetInteractive=false";
 
@@ -35,8 +35,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "--configuration", "<config>" }, new string[] { "--property:Configuration=<config>", "--property:DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE=true" })]
         [InlineData(new string[] { "--version-suffix", "<versionsuffix>" }, new string[] { "--property:VersionSuffix=<versionsuffix>" })]
         [InlineData(new string[] { "--manifest", "<manifestfiles>" }, new string[] { "--property:TargetManifestFiles=<cwd><manifestfiles>" })]
-        [InlineData(new string[] { "-v", "minimal" }, new string[] { "-verbosity:minimal" })]
-        [InlineData(new string[] { "--verbosity", "minimal" }, new string[] { "-verbosity:minimal" })]
+        [InlineData(new string[] { "-v", "minimal" }, new string[] { "--verbosity:minimal" })]
+        [InlineData(new string[] { "--verbosity", "minimal" }, new string[] { "--verbosity:minimal" })]
         [InlineData(new string[] { "<project>" }, new string[] { "<project>" })]
         [InlineData(new string[] { "<project>", "<extra-args>" }, new string[] { "<project>", "<extra-args>" })]
         [InlineData(new string[] { "--disable-build-servers" }, new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]

@@ -168,7 +168,7 @@ _testhost_build() {
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -982,7 +982,7 @@ _testhost_pack() {
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -1178,7 +1178,7 @@ _testhost_project_convert() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--output --force --help" 
+    opts="--output --force --interactive --dry-run --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1223,7 +1223,7 @@ _testhost_publish() {
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -1392,7 +1392,7 @@ _testhost_run() {
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -1542,7 +1542,7 @@ _testhost_store() {
             COMPREPLY=( $(compgen -W "(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" -- "$cur") )
             return
         ;;
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
@@ -1590,7 +1590,7 @@ _testhost_test() {
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
-        --verbosity|-v)
+        --verbosity|-v|--v|-verbosity|/v|/verbosity)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
