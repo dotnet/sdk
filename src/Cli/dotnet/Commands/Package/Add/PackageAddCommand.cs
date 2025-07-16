@@ -190,9 +190,9 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
         // (we always need to add the package reference to the C# file but when CPM is enabled, it's added without a version).
         string version = hasVersion
             ? _packageId.VersionRange?.OriginalString ?? string.Empty
-            : prerelease
-            ? "*-*"
-            : "*";
+            : (prerelease
+                ? "*-*"
+                : "*");
         bool skipUpdate = false;
         var central = SetCentralVersion(version);
         var local = SetLocalVersion(central != null ? null : version);
