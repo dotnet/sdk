@@ -196,17 +196,17 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                         minimumVSDefinedSDKVersion);
                 }
 
-                string? dotnetExe =
-                    TryResolveDotnetExeFromSdkResolution(resolverResult)
+                string? fullPathToMuxer =
+                    TryResolveMuxerFromSdkResolution(resolverResult)
                     ?? Path.Combine(dotnetRoot, RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Constants.DotNetExe : Constants.DotNet);
-                if (File.Exists(dotnetExe))
+                if (File.Exists(fullPathToMuxer))
                 {
                     propertiesToAdd ??= new Dictionary<string, string?>();
-                    propertiesToAdd.Add(DotnetHostExperimentalKey, dotnetExe);
+                    propertiesToAdd.Add(DotnetHostExperimentalKey, fullPathToMuxer);
                 }
                 else
                 {
-                    logger?.LogMessage($"Could not set '{DotnetHostExperimentalKey}' because dotnet executable '{dotnetExe}' does not exist.");
+                    logger?.LogMessage($"Could not set '{DotnetHostExperimentalKey}' because dotnet executable '{fullPathToMuxer}' does not exist.");
                 }
 
                 string? runtimeVersion = dotnetRoot != null ?
@@ -288,22 +288,23 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             return factory.IndicateSuccess(msbuildSdkDir, netcoreSdkVersion, propertiesToAdd, itemsToAdd, warnings);
         }
 
-        /// <summary>Try to find the dotnet binary from the SDK resolution result upwards</summary>
-        private static string? TryResolveDotnetExeFromSdkResolution(SdkResolutionResult resolverResult)
+        /// <summary>
+        /// Try to find the muxer binary from the SDK resolution result.
+        /// </summary>
+        /// <remarks>
+        /// SDK layouts always have a defined relationship to the location of the muxer -
+        /// the muxer binary should be exactly two directories above the SDK directory.
+        /// </remarks>
+        private static string? TryResolveMuxerFromSdkResolution(SdkResolutionResult resolverResult)
         {
             var expectedFileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Constants.DotNetExe : Constants.DotNet;
             var currentDir = resolverResult.ResolvedSdkDirectory;
-            while (currentDir != null)
+            var expectedDotnetRoot = Path.GetFullPath(Path.Combine(currentDir, "..", ".."));
+            var expectedMuxerPath = Path.Combine(expectedDotnetRoot, expectedFileName);
+            if (File.Exists(expectedMuxerPath))
             {
-                var dotnetExe = Path.Combine(currentDir, expectedFileName);
-                if (File.Exists(dotnetExe))
-                {
-                    return dotnetExe;
-                }
-
-                currentDir = Path.GetDirectoryName(currentDir);
+                return expectedMuxerPath;
             }
-
             return null;
         }
 
