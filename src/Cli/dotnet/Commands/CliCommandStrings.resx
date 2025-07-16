@@ -671,6 +671,12 @@ dotnet.config is a name don't translate.</comment>
   <data name="CommandOptionProjectHelpName" xml:space="preserve">
     <value>PROJECT_PATH</value>
   </data>
+  <data name="CommandOptionFileDescription" xml:space="preserve">
+    <value>The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).</value>
+  </data>
+  <data name="CommandOptionFileHelpName" xml:space="preserve">
+    <value>FILE_PATH</value>
+  </data>
   <data name="Commands" xml:space="preserve">
     <value>SDK commands</value>
   </data>
