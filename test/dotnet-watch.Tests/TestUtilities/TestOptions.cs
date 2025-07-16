@@ -17,7 +17,7 @@ internal static class TestOptions
         // 0 timeout for process cleanup in tests. We can't send Ctrl+C on Windows, so process termination must be forced.
         var processCleanupTimeout = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? TimeSpan.FromSeconds(0) : TimeSpan.FromSeconds(1);
 
-        return new(workingDirectory, muxerPath, processCleanupTimeout, TestFlags: TestFlags.RunningAsTest, TestOutput: asset != null ? GetWatchTestOutputPath(asset) : "");
+        return new(workingDirectory, muxerPath, processCleanupTimeout, IsPollingEnabled: true, TestFlags: TestFlags.RunningAsTest, TestOutput: asset != null ? GetWatchTestOutputPath(asset) : "");
     }
 
     public static CommandLineOptions GetCommandLineOptions(string[] args)

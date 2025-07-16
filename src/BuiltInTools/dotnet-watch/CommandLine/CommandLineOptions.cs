@@ -195,7 +195,7 @@ internal sealed class CommandLineOptions
                 // Some options _may_ be computed or have defaults, so not all may have an IdentifierToken.
                 // For those that do not, use the Option's Name instead.
                 var optionNameToForward = optionResult.IdentifierToken?.Value ?? optionResult.Option.Name;
-                if (optionResult.Tokens.Count == 0)
+                if (optionResult.Tokens.Count == 0 && !optionResult.Implicit)
                 {
                     arguments.Add(optionNameToForward);
                 }

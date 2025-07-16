@@ -152,6 +152,11 @@ internal static class TestCommandParser
 
     public static readonly Option ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.TestConfigurationOptionDescription);
 
+    public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.VerbosityOption();
+    public static readonly Option<string[]> VsTestTargetOption = CommonOptions.RequiredMSBuildTargetOption("VSTest");
+    public static readonly Option<string[]> MTPTargetOption = CommonOptions.RequiredMSBuildTargetOption(CliConstants.MTPTarget);
+
+
     private static readonly Command Command = ConstructCommand();
 
     public static Command GetCommand()
@@ -237,7 +242,7 @@ internal static class TestCommandParser
         command.Options.Add(TestingPlatformOptions.FrameworkOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
         command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
-        command.Options.Add(CommonOptions.VerbosityOption);
+        command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.NoRestoreOption);
         command.Options.Add(TestingPlatformOptions.NoBuildOption);
         command.Options.Add(TestingPlatformOptions.NoAnsiOption);
@@ -245,6 +250,7 @@ internal static class TestCommandParser
         command.Options.Add(TestingPlatformOptions.OutputOption);
         command.Options.Add(TestingPlatformOptions.NoLaunchProfileOption);
         command.Options.Add(TestingPlatformOptions.NoLaunchProfileArgumentsOption);
+        command.Options.Add(MTPTargetOption);
 
         return command;
     }
@@ -284,10 +290,11 @@ internal static class TestCommandParser
         command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
         command.Options.Add(NoRestoreOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
-        command.Options.Add(CommonOptions.VerbosityOption);
+        command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.ArchitectureOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.Options.Add(VsTestTargetOption);
         command.SetAction(TestCommand.Run);
 
         return command;

@@ -84,7 +84,7 @@
       </trans-unit>
       <trans-unit id="AspireWorkloadIsDeprecated">
         <source>NETSDK1228: This project depends on the Aspire Workload which has been deprecated. Aspire now ships via NuGet packages and no longer requires a workload. Please visit {0} for upgrade guidance.</source>
-        <target state="new">NETSDK1228: This project depends on the Aspire Workload which has been deprecated. Aspire now ships via NuGet packages and no longer requires a workload. Please visit {0} for upgrade guidance.</target>
+        <target state="translated">NETSDK1228: Este projeto depende da Carga de trabalho Aspire, que foi descontinuada. O Aspire agora é distribuído via pacotes NuGet e não requer mais uma carga de trabalho. Visite {0} para orientações de atualização.</target>
         <note>{StrBegins="NETSDK1228: "}</note>
       </trans-unit>
       <trans-unit id="AssetPreprocessorMustBeConfigured">

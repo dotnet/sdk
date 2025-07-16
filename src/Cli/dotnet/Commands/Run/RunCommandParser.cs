@@ -1,10 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
+using System.Collections.Frozen;
+using System.Collections.ObjectModel;
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
@@ -12,7 +11,7 @@ internal static class RunCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-run";
 
-    public static readonly Option<string> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.RunConfigurationOptionDescription);
+    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.RunConfigurationOptionDescription);
 
     public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.RunFrameworkOptionDescription);
 
@@ -24,7 +23,7 @@ internal static class RunCommandParser
         HelpName = CliCommandStrings.CommandOptionProjectHelpName
     };
 
-    public static readonly Option<string[]> PropertyOption = CommonOptions.PropertiesOption;
+    public static readonly Option<ReadOnlyDictionary<string, string>?> PropertyOption = CommonOptions.PropertiesOption;
 
     public static readonly Option<string> LaunchProfileOption = new("--launch-profile", "-lp")
     {
@@ -63,6 +62,8 @@ internal static class RunCommandParser
 
     public static readonly Option NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
 
+    public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.VerbosityOption();
+
     public static readonly Argument<string[]> ApplicationArguments = new("applicationArguments")
     {
         DefaultValueFactory = _ => [],
@@ -93,7 +94,7 @@ internal static class RunCommandParser
         command.Options.Add(NoCacheOption);
         command.Options.Add(SelfContainedOption);
         command.Options.Add(NoSelfContainedOption);
-        command.Options.Add(CommonOptions.VerbosityOption);
+        command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.ArchitectureOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
