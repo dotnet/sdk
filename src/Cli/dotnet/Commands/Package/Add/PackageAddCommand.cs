@@ -268,7 +268,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
         (Action Revert, Action<string> Update, Action Save)? SetCentralVersion(string version)
         {
             // Find out whether CPM is enabled.
-            if (!string.Equals(projectInstance.GetProperty("ManagePackageVersionsCentrally")?.EvaluatedValue, bool.TrueString, StringComparison.OrdinalIgnoreCase))
+            if (!MSBuildUtilities.ConvertStringToBool(projectInstance.GetProperty("ManagePackageVersionsCentrally")?.EvaluatedValue))
             {
                 return null;
             }
