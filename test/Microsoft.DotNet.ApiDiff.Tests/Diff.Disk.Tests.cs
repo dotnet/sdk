@@ -25,7 +25,6 @@ public class DiffDiskTests
 
         * [{DefaultAssemblyName}]({DefaultTableOfContentsTitle}_{DefaultAssemblyName}.md)
 
-
         """;
 
     private const string ExpectedEmptyTableOfContents = $"""
@@ -33,7 +32,6 @@ public class DiffDiskTests
 
         API listing follows standard diff formatting.
         Lines preceded by a '+' are additions and a '-' indicates removal.
-
 
 
         """;
