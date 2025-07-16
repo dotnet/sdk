@@ -642,7 +642,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 #!/program
                 #:sdk Microsoft.NET.Sdk
                 #:sdk Aspire.Hosting.Sdk@9.1.0
-                #:property TargetFramework=net11.0
+                #:property TargetFramework=net472
                 #:package System.CommandLine@2.0.0-beta4.22272.1
                 #:property LangVersion=preview
                 Console.WriteLine();
@@ -660,7 +660,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                   </PropertyGroup>
 
                   <PropertyGroup>
-                    <TargetFramework>net11.0</TargetFramework>
+                    <TargetFramework>net472</TargetFramework>
                     <LangVersion>preview</LangVersion>
                   </PropertyGroup>
 
@@ -687,7 +687,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 #!/program
                 #:sdk Microsoft.NET.Web.Sdk
                 #:property OutputType=Exe
-                #:property TargetFramework=net11.0
+                #:property TargetFramework=net472
                 #:property Nullable=disable
                 #:property PublishAot=false
                 #:property Custom=1
@@ -699,7 +699,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
                   <PropertyGroup>
                     <OutputType>Exe</OutputType>
-                    <TargetFramework>net11.0</TargetFramework>
+                    <TargetFramework>net472</TargetFramework>
                     <Nullable>disable</Nullable>
                     <PublishAot>false</PublishAot>
                     <Custom>1</Custom>
