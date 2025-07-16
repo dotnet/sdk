@@ -8,7 +8,6 @@ using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
-using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -54,12 +53,13 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
 
     private ProcessStartInfo CreateProcessStartInfo(TestOptions testOptions)
     {
-        bool isDll = Module.RunProperties.RunCommand.HasExtension(CliConstants.DLLExtension);
-
         var processStartInfo = new ProcessStartInfo
         {
-            FileName = GetFileName(testOptions, isDll),
-            Arguments = GetArguments(testOptions, isDll),
+            // We should get correct RunProperties right away.
+            // For the case of dotnet test --test-modules path/to/dll, the TestModulesFilterHandler is responsible
+            // for providing the dotnet muxer as RunCommand, and `exec "path/to/dll"` as RunArguments.
+            FileName = Module.RunProperties.RunCommand,
+            Arguments = GetArguments(testOptions),
             RedirectStandardOutput = true,
             RedirectStandardError = true
         };
@@ -87,23 +87,27 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         return processStartInfo;
     }
 
-    private string GetFileName(TestOptions testOptions, bool isDll)
-        => isDll ? Environment.ProcessPath : Module.RunProperties.RunCommand;
-
-    private string GetArguments(TestOptions testOptions, bool isDll)
+    private string GetArguments(TestOptions testOptions)
     {
-        if (testOptions.HasFilterMode || !isDll || !IsArchitectureSpecified(testOptions))
+        // Keep RunArguments first.
+        // In the case of UseAppHost=false, RunArguments is set to `exec $(TargetPath)`:
+        // https://github.com/dotnet/sdk/blob/333388c31d811701e3b6be74b5434359151424dc/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Sdk.targets#L1411
+        // So, we keep that first always.
+        StringBuilder builder = new(Module.RunProperties.RunArguments);
+
+        if (testOptions.IsHelp)
         {
-            return BuildArgs(testOptions, isDll);
+            builder.Append($" {TestingPlatformOptions.HelpOption.Name} ");
         }
 
-        // If we reach here, that means we have a test project that doesn't produce an executable.
-        throw new InvalidOperationException($"A Microsoft.Testing.Platform test project should produce an executable. The file '{Module.RunProperties.RunCommand}' is dll.");
-    }
+        var args = _buildOptions.UnmatchedTokens;
+        builder.Append(args.Count != 0
+            ? args.Aggregate((a, b) => $"{a} {b}")
+            : string.Empty);
 
-    private static bool IsArchitectureSpecified(TestOptions testOptions)
-    {
-        return !string.IsNullOrEmpty(testOptions.Architecture);
+        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name}");
+
+        return builder.ToString();
     }
 
     private void WaitOnTestApplicationPipeConnectionLoop()
@@ -275,35 +279,6 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             return false;
         }
         return true;
-    }
-
-    private string BuildArgs(TestOptions testOptions, bool isDll)
-    {
-        StringBuilder builder = new();
-
-        if (isDll)
-        {
-            builder.Append($"exec {Module.RunProperties.RunCommand} ");
-        }
-
-        AppendCommonArgs(builder, testOptions);
-
-        return builder.ToString();
-    }
-
-    private void AppendCommonArgs(StringBuilder builder, TestOptions testOptions)
-    {
-        if (testOptions.IsHelp)
-        {
-            builder.Append($" {TestingPlatformOptions.HelpOption.Name} ");
-        }
-
-        var args = _buildOptions.UnmatchedTokens;
-        builder.Append(args.Count != 0
-            ? args.Aggregate((a, b) => $"{a} {b}")
-            : string.Empty);
-
-        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name} {Module.RunProperties.RunArguments}");
     }
 
     public void OnHandshakeMessage(HandshakeMessage handshakeMessage)

@@ -19,7 +19,9 @@ public static class Constants
 
     public static readonly string MSBUILD_EXE_PATH = nameof(MSBUILD_EXE_PATH);
     public static readonly string MSBuildExtensionsPath = nameof(MSBuildExtensionsPath);
+
     public static readonly string EnableDefaultItems = nameof(EnableDefaultItems);
+    public static readonly string EnableDefaultContentItems = nameof(EnableDefaultContentItems);
     public static readonly string EnableDefaultCompileItems = nameof(EnableDefaultCompileItems);
     public static readonly string EnableDefaultEmbeddedResourceItems = nameof(EnableDefaultEmbeddedResourceItems);
     public static readonly string EnableDefaultNoneItems = nameof(EnableDefaultNoneItems);

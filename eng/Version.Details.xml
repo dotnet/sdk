@@ -189,17 +189,17 @@
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>c21ba3b47e224cf84490bdc53b89e7f9ebcc1841</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.15.0-preview-25359-101">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
+    <Dependency Name="Microsoft.NET.Test.Sdk" Version="18.0.0-preview-25366-02">
+      <Uri>https://github.com/microsoft/vstest</Uri>
+      <Sha>8b102963a8cce7809a6956fe0a6df5cb93b2447a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.15.0-preview-25359-101">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
+    <Dependency Name="Microsoft.TestPlatform.CLI" Version="18.0.0-preview-25366-02">
+      <Uri>https://github.com/microsoft/vstest</Uri>
+      <Sha>8b102963a8cce7809a6956fe0a6df5cb93b2447a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.15.0-preview-25359-101">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
+    <Dependency Name="Microsoft.TestPlatform.Build" Version="18.0.0-preview-25366-02">
+      <Uri>https://github.com/microsoft/vstest</Uri>
+      <Sha>8b102963a8cce7809a6956fe0a6df5cb93b2447a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="10.0.0-preview.7.25359.101">
       <Uri>https://github.com/dotnet/dotnet</Uri>
@@ -528,13 +528,13 @@
       <Uri>https://github.com/dotnet/arcade-services</Uri>
       <Sha>afa79da3b68fd0fe48d90ea7fcbffbf7789c6d7f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="1.8.0-preview.25358.4">
+    <Dependency Name="Microsoft.Testing.Platform" Version="1.8.0-preview.25364.2">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>94360dfccacfc549d3a385300dba6ab40ca4736d</Sha>
+      <Sha>ad90815c3000f49b310707d78c054400f5b8b214</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="3.10.0-preview.25358.4">
+    <Dependency Name="MSTest" Version="3.10.0-preview.25364.2">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>94360dfccacfc549d3a385300dba6ab40ca4736d</Sha>
+      <Sha>ad90815c3000f49b310707d78c054400f5b8b214</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="10.0.0-preview.7.25359.101">
       <Uri>https://github.com/dotnet/dotnet</Uri>

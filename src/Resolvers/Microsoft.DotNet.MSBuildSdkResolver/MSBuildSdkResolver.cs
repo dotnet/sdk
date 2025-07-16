@@ -196,9 +196,9 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                         minimumVSDefinedSDKVersion);
                 }
 
-                string? dotnetExe = dotnetRoot != null ?
-                    Path.Combine(dotnetRoot, Constants.DotNetExe) :
-                    null;
+                string? dotnetExe =
+                    TryResolveDotnetExeFromSdkResolution(resolverResult)
+                    ?? Path.Combine(dotnetRoot, RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Constants.DotNetExe : Constants.DotNet);
                 if (File.Exists(dotnetExe))
                 {
                     propertiesToAdd ??= new Dictionary<string, string?>();
@@ -286,6 +286,25 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             }
 
             return factory.IndicateSuccess(msbuildSdkDir, netcoreSdkVersion, propertiesToAdd, itemsToAdd, warnings);
+        }
+
+        /// <summary>Try to find the dotnet binary from the SDK resolution result upwards</summary>
+        private static string? TryResolveDotnetExeFromSdkResolution(SdkResolutionResult resolverResult)
+        {
+            var expectedFileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Constants.DotNetExe : Constants.DotNet;
+            var currentDir = resolverResult.ResolvedSdkDirectory;
+            while (currentDir != null)
+            {
+                var dotnetExe = Path.Combine(currentDir, expectedFileName);
+                if (File.Exists(dotnetExe))
+                {
+                    return dotnetExe;
+                }
+
+                currentDir = Path.GetDirectoryName(currentDir);
+            }
+
+            return null;
         }
 
         private static string? GetMSbuildRuntimeVersion(string sdkDirectory, string dotnetRoot)
