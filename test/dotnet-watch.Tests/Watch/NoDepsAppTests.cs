@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
     {
         private const string AppName = "WatchNoDepsApp";
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
         public async Task RestartProcessOnFileChange()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
