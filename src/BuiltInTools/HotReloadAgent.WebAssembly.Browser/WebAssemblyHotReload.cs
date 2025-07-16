@@ -127,7 +127,7 @@ internal static partial class WebAssemblyHotReload
             errorMessage = e.ToString();
         }
 
-        s_reporter.Report($"Failed to retrieve and apply previous deltas from the server: ${errorMessage}", AgentMessageSeverity.Error);
+        s_reporter.Report($"Failed to retrieve and apply previous deltas from the server: {errorMessage}", AgentMessageSeverity.Error);
     }
 
     private static HotReloadAgent? GetAgent()
