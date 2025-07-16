@@ -3079,7 +3079,7 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
         }
 
         [Fact]
-        public void TestParameterAttributesGenerationSimple()
+        public void TestParameterAttributesGeneration()
         {
             RunTest(original: """
                     namespace A
@@ -3088,20 +3088,42 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                         
                         public class TestClass
                         {
+                            // Method parameter
                             public void TestMethod([MyAttribute] string param1) { }
+                            
+                            // Constructor parameter
+                            public TestClass([MyAttribute] string param) { }
+                            
+                            // Indexer parameter
+                            public string this[[MyAttribute] int index] { get { return ""; } set { } }
+                            
+                            // Operator parameter
+                            public static TestClass operator +([MyAttribute] TestClass left, [MyAttribute] TestClass right) { return left; }
+                            
+                            // Conversion operator parameter
+                            public static implicit operator string([MyAttribute] TestClass value) { return ""; }
                         }
+                        
+                        // Delegate parameter
+                        public delegate void MyDelegate([MyAttribute] string param);
                     }
                     """,
                 expected: """
                     namespace A
                     {
+                        public delegate void MyDelegate([My] string param);
+                        
                         public partial class MyAttribute : System.Attribute
                         {
                         }
                         
                         public partial class TestClass
                         {
+                            public TestClass([My] string param) { }
+                            public string this[[My] int index] { get { throw null; } set { } }
                             public void TestMethod([My] string param1) { }
+                            public static TestClass operator +([My] TestClass left, [My] TestClass right) { throw null; }
+                            public static implicit operator string([My] TestClass value) { throw null; }
                         }
                     }
                     """,

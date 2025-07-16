@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -40,6 +41,9 @@ namespace Microsoft.DotNet.GenAPI
 
             // Add attributes to parameters for methods, constructors, indexers, and delegates that have parameters
             node = AddParameterAttributes(node, syntaxGenerator, member, attributeDataSymbolFilter);
+
+            // Add attributes to type parameters for types and methods that have type parameters
+            node = AddTypeParameterAttributes(node, syntaxGenerator, member, attributeDataSymbolFilter);
 
             return node;
         }
@@ -95,8 +99,16 @@ namespace Microsoft.DotNet.GenAPI
             {
                 IMethodSymbol method => method.Parameters,
                 IPropertySymbol property when property.IsIndexer => property.Parameters,
+                INamedTypeSymbol { IsRecord: true } record => GetRecordPrimaryConstructorParameters(record),
                 _ => ImmutableArray<IParameterSymbol>.Empty
             };
+        }
+
+        private static ImmutableArray<IParameterSymbol> GetRecordPrimaryConstructorParameters(INamedTypeSymbol recordType)
+        {
+            // For records, find the primary constructor parameters
+            var primaryConstructor = recordType.Constructors.FirstOrDefault(c => c.IsImplicitlyDeclared == false);
+            return primaryConstructor?.Parameters ?? ImmutableArray<IParameterSymbol>.Empty;
         }
 
         private static SeparatedSyntaxList<ParameterSyntax>? GetParameterSyntaxList(SyntaxNode node)
@@ -109,6 +121,7 @@ namespace Microsoft.DotNet.GenAPI
                 DelegateDeclarationSyntax delegateDecl => delegateDecl.ParameterList.Parameters,
                 OperatorDeclarationSyntax operatorDecl => operatorDecl.ParameterList.Parameters,
                 ConversionOperatorDeclarationSyntax conversionOp => conversionOp.ParameterList.Parameters,
+                RecordDeclarationSyntax record => record.ParameterList?.Parameters,
                 _ => null
             };
         }
@@ -123,6 +136,96 @@ namespace Microsoft.DotNet.GenAPI
                 DelegateDeclarationSyntax delegateDecl => delegateDecl.WithParameterList(delegateDecl.ParameterList.WithParameters(updatedParameters)),
                 OperatorDeclarationSyntax operatorDecl => operatorDecl.WithParameterList(operatorDecl.ParameterList.WithParameters(updatedParameters)),
                 ConversionOperatorDeclarationSyntax conversionOp => conversionOp.WithParameterList(conversionOp.ParameterList.WithParameters(updatedParameters)),
+                RecordDeclarationSyntax record when record.ParameterList != null => record.WithParameterList(record.ParameterList.WithParameters(updatedParameters)),
+                _ => node
+            };
+        }
+
+        private static SyntaxNode AddTypeParameterAttributes(SyntaxNode node,
+            SyntaxGenerator syntaxGenerator,
+            ISymbol member,
+            ISymbolFilter attributeDataSymbolFilter)
+        {
+            // Get the type parameters from the symbol based on the member type
+            ImmutableArray<ITypeParameterSymbol> typeParameters = GetTypeParametersFromSymbol(member);
+            if (typeParameters.IsEmpty)
+            {
+                return node;
+            }
+
+            // Get the type parameter syntax nodes from the declaration
+            SeparatedSyntaxList<TypeParameterSyntax>? typeParameterSyntaxList = GetTypeParameterSyntaxList(node);
+            if (typeParameterSyntaxList == null || typeParameterSyntaxList.Value.Count != typeParameters.Length)
+            {
+                // If we can't match type parameters between symbol and syntax, skip adding type parameter attributes
+                return node;
+            }
+
+            // Apply attributes to each type parameter
+            SeparatedSyntaxList<TypeParameterSyntax> updatedTypeParameters = typeParameterSyntaxList.Value;
+            for (int i = 0; i < typeParameters.Length; i++)
+            {
+                ITypeParameterSymbol typeParameterSymbol = typeParameters[i];
+                TypeParameterSyntax typeParameterSyntax = updatedTypeParameters[i];
+
+                // Add attributes to this type parameter
+                foreach (AttributeData attribute in typeParameterSymbol.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(attributeDataSymbolFilter))
+                {
+                    if (attribute.IsReserved())
+                    {
+                        continue;
+                    }
+
+                    typeParameterSyntax = (TypeParameterSyntax)syntaxGenerator.AddAttributes(typeParameterSyntax, syntaxGenerator.Attribute(attribute));
+                }
+
+                updatedTypeParameters = updatedTypeParameters.Replace(updatedTypeParameters[i], typeParameterSyntax);
+            }
+
+            // Update the node with the modified type parameters
+            return UpdateNodeWithTypeParameters(node, updatedTypeParameters);
+        }
+
+        private static ImmutableArray<ITypeParameterSymbol> GetTypeParametersFromSymbol(ISymbol member)
+        {
+            return member switch
+            {
+                INamedTypeSymbol namedType => namedType.TypeParameters,
+                IMethodSymbol method => method.TypeParameters,
+                _ => ImmutableArray<ITypeParameterSymbol>.Empty
+            };
+        }
+
+        private static SeparatedSyntaxList<TypeParameterSyntax>? GetTypeParameterSyntaxList(SyntaxNode node)
+        {
+            return node switch
+            {
+                ClassDeclarationSyntax classDecl => classDecl.TypeParameterList?.Parameters,
+                StructDeclarationSyntax structDecl => structDecl.TypeParameterList?.Parameters,
+                InterfaceDeclarationSyntax interfaceDecl => interfaceDecl.TypeParameterList?.Parameters,
+                RecordDeclarationSyntax record => record.TypeParameterList?.Parameters,
+                DelegateDeclarationSyntax delegateDecl => delegateDecl.TypeParameterList?.Parameters,
+                MethodDeclarationSyntax method => method.TypeParameterList?.Parameters,
+                _ => null
+            };
+        }
+
+        private static SyntaxNode UpdateNodeWithTypeParameters(SyntaxNode node, SeparatedSyntaxList<TypeParameterSyntax> updatedTypeParameters)
+        {
+            return node switch
+            {
+                ClassDeclarationSyntax classDecl when classDecl.TypeParameterList != null => 
+                    classDecl.WithTypeParameterList(classDecl.TypeParameterList.WithParameters(updatedTypeParameters)),
+                StructDeclarationSyntax structDecl when structDecl.TypeParameterList != null => 
+                    structDecl.WithTypeParameterList(structDecl.TypeParameterList.WithParameters(updatedTypeParameters)),
+                InterfaceDeclarationSyntax interfaceDecl when interfaceDecl.TypeParameterList != null => 
+                    interfaceDecl.WithTypeParameterList(interfaceDecl.TypeParameterList.WithParameters(updatedTypeParameters)),
+                RecordDeclarationSyntax record when record.TypeParameterList != null => 
+                    record.WithTypeParameterList(record.TypeParameterList.WithParameters(updatedTypeParameters)),
+                DelegateDeclarationSyntax delegateDecl when delegateDecl.TypeParameterList != null => 
+                    delegateDecl.WithTypeParameterList(delegateDecl.TypeParameterList.WithParameters(updatedTypeParameters)),
+                MethodDeclarationSyntax method when method.TypeParameterList != null => 
+                    method.WithTypeParameterList(method.TypeParameterList.WithParameters(updatedTypeParameters)),
                 _ => node
             };
         }
