@@ -13,4 +13,5 @@ if [[ "$@" != *"-pack"* ]]; then
   skipFlags="/p:SkipUsingCrossgen=true /p:SkipBuildingInstallers=true"
 fi
 
-DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT="true" . "$ScriptRoot/eng/common/build.sh" --build --restore $skipFlags "$@"
+export DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT="true"
+. "$ScriptRoot/eng/common/build.sh" --build --restore $skipFlags "$@"
