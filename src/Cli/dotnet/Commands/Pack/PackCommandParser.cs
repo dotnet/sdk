@@ -54,11 +54,11 @@ internal static class PackCommandParser
         Arity = ArgumentArity.Zero
     }.ForwardAs("-nologo");
 
-    public static readonly Option<bool> Nuspec = new ForwardedOption<bool>("--nuspec")
+    /*public static readonly Option<bool> Nuspec = new ForwardedOption<bool>("--nuspec")
     {
         Description = "Nuspec",
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-nuspec");
+    }.ForwardAs("-nuspec");*/
 
     public static readonly Option<string> VersionOption = new ForwardedOption<string>("--version")
     {
@@ -100,7 +100,7 @@ internal static class PackCommandParser
         command.Options.Add(IncludeSourceOption);
         command.Options.Add(ServiceableOption);
         command.Options.Add(NoLogoOption);
-        command.Options.Add(Nuspec);
+        //command.Options.Add(Nuspec);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
         command.Options.Add(NoRestoreOption);
         command.Options.Add(VersionOption);

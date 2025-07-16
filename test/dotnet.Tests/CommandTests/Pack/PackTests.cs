@@ -297,7 +297,7 @@ namespace Microsoft.DotNet.Pack.Tests
             string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
             var result = new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute("--nuspec", nuspecPath, "--property", "id=CustomID");
+                .Execute(nuspecPath, "--property", "id=CustomID");
 
             result.Should().Pass();
 
@@ -314,9 +314,46 @@ namespace Microsoft.DotNet.Pack.Tests
             string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
             var result = new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute("--nuspec", nuspecPath,  "--version", "1.2.3");
+                .Execute(nuspecPath,  "--version", "1.2.3");
 
             result.Should().Pass();
+
+            var outputDir = new DirectoryInfo(Path.Combine(testInstance.Path, "Debug"));
+            outputDir.Should().Exist()
+                .And.HaveFile("PackNoCsproj.1.2.3.nupkg");
+        }
+
+        [Fact]
+        public void DotnetPack_AcceptsConfigurationOption()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
+                .WithSource();
+            string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
+            var result = new DotnetPackCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(nuspecPath, "--configuration", "Release");
+
+            result.Should().Pass();
+            var outputDir = new DirectoryInfo(Path.Combine(testInstance.Path, "Release"));
+            outputDir.Should().Exist()
+                .And.HaveFile("PackNoCsproj.1.0.0.nupkg");
+        }
+
+        [Fact]
+        public void DotnetPack_AcceptsOutputOption()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
+                .WithSource();
+            string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
+            string outputDirPath = Path.Combine(testInstance.Path, "output");
+
+            var result = new DotnetPackCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(nuspecPath, "--output", outputDirPath);
+            result.Should().Pass();
+            var outputDir = new DirectoryInfo(outputDirPath);
+            outputDir.Should().Exist()
+                .And.HaveFile("PackNoCsproj.1.0.0.nupkg");
         }
 
         [Fact]
@@ -329,10 +366,25 @@ namespace Microsoft.DotNet.Pack.Tests
             {
                 new DotnetPackCommand(Log)
                     .WithWorkingDirectory(testInstace.Path)
-                    .Execute("--nuspec");
+                    .Execute("missing.nuspec");
             });
 
-            Assert.Contains("You must specify a .nuspec file as the positional argument when using --nuspec.", ex.Message);
+            Assert.Contains("does not exist.", ex.Message);
+        }
+
+        [Fact]
+        public void DotnetPack_FailsForNonExistentNuspec()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
+                .WithSource();
+            string nuspecPath = Path.Combine(testInstance.Path, "NonExistent.nuspec");
+
+            var result = new DotnetPackCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(nuspecPath);
+
+            result.Should().Fail();
+            result.StdErr.Should().Contain("does not exist");
         }
     }
 }

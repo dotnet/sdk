@@ -98,53 +98,61 @@ public class PackCommand(
     {
         parseResult.ShowHelpOrErrorIfAppropriate();
         var args = parseResult.GetValue(PackCommandParser.SlnOrProjectArgument)?.ToList() ?? new List<string>();
+        var firstArg = args.FirstOrDefault();
 
-        // If --nuspec is specified, pack the nuspec file directly using NuGet APIs
-        if (parseResult.GetValue(PackCommandParser.Nuspec) == true)
+        if (!string.IsNullOrEmpty(firstArg) && firstArg.EndsWith(".nuspec", StringComparison.OrdinalIgnoreCase))
         {
-            var nuspecPath = args.FirstOrDefault();
-            if (string.IsNullOrEmpty(nuspecPath) || !nuspecPath.EndsWith(".nuspec", StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException("You must specify a .nuspec file as the positional argument when using --nuspec.");
-            if (!File.Exists(nuspecPath))
-                throw new FileNotFoundException($"The specified .nuspec file '{nuspecPath}' does not exist.");
+            // NuSpec packing logic
+            if (!File.Exists(firstArg))
+                throw new FileNotFoundException($"The specified .nuspec file '{firstArg}' does not exist.");
 
-            var packArgs = new PackArgs()
+            // If --nuspec is specified, pack the nuspec file directly using NuGet APIs
+            if (parseResult.GetValue(PackCommandParser.Nuspec) == true)
             {
-                Path = nuspecPath,
-                BasePath = Path.GetDirectoryName(nuspecPath),
-                Logger = new NuGetConsoleLogger(),
-                Exclude = new List<string>()
-            };
+                var nuspecPath = args.FirstOrDefault();
+                if (string.IsNullOrEmpty(nuspecPath) || !nuspecPath.EndsWith(".nuspec", StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidOperationException("You must specify a .nuspec file as the positional argument when using --nuspec.");
+                if (!File.Exists(nuspecPath))
+                    throw new FileNotFoundException($"The specified .nuspec file '{nuspecPath}' does not exist.");
 
-            var properties = parseResult.GetValue(PackCommandParser.PropertiesOption);
-            string? idOverride = null;
-            if (properties != null)
-            {
-                foreach (var prop in properties)
+                var packArgs = new PackArgs()
                 {
-                    var split = prop.Split('=', 2);
-                    if (split.Length == 2)
+                    Path = nuspecPath,
+                    BasePath = Path.GetDirectoryName(nuspecPath),
+                    Logger = new NuGetConsoleLogger(),
+                    Exclude = new List<string>()
+                };
+
+                var properties = parseResult.GetValue(PackCommandParser.PropertiesOption);
+                string? idOverride = null;
+                if (properties != null)
+                {
+                    foreach (var prop in properties)
                     {
-                        if (split[0].Equals("Id", StringComparison.OrdinalIgnoreCase) ||
-                            split[0].Equals("PackageId", StringComparison.OrdinalIgnoreCase))
+                        var split = prop.Split('=', 2);
+                        if (split.Length == 2)
+                        {
+                            if (split[0].Equals("Id", StringComparison.OrdinalIgnoreCase) ||
+                                split[0].Equals("PackageId", StringComparison.OrdinalIgnoreCase))
                             {
-                            idOverride = split[1]; 
+                                idOverride = split[1];
+                            }
                         }
-                    }
                         packArgs.Properties[split[0]] = split[1];
+                    }
                 }
+
+                var version = parseResult.GetValue(PackCommandParser.VersionOption);
+                if (!string.IsNullOrEmpty(version))
+                    packArgs.Version = version;
+
+                var packCommandRunner = new PackCommandRunner(packArgs, null);
+                if (!packCommandRunner.RunPackageBuild())
+                    // throw new InvalidOperationException("Failed to run pack command with nuspec option.");
+                    return 1;
             }
-
-            var version = parseResult.GetValue(PackCommandParser.VersionOption);
-            if (!string.IsNullOrEmpty(version))
-                packArgs.Version = version;
-
-            var packCommandRunner = new PackCommandRunner(packArgs, null);
-            if (!packCommandRunner.RunPackageBuild())
-                // throw new InvalidOperationException("Failed to run pack command with nuspec option.");
-                return 1;
+            return 0;
         }
-        return 0;
     }
 
     public static int Run(ParseResult parseResult)
