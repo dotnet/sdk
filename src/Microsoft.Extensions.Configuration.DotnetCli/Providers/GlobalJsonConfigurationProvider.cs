@@ -1,17 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Json;
+using Microsoft.Extensions.Configuration.Json;
 
 namespace Microsoft.Extensions.Configuration.DotnetCli.Providers;
 
 /// <summary>
 /// Configuration provider that reads global.json files and maps keys to the canonical format.
 /// </summary>
-public class GlobalJsonConfigurationProvider : ConfigurationProvider
+public class GlobalJsonConfigurationProvider : JsonConfigurationProvider
 {
-    private readonly string? _path;
-
     private static readonly Dictionary<string, string> GlobalJsonKeyMappings = new()
     {
         ["sdk:version"] = "sdk:version",
@@ -21,54 +19,26 @@ public class GlobalJsonConfigurationProvider : ConfigurationProvider
         // Add more mappings as the global.json schema evolves
     };
 
-    public GlobalJsonConfigurationProvider(string workingDirectory)
+    public GlobalJsonConfigurationProvider(GlobalJsonConfigurationSource source) : base(source)
     {
-        _path = FindGlobalJson(workingDirectory);
     }
 
     public override void Load()
     {
-        Data.Clear();
+        base.Load();
+        // Transform keys according to our mapping
+        var transformedData = new Dictionary<string, string?>(Data.Count, StringComparer.OrdinalIgnoreCase);
 
-        if (_path == null || !File.Exists(_path))
-            return;
-
-        try
+        foreach (var kvp in Data)
         {
-            var json = File.ReadAllText(_path);
-            var document = JsonDocument.Parse(json);
-
-            LoadGlobalJsonData(document.RootElement, "");
+            string key = kvp.Key;
+            string? value = kvp.Value;
+            var mappedKey = MapGlobalJsonKey(key);
+            transformedData[mappedKey] = value;
         }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Error parsing global.json at {_path}", ex);
-        }
-    }
 
-    private void LoadGlobalJsonData(JsonElement element, string prefix)
-    {
-        foreach (var property in element.EnumerateObject())
-        {
-            var rawKey = string.IsNullOrEmpty(prefix)
-                ? property.Name
-                : $"{prefix}:{property.Name}";
-
-            switch (property.Value.ValueKind)
-            {
-                case JsonValueKind.Object:
-                    LoadGlobalJsonData(property.Value, rawKey);
-                    break;
-                case JsonValueKind.String:
-                case JsonValueKind.Number:
-                case JsonValueKind.True:
-                case JsonValueKind.False:
-                    // Map to canonical key format
-                    var canonicalKey = MapGlobalJsonKey(rawKey);
-                    Data[canonicalKey] = GetValueAsString(property.Value);
-                    break;
-            }
-        }
+        // Replace the data with transformed keys
+        Data = transformedData;
     }
 
     private string MapGlobalJsonKey(string rawKey)
@@ -83,30 +53,5 @@ public class GlobalJsonConfigurationProvider : ConfigurationProvider
 
         // Default: convert to lowercase and normalize separators
         return rawKey.ToLowerInvariant().Replace("-", ":");
-    }
-
-    private string GetValueAsString(JsonElement element)
-    {
-        return element.ValueKind switch
-        {
-            JsonValueKind.String => element.GetString()!,
-            JsonValueKind.Number => element.GetRawText(),
-            JsonValueKind.True => "true",
-            JsonValueKind.False => "false",
-            _ => element.GetRawText()
-        };
-    }
-
-    private string? FindGlobalJson(string startDirectory)
-    {
-        var current = new DirectoryInfo(startDirectory);
-        while (current != null)
-        {
-            var globalJsonPath = Path.Combine(current.FullName, "global.json");
-            if (File.Exists(globalJsonPath))
-                return globalJsonPath;
-            current = current.Parent;
-        }
-        return null;
     }
 }

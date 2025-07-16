@@ -54,6 +54,7 @@ public static class DotNetConfigurationFactory
         workingDirectory ??= Directory.GetCurrentDirectory();
 
         var configurationBuilder = new ConfigurationBuilder();
+        configurationBuilder.SetBasePath(workingDirectory);
 
         // Configuration sources are added in reverse precedence order
         // Last added has highest precedence

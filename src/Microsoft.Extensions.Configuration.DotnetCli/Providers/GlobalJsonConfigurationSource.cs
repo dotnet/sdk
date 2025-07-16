@@ -1,22 +1,26 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Configuration.Json;
+
 namespace Microsoft.Extensions.Configuration.DotnetCli.Providers;
 
 /// <summary>
 /// Configuration source for global.json files.
 /// </summary>
-public class GlobalJsonConfigurationSource : IConfigurationSource
+public class GlobalJsonConfigurationSource : JsonConfigurationSource
 {
-    private readonly string _workingDirectory;
 
     public GlobalJsonConfigurationSource(string workingDirectory)
     {
-        _workingDirectory = workingDirectory ?? throw new ArgumentNullException(nameof(workingDirectory));
+        Path = System.IO.Path.Combine(workingDirectory, "global.json");
+        Optional = true;
+        ResolveFileProvider();
     }
 
-    public IConfigurationProvider Build(IConfigurationBuilder builder)
+    public override IConfigurationProvider Build(IConfigurationBuilder builder)
     {
-        return new GlobalJsonConfigurationProvider(_workingDirectory);
+        EnsureDefaults(builder);
+        return new GlobalJsonConfigurationProvider(this);
     }
 }
