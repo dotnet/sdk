@@ -62,6 +62,11 @@
         <target state="translated">NETSDK1177: Nepovedlo se podepsat hostitele aplikace s kódem chyby {1}: {0}.</target>
         <note>{StrBegins="NETSDK1177: "}</note>
       </trans-unit>
+      <trans-unit id="ApphostCollisionWithCultureDirectory">
+        <source>NETSDK1229: The executable file name '{0}' may conflict with resource directories for culture '{1}'. Consider renaming the application or restricting the SatelliteResourceLanguages property to avoid this conflict.</source>
+        <target state="new">NETSDK1229: The executable file name '{0}' may conflict with resource directories for culture '{1}'. Consider renaming the application or restricting the SatelliteResourceLanguages property to avoid this conflict.</target>
+        <note>{StrBegins="NETSDK1229: "}</note>
+      </trans-unit>
       <trans-unit id="ArtifactsPathCannotBeSetInProject">
         <source>NETSDK1199: The ArtifactsPath and UseArtifactsOutput properties cannot be set in a project file, due to MSBuild ordering constraints. They must be set in a Directory.Build.props file or from the command line. See https://aka.ms/netsdk1199 for more information.</source>
         <target state="translated">NETSDK1199: Vlastnosti ArtifactsPath a UseArtifactsOutput nelze nastavit v souboru projektu z důvodu omezení řazení nástroje MSBuild. Musí být nastaveny v souboru Directory.Build.props nebo z příkazového řádku. Další informace najdete v https://aka.ms/netsdk1199.</target>
