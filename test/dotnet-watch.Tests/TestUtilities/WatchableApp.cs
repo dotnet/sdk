@@ -65,9 +65,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             Logger.Log($"Test waiting for output: '{expectedPrefix}'", testPath, testLine);
 
-            var line = await TryGetOutputLineWithDelayAsync(
-                expectedPrefix,
-                failure ?? new Predicate<string>(line => line.Contains(WatchErrorOutputEmoji, StringComparison.Ordinal)));
+            var line = await Process.GetOutputLineAsync(
+                success: line => line.StartsWith(expectedPrefix, StringComparison.Ordinal),
+                failure: failure ?? new Predicate<string>(line => line.Contains(WatchErrorOutputEmoji, StringComparison.Ordinal)));
 
             if (line == null)
             {
@@ -170,29 +170,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Process.Process.StandardInput.Write(c);
             Process.Process.StandardInput.Flush();
-        }
-
-        private async Task<string> TryGetOutputLineWithDelayAsync(string expectedPrefix, Predicate<string> failure, int maxAttempts = 2)
-        {
-            for (int attempt = 0; attempt < maxAttempts; attempt++)
-            {
-                if (attempt > 0)
-                {
-                    Logger.Log($"Retrying to find output with prefix: '{expectedPrefix}' (attempt {attempt + 1}/{maxAttempts})");
-                    await Task.Delay(TimeSpan.FromSeconds(1));
-                }
-
-                var line = await Process.GetOutputLineAsync(
-                    success: line => line.StartsWith(expectedPrefix, StringComparison.Ordinal),
-                    failure: failure);
-
-                if (line is not null)
-                {
-                    return line;
-                }
-            }
-
-            return null;
         }
     }
 }

@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await AssertCompiledAppDefinedTypes(expected: 2);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
         public async Task DeleteCompiledFile()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await AssertCompiledAppDefinedTypes(expected: 1);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
         public async Task DeleteSourceFolder()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await AssertCompiledAppDefinedTypes(expected: 1);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
         public async Task RenameCompiledFile()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
