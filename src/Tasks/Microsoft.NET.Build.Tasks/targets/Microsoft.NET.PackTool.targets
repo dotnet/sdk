@@ -74,11 +74,6 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     <_InnerToolsPublishAot Condition="$(_HasRIDSpecificTools) and '$(PublishAot)' == 'true'">true</_InnerToolsPublishAot>
     <PublishAot Condition="!$(_IsRidSpecific) and '$(MSBuildIsRestoring)' != 'true'">false</PublishAot>
 
-    <!-- we want to ensure that we don't publish any AppHosts for the 'outer', RID-agnostic builds -->
-    <UseAppHost Condition="!$(_IsRidSpecific)">false</UseAppHost>
-    <!-- we want to ensure that we _do_ publish any AppHosts for the 'inner', RID-specific builds -->
-    <UseAppHost Condition="$(_IsRidSpecific)">true</UseAppHost>
-
     <!-- Tool implementation files are not included in the primary package when the tool has RID-specific packages.  So only pack the tool implementation
        (and only depend on publish) if there are no RID-specific packages, or if the RuntimeIdentifier is set. -->
     <_ToolPackageShouldIncludeImplementation Condition=" '$(PackAsTool)' == 'true' And
@@ -132,6 +127,19 @@ NOTE: This file is imported from the following contexts, so be aware when writin
   <Target Name="SetPackToolProperties"
           BeforeTargets="_GenerateRestoreProjectSpec;_GenerateToolsSettingsFileInputCache;_GenerateShimInputCache;_GetOutputItemsFromPack">
 
+    <!-- We set UseAppHost here instead of as a 'raw' property because we don't want to impact 'normal' Publish operations on these apps.  -->
+    <PropertyGroup>
+      <!-- we want to ensure that we don't publish any AppHosts for the 'outer', RID-agnostic builds -->
+      <UseAppHost Condition="!$(_IsRidSpecific)">false</UseAppHost>
+      <!-- we want to ensure that we _do_ publish any AppHosts for the 'inner', RID-specific builds -->
+      <UseAppHost Condition="$(_IsRidSpecific)">true</UseAppHost>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(ToolCommandRunner)' == ''">
+      <ToolCommandRunner Condition="!$(UseAppHost)">dotnet</ToolCommandRunner>
+      <ToolCommandRunner Condition="$(UseAppHost)">executable</ToolCommandRunner>
+    </PropertyGroup>
+
     <!-- Needs to be in a target so we don't need to worry about evaluation order with NativeBinary property -->
     <PropertyGroup Condition="'$(ToolEntryPoint)' == ''">
       <ToolEntryPoint>$(TargetFileName)</ToolEntryPoint>
@@ -157,7 +165,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
   <Target Name="PackToPublishDependencyIndirection"
           DependsOnTargets="$(_PackToolPublishDependency)"/>
 
-  <Target Name="PackTool" DependsOnTargets="SetPackToolProperties;GenerateToolsSettingsFileFromBuildProperty;PackToPublishDependencyIndirection;_PackToolValidation;PackToolImplementation" 
+  <Target Name="PackTool" DependsOnTargets="SetPackToolProperties;GenerateToolsSettingsFileFromBuildProperty;PackToPublishDependencyIndirection;_PackToolValidation;PackToolImplementation"
     Condition=" '$(PackAsTool)' == 'true' "
     Returns="@(TfmSpecificPackageFile)">
     <ItemGroup>
@@ -193,11 +201,6 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     <ToolRuntimeIdentifier Condition=" '$(ToolRuntimeIdentifier)' == ''">$(RuntimeIdentifier)</ToolRuntimeIdentifier>
     <_GenerateToolsSettingsFileCacheFile Condition="'$(_GenerateToolsSettingsFileCacheFile)' == ''">$(IntermediateOutputPath)$(MSBuildProjectName).toolssettingsinput.cache</_GenerateToolsSettingsFileCacheFile>
     <_GenerateToolsSettingsFileCacheFile>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_GenerateToolsSettingsFileCacheFile)))</_GenerateToolsSettingsFileCacheFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(ToolCommandRunner)' == ''">
-    <ToolCommandRunner Condition="!$(UseAppHost)">dotnet</ToolCommandRunner>
-    <ToolCommandRunner Condition="$(UseAppHost)">executable</ToolCommandRunner>
   </PropertyGroup>
 
   <Target Name="_GenerateToolsSettingsFileInputCache">
