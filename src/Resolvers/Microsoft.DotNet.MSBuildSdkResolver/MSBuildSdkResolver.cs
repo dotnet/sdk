@@ -299,7 +299,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         {
             var expectedFileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Constants.DotNetExe : Constants.DotNet;
             var currentDir = resolverResult.ResolvedSdkDirectory;
-            var expectedDotnetRoot = Path.GetFullPath(Path.Combine(currentDir, "..", ".."));
+            var expectedDotnetRoot = Path.GetDirectoryName(Path.GetDirectoryName(currentDir));
             var expectedMuxerPath = Path.Combine(expectedDotnetRoot, expectedFileName);
             if (File.Exists(expectedMuxerPath))
             {
