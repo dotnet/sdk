@@ -14,15 +14,15 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 /// </summary>
 internal sealed class FileBasedAppSourceEditor
 {
-    private bool _modified;
-
     public SourceFile SourceFile
     {
         get;
         private set
         {
             field = value;
-            _modified = true;
+
+            // Make sure directives are reloaded next time they are accessed.
+            Directives = default;
         }
     }
 
@@ -30,13 +30,17 @@ internal sealed class FileBasedAppSourceEditor
     {
         get
         {
-            ReloadIfNecessary();
+            if (field.IsDefault)
+            {
+                field = LoadDirectives(SourceFile);
+                Debug.Assert(!field.IsDefault);
+            }
+
             return field;
         }
         private set
         {
             field = value;
-            _modified = false;
         }
     }
 
@@ -75,14 +79,6 @@ internal sealed class FileBasedAppSourceEditor
     private static ImmutableArray<CSharpDirective> LoadDirectives(SourceFile sourceFile)
     {
         return VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: false, DiagnosticBag.Ignore());
-    }
-
-    private void ReloadIfNecessary()
-    {
-        if (_modified)
-        {
-            Directives = LoadDirectives(SourceFile);
-        }
     }
 
     public void Add(CSharpDirective directive)
