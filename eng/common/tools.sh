@@ -123,7 +123,7 @@ function InitializeDotNetCli {
 
   # Disable telemetry on CI
   if [[ $ci == true ]]; then
-    export DOTNET_CLI_TELEMETRY_OPTOUT=1
+    export DOTNET_CLI_TELEMETRY_OPTOUT=true
   fi
 
   # LTTNG is the logging infrastructure used by Core CLR. Need this variable set

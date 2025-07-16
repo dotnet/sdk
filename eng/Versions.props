@@ -103,6 +103,10 @@
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>10.0.0-preview.7.25359.101</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
     <MicrosoftExtensionsLoggingAbstractionsVersion>10.0.0-preview.7.25359.101</MicrosoftExtensionsLoggingAbstractionsVersion>
     <MicrosoftExtensionsLoggingConsoleVersion>10.0.0-preview.7.25359.101</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsConfigurationPackageVersion>10.0.0-preview.7.25359.101</MicrosoftExtensionsConfigurationPackageVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>10.0.0-preview.7.25359.101</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
+    <MicrosoftExtensionsConfigurationBinderPackageVersion>10.0.0-preview.7.25359.101</MicrosoftExtensionsConfigurationBinderPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>10.0.0-preview.7.25359.101</MicrosoftExtensionsConfigurationJsonPackageVersion>
     <MicrosoftExtensionsLoggingVersion>10.0.0-preview.7.25359.101</MicrosoftExtensionsLoggingVersion>
     <MicrosoftNETILLinkTasksPackageVersion>10.0.0-preview.7.25359.101</MicrosoftNETILLinkTasksPackageVersion>
     <MicrosoftExtensionsConfigurationIniVersion>10.0.0-preview.7.25359.101</MicrosoftExtensionsConfigurationIniVersion>

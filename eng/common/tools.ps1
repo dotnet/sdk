@@ -165,7 +165,7 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
 
   # Disable telemetry on CI.
   if ($ci) {
-    $env:DOTNET_CLI_TELEMETRY_OPTOUT=1
+    $env:DOTNET_CLI_TELEMETRY_OPTOUT=$true
   }
 
   # Find the first path on %PATH% that contains the dotnet.exe
@@ -293,7 +293,7 @@ function InstallDotNet([string] $dotnetRoot,
     if ($runtime -eq "aspnetcore") { $runtimePath = $runtimePath + "\Microsoft.AspNetCore.App" }
     if ($runtime -eq "windowsdesktop") { $runtimePath = $runtimePath + "\Microsoft.WindowsDesktop.App" }
     $runtimePath = $runtimePath + "\" + $version
-  
+
     $dotnetVersionLabel = "runtime toolset '$runtime/$architecture v$version'"
 
     if (Test-Path $runtimePath) {

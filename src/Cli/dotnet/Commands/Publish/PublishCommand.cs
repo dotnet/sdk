@@ -6,6 +6,7 @@ using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.Configuration.DotnetCli;
 
 namespace Microsoft.DotNet.Cli.Commands.Publish;
 

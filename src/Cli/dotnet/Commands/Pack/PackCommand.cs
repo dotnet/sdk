@@ -5,6 +5,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.Configuration.DotnetCli;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
@@ -31,8 +32,7 @@ public class PackCommand(
             new ReleasePropertyProjectLocator.DependentCommandOptions(
                     parseResult.GetValue(PackCommandParser.SlnOrProjectArgument),
                     parseResult.HasOption(PackCommandParser.ConfigurationOption) ? parseResult.GetValue(PackCommandParser.ConfigurationOption) : null
-                )
-        );
+                ));
 
         bool noRestore = parseResult.HasOption(PackCommandParser.NoRestoreOption) || parseResult.HasOption(PackCommandParser.NoBuildOption);
         var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
