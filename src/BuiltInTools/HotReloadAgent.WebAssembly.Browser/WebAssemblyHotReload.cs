@@ -155,7 +155,7 @@ internal static partial class WebAssemblyHotReload
 
     [JSExport]
     [SupportedOSPlatform("browser")]
-    public static string ApplyHotReloadDeltas(string deltasJson, int loggingLevel)
+    public static string? ApplyHotReloadDeltas(string deltasJson, int loggingLevel)
     {
         var deltas = JsonSerializer.Deserialize(deltasJson, jsonContext.DeltaArray);
         if (deltas == null)
