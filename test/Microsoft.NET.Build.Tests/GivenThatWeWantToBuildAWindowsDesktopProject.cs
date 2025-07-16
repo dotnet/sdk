@@ -499,6 +499,58 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [WindowsOnlyFact]
+        public void ItImplicitlyDefinesCSWINRT3_0WhenBuildingAProjectTargetingCsWinRT3_0()
+        {
+            TestProject testProject = new()
+            {
+                Name = "A",
+                ProjectSdk = "Microsoft.NET.Sdk",
+                TargetFrameworks = "net10.0-windows10.0.22621.1",
+                SourceFiles =
+                {
+                    ["Program.cs"] = """
+                    #if !CSWINRT3_0
+                    #error CSWINRT3_0 is not defined
+                    #endif
+                    """
+                }
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+        }
+
+        [WindowsOnlyFact]
+        public void ItDoesNotImplicitlyDefineCSWINRT3_0WhenBuildingAProjectNotTargetingCsWinRT3_0()
+        {
+            TestProject testProject = new()
+            {
+                Name = "A",
+                ProjectSdk = "Microsoft.NET.Sdk",
+                TargetFrameworks = "net10.0-windows10.0.22621.0",
+                SourceFiles =
+                {
+                    ["Program.cs"] = """
+                    #if CSWINRT3_0
+                    #error CSWINRT3_0 is defined
+                    #endif
+                    """
+                }
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+        }
+
+        [WindowsOnlyFact]
         public void ItErrorsWhenTargetingBelowNet6WithUseUwpProperty()
         {
             TestProject testProject = new()
