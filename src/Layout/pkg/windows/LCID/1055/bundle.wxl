@@ -4,25 +4,24 @@
   <String Id="ConfirmCancelMessage">İptal etmek istediğinizden emin misiniz?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Önceki sürüm</String>
   <String Id="HelpHeader">Kurulum Yardımı</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"dizin"[\]] - yüklemeler, onarımlar, kaldırmalar
-   veya paketin tam bir yerel kopyasını dizinde oluşturur. '/install' varsayılandır.
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] - yükler, onarır, kaldırır
+   veya paketin tam bir yerel kopyasını dizinde oluşturur. Varsayılan değer: '/install'.
 
-/passive | /quiet - kullanıcı arabirimini istem olmadan minimum düzeyde görüntüler veya kullanıcı arabirimi ve 
- istem olmadan
-   görüntüler. Varsayılan olarak kullanıcı arabirimi ve tüm istemler görüntülenir.
+/passive | /quiet - istemler olmadan minimal kullanıcı arayüzünü görüntüler veya kullanıcı arayüzü ve
+   istem olmadan görüntüler. Varsayılan olarak kullanıcı arabirimi ve tüm istemler görüntülenir.
 
-/norestart - yeniden başlatma girişimlerini durdur. Varsayılan olarak kullanıcı arabirimi yeniden başlatmadan önce sorar.
+/norestart - yeniden başlatma girişimlerini durdurur. Varsayılan olarak kullanıcı arabirimi yeniden başlatmadan önce soracaktır.
 /log [\[]"log.txt"[\]] - belirli bir dosyaya kaydeder. Varsayılan olarak, %TEMP% içinde bir günlük dosyası oluşturulur.</String>
   <String Id="HelpCloseButton">&amp;Kapat</String>
-  <String Id="InstallAcceptCheckbox">Lisans hüküm ve koşullarını &amp;kabul ediyorum</String>
+  <String Id="InstallAcceptCheckbox">Lisans &amp;hüküm ve koşullarını kabul ediyorum</String>
   <String Id="InstallOptionsButton">&amp;Seçenekler</String>
-  <String Id="InstallInstallButton">Yü&amp;kle</String>
+  <String Id="InstallInstallButton">&amp;Yükle</String>
   <String Id="InstallCloseButton">&amp;Kapat</String>
   <String Id="ProgressHeader">Kurulum İlerleme Durumu</String>
   <String Id="ProgressLabel">İşleniyor:</String>
   <String Id="OverallProgressPackageText">Başlatılıyor...</String>
   <String Id="ProgressCancelButton">İ&amp;ptal</String>
-  <String Id="ModifyHeader">Kurulumu değiştir</String>
+  <String Id="ModifyHeader">Kurulumu Değiştir</String>
   <String Id="ModifyRepairButton">&amp;Onar</String>
   <String Id="ModifyUninstallButton">&amp;Kaldır</String>
   <String Id="ModifyCloseButton">&amp;Kapat</String>
@@ -56,7 +55,7 @@
     • .NET Windows Masaüstü Çalışma Zamanı [WINFORMSANDWPFVERSION]
 
 Bu ürün, kullanım verilerini toplar
-    • Daha fazla bilgi ve geri çevirme https://aka.ms/dotnet-cli-telemetry
+    • Daha fazla bilgi ve geri çevirme için https://aka.ms/dotnet-cli-telemetry adresine bakın
 
 Kaynaklar
     • .NET Belgeleri https://aka.ms/dotnet-docs

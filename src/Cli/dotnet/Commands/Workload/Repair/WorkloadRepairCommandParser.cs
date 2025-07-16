@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 
@@ -15,6 +13,8 @@ internal static class WorkloadRepairCommandParser
     public static readonly Option<string[]> SourceOption = InstallingWorkloadCommandParser.SourceOption;
 
     public static readonly Option<string> VersionOption = InstallingWorkloadCommandParser.VersionOption;
+
+    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal);
 
     private static readonly Command Command = ConstructCommand();
 
@@ -30,7 +30,7 @@ internal static class WorkloadRepairCommandParser
         command.Options.Add(VersionOption);
         command.Options.Add(ConfigOption);
         command.Options.Add(SourceOption);
-        command.Options.Add(CommonOptions.VerbosityOption);
+        command.Options.Add(VerbosityOption);
         command.AddWorkloadCommandNuGetRestoreActionConfigOptions();
         command.Options.Add(WorkloadInstallCommandParser.SkipSignCheckOption);
 

@@ -17,7 +17,7 @@ internal static class ToolRunCommandParser
 
     public static readonly Argument<IEnumerable<string>> CommandArgument = new("toolArguments")
     {
-        Description = "arguments forwarded to the tool"
+        Description = CliCommandStrings.ToolRunArgumentsDescription
     };
 
     public static readonly Option<bool> RollForwardOption = new("--allow-roll-forward")

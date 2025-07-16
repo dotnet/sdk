@@ -30,6 +30,7 @@
     <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
     <UseNativeHttpHandler>true</UseNativeHttpHandler>
     <_UseManagedNtlm>true</_UseManagedNtlm>
+    <Http3Support>false</Http3Support>
     <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
     <NullabilityInfoContextSupport>false</NullabilityInfoContextSupport>
     <CustomResourceTypesSupport>false</CustomResourceTypesSupport>

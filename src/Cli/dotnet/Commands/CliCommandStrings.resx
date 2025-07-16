@@ -649,6 +649,9 @@ dotnet.config is a name don't translate.</comment>
   <data name="CommandOptionLaunchProfileDescription" xml:space="preserve">
     <value>The name of the launch profile (if any) to use when launching the application.</value>
   </data>
+  <data name="CommandOptionLaunchProfileHelpName" xml:space="preserve">
+    <value>LAUNCH_PROFILE</value>
+  </data>
   <data name="CommandOptionNoBuildDescription" xml:space="preserve">
     <value>Do not build the project before running. Implies --no-restore.</value>
     <comment>{Locked="--no-restore"}</comment>
@@ -664,6 +667,9 @@ dotnet.config is a name don't translate.</comment>
   </data>
   <data name="CommandOptionProjectDescription" xml:space="preserve">
     <value>The path to the project file to run (defaults to the current directory if there is only one project).</value>
+  </data>
+  <data name="CommandOptionProjectHelpName" xml:space="preserve">
+    <value>PROJECT_PATH</value>
   </data>
   <data name="Commands" xml:space="preserve">
     <value>SDK commands</value>
@@ -1045,6 +1051,10 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   <data name="MinimumExpectedTestsPolicyViolation" xml:space="preserve">
     <value>Minimum expected tests policy violation, tests ran {0}, minimum expected {1}</value>
     <comment>{0}, {1} number of tests</comment>
+  </data>
+  <data name="InvalidProjectDirective" xml:space="preserve">
+    <value>The '#:project' directive at '{0}' is invalid: {1}</value>
+    <comment>{0} is the file path and line number. {1} is the inner error message.</comment>
   </data>
   <data name="MissingDirectiveName" xml:space="preserve">
     <value>Missing name of '{0}' at {1}.</value>
@@ -1428,7 +1438,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
            microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
-           microsoft.net.sdk.aspire                           8.0.100                    8.2.0
       3. If one or more workloads are provided along with their versions (by joining them with the '@' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.
          Example:
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
@@ -1437,7 +1446,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <comment>{Locked="--take"} {Locked="--format"} {Locked="dotnet workload search version"} {Locked="workloadVersion"}</comment>
   </data>
   <data name="ProjectCapabilityConstraint_DisplayName" xml:space="preserve">
-    <value>Project capabiltities</value>
+    <value>Project capabilities</value>
   </data>
   <data name="ProjectCapabilityConstraint_Error_ArgumentShouldBeString" xml:space="preserve">
     <value>argument should be a string</value>
@@ -1492,6 +1501,37 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   <data name="ProjectConvertAppFullName" xml:space="preserve">
     <value>Convert a file-based program to a project-based program.</value>
   </data>
+  <data name="ProjectConvertAskForOutputDirectory" xml:space="preserve">
+    <value>Specify the output directory ({0}):</value>
+    <comment>{0} is the default value</comment>
+  </data>
+  <data name="ProjectConvertDryRun" xml:space="preserve">
+    <value>Determines changes without actually modifying the file system</value>
+  </data>
+  <data name="ProjectConvertWouldCreateDirectory" xml:space="preserve">
+    <value>Dry run: would create directory: {0}</value>
+    <comment>{0} is the directory full path.</comment>
+  </data>
+  <data name="ProjectConvertWouldCopyFile" xml:space="preserve">
+    <value>Dry run: would copy file '{0}' to '{1}'.</value>
+    <comment>{0} and {1} are file full paths.</comment>
+  </data>
+  <data name="ProjectConvertWouldConvertFile" xml:space="preserve">
+    <value>Dry run: would remove file-level directives from file: {0}</value>
+    <comment>{0} is the file full path.</comment>
+  </data>
+  <data name="ProjectConvertWouldMoveFile" xml:space="preserve">
+    <value>Dry run: would move file '{0}' to '{1}'.</value>
+    <comment>{0} and {1} are file full paths.</comment>
+  </data>
+  <data name="ProjectConvertWouldDeleteFile" xml:space="preserve">
+    <value>Dry run: would delete file: {0}</value>
+    <comment>{0} is the file full path.</comment>
+  </data>
+  <data name="ProjectConvertWouldCreateFile" xml:space="preserve">
+    <value>Dry run: would create file: {0}</value>
+    <comment>{0} is the file full path.</comment>
+  </data>
   <data name="ProjectManifest" xml:space="preserve">
     <value>PROJECT_MANIFEST</value>
   </data>
@@ -1506,16 +1546,28 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <comment>{0} is the file path and line number. {1} is an inner exception message.</comment>
   </data>
   <data name="PropertyDirectiveMissingParts" xml:space="preserve">
-    <value>The property directive needs to have two parts separated by a space like 'PropertyName PropertyValue': {0}</value>
+    <value>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</value>
     <comment>{0} is the file path and line number.</comment>
+  </data>
+  <data name="InvalidDirectiveName" xml:space="preserve">
+    <value>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</value>
+    <comment>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</comment>
   </data>
   <data name="CannotConvertDirective" xml:space="preserve">
     <value>Some directives cannot be converted: the first error is at {0}. Run the file to see all compilation errors. Specify '--force' to convert anyway.</value>
     <comment>{Locked="--force"}. {0} is the file path and line number.</comment>
   </data>
+  <data name="DuplicateDirective" xml:space="preserve">
+    <value>Duplicate directives are not supported: {0} at {1}</value>
+    <comment>{0} is the directive type and name. {1} is the file path and line number.</comment>
+  </data>
   <data name="InvalidOptionCombination" xml:space="preserve">
     <value>Cannot combine option '{0}' and '{1}'.</value>
     <comment>{0} and {1} are option names like '--no-build'.</comment>
+  </data>
+  <data name="InvalidOptionForStdin" xml:space="preserve">
+    <value>Cannot specify option '{0}' when also using '-' to read the file from standard input.</value>
+    <comment>{0} is an option name like '--no-build'.</comment>
   </data>
   <data name="NoBinaryLogBecauseUpToDate" xml:space="preserve">
     <value>Warning: Binary log option was specified but build will be skipped because output is up to date, specify '--no-cache' to force build.</value>
@@ -1938,16 +1990,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
   <data name="ToolInstallationFailedContactAuthor" xml:space="preserve">
     <value>Tool '{0}' failed to install. Contact the tool author for assistance.</value>
   </data>
-  <data name="ToolInstallationFailedWithRestoreGuidance" xml:space="preserve">
-    <value>Tool '{0}' failed to install. This failure may have been caused by:
-
-* You are attempting to install a preview release and did not use the --version option to specify the version.
-* A package by this name was found, but it was not a .NET tool.
-* The required NuGet feed cannot be accessed, perhaps because of an Internet connection problem.
-* You mistyped the name of the tool.
-
-For more reasons, including package naming enforcement, visit https://aka.ms/failure-installing-tool</value>
-  </data>
   <data name="ToolInstallationRestoreFailed" xml:space="preserve">
     <value>The tool package could not be restored.</value>
   </data>
@@ -1984,10 +2026,6 @@ Tool '{1}' (version '{2}') was successfully installed.</value>
   </data>
   <data name="ToolInstallManifestPathOptionName" xml:space="preserve">
     <value>PATH</value>
-  </data>
-  <data name="ToolInstallNoManifestGuide" xml:space="preserve">
-    <value>If you intended to install a global tool, add `--global` to the command.
-If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</value>
   </data>
   <data name="ToolInstallNuGetConfigurationFileDoesNotExist" xml:space="preserve">
     <value>NuGet configuration file '{0}' does not exist.</value>
@@ -2061,6 +2099,9 @@ If you would like to create a manifest, use the `--create-manifest-if-needed` fl
   </data>
   <data name="ToolRunCommandDescription" xml:space="preserve">
     <value>Run a local tool. Note that this command cannot be used to run a global tool. </value>
+  </data>
+  <data name="ToolRunArgumentsDescription" xml:space="preserve">
+    <value>Arguments forwarded to the tool</value>
   </data>
   <data name="ToolSearchCommandDescription" xml:space="preserve">
     <value>Search dotnet tools in nuget.org</value>
@@ -2392,6 +2433,9 @@ To display a value, specify the corresponding command-line option without provid
   <data name="WorkloadNotRecognized" xml:space="preserve">
     <value>Workload ID {0} is not recognized.</value>
   </data>
+  <data name="AspireWorkloadDeprecated" xml:space="preserve">
+    <value>The Aspire workload is deprecated and no longer necessary. Aspire is now available as NuGet packages that you can add directly to your projects. For more information, see https://aka.ms/aspire/support-policy</value>
+  </data>
   <data name="WorkloadNotSupportedOnPlatform" xml:space="preserve">
     <value>Workload ID {0} isn't supported on this platform.</value>
   </data>
@@ -2485,5 +2529,30 @@ To display a value, specify the corresponding command-line option without provid
   </data>
   <data name="SolutionAddReferencedProjectsOptionDescription" xml:space="preserve">
     <value>Recursively add projects' ReferencedProjects to solution</value>
+  </data>
+  <data name="ToolExecuteCommandDescription" xml:space="preserve">
+    <value>Executes a tool from source without permanently installing it.</value>
+  </data>
+  <data name="ToolDownloadConfirmationPrompt" xml:space="preserve">
+    <value>Tool package {0}@{1} will be downloaded from source {2}.
+Proceed?</value>
+  </data>
+  <data name="ConfirmationPromptYesValue" xml:space="preserve">
+    <value>y</value>
+    <comment>For a command line connfirmation prompt, this is the key that should be pressed for "yes", ie to agree.</comment>
+  </data>
+  <data name="ConfirmationPromptNoValue" xml:space="preserve">
+    <value>n</value>
+    <comment>For a command line connfirmation prompt, this is the key that should be pressed for "no", ie to cancel the operation.</comment>
+  </data>
+  <data name="ConfirmationPromptInvalidChoiceMessage" xml:space="preserve">
+    <value>Please type '{0}' for yes or '{1}' for no.</value>
+  </data>
+  <data name="ToolDownloadCanceled" xml:space="preserve">
+    <value>Tool package download canceled</value>
+  </data>
+  <data name="ToolDownloadNeedsConfirmation" xml:space="preserve">
+    <value>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</value>
+    <comment>{Locked="--yes"}</comment>
   </data>
 </root>

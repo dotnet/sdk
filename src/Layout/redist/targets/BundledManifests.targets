@@ -7,7 +7,6 @@
     <BundledManifests Include="Microsoft.NET.Sdk.macOS" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinMacOSWorkloadManifestVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
     <BundledManifests Include="Microsoft.NET.Sdk.Maui" FeatureBand="$(MauiFeatureBand)" Version="$(MauiWorkloadManifestVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
     <BundledManifests Include="Microsoft.NET.Sdk.tvOS" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinTvOSWorkloadManifestVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-    <BundledManifests Include="Microsoft.NET.Sdk.Aspire" FeatureBand="$(AspireFeatureBand)" Version="$(MicrosoftNETSdkAspireManifest80100PackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -67,8 +66,7 @@
 
     <ItemGroup>
       <!-- Don't try to validate signing for workload manifests that will be signed as part of post-build signing -->
-      <BundledManifestsToValidateSigning Include="@(BundledManifests)"
-        Exclude="Microsoft.NET.Sdk.Aspire">
+      <BundledManifestsToValidateSigning Include="@(BundledManifests)">
         <RestoredMsiPathInNupkg>$([MSBuild]::NormalizePath($([System.IO.Directory]::GetFiles('%(RestoredMsiNupkgContentPath)/data/', '*$(MsiArchitectureForWorkloadManifests).msi'))))</RestoredMsiPathInNupkg>
       </BundledManifestsToValidateSigning>
 
@@ -105,7 +103,7 @@
                        DestinationPath="%(BundledManifests.FeatureBand)/$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/%(BundledManifests.Version)/localize" />
     </ItemGroup>
 
-    <Error Text="No workload manifest content found." Condition="'@(ManifestContent->Count())' == '0'" />
+    <Error Text="No workload manifest content found." Condition="'@(BundledManifests)' != '' and '@(ManifestContent)' == ''" />
 
     <Copy SourceFiles="@(ManifestContent)"
           DestinationFolder="$(RedistInstallerLayoutPath)sdk-manifests/%(DestinationPath)" />

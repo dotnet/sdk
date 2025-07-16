@@ -47,6 +47,7 @@ try {
 
   $env:PATH = "$TestDotnetRoot;$env:Path"
   $env:DOTNET_ROOT = $TestDotnetRoot
+  $env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH="0"
 
   # Avoid downloading Microsoft.Net.Sdk.Compilers.Toolset from feed
   # Locally built SDK package version is Major.Minor.0-dev, which won't be available.

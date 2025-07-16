@@ -6,6 +6,7 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using ResourceHashesByNameDictionary = System.Collections.Generic.Dictionary<string, string>;
 
 // For test purposes only. Actual build time implementation lives in runtime repository with WasmSDK
@@ -41,7 +42,11 @@ public class BootJsonData
     /// and values are SHA-256 hashes formatted in prefixed base-64 style (e.g., 'sha256-abcdefg...')
     /// as used for subresource integrity checking.
     /// </summary>
-    public ResourcesData resources { get; set; } = new ResourcesData();
+    [JsonIgnore]
+    public ResourcesData resources => (ResourcesData)resourcesRaw;
+
+    [JsonPropertyName("resources")]
+    public object resourcesRaw { get; set; }
 
     /// <summary>
     /// Gets a value that determines whether to enable caching of the <see cref="resources"/>
@@ -149,6 +154,9 @@ public class ResourcesData
     public ResourceHashesByNameDictionary jsModuleWorker { get; set; }
 
     [DataMember(EmitDefaultValue = false)]
+    public ResourceHashesByNameDictionary jsModuleDiagnostics { get; set; }
+
+    [DataMember(EmitDefaultValue = false)]
     public ResourceHashesByNameDictionary jsModuleNative { get; set; }
 
     [DataMember(EmitDefaultValue = false)]
@@ -158,15 +166,20 @@ public class ResourcesData
     public ResourceHashesByNameDictionary wasmNative { get; set; }
 
     [DataMember(EmitDefaultValue = false)]
-    public ResourceHashesByNameDictionary jsSymbols { get; set; }
+    public ResourceHashesByNameDictionary wasmSymbols { get; set; }
 
     [DataMember(EmitDefaultValue = false)]
     public ResourceHashesByNameDictionary icu { get; set; }
+
+    public ResourceHashesByNameDictionary coreAssembly { get; set; } = new ResourceHashesByNameDictionary();
 
     /// <summary>
     /// "assembly" (.dll) resources
     /// </summary>
     public ResourceHashesByNameDictionary assembly { get; set; } = new ResourceHashesByNameDictionary();
+
+    [DataMember(EmitDefaultValue = false)]
+    public ResourceHashesByNameDictionary corePdb { get; set; }
 
     /// <summary>
     /// "debug" (.pdb) resources
@@ -213,10 +226,141 @@ public class ResourcesData
     public Dictionary<string, AdditionalAsset> runtimeAssets { get; set; }
 
     [DataMember(EmitDefaultValue = false)]
+    public Dictionary<string, ResourceHashesByNameDictionary> coreVfs { get; set; }
+
+    [DataMember(EmitDefaultValue = false)]
     public Dictionary<string, ResourceHashesByNameDictionary> vfs { get; set; }
 
     [DataMember(EmitDefaultValue = false)]
     public List<string> remoteSources { get; set; }
+}
+
+public class AssetsData
+{
+    /// <summary>
+    /// Gets a hash of all resources
+    /// </summary>
+    public string hash { get; set; }
+
+    [DataMember(EmitDefaultValue = false)]
+    public List<JsAsset> jsModuleWorker { get; set; }
+
+    [DataMember(EmitDefaultValue = false)]
+    public List<JsAsset> jsModuleDiagnostics { get; set; }
+
+    [DataMember(EmitDefaultValue = false)]
+    public List<JsAsset> jsModuleNative { get; set; }
+
+    [DataMember(EmitDefaultValue = false)]
+    public List<JsAsset> jsModuleRuntime { get; set; }
+
+    [DataMember(EmitDefaultValue = false)]
+    public List<WasmAsset> wasmNative { get; set; }
+
+    [DataMember(EmitDefaultValue = false)]
+    public List<SymbolsAsset> wasmSymbols { get; set; }
+
+    [DataMember(EmitDefaultValue = false)]
+    public List<GeneralAsset> icu { get; set; }
+
+    /// <summary>
+    /// "assembly" (.dll) resources needed to start MonoVM
+    /// </summary>
+    public List<GeneralAsset> coreAssembly { get; set; } = new();
+
+    /// <summary>
+    /// "assembly" (.dll) resources
+    /// </summary>
+    public List<GeneralAsset> assembly { get; set; } = new();
+
+    /// <summary>
+    /// "debug" (.pdb) resources needed to start MonoVM
+    /// </summary>
+    [DataMember(EmitDefaultValue = false)]
+    public List<GeneralAsset> corePdb { get; set; }
+
+    /// <summary>
+    /// "debug" (.pdb) resources
+    /// </summary>
+    [DataMember(EmitDefaultValue = false)]
+    public List<GeneralAsset> pdb { get; set; }
+
+    /// <summary>
+    /// localization (.satellite resx) resources
+    /// </summary>
+    [DataMember(EmitDefaultValue = false)]
+    public Dictionary<string, List<GeneralAsset>> satelliteResources { get; set; }
+
+    /// <summary>
+    /// Assembly (.dll) resources that are loaded lazily during runtime
+    /// </summary>
+    [DataMember(EmitDefaultValue = false)]
+    public List<GeneralAsset> lazyAssembly { get; set; }
+
+    /// <summary>
+    /// JavaScript module initializers that Blazor will be in charge of loading.
+    /// Used in .NET < 8
+    /// </summary>
+    [DataMember(EmitDefaultValue = false)]
+    public List<JsAsset> libraryInitializers { get; set; }
+
+    [DataMember(EmitDefaultValue = false)]
+    public List<JsAsset> modulesAfterConfigLoaded { get; set; }
+
+    [DataMember(EmitDefaultValue = false)]
+    public List<JsAsset> modulesAfterRuntimeReady { get; set; }
+
+    /// <summary>
+    /// Extensions created by users customizing the initialization process. The format of the file(s)
+    /// is up to the user.
+    /// </summary>
+    [DataMember(EmitDefaultValue = false)]
+    public Dictionary<string, ResourceHashesByNameDictionary> extensions { get; set; }
+
+    [DataMember(EmitDefaultValue = false)]
+    public List<VfsAsset> coreVfs { get; set; }
+
+    [DataMember(EmitDefaultValue = false)]
+    public List<VfsAsset> vfs { get; set; }
+}
+
+[DataContract]
+public class JsAsset
+{
+    public string name { get; set; }
+    public string moduleExports { get; set; }
+}
+
+[DataContract]
+public class SymbolsAsset
+{
+    public string name { get; set; }
+}
+
+[DataContract]
+public class WasmAsset
+{
+    public string name { get; set; }
+    public string integrity { get; set; }
+    public string resolvedUrl { get; set; }
+}
+
+[DataContract]
+public class GeneralAsset
+{
+    public string virtualPath { get; set; }
+    public string name { get; set; }
+    public string integrity { get; set; }
+    public string resolvedUrl { get; set; }
+}
+
+[DataContract]
+public class VfsAsset
+{
+    public string virtualPath { get; set; }
+    public string name { get; set; }
+    public string integrity { get; set; }
+    public string resolvedUrl { get; set; }
 }
 
 public enum GlobalizationMode : int
@@ -261,8 +405,63 @@ public class BootJsonDataLoader
     public static BootJsonData ParseBootData(string bootConfigPath)
     {
         string jsonContent = GetJsonContent(bootConfigPath);
-        BootJsonData config = JsonSerializer.Deserialize<BootJsonData>(jsonContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        options.Converters.Add(new ResourcesConverter());
+        BootJsonData config = JsonSerializer.Deserialize<BootJsonData>(jsonContent, options);
+        if (config.resourcesRaw is AssetsData assets)
+        {
+            config.resourcesRaw = ConvertAssetsToResources(assets);
+        }
+
         return config;
+    }
+
+    private static ResourcesData ConvertAssetsToResources(AssetsData assets)
+    {
+        static Dictionary<string, ResourceHashesByNameDictionary> ConvertSatelliteResources(Dictionary<string, List<GeneralAsset>> satelliteResources)
+        {
+            if (satelliteResources == null)
+                return null;
+
+            var result = new Dictionary<string, ResourceHashesByNameDictionary>();
+            foreach (var kvp in satelliteResources)
+                result[kvp.Key] = kvp.Value.ToDictionary(a => a.name, a => a.integrity);
+
+            return result;
+        }
+
+        static Dictionary<string, ResourceHashesByNameDictionary> ConvertVfsAssets(List<VfsAsset> vfsAssets)
+        {
+            return vfsAssets?.ToDictionary(a => a.virtualPath, a => new ResourceHashesByNameDictionary
+            {
+                { a.name, a.integrity }
+            });
+        }
+
+        var resources = new ResourcesData
+        {
+            hash = assets.hash,
+            jsModuleWorker = assets.jsModuleWorker?.ToDictionary(a => a.name, a => (string)null),
+            jsModuleDiagnostics = assets.jsModuleDiagnostics?.ToDictionary(a => a.name, a => (string)null),
+            jsModuleNative = assets.jsModuleNative?.ToDictionary(a => a.name, a => (string)null),
+            jsModuleRuntime = assets.jsModuleRuntime?.ToDictionary(a => a.name, a => (string)null),
+            wasmNative = assets.wasmNative?.ToDictionary(a => a.name, a => a.integrity),
+            wasmSymbols = assets.wasmSymbols?.ToDictionary(a => a.name, a => (string)null),
+            icu = assets.icu?.ToDictionary(a => a.name, a => a.integrity),
+            coreAssembly = assets.coreAssembly?.ToDictionary(a => a.name, a => a.integrity),
+            assembly = assets.assembly?.ToDictionary(a => a.name, a => a.integrity),
+            corePdb = assets.corePdb?.ToDictionary(a => a.name, a => a.integrity),
+            pdb = assets.pdb?.ToDictionary(a => a.name, a => a.integrity),
+            satelliteResources = ConvertSatelliteResources(assets.satelliteResources),
+            lazyAssembly = assets.lazyAssembly?.ToDictionary(a => a.name, a => a.integrity),
+            libraryInitializers = assets.libraryInitializers?.ToDictionary(a => a.name, a => (string)null),
+            modulesAfterConfigLoaded = assets.modulesAfterConfigLoaded?.ToDictionary(a => a.name, a => (string)null),
+            modulesAfterRuntimeReady = assets.modulesAfterRuntimeReady?.ToDictionary(a => a.name, a => (string)null),
+            extensions = assets.extensions,
+            coreVfs = ConvertVfsAssets(assets.coreVfs),
+            vfs = ConvertVfsAssets(assets.vfs)
+        };
+        return resources;
     }
 
     public static string GetJsonContent(string bootConfigPath)
@@ -282,5 +481,34 @@ public class BootJsonDataLoader
         }
 
         return moduleContent;
+    }
+}
+
+internal class ResourcesConverter : JsonConverter<object>
+{
+    public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        var nestedOptions = new JsonSerializerOptions(options);
+        nestedOptions.Converters.Remove(this);
+
+        if (reader.TokenType == JsonTokenType.StartObject)
+        {
+            try
+            {
+
+                return JsonSerializer.Deserialize<AssetsData>(ref reader, nestedOptions)!;
+            }
+            catch
+            {
+                return JsonSerializer.Deserialize<ResourcesData>(ref reader, nestedOptions)!;
+            }
+        }
+
+        return JsonSerializer.Deserialize<object>(ref reader, nestedOptions)!;
+    }
+
+    public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
+    {
+        JsonSerializer.Serialize(writer, value, value.GetType(), options);
     }
 }

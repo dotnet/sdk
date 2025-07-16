@@ -1248,6 +1248,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       ReferenceAssemblies="@(_ReferenceAssemblies)"
                       RuntimePackAssets="@(RuntimePackAsset)"
                       IncludeMainProject="$(IncludeMainProjectInDepsFile)"
+                      TrimDepsJsonLibrariesWithoutAssets="$(TrimDepsJsonLibrariesWithoutAssets)"
                       RuntimeIdentifier="$(RuntimeIdentifier)"
                       PlatformLibraryName="$(MicrosoftNETPlatformLibrary)"
                       RuntimeFrameworks="@(RuntimeFramework)"
@@ -1280,14 +1281,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetEmbeddedApphostPaths"
           AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-  <Target Name="ComputeEmbeddedApphostPaths">
+  <Target Name="ComputeEmbeddedApphostPaths" Condition="'$(PackAsTool)' == 'true'">
 
     <ItemGroup>
       <_PackAsToolShimRuntimeIdentifiers Condition="@(_PackAsToolShimRuntimeIdentifiers) ==''" Include="$(PackAsToolShimRuntimeIdentifiers)"/>
     </ItemGroup>
 
     <GetEmbeddedApphostPaths
-      PackagedShimOutputDirectory="$(PackagedShimOutputRootDirectory)/shims/$(TargetFramework)"
+      PackagedShimOutputDirectory="$([System.IO.Path]::Combine($(PackagedShimOutputRootDirectory), 'shims', $(TargetFramework)))"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
       ToolCommandName="$(ToolCommandName)"
       >

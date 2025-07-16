@@ -58,7 +58,7 @@ jobs:
     templateContext:
       sdl:
         binskim:
-          analyzeTargetGlob: +:f|eng\**\*.props;+:f|artifacts\bin\**\*.dll;+:f|artifacts\bin\**\*.exe;-:f|artifacts\bin\**\msdia140.dll;-:f|artifacts\bin\**\pgort140.dll;-:f|artifacts\bin\*Tests\**;
+          analyzeTargetGlob: +:f|eng\**\*.props;+:f|artifacts\bin\**\*.dll;+:f|artifacts\bin\**\*.exe;-:f|artifacts\bin\**\msdia140.dll;-:f|artifacts\bin\**\pgort140.dll;-:f|artifacts\bin\*Tests\**;-:f|**\Microsoft.NET.Runtime.Emscripten**\tools\**;-:f|**\CodeCoverage\**;-:f|artifacts\bin\**\capstone.dll;
 
     steps:
     ############## PREP ###############
@@ -104,6 +104,10 @@ jobs:
         env:
           BuildConfig: $(buildConfiguration)
           TestFullMSBuild: ${{ parameters.testFullMSBuild }}
+
+      - powershell: build/RunTestTemplateTests.ps1
+        displayName: 🟣 Run Test Templates Tests
+
     - ${{ else }}:
       - script: |
           source $(Build.SourcesDirectory)/eng/common/native/init-os-and-arch.sh
@@ -133,6 +137,7 @@ jobs:
       - ${{ if eq(parameters.runAoTTests, true) }}:
         # For the reason this is here, see: https://github.com/dotnet/sdk/issues/22655
         - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(buildConfiguration)/dotnet/dotnet workload install wasm-tools --skip-manifest-update
+          workingDirectory: $(Build.SourcesDirectory)/artifacts
           displayName: 🟣 Install wasm-tools Workload
       # For the /p:Projects syntax for PowerShell, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1146466335
       - ${{ if eq(parameters.pool.os, 'windows') }}:

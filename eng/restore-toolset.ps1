@@ -9,8 +9,8 @@ function InitializeCustomSDKToolset {
   }
 
   # The following frameworks and tools are used only for testing.
-  # Do not attempt to install them in product build.
-  if ($productBuild) {
+  # Do not attempt to install them when building in the VMR.
+  if ($fromVmr) {
     return
   }
 
@@ -51,6 +51,7 @@ set DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR=$env:DOTNET_INSTALL_DIR
 
 set PATH=$env:DOTNET_INSTALL_DIR;%PATH%
 set NUGET_PACKAGES=$env:NUGET_PACKAGES
+set DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=0
 
 DOSKEY killdotnet=taskkill /F /IM dotnet.exe /T ^& taskkill /F /IM VSTest.Console.exe /T ^& taskkill /F /IM msbuild.exe /T
 "@
@@ -70,6 +71,7 @@ DOSKEY killdotnet=taskkill /F /IM dotnet.exe /T ^& taskkill /F /IM VSTest.Consol
 
 `$env:PATH="$env:DOTNET_INSTALL_DIR;" + `$env:PATH
 `$env:NUGET_PACKAGES="$env:NUGET_PACKAGES"
+`$env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH="0"
 
 function killdotnet {
   taskkill /F /IM dotnet.exe /T
@@ -100,10 +102,10 @@ function CreateVSShortcut()
   }
 
   $scriptPath = Join-Path $ArtifactsDir 'sdk-build-env.ps1'
-  $slnPath = Join-Path $RepoRoot 'sdk.sln'
+  $slnPath = Join-Path $RepoRoot 'sdk.slnx'
   $commandToLaunch = "& '$scriptPath'; & '$devenvPath' '$slnPath'"
   $powershellPath = '%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe'
-  $shortcutPath = Join-Path $ArtifactsDir 'VS with sdk.sln.lnk'
+  $shortcutPath = Join-Path $ArtifactsDir 'VS with sdk.slnx.lnk'
 
   # https://stackoverflow.com/a/9701907/294804
   # https://learn.microsoft.com/en-us/troubleshoot/windows-client/admin-development/create-desktop-shortcut-with-wsh

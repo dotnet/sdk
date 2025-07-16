@@ -41,8 +41,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                   "microsoft.net.workload.emscripten.net6": "8.0.1/8.0.100",
                   "microsoft.net.workload.emscripten.net7": "8.0.1/8.0.100",
                   "microsoft.net.workload.mono.toolchain.net6": "8.0.1/8.0.100",
-                  "microsoft.net.workload.mono.toolchain.net7": "8.0.1/8.0.100",
-                  "microsoft.net.sdk.aspire": "8.0.0-preview.2.23619.3/8.0.100"
+                  "microsoft.net.workload.mono.toolchain.net7": "8.0.1/8.0.100"
                 }
                 """;
 
@@ -230,7 +229,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             ApplyRC1Manifests();
             var workloadVersion = GetWorkloadVersion();
             
-            InstallWorkload("aspire", skipManifestUpdate: false);
+            InstallWorkload("wasm-tools", skipManifestUpdate: false);
 
             GetWorkloadVersion().Should().Be(workloadVersion);
         }
@@ -273,7 +272,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             //VM.CreateRunCommand("powershell", "-Command", "& { $(irm https://aka.ms/install-artifacts-credprovider.ps1) }")
             //    .Execute().Should().PassWithoutWarning();
 
-            InstallWorkload("aspire", skipManifestUpdate: true);
+            InstallWorkload("wasm-tools", skipManifestUpdate: true);
 
             VM.CreateRunCommand("dotnet", "new", "aspire-starter", "-o", "Aspire-StarterApp01")
                 .WithWorkingDirectory(@"c:\SdkTesting")

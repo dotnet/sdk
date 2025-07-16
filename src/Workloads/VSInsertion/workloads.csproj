@@ -96,13 +96,13 @@
 
   <ItemGroup Condition="'$(BuildWorkloads)' == 'true'">
     <PackageDownload Include="@(RuntimeWorkloadPacksToDownload)" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
-    <PackageDownload Include="@(EmsdkWorkloadPacksToDownload)" Version="[$(MicrosoftNETRuntimeEmscriptenSdkInternalVersion)]" />
+    <PackageDownload Include="@(EmsdkWorkloadPacksToDownload)" Version="[$(MicrosoftNETRuntimeEmscripten3156Cachewinx64Version)]" />
   </ItemGroup>
 
   <Target Name="_CollectDownloadedWorkloadPacks">
     <ItemGroup>
       <DownloadedWorkloadPacks Include="$(NuGetPackageRoot)\%(RuntimeWorkloadPacksToDownload.Identity)\$(MicrosoftNETCoreAppRuntimePackageVersion)\*.nupkg" />
-      <DownloadedWorkloadPacks Include="$(NuGetPackageRoot)\%(EmsdkWorkloadPacksToDownload.Identity)\$(MicrosoftNETRuntimeEmscriptenSdkInternalVersion)\*.nupkg" />
+      <DownloadedWorkloadPacks Include="$(NuGetPackageRoot)\%(EmsdkWorkloadPacksToDownload.Identity)\$(MicrosoftNETRuntimeEmscripten3156Cachewinx64Version)\*.nupkg" />
     </ItemGroup>
 
     <Copy SourceFiles="@(DownloadedWorkloadPacks)"

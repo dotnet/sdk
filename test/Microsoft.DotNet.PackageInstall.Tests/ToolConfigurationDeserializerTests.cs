@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public void GivenInvalidCharAsFileNameItThrows()
         {
             var invalidCommandName = "na\0me";
-            Action a = () => new ToolConfiguration(invalidCommandName, "my.dll");
+            Action a = () => new ToolConfiguration(invalidCommandName, "my.dll", "dotnet");
             a.Should().Throw<ToolConfigurationException>()
                 .And.Message.Should()
                 .Contain(
@@ -77,7 +77,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public void GivenALeadingDotAsFileNameItThrows()
         {
             var invalidCommandName = ".mytool";
-            Action a = () => new ToolConfiguration(invalidCommandName, "my.dll");
+            Action a = () => new ToolConfiguration(invalidCommandName, "my.dll", "dotnet");
             a.Should().Throw<ToolConfigurationException>()
                 .And.Message.Should()
                 .Contain(string.Format(

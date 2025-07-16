@@ -87,10 +87,12 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
     public IReadOnlyDictionary<string, string> Results => _results.AsReadOnly();
 
     /// <inheritdoc/>
-    public async Task RunAsync()
+    public async Task RunAsync(CancellationToken cancellationToken)
     {
         Debug.Assert(_beforeAssembliesFolderPaths.Length == 1);
         Debug.Assert(_afterAssembliesFolderPaths.Length == 1);
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         (IAssemblySymbolLoader beforeLoader, Dictionary<string, IAssemblySymbol> beforeAssemblySymbols) =
             AssemblySymbolLoader.CreateFromFiles(
@@ -118,7 +120,7 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
                                                   _addPartialModifier,
                                                   _diagnosticOptions);
 
-        await generator.RunAsync().ConfigureAwait(false);
+        await generator.RunAsync(cancellationToken).ConfigureAwait(false);
 
         // If true, output is disk. Otherwise, it's the Results dictionary.
         if (_writeToDisk)
@@ -135,6 +137,8 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
 
         foreach ((string assemblyName, string text) in generator.Results.OrderBy(r => r.Key))
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             string fileName = $"{_tableOfContentsTitle}_{assemblyName}.md";
             tableOfContents.AppendLine($"* [{assemblyName}]({fileName})");
 
@@ -150,8 +154,6 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
 
             _log.LogMessage($"Wrote '{filePath}'.");
         }
-
-        tableOfContents.AppendLine();
 
         string tableOfContentsFilePath = Path.Combine(_outputFolderPath, $"{_tableOfContentsTitle}.md");
 

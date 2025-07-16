@@ -22,7 +22,7 @@ namespace Microsoft.NET.ToolPack.Tests
         {
 
             TestAsset helloWorldAsset = _testAssetsManager
-                .CopyTestAsset("PortableTool", callingMethod + multiTarget)
+                .CopyTestAsset("PortableTool", callingMethod + multiTarget + (packageType ?? ""))
                 .WithSource()
                 .WithProjectChanges(project =>
                 {
@@ -193,10 +193,8 @@ namespace Microsoft.NET.ToolPack.Tests
                 getValuesCommand.Execute(args)
                     .Should().Pass();
                 string runCommandPath = getValuesCommand.GetValues().Single();
-                Path.GetExtension(runCommandPath)
-                    .Should().Be(extension);
-                File.Exists(runCommandPath).Should()
-                    .BeTrue("run command should be apphost executable (for WinExe) to debug. But it will not be packed");
+                runCommandPath
+                    .Should().Be("dotnet", because: "The RunCommand should recognize that this is a non-AppHost tool and should use the muxer to launch it");
             }
         }
 

@@ -110,6 +110,9 @@
       <ResourcesReplacement Include="{DOTNETSDKVERSION}">
         <ReplacementString>$(Version)</ReplacementString>
       </ResourcesReplacement>
+      <ResourcesReplacement Include="{DOTNETSDKVERSIONMAJOR}">
+        <ReplacementString>$(VersionMajor)</ReplacementString>
+      </ResourcesReplacement>
       <ResourcesReplacement Include="{DOTNETRUNTIMEVERSION}">
         <ReplacementString>$(MicrosoftNETCoreAppRuntimePackageVersion)</ReplacementString>
       </ResourcesReplacement>

@@ -33,6 +33,7 @@
       <IncludeAssets>build</IncludeAssets>
       <Private>false</Private>
     </ProjectReference>
+    <ProjectReference Include="..\..\Microsoft.Extensions.Logging.MSBuild\Microsoft.Extensions.Logging.MSBuild.csproj" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
 
   <ItemGroup>

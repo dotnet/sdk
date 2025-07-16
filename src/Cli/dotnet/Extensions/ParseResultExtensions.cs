@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
@@ -99,7 +97,7 @@ public static class ParseResultExtensions
 
     public static bool IsTopLevelDotnetCommand(this ParseResult parseResult)
     {
-        return parseResult.CommandResult.Command.Equals(Microsoft.DotNet.Cli.Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
+        return parseResult.CommandResult.Command.Equals(Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
     }
 
     public static bool CanBeInvoked(this ParseResult parseResult)
@@ -164,10 +162,10 @@ public static class ParseResultExtensions
         return false;
     }
 
-    private static string GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
+    private static string? GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
     {
         CommandResult commandResult => commandResult.Command.Name,
-        ArgumentResult argResult => argResult.Tokens.FirstOrDefault()?.Value ?? string.Empty,
+        ArgumentResult argResult => argResult.Tokens.FirstOrDefault()?.Value,
         _ => parseResult.GetResult(DotnetSubCommand)?.GetValueOrDefault<string>()
     };
 
@@ -176,10 +174,10 @@ public static class ParseResultExtensions
         parseResult.HasOption(CommonOptions.LongFormArchitectureOption)) &&
         parseResult.HasOption(CommonOptions.OperatingSystemOption);
 
-    internal static string GetCommandLineRuntimeIdentifier(this ParseResult parseResult)
+    internal static string? GetCommandLineRuntimeIdentifier(this ParseResult parseResult)
     {
-        return parseResult.HasOption(CommonOptions.RuntimeOption) ?
-            parseResult.GetValue(CommonOptions.RuntimeOption) :
+        return parseResult.HasOption(CommonOptions.RuntimeOptionName) ?
+            parseResult.GetValue<string>(CommonOptions.RuntimeOptionName) :
             parseResult.HasOption(CommonOptions.OperatingSystemOption) ||
             parseResult.HasOption(CommonOptions.ArchitectureOption) ||
             parseResult.HasOption(CommonOptions.LongFormArchitectureOption) ?
@@ -191,10 +189,10 @@ public static class ParseResultExtensions
 
     public static bool UsingRunCommandShorthandProjectOption(this ParseResult parseResult)
     {
-        if (parseResult.HasOption(RunCommandParser.PropertyOption) && parseResult.GetValue(RunCommandParser.PropertyOption).Any())
+        if (parseResult.HasOption(RunCommandParser.PropertyOption) && parseResult.GetValue(RunCommandParser.PropertyOption)!.Any())
         {
             var projVals = parseResult.GetRunCommandShorthandProjectValues();
-            if (projVals.Any())
+            if (projVals?.Any() is true)
             {
                 if (projVals.Count() != 1 || parseResult.HasOption(RunCommandParser.ProjectOption))
                 {
@@ -206,28 +204,33 @@ public static class ParseResultExtensions
         return false;
     }
 
-    public static IEnumerable<string> GetRunCommandShorthandProjectValues(this ParseResult parseResult)
+    public static IEnumerable<string>? GetRunCommandShorthandProjectValues(this ParseResult parseResult)
     {
         var properties = GetRunPropertyOptions(parseResult, true);
-        return properties.Where(property => !property.Contains("="));
+        return properties?.Where(property => !property.Contains("="));
     }
 
     public static IEnumerable<string> GetRunCommandPropertyValues(this ParseResult parseResult)
     {
-        var shorthandProperties = GetRunPropertyOptions(parseResult, true)
-            .Where(property => property.Contains("="));
+        var shorthandProperties = GetRunPropertyOptions(parseResult, true)?.Where(property => property.Contains("="));
         var longhandProperties = GetRunPropertyOptions(parseResult, false);
-        return longhandProperties.Concat(shorthandProperties);
+        return (shorthandProperties, longhandProperties) switch
+        {
+            (null, null) => Enumerable.Empty<string>(),
+            (null, var longhand) => longhand,
+            (var shorthand, null) => shorthand,
+            (var shorthand, var longhand) => shorthand.Concat(longhand)
+        };
     }
 
-    private static IEnumerable<string> GetRunPropertyOptions(ParseResult parseResult, bool shorthand)
+    private static IEnumerable<string>? GetRunPropertyOptions(ParseResult parseResult, bool shorthand)
     {
         var optionString = shorthand ? "-p" : "--property";
         var propertyOptions = parseResult.CommandResult.Children.Where(c => GetOptionTokenOrDefault(c)?.Value.Equals(optionString) ?? false);
         var propertyValues = propertyOptions.SelectMany(o => o.Tokens.Select(t => t.Value)).ToArray();
         return propertyValues;
 
-        static Token GetOptionTokenOrDefault(SymbolResult symbolResult)
+        static Token? GetOptionTokenOrDefault(SymbolResult symbolResult)
         {
             if (symbolResult is not OptionResult optionResult)
             {
@@ -253,12 +256,24 @@ public static class ParseResultExtensions
     /// If you are inside a command handler or 'normal' System.CommandLine code then you don't need this - the parse error handling
     /// will have covered these cases.
     /// </summary>
-    public static T SafelyGetValueForOption<T>(this ParseResult parseResult, Option<T> optionToGet)
+    public static T? SafelyGetValueForOption<T>(this ParseResult parseResult, Option<T> optionToGet)
     {
         if (parseResult.GetResult(optionToGet) is OptionResult optionResult &&
             !parseResult.Errors.Any(e => e.SymbolResult == optionResult))
         {
             return optionResult.GetValue(optionToGet);
+        }
+        else
+        {
+            return default;
+        }
+    }
+    public static T? SafelyGetValueForOption<T>(this ParseResult parseResult, string name)
+    {
+        if (parseResult.GetResult(name) is OptionResult optionResult &&
+            !parseResult.Errors.Any(e => e.SymbolResult == optionResult))
+        {
+            return optionResult.GetValue<T>(name);
         }
         else
         {
@@ -271,4 +286,11 @@ public static class ParseResultExtensions
     /// This is useful for checking if the user has explicitly set an option, as opposed to it being set by default.
     /// </summary>
     public static bool HasOption(this ParseResult parseResult, Option option) => parseResult.GetResult(option) is OptionResult or && !or.Implicit;
+
+    /// <summary>
+    /// Checks if the option with given name is present and not implicit (i.e. not set by default).
+    /// This is useful for checking if the user has explicitly set an option, as opposed to it being set by default.
+    /// </summary>
+    public static bool HasOption(this ParseResult parseResult, string name)
+        => parseResult.GetResult(name) is OptionResult or && !or.Implicit;
 }

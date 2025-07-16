@@ -61,6 +61,23 @@ internal static class LoggerUtility
         return new FacadeLogger(dispatcher);
     }
 
+    internal static void SeparateBinLogArguments(IEnumerable<string>? args, out List<string> binLogArgs, out List<string> nonBinLogArgs)
+    {
+        binLogArgs = new List<string>();
+        nonBinLogArgs = new List<string>();
+        foreach (var arg in args ?? [])
+        {
+            if (IsBinLogArgument(arg))
+            {
+                binLogArgs.Add(arg);
+            }
+            else
+            {
+                nonBinLogArgs.Add(arg);
+            }
+        }
+    }
+
     internal static bool IsBinLogArgument(string arg)
     {
         const StringComparison comp = StringComparison.OrdinalIgnoreCase;

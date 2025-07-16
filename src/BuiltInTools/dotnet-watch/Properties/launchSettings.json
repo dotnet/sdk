@@ -3,13 +3,16 @@
     "dotnet-watch": {
       "commandName": "Project",
       "commandLineArgs": "--verbose /bl:DotnetRun.binlog",
-      "workingDirectory": "$(RepoRoot)src\\Assets\\TestProjects\\BlazorWasmWithLibrary\\blazorwasm",
+      "workingDirectory": "E:\\sdk\\artifacts\\tmp\\Debug\\Aspire_BuildE---04F22750\\WatchAspire.AppHost",
       "environmentVariables": {
         "DOTNET_WATCH_DEBUG_SDK_DIRECTORY": "$(RepoRoot)artifacts\\bin\\redist\\$(Configuration)\\dotnet\\sdk\\$(Version)",
         "DCP_IDE_REQUEST_TIMEOUT_SECONDS": "100000",
         "DCP_IDE_NOTIFICATION_TIMEOUT_SECONDS": "100000",
         "DCP_IDE_NOTIFICATION_KEEPALIVE_SECONDS": "100000",
-        "DOTNET_WATCH_PROCESS_CLEANUP_TIMEOUT_MS": "0"
+        "DOTNET_WATCH_PROCESS_CLEANUP_TIMEOUT_MS": "0",
+        "ASPIRE_ALLOW_UNSECURED_TRANSPORT": "1",
+        "__DOTNET_WATCH_TEST_FLAGS": "RunningAsTest",
+        "__DOTNET_WATCH_TEST_OUTPUT_DIR": "$(RepoRoot)\\artifacts\\tmp\\Debug"
       }
     }
   }

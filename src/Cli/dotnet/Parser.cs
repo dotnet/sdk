@@ -5,11 +5,12 @@
 
 using System.CommandLine;
 using System.CommandLine.Completions;
-using System.CommandLine.Help;
+using System.CommandLine.Invocation;
 using System.Reflection;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.BuildServer;
 using Microsoft.DotNet.Cli.Commands.Clean;
+using Microsoft.DotNet.Cli.Commands.Dnx;
 using Microsoft.DotNet.Cli.Commands.Format;
 using Microsoft.DotNet.Cli.Commands.Fsi;
 using Microsoft.DotNet.Cli.Commands.Help;
@@ -45,6 +46,7 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Cli;
+using Microsoft.TemplateEngine.Cli.Help;
 using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli;
@@ -65,6 +67,7 @@ public static class Parser
         BuildCommandParser.GetCommand(),
         BuildServerCommandParser.GetCommand(),
         CleanCommandParser.GetCommand(),
+        DnxCommandParser.GetCommand(),
         FormatCommandParser.GetCommand(),
         CompleteCommandParser.GetCommand(),
         FsiCommandParser.GetCommand(),
@@ -98,28 +101,37 @@ public static class Parser
 
     public static readonly Option<bool> VersionOption = new("--version")
     {
-        Arity = ArgumentArity.Zero,
+        Arity = ArgumentArity.Zero
     };
 
     public static readonly Option<bool> InfoOption = new("--info")
     {
-        Arity = ArgumentArity.Zero,
+        Arity = ArgumentArity.Zero
     };
 
     public static readonly Option<bool> ListSdksOption = new("--list-sdks")
     {
-        Arity = ArgumentArity.Zero,
+        Arity = ArgumentArity.Zero
     };
 
     public static readonly Option<bool> ListRuntimesOption = new("--list-runtimes")
     {
+        Arity = ArgumentArity.Zero
+    };
+
+    public static readonly Option<bool> CliSchemaOption = new("--cli-schema")
+    {
+        Description = CliStrings.SDKSchemaCommandDefinition,
         Arity = ArgumentArity.Zero,
+        Recursive = true,
+        Hidden = true,
+        Action = new PrintCliSchemaAction()
     };
 
     // Argument
     public static readonly Argument<string> DotnetSubCommand = new("subcommand") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };
 
-    private static Command ConfigureCommandLine(Command rootCommand)
+    private static Command ConfigureCommandLine(RootCommand rootCommand)
     {
         for (int i = rootCommand.Options.Count - 1; i >= 0; i--)
         {
@@ -129,9 +141,9 @@ public static class Parser
             {
                 rootCommand.Options.RemoveAt(i);
             }
-            else if (option is HelpOption helpOption)
+            else if (option is System.CommandLine.Help.HelpOption helpOption)
             {
-                helpOption.Action = new HelpAction()
+                helpOption.Action = new DotnetHelpAction()
                 {
                     Builder = DotnetHelpBuilder.Instance.Value
                 };
@@ -152,9 +164,13 @@ public static class Parser
         rootCommand.Options.Add(InfoOption);
         rootCommand.Options.Add(ListSdksOption);
         rootCommand.Options.Add(ListRuntimesOption);
+        rootCommand.Options.Add(CliSchemaOption);
 
         // Add argument
         rootCommand.Arguments.Add(DotnetSubCommand);
+
+        // NuGet implements several commands in its own repo. Add them to the .NET SDK via the provided API.
+        NuGet.CommandLine.XPlat.NuGetCommands.Add(rootCommand);
 
         rootCommand.SetAction(parseResult =>
         {
@@ -175,11 +191,8 @@ public static class Parser
         return rootCommand;
     }
 
-    public static Command GetBuiltInCommand(string commandName)
-    {
-        return Subcommands
-            .FirstOrDefault(c => c.Name.Equals(commandName, StringComparison.OrdinalIgnoreCase));
-    }
+    public static Command GetBuiltInCommand(string commandName) =>
+        Subcommands.FirstOrDefault(c => c.Name.Equals(commandName, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
     /// Implements token-per-line response file handling for the CLI. We use this instead of the built-in S.CL handling
@@ -273,31 +286,8 @@ public static class Parser
 
             DotnetHelpBuilder dotnetHelpBuilder = new(windowWidth);
 
-            SetHelpCustomizations(dotnetHelpBuilder);
-
             return dotnetHelpBuilder;
         });
-
-        private static void SetHelpCustomizations(HelpBuilder builder)
-        {
-            foreach (var option in OptionForwardingExtensions.HelpDescriptionCustomizations.Keys)
-            {
-                Func<HelpContext, string> descriptionCallback = (HelpContext context) =>
-                {
-                    foreach (var (command, helpText) in OptionForwardingExtensions.HelpDescriptionCustomizations[option])
-                    {
-                        if (context.ParseResult.CommandResult.Command.Equals(command))
-                        {
-                            return helpText;
-                        }
-                    }
-                    return null;
-                };
-                builder.CustomizeSymbol(option, secondColumnText: descriptionCallback);
-            }
-
-            builder.CustomizeSymbol(WorkloadSearchVersionsCommandParser.GetCommand(), secondColumnText: CliStrings.ShortWorkloadSearchVersionDescription);
-        }
 
         public static void additionalOption(HelpContext context)
         {
@@ -325,12 +315,15 @@ public static class Parser
         {
             var command = context.Command;
             var helpArgs = new string[] { "--help" };
+
+            // custom help overrides
             if (command.Equals(RootCommand))
             {
                 Console.Out.WriteLine(CliUsage.HelpText);
                 return;
             }
 
+            // argument/option cleanups specific to help
             foreach (var option in command.Options)
             {
                 option.EnsureHelpName();
@@ -342,7 +335,7 @@ public static class Parser
             }
             else if (command.Name.Equals(MSBuildCommandParser.GetCommand().Name))
             {
-                new MSBuildForwardingApp(helpArgs).Execute();
+                new MSBuildForwardingApp(MSBuildArgs.ForHelp).Execute();
                 context.Output.WriteLine();
                 additionalOption(context);
             }
@@ -395,9 +388,27 @@ public static class Parser
                     // Don't show package completions in help
                     PackageAddCommandParser.CmdPackageArgument.CompletionSources.Clear();
                 }
+                else if (command.Name.Equals(WorkloadSearchCommandParser.GetCommand().Name))
+                {
+                    // Set shorter description for displaying parent command help.
+                    WorkloadSearchVersionsCommandParser.GetCommand().Description = CliStrings.ShortWorkloadSearchVersionDescription;
+                }
 
                 base.Write(context);
             }
+        }
+    }
+
+    private class PrintCliSchemaAction : SynchronousCommandLineAction
+    {
+        internal PrintCliSchemaAction()
+        {
+            Terminating = true;
+        }
+        public override int Invoke(ParseResult parseResult)
+        {
+            CliSchema.PrintCliSchema(parseResult.CommandResult, parseResult.Configuration.Output, Program.TelemetryClient);
+            return 0;
         }
     }
 }

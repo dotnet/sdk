@@ -4,11 +4,11 @@
   <String Id="ConfirmCancelMessage">Czy na pewno chcesz anulować?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Poprzednia wersja</String>
   <String Id="HelpHeader">Instalator — Pomoc</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\]] — instaluje, naprawia, odinstalowuje
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] — instaluje, naprawia, odinstalowuje
    lub tworzy pełną lokalną kopię pakietu w katalogu. „/install” jest wartością domyślną.
 
 /passive | /quiet — wyświetla minimalny interfejs użytkownika bez monitów lub nie wyświetla interfejsu użytkownika
-   ani monitów. Domyślnie jest wyświetlany interfejs użytkownika i wszystkie monity.
+   brak poleceń. Domyślnie jest wyświetlany interfejs użytkownika i wszystkie monity.
 
 /norestart — wstrzymaj próby ponownego uruchomienia. Domyślnie interfejs użytkownika wyświetli monit przed ponownym uruchomieniem.
 /log [\[]"log.txt"[\]] — rejestruje do określonego pliku. Domyślnie plik dziennika jest tworzony w katalogu %TEMP%.</String>
@@ -21,7 +21,7 @@
   <String Id="ProgressLabel">Przetwarzanie:</String>
   <String Id="OverallProgressPackageText">Trwa inicjowanie...</String>
   <String Id="ProgressCancelButton">A&amp;nuluj</String>
-  <String Id="ModifyHeader">Zmodyfikuj instalatora</String>
+  <String Id="ModifyHeader">Modyfikowanie instalacji</String>
   <String Id="ModifyRepairButton">Nap&amp;raw</String>
   <String Id="ModifyUninstallButton">O&amp;dinstaluj</String>
   <String Id="ModifyCloseButton">&amp;Zamknij</String>
@@ -49,7 +49,7 @@
   <String Id="FirstTimeWelcomeMessage">Instalacja zakończyła się pomyślnie.
 
 Zainstalowano następujące produkty:
-    • Zestaw SDK .NET [DOTNETSDKVERSION]
+    • ZESTAW SDK .NET [DOTNETSDKVERSION]
     • Środowisko uruchomieniowe platformy .NET [DOTNETRUNTIMEVERSION]
     • Środowisko uruchomieniowe platformy ASP.NET Core [ASPNETCOREVERSION]
     • Środowisko uruchomieniowe platformy .NET dla komputerów z systemem Windows [WINFORMSANDWPFVERSION]

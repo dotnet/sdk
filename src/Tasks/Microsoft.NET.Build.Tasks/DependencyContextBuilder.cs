@@ -29,6 +29,7 @@ namespace Microsoft.NET.Build.Tasks
         private string _referenceAssembliesPath;
         private Dictionary<PackageIdentity, string> _filteredPackages;
         private bool _includeMainProjectInDepsFile = true;
+        private bool _trimLibrariesWithoutAssets = true;
         private readonly Dictionary<string, DependencyLibrary> _dependencyLibraries;
         private readonly Dictionary<string, List<LibraryDependency>> _libraryDependencies;
         private readonly List<string> _mainProjectDependencies;
@@ -212,6 +213,12 @@ namespace Microsoft.NET.Build.Tasks
             return this;
         }
 
+        public DependencyContextBuilder WithTrimLibrariesWithoutAssets(bool trimLibrariesWithoutAssets)
+        {
+            _trimLibrariesWithoutAssets = trimLibrariesWithoutAssets;
+            return this;
+        }
+
         public DependencyContextBuilder WithRuntimePackAssets(IEnumerable<RuntimePackAssetInfo> runtimePackAssets)
         {
             _runtimePackAssets = new Dictionary<string, List<RuntimePackAssetInfo>>();
@@ -356,31 +363,43 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            var unprocessedLibraries = runtimeLibraries.ToHashSet();
-            while (unprocessedLibraries.Any())
+            if (_trimLibrariesWithoutAssets)
             {
-                var lib = unprocessedLibraries.First();
-                unprocessedLibraries.Remove(lib);
-
-                if (lib.Library.RuntimeAssemblyGroups.Count == 0 && lib.Library.NativeLibraryGroups.Count == 0 && lib.Library.ResourceAssemblies.Count == 0)
+                var unprocessedLibraries = runtimeLibraries.ToHashSet();
+                while (unprocessedLibraries.Any())
                 {
-                    if (lib.Library.Dependencies.All(d => !libraries.TryGetValue(d.Name, out var dependency) || dependency.Dependents.Count > 1))
-                    {
-                        runtimeLibraries.Remove(lib);
-                        libraries.Remove(lib.Library.Name);
-                        foreach (var dependency in lib.Library.Dependencies)
-                        {
-                            if (libraries.TryGetValue(dependency.Name, out ModifiableRuntimeLibrary value))
-                            {
-                                value.Dependents.Remove(lib.Library.Name);
-                            }
-                        }
+                    var lib = unprocessedLibraries.First();
+                    unprocessedLibraries.Remove(lib);
 
-                        foreach (var dependent in lib.Dependents)
+                    if (lib.Library.Name.Equals("xunit", StringComparison.OrdinalIgnoreCase) ||
+                        lib.Library.Name.Equals("xunit.core", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Special case xunit and xunit.core, they should not be removed because the xUnit v2 runner looks for these libraries in the deps.json to
+                        // identify test projects.
+                        // See https://github.com/dotnet/sdk/issues/49248
+                        continue;
+                    }
+
+                    if (lib.Library.RuntimeAssemblyGroups.Count == 0 && lib.Library.NativeLibraryGroups.Count == 0 && lib.Library.ResourceAssemblies.Count == 0)
+                    {
+                        if (lib.Library.Dependencies.All(d => !libraries.TryGetValue(d.Name, out var dependency) || dependency.Dependents.Count > 1))
                         {
-                            if (libraries.TryGetValue(dependent, out var dep))
+                            runtimeLibraries.Remove(lib);
+                            libraries.Remove(lib.Library.Name);
+                            foreach (var dependency in lib.Library.Dependencies)
                             {
-                                unprocessedLibraries.Add(dep);
+                                if (libraries.TryGetValue(dependency.Name, out ModifiableRuntimeLibrary value))
+                                {
+                                    value.Dependents.Remove(lib.Library.Name);
+                                }
+                            }
+
+                            foreach (var dependent in lib.Dependents)
+                            {
+                                if (libraries.TryGetValue(dependent, out var dep))
+                                {
+                                    unprocessedLibraries.Add(dep);
+                                }
                             }
                         }
                     }

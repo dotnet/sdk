@@ -30,10 +30,11 @@
    <Target Name="_ResolvePublishNuGetPackagePdbsAndXml"
         AfterTargets="_ResolveCopyLocalAssetsForPublish">
     <PropertyGroup>
-        <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'!='release'">Shipping</FSharpCorePath>
-        <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'=='release'">Release</FSharpCorePath>
-        <FSharpTfm>net9.0</FSharpTfm>
-        <FSharpTfm Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildOrchestrator)' == 'true'">$(NetCurrent)</FSharpTfm>
+      <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'==''">Shipping</FSharpCorePath>
+      <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'=='prerelease'">PreRelease</FSharpCorePath>
+      <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'=='release'">Release</FSharpCorePath>
+      <FSharpTfm>net9.0</FSharpTfm>
+      <FSharpTfm Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildFromVMR)' == 'true'">$(NetCurrent)</FSharpTfm>
     </PropertyGroup>
 
     <ItemGroup>

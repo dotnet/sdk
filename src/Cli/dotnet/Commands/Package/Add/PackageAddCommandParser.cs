@@ -5,17 +5,16 @@
 
 using System.CommandLine;
 using System.CommandLine.Completions;
+using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
-using Microsoft.DotNet.Cli.Extensions;
-using System.CommandLine.Parsing;
-using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
-internal static class PackageAddCommandParser
+public static class PackageAddCommandParser
 {
-    public static readonly Argument<PackageIdentity> CmdPackageArgument = CommonArguments.PackageIdentityArgument(true)
+    public static readonly Argument<PackageIdentityWithRange> CmdPackageArgument = CommonArguments.RequiredPackageIdentityArgument()
     .AddCompletions((context) =>
     {
         // we should take --prerelease flags into account for version completion
@@ -31,7 +30,7 @@ internal static class PackageAddCommandParser
         .AddCompletions((context) =>
         {
             // we can only do version completion if we have a package id
-            if (context.ParseResult.GetValue(CmdPackageArgument) is PackageIdentity packageId && !packageId.HasVersion)
+            if (context.ParseResult.GetValue(CmdPackageArgument) is { HasVersion: false } packageId)
             {
                 // we should take --prerelease flags into account for version completion
                 var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption);
@@ -106,7 +105,7 @@ internal static class PackageAddCommandParser
 
     private static void DisallowVersionIfPackageIdentityHasVersionValidator(OptionResult result)
     {
-        if (result.Parent.GetValue(CmdPackageArgument) is PackageIdentity identity && identity.HasVersion)
+        if (result.Parent.GetValue(CmdPackageArgument).HasVersion)
         {
             result.AddError(CliCommandStrings.ValidationFailedDuplicateVersion);
         }

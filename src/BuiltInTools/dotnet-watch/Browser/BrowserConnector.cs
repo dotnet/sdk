@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Watch
             ProcessSpec processSpec,
             EnvironmentVariablesBuilder environmentBuilder,
             ProjectOptions projectOptions,
-            HotReloadProfile profile,
+            HotReloadAppModel appModel,
             CancellationToken cancellationToken)
         {
             BrowserRefreshServer? server;
@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Watch
                 hasExistingServer = _servers.TryGetValue(key, out server);
                 if (!hasExistingServer)
                 {
-                    server = IsServerSupported(projectNode, profile) ? new BrowserRefreshServer(context.EnvironmentOptions, context.Reporter) : null;
+                    server = IsServerSupported(projectNode, appModel) ? new BrowserRefreshServer(context.EnvironmentOptions, context.Reporter) : null;
                     _servers.Add(key, server);
                 }
             }
@@ -272,24 +272,24 @@ namespace Microsoft.DotNet.Watch
             return true;
         }
 
-        public bool IsServerSupported(ProjectGraphNode projectNode, HotReloadProfile profile)
+        public bool IsServerSupported(ProjectGraphNode projectNode, HotReloadAppModel appModel)
         {
             if (context.EnvironmentOptions.SuppressBrowserRefresh)
             {
-                context.Reporter.Report(MessageDescriptor.SkippingConfiguringBrowserRefresh_SuppressedViaEnvironmentVariable.ToErrorWhen(profile.RequiresBrowserRefresh), EnvironmentVariables.SuppressBrowserRefresh);
+                context.Reporter.Report(MessageDescriptor.SkippingConfiguringBrowserRefresh_SuppressedViaEnvironmentVariable.ToErrorWhen(appModel.RequiresBrowserRefresh), EnvironmentVariables.SuppressBrowserRefresh);
                 return false;
             }
 
             if (!projectNode.IsNetCoreApp(minVersion: s_minimumSupportedVersion))
             {
-                context.Reporter.Report(MessageDescriptor.SkippingConfiguringBrowserRefresh_TargetFrameworkNotSupported.ToErrorWhen(profile.RequiresBrowserRefresh));
+                context.Reporter.Report(MessageDescriptor.SkippingConfiguringBrowserRefresh_TargetFrameworkNotSupported.ToErrorWhen(appModel.RequiresBrowserRefresh));
                 return false;
             }
 
             // We only want to enable browser refresh if this is a WebApp (ASP.NET Core / Blazor app).
             if (!projectNode.IsWebApp())
             {
-                context.Reporter.Report(MessageDescriptor.SkippingConfiguringBrowserRefresh_NotWebApp.ToErrorWhen(profile.RequiresBrowserRefresh));
+                context.Reporter.Report(MessageDescriptor.SkippingConfiguringBrowserRefresh_NotWebApp.ToErrorWhen(appModel.RequiresBrowserRefresh));
                 return false;
             }
 

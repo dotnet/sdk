@@ -122,7 +122,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             GetWorkloadVersion().Should().Be(versionToInstall);
 
             //  Installing a workload shouldn't update workload version
-            InstallWorkload("aspire", skipManifestUpdate: false);
+            InstallWorkload("wasm-tools", skipManifestUpdate: false);
 
             GetWorkloadVersion().Should().Be(versionToInstall);
 
@@ -224,7 +224,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                     VM.CreateRunCommand("cmd", "/c", "move", @"c:\SdkTesting\DisabledWorkloadSets\*.nupkg", @"c:\SdkTesting\WorkloadSets"))
                 .Execute().Should().PassWithoutWarning();
 
-            InstallWorkload("aspire", skipManifestUpdate: false);
+            InstallWorkload("wasm-tools", skipManifestUpdate: false);
 
             GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
         }

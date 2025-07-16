@@ -12,9 +12,4 @@ internal class ToolManifestCannotBeFoundException : GracefulException
     public ToolManifestCannotBeFoundException(string message) : base([message], null, false)
     {
     }
-
-    public ToolManifestCannotBeFoundException(string message, string optionalMessage)
-        : base([message], [optionalMessage], false)
-    {
-    }
 }

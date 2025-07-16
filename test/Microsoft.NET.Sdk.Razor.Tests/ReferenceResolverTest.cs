@@ -188,7 +188,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             var assemblies = resolver.ResolveAssemblies();
 
             // Assert
-            assemblies.Should().Contain("MyCMS", "MyCMS.Core", "MyCoolLibrary", "PresentationFramework", "ReachFramework");
+            assemblies.Should().Contain(["MyCMS", "MyCMS.Core", "MyCoolLibrary", "PresentationFramework", "ReachFramework"]);
         }
 
         public AssemblyItem CreateAssemblyItem(string name, bool isFrameworkReference = false)

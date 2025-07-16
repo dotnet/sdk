@@ -7,6 +7,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.TemplateEngine.Cli.Commands;
+using Microsoft.TemplateEngine.Cli.Help;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -127,11 +128,16 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
         var showPassedTests = parseResult.GetValue(TestingPlatformOptions.OutputOption) == OutputOptions.Detailed;
         var noProgress = parseResult.HasOption(TestingPlatformOptions.NoProgressOption);
         var noAnsi = parseResult.HasOption(TestingPlatformOptions.NoAnsiOption);
+
+        // TODO: Replace this with proper CI detection that we already have in telemetry. https://github.com/microsoft/testfx/issues/5533#issuecomment-2838893327
+        bool inCI = string.Equals(Environment.GetEnvironmentVariable("TF_BUILD"), "true", StringComparison.OrdinalIgnoreCase) || string.Equals(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), "true", StringComparison.OrdinalIgnoreCase);
+
         _output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
         {
             ShowPassedTests = () => showPassedTests,
             ShowProgress = () => !noProgress,
             UseAnsi = !noAnsi,
+            UseCIAnsi = inCI,
             ShowAssembly = true,
             ShowAssemblyStartAndComplete = true,
         });

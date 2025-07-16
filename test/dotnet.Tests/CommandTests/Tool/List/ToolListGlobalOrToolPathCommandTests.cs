@@ -114,7 +114,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     CreateMockToolPackage(
                         "test.tool",
                         "1.3.5-preview",
-                        new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
+                        new ToolCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
                     )
                 });
 
@@ -135,17 +135,17 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     CreateMockToolPackage(
                         "test.tool",
                         "1.3.5-preview",
-                        new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
+                        new ToolCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
                     ),
                     CreateMockToolPackage(
                         "another.tool",
                         "2.7.3",
-                        new RestoredCommand(new ToolCommandName("bar"), "dotnet", new FilePath("tool"))
+                        new ToolCommand(new ToolCommandName("bar"), "dotnet", new FilePath("tool"))
                     ),
                     CreateMockToolPackage(
                         "some.tool",
                         "1.0.0",
-                        new RestoredCommand(new ToolCommandName("fancy-foo"), "dotnet", new FilePath("tool"))
+                        new ToolCommand(new ToolCommandName("fancy-foo"), "dotnet", new FilePath("tool"))
                     )
                 });
 
@@ -167,12 +167,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     CreateMockToolPackage(
                         "test.tool",
                         "1.3.5-preview",
-                        new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
+                        new ToolCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
                     ),
                     CreateMockToolPackage(
                         "another.tool",
                         "2.7.3",
-                        new RestoredCommand(new ToolCommandName("bar"), "dotnet", new FilePath("tool"))
+                        new ToolCommand(new ToolCommandName("bar"), "dotnet", new FilePath("tool"))
                     )
                 });
 
@@ -207,7 +207,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     CreateMockToolPackage(
                         "test.tool",
                         "1.3.5-preview",
-                        new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool")))
+                        new ToolCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool")))
                 });
 
             var command = CreateCommand(store.Object, "-g");
@@ -227,13 +227,13 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     CreateMockToolPackage(
                         "test.tool",
                         "1.3.5-preview",
-                        new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
+                        new ToolCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
                     ),
                     CreateMockBrokenPackage("another.tool", "2.7.3"),
                     CreateMockToolPackage(
                         "some.tool",
                         "1.0.0",
-                        new RestoredCommand(new ToolCommandName("fancy-foo"), "dotnet", new FilePath("tool"))
+                        new ToolCommand(new ToolCommandName("fancy-foo"), "dotnet", new FilePath("tool"))
                     )
                 });
 
@@ -249,7 +249,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         "broken").Yellow()));
         }
 
-        private IToolPackage CreateMockToolPackage(string id, string version, RestoredCommand command)
+        private IToolPackage CreateMockToolPackage(string id, string version, ToolCommand command)
         {
             var package = new Mock<IToolPackage>(MockBehavior.Strict);
 
@@ -269,17 +269,17 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                      CreateMockToolPackage(
                         "test.tool",
                         "1.3.5-preview",
-                        new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
+                        new ToolCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
                     ),
                     CreateMockToolPackage(
                         "another.tool",
                         "2.7.3",
-                        new RestoredCommand(new ToolCommandName("bar"), "dotnet", new FilePath("tool"))
+                        new ToolCommand(new ToolCommandName("bar"), "dotnet", new FilePath("tool"))
                     ),
                     CreateMockToolPackage(
                         "some.tool",
                         "1.0.0",
-                        new RestoredCommand(new ToolCommandName("fancy-foo"), "dotnet", new FilePath("tool"))
+                        new ToolCommand(new ToolCommandName("fancy-foo"), "dotnet", new FilePath("tool"))
                     )
                 });
 
@@ -300,7 +300,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     CreateMockToolPackage(
                         "test.tool",
                         "1.3.5-preview",
-                        new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
+                        new ToolCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
                     )
                 });
 

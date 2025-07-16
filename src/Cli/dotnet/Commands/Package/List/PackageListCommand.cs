@@ -61,7 +61,7 @@ internal class PackageListCommand(
 
         args.Add($"-interactive:{interactive.ToString().ToLower()}");
 
-        MSBuildForwardingApp restoringCommand = new MSBuildForwardingApp(argsToForward: args);
+        MSBuildForwardingApp restoringCommand = new MSBuildForwardingApp(rawMSBuildArgs: args);
 
         int exitCode = 0;
 

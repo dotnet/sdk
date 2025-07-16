@@ -64,6 +64,18 @@
                       Overwrite="true" />
   </Target>
 
+  <Target Name="LayoutDnxShim">
+    <ItemGroup>
+      <DnxShimSource Condition="$([MSBuild]::IsOSPlatform('Windows'))" Include="dnx.cmd" />
+      <DnxShimSource Condition="$([MSBuild]::IsOSPlatform('Windows'))" Include="dnx.ps1" />
+      <DnxShimSource Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))" Include="dnx" />
+    </ItemGroup>
+    <Copy SourceFiles="@(DnxShimSource)" DestinationFolder="$(RedistInstallerLayoutPath)" />
+
+    <!-- Mark script as executable -->
+    <Exec Command="chmod 755 &quot;$(RedistInstallerLayoutPath)/dnx&quot;" Condition="!$([MSBuild]::IsOSPlatform('Windows'))" />
+  </Target>
+
   <!-- Replace files from the runtime packs with symbolic links to the corresponding shared framework files (and hostfxr) to reduce the size of the runtime pack directories. -->
   <Target Name="ReplaceBundledRuntimePackFilesWithSymbolicLinks" DependsOnTargets="LayoutBundledComponents"
                                                                  Condition="'$(BundleRuntimePacks)' == 'true' and !$([MSBuild]::IsOSPlatform('WINDOWS'))">
@@ -81,26 +93,31 @@
                             LayoutManifests;
                             LayoutBaselineWorkloadSet;
                             LayoutWorkloadUserLocalMarker;
+                            LayoutDnxShim;
                             CrossgenLayout;
                             ReplaceBundledRuntimePackFilesWithSymbolicLinks"
           AfterTargets="AfterBuild" />
 
   <!-- Copy the sdk layout into a temporary folder so that it's nested under "sdk\$(Version)\" which is
        necessary for the msi/pkg to install correctly and put the content under that sub path. -->
-  <Target Name="PrepareIntermediateSdkInstallerOutput" DependsOnTargets="GenerateSdkLayout">
+  <Target Name="PrepareIntermediateSdkInstallerOutput" DependsOnTargets="GenerateInstallerLayout">
     <PropertyGroup>
       <IntermediateSdkInstallerOutputPath>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'sdk-installer', '$(Configuration)'))</IntermediateSdkInstallerOutputPath>
     </PropertyGroup>
 
     <!-- Create "SDK Internal" layout. -->
     <ItemGroup>
-      <SdkOutputFile Include="$(OutputPath)**\*" />
+      <SdkOutputFile Include="$(InstallerOutputDirectory)**\*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(SdkOutputFile)"
           DestinationFiles="@(SdkOutputFile -> '$(IntermediateSdkInstallerOutputPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')"
           UseHardLinksIfPossible="true"
           SkipUnchangedFiles="true" />
+
+    <!-- Copy dnx script to root dotnet folder (which will map to DOTNETHOME) -->
+    <Copy SourceFiles="@(DnxShimSource)" DestinationFolder="$(IntermediateSdkInstallerOutputPath)" />
+    
   </Target>
 
 </Project>
