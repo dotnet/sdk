@@ -8,18 +8,17 @@ using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
-using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
 /// <param name="parseResult"></param>
 /// <param name="fileOrDirectory">
-/// Since this command is invoked via both 'package add' and 'add package', different symbols will control what the project path to search is. 
+/// Since this command is invoked via both 'package add' and 'add package', different symbols will control what the project path to search is.
 /// It's cleaner for the separate callsites to know this instead of pushing that logic here.
 /// </param>
 internal class PackageAddCommand(ParseResult parseResult, string fileOrDirectory) : CommandBase(parseResult)
 {
-    private readonly PackageIdentity _packageId = parseResult.GetValue(PackageAddCommandParser.CmdPackageArgument);
+    private readonly PackageIdentityWithRange _packageId = parseResult.GetValue(PackageAddCommandParser.CmdPackageArgument);
 
     public override int Execute()
     {
@@ -101,7 +100,7 @@ internal class PackageAddCommand(ParseResult parseResult, string fileOrDirectory
         }
     }
 
-    private string[] TransformArgs(PackageIdentity packageId, string tempDgFilePath, string projectFilePath)
+    private string[] TransformArgs(PackageIdentityWithRange packageId, string tempDgFilePath, string projectFilePath)
     {
         List<string> args = [
             "package",
@@ -111,15 +110,15 @@ internal class PackageAddCommand(ParseResult parseResult, string fileOrDirectory
             "--project",
             projectFilePath
         ];
-        
+
         if (packageId.HasVersion)
         {
             args.Add("--version");
-            args.Add(packageId.Version.ToString());
+            args.Add(packageId.VersionRange.OriginalString);
         }
 
         args.AddRange(_parseResult
-            .OptionValuesToBeForwarded(PackageAddCommandParser.GetCommand())
+            .OptionValuesToBeForwarded()
             .SelectMany(a => a.Split(' ', 2)));
 
         if (_parseResult.GetResult(PackageAddCommandParser.NoRestoreOption) is not null)

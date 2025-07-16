@@ -28,6 +28,13 @@ namespace Microsoft.NET.Publish.Tests
         [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
         public void ILLink_only_runs_when_switch_is_enabled(string targetFramework)
         {
+            if (targetFramework == "net5.0" &&
+                RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                //  https://github.com/dotnet/sdk/issues/49665
+                return;
+            }
+
             var projectName = "HelloWorld";
             var referenceProjectName = "ClassLibForILLink";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
@@ -58,7 +65,8 @@ namespace Microsoft.NET.Publish.Tests
             DoesDepsFileHaveAssembly(depsFile, UnusedFrameworkAssembly).Should().BeTrue();
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("netcoreapp3.0", true)]
         [InlineData("netcoreapp3.0", false)]
         [InlineData("net5.0", false)]
@@ -99,7 +107,9 @@ namespace Microsoft.NET.Publish.Tests
             DoesDepsFileHaveAssembly(depsFile, UnusedFrameworkAssembly).Should().BeFalse();
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        //  ILLINK : Failed to load /private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/10.0.0-preview.6.25315.102/libhostpolicy.dylib, error : dlopen(/private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/10.0.0-preview.6.25315.102/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/10.0.0-preview.6.25315.102/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), 
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
         public void ILLink_links_simple_app_without_analysis_warnings_and_it_runs(string targetFramework)
         {
@@ -152,7 +162,8 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining($"error {Strings.PublishTrimmedRequiresVersion30}");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("netcoreapp2.0", true)]
         [InlineData("netcoreapp2.1", true)]
         [InlineData("netstandard2.1", true)]
@@ -180,15 +191,17 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [RequiresMSBuildVersionTheory("17.8.0")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("netstandard2.0", true)]
         [InlineData("netstandard2.1", true)]
         [InlineData("netcoreapp3.1", true)]
         [InlineData("net5.0", true)]
         [InlineData("net6.0", false)]
         [InlineData("netstandard2.0;net5.0", true)] // None of these TFMs are supported for trimming
-        [InlineData("netstandard2.0;net6.0", false)] // Net6.0 is the min TFM supported for trimming and targeting.
-        [InlineData("netstandard2.0;net8.0", true)] // Net8.0 is supported for trimming, but leaves a "gap" for the supported net6.0/net7.0 TFMs.
+        [InlineData("netstandard2.0;net6.0", false)] // net6.0 is the min TFM supported for trimming and targeting.
+        [InlineData("netstandard2.0;net8.0", false)] // Net8.0 is supported for trimming and targeting.
+        [InlineData("netstandard2.0;net9.0", true)] // Net8.0 is supported for trimming, but leaves a "gap" for the supported net6.0/net7.0 TFMs.
         [InlineData("alias-ns2", true)]
         [InlineData("alias-n6", false)]
         [InlineData("alias-n6;alias-n8", false)] // If all TFMs are supported, there's no warning even though the project uses aliases.
@@ -200,19 +213,19 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectForILLinkTesting(_testAssetsManager, targetFrameworks, projectName);
             testProject.AdditionalProperties["IsTrimmable"] = "true";
-            testProject.AdditionalProperties["NoWarn"] = "NETSDK1138"; // Silence warning about targeting EOL TFMs
+            testProject.AdditionalProperties["CheckEolTargetFramework"] = "false"; // Silence warning about targeting EOL TFMs
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFrameworks)
                 .WithProjectChanges(AddTargetFrameworkAliases);
 
             var buildCommand = new BuildCommand(testAsset);
-            var resultAssertion = buildCommand.Execute()
+            var resultAssertion = buildCommand.Execute("/p:CheckEolTargetFramework=false")
                 .Should().Pass();
             if (shouldWarn) {
                 resultAssertion
                     // Note: can't check for Strings.IsTrimmableUnsupported because each line of
                     // the message gets prefixed with a file path by MSBuild.
                     .And.HaveStdOutContaining($"warning NETSDK1212")
-                    .And.HaveStdOutContaining($"<IsTrimmable Condition=\"$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))\">true</IsTrimmable>");
+                    .And.HaveStdOutContaining($"<IsTrimmable Condition=\"$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))\">true</IsTrimmable>");
             } else {
                 resultAssertion.And.NotHaveStdOutContaining($"warning");
             }
@@ -251,7 +264,8 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("warning IL2026");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
         public void PrepareForILLink_can_set_IsTrimmable(string targetFramework)
         {
@@ -276,7 +290,8 @@ namespace Microsoft.NET.Publish.Tests
             File.Exists(unusedIsTrimmableDll).Should().BeFalse();
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(Net5Plus), MemberType = typeof(PublishTestUtils))]
         public void PrepareForILLink_can_set_TrimMode(string targetFramework)
         {
@@ -310,6 +325,13 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework, "partial")]
         public void ILLink_respects_global_TrimMode(string targetFramework, string trimMode)
         {
+            if ((targetFramework == "net5.0" || targetFramework == "net6.0") &&
+                RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                //  https://github.com/dotnet/sdk/issues/49665
+                return;
+            }
+
             var projectName = "HelloWorld";
             var referenceProjectName = "ClassLibForILLink";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
@@ -343,7 +365,8 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(Net5Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_roots_IntermediateAssembly(string targetFramework)
         {
@@ -397,6 +420,13 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void ILLink_respects_IsTrimmable_attribute(string targetFramework)
         {
+            if (targetFramework == "net6.0" &&
+                RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                //  https://github.com/dotnet/sdk/issues/49665
+                return;
+            }
+
             string projectName = "HelloWorld";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testProject = CreateTestProjectWithIsTrimmableAttributes(targetFramework, projectName);
@@ -424,7 +454,8 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(Net6Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_IsTrimmable_metadata_can_override_attribute(string targetFramework)
         {
@@ -450,7 +481,8 @@ namespace Microsoft.NET.Publish.Tests
             File.Exists(unusedNonTrimmableDll).Should().BeFalse();
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("net6.0")]
         public void ILLink_TrimMode_applies_to_IsTrimmable_assemblies(string targetFramework)
         {
@@ -547,7 +579,8 @@ namespace Microsoft.NET.Publish.Tests
             File.Exists(unusedNonTrimmableDll).Should().BeFalse();
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("net5.0")]
         public void ILLink_analysis_warnings_are_disabled_by_default(string targetFramework)
         {
@@ -565,7 +598,9 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutMatching(@"warning IL\d\d\d\d");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        //  ILLINK : Failed to load /private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/7.0.0/libhostpolicy.dylib, error : dlopen(/private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/7.0.0/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/7.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), 
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(Net6Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_analysis_warnings_are_enabled_by_default(string targetFramework)
         {
@@ -600,7 +635,8 @@ namespace Microsoft.NET.Publish.Tests
             ValidateWarningsOnHelloWorldApp(publishCommand, result, expectedWarnings, targetFramework, rid, useRegex: true);
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(Net5Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_accepts_option_to_enable_analysis_warnings(string targetFramework)
         {
@@ -622,7 +658,8 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutMatching("warning IL2093.*Program.Derived.IL_2093");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(Net5Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_accepts_option_to_disable_analysis_warnings(string targetFramework)
         {
@@ -648,6 +685,13 @@ namespace Microsoft.NET.Publish.Tests
         [MemberData(nameof(Net5Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_accepts_option_to_enable_analysis_warnings_without_PublishTrimmed(string targetFramework)
         {
+            if (targetFramework == "net5.0" &&
+                RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                //  https://github.com/dotnet/sdk/issues/49665
+                return;
+            }
+
             var projectName = "AnalysisWarnings";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
@@ -744,7 +788,8 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutMatching("IL2104.*'TransitiveProjectReference'");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
         public void ILLink_errors_fail_the_build(string targetFramework)
         {
@@ -788,7 +833,8 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(Net6Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_verify_analysis_warnings_hello_world_app_trim_mode_copyused(string targetFramework)
         {
@@ -849,7 +895,8 @@ namespace Microsoft.NET.Publish.Tests
             ValidateWarningsOnHelloWorldApp(publishCommand, result, expectedWarnings, targetFramework, rid);
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(Net6Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_verify_analysis_warnings_framework_assemblies(string targetFramework)
         {
@@ -941,7 +988,8 @@ namespace Microsoft.NET.Publish.Tests
             ValidateWarningsOnHelloWorldApp(publishCommand, result, expectedWarnings, targetFramework, rid);
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(Net6Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_verify_analysis_warnings_hello_world_app_trim_mode_link(string targetFramework)
         {
@@ -957,7 +1005,8 @@ namespace Microsoft.NET.Publish.Tests
             ValidateWarningsOnHelloWorldApp(publishCommand, result, new List<string>(), targetFramework, rid);
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void ILLink_verify_analysis_warnings_hello_world_app_trim_mode_link_5_0()
         {
             string targetFramework = "net5.0";
@@ -974,7 +1023,8 @@ namespace Microsoft.NET.Publish.Tests
             ValidateWarningsOnHelloWorldApp(publishCommand, result, new List<string>(), targetFramework, rid);
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
         public void TrimmingOptions_are_defaulted_correctly_on_trimmed_apps(string targetFramework)
         {
@@ -1046,7 +1096,8 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
         public void ILLink_accepts_root_descriptor(string targetFramework)
         {
@@ -1081,7 +1132,8 @@ namespace Microsoft.NET.Publish.Tests
             DoesImageHaveMethod(unusedDll, "UnusedMethodToRoot").Should().BeTrue();
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("_TrimmerBeforeFieldInit")]
         [InlineData("_TrimmerOverrideRemoval")]
         [InlineData("_TrimmerUnreachableBodies")]
@@ -1102,7 +1154,8 @@ namespace Microsoft.NET.Publish.Tests
                 .Should().Fail().And.HaveStdOutContaining("MSB4030");
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void ILLink_respects_feature_settings_from_host_config()
         {
             var projectName = "HelloWorld";
@@ -1135,7 +1188,8 @@ namespace Microsoft.NET.Publish.Tests
             DoesImageHaveMethod(referenceDll, "FeatureImplementation").Should().BeFalse();
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void ILLink_ignores_host_config_settings_with_link_false()
         {
             var projectName = "HelloWorld";
@@ -1168,7 +1222,8 @@ namespace Microsoft.NET.Publish.Tests
             DoesImageHaveMethod(referenceDll, "FeatureImplementation").Should().BeTrue();
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
         public void ILLink_runs_incrementally(string targetFramework)
         {
@@ -1197,7 +1252,8 @@ namespace Microsoft.NET.Publish.Tests
             semaphoreFirstModifiedTime.Should().Be(semaphoreSecondModifiedTime);
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("netcoreapp3.1")]
         [InlineData("net5.0")]
         [InlineData("net6.0")]
@@ -1235,7 +1291,8 @@ namespace Microsoft.NET.Publish.Tests
             DoesDepsFileHaveAssembly(depsFile, UnusedFrameworkAssembly).Should().BeFalse();
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void ILLink_net7_defaults_trim_nonframework()
         {
             string targetFramework = "net7.0";
@@ -1271,7 +1328,8 @@ namespace Microsoft.NET.Publish.Tests
             DoesDepsFileHaveAssembly(depsFile, UnusedFrameworkAssembly).Should().BeFalse();
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
         public void ILLink_does_not_include_leftover_artifacts_on_second_run(string targetFramework)
         {
@@ -1324,7 +1382,8 @@ namespace Microsoft.NET.Publish.Tests
             Directory.Exists(Path.Combine(publishDirectory, "linked")).Should().BeFalse();
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
         public void ILLink_keeps_symbols_by_default(string targetFramework)
         {
@@ -1361,7 +1420,8 @@ namespace Microsoft.NET.Publish.Tests
             publishPdbSize.Should().Be(linkedPdbSize);
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
         public void ILLink_removes_symbols_when_debugger_support_is_disabled(string targetFramework)
         {
@@ -1397,7 +1457,8 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
         public void ILLink_accepts_option_to_remove_symbols(string targetFramework)
         {
@@ -1425,7 +1486,8 @@ namespace Microsoft.NET.Publish.Tests
             File.Exists(publishedPdb).Should().BeFalse();
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
         public void ILLink_symbols_option_can_override_defaults_from_debugger_support(string targetFramework)
         {
@@ -1467,6 +1529,13 @@ namespace Microsoft.NET.Publish.Tests
         [MemberData(nameof(Net5Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_can_treat_warnings_as_errors(string targetFramework)
         {
+            if (targetFramework == "net5.0" &&
+                RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                //  https://github.com/dotnet/sdk/issues/49665
+                return;
+            }
+
             var projectName = "AnalysisWarnings";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
@@ -1481,7 +1550,8 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("warning IL2026");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(Net5Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_can_treat_warnings_not_as_errors(string targetFramework)
         {
@@ -1506,7 +1576,8 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutContaining("warning IL2043");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(Net5Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_can_ignore_warnings(string targetFramework)
         {
@@ -1525,7 +1596,8 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("warning IL2026");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(Net5Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_respects_analysis_level(string targetFramework)
         {
@@ -1541,7 +1613,8 @@ namespace Microsoft.NET.Publish.Tests
                 .Should().Pass().And.NotHaveStdOutMatching(@"warning IL\d\d\d\d");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(Net5Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_respects_warning_level_independently(string targetFramework)
         {
@@ -1560,7 +1633,8 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutContaining("warning IL2075");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(Net5Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_can_treat_warnings_as_errors_independently(string targetFramework)
         {
@@ -1598,7 +1672,8 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining(Strings.ILLinkNotSupportedError);
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("net5.0")]
         [InlineData("netcoreapp3.1")]
         public void ILLink_displays_informational_warning_up_to_net5_by_default(string targetFramework)
@@ -1616,7 +1691,8 @@ namespace Microsoft.NET.Publish.Tests
                 .Should().Pass().And.HaveStdOutContainingIgnoreCase("https://aka.ms/dotnet-illink");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(Net6Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_displays_informational_warning_when_trim_analysis_warnings_are_suppressed_on_net6plus(string targetFramework)
         {
@@ -1634,7 +1710,8 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContainingIgnoreCase("This process might take a while");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(Net6Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_dont_display_informational_warning_by_default_on_net6plus(string targetFramework)
         {
@@ -1652,7 +1729,8 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContainingIgnoreCase("This process might take a while");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
         public void ILLink_dont_display_time_awareness_message_on_incremental_build(string targetFramework)
         {

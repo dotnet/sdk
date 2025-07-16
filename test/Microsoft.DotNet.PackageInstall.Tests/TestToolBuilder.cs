@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
     [CollectionDefinition(nameof(TestToolBuilderCollection))]
@@ -31,19 +27,64 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             public string ToolPackageId { get; set; } = "TestTool";
             public string ToolPackageVersion { get; set; } = "1.0.0";
             public string ToolCommandName { get; set; } = "TestTool";
+            public string[]? AdditionalPackageTypes { get; set; } = null;
 
-            public bool NativeAOT { get; set; } = false;
-            public bool SelfContained { get; set; } = false;
-            public bool Trimmed { get; set; } = false;
+            public bool NativeAOT { get; set { field = value; this.RidSpecific = value; } } = false;
+            public bool SelfContained { get; set { field = value; this.RidSpecific = value; } } = false;
+            public bool Trimmed { get; set { field = value; this.RidSpecific = value; } } = false;
+            public bool IncludeAnyRid { get; set { field = value; } } = false;
+            public bool RidSpecific { get; set; } = false;
+            public bool IncludeCurrentRid { get; set; } = true;
 
-            public string GetIdentifier() => $"{ToolPackageId}-{ToolPackageVersion}-{ToolCommandName}-{(NativeAOT ? "nativeaot" : SelfContained ? "selfcontained" : Trimmed ? "trimmed" : "managed")}";
+            public string GetIdentifier() {
+                var builder = new StringBuilder();
+                builder.Append(ToolPackageId.ToLowerInvariant());
+                builder.Append('-');
+                builder.Append(ToolPackageVersion.ToLowerInvariant());
+                builder.Append('-');
+                builder.Append(ToolCommandName.ToLowerInvariant());
+                if (NativeAOT)
+                {
+                    builder.Append("-nativeaot");
+                }
+                else if (SelfContained)
+                {
+                    builder.Append("-selfcontained");
+                }
+                else if (Trimmed)
+                {
+                    builder.Append("-trimmed");
+                }
+                else
+                {
+                    builder.Append("-managed");
+                }
+                if (RidSpecific)
+                {
+                    builder.Append("-specific");
+                }
+                if (IncludeAnyRid)
+                {
+                    builder.Append("-anyrid");
+                }
+                if (!IncludeCurrentRid)
+                {
+                    builder.Append("-no-current-rid");
+                }
+                if (AdditionalPackageTypes is not null && AdditionalPackageTypes.Length > 0)
+                {
+                    builder.Append('-');
+                    builder.Append(string.Join("-", AdditionalPackageTypes.Select(p => p.ToLowerInvariant())));
+                }
+
+                return builder.ToString();
+            }
         }
 
 
-        public string CreateTestTool(ITestOutputHelper log, TestToolSettings toolSettings)
+        public string CreateTestTool(ITestOutputHelper log, TestToolSettings toolSettings, bool collectBinlogs = false)
         {
             var targetDirectory = Path.Combine(TestContext.Current.TestExecutionDirectory, "TestTools", toolSettings.GetIdentifier());
-
 
             var testProject = new TestProject(toolSettings.ToolPackageId)
             {
@@ -55,22 +96,37 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             testProject.AdditionalProperties["ImplicitUsings"] = "enable";
             testProject.AdditionalProperties["Version"] = toolSettings.ToolPackageVersion;
 
+            var multiRid = toolSettings.IncludeCurrentRid ? ToolsetInfo.LatestRuntimeIdentifiers : ToolsetInfo.LatestRuntimeIdentifiers.Replace(RuntimeInformation.RuntimeIdentifier, string.Empty).Trim(';');
+
+            if (toolSettings.RidSpecific)
+            {
+                testProject.AdditionalProperties["RuntimeIdentifiers"] = multiRid;
+            }
+            if (toolSettings.IncludeAnyRid)
+            {
+                testProject.AdditionalProperties["RuntimeIdentifiers"] = testProject.AdditionalProperties.TryGetValue("RuntimeIdentifiers", out var existingRids)
+                    ? $"{existingRids};any"
+                    : "any";
+            }
+
             if (toolSettings.NativeAOT)
             {
                 testProject.AdditionalProperties["PublishAot"] = "true";
-                testProject.AdditionalProperties["RuntimeIdentifiers"] = RuntimeInformation.RuntimeIdentifier;
             }
 
             if (toolSettings.SelfContained)
             {
                 testProject.AdditionalProperties["SelfContained"] = "true";
-                testProject.AdditionalProperties["RuntimeIdentifiers"] = ToolsetInfo.LatestRuntimeIdentifiers;
             }
 
             if (toolSettings.Trimmed)
             {
                 testProject.AdditionalProperties["PublishTrimmed"] = "true";
-                testProject.AdditionalProperties["RuntimeIdentifiers"] = ToolsetInfo.LatestRuntimeIdentifiers;
+            }
+
+            if (toolSettings.AdditionalPackageTypes is not null && toolSettings.AdditionalPackageTypes.Length > 0)
+            {
+                testProject.AdditionalProperties["PackageType"] = string.Join(";", toolSettings.AdditionalPackageTypes);
             }
 
             testProject.SourceFiles.Add("Program.cs", "Console.WriteLine(\"Hello Tool!\");");
@@ -101,7 +157,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             {
                 new DotnetPackCommand(log)
                     .WithWorkingDirectory(targetDirectory)
-                    .Execute()
+                    .Execute(collectBinlogs ? $"--bl:{toolSettings.GetIdentifier()}-{{}}" : "")
                     .Should().Pass();
 
                 if (toolSettings.NativeAOT)
@@ -109,7 +165,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     //  For Native AOT tools, we need to repack the tool to include the runtime-specific files that were generated during publish
                     new DotnetPackCommand(log, "-r", RuntimeInformation.RuntimeIdentifier)
                         .WithWorkingDirectory(targetDirectory)
-                        .Execute()
+                        .Execute(collectBinlogs ? $"--bl:{toolSettings.GetIdentifier()}-{RuntimeInformation.RuntimeIdentifier}-{{}}" : "")
                         .Should().Pass();
                 }
 

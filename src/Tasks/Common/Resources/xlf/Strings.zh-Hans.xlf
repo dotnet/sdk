@@ -82,6 +82,11 @@
         <target state="translated">NETSDK1080: 当面向 .NET Core 3.0 或更高版本时，不需要 Microsoft.AspNetCore.App 的 PackageReference。如果使用 Microsoft.NET.Sdk.Web，则将自动引用共享框架。否则，应使用 FrameworkReference 替换 PackageReference。</target>
         <note>{StrBegins="NETSDK1080: "}</note>
       </trans-unit>
+      <trans-unit id="AspireWorkloadIsDeprecated">
+        <source>NETSDK1228: This project depends on the Aspire Workload which has been deprecated. Aspire now ships via NuGet packages and no longer requires a workload. Please visit {0} for upgrade guidance.</source>
+        <target state="translated">NETSDK1228: 此项目取决于已弃用的 Aspire 工作负载。Aspire 现在通过 NuGet 包的形式提供，并且不再需要工作负载。请访问 {0} 以获取升级指导。</target>
+        <note>{StrBegins="NETSDK1228: "}</note>
+      </trans-unit>
       <trans-unit id="AssetPreprocessorMustBeConfigured">
         <source>NETSDK1017: Asset preprocessor must be configured before assets are processed.</source>
         <target state="translated">NETSDK1017: 必须在处理资产之前配置资产预处理器。</target>

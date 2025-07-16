@@ -1438,7 +1438,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
            microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
-           microsoft.net.sdk.aspire                           8.0.100                    8.2.0
       3. If one or more workloads are provided along with their versions (by joining them with the '@' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.
          Example:
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
@@ -1501,6 +1500,37 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   </data>
   <data name="ProjectConvertAppFullName" xml:space="preserve">
     <value>Convert a file-based program to a project-based program.</value>
+  </data>
+  <data name="ProjectConvertAskForOutputDirectory" xml:space="preserve">
+    <value>Specify the output directory ({0}):</value>
+    <comment>{0} is the default value</comment>
+  </data>
+  <data name="ProjectConvertDryRun" xml:space="preserve">
+    <value>Determines changes without actually modifying the file system</value>
+  </data>
+  <data name="ProjectConvertWouldCreateDirectory" xml:space="preserve">
+    <value>Dry run: would create directory: {0}</value>
+    <comment>{0} is the directory full path.</comment>
+  </data>
+  <data name="ProjectConvertWouldCopyFile" xml:space="preserve">
+    <value>Dry run: would copy file '{0}' to '{1}'.</value>
+    <comment>{0} and {1} are file full paths.</comment>
+  </data>
+  <data name="ProjectConvertWouldConvertFile" xml:space="preserve">
+    <value>Dry run: would remove file-level directives from file: {0}</value>
+    <comment>{0} is the file full path.</comment>
+  </data>
+  <data name="ProjectConvertWouldMoveFile" xml:space="preserve">
+    <value>Dry run: would move file '{0}' to '{1}'.</value>
+    <comment>{0} and {1} are file full paths.</comment>
+  </data>
+  <data name="ProjectConvertWouldDeleteFile" xml:space="preserve">
+    <value>Dry run: would delete file: {0}</value>
+    <comment>{0} is the file full path.</comment>
+  </data>
+  <data name="ProjectConvertWouldCreateFile" xml:space="preserve">
+    <value>Dry run: would create file: {0}</value>
+    <comment>{0} is the file full path.</comment>
   </data>
   <data name="ProjectManifest" xml:space="preserve">
     <value>PROJECT_MANIFEST</value>
@@ -2402,6 +2432,9 @@ To display a value, specify the corresponding command-line option without provid
   </data>
   <data name="WorkloadNotRecognized" xml:space="preserve">
     <value>Workload ID {0} is not recognized.</value>
+  </data>
+  <data name="AspireWorkloadDeprecated" xml:space="preserve">
+    <value>The Aspire workload is deprecated and no longer necessary. Aspire is now available as NuGet packages that you can add directly to your projects. For more information, see https://aka.ms/aspire/support-policy</value>
   </data>
   <data name="WorkloadNotSupportedOnPlatform" xml:space="preserve">
     <value>Workload ID {0} isn't supported on this platform.</value>

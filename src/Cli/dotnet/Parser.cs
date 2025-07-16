@@ -335,7 +335,7 @@ public static class Parser
             }
             else if (command.Name.Equals(MSBuildCommandParser.GetCommand().Name))
             {
-                new MSBuildForwardingApp(helpArgs).Execute();
+                new MSBuildForwardingApp(MSBuildArgs.ForHelp).Execute();
                 context.Output.WriteLine();
                 additionalOption(context);
             }

@@ -76,6 +76,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Basic.CompilerLog.Util" />
     <PackageReference Include="Moq" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" />
     <PackageReference Include="Microsoft.TemplateEngine.Mocks" />

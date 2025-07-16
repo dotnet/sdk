@@ -2,17 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using Microsoft.DotNet.Cli.Extensions;
-using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
 internal static class ToolInstallCommandParser
 {
-    public static readonly Argument<PackageIdentity> PackageIdentityArgument = CommonArguments.RequiredPackageIdentityArgument();
+    public static readonly Argument<PackageIdentityWithRange> PackageIdentityArgument = CommonArguments.RequiredPackageIdentityArgument();
 
     public static readonly Option<string> VersionOption = new("--version")
     {
@@ -59,7 +57,7 @@ internal static class ToolInstallCommandParser
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption;
+    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal);
 
     // Don't use the common options version as we don't want this to be a forwarded option
     public static readonly Option<string> ArchitectureOption = new("--arch", "-a")

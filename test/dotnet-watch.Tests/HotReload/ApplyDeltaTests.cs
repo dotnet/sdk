@@ -3,11 +3,13 @@
 
 #nullable disable
 
+using System.Text.RegularExpressions;
+
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class ApplyDeltaTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task AddSourceFile()
         {
             Log("AddSourceFile started");
@@ -30,6 +32,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 }
                 """);
 
+            await App.AssertOutputLineStartsWith(MessageDescriptor.ReEvaluationCompleted);
+
             // update existing file:
             UpdateSourceFile(Path.Combine(dependencyDir, "Foo.cs"), """
                 public class Lib
@@ -42,7 +46,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Changed!");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task ChangeFileInDependency()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -67,7 +71,283 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Changed!");
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+        [Fact]
+        public async Task ProjectChange_UpdateDirectoryBuildPropsThenUpdateSource()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
+                .WithSource();
+
+            var dependencyDir = Path.Combine(testAsset.Path, "Dependency");
+
+            App.Start(testAsset, [], "AppWithDeps");
+
+            await App.AssertWaitingForChanges();
+
+            UpdateSourceFile(
+                Path.Combine(testAsset.Path, "Directory.Build.props"),
+                src => src.Replace("<AllowUnsafeBlocks>false</AllowUnsafeBlocks>", "<AllowUnsafeBlocks>true</AllowUnsafeBlocks>"));
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.NoCSharpChangesToApply);
+            App.AssertOutputContains(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
+            App.Process.ClearOutput();
+
+            var newSrc = """
+                public class Lib
+                {
+                    public static unsafe void Print()
+                    {
+                        char c = '!';
+                        char* pc = &c;
+                        System.Console.WriteLine($"Changed{*pc}");
+                    }
+                }
+                """;
+
+            UpdateSourceFile(Path.Combine(dependencyDir, "Foo.cs"), newSrc);
+
+            await App.AssertOutputLineStartsWith("Changed!");
+            await App.WaitUntilOutputContains($"dotnet watch 🔥 [App.WithDeps ({ToolsetInfo.CurrentTargetFramework})] Hot reload succeeded.");
+        }
+
+        [Theory]
+        [CombinatorialData]
+        public async Task ProjectChange_Update(bool isDirectoryProps)
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps", identifier: isDirectoryProps.ToString())
+                .WithSource();
+
+            var symbolName = isDirectoryProps ? "BUILD_CONST_IN_PROPS" : "BUILD_CONST_IN_CSPROJ";
+
+            var dependencyDir = Path.Combine(testAsset.Path, "Dependency");
+            var libSourcePath = Path.Combine(dependencyDir, "Foo.cs");
+            var buildFilePath = isDirectoryProps ? Path.Combine(testAsset.Path, "Directory.Build.props") : Path.Combine(dependencyDir, "Dependency.csproj");
+
+            File.WriteAllText(libSourcePath, $$"""
+                public class Lib
+                {
+                    public static void Print()
+                    {
+                #if {{symbolName}}
+                        System.Console.WriteLine("{{symbolName}} set");
+                #else
+                        System.Console.WriteLine("{{symbolName}} not set");
+                #endif
+                    }
+                }
+                """);
+
+            App.Start(testAsset, [], "AppWithDeps");
+
+            await App.AssertWaitingForChanges();
+            await App.WaitUntilOutputContains($"{symbolName} set");
+            App.Process.ClearOutput();
+
+            UpdateSourceFile(buildFilePath, src => src.Replace(symbolName, ""));
+
+            // TODO: https://github.com/dotnet/roslyn/issues/78921
+
+            // Roslyn should detect change in build constant and apply it or flag it as rude edit.
+            //await App.WaitUntilOutputContains($"dotnet watch 🔥 [App.WithDeps ({ToolsetInfo.CurrentTargetFramework})] Hot reload succeeded.");
+            //await App.WaitUntilOutputContains("BUILD_CONST not set");
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.NoCSharpChangesToApply);
+            App.AssertOutputContains(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
+        }
+
+        [Fact(Skip = "https://github.com/dotnet/msbuild/issues/12001")]
+        public async Task ProjectChange_DirectoryBuildProps_Add()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
+                .WithSource();
+
+            var dependencyDir = Path.Combine(testAsset.Path, "Dependency");
+            var libSourcePath = Path.Combine(dependencyDir, "Foo.cs");
+            var directoryBuildProps = Path.Combine(testAsset.Path, "Directory.Build.props");
+
+            // delete the file before we start the app, it will be added later:
+            File.Delete(directoryBuildProps);
+
+            File.WriteAllText(libSourcePath, """
+                public class Lib
+                {
+                    public static void Print()
+                    {
+                #if BUILD_CONST_IN_PROPS
+                        System.Console.WriteLine("BUILD_CONST_IN_PROPS set");
+                #else                
+                        System.Console.WriteLine("BUILD_CONST_IN_PROPS not set");
+                #endif
+                    }
+                }
+                """);
+
+            App.Start(testAsset, [], "AppWithDeps");
+
+            await App.AssertWaitingForChanges();
+            await App.WaitUntilOutputContains("BUILD_CONST_IN_PROPS set");
+            App.Process.ClearOutput();
+
+            UpdateSourceFile(
+                directoryBuildProps,
+                src => src.Replace("BUILD_CONST_IN_PROPS", ""));
+
+            await App.WaitUntilOutputContains($"dotnet watch 🔥 [App.WithDeps ({ToolsetInfo.CurrentTargetFramework})] Hot reload succeeded.");
+            await App.WaitUntilOutputContains("BUILD_CONST not set");
+
+            App.AssertOutputContains(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
+        }
+
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/49545")]
+        public async Task ProjectChange_DirectoryBuildProps_Delete()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
+                .WithSource();
+
+            var dependencyDir = Path.Combine(testAsset.Path, "Dependency");
+            var libSourcePath = Path.Combine(dependencyDir, "Foo.cs");
+            var directoryBuildProps = Path.Combine(testAsset.Path, "Directory.Build.props");
+
+            File.WriteAllText(libSourcePath, """
+                public class Lib
+                {
+                    public static void Print()
+                    {
+                #if BUILD_CONST_IN_PROPS
+                        System.Console.WriteLine("BUILD_CONST_IN_PROPS set");
+                #else
+                        System.Console.WriteLine("BUILD_CONST_IN_PROPS not set");
+                #endif
+                    }
+                }
+                """);
+
+            App.Start(testAsset, [], "AppWithDeps");
+
+            await App.AssertWaitingForChanges();
+            await App.WaitUntilOutputContains("BUILD_CONST_IN_PROPS set");
+
+            Log($"Deleting {directoryBuildProps}");
+            File.Delete(directoryBuildProps);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.NoCSharpChangesToApply);
+            App.AssertOutputContains(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
+            App.Process.ClearOutput();
+
+            await App.AssertOutputLineStartsWith("BUILD_CONST_IN_PROPS not set");
+        }
+
+        [Fact]
+        public async Task DefaultItemExcludes_DefaultItemsEnabled()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    project.Root.Descendants()
+                        .First(e => e.Name.LocalName == "PropertyGroup")
+                        .Add(XElement.Parse("""
+                            <DefaultItemExcludes>$(DefaultItemExcludes);AppData/**/*.*</DefaultItemExcludes>
+                            """));
+                });
+
+            var appDataDir = Path.Combine(testAsset.Path, "AppData", "dir");
+            var appDataFilePath = Path.Combine(appDataDir, "ShouldBeIgnored.cs");
+
+            Directory.CreateDirectory(appDataDir);
+
+            App.Start(testAsset, []);
+
+            await App.AssertWaitingForChanges();
+            App.AssertOutputContains(new Regex(@"dotnet watch ⌚ Exclusion glob: 'AppData/[*][*]/[*][.][*];bin[/\\]+Debug[/\\]+[*][*];obj[/\\]+Debug[/\\]+[*][*];bin[/\\]+[*][*];obj[/\\]+[*][*]"));
+            App.Process.ClearOutput();
+
+            UpdateSourceFile(appDataFilePath, """
+            class X;
+            """);
+
+            await App.WaitUntilOutputContains($"dotnet watch ⌚ Ignoring change in excluded file '{appDataFilePath}': Add. Path matches DefaultItemExcludes glob 'AppData/**/*.*' set in '{testAsset.Path}'.");
+        }
+
+        [Fact]
+        public async Task DefaultItemExcludes_DefaultItemsDisabled()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    project.Root.Descendants()
+                        .First(e => e.Name.LocalName == "PropertyGroup")
+                        .Add(XElement.Parse("""
+                            <EnableDefaultItems>false</EnableDefaultItems>
+                            """));
+
+                    project.Root.Descendants()
+                        .First(e => e.Name.LocalName == "ItemGroup")
+                        .Add(XElement.Parse("""
+                            <Compile Include="Program.cs" />
+                            """));
+                });
+
+            var binDir = Path.Combine(testAsset.Path, "bin", "Debug", ToolsetInfo.CurrentTargetFramework);
+            var binDirFilePath = Path.Combine(binDir, "ShouldBeIgnored.cs");
+
+            var objDir = Path.Combine(testAsset.Path, "obj", "Debug", ToolsetInfo.CurrentTargetFramework);
+            var objDirFilePath = Path.Combine(objDir, "ShouldBeIgnored.cs");
+
+            Directory.CreateDirectory(binDir);
+
+            App.Start(testAsset, []);
+
+            await App.AssertWaitingForChanges();
+            App.AssertOutputContains($"dotnet watch ⌚ Excluded directory: '{binDir}'");
+            App.AssertOutputContains($"dotnet watch ⌚ Excluded directory: '{objDir}'");
+            App.Process.ClearOutput();
+
+            UpdateSourceFile(binDirFilePath, "class X;");
+            UpdateSourceFile(objDirFilePath, "class X;");
+
+            await App.WaitUntilOutputContains($"dotnet watch ⌚ Ignoring change in output directory: Add '{binDirFilePath}'");
+            await App.WaitUntilOutputContains($"dotnet watch ⌚ Ignoring change in output directory: Add '{objDirFilePath}'");
+        }
+
+        [Fact]
+        public async Task ProjectChange_GlobalUsings()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+                .WithSource();
+
+            var programPath = Path.Combine(testAsset.Path, "Program.cs");
+            var projectPath = Path.Combine(testAsset.Path, "WatchHotReloadApp.csproj");
+
+            App.Start(testAsset, []);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges);
+
+            // missing System.Linq import:
+            UpdateSourceFile(programPath, content => content.Replace("""
+                Console.WriteLine(".");
+                """,
+                """
+                Console.WriteLine($">>> {typeof(XDocument)}");
+                """));
+
+            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Unable to apply hot reload due to compilation errors.", failure: _ => false);
+
+            UpdateSourceFile(projectPath, content => content.Replace("""
+                <!-- items placeholder -->
+                """,
+                """
+                <Using Include="System.Xml.Linq" />
+                """));
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded, $"WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})", failure: _ => false);
+
+            await App.WaitUntilOutputContains(">>> System.Xml.Linq.XDocument");
+
+            App.AssertOutputContains(MessageDescriptor.ReEvaluationCompleted);
+        }
+
+        [Theory]
         [CombinatorialData]
         public async Task AutoRestartOnRudeEdit(bool nonInteractive)
         {
@@ -100,7 +380,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
 
             App.AssertOutputContains("⌚ Restart is needed to apply the changes");
-            App.AssertOutputContains($"⌚ [auto-restart] {programPath}(33,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
+            App.AssertOutputContains($"⌚ [auto-restart] {programPath}(38,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
             App.Process.ClearOutput();
@@ -111,7 +391,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith($"dotnet watch 🔥 [WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Hot reload succeeded.");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/49307")]
+        [Fact]
         public async Task AutoRestartOnRudeEditAfterRestartPrompt()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -130,7 +410,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("  ❔ Do you want to restart your app? Yes (y) / No (n) / Always (a) / Never (v)", failure: _ => false);
 
             App.AssertOutputContains("⌚ Restart is needed to apply the changes.");
-            App.AssertOutputContains($"❌ {programPath}(33,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
+            App.AssertOutputContains($"❌ {programPath}(38,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
             App.Process.ClearOutput();
 
             App.SendKey('a');
@@ -147,12 +427,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
 
             App.AssertOutputContains("⌚ Restart is needed to apply the changes");
-            App.AssertOutputContains($"⌚ [auto-restart] {programPath}(33,1): error ENC0033: Deleting method 'F()' requires restarting the application.");
+            App.AssertOutputContains($"⌚ [auto-restart] {programPath}(38,1): error ENC0033: Deleting method 'F()' requires restarting the application.");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+        [Theory]
         [CombinatorialData]
         public async Task AutoRestartOnNoEffectEdit(bool nonInteractive)
         {
@@ -200,7 +480,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         /// <summary>
         /// Unchanged project doesn't build. Wait for source change and rebuild.
         /// </summary>
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task BaselineCompilationError()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
@@ -223,50 +503,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("<Updated>", failure: _ => false);
         }
 
-        /// <summary>
-        /// We currently do not support applying project changes.
-        /// The workaround is to restart via Ctrl+R.
-        /// </summary>
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
-        public async Task ProjectChangeAndRestart()
-        {
-            var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
-                .WithSource();
-
-            var programPath = Path.Combine(testAsset.Path, "Program.cs");
-            var projectPath = Path.Combine(testAsset.Path, "WatchNoDepsApp.csproj");
-
-            App.Start(testAsset, ["--no-exit"], testFlags: TestFlags.ReadKeyFromStdin);
-
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges);
-
-            // missing System.Linq import:
-            UpdateSourceFile(programPath, content => content.Replace("""
-                Console.WriteLine("Started");
-                """,
-                """
-                Console.WriteLine($">>> {typeof(Enumerable)}");
-                """));
-
-            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Unable to apply hot reload due to compilation errors.", failure: _ => false);
-
-            UpdateSourceFile(projectPath, content => content.Replace("""
-                <!-- add item -->
-                """,
-                """
-                <Using Include="System.Linq" />
-                """));
-
-            // project change not applied:
-            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Unable to apply hot reload due to compilation errors.", failure: _ => false);
-
-            // Ctlr+R rebuilds and restarts:
-            App.SendControlR();
-
-            await App.AssertOutputLineStartsWith(">>> System.Linq.Enumerable", failure: _ => false);
-        }
-
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task ChangeFileInFSharpProject()
         {
             var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
@@ -281,7 +518,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("<Updated>");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task ChangeFileInFSharpProjectWithLoop()
         {
             var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
@@ -351,7 +588,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Updated types: Printer");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task MetadataUpdateHandler_NoActions()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -383,7 +620,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 $"dotnet watch ⚠ [WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Expected to find a static method 'ClearCache', 'UpdateApplication' or 'UpdateContent' on type 'AppUpdateHandler, WatchHotReloadApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' but neither exists.");
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+        [Theory]
         [CombinatorialData]
         public async Task MetadataUpdateHandler_Exception(bool verbose)
         {
@@ -686,7 +923,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Updated types: Printer");
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+        [Theory]
         [InlineData(true, Skip = "https://github.com/dotnet/sdk/issues/43320")]
         [InlineData(false)]
         public async Task RenameSourceFile(bool useMove)
@@ -738,7 +975,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("> Renamed.cs");
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+        [Theory]
         [InlineData(true, Skip = "https://github.com/dotnet/sdk/issues/43320")]
         [InlineData(false)]
         public async Task RenameDirectory(bool useMove)
@@ -772,7 +1009,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Directory.CreateDirectory(oldSubdir);
             File.WriteAllText(Path.Combine(oldSubdir, "Foo.cs"), source);
 
-            App.Start(testAsset, [], "AppWithDeps");
+            App.Start(testAsset, ["--non-interactive"], "AppWithDeps");
 
             await App.AssertWaitingForChanges();
 
@@ -790,7 +1027,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Log($"Renamed '{oldSubdir}' to '{newSubdir}'.");
 
-            await App.AssertOutputLineStartsWith("> NewSubdir");
+            // dotnet-watch may observe the delete separately from the new file write.
+            // If so, rude edit is reported, the app is auto-restarted and we should observe the final result.
+
+            await App.AssertOutputLineStartsWith("> NewSubdir", failure: _ => false);
         }
 
         [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")

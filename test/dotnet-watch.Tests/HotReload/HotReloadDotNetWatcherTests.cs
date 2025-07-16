@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 
 public class HotReloadDotNetWatcherTests
 {
-    [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+    [Theory]
     [InlineData(new[] { ChangeKind.Update }, new[] { ChangeKind.Update })]
     [InlineData(new[] { ChangeKind.Add }, new[] { ChangeKind.Add })]
     [InlineData(new[] { ChangeKind.Delete }, new[] { ChangeKind.Delete })]

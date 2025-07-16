@@ -105,7 +105,7 @@ function CreateVSShortcut()
   $slnPath = Join-Path $RepoRoot 'sdk.slnx'
   $commandToLaunch = "& '$scriptPath'; & '$devenvPath' '$slnPath'"
   $powershellPath = '%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe'
-  $shortcutPath = Join-Path $ArtifactsDir 'VS with sdk.sln.lnk'
+  $shortcutPath = Join-Path $ArtifactsDir 'VS with sdk.slnx.lnk'
 
   # https://stackoverflow.com/a/9701907/294804
   # https://learn.microsoft.com/en-us/troubleshoot/windows-client/admin-development/create-desktop-shortcut-with-wsh

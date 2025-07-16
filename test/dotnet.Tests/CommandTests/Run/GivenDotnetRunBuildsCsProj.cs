@@ -714,8 +714,12 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.NotHaveStdOutContaining("Important text");
         }
 
+        /// <summary>
+        /// default verbosity for `run` is as quiet as possible, so it does not show important messages.
+        /// NuGet authentication messages _are_ shown, but all other non-warning/-error messages are not.
+        /// </summary>
         [Fact]
-        public void ItShowImportantLevelMessageWhenPassInteractive()
+        public void ItDoesNotShowImportantLevelMessageWhenPassInteractive()
         {
             var testAppName = "MSBuildTestApp";
             var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
@@ -727,8 +731,25 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute("--interactive");
 
             result.Should().Pass()
+                .And.NotHaveStdOutContaining("Important text");
+        }
+
+        [Fact]
+        public void ItShowsImportantLevelMessageWhenPassInteractiveAndVerbose()
+        {
+            var testAppName = "MSBuildTestApp";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                .WithSource()
+                .WithProjectChanges(ProjectModification.AddDisplayMessageBeforeRestoreToProject);
+
+            var result = new DotnetCommand(Log, "run", "/v", "d")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("--interactive");
+
+            result.Should().Pass()
                 .And.HaveStdOutContaining("Important text");
         }
+
 
         [Fact]
         public void ItPrintsDuplicateArguments()

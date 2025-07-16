@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
@@ -25,17 +23,17 @@ internal static class BuildCommandParser
         HelpName = CliCommandStrings.OutputOptionName
     }.ForwardAsOutputPath("OutputPath");
 
-    public static readonly Option<bool> NoIncrementalOption = new("--no-incremental")
+    public static readonly Option<bool> NoIncrementalOption = new ForwardedOption<bool>("--no-incremental")
     {
         Description = CliCommandStrings.NoIncrementalOptionDescription,
         Arity = ArgumentArity.Zero
-    };
+    }.ForwardAs("--target:Rebuild");
 
     public static readonly Option<bool> NoDependenciesOption = new ForwardedOption<bool>("--no-dependencies")
     {
         Description = CliCommandStrings.NoDependenciesOptionDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:BuildProjectReferences=false");
+    }.ForwardAs("--property:BuildProjectReferences=false");
 
     public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
     {
@@ -53,7 +51,14 @@ internal static class BuildCommandParser
 
     public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.BuildFrameworkOptionDescription);
 
-    public static readonly Option<string> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.BuildConfigurationOptionDescription);
+    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.BuildConfigurationOptionDescription);
+
+    /// <summary>
+    /// Build actually means 'run the default Target' generally in MSBuild
+    /// </summary>
+    public static readonly Option<string[]?> TargetOption = CommonOptions.MSBuildTargetOption();
+
+    public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.VerbosityOption();
 
     private static readonly Command Command = ConstructCommand();
 
@@ -74,7 +79,7 @@ internal static class BuildCommandParser
         command.Options.Add(CommonOptions.VersionSuffixOption);
         command.Options.Add(NoRestoreOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
-        command.Options.Add(CommonOptions.VerbosityOption);
+        command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.DebugOption);
         command.Options.Add(OutputOption);
         command.Options.Add(CommonOptions.ArtifactsPathOption);
@@ -86,6 +91,7 @@ internal static class BuildCommandParser
         command.Options.Add(CommonOptions.ArchitectureOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.Options.Add(TargetOption);
 
         command.SetAction(BuildCommand.Run);
 

@@ -415,7 +415,9 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [RequiresMSBuildVersionTheory("16.8.0")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        //   error NETSDK1084: There is no application host available for the specified RuntimeIdentifier 'osx-arm64'. 
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("netcoreapp3.0")]
         [InlineData("netcoreapp3.1")]
         public void It_generates_a_single_file_including_pdbs(string targetFramework)
@@ -696,7 +698,8 @@ namespace Microsoft.NET.Publish.Tests
         }
 
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("netcoreapp2.1", true)]
         [InlineData("netcoreapp3.0", false)]
         [InlineData("netcoreapp3.1", false)]
@@ -736,7 +739,8 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("net6.0", false)]
         [InlineData("netstandard2.0;net5.0", true)] // None of these TFMs are supported for single-file
         [InlineData("netstandard2.0;net6.0", false)] // Net6.0 is the min TFM supported for single-file and targeting.
-        [InlineData("netstandard2.0;net8.0", true)] // Net8.0 is supported for single-file, but leaves a "gap" for the supported net6./net7.0 TFMs.
+        [InlineData("netstandard2.0;net8.0", false)] // Net8.0 is supported for single-file
+        [InlineData("netstandard2.0;net9.0", true)] // Net9.0 is supported for single-file, but leaves a "gap" for the supported net6./net7.0 TFMs.
         [InlineData("alias-ns2", true)]
         [InlineData("alias-n6", false)]
         [InlineData("alias-n6;alias-n8", false)] // If all TFMs are supported, there's no warning even though the project uses aliases.
@@ -749,18 +753,19 @@ namespace Microsoft.NET.Publish.Tests
                 TargetFrameworks = targetFrameworks
             };
             testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "true";
+            testProject.AdditionalProperties["CheckEolTargetFramework"] = "false"; // Silence warning about targeting EOL TFMs
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFrameworks)
                 .WithProjectChanges(AddTargetFrameworkAliases);
-
+            
             var buildCommand = new BuildCommand(testAsset);
-            var resultAssertion = buildCommand.Execute("/bl:my.binlog")
+            var resultAssertion = buildCommand.Execute("/p:CheckEolTargetFramework=false")
                 .Should().Pass();
             if (shouldWarn) {
                 // Note: can't check for Strings.EnableSingleFileAnalyzerUnsupported because each line of
                 // the message gets prefixed with a file path by MSBuild.
                 resultAssertion
                     .And.HaveStdOutContaining($"warning NETSDK1211")
-                    .And.HaveStdOutContaining($"<EnableSingleFileAnalyzer Condition=\"$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))\">true</EnableSingleFileAnalyzer>");
+                    .And.HaveStdOutContaining($"<EnableSingleFileAnalyzer Condition=\"$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))\">true</EnableSingleFileAnalyzer>");
             } else {
                 resultAssertion.And.NotHaveStdOutContaining($"warning");
             }
@@ -812,6 +817,12 @@ class C
         [InlineData(ToolsetInfo.CurrentTargetFramework, true, IncludeAllContent)]
         public void It_runs_single_file_apps(string targetFramework, bool selfContained, string bundleOption)
         {
+            if (targetFramework == "net6.0" && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                //  https://github.com/dotnet/sdk/issues/49665
+                return;
+            }
+
             var testProject = new TestProject()
             {
                 Name = "SingleFileTest",
@@ -900,7 +911,8 @@ class C
                 .HaveStdOutContaining(Strings.CannotIncludeSymbolsInSingleFile);
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void It_errors_when_enabling_compression_targeting_net5()
         {
             var testProject = new TestProject()

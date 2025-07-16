@@ -84,6 +84,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Checks for EOL frameworks -->
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.EolTargetFrameworks.targets" />
 
+  <!-- Checks for deprecated Aspire workload usage -->
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.AspireWorkloadDeprecation.targets" />
+
   <!-- Check if the Target Framework is coreclr based -->
   <PropertyGroup Condition="'$(_IsNETCoreOrNETStandard)' == ''">
     <_IsNETCoreOrNETStandard Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">true</_IsNETCoreOrNETStandard>

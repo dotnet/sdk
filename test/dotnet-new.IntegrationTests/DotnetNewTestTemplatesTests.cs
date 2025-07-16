@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
@@ -29,7 +30,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             ("nunit-playwright", new[] { Languages.CSharp }, false, false),
         ];
 
-        private static readonly string PackagesJsonPath = Path.Combine(CodeBaseRoot, "test", "component-governance", "packages.json");
+        private static readonly string PackagesJsonPath = Path.Combine(CodeBaseRoot, "test", "TestPackages", "cgmanifest.json");
 
         public DotnetNewTestTemplatesTests(ITestOutputHelper log) : base(log)
         {
@@ -226,23 +227,32 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                               file.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase) ||
                               file.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase));
 
-            Dictionary<string, string> packageVersions =
-                [];
+            // Load existing component detection manifest or create new one
+            ComponentDetectionManifest manifest;
 
-            // Load existing package versions if file exists
             if (File.Exists(PackagesJsonPath))
             {
                 try
                 {
-                    packageVersions = JsonSerializer.Deserialize<Dictionary<string, string>>(
-                        File.ReadAllText(PackagesJsonPath)) ??
-                        [];
+                    string jsonContent = File.ReadAllText(PackagesJsonPath);
+                    manifest = JsonSerializer.Deserialize<ComponentDetectionManifest>(jsonContent) ??
+                        CreateNewManifest();
                 }
                 catch (Exception ex)
                 {
-                    _log.WriteLine($"Warning: Could not parse existing packages.json: {ex.Message}");
+                    _log.WriteLine($"Warning: Could not parse existing component detection manifest: {ex.Message}");
+                    // Don't create a new manifest when we can't parse the existing one
+                    // This prevents overwriting the existing file with an empty manifest
+                    return;
                 }
             }
+            else
+            {
+                manifest = CreateNewManifest();
+            }
+
+            // Keep track of whether we added anything new
+            bool updatedManifest = false;
 
             // Extract package references from project files
             foreach (var projectFile in projectFiles)
@@ -271,24 +281,104 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                         version = match.Groups[3].Value;
                     }
 
-                    packageVersions[packageId] = version;
+                    // Find existing registration for this package with the SAME VERSION
+                    var existingRegistration = manifest.Registrations?.FirstOrDefault(r =>
+                        r.Component != null &&
+                        r.Component.Nuget != null &&
+                        string.Equals(r.Component.Nuget.Name, packageId, StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(r.Component.Nuget.Version, version, StringComparison.OrdinalIgnoreCase));
+
+                    if (existingRegistration == null)
+                    {
+                        // Add new package if it doesn't exist with this version
+                        manifest.Registrations?.Add(new Registration
+                        {
+                            Component = new Component
+                            {
+                                Type = "nuget",
+                                Nuget = new NugetComponent
+                                {
+                                    Name = packageId,
+                                    Version = version
+                                }
+                            }
+                        });
+                        updatedManifest = true;
+                    }
                 }
             }
 
-            // Ensure directory exists
-            if (Path.GetDirectoryName(PackagesJsonPath) is string directoryPath)
+            // Only write the file if we actually added something new
+            if (updatedManifest)
             {
-                Directory.CreateDirectory(directoryPath);
-            }
-            else
-            {
-                _log.WriteLine($"Warning: Could not determine directory path for '{PackagesJsonPath}'.");
-            }
+                // Ensure directory exists
+                if (Path.GetDirectoryName(PackagesJsonPath) is string directoryPath)
+                {
+                    Directory.CreateDirectory(directoryPath);
+                }
+                else
+                {
+                    _log.WriteLine($"Warning: Could not determine directory path for '{PackagesJsonPath}'.");
+                    return;
+                }
 
-            // Write updated packages.json
-            File.WriteAllText(
-                PackagesJsonPath,
-                JsonSerializer.Serialize(packageVersions, new JsonSerializerOptions { WriteIndented = true }));
+                // Write updated manifest
+                File.WriteAllText(
+                    PackagesJsonPath,
+                    JsonSerializer.Serialize(manifest, new JsonSerializerOptions
+                    {
+                        WriteIndented = true,
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    }));
+            }
+        }
+
+        private ComponentDetectionManifest CreateNewManifest()
+        {
+            return new ComponentDetectionManifest
+            {
+                Schema = "https://json.schemastore.org/component-detection-manifest.json",
+                Version = 1,
+                Registrations =
+                []
+            };
+        }
+
+        // Classes to model the component detection manifest
+        private class ComponentDetectionManifest
+        {
+            [JsonPropertyName("$schema")]
+            public string? Schema { get; set; }
+
+            [JsonPropertyName("version")]
+            public int Version { get; set; }
+
+            [JsonPropertyName("registrations")]
+            public List<Registration>? Registrations { get; set; }
+        }
+
+        private class Registration
+        {
+            [JsonPropertyName("component")]
+            public Component? Component { get; set; }
+        }
+
+        private class Component
+        {
+            [JsonPropertyName("type")]
+            public string? Type { get; set; }
+
+            [JsonPropertyName("nuget")]
+            public NugetComponent? Nuget { get; set; }
+        }
+
+        private class NugetComponent
+        {
+            [JsonPropertyName("name")]
+            public string? Name { get; set; }
+
+            [JsonPropertyName("version")]
+            public string? Version { get; set; }
         }
 
         private static string GenerateTestProjectName()

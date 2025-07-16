@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\AspireService\Microsoft.WebTools.AspireService.projitems" Label="Shared" />
   <Import Project="..\HotReloadAgent.PipeRpc\Microsoft.DotNet.HotReload.Agent.PipeRpc.projitems" Label="Shared" />
@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <EmbeddedResource Update="**\*.resx" GenerateSource="true" />
-    <Content Include="DotNetWatch.targets" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="Watch\DotNetWatch.targets" TargetPath="DotNetWatch.targets" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
@@ -50,8 +50,27 @@
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)\src\Cli\dotnet\dotnet.csproj" />
     <ProjectReference Include="..\BrowserRefresh\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework;TargetFrameworks" OutputItemType="Content" TargetPath="middleware\Microsoft.AspNetCore.Watch.BrowserRefresh.dll" CopyToOutputDirectory="PreserveNewest" />
-    <ProjectReference Include="..\DotNetDeltaApplier\Microsoft.Extensions.DotNetDeltaApplier.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework;TargetFrameworks" OutputItemType="Content" TargetPath="hotreload\Microsoft.Extensions.DotNetDeltaApplier.dll" CopyToOutputDirectory="PreserveNewest" />
     <ProjectReference Include="..\DotNetWatchTasks\DotNetWatchTasks.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework;TargetFrameworks" OutputItemType="Content" CopyToOutputDirectory="PreserveNewest" />
+
+    <ProjectReference Include="..\DotNetDeltaApplier\Microsoft.Extensions.DotNetDeltaApplier.csproj">
+      <PrivateAssets>all</PrivateAssets>
+      <OutputItemType>Content</OutputItemType>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetTargetFramework>TargetFramework=net10.0</SetTargetFramework>
+      <TargetPath>hotreload\net10.0\Microsoft.Extensions.DotNetDeltaApplier.dll</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> 
+    </ProjectReference>
+
+    <ProjectReference Include="..\DotNetDeltaApplier\Microsoft.Extensions.DotNetDeltaApplier.csproj">
+      <PrivateAssets>all</PrivateAssets>
+      <OutputItemType>Content</OutputItemType>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetTargetFramework>TargetFramework=net6.0</SetTargetFramework>
+      <TargetPath>hotreload\net6.0\Microsoft.Extensions.DotNetDeltaApplier.dll</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </ProjectReference>
   </ItemGroup>
 
   <!-- Publish dotnet-watch files to the redist testhost folder so that in innerloop, redist doesn't need to be built again. -->

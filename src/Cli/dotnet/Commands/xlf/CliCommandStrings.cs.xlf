@@ -77,6 +77,11 @@
         <target state="translated">Při instalaci balíčku nástroje .NET povolte downgrade balíčku.</target>
         <note />
       </trans-unit>
+      <trans-unit id="AspireWorkloadDeprecated">
+        <source>The Aspire workload is deprecated and no longer necessary. Aspire is now available as NuGet packages that you can add directly to your projects. For more information, see https://aka.ms/aspire/support-policy</source>
+        <target state="translated">Úloha Aspire je zastaralá a už není potřeba. Aspire je nyní k dispozici v podobě balíčků NuGet, které můžete přidat přímo do svých projektů. Další informace najdete na https://aka.ms/aspire/support-policy</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Authors">
         <source>Authors</source>
         <target state="translated">Autoři</target>
@@ -1438,7 +1443,7 @@ Nastavte odlišné názvy profilů.</target>
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
         <source>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="new">The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</target>
+        <target state="translated">Direktiva v {2} by měla obsahovat název bez speciálních znaků a volitelnou hodnotu oddělenou znakem {1}, například #:{0} Název{1}Hodnota.</target>
         <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="InvalidFilePath">
@@ -2174,7 +2179,6 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
            microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
-           microsoft.net.sdk.aspire                           8.0.100                    8.2.0
       3. If one or more workloads are provided along with their versions (by joining them with the '@' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.
          Example:
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
@@ -2204,7 +2208,6 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
            microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
-           microsoft.net.sdk.aspire                           8.0.100                    8.2.0
       3. Pokud jsou zadány úlohy spolu s jejich verzemi (spojených znakem @), budou výstupem verze úloh, které odpovídají zadaným verzím. Pomocí parametru --take určíte, kolik jich má být poskytnuto, a pomocí parametru --format změníte formát.
          Příklad:
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
@@ -2286,6 +2289,46 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
         <source>Convert a file-based program to a project-based program.</source>
         <target state="translated">Umožňuje převést program na bázi souboru na program na bázi projektu.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertAskForOutputDirectory">
+        <source>Specify the output directory ({0}):</source>
+        <target state="new">Specify the output directory ({0}):</target>
+        <note>{0} is the default value</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertDryRun">
+        <source>Determines changes without actually modifying the file system</source>
+        <target state="new">Determines changes without actually modifying the file system</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldConvertFile">
+        <source>Dry run: would remove file-level directives from file: {0}</source>
+        <target state="new">Dry run: would remove file-level directives from file: {0}</target>
+        <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldCopyFile">
+        <source>Dry run: would copy file '{0}' to '{1}'.</source>
+        <target state="new">Dry run: would copy file '{0}' to '{1}'.</target>
+        <note>{0} and {1} are file full paths.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldCreateDirectory">
+        <source>Dry run: would create directory: {0}</source>
+        <target state="new">Dry run: would create directory: {0}</target>
+        <note>{0} is the directory full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldCreateFile">
+        <source>Dry run: would create file: {0}</source>
+        <target state="new">Dry run: would create file: {0}</target>
+        <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldDeleteFile">
+        <source>Dry run: would delete file: {0}</source>
+        <target state="new">Dry run: would delete file: {0}</target>
+        <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldMoveFile">
+        <source>Dry run: would move file '{0}' to '{1}'.</source>
+        <target state="new">Dry run: would move file '{0}' to '{1}'.</target>
+        <note>{0} and {1} are file full paths.</note>
       </trans-unit>
       <trans-unit id="ProjectManifest">
         <source>PROJECT_MANIFEST</source>

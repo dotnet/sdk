@@ -51,6 +51,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <UseSystemResourceKeys Condition="'$(UseSystemResourceKeys)' == ''">true</UseSystemResourceKeys>
     <UseSizeOptimizedLinq Condition="'$(UseSizeOptimizedLinq)' == ''">true</UseSizeOptimizedLinq>
     <EnableUnsafeUTF7Encoding Condition="'$(EnableUnsafeUTF7Encoding)' == ''">false</EnableUnsafeUTF7Encoding>
+    <Http3Support Condition="'$(Http3Support)' == ''">false</Http3Support>
     <HttpActivityPropagationSupport Condition="'$(HttpActivityPropagationSupport)' == ''">false</HttpActivityPropagationSupport>
     <DebuggerSupport Condition="'$(DebuggerSupport)' == '' and '$(Configuration)' != 'Debug'">false</DebuggerSupport>
     <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == '' and '$(_TargetingNET100OrLater)' != 'true'">true</BlazorCacheBootResources>

@@ -77,6 +77,11 @@
         <target state="translated">安裝 .NET 工具套件時允許套件降級。</target>
         <note />
       </trans-unit>
+      <trans-unit id="AspireWorkloadDeprecated">
+        <source>The Aspire workload is deprecated and no longer necessary. Aspire is now available as NuGet packages that you can add directly to your projects. For more information, see https://aka.ms/aspire/support-policy</source>
+        <target state="translated">Aspire 工作負載已棄用，不再需要。Aspire 現已作為 NuGet 套件提供，您可以將它直接新增至專案。如需詳細資訊，請參閱 https://aka.ms/aspire/support-policy</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Authors">
         <source>Authors</source>
         <target state="translated">作者</target>
@@ -1438,7 +1443,7 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
         <source>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="new">The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</target>
+        <target state="translated">位於 '{2}' 的指示詞應包含不含特殊字元的名稱，以及 '{1}' 分隔的選用值，例如 '#:{0} Name{1}Value'。</target>
         <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="InvalidFilePath">
@@ -2174,7 +2179,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
            microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
-           microsoft.net.sdk.aspire                           8.0.100                    8.2.0
       3. If one or more workloads are provided along with their versions (by joining them with the '@' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.
          Example:
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
@@ -2204,7 +2208,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
            microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
-           microsoft.net.sdk.aspire                           8.0.100                    8.2.0
       3. 如果提供一或多個工作負載及其版本 (使用 '@' 字元聯結它們)，它會輸出符合所提供版本的工作負載版本。使用 --take 選項來指定要提供多少個，以及使用 --format 來變更格式。
          範例: 
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
@@ -2286,6 +2289,46 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <source>Convert a file-based program to a project-based program.</source>
         <target state="translated">將檔案型程式轉換成專案型程式。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertAskForOutputDirectory">
+        <source>Specify the output directory ({0}):</source>
+        <target state="new">Specify the output directory ({0}):</target>
+        <note>{0} is the default value</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertDryRun">
+        <source>Determines changes without actually modifying the file system</source>
+        <target state="new">Determines changes without actually modifying the file system</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldConvertFile">
+        <source>Dry run: would remove file-level directives from file: {0}</source>
+        <target state="new">Dry run: would remove file-level directives from file: {0}</target>
+        <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldCopyFile">
+        <source>Dry run: would copy file '{0}' to '{1}'.</source>
+        <target state="new">Dry run: would copy file '{0}' to '{1}'.</target>
+        <note>{0} and {1} are file full paths.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldCreateDirectory">
+        <source>Dry run: would create directory: {0}</source>
+        <target state="new">Dry run: would create directory: {0}</target>
+        <note>{0} is the directory full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldCreateFile">
+        <source>Dry run: would create file: {0}</source>
+        <target state="new">Dry run: would create file: {0}</target>
+        <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldDeleteFile">
+        <source>Dry run: would delete file: {0}</source>
+        <target state="new">Dry run: would delete file: {0}</target>
+        <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldMoveFile">
+        <source>Dry run: would move file '{0}' to '{1}'.</source>
+        <target state="new">Dry run: would move file '{0}' to '{1}'.</target>
+        <note>{0} and {1} are file full paths.</note>
       </trans-unit>
       <trans-unit id="ProjectManifest">
         <source>PROJECT_MANIFEST</source>

@@ -1,19 +1,13 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#nullable disable
-
-using System.Reflection;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json.Linq;
 using NuGet.Client;
-using NuGet.Commands;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -30,8 +24,8 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
 {
     public ToolPackageDownloader(
         IToolPackageStore store,
-        string runtimeJsonPathForTests = null,
-        string currentWorkingDirectory = null
+        string? runtimeJsonPathForTests = null,
+        string? currentWorkingDirectory = null
     ) : base(store, runtimeJsonPathForTests, currentWorkingDirectory, FileSystemWrapper.Default)
     {
     }
@@ -39,14 +33,14 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
     protected override INuGetPackageDownloader CreateNuGetPackageDownloader(
         bool verifySignatures,
         VerbosityOptions verbosity,
-        RestoreActionConfig restoreActionConfig)
+        RestoreActionConfig? restoreActionConfig)
     {
         ILogger verboseLogger = new NullLogger();
         if (verbosity.IsDetailedOrDiagnostic())
         {
             verboseLogger = new NuGetConsoleLogger();
         }
-        
+
         return new NuGetPackageDownloader.NuGetPackageDownloader(
             new DirectoryPath(),
             verboseLogger: verboseLogger,
@@ -63,13 +57,14 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         string packagesRootPath,
         NuGetVersion packageVersion,
         PackageSourceLocation packageSourceLocation,
+        VerbosityOptions verbosity,
         bool includeUnlisted = false
         )
     {
         var versionFolderPathResolver = new VersionFolderPathResolver(packagesRootPath);
 
-        string folderToDeleteOnFailure = null;
-        return TransactionalAction.Run<NuGetVersion>(() =>
+        string? folderToDeleteOnFailure = null;
+        return TransactionalAction.Run(() =>
         {
             var packagePath = nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation,
                         includeUnlisted: includeUnlisted, downloadFolder: new DirectoryPath(packagesRootPath)).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -86,11 +81,14 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
 
                 var packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(reader.GetNuspec()));
                 var hashPath = versionFolderPathResolver.GetHashPath(packageId.ToString(), version);
-
-                Directory.CreateDirectory(Path.GetDirectoryName(hashPath));
+                Directory.CreateDirectory(Path.GetDirectoryName(hashPath)!);
                 File.WriteAllText(hashPath, packageHash);
             }
 
+            if (verbosity.IsDetailedOrDiagnostic())
+            {
+                Reporter.Output.WriteLine($"Extracting package {packageId}@{packageVersion} to {packagePath}");
+            }
             // Extract the package
             var nupkgDir = versionFolderPathResolver.GetInstallPath(packageId.ToString(), version);
             nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir)).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -111,7 +109,6 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         NuGetv3LocalRepository nugetLocalRepository = new(packagesRootPath);
 
         var package = nugetLocalRepository.FindPackage(packageId.ToString(), packageVersion);
-
         return package != null;
     }
 
@@ -126,7 +123,8 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         DirectoryPath packagesRootPath,
         string assetFilePath,
         string runtimeJsonGraph,
-        string targetFramework = null
+        VerbosityOptions verbosity,
+        string? targetFramework = null
         )
     {
         // To get runtimeGraph:
@@ -139,6 +137,11 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         NuGetv3LocalRepository localRepository = new(packagesRootPath.Value);
         var package = localRepository.FindPackage(packageId.ToString(), version);
 
+        if (verbosity.IsDetailedOrDiagnostic())
+        {
+            Reporter.Output.WriteLine($"Locating package {packageId}@{version} in package store {packagesRootPath.Value}");
+            Reporter.Output.WriteLine($"The package has {string.Join(',', package.Nuspec.GetPackageTypes().Select(p => $"{p.Name},{p.Version}"))} package types");
+        }
         if (!package.Nuspec.GetPackageTypes().Any(pt => pt.Name.Equals(PackageType.DotnetTool.Name, StringComparison.OrdinalIgnoreCase) ||
                                                         pt.Name.Equals("DotnetToolRidPackage", StringComparison.OrdinalIgnoreCase)))
         {
@@ -222,7 +225,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
     protected static IEnumerable<LockFileItem> GetLockFileItems(
        IReadOnlyList<SelectionCriteria> criteria,
        ContentItemCollection items,
-       Action<LockFileItem> additionalAction,
+       Action<LockFileItem>? additionalAction,
        params PatternSet[] patterns)
     {
         // Loop through each criteria taking the first one that matches one or more items.

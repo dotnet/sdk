@@ -13,7 +13,7 @@ internal static class ParseResultExtension
 {
     public static VersionRange GetVersionRange(this ParseResult parseResult)
     {
-        var packageVersionFromIdentityArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdentityArgument)?.Version?.ToString();
+        var packageVersionFromIdentityArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdentityArgument).VersionRange?.OriginalString;
         var packageVersionFromVersionOption = parseResult.GetValue(ToolInstallCommandParser.VersionOption);
 
         // Check that only one of these has a value
