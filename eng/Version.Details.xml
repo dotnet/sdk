@@ -97,41 +97,41 @@
       <Sha>47d4e3f91e4e5414b6dafbf14288b9c5a798ef99</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.12.0-3.25275.3">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.12.0-3.25329.7">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>3f5cf9fbbd91f2047e988801a5142ca1cb6bab45</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.12.0-3.25275.3">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.12.0-3.25329.7">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>3f5cf9fbbd91f2047e988801a5142ca1cb6bab45</Sha>
       <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset.Framework" Version="4.12.0-3.25275.3">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset.Framework" Version="4.12.0-3.25329.7">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>3f5cf9fbbd91f2047e988801a5142ca1cb6bab45</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis" Version="4.12.0-3.25275.3">
+    <Dependency Name="Microsoft.CodeAnalysis" Version="4.12.0-3.25329.7">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>3f5cf9fbbd91f2047e988801a5142ca1cb6bab45</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.12.0-3.25275.3">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.12.0-3.25329.7">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>3f5cf9fbbd91f2047e988801a5142ca1cb6bab45</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.12.0-3.25275.3">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.12.0-3.25329.7">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>3f5cf9fbbd91f2047e988801a5142ca1cb6bab45</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.12.0-3.25275.3">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.12.0-3.25329.7">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>3f5cf9fbbd91f2047e988801a5142ca1cb6bab45</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.12.0-3.25275.3">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.12.0-3.25329.7">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>3f5cf9fbbd91f2047e988801a5142ca1cb6bab45</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.12.0-3.25275.3">
+    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.12.0-3.25329.7">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>3f5cf9fbbd91f2047e988801a5142ca1cb6bab45</Sha>
     </Dependency>
@@ -631,14 +631,14 @@
       <Uri>https://github.com/dotnet/arcade-services</Uri>
       <Sha>e156e649f28395d9d0ee1e848225a689b59e0fd3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.25316.1">
+    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.25326.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>45390d82e9b9686adeee65e046b8232f6814bea0</Sha>
+      <Sha>270606f9f338c1c2dfb255b6f18bbcb5f085a06c</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.25316.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.25326.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>45390d82e9b9686adeee65e046b8232f6814bea0</Sha>
+      <Sha>270606f9f338c1c2dfb255b6f18bbcb5f085a06c</Sha>
       <SourceBuild RepoName="scenario-tests" ManagedOnly="true" />
     </Dependency>
     <!--
