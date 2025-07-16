@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
 /// <param name="parseResult"></param>
 /// <param name="fileOrDirectory">
-/// Since this command is invoked via both 'package add' and 'add package', different symbols will control what the project path to search is. 
+/// Since this command is invoked via both 'package add' and 'add package', different symbols will control what the project path to search is.
 /// It's cleaner for the separate callsites to know this instead of pushing that logic here.
 /// </param>
 internal class PackageAddCommand(ParseResult parseResult, string fileOrDirectory) : CommandBase(parseResult)
@@ -118,7 +118,7 @@ internal class PackageAddCommand(ParseResult parseResult, string fileOrDirectory
         }
 
         args.AddRange(_parseResult
-            .OptionValuesToBeForwarded(PackageAddCommandParser.GetCommand())
+            .OptionValuesToBeForwarded()
             .SelectMany(a => a.Split(' ', 2)));
 
         if (_parseResult.GetResult(PackageAddCommandParser.NoRestoreOption) is not null)

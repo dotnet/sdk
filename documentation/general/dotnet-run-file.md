@@ -98,6 +98,8 @@ Command `dotnet publish file.cs` is also supported for file-based programs.
 Note that file-based apps have implicitly set `PublishAot=true`, so publishing uses Native AOT (and building reports AOT warnings).
 To opt out, use `#:property PublishAot=false` directive in your `.cs` file.
 
+Command `dotnet clean file.cs` can be used to clean build artifacts of the file-based program.
+
 ## Entry points
 
 If a file is given to `dotnet run`, it has to be an *entry-point file*, otherwise an error is reported.
@@ -123,6 +125,10 @@ Similarly, implicit build files like `Directory.Build.props` or `Directory.Packa
 > [!CAUTION]
 > Multi-file support is postponed for .NET 11.
 > In .NET 10, only the single file passed as the command-line argument to `dotnet run` is part of the compilation.
+> Specifically, the virtual project has properties `EnableDefaultCompileItems=false` and `EnableDefaultEmbeddedResourceItems=false`
+> (which can be customized via `#:property` directives), and a `Compile` item for the entry point file.
+> During [conversion](#grow-up), any `Content`, `None`, `Compile`, and `EmbeddedResource` items that do not have metadata `ExcludeFromFileBasedAppConversion=true`
+> and that are files inside the entry point file's directory tree are copied to the converted directory.
 
 ### Nested files
 
@@ -364,9 +370,8 @@ or as the first argument if it makes sense for them.
 We could also add `dotnet compile` command that would be the equivalent of `dotnet build` but for file-based programs
 (because "compiling" might make more sense for file-based programs than "building").
 
-`dotnet clean` could be extended to support cleaning [the output directory](#build-outputs),
-e.g., via `dotnet clean --file-based-program <path-to-entry-point>`
-or `dotnet clean --all-file-based-programs`.
+`dotnet clean` could be extended to support cleaning all file-based app outputs,
+e.g., `dotnet clean --all-file-based-apps`.
 
 Adding references via `dotnet package add`/`dotnet reference add` could be supported for file-based programs as well,
 i.e., the command would add a `#:package`/`#:project` directive to the top of a `.cs` file.

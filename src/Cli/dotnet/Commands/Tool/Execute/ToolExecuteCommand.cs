@@ -22,7 +22,7 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
 {
     const int ERROR_CANCELLED = 1223; //  Windows error code for "Operation canceled by user"
 
-    private readonly PackageIdentityWithRange _packageToolIdentityArgument = result.GetRequiredValue(ToolExecuteCommandParser.PackageIdentityArgument);
+    private readonly PackageIdentityWithRange _packageToolIdentityArgument = result.GetValue(ToolExecuteCommandParser.PackageIdentityArgument);
     private readonly IEnumerable<string> _forwardArguments = result.GetValue(ToolExecuteCommandParser.CommandArgument) ?? Enumerable.Empty<string>();
     private readonly bool _allowRollForward = result.GetValue(ToolExecuteCommandParser.RollForwardOption);
     private readonly string? _configFile = result.GetValue(ToolExecuteCommandParser.ConfigOption);
@@ -30,7 +30,6 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
     private readonly string[] _addSource = result.GetValue(ToolExecuteCommandParser.AddSourceOption) ?? [];
     private readonly bool _interactive = result.GetValue(ToolExecuteCommandParser.InteractiveOption);
     private readonly VerbosityOptions _verbosity = result.GetValue(ToolExecuteCommandParser.VerbosityOption);
-    private readonly bool _yes = result.GetValue(ToolExecuteCommandParser.YesOption);
     private readonly IToolPackageDownloader _toolPackageDownloader = ToolPackageFactory.CreateToolPackageStoresAndDownloader().downloader;
 
     private readonly RestoreActionConfig _restoreActionConfig = new RestoreActionConfig(DisableParallel: result.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
@@ -84,11 +83,9 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
 
         (var bestVersion, var packageSource) = _toolPackageDownloader.GetNuGetVersion(packageLocation, packageId, _verbosity, versionRange, _restoreActionConfig);
 
-        IToolPackage toolPackage;
-
         //  TargetFramework is null, which means to use the current framework.  Global tools can override the target framework to use (or select assets for),
         //  but we don't support this for local or one-shot tools.
-        if (!_toolPackageDownloader.TryGetDownloadedTool(packageId, bestVersion, targetFramework: null, out toolPackage))
+        if (!_toolPackageDownloader.TryGetDownloadedTool(packageId, bestVersion, targetFramework: null, verbosity: _verbosity, out var toolPackage))
         {
             if (!UserAgreedToRunFromSource(packageId, bestVersion, packageSource))
             {
@@ -130,47 +127,7 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
 
     private bool UserAgreedToRunFromSource(PackageId packageId, NuGetVersion version, PackageSource source)
     {
-        if (_yes)
-        {
-            return true;
-        }
-
-        if (!_interactive)
-        {
-            return false;
-        }
-
         string promptMessage = string.Format(CliCommandStrings.ToolDownloadConfirmationPrompt, packageId, version.ToString(), source.Source);
-
-        static string AddPromptOptions(string message)
-        {
-            return $"{message} [{CliCommandStrings.ConfirmationPromptYesValue}/{CliCommandStrings.ConfirmationPromptNoValue}] ({CliCommandStrings.ConfirmationPromptYesValue}): ";
-        }
-
-        Console.Write(AddPromptOptions(promptMessage));
-
-        static bool KeyMatches(ConsoleKeyInfo pressedKey, string valueKey)
-        {
-            //  Apparently you can't do invariant case insensitive comparison on a char directly, so we have to convert it to a string.
-            //  The resource string should be a single character, but we take the first character just to be sure.
-            return pressedKey.KeyChar.ToString().ToLowerInvariant().Equals(
-                    valueKey.ToLowerInvariant().Substring(0, 1));
-        }
-
-        while (true)
-        {
-            var key = Console.ReadKey();
-            Console.WriteLine();
-            if (key.Key == ConsoleKey.Enter || KeyMatches(key, CliCommandStrings.ConfirmationPromptYesValue))
-            {
-                return true;
-            }
-            if (key.Key == ConsoleKey.Escape || KeyMatches(key, CliCommandStrings.ConfirmationPromptNoValue))
-            {
-                return false;
-            }
-
-            Console.Write(AddPromptOptions(string.Format(CliCommandStrings.ConfirmationPromptInvalidChoiceMessage, CliCommandStrings.ConfirmationPromptYesValue, CliCommandStrings.ConfirmationPromptNoValue)));
-        }
+        return InteractiveConsole.Confirm(promptMessage, _parseResult, acceptEscapeForFalse: true) == true;
     }
 }

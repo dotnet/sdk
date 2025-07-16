@@ -37,7 +37,7 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
         bool? shouldUseWorkloadSetsFromGlobalJson = null)
         : base(parseResult, reporter: reporter, workloadResolverFactory: workloadResolverFactory, workloadInstaller: workloadInstaller,
               nugetPackageDownloader: nugetPackageDownloader, workloadManifestUpdater: workloadManifestUpdater,
-              tempDirPath: tempDirPath, shouldUseWorkloadSetsFromGlobalJson: shouldUseWorkloadSetsFromGlobalJson)
+              tempDirPath: tempDirPath, shouldUseWorkloadSetsFromGlobalJson: shouldUseWorkloadSetsFromGlobalJson, verbosityOptions: WorkloadUpdateCommandParser.VerbosityOption)
 
     {
         _fromPreviousSdk = parseResult.GetValue(WorkloadUpdateCommandParser.FromPreviousSdkOption);

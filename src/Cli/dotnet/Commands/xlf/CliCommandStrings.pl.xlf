@@ -79,7 +79,7 @@
       </trans-unit>
       <trans-unit id="AspireWorkloadDeprecated">
         <source>The Aspire workload is deprecated and no longer necessary. Aspire is now available as NuGet packages that you can add directly to your projects. For more information, see https://aka.ms/aspire/support-policy</source>
-        <target state="new">The Aspire workload is deprecated and no longer necessary. Aspire is now available as NuGet packages that you can add directly to your projects. For more information, see https://aka.ms/aspire/support-policy</target>
+        <target state="translated">Obciążenie Aspire jest przestarzałe i nie jest już konieczne. Usługa Aspire jest teraz dostępna jako pakiety NuGet, które można dodawać bezpośrednio do projektów. Więcej informacji znajdziesz na stronie https://aka.ms/aspire/support-policy</target>
         <note />
       </trans-unit>
       <trans-unit id="Authors">
@@ -2184,15 +2184,15 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </source>
-        <target state="new">'dotnet workload search version' has three functions depending on its argument:
-      1. If no argument is specified, it outputs a list of the latest released workload versions from this feature band. Takes the --take option to specify how many to provide and --format to alter the format.
-         Example:
+        <target state="translated">Polecenie „dotnet workload search version” ma trzy funkcje w zależności od argumentu:
+      1. Jeśli nie zostanie określony żaden argument, wyświetla listę najnowszych wydanych wersji obciążenia z tego pasma funkcji. Przyjmuje opcję --take, aby określić, ile elementów należy podać, i polecenie --format, aby zmienić format.
+         Przykład:
            dotnet workload search version --take 2 --format json
            [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
-      2. If a workload version is provided as an argument, it outputs a table of various workloads and their versions for the specified workload version. Takes the --format option to alter the output format.
-         Example:
+      2. Jeśli wersja obciążenia jest podana jako argument, generuje tabelę różnych obciążeń i ich wersje dla określonej wersji obciążenia. Przyjmuje opcję --format, aby zmienić format danych wyjściowych.
+         Przykład:
            dotnet workload search version 9.0.201
-           Workload manifest ID                               Manifest feature band      Manifest Version
+           Identyfikator manifestu obciążenia                               Pasmo funkcji manifestu      Wersja manifestu
            ------------------------------------------------------------------------------------------------
            microsoft.net.workload.emscripten.current          9.0.100-rc.1               9.0.0-rc.1.24430.3
            microsoft.net.workload.emscripten.net6             9.0.100-rc.1               9.0.0-rc.1.24430.3
@@ -2208,8 +2208,8 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
            microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
-      3. If one or more workloads are provided along with their versions (by joining them with the '@' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.
-         Example:
+      3. Jeśli co najmniej jedno obciążenie jest podane wraz z jego wersją (przez połączenie jej za pomocą znaku „@”), generuje wersje obciążeń zgodne z podanymi wersjami. Przyjmuje opcję --take, aby określić, ile elementów należy podać, i polecenie --format, aby zmienić format.
+         Przykład:
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </target>
@@ -2289,6 +2289,46 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
         <source>Convert a file-based program to a project-based program.</source>
         <target state="translated">Konwertuj program oparty na plikach na program oparty na projekcie.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertAskForOutputDirectory">
+        <source>Specify the output directory ({0}):</source>
+        <target state="new">Specify the output directory ({0}):</target>
+        <note>{0} is the default value</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertDryRun">
+        <source>Determines changes without actually modifying the file system</source>
+        <target state="new">Determines changes without actually modifying the file system</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldConvertFile">
+        <source>Dry run: would remove file-level directives from file: {0}</source>
+        <target state="new">Dry run: would remove file-level directives from file: {0}</target>
+        <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldCopyFile">
+        <source>Dry run: would copy file '{0}' to '{1}'.</source>
+        <target state="new">Dry run: would copy file '{0}' to '{1}'.</target>
+        <note>{0} and {1} are file full paths.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldCreateDirectory">
+        <source>Dry run: would create directory: {0}</source>
+        <target state="new">Dry run: would create directory: {0}</target>
+        <note>{0} is the directory full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldCreateFile">
+        <source>Dry run: would create file: {0}</source>
+        <target state="new">Dry run: would create file: {0}</target>
+        <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldDeleteFile">
+        <source>Dry run: would delete file: {0}</source>
+        <target state="new">Dry run: would delete file: {0}</target>
+        <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldMoveFile">
+        <source>Dry run: would move file '{0}' to '{1}'.</source>
+        <target state="new">Dry run: would move file '{0}' to '{1}'.</target>
+        <note>{0} and {1} are file full paths.</note>
       </trans-unit>
       <trans-unit id="ProjectManifest">
         <source>PROJECT_MANIFEST</source>

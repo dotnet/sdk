@@ -42,11 +42,11 @@ public class CliSchemaTests : SdkTest
   "description": ".NET Clean Command",
   "hidden": false,
   "arguments": {
-    "PROJECT | SOLUTION": {
-      "description": "The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.",
+    "PROJECT | SOLUTION | FILE": {
+      "description": "The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.",
       "order": 0,
       "hidden": false,
-      "valueType": "System.Collections.Generic.IEnumerable<System.String>",
+      "valueType": "System.String[]",
       "hasDefaultValue": false,
       "arity": {
         "minimum": 0
@@ -168,6 +168,28 @@ public class CliSchemaTests : SdkTest
       "required": false,
       "recursive": false
     },
+    "--target": {
+      "description": "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
+      "hidden": true,
+      "aliases": [
+        "--t",
+        "-t",
+        "-target",
+        "/t",
+        "/target"
+      ],
+      "helpName": "TARGET",
+      "valueType": "System.String[]",
+      "hasDefaultValue": true,
+      "defaultValue": [
+        "Clean"
+      ],
+      "arity": {
+        "minimum": 0
+      },
+      "required": false,
+      "recursive": false
+    },
     "--verbosity": {
       "description": "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].",
       "hidden": false,
@@ -175,8 +197,9 @@ public class CliSchemaTests : SdkTest
         "-v"
       ],
       "helpName": "LEVEL",
-      "valueType": "Microsoft.DotNet.Cli.VerbosityOptions",
-      "hasDefaultValue": false,
+      "valueType": "Microsoft.DotNet.Cli.Utils.VerbosityOptions",
+      "hasDefaultValue": true,
+      "defaultValue": "normal",
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -525,8 +548,9 @@ public class CliSchemaTests : SdkTest
         "-v"
       ],
       "helpName": "LEVEL",
-      "valueType": "Microsoft.DotNet.Cli.VerbosityOptions",
-      "hasDefaultValue": false,
+      "valueType": "Microsoft.DotNet.Cli.Utils.VerbosityOptions",
+      "hasDefaultValue": true,
+      "defaultValue": "normal",
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -849,10 +873,27 @@ public class CliSchemaTests : SdkTest
         "/p",
         "/property"
       ],
-      "valueType": "System.String[]",
+      "valueType": "System.Collections.ObjectModel.ReadOnlyDictionary<System.String, System.String>",
       "hasDefaultValue": false,
       "arity": {
-        "minimum": 1
+        "minimum": 0
+      },
+      "required": false,
+      "recursive": false
+    },
+    "--restoreProperty": {
+      "hidden": true,
+      "aliases": [
+        "--rp",
+        "-restoreProperty",
+        "-rp",
+        "/restoreProperty",
+        "/rp"
+      ],
+      "valueType": "System.Collections.ObjectModel.ReadOnlyDictionary<System.String, System.String>",
+      "hasDefaultValue": false,
+      "arity": {
+        "minimum": 0
       },
       "required": false,
       "recursive": false
@@ -900,6 +941,25 @@ public class CliSchemaTests : SdkTest
       "required": false,
       "recursive": false
     },
+    "--target": {
+      "description": "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
+      "hidden": true,
+      "aliases": [
+        "--t",
+        "-t",
+        "-target",
+        "/t",
+        "/target"
+      ],
+      "helpName": "TARGET",
+      "valueType": "System.String[]",
+      "hasDefaultValue": true,
+      "arity": {
+        "minimum": 0
+      },
+      "required": false,
+      "recursive": false
+    },
     "--use-current-runtime": {
       "description": "Use current runtime as the target runtime.",
       "hidden": false,
@@ -919,10 +979,14 @@ public class CliSchemaTests : SdkTest
       "description": "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].",
       "hidden": false,
       "aliases": [
-        "-v"
+        "--v",
+        "-v",
+        "-verbosity",
+        "/v",
+        "/verbosity"
       ],
       "helpName": "LEVEL",
-      "valueType": "Microsoft.DotNet.Cli.VerbosityOptions",
+      "valueType": "System.Nullable<Microsoft.DotNet.Cli.Utils.VerbosityOptions>",
       "hasDefaultValue": false,
       "arity": {
         "minimum": 1,

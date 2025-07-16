@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Collections.Frozen;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Security;
 using System.Text.Json;
@@ -19,6 +21,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 
@@ -100,7 +103,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 Projects="@(_GenerateRestoreGraphProjectEntryInput)"
                 Targets="_GenerateProjectRestoreGraph"
                 Properties="$(_GenerateRestoreGraphProjectEntryInputProperties)">
-        
+
               <Output
                   TaskParameter="TargetOutputs"
                   ItemName="_RestoreGraphEntry" />
@@ -108,34 +111,52 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
           </Target>
         """;
 
-    private ImmutableArray<CSharpDirective> _directives;
-
     public VirtualProjectBuildingCommand(
         string entryPointFileFullPath,
-        string[] msbuildArgs)
+        MSBuildArgs msbuildArgs)
     {
         Debug.Assert(Path.IsPathFullyQualified(entryPointFileFullPath));
 
         EntryPointFileFullPath = entryPointFileFullPath;
-        GlobalProperties = new(StringComparer.OrdinalIgnoreCase);
-        CommonRunHelpers.AddUserPassedProperties(GlobalProperties, msbuildArgs);
-        LoggerArgs = msbuildArgs;
+        MSBuildArgs = msbuildArgs;
     }
 
     public string EntryPointFileFullPath { get; }
-    public Dictionary<string, string> GlobalProperties { get; }
-    public string[] LoggerArgs { get; }
+    public MSBuildArgs MSBuildArgs { get; }
     public string? CustomArtifactsPath { get; init; }
     public bool NoRestore { get; init; }
     public bool NoCache { get; init; }
     public bool NoBuild { get; init; }
-    public string BuildTarget { get; init; } = "Build";
+
+    /// <summary>
+    /// If <see langword="true"/>, no build markers are written
+    /// (like <see cref="BuildStartCacheFileName"/> and <see cref="BuildSuccessCacheFileName"/>).
+    /// </summary>
+    public bool NoBuildMarkers { get; init; }
+
+    public ImmutableArray<CSharpDirective> Directives
+    {
+        get
+        {
+            if (field.IsDefault)
+            {
+                var sourceFile = LoadSourceFile(EntryPointFileFullPath);
+                field = FindDirectives(sourceFile, reportAllErrors: false, errors: null);
+                Debug.Assert(!field.IsDefault);
+            }
+
+            return field;
+        }
+
+        init;
+    }
 
     public override int Execute()
     {
         Debug.Assert(!(NoRestore && NoBuild));
-        var consoleLogger = TerminalLogger.CreateTerminalOrConsoleLogger(LoggerArgs);
-        var binaryLogger = GetBinaryLogger(LoggerArgs);
+        var verbosity = MSBuildArgs.Verbosity ?? VerbosityOptions.quiet;
+        var consoleLogger = TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]);
+        var binaryLogger = GetBinaryLogger(MSBuildArgs.OtherMSBuildArgs);
 
         RunFileBuildCacheEntry? cacheEntry = null;
 
@@ -152,8 +173,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseUpToDate.Yellow());
                 }
 
-                PrepareProjectInstance();
-
                 return 0;
             }
 
@@ -161,6 +180,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
 
         Dictionary<string, string?> savedEnvironmentVariables = [];
+        ProjectCollection? projectCollection = null;
         try
         {
             // Set environment variables.
@@ -172,8 +192,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             // Set up MSBuild.
             ReadOnlySpan<ILogger> binaryLoggers = binaryLogger is null ? [] : [binaryLogger];
-            var projectCollection = new ProjectCollection(
-                GlobalProperties,
+            projectCollection = new ProjectCollection(
+                MSBuildArgs.GlobalProperties,
                 [.. binaryLoggers, consoleLogger],
                 ToolsetDefinitionLocations.Default);
             var parameters = new BuildParameters(projectCollection)
@@ -181,9 +201,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 Loggers = projectCollection.Loggers,
                 LogTaskInputs = binaryLoggers.Length != 0,
             };
-            BuildManager.DefaultBuildManager.BeginBuild(parameters);
-
-            PrepareProjectInstance();
 
             // Do a restore first (equivalent to MSBuild's "implicit restore", i.e., `/restore`).
             // See https://github.com/dotnet/msbuild/blob/a1c2e7402ef0abe36bf493e395b04dd2cb1b3540/src/MSBuild/XMake.cs#L1838
@@ -191,14 +208,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             if (!NoRestore)
             {
                 var restoreRequest = new BuildRequestData(
-                    CreateProjectInstance(projectCollection, addGlobalProperties: static (globalProperties) =>
-                    {
-                        globalProperties["MSBuildRestoreSessionId"] = Guid.NewGuid().ToString("D");
-                        globalProperties["MSBuildIsRestoring"] = bool.TrueString;
-                    }),
+                    CreateProjectInstance(projectCollection, addGlobalProperties: AddRestoreGlobalProperties(MSBuildArgs.RestoreGlobalProperties)),
                     targetsToBuild: ["Restore"],
                     hostServices: null,
                     BuildRequestDataFlags.ClearCachesAfterBuild | BuildRequestDataFlags.SkipNonexistentTargets | BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports | BuildRequestDataFlags.FailOnUnresolvedSdk);
+
+                BuildManager.DefaultBuildManager.BeginBuild(parameters);
+
                 var restoreResult = BuildManager.DefaultBuildManager.BuildRequest(restoreRequest);
                 if (restoreResult.OverallResult != BuildResultCode.Success)
                 {
@@ -211,7 +227,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             {
                 var buildRequest = new BuildRequestData(
                     CreateProjectInstance(projectCollection),
-                    targetsToBuild: [BuildTarget]);
+                    targetsToBuild: MSBuildArgs.RequestedTargets ?? ["Build"]);
+
+                // For some reason we need to BeginBuild after creating BuildRequestData otherwise the binlog doesn't contain Evaluation.
+                if (NoRestore)
+                {
+                    BuildManager.DefaultBuildManager.BeginBuild(parameters);
+                }
+
                 var buildResult = BuildManager.DefaultBuildManager.BuildRequest(buildRequest);
                 if (buildResult.OverallResult != BuildResultCode.Success)
                 {
@@ -242,8 +265,33 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             consoleLogger.Shutdown();
         }
 
-        static ILogger? GetBinaryLogger(IReadOnlyList<string> args)
+        static Action<IDictionary<string, string>> AddRestoreGlobalProperties(ReadOnlyDictionary<string, string>? restoreProperties)
         {
+            return globalProperties =>
+            {
+                globalProperties["MSBuildRestoreSessionId"] = Guid.NewGuid().ToString("D");
+                globalProperties["MSBuildIsRestoring"] = bool.TrueString;
+                foreach (var (key, value) in RestoringCommand.RestoreOptimizationProperties)
+                {
+                    globalProperties[key] = value;
+                }
+                if (restoreProperties is null)
+                {
+                    return;
+                }
+                foreach (var (key, value) in restoreProperties)
+                {
+                    if (value is not null)
+                    {
+                        globalProperties[key] = value;
+                    }
+                }
+            };
+        }
+
+        static ILogger? GetBinaryLogger(IReadOnlyList<string>? args)
+        {
+            if (args is null) return null;
             // Like in MSBuild, only the last binary logger is used.
             for (int i = args.Count - 1; i >= 0; i--)
             {
@@ -272,7 +320,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </summary>
     private RunFileBuildCacheEntry ComputeCacheEntry(out FileInfo entryPointFileInfo)
     {
-        var cacheEntry = new RunFileBuildCacheEntry(GlobalProperties);
+        var cacheEntry = new RunFileBuildCacheEntry(MSBuildArgs.GlobalProperties?.ToDictionary(StringComparer.OrdinalIgnoreCase) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
         entryPointFileInfo = new FileInfo(EntryPointFileFullPath);
 
         // Collect current implicit build files.
@@ -402,41 +450,28 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     private void MarkBuildStart()
     {
+        if (NoBuildMarkers)
+        {
+            return;
+        }
+
         string directory = GetArtifactsPath();
 
-        if (OperatingSystem.IsWindows())
-        {
-            Directory.CreateDirectory(directory);
-        }
-        else
-        {
-            // Ensure only the current user has access to the directory to avoid leaking the program to other users.
-            // We don't mind that permissions might be different if the directory already exists,
-            // since it's under user's local directory and its path should be unique.
-            Directory.CreateDirectory(directory, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
-        }
+        CreateTempSubdirectory(directory);
 
         File.WriteAllText(Path.Join(directory, BuildStartCacheFileName), EntryPointFileFullPath);
     }
 
     private void MarkBuildSuccess(RunFileBuildCacheEntry cacheEntry)
     {
+        if (NoBuildMarkers)
+        {
+            return;
+        }
+
         string successCacheFile = Path.Join(GetArtifactsPath(), BuildSuccessCacheFileName);
         using var stream = File.Open(successCacheFile, FileMode.Create, FileAccess.Write, FileShare.None);
         JsonSerializer.Serialize(stream, cacheEntry, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
-    }
-
-    /// <summary>
-    /// Needs to be called before the first call to <see cref="CreateProjectInstance(ProjectCollection)"/>.
-    /// </summary>
-    public VirtualProjectBuildingCommand PrepareProjectInstance()
-    {
-        Debug.Assert(_directives.IsDefault, $"{nameof(PrepareProjectInstance)} should not be called multiple times.");
-
-        var sourceFile = LoadSourceFile(EntryPointFileFullPath);
-        _directives = FindDirectives(sourceFile, reportAllErrors: false, errors: null);
-
-        return this;
     }
 
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection)
@@ -459,22 +494,21 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         return ProjectInstance.FromProjectRootElement(projectRoot, new ProjectOptions
         {
+            ProjectCollection = projectCollection,
             GlobalProperties = globalProperties,
         });
 
         ProjectRootElement CreateProjectRootElement(ProjectCollection projectCollection)
         {
-            Debug.Assert(!_directives.IsDefault, $"{nameof(PrepareProjectInstance)} should have been called first.");
-
             var projectFileFullPath = Path.ChangeExtension(EntryPointFileFullPath, ".csproj");
             var projectFileWriter = new StringWriter();
             WriteProjectFile(
                 projectFileWriter,
-                _directives,
+                Directives,
                 isVirtualProject: true,
                 targetFilePath: EntryPointFileFullPath,
                 artifactsPath: GetArtifactsPath(),
-                includeRuntimeConfigInformation: BuildTarget != "Publish");
+                includeRuntimeConfigInformation: !MSBuildArgs.RequestedTargets?.Contains("Publish") ?? true);
             var projectFileText = projectFileWriter.ToString();
 
             using var reader = new StringReader(projectFileText);
@@ -487,20 +521,46 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     private string GetArtifactsPath() => CustomArtifactsPath ?? GetArtifactsPath(EntryPointFileFullPath);
 
-    // internal for testing
-    internal static string GetArtifactsPath(string entryPointFileFullPath)
+    public static string GetArtifactsPath(string entryPointFileFullPath)
+    {
+        // Include entry point file name so the directory name is not completely opaque.
+        string fileName = Path.GetFileNameWithoutExtension(entryPointFileFullPath);
+        string hash = Sha256Hasher.HashWithNormalizedCasing(entryPointFileFullPath);
+        string directoryName = $"{fileName}-{hash}";
+
+        return GetTempSubdirectory(directoryName);
+    }
+
+    /// <summary>
+    /// Obtains a temporary subdirectory for file-based apps.
+    /// </summary>
+    public static string GetTempSubdirectory(string name)
     {
         // We want a location where permissions are expected to be restricted to the current user.
         string directory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? Path.GetTempPath()
             : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
-        // Include entry point file name so the directory name is not completely opaque.
-        string fileName = Path.GetFileNameWithoutExtension(entryPointFileFullPath);
-        string hash = Sha256Hasher.HashWithNormalizedCasing(entryPointFileFullPath);
-        string directoryName = $"{fileName}-{hash}";
+        return Path.Join(directory, "dotnet", "runfile", name);
+    }
 
-        return Path.Join(directory, "dotnet", "runfile", directoryName);
+    /// <summary>
+    /// Creates a temporary subdirectory for file-based apps.
+    /// Use <see cref="GetTempSubdirectory"/> to obtain the path.
+    /// </summary>
+    public static void CreateTempSubdirectory(string path)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            Directory.CreateDirectory(path);
+        }
+        else
+        {
+            // Ensure only the current user has access to the directory to avoid leaking the program to other users.
+            // We don't mind that permissions might be different if the directory already exists,
+            // since it's under user's local directory and its path should be unique.
+            Directory.CreateDirectory(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        }
     }
 
     public static void WriteProjectFile(
@@ -530,6 +590,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(artifactsPath));
 
+            // Note that ArtifactsPath needs to be specified before Sdk.props
+            // (usually it's recommended to specify it in Directory.Build.props
+            // but importing Sdk.props manually afterwards also works).
             writer.WriteLine($"""
                 <Project>
 
@@ -538,6 +601,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     <ArtifactsPath>{EscapeValue(artifactsPath)}</ArtifactsPath>
                     <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                   </PropertyGroup>
+
+                  <ItemGroup>
+                    <Clean Include="{EscapeValue(artifactsPath)}/*" />
+                  </ItemGroup>
 
                   <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                   <Import Project="Sdk.props" Sdk="{EscapeValue(sdkValue)}" />
@@ -594,7 +661,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             writer.WriteLine("""
 
                   <PropertyGroup>
-                    <EnableDefaultItems>false</EnableDefaultItems>
+                    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                   </PropertyGroup>
                 """);
         }
@@ -988,7 +1055,7 @@ internal abstract class CSharpDirective
             "sdk" => Sdk.Parse(errors, sourceFile, span, directiveKind, directiveText),
             "property" => Property.Parse(errors, sourceFile, span, directiveKind, directiveText),
             "package" => Package.Parse(errors, sourceFile, span, directiveKind, directiveText),
-            "project" => Project.Parse(errors, sourceFile, span, directiveText),
+            "project" => Project.Parse(errors, sourceFile, span, directiveKind, directiveText),
             _ => ReportError<Named>(errors, sourceFile, span, string.Format(CliCommandStrings.UnrecognizedDirective, directiveKind, sourceFile.GetLocationString(span))),
         };
     }
@@ -1147,8 +1214,13 @@ internal abstract class CSharpDirective
     {
         private Project() { }
 
-        public static Project Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveText)
+        public static new Project? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
         {
+            if (directiveText.IsWhiteSpace())
+            {
+                return ReportError<Project?>(errors, sourceFile, span, string.Format(CliCommandStrings.MissingDirectiveName, directiveKind, sourceFile.GetLocationString(span)));
+            }
+
             try
             {
                 // If the path is a directory like '../lib', transform it to a project file path like '../lib/lib.csproj'.

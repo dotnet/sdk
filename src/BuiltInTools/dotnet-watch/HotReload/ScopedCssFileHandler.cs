@@ -2,14 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-using Microsoft.Build.Framework;
 using Microsoft.Build.Graph;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class ScopedCssFileHandler(IReporter reporter, ProjectNodeMap projectMap, BrowserConnector browserConnector)
+    internal sealed class ScopedCssFileHandler(IReporter reporter, ProjectNodeMap projectMap, BrowserConnector browserConnector, EnvironmentOptions environmentOptions)
     {
-        private const string BuildTargetName = "GenerateComputedBuildStaticWebAssets";
+        private const string BuildTargetName = TargetNames.GenerateComputedBuildStaticWebAssets;
 
         public async ValueTask HandleFileChangesAsync(IReadOnlyList<ChangedFile> files, CancellationToken cancellationToken)
         {
@@ -54,20 +53,16 @@ namespace Microsoft.DotNet.Watch
                 return;
             }
 
-            var logger = reporter.IsVerbose ? new[] { new Build.Logging.ConsoleLogger(LoggerVerbosity.Minimal) } : null;
+            var buildReporter = new BuildReporter(reporter, environmentOptions);
 
             var buildTasks = projectsToRefresh.Select(projectNode => Task.Run(() =>
             {
-                try
+                using var loggers = buildReporter.GetLoggers(projectNode.ProjectInstance.FullPath, BuildTargetName);
+
+                // Deep copy so that we don't pollute the project graph:
+                if (!projectNode.ProjectInstance.DeepCopy().Build(BuildTargetName, loggers))
                 {
-                    if (!projectNode.ProjectInstance.DeepCopy().Build(BuildTargetName, logger))
-                    {
-                        return null;
-                    }
-                }
-                catch (Exception e)
-                {
-                    reporter.Error($"[{projectNode.GetDisplayName()}] Target {BuildTargetName} failed to build: {e}");
+                    loggers.ReportOutput();
                     return null;
                 }
 

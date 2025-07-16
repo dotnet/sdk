@@ -37,7 +37,7 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
         bool? skipWorkloadManifestUpdate = null)
         : base(parseResult, reporter: reporter, workloadResolverFactory: workloadResolverFactory, workloadInstaller: workloadInstaller,
               nugetPackageDownloader: nugetPackageDownloader, workloadManifestUpdater: workloadManifestUpdater,
-              tempDirPath: tempDirPath)
+              tempDirPath: tempDirPath, verbosityOptions: WorkloadInstallCommandParser.VerbosityOption)
     {
         _skipManifestUpdate = skipWorkloadManifestUpdate ?? parseResult.GetValue(WorkloadInstallCommandParser.SkipManifestUpdateOption);
         var unprocessedWorkloadIds = workloadIds ?? parseResult.GetValue(WorkloadInstallCommandParser.WorkloadIdArgument);
