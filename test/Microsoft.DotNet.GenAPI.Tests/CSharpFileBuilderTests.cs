@@ -3093,16 +3093,64 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                             
                             // Constructor parameter
                             public TestClass([MyAttribute] string param) { }
-                            
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace A
+                    {
+                        public partial class MyAttribute : System.Attribute
+                        {
+                        }
+                        
+                        public partial class TestClass
+                        {
+                            public TestClass([My] string param) { }
+                            public void TestMethod([My] string param1) { }
+                        }
+                    }
+                    """,
+                includeInternalSymbols: false);
+        }
+
+        [Fact]
+        public void TestIndexerParameterAttributes()
+        {
+            RunTest(original: """
+                    namespace A
+                    {
+                        public class MyAttribute : System.Attribute { }
+                        
+                        public class TestClass
+                        {
                             // Indexer parameter
                             public string this[[MyAttribute] int index] { get { return ""; } set { } }
-                            
-                            // Operator parameter
-                            public static TestClass operator +([MyAttribute] TestClass left, [MyAttribute] TestClass right) { return left; }
-                            
-                            // Conversion operator parameter
-                            public static implicit operator string([MyAttribute] TestClass value) { return ""; }
                         }
+                    }
+                    """,
+                expected: """
+                    namespace A
+                    {
+                        public partial class MyAttribute : System.Attribute
+                        {
+                        }
+                        
+                        public partial class TestClass
+                        {
+                            public string this[[My] int index] { get { throw null; } set { } }
+                        }
+                    }
+                    """,
+                includeInternalSymbols: false);
+        }
+
+        [Fact]
+        public void TestDelegateParameterAttributes()
+        {
+            RunTest(original: """
+                    namespace A
+                    {
+                        public class MyAttribute : System.Attribute { }
                         
                         // Delegate parameter
                         public delegate void MyDelegate([MyAttribute] string param);
@@ -3116,12 +3164,38 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                         public partial class MyAttribute : System.Attribute
                         {
                         }
+                    }
+                    """,
+                includeInternalSymbols: false);
+        }
+
+        [Fact]
+        public void TestOperatorParameterAttributes()
+        {
+            RunTest(original: """
+                    namespace A
+                    {
+                        public class MyAttribute : System.Attribute { }
+                        
+                        public class TestClass
+                        {
+                            // Operator parameter
+                            public static TestClass operator +([MyAttribute] TestClass left, [MyAttribute] TestClass right) { return left; }
+                            
+                            // Conversion operator parameter
+                            public static implicit operator string([MyAttribute] TestClass value) { return ""; }
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace A
+                    {
+                        public partial class MyAttribute : System.Attribute
+                        {
+                        }
                         
                         public partial class TestClass
                         {
-                            public TestClass([My] string param) { }
-                            public string this[[My] int index] { get { throw null; } set { } }
-                            public void TestMethod([My] string param1) { }
                             public static TestClass operator +([My] TestClass left, [My] TestClass right) { throw null; }
                             public static implicit operator string([My] TestClass value) { throw null; }
                         }

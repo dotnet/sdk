@@ -99,9 +99,17 @@ namespace Microsoft.DotNet.GenAPI
             {
                 IMethodSymbol method => method.Parameters,
                 IPropertySymbol property when property.IsIndexer => property.Parameters,
+                INamedTypeSymbol { TypeKind: TypeKind.Delegate } delegateType => GetDelegateParameters(delegateType),
                 INamedTypeSymbol { IsRecord: true } record => GetRecordPrimaryConstructorParameters(record),
                 _ => ImmutableArray<IParameterSymbol>.Empty
             };
+        }
+
+        private static ImmutableArray<IParameterSymbol> GetDelegateParameters(INamedTypeSymbol delegateType)
+        {
+            // For delegates, get the parameters from the Invoke method
+            var invokeMethod = delegateType.GetMembers("Invoke").OfType<IMethodSymbol>().FirstOrDefault();
+            return invokeMethod?.Parameters ?? ImmutableArray<IParameterSymbol>.Empty;
         }
 
         private static ImmutableArray<IParameterSymbol> GetRecordPrimaryConstructorParameters(INamedTypeSymbol recordType)
