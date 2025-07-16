@@ -138,6 +138,7 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             Console.WriteLine();
             """));
     }
+
     [Fact]
     public void Comment_MultiLine()
     {
