@@ -63,6 +63,10 @@ internal sealed class FileBasedAppSourceEditor
             {
                 [.., '\r', '\n'] => "\r\n",
                 [.., '\n'] => "\n",
+                [.., '\r'] => "\r",
+                [.., '\u0085'] => "\u0085",
+                [.., '\u2028'] => "\u2028",
+                [.., '\u2029'] => "\u2029",
                 _ => Environment.NewLine,
             };
         }
