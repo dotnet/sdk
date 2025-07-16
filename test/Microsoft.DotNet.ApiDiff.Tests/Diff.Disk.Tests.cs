@@ -237,7 +237,6 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
 
 * [Assembly1]({DefaultTableOfContentsTitle}_Assembly1.md)
 * [Assembly2]({DefaultTableOfContentsTitle}_Assembly2.md)
-
 ";
 
         using TempDirectory inputFolderPath = new();
