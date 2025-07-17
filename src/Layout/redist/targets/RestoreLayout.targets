@@ -126,6 +126,12 @@
       PackageVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
       RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
 
+    <BundledLayoutPackage Include="Microsoft.NETCore.App.Runtime.NativeAOT.$(SharedFrameworkRid)"
+      Condition="'$(BundleNativeAotCompiler)' == 'true'"
+      PackageName="Microsoft.NETCore.App.Runtime.NativeAOT.$(SharedFrameworkRid)"
+      PackageVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+      RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
+
     <BundledLayoutPackage Include="Microsoft.DotNet.ILCompiler"
       Condition="'$(BundleNativeAotCompiler)' == 'true'"
       PackageName="Microsoft.DotNet.ILCompiler"

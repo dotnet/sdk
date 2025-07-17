@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal class FileWatcher(IReporter reporter) : IDisposable
+    internal class FileWatcher(IReporter reporter, EnvironmentOptions environmentOptions) : IDisposable
     {
         // Directory watcher for each watched directory tree.
         // Keyed by full path to the root directory with a trailing directory separator.
@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Watch
 
         protected virtual DirectoryWatcher CreateDirectoryWatcher(string directory, ImmutableHashSet<string> fileNames, bool includeSubdirectories)
         {
-            var watcher = DirectoryWatcher.Create(directory, fileNames, includeSubdirectories);
+            var watcher = DirectoryWatcher.Create(directory, fileNames, environmentOptions.IsPollingEnabled, includeSubdirectories);
             if (watcher is EventBasedDirectoryWatcher eventBasedWatcher)
             {
                 eventBasedWatcher.Logger = message => reporter.Verbose(message);
@@ -204,9 +204,9 @@ namespace Microsoft.DotNet.Watch
             return change;
         }
 
-        public static async ValueTask WaitForFileChangeAsync(string filePath, IReporter reporter, Action? startedWatching, CancellationToken cancellationToken)
+        public static async ValueTask WaitForFileChangeAsync(string filePath, IReporter reporter, EnvironmentOptions environmentOptions, Action? startedWatching, CancellationToken cancellationToken)
         {
-            using var watcher = new FileWatcher(reporter);
+            using var watcher = new FileWatcher(reporter, environmentOptions);
 
             watcher.WatchContainingDirectories([filePath], includeSubdirectories: false);
 

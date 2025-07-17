@@ -33,7 +33,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         new DirectoryInfo(dotnetProjectConvert)
             .EnumerateFileSystemInfos().Select(d => d.Name).Order()
-            .Should().BeEquivalentTo(["Program"]);
+            .Should().BeEquivalentTo(["Program", "Program.cs"]);
 
         new DirectoryInfo(Path.Join(dotnetProjectConvert, "Program"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
@@ -140,7 +140,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFileSystemInfos().Select(d => d.Name).Order()
-            .Should().BeEquivalentTo(["Program1", "Program2.cs"]);
+            .Should().BeEquivalentTo(["Program1", "Program1.cs", "Program2.cs"]);
 
         new DirectoryInfo(Path.Join(testInstance.Path, "Program1"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
@@ -208,7 +208,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program"]);
+            .Should().BeEquivalentTo(["Program", "Program.CS"]);
 
         new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
@@ -230,7 +230,10 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program"]);
+            .Should().BeEquivalentTo(["Program", "Program.cs"]);
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Program.cs"))
+            .Should().Be(content);
 
         new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
@@ -255,11 +258,284 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         new DirectoryInfo(Path.Join(testInstance.Path, "app"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program"]);
+            .Should().BeEquivalentTo(["Program", "Program.cs"]);
 
         new DirectoryInfo(Path.Join(testInstance.Path, "app", "Program"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
             .Should().BeEquivalentTo(["Program.csproj", "Program.cs"]);
+    }
+
+    /// <summary>
+    /// Default items like <c>None</c> or <c>Content</c> are copied over.
+    /// </summary>
+    [Fact]
+    public void DefaultItems()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine();
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "my.json"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "");
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "subdir"));
+        File.WriteAllText(Path.Join(testInstance.Path, "subdir", "second.json"), "");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program", "Program.cs", "Resources.resx", "Util.cs", "my.json", "subdir"]);
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program.csproj", "Resources.resx", "Program.cs", "my.json", "subdir"]);
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program", "subdir"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["second.json"]);
+    }
+
+    [Fact]
+    public void DefaultItems_MoreIncluded()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property EnableDefaultCompileItems=true
+            Console.WriteLine();
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "my.json"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program", "Program.cs", "Resources.resx", "Util.cs", "my.json"]);
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program.csproj", "Program.cs", "Resources.resx", "Util.cs", "my.json"]);
+    }
+
+    [Fact]
+    public void DefaultItems_MoreExcluded()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property EnableDefaultItems=false
+            Console.WriteLine();
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "my.json"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program", "Program.cs", "Resources.resx", "Util.cs", "my.json"]);
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program.csproj", "Program.cs"]);
+    }
+
+    /// <summary>
+    /// <c>ExcludeFromFileBasedAppConversion</c> metadata can be used to exclude items from the conversion.
+    /// </summary>
+    [Fact]
+    public void DefaultItems_ExcludedViaMetadata()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine();
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "my.json"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "second.json"), "");
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.targets"), """
+            <Project>
+                <ItemGroup>
+                    <None Update="$(MSBuildThisFileDirectory)second.json" ExcludeFromFileBasedAppConversion="true" />
+                </ItemGroup>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Directory.Build.targets", "Program", "Program.cs", "Resources.resx", "Util.cs", "my.json", "second.json"]);
+
+        // `second.json` is excluded from the conversion.
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Directory.Build.targets", "Program.csproj", "Resources.resx", "Program.cs", "my.json"]);
+    }
+
+    [Fact]
+    public void DefaultItems_ImplicitBuildFileInDirectory()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine(Util.GetText());
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+            class Util { public static string GetText() => "Hi from Util"; }
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+                <ItemGroup>
+                    <Compile Include="Util.cs" />
+                </ItemGroup>
+            </Project>
+            """);
+
+        // The app works before conversion.
+        string expectedOutput = "Hi from Util";
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        // Convert.
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Directory.Build.props", "Program", "Program.cs", "Util.cs"]);
+
+        // Directory.Build.props is included as it's a None item.
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Directory.Build.props", "Program.csproj", "Program.cs", "Util.cs"]);
+
+        // The app works after conversion.
+        new DotnetCommand(Log, "run", "Program/Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+    }
+
+    [Fact]
+    public void DefaultItems_ImplicitBuildFileOutsideDirectory()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var subdir = Path.Join(testInstance.Path, "subdir");
+        Directory.CreateDirectory(subdir);
+        File.WriteAllText(Path.Join(subdir, "Program.cs"), """
+            Console.WriteLine(Util.GetText());
+            """);
+        File.WriteAllText(Path.Join(subdir, "Util.cs"), """
+            class Util { public static string GetText() => "Hi from Util"; }
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+                <ItemGroup>
+                    <Compile Include="$(MSBuildThisFileDirectory)subdir\Util.cs" />
+                </ItemGroup>
+            </Project>
+            """);
+
+        // The app works before conversion.
+        string expectedOutput = "Hi from Util";
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(subdir)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        // Convert.
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(subdir)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(subdir)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program", "Program.cs", "Util.cs"]);
+
+        new DirectoryInfo(Path.Join(subdir, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program.csproj", "Program.cs", "Util.cs"]);
+
+        // The app works after conversion.
+        new DotnetCommand(Log, "run", "Program/Program.cs")
+            .WithWorkingDirectory(subdir)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+    }
+
+    [Fact]
+    public void DefaultItems_ImplicitBuildFileAndUtilOutsideDirectory()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var subdir = Path.Join(testInstance.Path, "subdir");
+        Directory.CreateDirectory(subdir);
+        File.WriteAllText(Path.Join(subdir, "Program.cs"), """
+            Console.WriteLine(Util.GetText());
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+            class Util { public static string GetText() => "Hi from Util"; }
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+                <ItemGroup>
+                    <Compile Include="$(MSBuildThisFileDirectory)Util.cs" />
+                </ItemGroup>
+            </Project>
+            """);
+
+        // The app works before conversion.
+        string expectedOutput = "Hi from Util";
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(subdir)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        // Convert.
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(subdir)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(subdir)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program", "Program.cs"]);
+
+        new DirectoryInfo(Path.Join(subdir, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program.csproj", "Program.cs"]);
+
+        // The app works after conversion.
+        new DotnetCommand(Log, "run", "Program/Program.cs")
+            .WithWorkingDirectory(subdir)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
     }
 
     /// <summary>
@@ -284,16 +560,39 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     }
 
     /// <summary>
+    /// Since we perform MSBuild evaluation during the conversion (to find included items to copy over),
+    /// the conversion can fail when the specified SDK does not exist.
+    /// </summary>
+    [Fact]
+    public void ProcessingFails_Evaluation()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var filePath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(filePath, "#:sdk Microsoft.ThisSdkDoesNotExist");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            // The SDK 'Microsoft.ThisSdkDoesNotExist' specified could not be found.
+            .And.HaveStdErrContaining("Microsoft.ThisSdkDoesNotExist");
+
+        new DirectoryInfo(Path.Join(testInstance.Path))
+            .EnumerateDirectories().Should().BeEmpty();
+    }
+
+    /// <summary>
     /// End-to-end test of directive processing. More cases are covered by faster unit tests below.
     /// </summary>
     [Fact]
     public void ProcessingSucceeds()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
-            #:sdk Aspire.Hosting.Sdk@9.1.0
+        var originalSource = """
+            #:package Humanizer@2.14.1
             Console.WriteLine();
-            """);
+            """;
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), originalSource);
 
         new DotnetCommand(Log, "project", "convert", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
@@ -302,7 +601,10 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program"]);
+            .Should().BeEquivalentTo(["Program", "Program.cs"]);
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Program.cs"))
+            .Should().Be(originalSource);
 
         new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
@@ -313,7 +615,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         File.ReadAllText(Path.Join(testInstance.Path, "Program", "Program.csproj"))
             .Should().Be($"""
-                <Project Sdk="Aspire.Hosting.Sdk/9.1.0">
+                <Project Sdk="Microsoft.NET.Sdk">
 
                   <PropertyGroup>
                     <OutputType>Exe</OutputType>
@@ -322,6 +624,10 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
                   </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageReference Include="Humanizer" Version="2.14.1" />
+                  </ItemGroup>
 
                 </Project>
 
@@ -511,7 +817,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
     [Theory, CombinatorialData]
     public void Directives_EmptyName(
-        [CombinatorialValues("sdk", "property", "package")] string directive,
+        [CombinatorialValues("sdk", "property", "package", "project")] string directive,
         [CombinatorialValues(" ", "")] string value)
     {
         VerifyConversionThrows(
