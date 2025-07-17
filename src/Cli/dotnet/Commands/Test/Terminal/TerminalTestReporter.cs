@@ -465,6 +465,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string instanceId,
         string testNodeUid,
         string displayName,
+        string? informativeMessage,
         TestOutcome outcome,
         TimeSpan duration,
         FlatException[] exceptions,
@@ -515,6 +516,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 targetFramework,
                 architecture,
                 displayName,
+                informativeMessage,
                 outcome,
                 duration,
                 exceptions,
@@ -538,6 +540,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? targetFramework,
         string? architecture,
         string displayName,
+        string? informativeMessage,
         TestOutcome outcome,
         TimeSpan duration,
         FlatException[] flatExceptions,
@@ -580,6 +583,14 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.SetColor(TerminalColor.DarkGray);
         terminal.Append(' ');
         AppendLongDuration(terminal, duration);
+
+        if (!string.IsNullOrEmpty(informativeMessage))
+        {
+            terminal.AppendLine();
+            terminal.Append(SingleIndentation);
+            terminal.Append(informativeMessage);
+        }
+
         if (_options.ShowAssembly)
         {
             terminal.AppendLine();
