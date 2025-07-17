@@ -483,9 +483,10 @@ public class ReferencedExeProgram
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData("xunit")]
-        [InlineData("mstest")]
-        public void ExeProjectCanReferenceTestProject(string testTemplateName)
+        [CombinatorialData]
+        public void ExeProjectCanReferenceTestProject(
+            [CombinatorialValues("xunit", "mstest")] string testTemplateName,
+            bool setSelfContainedProperty)
         {
             var testConsoleProject = new TestProject("ConsoleApp")
             {
@@ -493,6 +494,11 @@ public class ReferencedExeProgram
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid()
             };
+
+            if (setSelfContainedProperty)
+            {
+                testConsoleProject.SelfContained = "true";
+            }
 
             var testAsset = _testAssetsManager.CreateTestProject(testConsoleProject, identifier: testTemplateName);
 
