@@ -1298,18 +1298,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_UseAttributeForTargetFrameworkInfoPropertyNames Condition="$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), '17.0'))">true</_UseAttributeForTargetFrameworkInfoPropertyNames>
   </PropertyGroup>
 
-  <Target Name="_CalculateIsVSTest">
+  <Target Name="_CalculateIsVSTestTestProject">
     <PropertyGroup>
-      <_IsVSTest Condition="'$(IsTestProject)' == 'true' and '$(IsTestingPlatformApplication)' != 'true'">true</_IsVSTest>
-      <_IsVSTest Condition="'$(_IsVSTest)' == ''">false</_IsVSTest>
+      <_IsVSTestTestProject Condition="'$(IsTestProject)' == 'true' and '$(IsTestingPlatformApplication)' != 'true'">true</_IsVSTestTestProject>
+      <_IsVSTestTestProject Condition="'$(_IsVSTestTestProject)' == ''">false</_IsVSTestTestProject>
 
       <!-- Don't generate an error if an Exe project references a test project. -->
-      <ShouldBeValidatedAsExecutableReference Condition="'$(_IsVSTest)' == 'true'">false</ShouldBeValidatedAsExecutableReference>
+      <ShouldBeValidatedAsExecutableReference Condition="'$(_IsVSTestTestProject)' == 'true'">false</ShouldBeValidatedAsExecutableReference>
 
         <!-- Don't generate an error if a test project references a self-contained Exe.  Test projects
             use an OutputType of Exe but will usually call APIs in a referenced Exe rather than try
             to run it. -->
-      <ValidateExecutableReferencesMatchSelfContained Condition="'$(_IsVSTest)' == 'true' And '$(ValidateExecutableReferencesMatchSelfContained)' == ''">false</ValidateExecutableReferencesMatchSelfContained>
+      <ValidateExecutableReferencesMatchSelfContained Condition="'$(_IsVSTestTestProject)' == 'true' And '$(ValidateExecutableReferencesMatchSelfContained)' == ''">false</ValidateExecutableReferencesMatchSelfContained>
     </PropertyGroup>
   </Target>
 
@@ -1324,7 +1324,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="ValidateExecutableReferencesCore"
-          DependsOnTargets="_CalculateIsVSTest;ValidateExecutableReferences"
+          DependsOnTargets="_CalculateIsVSTestTestProject;ValidateExecutableReferences"
           AfterTargets="_GetProjectReferenceTargetFrameworkProperties">
 
   </Target>
