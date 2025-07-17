@@ -76,6 +76,12 @@ namespace Microsoft.DotNet.Watch
             if (environmentOptions.TestFlags != TestFlags.None)
             {
                 reporter.Verbose($"Test flags: {environmentOptions.TestFlags}");
+
+//                if (environmentOptions.TestFlags.HasFlag(TestFlags.EnableWindowsCtrlCHandling) &&
+//                    RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+//                {
+//                    ProcessUtilities.EnableWindowsCtrlCHandling(m => reporter.Verbose($"Test: {m}"));
+//                }
             }
 
             if (!TryFindProject(workingDirectory, options, reporter, out var projectPath))
@@ -140,7 +146,7 @@ namespace Microsoft.DotNet.Watch
             var shutdownCancellationSourceDisposed = false;
             var shutdownCancellationSource = new CancellationTokenSource();
             var shutdownCancellationToken = shutdownCancellationSource.Token;
-            var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout, shutdownCancellationToken);
+            var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout);
 
             console.KeyPressed += key =>
             {

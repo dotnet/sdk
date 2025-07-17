@@ -55,6 +55,15 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
+        public async ValueTask WaitUntilOutputContains(Regex pattern, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
+        {
+            if (!Process.Output.Any(line => pattern.IsMatch(line)))
+            {
+                Logger.Log($"Test waiting for output pattern: '{pattern}'", testPath, testLine);
+                _ = await AssertOutputLine(line => pattern.IsMatch(line));
+            }
+        }
+
         public Task<string> AssertOutputLineStartsWith(MessageDescriptor descriptor, string projectDisplay = null, Predicate<string> failure = null, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
             => AssertOutputLineStartsWith(GetLinePrefix(descriptor, projectDisplay), failure, testPath, testLine);
 
@@ -115,7 +124,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         public void Start(TestAsset asset, IEnumerable<string> arguments, string relativeProjectDirectory = null, string workingDirectory = null, TestFlags testFlags = TestFlags.None)
         {
-            testFlags |= TestFlags.RunningAsTest;
+            testFlags |= TestFlags.RunningAsTest;// | TestFlags.EnableWindowsCtrlCHandling;
 
             var projectDirectory = (relativeProjectDirectory != null) ? Path.Combine(asset.Path, relativeProjectDirectory) : asset.Path;
 
@@ -138,10 +147,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             commandSpec.WithEnvironmentVariable("DCP_IDE_REQUEST_TIMEOUT_SECONDS", "100000");
             commandSpec.WithEnvironmentVariable("DCP_IDE_NOTIFICATION_TIMEOUT_SECONDS", "100000");
             commandSpec.WithEnvironmentVariable("DCP_IDE_NOTIFICATION_KEEPALIVE_SECONDS", "100000");
-
-            // 0 timeout for process cleanup in tests. We can't send Ctrl+C, so process termination must be forced.
-            commandSpec.WithEnvironmentVariable("DOTNET_WATCH_PROCESS_CLEANUP_TIMEOUT_MS", "0");
-
+            commandSpec.WithEnvironmentVariable("DOTNET_WATCH_PROCESS_CLEANUP_TIMEOUT_MS", "100000");
             commandSpec.WithEnvironmentVariable("ASPIRE_ALLOW_UNSECURED_TRANSPORT", "1");
 
             foreach (var env in EnvironmentVariables)
