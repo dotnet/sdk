@@ -41,7 +41,7 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
 
     public override int Execute()
     {
-        VersionRange versionRange = _parseResult.GetVersionRange();
+        VersionRange? versionRange = _parseResult.GetVersionRange();
         PackageId packageId = new PackageId(_packageToolIdentityArgument.Id);
 
         var toolLocationActivity = Activities.Source.StartActivity("find-tool");
