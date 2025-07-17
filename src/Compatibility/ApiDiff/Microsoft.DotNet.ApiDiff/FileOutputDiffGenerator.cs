@@ -155,8 +155,6 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
             _log.LogMessage($"Wrote '{filePath}'.");
         }
 
-        tableOfContents.AppendLine();
-
         string tableOfContentsFilePath = Path.Combine(_outputFolderPath, $"{_tableOfContentsTitle}.md");
 
         if (_writeToDisk)
