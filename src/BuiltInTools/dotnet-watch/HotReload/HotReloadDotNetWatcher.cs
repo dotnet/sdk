@@ -796,6 +796,7 @@ namespace Microsoft.DotNet.Watch
             {
                 Executable = _context.EnvironmentOptions.MuxerPath,
                 WorkingDirectory = Path.GetDirectoryName(projectPath)!,
+                IsUserApplication = false,
                 OnOutput = line =>
                 {
                     lock (buildOutput)
@@ -804,12 +805,12 @@ namespace Microsoft.DotNet.Watch
                     }
                 },
                 // pass user-specified build arguments last to override defaults:
-                Arguments = ["build", projectPath, "-consoleLoggerParameters:NoSummary;Verbosity=minimal", .. binLogArguments, .. buildArguments]
+                Arguments = ["build", projectPath, "-consoleLoggerParameters:NoSummary;Verbosity=minimal", .. binLogArguments, .. buildArguments],
             };
 
             _context.Reporter.Output($"Building {projectPath} ...");
 
-            var exitCode = await _context.ProcessRunner.RunAsync(processSpec, _context.Reporter, isUserApplication: false, launchResult: null, cancellationToken);
+            var exitCode = await _context.ProcessRunner.RunAsync(processSpec, _context.Reporter, launchResult: null, cancellationToken);
             return (exitCode == 0, buildOutput.ToImmutableArray(), projectPath);
         }
 

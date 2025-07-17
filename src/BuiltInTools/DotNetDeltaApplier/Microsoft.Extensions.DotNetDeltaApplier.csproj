@@ -25,6 +25,9 @@
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(TargetFramework)' == 'net6.0'">
     <FrameworkReference Update="Microsoft.NETCore.App" TargetingPackVersion="6.0.0" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\dotnet-watch\Utilities\ProcessUtilities.cs" Link="ProcessUtilities.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.Extensions.DotNetDeltaApplier.Tests" />

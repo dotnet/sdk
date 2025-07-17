@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.IO.Pipes;
 using Microsoft.DotNet.HotReload;
+using Microsoft.DotNet.Watch;
 
 /// <summary>
 /// The runtime startup hook looks for top-level type named "StartupHook".
@@ -58,7 +59,7 @@ internal sealed class StartupHook
             return;
         }
 
-        RegisterPosixSignalHandlers();
+        RegisterSignalHandlers();
 
         var agent = new HotReloadAgent();
         try
@@ -79,27 +80,34 @@ internal sealed class StartupHook
         }
     }
 
-    private static void RegisterPosixSignalHandlers()
+    private static void RegisterSignalHandlers()
     {
-#if NET10_0_OR_GREATER
-        // Register a handler for SIGTERM to allow graceful shutdown of the application on Unix.
-        // See https://github.com/dotnet/docs/issues/46226.
-
-        // Note: registered handlers are executed in reverse order of their registration.
-        // Since the startup hook is executed before any code of the application, it is the first handler registered and thus the last to run.
-
-        s_signalRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, context =>
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            Log($"SIGTERM received. Cancel={context.Cancel}");
+            ProcessUtilities.EnableWindowsCtrlCHandling(Log);
+        }
+        else
+        {
+#if NET10_0_OR_GREATER
+            // Register a handler for SIGTERM to allow graceful shutdown of the application on Unix.
+            // See https://github.com/dotnet/docs/issues/46226.
 
-            if (!context.Cancel)
+            // Note: registered handlers are executed in reverse order of their registration.
+            // Since the startup hook is executed before any code of the application, it is the first handler registered and thus the last to run.
+
+            s_signalRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, context =>
             {
-                Environment.Exit(0);
-            }
-        });
+                Log($"SIGTERM received. Cancel={context.Cancel}");
 
-        Log("Posix signal handlers registered.");
+                if (!context.Cancel)
+                {
+                    Environment.Exit(0);
+                }
+            });
+
+            Log("Posix signal handlers registered.");
 #endif
+        }
     }
 
     private static async ValueTask InitializeAsync(NamedPipeClientStream pipeClient, HotReloadAgent agent, CancellationToken cancellationToken)

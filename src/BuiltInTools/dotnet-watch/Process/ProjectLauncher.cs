@@ -47,8 +47,9 @@ internal sealed class ProjectLauncher(
         var processSpec = new ProcessSpec
         {
             Executable = EnvironmentOptions.MuxerPath,
+            IsUserApplication = true,
             WorkingDirectory = projectOptions.WorkingDirectory,
-            OnOutput = onOutput
+            OnOutput = onOutput,
         };
 
         var environmentBuilder = EnvironmentVariablesBuilder.FromCurrentEnvironment();

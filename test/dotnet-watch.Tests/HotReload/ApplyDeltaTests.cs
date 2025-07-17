@@ -669,6 +669,35 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
+        [Fact]
+        public async Task GracefulTermination()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+               .WithSource();
+
+            var programPath = Path.Combine(testAsset.Path, "Program.cs");
+
+            UpdateSourceFile(programPath, src => src.Replace("// <metadata update handler placeholder>", """
+                Console.CancelKeyPress += (sender, e) =>
+                {
+                    e.Cancel = true;
+                    Console.WriteLine("Ctrl+C detected! Performing cleanup...");
+                    Environment.Exit(0);
+                };
+                """));
+
+            App.Start(testAsset, [], testFlags: TestFlags.ReadKeyFromStdin);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges);
+            await App.WaitUntilOutputContains(new Regex(@"dotnet watch 🕵️ \[.*\] Windows Ctrl\+C handling enabled."));
+            await App.WaitUntilOutputContains("Started");
+
+            App.SendControlC();
+
+            await App.AssertOutputLineStartsWith("Ctrl+C detected! Performing cleanup...");
+            await App.WaitUntilOutputContains("exited with exit code 0.");
+        }
+
         [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [CombinatorialData]
         public async Task BlazorWasm(bool projectSpecifiesCapabilities)
@@ -1033,7 +1062,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("> NewSubdir", failure: _ => false);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task Aspire_BuildError_ManualRestart()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -1090,17 +1119,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.AssertOutputLineStartsWith(MessageDescriptor.FixBuildError, failure: _ => false);
 
+            App.AssertOutputContains("Application is shutting down...");
+
             // We don't have means to gracefully terminate process on Windows, see https://github.com/dotnet/runtime/issues/109432
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                App.AssertOutputContains($"dotnet watch ❌ [WatchAspire.ApiService ({tfm})] Exited with error code -1");
-            }
-            else
-            {
-                // Unix process may return exit code = 128 + SIGTERM
-                // Exited with error code 143
-                App.AssertOutputContains($"[WatchAspire.ApiService ({tfm})] Exited");
-            }
+            App.AssertOutputContains($"[WatchAspire.ApiService ({tfm})] Exited");
+            App.AssertOutputContains(new Regex(@"dotnet watch ⌚ \[WatchAspire.ApiService \(net.*\)\] Process id [0-9]+ ran for [0-9]+ms and exited with exit code 0"));
 
             App.AssertOutputContains($"dotnet watch ⌚ Building {serviceProjectPath} ...");
             App.AssertOutputContains("error CS0246: The type or namespace name 'WeatherForecast' could not be found");
@@ -1117,27 +1140,16 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains("dotnet watch 🔥 Projects rebuilt");
             App.AssertOutputContains($"dotnet watch ⭐ Starting project: {serviceProjectPath}");
 
-            // Note: sending Ctrl+C via standard input is not the same as sending real Ctrl+C.
-            // The latter terminates the processes gracefully on Windows, so exit codes -1 are actually not reported.
             App.SendControlC();
 
             await App.AssertOutputLineStartsWith("dotnet watch 🛑 Shutdown requested. Press Ctrl+C again to force exit.");
 
-            // We don't have means to gracefully terminate process on Windows, see https://github.com/dotnet/runtime/issues/109432
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                await App.AssertOutputLineStartsWith($"dotnet watch ❌ [WatchAspire.ApiService ({tfm})] Exited with error code -1");
-                await App.AssertOutputLineStartsWith($"dotnet watch ❌ [WatchAspire.AppHost ({tfm})] Exited with error code -1");
-            }
-            else
-            {
-                // Unix process may return exit code = 128 + SIGTERM
-                // Exited with error code 143
-                await App.AssertOutputLine(line => line.Contains($"[WatchAspire.ApiService ({tfm})] Exited"));
-                await App.AssertOutputLine(line => line.Contains($"[WatchAspire.AppHost ({tfm})] Exited"));
-            }
+            await App.WaitUntilOutputContains($"[WatchAspire.ApiService ({tfm})] Exited");
+            await App.WaitUntilOutputContains($"[WatchAspire.AppHost ({tfm})] Exited");
+            await App.WaitUntilOutputContains(new Regex(@"dotnet watch ⌚ \[WatchAspire.ApiService \(net.*\)\] Process id [0-9]+ ran for [0-9]+ms and exited with exit code 0"));
+            await App.WaitUntilOutputContains(new Regex(@"dotnet watch ⌚ \[WatchAspire.AppHost \(net.*\)\] Process id [0-9]+ ran for [0-9]+ms and exited with exit code 0"));
 
-            await App.AssertOutputLineStartsWith("dotnet watch ⭐ Waiting for server to shutdown ...");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ Waiting for server to shutdown ...");
 
             App.AssertOutputContains("dotnet watch ⭐ Stop session #1");
             App.AssertOutputContains("dotnet watch ⭐ [#1] Sending 'sessionTerminated'");
