@@ -381,26 +381,25 @@ public class ReferencedExeProgram
                 SelfContained = "true",
             };
 
-            var testAssetSelfContained = _testAssetsManager.CreateTestProject(testConsoleProjectSelfContained);
-
             var mtpNotSelfContained = new TestProject("MTPTestProject")
             {
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
-                IsTestProject = true,
             };
+
+            mtpNotSelfContained.AdditionalProperties["IsTestProject"] = "true";
 
             if (setIsTestingPlatformApplicationEarly)
             {
-                mtpNotSelfContained.IsTestingPlatformApplication = true;
+                mtpNotSelfContained.AdditionalProperties["IsTestingPlatformApplication"] = "true";
             }
+
+            mtpNotSelfContained.ReferencedProjects.Add(testConsoleProjectSelfContained);
 
             var testAssetMTP = _testAssetsManager.CreateTestProject(mtpNotSelfContained);
 
             var mtpProjectDirectory = Path.Combine(testAssetMTP.Path, "MTPTestProject");
-            Assert.True(Directory.Exists(mtpProjectDirectory), $"Expected directory {mtpProjectDirectory} to exist.");
-            Assert.True(File.Exists(Path.Combine(mtpProjectDirectory, "MTPTestProject.csproj")), $"Expected file MTPTestProject.csproj to exist in {mtpProjectDirectory}.");
-
+            
             if (!setIsTestingPlatformApplicationEarly)
             {
                 File.WriteAllText(Path.Combine(mtpProjectDirectory, "Directory.Build.targets"), """
@@ -411,12 +410,6 @@ public class ReferencedExeProgram
                     </Project>
                     """);
             }
-
-            new DotnetCommand(Log, "add", "reference", Path.Combine(testAssetSelfContained.Path, testConsoleProjectSelfContained.Name))
-                .WithWorkingDirectory(mtpProjectDirectory)
-                .Execute()
-                .Should()
-                .Pass();
 
             var result = new BuildCommand(Log, mtpProjectDirectory).Execute();
             result.Should().HaveStdOutContaining("NETSDK1151").And.ExitWith(1);
@@ -437,29 +430,26 @@ public class ReferencedExeProgram
                 SelfContained = "true",
             };
 
-            var testAssetSelfContained = _testAssetsManager.CreateTestProject(testConsoleProjectSelfContained);
-
             var mtpNotSelfContained = new TestProject("MTPTestProject")
             {
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
-                IsTestProject = true,
             };
+
+            mtpNotSelfContained.AdditionalProperties["IsTestProject"] = "true";
 
             if (setIsTestingPlatformApplicationEarly)
             {
-                mtpNotSelfContained.IsTestingPlatformApplication = true;
+                mtpNotSelfContained.AdditionalProperties["IsTestingPlatformApplication"] = "true";
             }
 
-            var testAssetMTP = _testAssetsManager.CreateTestProject(mtpNotSelfContained);
+            testConsoleProjectSelfContained.ReferencedProjects.Add(mtpNotSelfContained);
 
-            var mtpProjectDirectory = Path.Combine(testAssetMTP.Path, mtpNotSelfContained.Name);
-            Assert.True(Directory.Exists(mtpProjectDirectory), $"Expected directory {mtpProjectDirectory} to exist.");
-            Assert.True(File.Exists(Path.Combine(mtpProjectDirectory, "MTPTestProject.csproj")), $"Expected file MTPTestProject.csproj to exist in {mtpProjectDirectory}.");
-
+            var testAssetSelfContained = _testAssetsManager.CreateTestProject(testConsoleProjectSelfContained);
+            
             if (!setIsTestingPlatformApplicationEarly)
             {
-                File.WriteAllText(Path.Combine(mtpProjectDirectory, "Directory.Build.targets"), """
+                File.WriteAllText(Path.Combine(testAssetSelfContained.TestRoot, mtpNotSelfContained.Name, "Directory.Build.targets"), """
                     <Project>
                         <PropertyGroup>
                             <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
@@ -469,14 +459,6 @@ public class ReferencedExeProgram
             }
 
             var consoleAppDirectory = Path.Combine(testAssetSelfContained.Path, testConsoleProjectSelfContained.Name);
-            Assert.True(Directory.Exists(consoleAppDirectory), $"Expected directory {consoleAppDirectory} to exist.");
-            Assert.True(File.Exists(Path.Combine(consoleAppDirectory, "ConsoleApp.csproj")), $"Expected file ConsoleApp.csproj to exist in {consoleAppDirectory}.");
-
-            new DotnetCommand(Log, "add", "reference", Path.Combine(testAssetMTP.Path, mtpNotSelfContained.Name))
-                .WithWorkingDirectory(consoleAppDirectory)
-                .Execute()
-                .Should()
-                .Pass();
 
             var result = new BuildCommand(Log, consoleAppDirectory).Execute();
             result.Should().HaveStdOutContaining("NETSDK1150").And.ExitWith(1);
@@ -534,20 +516,19 @@ public class ReferencedExeProgram
             {
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
-                IsTestProject = true,
                 SelfContained = "true",
             };
 
+            mtpSelfContained.AdditionalProperties["IsTestProject"] = "true";
+
             if (setIsTestingPlatformApplicationEarly)
             {
-                mtpSelfContained.IsTestingPlatformApplication = true;
+                mtpSelfContained.AdditionalProperties["IsTestingPlatformApplication"] = "true";
             }
 
             var testAssetMTP = _testAssetsManager.CreateTestProject(mtpSelfContained);
 
             var mtpProjectDirectory = Path.Combine(testAssetMTP.Path, mtpSelfContained.Name);
-            Assert.True(Directory.Exists(mtpProjectDirectory), $"Expected directory {mtpProjectDirectory} to exist.");
-            Assert.True(File.Exists(Path.Combine(mtpProjectDirectory, "MTPTestProject.csproj")), $"Expected file MTPTestProject.csproj to exist in {mtpProjectDirectory}.");
 
             if (!setIsTestingPlatformApplicationEarly)
             {

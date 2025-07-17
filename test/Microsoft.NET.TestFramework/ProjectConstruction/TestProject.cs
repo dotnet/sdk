@@ -34,11 +34,6 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
         /// </summary>
         public bool IsWinExe { get; set; }
 
-        public bool IsTestingPlatformApplication { get; set; }
-
-        public bool IsTestProject { get; set; }
-
-
         public string? ProjectSdk { get; set; }
 
         /// <summary>
@@ -295,16 +290,6 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
             else if (IsWinExe)
             {
                 propertyGroup?.Element(ns + "OutputType")?.SetValue("WinExe");
-            }
-
-            if (IsTestProject)
-            {
-                propertyGroup?.Add(new XElement(ns + "IsTestProject", "true"));
-            }
-
-            if (IsTestingPlatformApplication)
-            {
-                propertyGroup?.Add(new XElement(ns + "IsTestingPlatformApplication", "true"));
             }
 
             if (SelfContained != "")
