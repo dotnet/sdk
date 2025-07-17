@@ -58,6 +58,8 @@ internal static class PackCommandParser
         Arity = ArgumentArity.Zero
     }.ForwardAs("-nologo");
 
+    public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
+
     public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.PackConfigurationOptionDescription);
 
     public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Pack", [("_IsPacking", "true")]);

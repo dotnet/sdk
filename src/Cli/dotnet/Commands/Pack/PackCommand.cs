@@ -26,15 +26,14 @@ public class PackCommand(
 
     public static PackCommand FromParseResult(ParseResult parseResult, string? msbuildPath = null)
     {
-        // Otherwise, fall back to existing MSBuild-based logic for projects/solutions
-        var msbuildArgs = parseResult.OptionValuesToBeForwarded(PackCommandParser.GetCommand())
-            .Concat(parseResult.GetValue(PackCommandParser.SlnOrProjectArgument) ?? []);
+
+        var msbuildArgs = parseResult.OptionValuesToBeForwarded(PackCommandParser.GetCommand()).Concat(parseResult.GetValue(PackCommandParser.SlnOrProjectArgument) ?? []);
 
         ReleasePropertyProjectLocator projectLocator = new(parseResult, MSBuildPropertyNames.PACK_RELEASE,
             new ReleasePropertyProjectLocator.DependentCommandOptions(
-                parseResult.GetValue(PackCommandParser.SlnOrProjectArgument),
-                parseResult.HasOption(PackCommandParser.ConfigurationOption) ? parseResult.GetValue(PackCommandParser.ConfigurationOption) : null
-            )
+                    parseResult.GetValue(PackCommandParser.SlnOrProjectArgument),
+                    parseResult.HasOption(PackCommandParser.ConfigurationOption) ? parseResult.GetValue(PackCommandParser.ConfigurationOption) : null
+                )
         );
 
         bool noRestore = parseResult.HasOption(PackCommandParser.NoRestoreOption) || parseResult.HasOption(PackCommandParser.NoBuildOption);
@@ -42,8 +41,7 @@ public class PackCommand(
             msbuildArgs,
             CommonOptions.PropertiesOption,
             CommonOptions.RestorePropertiesOption,
-            PackCommandParser.TargetOption
-            );
+            PackCommandParser.TargetOption);
 
         return new PackCommand(
             parsedMSBuildArgs.CloneWithAdditionalProperties(projectLocator.GetCustomDefaultConfigurationValueIfSpecified()),
@@ -73,7 +71,7 @@ public class PackCommand(
                 if (split.Length == 2)
                     packArgs.Properties[split[0]] = split[1];
             }
-        }
+        }a
 
         var version = parseResult.GetValue(PackCommandParser.VersionOption);
         if (!string.IsNullOrEmpty(version))
