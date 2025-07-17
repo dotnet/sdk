@@ -4,6 +4,8 @@
 using System.Formats.Tar;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using FakeItEasy;
+using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Containers.LocalDaemons;
 using Microsoft.NET.Build.Containers.Resources;
@@ -1431,9 +1433,10 @@ public class EndToEndTests : IDisposable
     }
 
     [DockerAvailableFact]
-    public async Task CheckErrorMessageWhenSourceRepositoryThrows()
+    public async void CheckDownloadErrorMessageWhenSourceRepositoryThrows()
     {
-        ILogger logger = _loggerFactory.CreateLogger(nameof(CheckErrorMessageWhenSourceRepositoryThrows));
+        var loggerFactory = new TestLoggerFactory(_testOutput);
+        var logger = loggerFactory.CreateLogger(nameof(CheckDownloadErrorMessageWhenSourceRepositoryThrows));
         string rid = "win-x64";
         string publishDirectory = BuildLocalApp(tfm: ToolsetInfo.CurrentTargetFramework, rid: rid);
 
@@ -1459,23 +1462,38 @@ public class EndToEndTests : IDisposable
 
         // Load the image into the local registry
         var sourceReference = new SourceImageReference(registry, "some_random_image", DockerRegistryManager.Net9ImageTag, null);
-        var destinationReference = new DestinationImageReference(registry, NewImageName(), new[] { rid });
-        var sawMyException = false;
-        try
-        {
-            await new DockerCli(_loggerFactory).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
-        }
-        catch (UnableToDownloadFromRepositoryException e)
-        {
-            sawMyException = true;
-            Assert.Contains("The download of the image from repository some_random_image has failed", e.ToString());
-        }
-        Assert.True(sawMyException);
+        string archivePath = Path.Combine(TestSettings.TestArtifactsDirectory, nameof(CheckDownloadErrorMessageWhenSourceRepositoryThrows));
+        var destinationReference = new DestinationImageReference(new ArchiveFileRegistry(archivePath), NewImageName(), new[] { rid });
+
+        (var taskLog, var errors) = SetupTaskLog();
+        var telemetry = new Telemetry(sourceReference, destinationReference, taskLog);
+
+        await ImagePublisher.PublishImageAsync(builtImage, sourceReference, destinationReference, taskLog, telemetry, CancellationToken.None)
+                .ConfigureAwait(false);
+
+        // Assert the error message
+        Assert.True(taskLog.HasLoggedErrors);
+        Assert.NotNull(errors);
+        Assert.Single(errors);
+        Assert.Contains("Unable to download image from the repository", errors[0]);
 
         static string[] DecideEntrypoint(string rid, string appName, string workingDir)
         {
             var binary = rid.StartsWith("win", StringComparison.Ordinal) ? $"{appName}.exe" : appName;
             return new[] { $"{workingDir}/{binary}" };
+        }
+
+        static (Microsoft.Build.Utilities.TaskLoggingHelper, List<string?> errors) SetupTaskLog()
+        {
+            // We can use any Task, we just need TaskLoggingHelper
+            Tasks.CreateNewImage cni = new();
+            List<string?> errors = new();
+            IBuildEngine buildEngine = A.Fake<IBuildEngine>();
+            A.CallTo(() => buildEngine.LogWarningEvent(A<BuildWarningEventArgs>.Ignored)).Invokes((BuildWarningEventArgs e) => errors.Add(e.Message));
+            A.CallTo(() => buildEngine.LogErrorEvent(A<BuildErrorEventArgs>.Ignored)).Invokes((BuildErrorEventArgs e) => errors.Add(e.Message));
+            A.CallTo(() => buildEngine.LogMessageEvent(A<BuildMessageEventArgs>.Ignored)).Invokes((BuildMessageEventArgs e) => errors.Add(e.Message));
+            cni.BuildEngine = buildEngine;
+            return (cni.Log, errors);
         }
     }
 
