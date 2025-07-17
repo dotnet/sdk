@@ -25,7 +25,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" Condition="'$(TargetFramework)' != 'net472'">
+    <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj"
+                      Condition="'$(TargetFramework)' != 'net472'"
+                      GlobalPropertiesToRemove="PublishDir">
       <!-- This is referenced by the core CLI as well so it doesn't need to be redistributed
            in the containers task folder. -->
       <IncludeAssets>build</IncludeAssets>

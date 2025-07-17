@@ -6,6 +6,7 @@ using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Security;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -21,6 +22,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -125,14 +127,22 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public MSBuildArgs MSBuildArgs { get; }
     public string? CustomArtifactsPath { get; init; }
     public bool NoRestore { get; init; }
+
+    /// <summary>
+    /// If <see langword="true"/>, build markers are not checked and hence MSBuild is always run.
+    /// This property does not control whether the build markers are written, use <see cref="NoWriteBuildMarkers"/> for that.
+    /// </summary>
     public bool NoCache { get; init; }
+
     public bool NoBuild { get; init; }
 
     /// <summary>
     /// If <see langword="true"/>, no build markers are written
     /// (like <see cref="BuildStartCacheFileName"/> and <see cref="BuildSuccessCacheFileName"/>).
+    /// Also skips automatic cleanup.
+    /// This property does not control whether the markers are checked, use <see cref="NoCache"/> for that.
     /// </summary>
-    public bool NoBuildMarkers { get; init; }
+    public bool NoWriteBuildMarkers { get; init; }
 
     public ImmutableArray<CSharpDirective> Directives
     {
@@ -173,10 +183,21 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseUpToDate.Yellow());
                 }
 
+                MarkArtifactsFolderUsed();
                 return 0;
             }
 
             MarkBuildStart();
+        }
+        else if (!NoWriteBuildMarkers)
+        {
+            CreateTempSubdirectory(GetArtifactsPath());
+            MarkArtifactsFolderUsed();
+        }
+
+        if (!NoWriteBuildMarkers)
+        {
+            CleanFileBasedAppArtifactsCommand.StartAutomaticCleanupIfNeeded();
         }
 
         Dictionary<string, string?> savedEnvironmentVariables = [];
@@ -448,9 +469,31 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
+    /// <summary>
+    /// Touching the artifacts folder ensures it's considered as recently used and not cleaned up by <see cref="CleanFileBasedAppArtifactsCommand"/>.
+    /// </summary>
+    public void MarkArtifactsFolderUsed()
+    {
+        if (NoWriteBuildMarkers)
+        {
+            return;
+        }
+
+        string directory = GetArtifactsPath();
+
+        try
+        {
+            Directory.SetLastWriteTimeUtc(directory, DateTime.UtcNow);
+        }
+        catch (Exception ex)
+        {
+            Reporter.Verbose.WriteLine($"Cannot touch folder '{directory}': {ex}");
+        }
+    }
+
     private void MarkBuildStart()
     {
-        if (NoBuildMarkers)
+        if (NoWriteBuildMarkers)
         {
             return;
         }
@@ -459,12 +502,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         CreateTempSubdirectory(directory);
 
+        MarkArtifactsFolderUsed();
+
         File.WriteAllText(Path.Join(directory, BuildStartCacheFileName), EntryPointFileFullPath);
     }
 
     private void MarkBuildSuccess(RunFileBuildCacheEntry cacheEntry)
     {
-        if (NoBuildMarkers)
+        if (NoWriteBuildMarkers)
         {
             return;
         }
@@ -528,25 +573,33 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         string hash = Sha256Hasher.HashWithNormalizedCasing(entryPointFileFullPath);
         string directoryName = $"{fileName}-{hash}";
 
-        return GetTempSubdirectory(directoryName);
+        return GetTempSubpath(directoryName);
     }
 
     /// <summary>
-    /// Obtains a temporary subdirectory for file-based apps.
+    /// Obtains a temporary subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/</c>.
     /// </summary>
-    public static string GetTempSubdirectory(string name)
+    public static string GetTempSubdirectory()
     {
         // We want a location where permissions are expected to be restricted to the current user.
         string directory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? Path.GetTempPath()
             : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
-        return Path.Join(directory, "dotnet", "runfile", name);
+        return Path.Join(directory, "dotnet", "runfile");
+    }
+
+    /// <summary>
+    /// Obtains a specific temporary path in a subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/{name}</c>.
+    /// </summary>
+    public static string GetTempSubpath(string name)
+    {
+        return Path.Join(GetTempSubdirectory(), name);
     }
 
     /// <summary>
     /// Creates a temporary subdirectory for file-based apps.
-    /// Use <see cref="GetTempSubdirectory"/> to obtain the path.
+    /// Use <see cref="GetTempSubpath"/> to obtain the path.
     /// </summary>
     public static void CreateTempSubdirectory(string path)
     {
@@ -1329,4 +1382,5 @@ internal sealed class RunFileBuildCacheEntry
 }
 
 [JsonSerializable(typeof(RunFileBuildCacheEntry))]
+[JsonSerializable(typeof(RunFileArtifactsMetadata))]
 internal partial class RunFileJsonSerializerContext : JsonSerializerContext;
