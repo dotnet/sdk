@@ -6,7 +6,7 @@ using System.Diagnostics;
 namespace Microsoft.DotNet.Cli.Utils;
 
 /// <summary>
-/// Contains helpers for working with <see cref="System.Diagnostics.Activity">Activities</see> in the .NET CLI.
+/// Contains helpers for working with <see cref="Activity">Activities</see> in the .NET CLI.
 /// </summary>
 public static class Activities
 {
@@ -22,11 +22,11 @@ public static class Activities
     /// This should be used when constructing new sub-processes in order to 
     /// track spans across calls.
     /// </summary>
-    public const string DOTNET_CLI_TRACEPARENT = nameof(DOTNET_CLI_TRACEPARENT);
+    public const string TRACEPARENT = nameof(TRACEPARENT);
     /// <summary>
     /// The environment variable used to transfer the trace state of the parent activities.
     /// This should be used when constructing new sub-processes in order to 
     /// track spans across calls.
     /// </summary>
-    public const string DOTNET_CLI_TRACESTATE = nameof(DOTNET_CLI_TRACESTATE);
+    public const string TRACESTATE = nameof(TRACESTATE);
 }

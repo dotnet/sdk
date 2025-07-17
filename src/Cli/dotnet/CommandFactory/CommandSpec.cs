@@ -8,13 +8,13 @@ namespace Microsoft.DotNet.Cli.CommandFactory;
 public class CommandSpec(
     string path,
     string? args,
-    Dictionary<string, string>? environmentVariables = null)
+    IDictionary<string, string>? environmentVariables = null)
 {
     public string Path { get; } = path;
 
     public string? Args { get; } = args;
 
-    public Dictionary<string, string> EnvironmentVariables { get; } = environmentVariables ?? [];
+    public IDictionary<string, string> EnvironmentVariables { get; } = environmentVariables ?? new Dictionary<string, string>();
 
     internal void AddEnvironmentVariablesFromProject(IProject project)
     {
