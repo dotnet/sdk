@@ -1298,7 +1298,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_UseAttributeForTargetFrameworkInfoPropertyNames Condition="$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), '17.0'))">true</_UseAttributeForTargetFrameworkInfoPropertyNames>
   </PropertyGroup>
 
-  <Target Name="_CalculateIsVSTestTestProject">
+  <!-- GetTargetFrameworksWithPlatformForSingleTargetFramework uses AdditionalTargetFrameworkInfoProperty to populate _AdditionalTargetFrameworkInfoPropertyWithValue -->
+  <!-- As we are modifying the value of ShouldBeValidatedAsExecutableReference here (which is part of AdditionalTargetFrameworkInfoProperty), we must run before GetTargetFrameworksWithPlatformForSingleTargetFramework -->
+  <Target Name="_CalculateIsVSTestTestProject" BeforeTargets="GetTargetFrameworksWithPlatformForSingleTargetFramework">
     <PropertyGroup>
       <_IsVSTestTestProject Condition="'$(IsTestProject)' == 'true' and '$(IsTestingPlatformApplication)' != 'true'">true</_IsVSTestTestProject>
       <_IsVSTestTestProject Condition="'$(_IsVSTestTestProject)' == ''">false</_IsVSTestTestProject>
