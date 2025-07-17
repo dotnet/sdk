@@ -115,7 +115,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Set the IsRidAgnostic property if this project should NOT accept global RuntimeIdentifier and SelfContained
        property values from referencing projects. -->
   <PropertyGroup Condition="'$(IsRidAgnostic)' == ''">
-    <IsRidAgnostic Condition="('$(_IsExecutable)' == 'true' And '$(IsTestProject)' != 'true') Or
+    <IsRidAgnostic Condition="('$(_IsExecutable)' == 'true') Or
                               '$(RuntimeIdentifier)' != '' Or
                               '$(RuntimeIdentifiers)' != ''">false</IsRidAgnostic>
     <IsRidAgnostic Condition="'$(IsRidAgnostic)' == ''">true</IsRidAgnostic>
@@ -1292,27 +1292,28 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ShouldBeValidatedAsExecutableReference>false</ShouldBeValidatedAsExecutableReference>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(IsTestProject)' == 'true' And '$(ValidateExecutableReferencesMatchSelfContained)' == ''">
-    <!-- Don't generate an error if a test project references a self-contained Exe.  Test projects
-         use an OutputType of Exe but will usually call APIs in a referenced Exe rather than try
-         to run it. -->
-    <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
-    <!-- Don't generate an error if an Exe project references a test project. -->
-    <ShouldBeValidatedAsExecutableReference>false</ShouldBeValidatedAsExecutableReference>
-  </PropertyGroup>
-
-
   <UsingTask TaskName="ValidateExecutableReferences" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <PropertyGroup>
     <_UseAttributeForTargetFrameworkInfoPropertyNames Condition="$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), '17.0'))">true</_UseAttributeForTargetFrameworkInfoPropertyNames>
   </PropertyGroup>
 
+  <Target Name="_CalculateIsVSTest">
+    <PropertyGroup>
+      <_IsVSTest Condition="'$(IsTestProject)' == 'true' and '$(IsTestingPlatformApplication)' != 'true'">true</_IsVSTest>
+      <_IsVSTest Condition="'$(_IsVSTest)' == ''">false</_IsVSTest>
+
+      <!-- Don't generate an error if an Exe project references a test project. -->
+      <ShouldBeValidatedAsExecutableReference Condition="'$(_IsVSTest)' == 'true'">false</ShouldBeValidatedAsExecutableReference>
+
+        <!-- Don't generate an error if a test project references a self-contained Exe.  Test projects
+            use an OutputType of Exe but will usually call APIs in a referenced Exe rather than try
+            to run it. -->
+      <ValidateExecutableReferencesMatchSelfContained Condition="'$(_IsVSTest)' == 'true' And '$(ValidateExecutableReferencesMatchSelfContained)' == ''">false</ValidateExecutableReferencesMatchSelfContained>
+    </PropertyGroup>
+  </Target>
+
   <Target Name="ValidateExecutableReferences"
-          AfterTargets="_GetProjectReferenceTargetFrameworkProperties"
           Condition="'$(ValidateExecutableReferencesMatchSelfContained)' != 'false'">
 
     <ValidateExecutableReferences
@@ -1320,6 +1321,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       IsExecutable="$(_IsExecutable)"
       ReferencedProjects="@(_MSBuildProjectReferenceExistent)"
       UseAttributeForTargetFrameworkInfoPropertyNames="$(_UseAttributeForTargetFrameworkInfoPropertyNames)"/>
+  </Target>
+
+  <Target Name="ValidateExecutableReferencesCore"
+          DependsOnTargets="_CalculateIsVSTest;ValidateExecutableReferences"
+          AfterTargets="_GetProjectReferenceTargetFrameworkProperties">
+
   </Target>
 
   <!--
