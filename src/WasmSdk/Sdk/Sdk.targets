@@ -23,7 +23,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
   <Target Name="_ImplicitlyReferenceHotReload" BeforeTargets="ProcessFrameworkReferences">
     <ItemGroup Condition="'$(_WasmEnableHotReload)' == 'true'">
-      <PackageReference Include="Microsoft.DotNet.HotReload.WebAssembly.Browser" Version="$(NETCoreSdkVersion)" IsImplicitlyDefined="true" PrivateAssets="All" />
+      <PackageReference Include="Microsoft.DotNet.HotReload.WebAssembly.Browser" Version="$(NETCoreSdkVersion)" IsImplicitlyDefined="true" />
     </ItemGroup>
   </Target>
 
