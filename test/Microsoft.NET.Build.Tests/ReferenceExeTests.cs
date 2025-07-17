@@ -478,7 +478,7 @@ public class ReferencedExeProgram
                 .Should()
                 .Pass();
 
-            var result = new BuildCommand(Log, mtpProjectDirectory).Execute();
+            var result = new BuildCommand(Log, consoleAppDirectory).Execute();
             result.Should().HaveStdOutContaining("NETSDK1150").And.ExitWith(1);
         }
 
