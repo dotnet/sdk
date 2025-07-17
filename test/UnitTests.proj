@@ -139,6 +139,7 @@
       <MSBuildSdkResolverDir>$(RepoRoot)artifacts\bin\Microsoft.DotNet.MSBuildSdkResolver</MSBuildSdkResolverDir>
       <HelixStage0Targz>$(RepoRoot)artifacts\tmp\HelixStage0.tar.gz</HelixStage0Targz>
       <MicrosoftNETBuildExtensions>$(RepoRoot)artifacts\bin\$(Configuration)\Sdks\Microsoft.NET.Build.Extensions</MicrosoftNETBuildExtensions>
+      <ArtifactsShippingPackages>$(RepoRoot)artifacts\packages\$(Configuration)\Shipping</ArtifactsShippingPackages>
     </PropertyGroup>
 
     <TarGzFileCreateFromDirectory
@@ -182,6 +183,11 @@
         <PayloadDirectory>$(TestHostDotNetRoot)</PayloadDirectory>
         <Destination>d/.nuget</Destination>
         <Uri>https://netcorenativeassets.blob.core.windows.net/resource-packages/external/any/sdk-test-assets/SDKTestRunPackages2.zip</Uri>
+      </HelixCorrelationPayload>
+
+      <HelixCorrelationPayload Include="$(ArtifactsShippingPackages)">
+        <PayloadDirectory>$(ArtifactsShippingPackages)</PayloadDirectory>
+        <Destination>d/.nuget</Destination>
       </HelixCorrelationPayload>
     </ItemGroup>
   </Target>
