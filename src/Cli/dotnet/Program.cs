@@ -315,7 +315,7 @@ public class Program
 
             try
             {
-                exitCode = parseResult.Invoke();
+                exitCode = Parser.Invoke(parseResult);
                 exitCode = AdjustExitCode(parseResult, exitCode);
             }
             catch (Exception exception)
