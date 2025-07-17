@@ -92,7 +92,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
             NoCache: parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption),
             IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
             Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
-        nugetPackageDownloader ??= new NuGetPackageDownloader.NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: _restoreActionConfig, verbosityOptions: _verbosity, verifySignatures: verifySignatures ?? true);
+        nugetPackageDownloader ??= new NuGetPackageDownloader.NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: _restoreActionConfig, verbosityOptions: _verbosity, verifySignatures: verifySignatures ?? true, shouldUsePackageSourceMapping: true);
         _shellShimTemplateFinder = new ShellShimTemplateFinder(nugetPackageDownloader, tempDir, packageSourceLocation);
         _store = store;
 
@@ -155,7 +155,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
             toolPath = new DirectoryPath(_toolPath);
         }
 
-        VersionRange versionRange = _parseResult.GetVersionRange();
+        VersionRange? versionRange = _parseResult.GetVersionRange();
 
         (IToolPackageStore toolPackageStore,
          IToolPackageStoreQuery toolPackageStoreQuery,
@@ -241,7 +241,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         return 0;
     }
 
-    private NuGetVersion GetBestMatchNugetVersion(PackageId packageId, VersionRange versionRange, IToolPackageDownloader toolPackageDownloader)
+    private NuGetVersion GetBestMatchNugetVersion(PackageId packageId, VersionRange? versionRange, IToolPackageDownloader toolPackageDownloader)
     {
         return toolPackageDownloader.GetNuGetVersion(
             packageLocation: new PackageLocation(nugetConfig: GetConfigFile(), sourceFeedOverrides: _source, additionalFeeds: _addSource),
