@@ -19,6 +19,10 @@ export async function onRuntimeReady({ getAssemblyExports }) {
 
     if (!window.Blazor) {
         window.Blazor = {};
+
+        if (!window.Blazor._internal) {
+            window.Blazor._internal = {};
+        }
     }
 
     window.Blazor._internal.applyHotReloadDeltas = (deltas, loggingLevel) => {
