@@ -18,7 +18,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <!-- Implicit HotReload package reference for .NET 10+ if not explicitly turned off -->
     <_WasmEnableHotReload>$(WasmEnableHotReload)</_WasmEnableHotReload>
-    <_WasmEnableHotReload Condition="'$(_WasmEnableHotReload)' == '' and '$(Configuration)' == 'Release'">false</_WasmEnableHotReload>
+    <_WasmEnableHotReload Condition="'$(_WasmEnableHotReload)' == '' and '$(Configuration)' != 'Debug'">false</_WasmEnableHotReload>
     <_WasmEnableHotReload Condition="'$(_WasmEnableHotReload)' == '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))">true</_WasmEnableHotReload>
   </PropertyGroup>
   <Target Name="_ImplicitlyReferenceHotReload" BeforeTargets="ProcessFrameworkReferences">
