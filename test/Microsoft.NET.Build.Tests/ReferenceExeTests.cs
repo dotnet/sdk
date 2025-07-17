@@ -519,5 +519,45 @@ public class ReferencedExeProgram
                 .Should()
                 .Pass();
         }
+
+        [Theory]
+        [CombinatorialData]
+        public void MTPCanBeBuiltAsSelfContained(bool setIsTestingPlatformApplicationEarly)
+        {
+            var mtpSelfContained = new TestProject("MTPTestProject")
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+                IsTestProject = true,
+                SelfContained = "true",
+            };
+
+            if (setIsTestingPlatformApplicationEarly)
+            {
+                mtpSelfContained.IsTestingPlatformApplication = true;
+            }
+
+            var testAssetMTP = _testAssetsManager.CreateTestProject(mtpSelfContained);
+
+            var mtpProjectDirectory = Path.Combine(testAssetMTP.Path, mtpSelfContained.Name);
+            Assert.True(Directory.Exists(mtpProjectDirectory), $"Expected directory {mtpProjectDirectory} to exist.");
+            Assert.True(File.Exists(Path.Combine(mtpProjectDirectory, "MTPTestProject.csproj")), $"Expected file MTPTestProject.csproj to exist in {mtpProjectDirectory}.");
+
+            if (!setIsTestingPlatformApplicationEarly)
+            {
+                File.WriteAllText(Path.Combine(mtpProjectDirectory, "Directory.Build.targets"), """
+                    <Project>
+                        <PropertyGroup>
+                            <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+                        </PropertyGroup>
+                    </Project>
+                    """);
+            }
+
+            new BuildCommand(Log, mtpProjectDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+        }
     }
 }
