@@ -94,7 +94,7 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
 
         //  TargetFramework is null, which means to use the current framework.  Global tools can override the target framework to use (or select assets for),
         //  but we don't support this for local or one-shot tools.
-        if (!_toolPackageDownloader.TryGetDownloadedTool(packageId, bestVersion, targetFramework: null,  verbosity: _verbosity, out var toolPackage))
+        if (!_toolPackageDownloader.TryGetDownloadedTool(packageId, bestVersion, targetFramework: null, verbosity: _verbosity, out var toolPackage))
         {
             if (!UserAgreedToRunFromSource(packageId, bestVersion, packageSource))
             {
@@ -134,7 +134,6 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
         toolExecuteActivity?.SetTag("tool.runner", toolPackage.Command.Runner);
         var commandSpec = ToolCommandSpecCreator.CreateToolCommandSpec(toolPackage.Command.Name.Value, toolPackage.Command.Executable.Value, toolPackage.Command.Runner, _allowRollForward, _forwardArguments);
         var command = CommandFactoryUsingResolver.Create(commandSpec);
-        using var _ = Activities.Source.StartActivity("execute-inline-tool");
         var result = command.Execute();
         return result.ExitCode;
     }
