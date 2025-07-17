@@ -57,14 +57,6 @@ namespace Microsoft.NET.TestFramework
                         targetFrameworks.Value = targetFrameworks.Value.Replace("$(AspNetTestTfm)", overrideTfm ?? DefaultTfm);
                         targetFrameworks.AddAfterSelf(new XElement("StaticWebAssetsFingerprintContent", "false"));
                     }
-
-                    if (project.Root != null)
-                    {
-                        var itemGroup = new XElement("PropertyGroup");
-                        var fingerprintAssets = new XElement("WasmEnableHotReload", "false");
-                        itemGroup.Add(fingerprintAssets);
-                        project.Root.Add(itemGroup);
-                    }
                 });
 
             foreach (string assetPath in Directory.EnumerateFiles(Path.Combine(_testAssetsManager.TestAssetsRoot, "WasmOverride")))
@@ -89,14 +81,6 @@ namespace Microsoft.NET.TestFramework
                     var targetFramework = project.Descendants()
                        .Single(e => e.Name.LocalName == "TargetFrameworks");
                     targetFramework.Value = targetFramework.Value.Replace("$(AspNetTestTfm)", overrideTfm ?? DefaultTfm);
-
-                    if (project.Root != null)
-                    {
-                        var itemGroup = new XElement("PropertyGroup");
-                        var fingerprintAssets = new XElement("WasmEnableHotReload", "false");
-                        itemGroup.Add(fingerprintAssets);
-                        project.Root.Add(itemGroup);
-                    }
                 });
             return projectDirectory;
         }
