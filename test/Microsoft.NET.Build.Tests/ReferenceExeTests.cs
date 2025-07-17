@@ -422,6 +422,66 @@ public class ReferencedExeProgram
             result.Should().HaveStdOutContaining("NETSDK1151").And.ExitWith(1);
         }
 
+        [Theory]
+        [CombinatorialData]
+        public void MTPNonSelfContainedExecutableCannotBeReferencedBySelfContained(bool setIsTestingPlatformApplicationEarly)
+        {
+            // The setup of this test is as follows:
+            // ConsoleApp is a self-contained executable project, which references a non-self-contained MTP executable test project.
+            // Building ConsoleApp should fail because it references a non-self-contained MTP executable project.
+            // A non self-contained executable cannot be referenced by a self-contained executable.
+            var testConsoleProjectSelfContained = new TestProject("ConsoleApp")
+            {
+                IsExe = true,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                SelfContained = "true",
+            };
+
+            var testAssetSelfContained = _testAssetsManager.CreateTestProject(testConsoleProjectSelfContained);
+
+            var mtpNotSelfContained = new TestProject("MTPTestProject")
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+                IsTestProject = true,
+            };
+
+            if (setIsTestingPlatformApplicationEarly)
+            {
+                mtpNotSelfContained.IsTestingPlatformApplication = true;
+            }
+
+            var testAssetMTP = _testAssetsManager.CreateTestProject(mtpNotSelfContained);
+
+            var mtpProjectDirectory = Path.Combine(testAssetMTP.Path, mtpNotSelfContained.Name);
+            Assert.True(Directory.Exists(mtpProjectDirectory), $"Expected directory {mtpProjectDirectory} to exist.");
+            Assert.True(File.Exists(Path.Combine(mtpProjectDirectory, "MTPTestProject.csproj")), $"Expected file MTPTestProject.csproj to exist in {mtpProjectDirectory}.");
+
+            if (!setIsTestingPlatformApplicationEarly)
+            {
+                File.WriteAllText(Path.Combine(mtpProjectDirectory, "Directory.Build.targets"), """
+                    <Project>
+                        <PropertyGroup>
+                            <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+                        </PropertyGroup>
+                    </Project>
+                    """);
+            }
+
+            var consoleAppDirectory = Path.Combine(testAssetSelfContained.Path, testConsoleProjectSelfContained.Name);
+            Assert.True(Directory.Exists(consoleAppDirectory), $"Expected directory {consoleAppDirectory} to exist.");
+            Assert.True(File.Exists(Path.Combine(consoleAppDirectory, "ConsoleApp.csproj")), $"Expected file ConsoleApp.csproj to exist in {consoleAppDirectory}.");
+
+            new DotnetCommand(Log, "add", "reference", Path.Combine(testAssetMTP.Path, mtpNotSelfContained.Name))
+                .WithWorkingDirectory(consoleAppDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+
+            var result = new BuildCommand(Log, mtpProjectDirectory).Execute();
+            result.Should().HaveStdOutContaining("NETSDK1150").And.ExitWith(1);
+        }
+
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData("xunit")]
         [InlineData("mstest")]
