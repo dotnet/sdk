@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Compression;
+using Microsoft.Build.Logging.StructuredLogger;
 
 namespace Microsoft.DotNet.Pack.Tests
 {
@@ -314,7 +315,7 @@ namespace Microsoft.DotNet.Pack.Tests
             string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
             var result = new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute(nuspecPath,  "--version", "1.2.3");
+                .Execute(nuspecPath, "--version", "1.2.3");
 
             result.Should().Pass();
 
@@ -323,6 +324,23 @@ namespace Microsoft.DotNet.Pack.Tests
                 .And.HaveFile("PackNoCsproj.1.2.3.nupkg");
         }
 
+        [Fact]
+        public void DotnetPack_AcceptsCustomProperties()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
+                .WithSource();
+
+            string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
+
+            var result = new DotnetPackCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(
+                nuspecPath, "--property", "id=CustomValue",
+                "--property", "authors=CustomAuthor"
+                );
+
+            result.Should().Pass();
+        }
         [Fact]
         public void DotnetPack_AcceptsConfigurationOption()
         {

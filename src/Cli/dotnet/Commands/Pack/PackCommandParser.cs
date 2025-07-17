@@ -1,4 +1,8 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -54,11 +58,9 @@ internal static class PackCommandParser
         Arity = ArgumentArity.Zero
     }.ForwardAs("-nologo");
 
-    /*public static readonly Option<bool> Nuspec = new ForwardedOption<bool>("--nuspec")
-    {
-        Description = "Nuspec",
-        Arity = ArgumentArity.Zero
-    }.ForwardAs("-nuspec");*/
+    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.PackConfigurationOptionDescription);
+
+    public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Pack", [("_IsPacking", "true")]);
 
     public static readonly Option<string> VersionOption = new ForwardedOption<string>("--version")
     {
@@ -77,9 +79,6 @@ internal static class PackCommandParser
 
     public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
-
-    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.PackConfigurationOptionDescription);
-
     private static readonly Command Command = ConstructCommand();
 
     public static Command GetCommand()
@@ -92,7 +91,6 @@ internal static class PackCommandParser
         var command = new DocumentedCommand("pack", DocsLink, CliCommandStrings.PackAppFullName);
 
         command.Arguments.Add(SlnOrProjectArgument);
-        //command.Options.Add(CommonOptions.PropertiesOption);
         command.Options.Add(OutputOption);
         command.Options.Add(CommonOptions.ArtifactsPathOption);
         command.Options.Add(NoBuildOption);
@@ -100,14 +98,14 @@ internal static class PackCommandParser
         command.Options.Add(IncludeSourceOption);
         command.Options.Add(ServiceableOption);
         command.Options.Add(NoLogoOption);
-        //command.Options.Add(Nuspec);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
         command.Options.Add(NoRestoreOption);
+        command.Options.Add(BuildCommandParser.VerbosityOption);
         command.Options.Add(VersionOption);
-        command.Options.Add(CommonOptions.HiddenVerbosityOption);
         command.Options.Add(CommonOptions.VersionSuffixOption);
         command.Options.Add(ConfigurationOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.Options.Add(TargetOption); 
 
         // Don't include runtime option because we want to include it specifically and allow the short version ("-r") to be used
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);

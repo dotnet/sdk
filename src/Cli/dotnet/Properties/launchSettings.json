@@ -1,8 +1,7 @@
 {
   "profiles": {
     "dotnet": {
-      "commandName": "Project",
-      "commandLineArgs": "pack \"C:\\Users\\t-kalfikadu\\sdk\\test\\TestAssets\\TestProjects\\TestNuspecProject\""
-    }
+      "commandName": "Project"
+     }
   }
 }
