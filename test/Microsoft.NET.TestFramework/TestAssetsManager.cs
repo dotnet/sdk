@@ -144,9 +144,9 @@ namespace Microsoft.NET.TestFramework
             return testAsset;
         }
 
-        public TestDirectory CreateTestDirectory([CallerMemberName] string? testName = null, string? identifier = null)
+        public TestDirectory CreateTestDirectory([CallerMemberName] string? testName = null, string? identifier = null, string? baseDirectory = null)
         {
-            string dir = GetTestDestinationDirectoryPath(testName, testName, identifier ?? string.Empty);
+            string dir = GetTestDestinationDirectoryPath(testName, testName, identifier ?? string.Empty, baseDirectory: baseDirectory);
             return new TestDirectory(dir, TestContext.Current.SdkVersion);
         }
 
@@ -170,9 +170,10 @@ namespace Microsoft.NET.TestFramework
             string? testProjectName,
             string? callingMethodAndFileName,
             string? identifier,
-            bool allowCopyIfPresent = false)
+            bool allowCopyIfPresent = false,
+            string? baseDirectory = null)
         {
-            string? baseDirectory = TestContext.Current.TestExecutionDirectory;
+            baseDirectory ??= TestContext.Current.TestExecutionDirectory;
             var directoryName = new StringBuilder(callingMethodAndFileName).Append(identifier);
 
             if (testProjectName != callingMethodAndFileName)

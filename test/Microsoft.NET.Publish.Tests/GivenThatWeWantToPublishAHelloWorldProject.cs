@@ -1174,17 +1174,7 @@ public static class Program
             var result = runCommand.Execute();
             if (expectedRoot != null)
             {
-                // SDK tests use /tmp for test assets. On macOS, it is a symlink - the app will print the resolved path
-                if (OperatingSystem.IsMacOS())
-                {
-                    string tmpPath = "/tmp/";
-                    DirectoryInfo tmp = new DirectoryInfo(tmpPath[..^1]); // No trailing slash in order to properly check the link target
-                    if (tmp.LinkTarget != null && expectedRoot.StartsWith(tmpPath))
-                    {
-                        expectedRoot = Path.Combine(tmp.ResolveLinkTarget(true).FullName, expectedRoot[tmpPath.Length..]);
-                    }
-                }
-
+                expectedRoot = TestPathUtility.ResolveTempPrefixLink(expectedRoot);
                 result.Should().Pass()
                     .And.HaveStdOutContaining($"Runtime directory: {expectedRoot}");
             }
