@@ -162,7 +162,7 @@ public class Program
     /// Uses the OpenTelemetrySDK's Propagation API to derive the parent activity context and kind
     /// from the DOTNET_CLI_TRACEPARENT and DOTNET_CLI_TRACESTATE environment variables.
     /// </summary>
-    private static (ActivityContext parentActivityContext, ActivityKind kind) DeriveParentActivityContextFromEnv()
+    private static (System.Diagnostics.ActivityContext parentActivityContext, ActivityKind kind) DeriveParentActivityContextFromEnv()
     {
         var traceParent = Env.GetEnvironmentVariable(Activities.TRACEPARENT);
         var traceState = Env.GetEnvironmentVariable(Activities.TRACESTATE);
