@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <EmbeddedResource Update="**\*.resx" GenerateSource="true" />
-    <Content Include="Build\DotNetWatch.targets" TargetPath="DotNetWatch.targets" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="Watch\DotNetWatch.targets" TargetPath="DotNetWatch.targets" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
@@ -67,8 +67,8 @@
       <OutputItemType>Content</OutputItemType>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SetTargetFramework>TargetFramework=netstandard2.1</SetTargetFramework>
-      <TargetPath>hotreload\netstandard2.1\Microsoft.Extensions.DotNetDeltaApplier.dll</TargetPath>
+      <SetTargetFramework>TargetFramework=net6.0</SetTargetFramework>
+      <TargetPath>hotreload\net6.0\Microsoft.Extensions.DotNetDeltaApplier.dll</TargetPath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </ProjectReference>
   </ItemGroup>

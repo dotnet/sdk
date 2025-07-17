@@ -54,7 +54,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\README.md" />
+    <None Include="README.md" />
   </ItemGroup>
 
   <ItemGroup>

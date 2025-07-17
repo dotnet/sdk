@@ -64,12 +64,13 @@
                       Overwrite="true" />
   </Target>
 
-  <Target Name="LayoutDnxScript">
-    <PropertyGroup>
-      <DnxScriptSource Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">dnx.cmd</DnxScriptSource>
-      <DnxScriptSource Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))">dnx</DnxScriptSource>
-    </PropertyGroup>
-    <Copy SourceFiles="$(DnxScriptSource)" DestinationFolder="$(RedistInstallerLayoutPath)" />
+  <Target Name="LayoutDnxShim">
+    <ItemGroup>
+      <DnxShimSource Condition="$([MSBuild]::IsOSPlatform('Windows'))" Include="dnx.cmd" />
+      <DnxShimSource Condition="$([MSBuild]::IsOSPlatform('Windows'))" Include="dnx.ps1" />
+      <DnxShimSource Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))" Include="dnx" />
+    </ItemGroup>
+    <Copy SourceFiles="@(DnxShimSource)" DestinationFolder="$(RedistInstallerLayoutPath)" />
 
     <!-- Mark script as executable -->
     <Exec Command="chmod 755 &quot;$(RedistInstallerLayoutPath)/dnx&quot;" Condition="!$([MSBuild]::IsOSPlatform('Windows'))" />
@@ -92,7 +93,7 @@
                             LayoutManifests;
                             LayoutBaselineWorkloadSet;
                             LayoutWorkloadUserLocalMarker;
-                            LayoutDnxScript;
+                            LayoutDnxShim;
                             CrossgenLayout;
                             ReplaceBundledRuntimePackFilesWithSymbolicLinks"
           AfterTargets="AfterBuild" />
@@ -115,7 +116,7 @@
           SkipUnchangedFiles="true" />
 
     <!-- Copy dnx script to root dotnet folder (which will map to DOTNETHOME) -->
-    <Copy SourceFiles="dnx.cmd" DestinationFolder="$(IntermediateSdkInstallerOutputPath)" />
+    <Copy SourceFiles="@(DnxShimSource)" DestinationFolder="$(IntermediateSdkInstallerOutputPath)" />
     
   </Target>
 

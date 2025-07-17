@@ -28,7 +28,6 @@ namespace Microsoft.DotNet.Cli
                 Arity = ArgumentArity.ExactlyOne,
             };
 
-
         private static PackageIdentityWithRange? ParsePackageIdentityWithVersionSeparator(string? packageIdentity, char versionSeparator = '@')
         {
             if (string.IsNullOrEmpty(packageIdentity))
@@ -58,7 +57,7 @@ namespace Microsoft.DotNet.Cli
         }
     }
 
-    internal readonly record struct PackageIdentityWithRange(string Id, VersionRange? VersionRange)
+    public readonly record struct PackageIdentityWithRange(string Id, VersionRange? VersionRange)
     {
         public bool HasVersion => VersionRange != null;
     }

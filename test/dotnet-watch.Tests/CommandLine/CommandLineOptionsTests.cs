@@ -9,8 +9,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
     {
         private readonly MockReporter _testReporter = new();
 
-        private const string InteractiveOption = "--interactive";
-
         private CommandLineOptions VerifyOptions(string[] args, string expectedOutput = "", string[] expectedMessages = null)
             => VerifyOptions(args, actualOutput => AssertEx.Equal(expectedOutput, actualOutput), expectedMessages ?? []);
 
@@ -83,7 +81,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions([]);
             Assert.Equal("run", options.Command);
-            AssertEx.SequenceEqual([InteractiveOption], options.CommandArguments);
+            AssertEx.SequenceEqual([], options.CommandArguments);
         }
 
         [Theory]
@@ -113,7 +111,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions([command]);
             var args = options.CommandArguments.ToList();
-            args.Remove(InteractiveOption);
             Assert.Equal(command, options.ExplicitCommand);
             Assert.Equal(command, options.Command);
             Assert.Empty(args);
@@ -127,7 +124,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(before ? [option, "test"] : ["test", option]);
             Assert.Equal("test", options.Command);
-            AssertEx.SequenceEqual(option == "--non-interactive" ? [] : [InteractiveOption], options.CommandArguments);
+            AssertEx.SequenceEqual([], options.CommandArguments);
         }
 
         [Fact]
@@ -136,7 +133,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var options = VerifyOptions(["-lp", "P", "run"]);
             Assert.Equal("P", options.LaunchProfileName);
             Assert.Equal("run", options.Command);
-            AssertEx.SequenceEqual(["-lp", "P", InteractiveOption], options.CommandArguments);
+            AssertEx.SequenceEqual(["-lp", "P"], options.CommandArguments);
         }
 
         [Fact]
@@ -145,7 +142,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var options = VerifyOptions(["run", "-lp", "P"]);
             Assert.Equal("P", options.LaunchProfileName);
             Assert.Equal("run", options.Command);
-            AssertEx.SequenceEqual(["-lp", "P", InteractiveOption], options.CommandArguments);
+            AssertEx.SequenceEqual(["-lp", "P"], options.CommandArguments);
         }
 
         [Fact]
@@ -162,7 +159,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Assert.True(options.NoLaunchProfile);
             Assert.Equal("run", options.Command);
-            AssertEx.SequenceEqual(["--no-launch-profile", InteractiveOption], options.CommandArguments);
+            AssertEx.SequenceEqual(["--no-launch-profile"], options.CommandArguments);
         }
 
         [Fact]
@@ -172,7 +169,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Assert.True(options.NoLaunchProfile);
             Assert.Equal("run", options.Command);
-            AssertEx.SequenceEqual(["--no-launch-profile", InteractiveOption], options.CommandArguments);
+            AssertEx.SequenceEqual(["--no-launch-profile"], options.CommandArguments);
         }
 
         [Fact]
@@ -182,7 +179,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Assert.True(options.NoLaunchProfile);
             Assert.Equal("run", options.Command);
-            AssertEx.SequenceEqual(["--no-launch-profile", InteractiveOption], options.CommandArguments);
+            AssertEx.SequenceEqual(["--no-launch-profile"], options.CommandArguments);
         }
 
         [Fact]
@@ -192,7 +189,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Assert.True(options.GlobalOptions.Verbose);
             Assert.Equal("run", options.Command);
-            AssertEx.SequenceEqual([InteractiveOption, "-watchArg", "-runArg"], options.CommandArguments);
+            AssertEx.SequenceEqual(["-watchArg", "-runArg"], options.CommandArguments);
         }
 
         [Fact]
@@ -202,7 +199,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Assert.Equal("p", options.ProjectPath);
             Assert.Equal("run", options.Command);
-            AssertEx.SequenceEqual(["--project", "p", InteractiveOption, "--unknown", "x", "y"], options.CommandArguments);
+            AssertEx.SequenceEqual(["--project", "p", "--unknown", "x", "y"], options.CommandArguments);
         }
 
         [Fact]
@@ -212,7 +209,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Assert.False(options.GlobalOptions.Verbose);
             Assert.Equal("run", options.Command);
-            AssertEx.SequenceEqual([InteractiveOption, "-watchArg", "--", "--verbose", "run", "-runArg",], options.CommandArguments);
+            AssertEx.SequenceEqual(["-watchArg", "--", "--verbose", "run", "-runArg",], options.CommandArguments);
         }
 
         [Fact]
@@ -222,7 +219,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Assert.False(options.GlobalOptions.Verbose);
             Assert.Equal("run", options.Command);
-            AssertEx.SequenceEqual([InteractiveOption, "--", "run"], options.CommandArguments);
+            AssertEx.SequenceEqual(["--", "run"], options.CommandArguments);
         }
 
         [Fact]
@@ -230,7 +227,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(["--"]);
             Assert.Equal("run", options.Command);
-            AssertEx.SequenceEqual([InteractiveOption], options.CommandArguments);
+            AssertEx.SequenceEqual([], options.CommandArguments);
         }
 
         /// <summary>
@@ -246,7 +243,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var options = VerifyOptions(["--", "-f", "TFM"]);
 
             Assert.Null(options.TargetFramework);
-            AssertEx.SequenceEqual([InteractiveOption, "--", "-f", "TFM"], options.CommandArguments);
+            AssertEx.SequenceEqual(["--", "-f", "TFM"], options.CommandArguments);
         }
 
         [Fact]
@@ -255,7 +252,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var options = VerifyOptions(["--", "--project", "proj"]);
 
             Assert.Null(options.ProjectPath);
-            AssertEx.SequenceEqual([InteractiveOption, "--", "--project", "proj"], options.CommandArguments);
+            AssertEx.SequenceEqual(["--", "--project", "proj"], options.CommandArguments);
         }
 
         [Fact]
@@ -264,7 +261,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var options = VerifyOptions(["--", "--no-launch-profile"]);
 
             Assert.False(options.NoLaunchProfile);
-            AssertEx.SequenceEqual([InteractiveOption, "--", "--no-launch-profile"], options.CommandArguments);
+            AssertEx.SequenceEqual(["--", "--no-launch-profile"], options.CommandArguments);
         }
 
         [Fact]
@@ -273,7 +270,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var options = VerifyOptions(["--", "--launch-profile", "p"]);
 
             Assert.False(options.NoLaunchProfile);
-            AssertEx.SequenceEqual([InteractiveOption, "--", "--launch-profile", "p"], options.CommandArguments);
+            AssertEx.SequenceEqual(["--", "--launch-profile", "p"], options.CommandArguments);
         }
 
         [Fact]
@@ -282,7 +279,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var options = VerifyOptions(["--", "--property", "x=1"]);
 
             Assert.False(options.NoLaunchProfile);
-            AssertEx.SequenceEqual([InteractiveOption, "--", "--property", "x=1"], options.CommandArguments);
+            AssertEx.SequenceEqual(["--", "--property", "x=1"], options.CommandArguments);
         }
 
         [Theory]
@@ -296,8 +293,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Assert.Equal("P", options.ProjectPath);
             Assert.Equal("F", options.TargetFramework);
-            AssertEx.SequenceEqual(["-property:TargetFramework=F", "--property:P1=V1", "--property:P2=V2", NugetInteractiveProperty], options.BuildArguments);
-            AssertEx.SequenceEqual(["--project", "P", "--framework", "F", "--property:P1=V1", "--property:P2=V2", InteractiveOption], options.CommandArguments);
+            AssertEx.SequenceEqual(["--property:TargetFramework=F", "--property:P1=V1", "--property:P2=V2", NugetInteractiveProperty], options.BuildArguments);
+            AssertEx.SequenceEqual(["--project", "P", "--framework", "F", "--property:P1=V1", "--property:P2=V2"], options.CommandArguments);
         }
 
         public enum ArgPosition
@@ -349,7 +346,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual(["--property:P1=V1", "--property:P2=V2", NugetInteractiveProperty], options.BuildArguments);
 
             // options must be repeated since --property does not support multiple args
-            AssertEx.SequenceEqual(["--property:P1=V1", "--property:P2=V2", InteractiveOption], options.CommandArguments);
+            AssertEx.SequenceEqual(["--property:P1=V1", "--property:P2=V2"], options.CommandArguments);
         }
 
         [Theory]
@@ -362,14 +359,14 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         [Theory]
-        [InlineData(new[] { "--unrecognized-arg" }, new[] { InteractiveOption, "--unrecognized-arg" })]
-        [InlineData(new[] { "run" }, new string[] { InteractiveOption })]
-        [InlineData(new[] { "run", "--", "runarg" }, new[] { InteractiveOption, "--", "runarg" })]
-        [InlineData(new[] { "--verbose", "run", "runarg1", "-runarg2" }, new[] { InteractiveOption, "runarg1", "-runarg2" })]
+        [InlineData(new[] { "--unrecognized-arg" }, new[] { "--unrecognized-arg" })]
+        [InlineData(new[] { "run" }, new string[] { })]
+        [InlineData(new[] { "run", "--", "runarg" }, new[] {  "--", "runarg" })]
+        [InlineData(new[] { "--verbose", "run", "runarg1", "-runarg2" }, new[] {  "runarg1", "-runarg2" })]
         // run is after -- and therefore not parsed as a command:
-        [InlineData(new[] { "--verbose", "--", "run", "--", "runarg" }, new[] { InteractiveOption, "--", "run", "--", "runarg" })]
+        [InlineData(new[] { "--verbose", "--", "run", "--", "runarg" }, new[] {  "--", "run", "--", "runarg" })]
         // run is before -- and therefore parsed as a command:
-        [InlineData(new[] { "--verbose", "run", "--", "--", "runarg" }, new[] { InteractiveOption, "--", "--", "runarg" })]
+        [InlineData(new[] { "--verbose", "run", "--", "--", "runarg" }, new[] {  "--", "--", "runarg" })]
         public void ParsesRemainingArgs(string[] args, string[] expected)
         {
             var options = VerifyOptions(args);
@@ -414,23 +411,23 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Equal("CustomLaunchProfile", options.LaunchProfileName);
         }
 
-        private const string NugetInteractiveProperty = "-property:NuGetInteractive=false";
+        private const string NugetInteractiveProperty = "--property:NuGetInteractive=false";
 
         /// <summary>
         /// Validates that options that the "run" command forwards to "build" command are forwarded by dotnet-watch.
         /// </summary>
         [Theory]
-        [InlineData(new[] { "--configuration", "release" }, new[] { "-property:Configuration=release", NugetInteractiveProperty })]
-        [InlineData(new[] { "--framework", "net9.0" }, new[] { "-property:TargetFramework=net9.0", NugetInteractiveProperty })]
-        [InlineData(new[] { "--runtime", "arm64" }, new[] { "-property:RuntimeIdentifier=arm64", "-property:_CommandLineDefinedRuntimeIdentifier=true", NugetInteractiveProperty })]
+        [InlineData(new[] { "--configuration", "release" }, new[] { "--property:Configuration=release", NugetInteractiveProperty })]
+        [InlineData(new[] { "--framework", "net9.0" }, new[] { "--property:TargetFramework=net9.0", NugetInteractiveProperty })]
+        [InlineData(new[] { "--runtime", "arm64" }, new[] { "--property:RuntimeIdentifier=arm64", "--property:_CommandLineDefinedRuntimeIdentifier=true", NugetInteractiveProperty })]
         [InlineData(new[] { "--property", "b=1" }, new[] { "--property:b=1", NugetInteractiveProperty })]
-        [InlineData(new[] { "--interactive" }, new[] { "-property:NuGetInteractive=true" })]
+        [InlineData(new[] { "--interactive" }, new[] { "--property:NuGetInteractive=true" })]
         [InlineData(new[] { "--no-restore" }, new[] { NugetInteractiveProperty, "-restore:false" })]
-        [InlineData(new[] { "--sc" }, new[] { NugetInteractiveProperty, "-property:SelfContained=True", "-property:_CommandLineDefinedSelfContained=true" })]
-        [InlineData(new[] { "--self-contained" }, new[] { NugetInteractiveProperty, "-property:SelfContained=True", "-property:_CommandLineDefinedSelfContained=true" })]
-        [InlineData(new[] { "--no-self-contained" }, new[] { NugetInteractiveProperty, "-property:SelfContained=False", "-property:_CommandLineDefinedSelfContained=true" })]
-        [InlineData(new[] { "--verbosity", "q" }, new[] { NugetInteractiveProperty, "-verbosity:q" })]
-        [InlineData(new[] { "--arch", "arm", "--os", "win" }, new[] { NugetInteractiveProperty, "-property:RuntimeIdentifier=win-arm" })]
+        [InlineData(new[] { "--sc" }, new[] { NugetInteractiveProperty, "--property:SelfContained=True", "--property:_CommandLineDefinedSelfContained=true" })]
+        [InlineData(new[] { "--self-contained" }, new[] { NugetInteractiveProperty, "--property:SelfContained=True", "--property:_CommandLineDefinedSelfContained=true" })]
+        [InlineData(new[] { "--no-self-contained" }, new[] { NugetInteractiveProperty, "--property:SelfContained=False", "--property:_CommandLineDefinedSelfContained=true" })]
+        [InlineData(new[] { "--verbosity", "q" }, new[] { NugetInteractiveProperty, "--verbosity:q" })]
+        [InlineData(new[] { "--arch", "arm", "--os", "win" }, new[] { NugetInteractiveProperty, "--property:RuntimeIdentifier=win-arm" })]
         [InlineData(new[] { "--disable-build-servers" }, new[] { NugetInteractiveProperty, "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
         public void ForwardedBuildOptions(string[] args, string[] buildArgs)
         {
@@ -444,7 +441,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var path = TestContext.Current.TestAssetsDirectory;
 
             var args = new[] { "--artifacts-path", path };
-            var buildArgs = new[] { NugetInteractiveProperty, @"-property:ArtifactsPath=" + path };
+            var buildArgs = new[] { NugetInteractiveProperty, @"--property:ArtifactsPath=" + path };
 
             var options = VerifyOptions(["run", .. args]);
             AssertEx.SequenceEqual(buildArgs, options.BuildArguments);

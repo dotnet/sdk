@@ -12,7 +12,7 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
-internal static class PackageAddCommandParser
+public static class PackageAddCommandParser
 {
     public static readonly Argument<PackageIdentityWithRange> CmdPackageArgument = CommonArguments.RequiredPackageIdentityArgument()
     .AddCompletions((context) =>

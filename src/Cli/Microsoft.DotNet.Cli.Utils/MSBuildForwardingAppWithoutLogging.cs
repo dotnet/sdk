@@ -5,6 +5,7 @@
 
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.Cli;
 
 namespace Microsoft.DotNet.Cli.Utils;
 
@@ -25,10 +26,12 @@ internal class MSBuildForwardingAppWithoutLogging
     // Null if we're running MSBuild in-proc.
     private ForwardingAppImplementation? _forwardingApp;
 
-    // Command line arguments we're asked to forward to MSBuild.
-    private readonly IEnumerable<string> _argsToForward;
-
     internal static string? MSBuildExtensionsPathTestHook = null;
+
+    /// <summary>
+    /// Structure describing the parsed and forwarded MSBuild arguments for this command.
+    /// </summary>
+    private MSBuildArgs _msbuildArgs;
 
     // Path to the MSBuild binary to use.
     public string MSBuildPath { get; }
@@ -38,13 +41,19 @@ internal class MSBuildForwardingAppWithoutLogging
 
     private readonly Dictionary<string, string> _msbuildRequiredEnvironmentVariables = GetMSBuildRequiredEnvironmentVariables();
 
-    private readonly List<string> _msbuildRequiredParameters = [ "-maxcpucount", "-verbosity:m" ];
+    private readonly List<string> _msbuildRequiredParameters = [ "-maxcpucount", "--verbosity:m" ];
 
-    public MSBuildForwardingAppWithoutLogging(IEnumerable<string> argsToForward, string? msbuildPath = null, bool includeLogo = false)
+    public MSBuildForwardingAppWithoutLogging(MSBuildArgs msbuildArgs, string? msbuildPath = null, bool includeLogo = false, bool isRestoring = true)
     {
         string defaultMSBuildPath = GetMSBuildExePath();
-
-        _argsToForward = includeLogo ? argsToForward : ["-nologo", ..argsToForward];
+        _msbuildArgs = msbuildArgs;
+        if (!includeLogo && !msbuildArgs.OtherMSBuildArgs.Contains("-nologo", StringComparer.OrdinalIgnoreCase))
+        {
+            // If the user didn't explicitly ask for -nologo, we add it to avoid the MSBuild logo.
+            // This is useful for scenarios like restore where we don't want to print the logo.
+            // Note that this is different from the default behavior of MSBuild, which prints the logo.
+            msbuildArgs.OtherMSBuildArgs.Add("-nologo");
+        }
         string? tlpDefault = TerminalLoggerDefault;
         // new for .NET 9 - default TL to auto (aka enable in non-CI scenarios)
         if (string.IsNullOrWhiteSpace(tlpDefault))
@@ -84,7 +93,23 @@ internal class MSBuildForwardingAppWithoutLogging
 
     public string[] GetAllArguments()
     {
-        return _msbuildRequiredParameters.Concat(_argsToForward.Select(Escape)).ToArray();
+        return [.. _msbuildRequiredParameters, ..EmitMSBuildArgs(_msbuildArgs) ];
+    }
+
+    private string[] EmitMSBuildArgs(MSBuildArgs msbuildArgs) => [
+        .. msbuildArgs.GlobalProperties?.Select(kvp => EmitProperty(kvp)) ?? [],
+        .. msbuildArgs.RestoreGlobalProperties?.Select(kvp => EmitProperty(kvp, "restoreProperty")) ?? [],
+        .. msbuildArgs.RequestedTargets?.Select(target => $"--target:{target}") ?? [],
+        .. msbuildArgs.Verbosity is not null ? new string[1] { $"--verbosity:{msbuildArgs.Verbosity}" } : [],
+        .. msbuildArgs.OtherMSBuildArgs
+    ];
+
+    private static string EmitProperty(KeyValuePair<string, string> property, string label = "property")
+    {
+        // Escape RestoreSources to avoid issues with semicolons in the value.
+        return IsRestoreSources(property.Key)
+            ? $"--{label}:{property.Key}={Escape(property.Value)}"
+            : $"--{label}:{property.Key}={property.Value}";
     }
 
     public void EnvironmentVariable(string name, string value)
@@ -160,9 +185,12 @@ internal class MSBuildForwardingAppWithoutLogging
         }
     }
 
-    private static string Escape(string arg) =>
-        // this is a workaround for https://github.com/Microsoft/msbuild/issues/1622
-        IsRestoreSources(arg) ? arg.Replace(";", "%3B").Replace("://", ":%2F%2F") : arg;
+    /// <summary>
+    /// This is a workaround for https://github.com/Microsoft/msbuild/issues/1622.
+    /// Only used historically for RestoreSources property only.
+    /// </summary>
+    private static string Escape(string propertyValue) =>
+        propertyValue.Replace(";", "%3B").Replace("://", ":%2F%2F");
 
     private static string GetMSBuildExePath()
     {
@@ -194,19 +222,13 @@ internal class MSBuildForwardingAppWithoutLogging
     {
         return new()
         {
-            { "MSBuildExtensionsPath", MSBuildExtensionsPathTestHook ?? AppContext.BaseDirectory },
+            { "MSBuildExtensionsPath", MSBuildExtensionsPathTestHook ?? Environment.GetEnvironmentVariable("MSBuildExtensionsPath") ?? AppContext.BaseDirectory },
             { "MSBuildSDKsPath", GetMSBuildSDKsPath() },
             { "DOTNET_HOST_PATH", GetDotnetPath() },
         };
     }
 
-    private static bool IsRestoreSources(string arg)
-    {
-        return arg.StartsWith("/p:RestoreSources=", StringComparison.OrdinalIgnoreCase) ||
-            arg.StartsWith("/property:RestoreSources=", StringComparison.OrdinalIgnoreCase) ||
-            arg.StartsWith("-p:RestoreSources=", StringComparison.OrdinalIgnoreCase) ||
-            arg.StartsWith("-property:RestoreSources=", StringComparison.OrdinalIgnoreCase);
-    }
+    private static bool IsRestoreSources(string arg) => arg.Equals("RestoreSources", StringComparison.OrdinalIgnoreCase);
 }
 
 #endif

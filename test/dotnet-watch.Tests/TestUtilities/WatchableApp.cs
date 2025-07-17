@@ -113,8 +113,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public Task AssertExiting()
             => AssertOutputLineStartsWith(ExitingMessage);
 
-        public void Start(TestAsset asset, IEnumerable<string> arguments, string relativeProjectDirectory = null, string workingDirectory = null, TestFlags testFlags = TestFlags.RunningAsTest)
+        public void Start(TestAsset asset, IEnumerable<string> arguments, string relativeProjectDirectory = null, string workingDirectory = null, TestFlags testFlags = TestFlags.None)
         {
+            testFlags |= TestFlags.RunningAsTest;
+
             var projectDirectory = (relativeProjectDirectory != null) ? Path.Combine(asset.Path, relativeProjectDirectory) : asset.Path;
 
             var commandSpec = new DotnetCommand(Logger, ["watch", .. DotnetWatchArgs, .. arguments])

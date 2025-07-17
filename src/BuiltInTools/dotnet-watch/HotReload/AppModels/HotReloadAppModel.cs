@@ -26,11 +26,11 @@ internal abstract partial class HotReloadAppModel(ProjectGraphNode? agentInjecti
         var hookTargetFramework = agentInjectionProject.GetTargetFramework() switch
         {
             // Note: Hot Reload is only supported on net6.0+
-            "net6.0" or "net7.0" or "net8.0" or "net9.0" => "netstandard2.1",
+            "net6.0" or "net7.0" or "net8.0" or "net9.0" => "net6.0",
             _ => "net10.0",
         };
 
-        path = Path.Combine(AppContext.BaseDirectory, "hotreload", hookTargetFramework, "Microsoft.Extensions.DotNetDeltaApplier.dll");
+        path = Path.Combine(Path.GetDirectoryName(typeof(HotReloadAppModel).Assembly.Location)!, "hotreload", hookTargetFramework, "Microsoft.Extensions.DotNetDeltaApplier.dll");
         return true;
     }
 

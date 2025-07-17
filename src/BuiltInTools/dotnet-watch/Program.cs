@@ -244,9 +244,8 @@ namespace Microsoft.DotNet.Watch
             var fileSetFactory = new MSBuildFileSetFactory(
                 rootProjectOptions.ProjectPath,
                 rootProjectOptions.BuildArguments,
-                environmentOptions,
                 processRunner,
-                reporter);
+                new BuildReporter(reporter, environmentOptions));
 
             if (await fileSetFactory.TryCreateAsync(requireProjectGraph: null, cancellationToken) is not { } evaluationResult)
             {

@@ -1,9 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
 
@@ -57,7 +56,10 @@ internal static class PackCommandParser
 
     public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
-    public static readonly Option<string> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.PackConfigurationOptionDescription);
+    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.PackConfigurationOptionDescription);
+
+    public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Pack", [("_IsPacking", "true")]);
+    public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = BuildCommandParser.VerbosityOption;
 
     private static readonly Command Command = ConstructCommand();
 
@@ -80,10 +82,11 @@ internal static class PackCommandParser
         command.Options.Add(NoLogoOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
         command.Options.Add(NoRestoreOption);
-        command.Options.Add(CommonOptions.VerbosityOption);
+        command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.VersionSuffixOption);
         command.Options.Add(ConfigurationOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.Options.Add(TargetOption);
 
         // Don't include runtime option because we want to include it specifically and allow the short version ("-r") to be used
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);

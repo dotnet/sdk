@@ -194,7 +194,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- controls warn as error -->
     <_BinaryFormatterObsoleteAsError>true</_BinaryFormatterObsoleteAsError>
     <!-- controls runtime behavior (AppContext & trimming) -->
-    <EnableUnsafeBinaryFormatterSerialization Condition="'$(EnableUnsafeBinaryFormatterSerialization)' == '' AND '$(_ProjectTypeRequiresBinaryFormatter)' == 'true'">true</EnableUnsafeBinaryFormatterSerialization>
     <EnableUnsafeBinaryFormatterSerialization Condition="$([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) AND '$(_ProjectTypeRequiresBinaryFormatter)' != 'true'">false</EnableUnsafeBinaryFormatterSerialization>
   </PropertyGroup>
 
@@ -621,6 +620,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.Net.Security.UseManagedNtlm"
                                     Condition="'$(_UseManagedNtlm)' != ''"
                                     Value="$(_UseManagedNtlm)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Net.SocketsHttpHandler.Http3Support"
+                                    Condition="'$(Http3Support)' != ''"
+                                    Value="$(Http3Support)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Reflection.Metadata.MetadataUpdater.IsSupported"

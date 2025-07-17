@@ -79,7 +79,7 @@
       </trans-unit>
       <trans-unit id="AspireWorkloadDeprecated">
         <source>The Aspire workload is deprecated and no longer necessary. Aspire is now available as NuGet packages that you can add directly to your projects. For more information, see https://aka.ms/aspire/support-policy</source>
-        <target state="new">The Aspire workload is deprecated and no longer necessary. Aspire is now available as NuGet packages that you can add directly to your projects. For more information, see https://aka.ms/aspire/support-policy</target>
+        <target state="translated">Рабочая нагрузка Aspire является нерекомендуемой и больше не требуется. Теперь нагрузка Aspire доступна в виде пакетов NuGet, которые можно добавлять непосредственно в проекты. Дополнительные сведения см. на странице https://aka.ms/aspire/support-policy</target>
         <note />
       </trans-unit>
       <trans-unit id="Authors">
@@ -1443,7 +1443,7 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
         <source>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="new">The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</target>
+        <target state="translated">Директива в "{2}" должна содержать имя без специальных символов и необязательное значение, разделенные символом-разделителем "{1}", например "#":{0} Имя{1}Значение".</target>
         <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="InvalidFilePath">
@@ -2184,15 +2184,15 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </source>
-        <target state="new">'dotnet workload search version' has three functions depending on its argument:
-      1. If no argument is specified, it outputs a list of the latest released workload versions from this feature band. Takes the --take option to specify how many to provide and --format to alter the format.
-         Example:
+        <target state="translated">"dotnet workload search version" имеет три функции в зависимости от переданного аргумента:
+      1. Если аргумент не указан, команда выводит список последних выпущенных версий рабочих нагрузок из данного диапазона функций. Принимает параметр --take для указания нужного количества и --format для изменения формата.
+         Пример:
            dotnet workload search version --take 2 --format json
            [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
-      2. If a workload version is provided as an argument, it outputs a table of various workloads and their versions for the specified workload version. Takes the --format option to alter the output format.
-         Example:
+      2. Если в качестве аргумента указана версия рабочей нагрузки, команда выводит таблицу различных рабочих нагрузок и их версий для указанной версии рабочей нагрузки. Может принимать параметр --format для изменения формата выхода.
+         Пример:
            dotnet workload search version 9.0.201
-           Workload manifest ID                               Manifest feature band      Manifest Version
+           ИД манифеста рабочей нагрузки                               Диапазон функций манифеста      Версия манифеста
            ------------------------------------------------------------------------------------------------
            microsoft.net.workload.emscripten.current          9.0.100-rc.1               9.0.0-rc.1.24430.3
            microsoft.net.workload.emscripten.net6             9.0.100-rc.1               9.0.0-rc.1.24430.3
@@ -2208,8 +2208,8 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
            microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
-      3. If one or more workloads are provided along with their versions (by joining them with the '@' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.
-         Example:
+      3. Если одна или несколько рабочих нагрузок указаны вместе с версиями (разделенные символом "@"), команда выводит версии рабочих нагрузок, соответствующие указанным версиям. Принимает параметр --take для указания нужного количества и --format для изменения формата.
+         Пример:
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </target>
@@ -2289,6 +2289,46 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <source>Convert a file-based program to a project-based program.</source>
         <target state="translated">Преобразование программы на основе файла в программу на основе проекта.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertAskForOutputDirectory">
+        <source>Specify the output directory ({0}):</source>
+        <target state="new">Specify the output directory ({0}):</target>
+        <note>{0} is the default value</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertDryRun">
+        <source>Determines changes without actually modifying the file system</source>
+        <target state="new">Determines changes without actually modifying the file system</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldConvertFile">
+        <source>Dry run: would remove file-level directives from file: {0}</source>
+        <target state="new">Dry run: would remove file-level directives from file: {0}</target>
+        <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldCopyFile">
+        <source>Dry run: would copy file '{0}' to '{1}'.</source>
+        <target state="new">Dry run: would copy file '{0}' to '{1}'.</target>
+        <note>{0} and {1} are file full paths.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldCreateDirectory">
+        <source>Dry run: would create directory: {0}</source>
+        <target state="new">Dry run: would create directory: {0}</target>
+        <note>{0} is the directory full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldCreateFile">
+        <source>Dry run: would create file: {0}</source>
+        <target state="new">Dry run: would create file: {0}</target>
+        <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldDeleteFile">
+        <source>Dry run: would delete file: {0}</source>
+        <target state="new">Dry run: would delete file: {0}</target>
+        <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldMoveFile">
+        <source>Dry run: would move file '{0}' to '{1}'.</source>
+        <target state="new">Dry run: would move file '{0}' to '{1}'.</target>
+        <note>{0} and {1} are file full paths.</note>
       </trans-unit>
       <trans-unit id="ProjectManifest">
         <source>PROJECT_MANIFEST</source>
