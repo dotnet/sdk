@@ -43,6 +43,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.NET.Sdk.Razor.Tests" />
+    <InternalsVisibleTo Include="Microsoft.NET.Sdk.StaticWebAssets.Tests" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">

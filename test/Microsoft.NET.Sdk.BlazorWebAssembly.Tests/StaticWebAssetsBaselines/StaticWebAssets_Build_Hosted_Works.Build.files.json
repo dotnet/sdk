@@ -331,6 +331,8 @@
   "${OutputPath}\\wwwroot\\_framework\\System.Text.Json.wasm.gz",
   "${OutputPath}\\wwwroot\\_framework\\System.Text.RegularExpressions.wasm",
   "${OutputPath}\\wwwroot\\_framework\\System.Text.RegularExpressions.wasm.gz",
+  "${OutputPath}\\wwwroot\\_framework\\System.Threading.AccessControl.wasm",
+  "${OutputPath}\\wwwroot\\_framework\\System.Threading.AccessControl.wasm.gz",
   "${OutputPath}\\wwwroot\\_framework\\System.Threading.Channels.wasm",
   "${OutputPath}\\wwwroot\\_framework\\System.Threading.Channels.wasm.gz",
   "${OutputPath}\\wwwroot\\_framework\\System.Threading.Overlapped.wasm",

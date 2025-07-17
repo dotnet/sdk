@@ -21,6 +21,7 @@
     <Import Project="GenerateArchives.targets" />
 
     <Import Project="OverlaySdkOnLKG.targets" />
+    <Import Project="GenerateTestingGlobalJson.targets" />
   </ImportGroup>
 
   <!-- Installers -->

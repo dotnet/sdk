@@ -111,8 +111,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
           </Target>
         """;
 
-    private ImmutableArray<CSharpDirective> _directives;
-
     public VirtualProjectBuildingCommand(
         string entryPointFileFullPath,
         MSBuildArgs msbuildArgs)
@@ -136,10 +134,28 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </summary>
     public bool NoBuildMarkers { get; init; }
 
+    public ImmutableArray<CSharpDirective> Directives
+    {
+        get
+        {
+            if (field.IsDefault)
+            {
+                var sourceFile = LoadSourceFile(EntryPointFileFullPath);
+                field = FindDirectives(sourceFile, reportAllErrors: false, errors: null);
+                Debug.Assert(!field.IsDefault);
+            }
+
+            return field;
+        }
+
+        init;
+    }
+
     public override int Execute()
     {
         Debug.Assert(!(NoRestore && NoBuild));
-        var consoleLogger = TerminalLogger.CreateTerminalOrConsoleLogger(MSBuildArgs.OtherMSBuildArgs.ToArray());
+        var verbosity = MSBuildArgs.Verbosity ?? VerbosityOptions.quiet;
+        var consoleLogger = TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]);
         var binaryLogger = GetBinaryLogger(MSBuildArgs.OtherMSBuildArgs);
 
         RunFileBuildCacheEntry? cacheEntry = null;
@@ -156,8 +172,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 {
                     Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseUpToDate.Yellow());
                 }
-
-                PrepareProjectInstance();
 
                 return 0;
             }
@@ -187,8 +201,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 Loggers = projectCollection.Loggers,
                 LogTaskInputs = binaryLoggers.Length != 0,
             };
-
-            PrepareProjectInstance();
 
             // Do a restore first (equivalent to MSBuild's "implicit restore", i.e., `/restore`).
             // See https://github.com/dotnet/msbuild/blob/a1c2e7402ef0abe36bf493e395b04dd2cb1b3540/src/MSBuild/XMake.cs#L1838
@@ -445,17 +457,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         string directory = GetArtifactsPath();
 
-        if (OperatingSystem.IsWindows())
-        {
-            Directory.CreateDirectory(directory);
-        }
-        else
-        {
-            // Ensure only the current user has access to the directory to avoid leaking the program to other users.
-            // We don't mind that permissions might be different if the directory already exists,
-            // since it's under user's local directory and its path should be unique.
-            Directory.CreateDirectory(directory, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
-        }
+        CreateTempSubdirectory(directory);
 
         File.WriteAllText(Path.Join(directory, BuildStartCacheFileName), EntryPointFileFullPath);
     }
@@ -470,19 +472,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         string successCacheFile = Path.Join(GetArtifactsPath(), BuildSuccessCacheFileName);
         using var stream = File.Open(successCacheFile, FileMode.Create, FileAccess.Write, FileShare.None);
         JsonSerializer.Serialize(stream, cacheEntry, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
-    }
-
-    /// <summary>
-    /// Needs to be called before the first call to <see cref="CreateProjectInstance(ProjectCollection)"/>.
-    /// </summary>
-    public VirtualProjectBuildingCommand PrepareProjectInstance()
-    {
-        Debug.Assert(_directives.IsDefault, $"{nameof(PrepareProjectInstance)} should not be called multiple times.");
-
-        var sourceFile = LoadSourceFile(EntryPointFileFullPath);
-        _directives = FindDirectives(sourceFile, reportAllErrors: false, errors: null);
-
-        return this;
     }
 
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection)
@@ -511,13 +500,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         ProjectRootElement CreateProjectRootElement(ProjectCollection projectCollection)
         {
-            Debug.Assert(!_directives.IsDefault, $"{nameof(PrepareProjectInstance)} should have been called first.");
-
             var projectFileFullPath = Path.ChangeExtension(EntryPointFileFullPath, ".csproj");
             var projectFileWriter = new StringWriter();
             WriteProjectFile(
                 projectFileWriter,
-                _directives,
+                Directives,
                 isVirtualProject: true,
                 targetFilePath: EntryPointFileFullPath,
                 artifactsPath: GetArtifactsPath(),
@@ -534,20 +521,46 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     private string GetArtifactsPath() => CustomArtifactsPath ?? GetArtifactsPath(EntryPointFileFullPath);
 
-    // internal for testing
-    internal static string GetArtifactsPath(string entryPointFileFullPath)
+    public static string GetArtifactsPath(string entryPointFileFullPath)
+    {
+        // Include entry point file name so the directory name is not completely opaque.
+        string fileName = Path.GetFileNameWithoutExtension(entryPointFileFullPath);
+        string hash = Sha256Hasher.HashWithNormalizedCasing(entryPointFileFullPath);
+        string directoryName = $"{fileName}-{hash}";
+
+        return GetTempSubdirectory(directoryName);
+    }
+
+    /// <summary>
+    /// Obtains a temporary subdirectory for file-based apps.
+    /// </summary>
+    public static string GetTempSubdirectory(string name)
     {
         // We want a location where permissions are expected to be restricted to the current user.
         string directory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? Path.GetTempPath()
             : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
-        // Include entry point file name so the directory name is not completely opaque.
-        string fileName = Path.GetFileNameWithoutExtension(entryPointFileFullPath);
-        string hash = Sha256Hasher.HashWithNormalizedCasing(entryPointFileFullPath);
-        string directoryName = $"{fileName}-{hash}";
+        return Path.Join(directory, "dotnet", "runfile", name);
+    }
 
-        return Path.Join(directory, "dotnet", "runfile", directoryName);
+    /// <summary>
+    /// Creates a temporary subdirectory for file-based apps.
+    /// Use <see cref="GetTempSubdirectory"/> to obtain the path.
+    /// </summary>
+    public static void CreateTempSubdirectory(string path)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            Directory.CreateDirectory(path);
+        }
+        else
+        {
+            // Ensure only the current user has access to the directory to avoid leaking the program to other users.
+            // We don't mind that permissions might be different if the directory already exists,
+            // since it's under user's local directory and its path should be unique.
+            Directory.CreateDirectory(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        }
     }
 
     public static void WriteProjectFile(
@@ -648,7 +661,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             writer.WriteLine("""
 
                   <PropertyGroup>
-                    <EnableDefaultItems>false</EnableDefaultItems>
+                    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                   </PropertyGroup>
                 """);
         }
@@ -1042,7 +1055,7 @@ internal abstract class CSharpDirective
             "sdk" => Sdk.Parse(errors, sourceFile, span, directiveKind, directiveText),
             "property" => Property.Parse(errors, sourceFile, span, directiveKind, directiveText),
             "package" => Package.Parse(errors, sourceFile, span, directiveKind, directiveText),
-            "project" => Project.Parse(errors, sourceFile, span, directiveText),
+            "project" => Project.Parse(errors, sourceFile, span, directiveKind, directiveText),
             _ => ReportError<Named>(errors, sourceFile, span, string.Format(CliCommandStrings.UnrecognizedDirective, directiveKind, sourceFile.GetLocationString(span))),
         };
     }
@@ -1201,8 +1214,13 @@ internal abstract class CSharpDirective
     {
         private Project() { }
 
-        public static Project Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveText)
+        public static new Project? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
         {
+            if (directiveText.IsWhiteSpace())
+            {
+                return ReportError<Project?>(errors, sourceFile, span, string.Format(CliCommandStrings.MissingDirectiveName, directiveKind, sourceFile.GetLocationString(span)));
+            }
+
             try
             {
                 // If the path is a directory like '../lib', transform it to a project file path like '../lib/lib.csproj'.

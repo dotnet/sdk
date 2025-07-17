@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
         }
 
-        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo"];
+        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "-nologo"];
         private const string NugetInteractiveProperty = "--property:NuGetInteractive=false";
         private static readonly string[] DefaultArgs = ["-restore", "-consoleloggerparameters:Summary", NugetInteractiveProperty];
 

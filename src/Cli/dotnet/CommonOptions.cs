@@ -122,29 +122,34 @@ internal static class CommonOptions
         return allTargets.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
     }
 
-
     public static Option<VerbosityOptions> VerbosityOption(VerbosityOptions defaultVerbosity) =>
         new ForwardedOption<VerbosityOptions>("--verbosity", "-v")
         {
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName,
             DefaultValueFactory = _ => defaultVerbosity
-        }.ForwardAsSingle(o => $"-verbosity:{o}");
+        }
+        .ForwardAsSingle(o => $"--verbosity:{o}")
+        .AggregateRepeatedTokens();
 
     public static Option<VerbosityOptions?> VerbosityOption() =>
-        new ForwardedOption<VerbosityOptions?>("--verbosity", "-v")
+        new ForwardedOption<VerbosityOptions?>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
         {
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName
-        }.ForwardAsSingle(o => $"-verbosity:{o}");
+        }
+        .ForwardAsSingle(o => $"--verbosity:{o}")
+        .AggregateRepeatedTokens();
 
     public static Option<VerbosityOptions> HiddenVerbosityOption =
-        new ForwardedOption<VerbosityOptions>("--verbosity", "-v")
+        new ForwardedOption<VerbosityOptions>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
         {
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName,
             Hidden = true
-        }.ForwardAsSingle(o => $"-verbosity:{o}");
+        }
+        .ForwardAsSingle(o => $"--verbosity:{o}")
+        .AggregateRepeatedTokens();
 
     public static Option<string> FrameworkOption(string description) =>
         new DynamicForwardedOption<string>("--framework", "-f")
@@ -240,23 +245,25 @@ internal static class CommonOptions
     private static bool IsCIEnvironmentOrRedirected() =>
         new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected;
 
+    public const string InteractiveOptionName = "--interactive";
+
     /// <summary>
     /// A 'template' for interactive usage across the whole dotnet CLI. Use this as a base and then specialize it for your use cases.
     /// Despite being a 'forwarded option' there is no default forwarding configured, so if you want forwarding you can add it on a per-command basis.
     /// </summary>
     /// <param name="acceptArgument">Whether the option accepts an boolean argument. If false, the option will be a flag.</param>
     /// <remarks>
-    // If not set by a user, this will default to true if the user is not in a CI environment as detected by <see cref="Telemetry.CIEnvironmentDetectorForTelemetry.IsCIEnvironment"/>.
-    // If this is set to function as a flag, then there is no simple user-provided way to circumvent the behavior.
-    // </remarks>
+    /// If not set by a user, this will default to true if the user is not in a CI environment as detected by <see cref="Telemetry.CIEnvironmentDetectorForTelemetry.IsCIEnvironment"/>.
+    /// If this is set to function as a flag, then there is no simple user-provided way to circumvent the behavior.
+    /// </remarks>
     public static ForwardedOption<bool> InteractiveOption(bool acceptArgument = false) =>
-         new("--interactive")
-         {
-             Description = CliStrings.CommandInteractiveOptionDescription,
-             Arity = acceptArgument ? ArgumentArity.ZeroOrOne : ArgumentArity.Zero,
-             // this default is called when no tokens/options are passed on the CLI args
-             DefaultValueFactory = (ar) => !IsCIEnvironmentOrRedirected()
-         };
+        new(InteractiveOptionName)
+        {
+            Description = CliStrings.CommandInteractiveOptionDescription,
+            Arity = acceptArgument ? ArgumentArity.ZeroOrOne : ArgumentArity.Zero,
+            // this default is called when no tokens/options are passed on the CLI args
+            DefaultValueFactory = (ar) => !IsCIEnvironmentOrRedirected()
+        };
 
     public static Option<bool> InteractiveMsBuildForwardOption = InteractiveOption(acceptArgument: true).ForwardAsSingle(b => $"--property:NuGetInteractive={(b ? "true" : "false")}");
 
@@ -468,20 +475,6 @@ internal static class CommonOptions
         option.CompletionSources.Add(completionSource);
         return option;
     }
-}
-
-public enum VerbosityOptions
-{
-    quiet,
-    q,
-    minimal,
-    m,
-    normal,
-    n,
-    detailed,
-    d,
-    diagnostic,
-    diag
 }
 
 public class DynamicOption<T>(string name, params string[] aliases) : Option<T>(name, aliases), IDynamicOption
