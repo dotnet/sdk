@@ -189,17 +189,17 @@
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>795d8b1beea2359a394e30d21f5faddbd3788ac7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.15.0-preview-25359-101">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
+    <Dependency Name="Microsoft.NET.Test.Sdk" Version="18.0.0-preview-25366-05">
+      <Uri>https://github.com/microsoft/vstest</Uri>
+      <Sha>ab6e14292ec4aac0c228a6c75e420f0a0461b0e1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.15.0-preview-25359-101">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
+    <Dependency Name="Microsoft.TestPlatform.CLI" Version="18.0.0-preview-25366-05">
+      <Uri>https://github.com/microsoft/vstest</Uri>
+      <Sha>ab6e14292ec4aac0c228a6c75e420f0a0461b0e1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.15.0-preview-25359-101">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
+    <Dependency Name="Microsoft.TestPlatform.Build" Version="18.0.0-preview-25366-05">
+      <Uri>https://github.com/microsoft/vstest</Uri>
+      <Sha>ab6e14292ec4aac0c228a6c75e420f0a0461b0e1</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="10.0.0-preview.7.25359.101">
       <Uri>https://github.com/dotnet/dotnet</Uri>
@@ -222,6 +222,39 @@
       <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
     </Dependency>
     <Dependency Name="System.Resources.Extensions" Version="10.0.0-preview.7.25359.101">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
+    </Dependency>
+    <!-- Do not use properties based on:
+         - Microsoft.WindowsDesktop.App.Ref
+         - Microsoft.WindowsDesktop.App.Internal
+         - Microsoft.NET.Sdk.WindowsDesktop
+         - Microsoft.Dotnet.WinForms.ProjectTemplates
+         - Microsoft.DotNet.Wpf.ProjectTemplates
+         In VMR builds on non-Windows, they aren't built. Instead, use the following:
+         - Microsoft.WindowsDesktop.App.Ref - Microsoft.NETCore.App.Ref
+         - Microsoft.WindowsDesktop.App.Internal - Microsoft.NETCore.Platforms
+         - Microsoft.NET.Sdk.WindowsDesktop - Microsoft.NETCore.App.Ref
+         - Microsoft.Dotnet.WinForms.ProjectTemplates - Microsoft.NETCore.Platforms
+         - Microsoft.DotNet.Wpf.ProjectTemplates - Microsoft.NETCore.Platforms
+    -->
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-preview.7.25359.101">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.WindowsDesktop.App.Internal" Version="10.0.0-preview.7.25359.101">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="10.0.0-preview.7.25359.101">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="10.0.0-preview.7.25359.101">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="10.0.0-preview.7.25359.101">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
     </Dependency>
