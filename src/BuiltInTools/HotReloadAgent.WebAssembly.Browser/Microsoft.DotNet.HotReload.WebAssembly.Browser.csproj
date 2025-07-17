@@ -1,9 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <!--
-      Intentionally pinned. Supports Visual Studio in-proc agent client.
-    -->
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <GenerateDependencyFile>false</GenerateDependencyFile>

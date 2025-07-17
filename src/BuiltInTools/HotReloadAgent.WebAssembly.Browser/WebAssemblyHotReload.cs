@@ -57,7 +57,6 @@ internal static partial class WebAssemblyHotReload
         public int[] UpdatedTypes { get; init; }
     }
 
-    private static readonly AgentReporter s_reporter = new();
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
     private static bool s_initialized;
@@ -102,14 +101,14 @@ internal static partial class WebAssemblyHotReload
                 var updates = deltasJson != "" ? JsonSerializer.Deserialize<Update[]>(deltasJson, s_jsonSerializerOptions) : null;
                 if (updates == null)
                 {
-                    s_reporter.Report($"No previous updates to apply.", AgentMessageSeverity.Verbose);
+                    agent.Reporter.Report($"No previous updates to apply.", AgentMessageSeverity.Verbose);
                     return;
                 }
 
                 var i = 1;
                 foreach (var update in updates)
                 {
-                    s_reporter.Report($"Reapplying update {i}/{updates.Length}.", AgentMessageSeverity.Verbose);
+                    agent.Reporter.Report($"Reapplying update {i}/{updates.Length}.", AgentMessageSeverity.Verbose);
 
                     agent.ApplyDeltas(
                         update.Deltas.Select(d => new UpdateDelta(Guid.Parse(d.ModuleId, CultureInfo.InvariantCulture), d.MetadataDelta, d.ILDelta, d.PdbDelta, d.UpdatedTypes)));
@@ -127,7 +126,7 @@ internal static partial class WebAssemblyHotReload
             errorMessage = e.ToString();
         }
 
-        s_reporter.Report($"Failed to retrieve and apply previous deltas from the server: {errorMessage}", AgentMessageSeverity.Error);
+        agent.Reporter.Report($"Failed to retrieve and apply previous deltas from the server: {errorMessage}", AgentMessageSeverity.Error);
     }
 
     private static HotReloadAgent? GetAgent()
@@ -136,11 +135,15 @@ internal static partial class WebAssemblyHotReload
     private static LogEntry[] ApplyHotReloadDeltas(Delta[] deltas, int loggingLevel)
     {
         var agent = GetAgent();
+        if (agent == null)
+        {
+            return [];
+        }
 
-        agent?.ApplyDeltas(
+        agent.ApplyDeltas(
             deltas.Select(d => new UpdateDelta(Guid.Parse(d.ModuleId, CultureInfo.InvariantCulture), d.MetadataDelta, d.ILDelta, d.PdbDelta, d.UpdatedTypes)));
 
-        return s_reporter.GetAndClearLogEntries((ResponseLoggingLevel)loggingLevel)
+        return agent.Reporter.GetAndClearLogEntries((ResponseLoggingLevel)loggingLevel)
             .Select(log => new LogEntry() { Message = log.message, Severity = (int)log.severity }).ToArray();
     }
 
