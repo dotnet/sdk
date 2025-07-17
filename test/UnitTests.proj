@@ -105,7 +105,7 @@
         <DestinationFolder>eng/</DestinationFolder>
       </TestExecutionDirectoryFiles>
 
-      <FilesInHelixRoot Include="$(RepoRoot)artifacts\tmp\$(Configuration)\NuGet.config" />
+      <FilesInHelixRoot Include="$(TestLayoutDir)\NuGet.config" />
       <FilesInHelixRoot Condition="$([MSBuild]::IsOSPlatform(`Windows`))" Include="$(RepoRoot)build\RunTestsOnHelix.cmd" />
       <FilesInHelixRoot Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' " Include="$(RepoRoot)build\RunTestsOnHelix.sh" />
     </ItemGroup>
