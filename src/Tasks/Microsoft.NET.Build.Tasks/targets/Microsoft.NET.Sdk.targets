@@ -1316,19 +1316,15 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="ValidateExecutableReferences"
-          Condition="'$(ValidateExecutableReferencesMatchSelfContained)' != 'false'">
+          DependsOnTargets="_CalculateIsVSTestTestProject"
+          AfterTargets="_GetProjectReferenceTargetFrameworkProperties">
 
     <ValidateExecutableReferences
+      Condition="'$(ValidateExecutableReferencesMatchSelfContained)' != 'false'"
       SelfContained="$(SelfContained)"
       IsExecutable="$(_IsExecutable)"
       ReferencedProjects="@(_MSBuildProjectReferenceExistent)"
       UseAttributeForTargetFrameworkInfoPropertyNames="$(_UseAttributeForTargetFrameworkInfoPropertyNames)"/>
-  </Target>
-
-  <Target Name="ValidateExecutableReferencesCore"
-          DependsOnTargets="_CalculateIsVSTestTestProject;ValidateExecutableReferences"
-          AfterTargets="_GetProjectReferenceTargetFrameworkProperties">
-
   </Target>
 
   <!--
