@@ -78,9 +78,6 @@ internal static class PackCommandParser
         Hidden = false
     };
 
-
-    public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
-
     private static readonly Command Command = ConstructCommand();
 
     public static Command GetCommand()

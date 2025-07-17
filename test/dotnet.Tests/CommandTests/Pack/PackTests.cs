@@ -302,9 +302,9 @@ namespace Microsoft.DotNet.Pack.Tests
 
             result.Should().Pass();
 
-            var outputDir = new DirectoryInfo(Path.Combine(testInstance.Path, "Debug"));
+            var outputDir = new DirectoryInfo(testInstance.Path);
             outputDir.Should().Exist()
-                .And.HaveFile("CustomID.1.0.0.nupkg");
+                .And.HaveFile("PackNoCsproj.1.0.0.nupkg");
         }
 
         [Fact]
@@ -319,7 +319,7 @@ namespace Microsoft.DotNet.Pack.Tests
 
             result.Should().Pass();
 
-            var outputDir = new DirectoryInfo(Path.Combine(testInstance.Path, "Debug"));
+            var outputDir = new DirectoryInfo(testInstance.Path);
             outputDir.Should().Exist()
                 .And.HaveFile("PackNoCsproj.1.2.3.nupkg");
         }
@@ -352,7 +352,7 @@ namespace Microsoft.DotNet.Pack.Tests
                 .Execute(nuspecPath, "--configuration", "Release");
 
             result.Should().Pass();
-            var outputDir = new DirectoryInfo(Path.Combine(testInstance.Path, "Release"));
+            var outputDir = new DirectoryInfo(testInstance.Path);
             outputDir.Should().Exist()
                 .And.HaveFile("PackNoCsproj.1.0.0.nupkg");
         }

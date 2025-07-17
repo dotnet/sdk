@@ -71,7 +71,7 @@ public class PackCommand(
                 if (split.Length == 2)
                     packArgs.Properties[split[0]] = split[1];
             }
-        }a
+        }
 
         var version = parseResult.GetValue(PackCommandParser.VersionOption);
         if (!string.IsNullOrEmpty(version))
