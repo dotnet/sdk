@@ -17,7 +17,7 @@ public static class ActivityContext
             return null;
         }
         var contextToInject = currentActivity.Context;
-        if (contextToInject.TraceId == default || contextToInject.SpanId == default || contextToInject.TraceState is null)
+        if (contextToInject.TraceId == default && contextToInject.SpanId == default && contextToInject.TraceState is null)
         {
             return null;
         }
