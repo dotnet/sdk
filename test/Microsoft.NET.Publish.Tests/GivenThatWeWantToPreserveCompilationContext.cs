@@ -103,7 +103,7 @@ namespace Microsoft.NET.Publish.Tests
 
                 dependencyContext.CompilationOptions.Defines.Should().Contain(expectedDefines);
                 dependencyContext.CompilationOptions.LanguageVersion.Should().Be(langVersion);
-                dependencyContext.CompilationOptions.Platform.Should().Be("x86");
+                dependencyContext.CompilationOptions.Platform.Should().Be(appTargetFramework == "net46" ? "x86" : "AnyCPU");
                 dependencyContext.CompilationOptions.Optimize.Should().Be(false);
                 dependencyContext.CompilationOptions.KeyFile.Should().Be("");
                 dependencyContext.CompilationOptions.EmitEntryPoint.Should().Be(true);
