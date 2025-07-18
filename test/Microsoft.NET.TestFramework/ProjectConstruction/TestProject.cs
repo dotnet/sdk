@@ -34,7 +34,6 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
         /// </summary>
         public bool IsWinExe { get; set; }
 
-
         public string? ProjectSdk { get; set; }
 
         /// <summary>
