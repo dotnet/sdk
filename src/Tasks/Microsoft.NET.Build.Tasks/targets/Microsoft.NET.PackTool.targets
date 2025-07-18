@@ -147,7 +147,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     </PropertyGroup>
 
     <!-- inner-build tool packages get a RID suffix -->
-    <PropertyGroup Condition="'$(_HasRIDSpecificTools)' != '' And $(RuntimeIdentifier) != ''">
+    <PropertyGroup Condition="'$(_HasRIDSpecificTools)' != '' And '$(RuntimeIdentifier)' != ''">
       <PackageId>$(PackageId).$(RuntimeIdentifier)</PackageId>
     </PropertyGroup>
   </Target>
@@ -413,7 +413,10 @@ NOTE: This file is imported from the following contexts, so be aware when writin
 
     <ItemGroup>
         <_rids Include="$(_PackageRids)" />
-        <_RidSpecificToolPackageProject Include="$(MSBuildProjectFullPath)" AdditionalProperties="RuntimeIdentifier=%(_rids.Identity);" />
+        <_ridsWithoutAny Include="@(_rids)" Condition="%(Identity) != 'any'" />
+        <_ridsWithAny Include="@(_rids)" Condition="%(Identity) == 'any'" />
+        <_RidSpecificToolPackageProject Include="$(MSBuildProjectFullPath)" AdditionalProperties="RuntimeIdentifier=%(_ridsWithoutAny.Identity);" />
+        <_RidSpecificToolPackageProject Include="$(MSBuildProjectFullPath)" AdditionalProperties="UseAppHost=false;RuntimeIdentifier=any;" Condition="@(_ridsWithAny->Count()) &gt; 0" />
     </ItemGroup>
 
     <MSBuild BuildInParallel="true" Projects="@(_RidSpecificToolPackageProject)" Targets="Pack">
