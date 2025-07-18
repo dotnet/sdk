@@ -295,7 +295,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
       ApphostsForShimRuntimeIdentifiers="@(_ApphostsForShimRuntimeIdentifiers)"
       IntermediateAssembly="@(IntermediateAssembly->'%(FullPath)')"
       OutputType="$(OutputType)"
-      PackagedShimOutputDirectory="$([System.IO.Path]::Combine($(PackagedShimOutputRootDirectory), 'shims', $(_ToolPackShortTargetFrameworkName)))"
+      PackagedShimOutputDirectory="$([MSBuild]::NormalizeDirectory($(PackagedShimOutputRootDirectory), 'shims', $(_ToolPackShortTargetFrameworkName)))"
       PackageId="$(PackageId)"
       PackageVersion="$(PackageVersion)"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
@@ -324,7 +324,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
 
   <Target Name="_ComputeExpectedEmbeddedApphostPaths">
     <GetEmbeddedApphostPaths
-      PackagedShimOutputDirectory="$([System.IO.Path]::Combine($(PackagedShimOutputRootDirectory), 'shims', $(_ToolPackShortTargetFrameworkName)))"
+      PackagedShimOutputDirectory="$([MSBuild]::NormalizeDirectory($(PackagedShimOutputRootDirectory), 'shims', $(_ToolPackShortTargetFrameworkName)))"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
       ToolCommandName="$(ToolCommandName)">
 

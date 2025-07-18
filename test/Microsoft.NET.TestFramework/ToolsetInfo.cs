@@ -346,7 +346,7 @@ namespace Microsoft.NET.TestFramework
 
             if (repoRoot != null && repoArtifactsDir is not null)
             {
-                ret.CliHomePath = Path.Combine(repoArtifactsDir, "tmp", configuration);
+                ret.CliHomePath = Path.Combine(repoArtifactsDir, "tmp", configuration, "testing");
             }
 
             return ret;

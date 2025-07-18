@@ -125,8 +125,8 @@ Similarly, implicit build files like `Directory.Build.props` or `Directory.Packa
 > [!CAUTION]
 > Multi-file support is postponed for .NET 11.
 > In .NET 10, only the single file passed as the command-line argument to `dotnet run` is part of the compilation.
-> Specifically, the virtual project has properties `EnableDefaultCompileItems=false` and `EnableDefaultEmbeddedResourceItems=false`
-> (which can be customized via `#:property` directives), and a `Compile` item for the entry point file.
+> Specifically, the virtual project has property `EnableDefaultCompileItems=false`
+> (which can be customized via `#:property` directive), and a `Compile` item for the entry point file.
 > During [conversion](#grow-up), any `Content`, `None`, `Compile`, and `EmbeddedResource` items that do not have metadata `ExcludeFromFileBasedAppConversion=true`
 > and that are files inside the entry point file's directory tree are copied to the converted directory.
 
@@ -184,9 +184,12 @@ The subdirectory is created by the SDK CLI with permissions restricting access t
 Note that it is possible for multiple users to run the same file-based program, however each user's run uses different build artifacts since the base directory is unique per user.
 Apart from keeping the source directory clean, such artifact isolation also avoids clashes of build outputs that are not project-scoped, like `project.assets.json`, in the case of multiple entry-point files.
 
-Artifacts are cleaned periodically by a background task that is started by `dotnet run` and
-removes current user's `dotnet run` build outputs that haven't been used in some time.
+Artifacts are cleaned periodically (every 2 days) by a background task that is started by `dotnet run` and
+removes current user's `dotnet run` build outputs that haven't been used in 30 days.
 They are not cleaned immediately because they can be re-used on subsequent runs for better performance.
+The automatic cleanup can be disabled by environment variable `DOTNET_CLI_DISABLE_FILE_BASED_APP_ARTIFACTS_AUTOMATIC_CLEANUP=true`,
+but other parameters of the automatic cleanup are currently not configurable.
+The same cleanup can be performed manually via command `dotnet clean-file-based-app-artifacts`.
 
 ## Directives for project metadata
 
