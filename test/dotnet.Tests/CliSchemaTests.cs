@@ -219,7 +219,7 @@ public class CliSchemaTests : SdkTest
         "--automatic": {
           "hidden": true,
           "valueType": "System.Boolean",
-          "hasDefaultValue": false,
+          "hasDefaultValue": true,
           "arity": {
             "minimum": 0,
             "maximum": 1
