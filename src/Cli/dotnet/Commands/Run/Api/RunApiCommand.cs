@@ -93,6 +93,7 @@ internal abstract class RunApiInput
             {
                 CustomArtifactsPath = ArtifactsPath,
             };
+            buildCommand.MarkArtifactsFolderUsed();
 
             var runCommand = new RunCommand(
                 noBuild: false,

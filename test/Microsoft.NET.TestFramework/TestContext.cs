@@ -206,7 +206,7 @@ namespace Microsoft.NET.TestFramework
                 string? FindFolder2 = FindFolderInTree(Path.Combine("test", "TestAssets"), AppContext.BaseDirectory);
                 if (FindFolder1 is not null)
                 {
-                    testContext.TestExecutionDirectory = Path.Combine(FindFolder1, "tmp", repoConfiguration);
+                    testContext.TestExecutionDirectory = Path.Combine(FindFolder1, "tmp", repoConfiguration, "testing");
                 }
                 if (FindFolder2 is not null)
                 {
@@ -237,7 +237,7 @@ namespace Microsoft.NET.TestFramework
                 testContext.NuGetExePath = Path.Combine(artifactsDir, ".nuget", $"nuget{Constants.ExeSuffix}");
                 testContext.NuGetCachePath = Path.Combine(artifactsDir, ".nuget", "packages");
 
-                testContext.TestPackages = Path.Combine(artifactsDir, "tmp", repoConfiguration, "testpackages");
+                testContext.TestPackages = Path.Combine(artifactsDir, "tmp", repoConfiguration, "testing", "testpackages");
             }
             else if (runAsTool)
             {
