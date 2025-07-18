@@ -195,7 +195,7 @@
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "false",
+      "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.DotNet.HotReload.WebAssembly.Browser.wasm",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
@@ -4979,7 +4979,7 @@
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "false",
+      "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\Microsoft.DotNet.HotReload.WebAssembly.Browser.wasm.gz",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
