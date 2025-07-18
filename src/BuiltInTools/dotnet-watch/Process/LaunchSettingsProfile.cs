@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
+using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.DotNet.Cli.Commands.Run;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -22,12 +24,20 @@ namespace Microsoft.DotNet.Watch
         public bool LaunchBrowser { get; init; }
         public string? LaunchUrl { get; init; }
 
-        internal static LaunchSettingsProfile? ReadLaunchProfile(string projectDirectory, string? launchProfileName, IReporter reporter)
+        internal static LaunchSettingsProfile? ReadLaunchProfile(string projectPath, string? launchProfileName, IReporter reporter)
         {
-            var launchSettingsPath = Path.Combine(projectDirectory, "Properties", "launchSettings.json");
+            var projectDirectory = Path.GetDirectoryName(projectPath);
+            Debug.Assert(projectDirectory != null);
+
+            var launchSettingsPath = CommonRunHelpers.GetPropertiesLaunchSettingsPath(projectDirectory, "Properties");
             if (!File.Exists(launchSettingsPath))
             {
-                return null;
+                var projectNameWithoutExtension = Path.GetFileNameWithoutExtension(projectPath);
+                launchSettingsPath = CommonRunHelpers.GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
+                if (!File.Exists(launchSettingsPath))
+                {
+                    return null;
+                }
             }
 
             LaunchSettingsJson? launchSettings;
@@ -39,7 +49,7 @@ namespace Microsoft.DotNet.Watch
             }
             catch (Exception ex)
             {
-                reporter.Verbose($"Error reading launchSettings.json: {ex}.");
+                reporter.Verbose($"Error reading '{launchSettingsPath}': {ex}.");
                 return null;
             }
 
