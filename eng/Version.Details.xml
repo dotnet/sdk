@@ -120,74 +120,74 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="7.0.0-preview.1.51">
+    <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="7.0.0-preview.1.55">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>56433639fd0a330f5b8642a5b52608c235eeeba8</Sha>
+      <Sha>42e061de3a16d9f3bb3a23f472198006e9397b6e</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks" Version="7.0.0-preview.1.51">
+    <Dependency Name="NuGet.Build.Tasks" Version="7.0.0-preview.1.55">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>56433639fd0a330f5b8642a5b52608c235eeeba8</Sha>
+      <Sha>42e061de3a16d9f3bb3a23f472198006e9397b6e</Sha>
       <SourceBuildTarball RepoName="nuget-client" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks.Console" Version="7.0.0-preview.1.51">
+    <Dependency Name="NuGet.Build.Tasks.Console" Version="7.0.0-preview.1.55">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>56433639fd0a330f5b8642a5b52608c235eeeba8</Sha>
+      <Sha>42e061de3a16d9f3bb3a23f472198006e9397b6e</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks.Pack" Version="7.0.0-preview.1.51">
+    <Dependency Name="NuGet.Build.Tasks.Pack" Version="7.0.0-preview.1.55">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>56433639fd0a330f5b8642a5b52608c235eeeba8</Sha>
+      <Sha>42e061de3a16d9f3bb3a23f472198006e9397b6e</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Commands" Version="7.0.0-preview.1.51">
+    <Dependency Name="NuGet.Commands" Version="7.0.0-preview.1.55">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>56433639fd0a330f5b8642a5b52608c235eeeba8</Sha>
+      <Sha>42e061de3a16d9f3bb3a23f472198006e9397b6e</Sha>
     </Dependency>
-    <Dependency Name="NuGet.CommandLine.XPlat" Version="7.0.0-preview.1.51">
+    <Dependency Name="NuGet.CommandLine.XPlat" Version="7.0.0-preview.1.55">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>56433639fd0a330f5b8642a5b52608c235eeeba8</Sha>
+      <Sha>42e061de3a16d9f3bb3a23f472198006e9397b6e</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Common" Version="7.0.0-preview.1.51">
+    <Dependency Name="NuGet.Common" Version="7.0.0-preview.1.55">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>56433639fd0a330f5b8642a5b52608c235eeeba8</Sha>
+      <Sha>42e061de3a16d9f3bb3a23f472198006e9397b6e</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Configuration" Version="7.0.0-preview.1.51">
+    <Dependency Name="NuGet.Configuration" Version="7.0.0-preview.1.55">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>56433639fd0a330f5b8642a5b52608c235eeeba8</Sha>
+      <Sha>42e061de3a16d9f3bb3a23f472198006e9397b6e</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Credentials" Version="7.0.0-preview.1.51">
+    <Dependency Name="NuGet.Credentials" Version="7.0.0-preview.1.55">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>56433639fd0a330f5b8642a5b52608c235eeeba8</Sha>
+      <Sha>42e061de3a16d9f3bb3a23f472198006e9397b6e</Sha>
     </Dependency>
-    <Dependency Name="NuGet.DependencyResolver.Core" Version="7.0.0-preview.1.51">
+    <Dependency Name="NuGet.DependencyResolver.Core" Version="7.0.0-preview.1.55">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>56433639fd0a330f5b8642a5b52608c235eeeba8</Sha>
+      <Sha>42e061de3a16d9f3bb3a23f472198006e9397b6e</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Frameworks" Version="7.0.0-preview.1.51">
+    <Dependency Name="NuGet.Frameworks" Version="7.0.0-preview.1.55">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>56433639fd0a330f5b8642a5b52608c235eeeba8</Sha>
+      <Sha>42e061de3a16d9f3bb3a23f472198006e9397b6e</Sha>
     </Dependency>
-    <Dependency Name="NuGet.LibraryModel" Version="7.0.0-preview.1.51">
+    <Dependency Name="NuGet.LibraryModel" Version="7.0.0-preview.1.55">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>56433639fd0a330f5b8642a5b52608c235eeeba8</Sha>
+      <Sha>42e061de3a16d9f3bb3a23f472198006e9397b6e</Sha>
     </Dependency>
-    <Dependency Name="NuGet.ProjectModel" Version="7.0.0-preview.1.51">
+    <Dependency Name="NuGet.ProjectModel" Version="7.0.0-preview.1.55">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>56433639fd0a330f5b8642a5b52608c235eeeba8</Sha>
+      <Sha>42e061de3a16d9f3bb3a23f472198006e9397b6e</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Protocol" Version="7.0.0-preview.1.51">
+    <Dependency Name="NuGet.Protocol" Version="7.0.0-preview.1.55">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>56433639fd0a330f5b8642a5b52608c235eeeba8</Sha>
+      <Sha>42e061de3a16d9f3bb3a23f472198006e9397b6e</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Packaging" Version="7.0.0-preview.1.51">
+    <Dependency Name="NuGet.Packaging" Version="7.0.0-preview.1.55">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>56433639fd0a330f5b8642a5b52608c235eeeba8</Sha>
+      <Sha>42e061de3a16d9f3bb3a23f472198006e9397b6e</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Versioning" Version="7.0.0-preview.1.51">
+    <Dependency Name="NuGet.Versioning" Version="7.0.0-preview.1.55">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>56433639fd0a330f5b8642a5b52608c235eeeba8</Sha>
+      <Sha>42e061de3a16d9f3bb3a23f472198006e9397b6e</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Localization" Version="7.0.0-preview.1.51">
+    <Dependency Name="NuGet.Localization" Version="7.0.0-preview.1.55">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>56433639fd0a330f5b8642a5b52608c235eeeba8</Sha>
+      <Sha>42e061de3a16d9f3bb3a23f472198006e9397b6e</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Test.Sdk" Version="18.0.0-preview-25366-05">
       <Uri>https://github.com/microsoft/vstest</Uri>
