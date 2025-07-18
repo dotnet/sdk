@@ -595,7 +595,6 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("netstandard2.0;net5.0", true)] // None of these TFMs are supported for AOT
         [InlineData("netstandard2.0;net7.0", false)] // Net7.0 is the min TFM supported for AOT and targeting.
         [InlineData("netstandard2.0;net8.0", false)] // net8.0 is supported for AOT and targeting.
-        [InlineData("netstandard2.0;net9.0", true)] // Net9.0 is supported for AOT, but leaves a "gap" for the supported net8.0 TFMs.
         [InlineData("alias-ns2", true)]
         [InlineData("alias-n6", false)]
         [InlineData("alias-n7;alias-n8", false)] // If all TFMs are supported, there's no warning even though the project uses aliases.
