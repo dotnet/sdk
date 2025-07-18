@@ -259,6 +259,46 @@ Aranan yollar: '{1}', '{2}'.</target>
         <target state="translated">Bir .NET projesinin derleme çıktılarını temizler.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsCommandDescription">
+        <source>Removes artifacts created for file-based apps</source>
+        <target state="new">Removes artifacts created for file-based apps</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsDays">
+        <source>How many days an artifact folder needs to be unused in order to be removed</source>
+        <target state="new">How many days an artifact folder needs to be unused in order to be removed</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsDirectoryNotFound">
+        <source>Warning: Artifacts directory does not exist: {0}</source>
+        <target state="new">Warning: Artifacts directory does not exist: {0}</target>
+        <note>{0} is directory path.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsDryRun">
+        <source>Determines changes without actually modifying the file system</source>
+        <target state="new">Determines changes without actually modifying the file system</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsErrorRemovingFolder">
+        <source>Error removing folder '{0}': {1}</source>
+        <target state="new">Error removing folder '{0}': {1}</target>
+        <note>{0} is folder path. {1} is inner error message.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsScanning">
+        <source>Scanning for folders to remove in: {0}</source>
+        <target state="new">Scanning for folders to remove in: {0}</target>
+        <note>{0} is directory path.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsTotalFoldersRemoved">
+        <source>Total folders removed: {0}</source>
+        <target state="new">Total folders removed: {0}</target>
+        <note>{0} is count.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsWouldRemoveFolders">
+        <source>Would remove folders: {0}</source>
+        <target state="new">Would remove folders: {0}</target>
+        <note>{0} is count.</note>
+      </trans-unit>
       <trans-unit id="CleanFrameworkOptionDescription">
         <source>The target framework to clean for. The target framework must also be specified in the project file.</source>
         <target state="translated">Temizlenecek hedef çerçeve. Hedef çerçevenin proje dosyasında da belirtilmesi gerekir.</target>
@@ -2289,6 +2329,46 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <source>Convert a file-based program to a project-based program.</source>
         <target state="translated">Dosya tabanlı bir programı proje tabanlı bir programa dönüştür.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertAskForOutputDirectory">
+        <source>Specify the output directory ({0}):</source>
+        <target state="new">Specify the output directory ({0}):</target>
+        <note>{0} is the default value</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertDryRun">
+        <source>Determines changes without actually modifying the file system</source>
+        <target state="new">Determines changes without actually modifying the file system</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldConvertFile">
+        <source>Dry run: would remove file-level directives from file: {0}</source>
+        <target state="new">Dry run: would remove file-level directives from file: {0}</target>
+        <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldCopyFile">
+        <source>Dry run: would copy file '{0}' to '{1}'.</source>
+        <target state="new">Dry run: would copy file '{0}' to '{1}'.</target>
+        <note>{0} and {1} are file full paths.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldCreateDirectory">
+        <source>Dry run: would create directory: {0}</source>
+        <target state="new">Dry run: would create directory: {0}</target>
+        <note>{0} is the directory full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldCreateFile">
+        <source>Dry run: would create file: {0}</source>
+        <target state="new">Dry run: would create file: {0}</target>
+        <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldDeleteFile">
+        <source>Dry run: would delete file: {0}</source>
+        <target state="new">Dry run: would delete file: {0}</target>
+        <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldMoveFile">
+        <source>Dry run: would move file '{0}' to '{1}'.</source>
+        <target state="new">Dry run: would move file '{0}' to '{1}'.</target>
+        <note>{0} and {1} are file full paths.</note>
       </trans-unit>
       <trans-unit id="ProjectManifest">
         <source>PROJECT_MANIFEST</source>

@@ -125,7 +125,7 @@ _testhost() {
                         '--disable-build-servers[Force the command to ignore any persistent build servers.]' \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
-                        '*::PROJECT | SOLUTION | FILE -- The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.: ' \
+                        '::PROJECT | SOLUTION | FILE -- The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.: ' \
                         && ret=0
                         case $state in
                             (dotnet_dynamic_complete)
@@ -135,6 +135,15 @@ _testhost() {
                                     completions+=(${(q)line})
                                 done
                                 _describe 'completions' $completions && ret=0
+                            ;;
+                        esac
+                        case $state in
+                            (clean)
+                                words=($line[2] "${words[@]}")
+                                (( CURRENT += 1 ))
+                                curcontext="${curcontext%:*:*}:testhost-clean-command-$line[2]:"
+                                case $line[2] in
+                                esac
                             ;;
                         esac
                     ;;
@@ -684,6 +693,8 @@ _testhost() {
                                             '--output=[Location to place the generated output.]: :_files' \
                                             '-o=[Location to place the generated output.]: :_files' \
                                             '--force[Force conversion even if there are malformed directives.]' \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
+                                            '--dry-run[Determines changes without actually modifying the file system]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             ':file -- Path to the file-based program.: ' \
