@@ -237,7 +237,10 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        public async ValueTask<(ImmutableDictionary<ProjectId, string> projectsToRebuild, ImmutableArray<RunningProject> terminatedProjects)> HandleManagedCodeChangesAsync(
+        public async ValueTask<(
+                ImmutableArray<string> projectsToRebuild,
+                ImmutableArray<string> projectsToRedeploy,
+                ImmutableArray<RunningProject> terminatedProjects)> HandleManagedCodeChangesAsync(
             bool autoRestart,
             Func<IEnumerable<string>, CancellationToken, Task<bool>> restartPrompt,
             CancellationToken cancellationToken)
@@ -263,7 +266,7 @@ namespace Microsoft.DotNet.Watch
                 // changes and await the next file change.
 
                 // Note: CommitUpdate/DiscardUpdate is not expected to be called.
-                return ([], []);
+                return ([], [], []);
             }
 
             var projectsToPromptForRestart =
@@ -279,7 +282,7 @@ namespace Microsoft.DotNet.Watch
                 _reporter.Output("Hot reload suspended. To continue hot reload, press \"Ctrl + R\".", emoji: "🔥");
                 await Task.Delay(-1, cancellationToken);
 
-                return ([], []);
+                return ([], [], []);
             }
 
             if (!updates.ProjectUpdates.IsEmpty)
@@ -325,7 +328,10 @@ namespace Microsoft.DotNet.Watch
 
             DiscardPreviousUpdates(updates.ProjectsToRebuild);
 
-            var projectsToRebuild = updates.ProjectsToRebuild.ToImmutableDictionary(keySelector: id => id, elementSelector: id => currentSolution.GetProject(id)!.FilePath!);
+            var projectsToRebuild = updates.ProjectsToRebuild.Select(id => currentSolution.GetProject(id)!.FilePath!).ToImmutableArray();
+            // TODO: needs Roslyn update
+            // var projectsToRedeploy = updates.ProjectsToRedeploy.Select(id => currentSolution.GetProject(id)!.FilePath!).ToImmutableArray();
+            var projectsToRedeploy = ImmutableArray<string>.Empty;
 
             // Terminate all tracked processes that need to be restarted,
             // except for the root process, which will terminate later on.
@@ -333,7 +339,7 @@ namespace Microsoft.DotNet.Watch
                 ? []
                 : await TerminateNonRootProcessesAsync(updates.ProjectsToRestart.Select(e => currentSolution.GetProject(e.Key)!.FilePath!), cancellationToken);
 
-            return (projectsToRebuild, terminatedProjects);
+            return (projectsToRebuild, projectsToRedeploy, terminatedProjects);
         }
 
         private static RunningProject? GetCorrespondingRunningProject(Project project, ImmutableDictionary<string, ImmutableArray<RunningProject>> runningProjects)
