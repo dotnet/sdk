@@ -23,6 +23,12 @@ internal static class RunCommandParser
         HelpName = CliCommandStrings.CommandOptionProjectHelpName
     };
 
+    public static readonly Option<string> FileOption = new("--file")
+    {
+        Description = CliCommandStrings.CommandOptionFileDescription,
+        HelpName = CliCommandStrings.CommandOptionFileHelpName,
+    };
+
     public static readonly Option<ReadOnlyDictionary<string, string>?> PropertyOption = CommonOptions.PropertiesOption;
 
     public static readonly Option<string> LaunchProfileOption = new("--launch-profile", "-lp")
@@ -85,6 +91,7 @@ internal static class RunCommandParser
         command.Options.Add(FrameworkOption);
         command.Options.Add(RuntimeOption);
         command.Options.Add(ProjectOption);
+        command.Options.Add(FileOption);
         command.Options.Add(PropertyOption);
         command.Options.Add(LaunchProfileOption);
         command.Options.Add(NoLaunchProfileOption);
