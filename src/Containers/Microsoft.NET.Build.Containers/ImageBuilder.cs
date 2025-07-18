@@ -9,6 +9,13 @@ using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
 
+internal enum LayerKind
+{
+    BaseImage,
+    External,
+    App
+}
+
 /// <summary>
 /// The class builds new image based on the base image.
 /// </summary>
@@ -21,6 +28,7 @@ internal sealed class ImageBuilder
     private readonly ManifestV2 _manifest;
     private readonly ImageConfig _baseImageConfig;
     private readonly ILogger _logger;
+    private readonly Dictionary<string, LayerKind> _layerKinds = new();
 
     /// <summary>
     /// This is a parser for ASPNETCORE_URLS based on https://github.com/dotnet/aspnetcore/blob/main/src/Http/Http/src/BindingAddress.cs
@@ -42,6 +50,10 @@ internal sealed class ImageBuilder
         ManifestMediaType = manifestMediaType;
         _baseImageConfig = baseImageConfig;
         _logger = logger;
+        foreach (var l in _manifest.Layers)
+        {
+            _layerKinds[l.digest] = LayerKind.BaseImage;
+        }
     }
 
     /// <summary>
@@ -94,16 +106,18 @@ internal sealed class ImageBuilder
             Manifest = JsonSerializer.SerializeToNode(newManifest)?.ToJsonString() ?? "",
             ManifestDigest = newManifest.GetDigest(),
             ManifestMediaType = ManifestMediaType,
-            Layers = _manifest.Layers
+            Layers = _manifest.Layers.Select(l => (l, _layerKinds[l.digest])).ToList(),
         };
     }
 
     /// <summary>
     /// Adds a <see cref="Layer"/> to a base image.
     /// </summary>
-    internal void AddLayer(Layer l)
+    internal void AddLayer(Layer l, LayerKind kind = LayerKind.External)
     {
         _manifest.Layers.Add(new(l.Descriptor.MediaType, l.Descriptor.Size, l.Descriptor.Digest, l.Descriptor.Urls));
+        _layerKinds.Add(l.Descriptor.Digest, kind);
+        if (l.Descriptor.UncompressedDigest is string d) _layerKinds.Add(d, kind);
         _baseImageConfig.AddLayer(l);
     }
 
