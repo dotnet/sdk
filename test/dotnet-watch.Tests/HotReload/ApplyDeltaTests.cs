@@ -689,7 +689,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.Start(testAsset, [], testFlags: TestFlags.ReadKeyFromStdin);
 
             await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges);
-            await App.WaitUntilOutputContains(new Regex(@"dotnet watch 🕵️ \[.*\] Windows Ctrl\+C handling enabled."));
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                await App.WaitUntilOutputContains(new Regex(@"dotnet watch 🕵️ \[.*\] Windows Ctrl\+C handling enabled."));
+            }
+
             await App.WaitUntilOutputContains("Started");
 
             App.SendControlC();
