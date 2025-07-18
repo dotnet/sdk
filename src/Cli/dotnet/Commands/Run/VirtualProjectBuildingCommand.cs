@@ -744,6 +744,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             writer.WriteLine("""
 
                   <PropertyGroup>
+                    <FileBasedProgram>true</FileBasedProgram>
                     <Features>$(Features);FileBasedProgram</Features>
                   </PropertyGroup>
                 """);

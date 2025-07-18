@@ -2190,4 +2190,73 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Pass()
             .And.HaveStdOut($"EntryPointFilePath: {filePath}");
     }
+
+    /// <summary>
+    /// Test that file-based programs can be executed successfully.
+    /// This test validates that the FileBasedProgram property implementation doesn't break existing functionality.
+    /// </summary>
+    [Fact]
+    public void FileBasedProgram_BasicFunctionality()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("Hello from Program");
+    }
+
+    /// <summary>
+    /// Test that the WriteProjectFile method generates the correct FileBasedProgram property for virtual projects.
+    /// </summary>
+    [Fact]
+    public void WriteProjectFile_FileBasedProgram_PropertyAddedToVirtualProject()
+    {
+        using var writer = new System.IO.StringWriter();
+        
+        // Generate a virtual project (file-based)
+        VirtualProjectBuildingCommand.WriteProjectFile(
+            writer,
+            directives: [],
+            isVirtualProject: true,
+            targetFilePath: "/test/Program.cs",
+            artifactsPath: "/test/artifacts",
+            includeRuntimeConfigInformation: true);
+
+        string projectContent = writer.ToString();
+
+        // Verify that FileBasedProgram property is set to true
+        projectContent.Should().Contain("<FileBasedProgram>true</FileBasedProgram>");
+        
+        // Verify that Features still contains FileBasedProgram for backward compatibility
+        projectContent.Should().Contain("<Features>$(Features);FileBasedProgram</Features>");
+    }
+
+    /// <summary>
+    /// Test that the WriteProjectFile method does NOT add the FileBasedProgram property for regular projects.
+    /// </summary>
+    [Fact]
+    public void WriteProjectFile_FileBasedProgram_PropertyNotAddedToRegularProject()
+    {
+        using var writer = new System.IO.StringWriter();
+        
+        // Generate a regular project (not virtual)
+        VirtualProjectBuildingCommand.WriteProjectFile(
+            writer,
+            directives: [],
+            isVirtualProject: false,
+            targetFilePath: null,
+            artifactsPath: null,
+            includeRuntimeConfigInformation: true);
+
+        string projectContent = writer.ToString();
+
+        // Verify that FileBasedProgram property is NOT set
+        projectContent.Should().NotContain("<FileBasedProgram>true</FileBasedProgram>");
+        
+        // Verify that Features does not contain FileBasedProgram
+        projectContent.Should().NotContain("<Features>$(Features);FileBasedProgram</Features>");
+    }
 }

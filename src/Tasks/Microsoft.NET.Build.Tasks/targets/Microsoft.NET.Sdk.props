@@ -40,6 +40,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ErrorReport Condition=" '$(ErrorReport)' == '' ">prompt</ErrorReport>
     <AssemblyName Condition=" '$(AssemblyName)' == '' ">$(MSBuildProjectName)</AssemblyName>
     <Deterministic Condition=" '$(Deterministic)' == '' ">true</Deterministic>
+    <FileBasedProgram Condition=" '$(FileBasedProgram)' == '' ">false</FileBasedProgram>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(RootNamespace)' == '' ">
