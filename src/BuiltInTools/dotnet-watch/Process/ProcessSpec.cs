@@ -15,6 +15,11 @@ namespace Microsoft.DotNet.Watch
         public ProcessExitAction? OnExit { get; set; }
         public CancellationToken CancelOutputCapture { get; set; }
 
+        /// <summary>
+        /// True if the process is a user application, false if it is a helper process (e.g. dotnet build).</param>
+        /// </summary>
+        public bool IsUserApplication { get; set; }
+
         public string? ShortDisplayName()
             => Path.GetFileNameWithoutExtension(Executable);
 

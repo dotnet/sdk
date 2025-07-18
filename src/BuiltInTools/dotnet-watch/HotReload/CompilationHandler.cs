@@ -130,7 +130,7 @@ namespace Microsoft.DotNet.Watch
             };
 
             var launchResult = new ProcessLaunchResult();
-            var runningProcess = _processRunner.RunAsync(processSpec, processReporter, isUserApplication: true, launchResult, processTerminationSource.Token);
+            var runningProcess = _processRunner.RunAsync(processSpec, processReporter, launchResult, processTerminationSource.Token);
             if (launchResult.ProcessId == null)
             {
                 // error already reported
