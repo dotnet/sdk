@@ -178,7 +178,9 @@ have the shared `.cs` files source-included via `<Compile Include="../Shared/**/
 
 ## Build outputs
 
-Build outputs are placed under a subdirectory whose name is hashed file path of the entry point
+If [artifacts output layout][artifacts-output] is enabled, build outputs of the file-based app are placed there
+(except caching markers which are placed in the global temp directory described next).
+Otherwise, build outputs are placed under a subdirectory whose name is hashed file path of the entry point
 inside a temp or app data directory which should be owned by and unique to the current user per [runtime guidelines][temp-guidelines].
 The subdirectory is created by the SDK CLI with permissions restricting access to it to the current user (`0700`) and the run fails if that is not possible.
 Note that it is possible for multiple users to run the same file-based program, however each user's run uses different build artifacts since the base directory is unique per user.

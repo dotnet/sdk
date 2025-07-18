@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests;
 
 public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 {
-    private static readonly string s_program = """
+    private static readonly string s_program = /* lang=C#-Test */ """
         if (args.Length > 0)
         {
             Console.WriteLine("echo args:" + string.Join(";", args));
@@ -27,7 +27,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         #endif
         """;
 
-    private static readonly string s_programDependingOnUtil = """
+    private static readonly string s_programDependingOnUtil = /* lang=C#-Test */ """
         if (args.Length > 0)
         {
             Console.WriteLine("echo args:" + string.Join(";", args));
@@ -35,7 +35,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Console.WriteLine("Hello, " + Util.GetMessage());
         """;
 
-    private static readonly string s_util = """
+    private static readonly string s_util = /* lang=C#-Test */ """
         static class Util
         {
             public static string GetMessage()
@@ -43,6 +43,29 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 return "String from Util";
             }
         }
+        """;
+
+    private static readonly string s_programReadingEmbeddedResource = /* lang=C#-Test */ """
+        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+        var resourceName = assembly.GetManifestResourceNames().SingleOrDefault();
+
+        if (resourceName is null)
+        {
+            Console.WriteLine("Resource not found");
+            return;
+        }
+
+        using var stream = assembly.GetManifestResourceStream(resourceName)!;
+        using var reader = new System.Resources.ResourceReader(stream);
+        Console.WriteLine(reader.Cast<System.Collections.DictionaryEntry>().Single());
+        """;
+
+    private static readonly string s_resx = """
+        <root>
+          <data name="MyString">
+            <value>TestValue</value>
+          </data>
+        </root>
         """;
 
     private static readonly string s_consoleProject = $"""
@@ -950,26 +973,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void EmbeddedResource()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        string code = """
-            using var stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("Program.Resources.resources");
-
-            if (stream is null)
-            {
-                Console.WriteLine("Resource not found");
-                return;
-            }
-
-            using var reader = new System.Resources.ResourceReader(stream);
-            Console.WriteLine(reader.Cast<System.Collections.DictionaryEntry>().Single());
-            """;
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), code);
-        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), """
-            <root>
-              <data name="MyString">
-                <value>TestValue</value>
-              </data>
-            </root>
-            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programReadingEmbeddedResource);
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
 
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
@@ -982,10 +987,39 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         // This behavior can be overridden.
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
             #:property EnableDefaultEmbeddedResourceItems=false
-            {code}
+            {s_programReadingEmbeddedResource}
             """);
 
         new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                Resource not found
+                """);
+    }
+
+    /// <summary>
+    /// <c>.resx</c> files in <c>./artifacts/</c> should not be included.
+    /// Part of <see href="https://github.com/dotnet/sdk/issues/49826"/>.
+    /// </summary>
+    [Fact]
+    public void EmbeddedResource_InRepoArtifacts()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programReadingEmbeddedResource);
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <UseArtifactsOutput>true</UseArtifactsOutput>
+              </PropertyGroup>
+            </Project>
+            """);
+        var dir = Path.Join(testInstance.Path, "artifacts", "obj", "AnotherApp");
+        Directory.CreateDirectory(dir);
+        File.WriteAllText(Path.Join(dir, "Resources.resx"), s_resx);
+
+        new DotnetCommand(Log, "run", "Program.cs", "-bl")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
@@ -1406,6 +1440,58 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         // Build shouldn't have changed the permissions.
         new DirectoryInfo(artifactsDir).UnixFileMode
             .Should().Be(actualMode, artifactsDir);
+    }
+
+    [Fact]
+    public void ArtifactsPath()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, s_program);
+
+        var globalArtifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(globalArtifactsDir)) Directory.Delete(globalArtifactsDir, recursive: true);
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "artifacts")).Should().NotExist();
+        new DirectoryInfo(Path.Join(testInstance.Path, "bin")).Should().NotExist();
+
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(globalArtifactsDir).EnumerateDirectories().Should().NotBeEmpty();
+        new DirectoryInfo(Path.Join(testInstance.Path, "artifacts")).Should().NotExist();
+        new DirectoryInfo(Path.Join(testInstance.Path, "bin")).Should().NotExist();
+    }
+
+    /// <summary>
+    /// When the surrounding repo uses artifacts layout, file-based apps place their artifacts there.
+    /// </summary>
+    [Fact]
+    public void ArtifactsPath_ReusedFromRepo()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, s_program);
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <UseArtifactsOutput>true</UseArtifactsOutput>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "artifacts")).Should().NotExist();
+
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // We still put our marker files into the global artifacts directory, but it should not contain any subdirectories.
+        new DirectoryInfo(VirtualProjectBuildingCommand.GetArtifactsPath(programPath)).EnumerateDirectories().Should().BeEmpty();
+        new FileInfo(Path.Join(testInstance.Path, "artifacts", "bin", "Program", "debug", "Program.dll")).Should().Exist();
     }
 
     [Fact]
@@ -1843,8 +1929,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                     <Project>
 
                       <PropertyGroup>
-                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                       </PropertyGroup>
 
@@ -1922,8 +2007,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                     <Project>
 
                       <PropertyGroup>
-                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                       </PropertyGroup>
 
@@ -1994,8 +2078,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                     <Project>
 
                       <PropertyGroup>
-                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                       </PropertyGroup>
 
