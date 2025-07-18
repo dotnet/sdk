@@ -631,12 +631,19 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         var packageDirectives = directives.OfType<CSharpDirective.Package>();
         var projectDirectives = directives.OfType<CSharpDirective.Project>();
 
-        string sdkValue = "Microsoft.NET.Sdk";
+        string firstSdkName;
+        string? firstSdkVersion;
 
         if (sdkDirectives.FirstOrDefault() is { } firstSdk)
         {
-            sdkValue = firstSdk.ToSlashDelimitedString();
+            firstSdkName = firstSdk.Name;
+            firstSdkVersion = firstSdk.Version;
             processedDirectives++;
+        }
+        else
+        {
+            firstSdkName = "Microsoft.NET.Sdk";
+            firstSdkVersion = null;
         }
 
         if (isVirtualProject)
@@ -660,13 +667,28 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                   </ItemGroup>
 
                   <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
-                  <Import Project="Sdk.props" Sdk="{EscapeValue(sdkValue)}" />
                 """);
+
+            if (firstSdkVersion is null)
+            {
+                writer.WriteLine($"""
+                      <Import Project="Sdk.props" Sdk="{EscapeValue(firstSdkName)}" />
+                    """);
+            }
+            else
+            {
+                writer.WriteLine($"""
+                      <Import Project="Sdk.props" Sdk="{EscapeValue(firstSdkName)}" Version="{EscapeValue(firstSdkVersion)}" />
+                    """);
+            }
         }
         else
         {
+            string slashDelimited = firstSdkVersion is null
+                ? firstSdkName
+                : $"{firstSdkName}/{firstSdkVersion}";
             writer.WriteLine($"""
-                <Project Sdk="{EscapeValue(sdkValue)}">
+                <Project Sdk="{EscapeValue(slashDelimited)}">
 
                 """);
         }
@@ -829,7 +851,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             if (!sdkDirectives.Any())
             {
-                Debug.Assert(sdkValue == "Microsoft.NET.Sdk");
+                Debug.Assert(firstSdkName == "Microsoft.NET.Sdk" && firstSdkVersion == null);
                 writer.WriteLine("""
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
                     """);
@@ -1188,11 +1210,6 @@ internal abstract class CSharpDirective
                 Name = sdkName,
                 Version = sdkVersion,
             };
-        }
-
-        public string ToSlashDelimitedString()
-        {
-            return Version is null ? Name : $"{Name}/{Version}";
         }
     }
 

@@ -1555,6 +1555,21 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Pass();
     }
 
+    [Fact] // https://github.com/dotnet/sdk/issues/49797
+    public void SdkReference_VersionedSdkFirst()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:sdk Microsoft.NET.Sdk@9.0.0
+            Console.WriteLine();
+            """);
+
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+    }
+
     [Theory]
     [InlineData("../Lib/Lib.csproj")]
     [InlineData("../Lib")]
