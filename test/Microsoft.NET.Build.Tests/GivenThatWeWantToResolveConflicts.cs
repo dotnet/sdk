@@ -282,6 +282,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = false
             };
             referencedProject.PackageReferences.Add(new TestPackageReference("System.Text.Json", "8.0.0"));
+            referencedProject.AdditionalProperties["RestoreEnablePackagePruning"] = prunePackages.ToString();
 
             var testProject = new TestProject()
             {
