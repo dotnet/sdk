@@ -199,7 +199,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdErrContaining("Required command was not provided.");
+                .HaveStdErrContaining("'--infoz'"); // we should complain about the bad option not being recognized
         }
 
         [Theory]
