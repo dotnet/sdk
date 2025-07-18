@@ -125,8 +125,8 @@ Similarly, implicit build files like `Directory.Build.props` or `Directory.Packa
 > [!CAUTION]
 > Multi-file support is postponed for .NET 11.
 > In .NET 10, only the single file passed as the command-line argument to `dotnet run` is part of the compilation.
-> Specifically, the virtual project has properties `EnableDefaultCompileItems=false` and `EnableDefaultEmbeddedResourceItems=false`
-> (which can be customized via `#:property` directives), and a `Compile` item for the entry point file.
+> Specifically, the virtual project has property `EnableDefaultCompileItems=false`
+> (which can be customized via `#:property` directive), and a `Compile` item for the entry point file.
 > During [conversion](#grow-up), any `Content`, `None`, `Compile`, and `EmbeddedResource` items that do not have metadata `ExcludeFromFileBasedAppConversion=true`
 > and that are files inside the entry point file's directory tree are copied to the converted directory.
 
