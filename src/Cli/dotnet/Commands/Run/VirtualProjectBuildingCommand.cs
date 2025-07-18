@@ -191,29 +191,26 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             // Set up MSBuild.
             ReadOnlySpan<ILogger> binaryLoggers = binaryLogger is null ? [] : [binaryLogger];
+            IEnumerable<ILogger> loggers = [.. binaryLoggers, consoleLogger];
             var projectCollection = new ProjectCollection(
                 MSBuildArgs.GlobalProperties,
-                [.. binaryLoggers, consoleLogger],
+                loggers,
                 ToolsetDefinitionLocations.Default);
             var parameters = new BuildParameters(projectCollection)
             {
-                Loggers = projectCollection.Loggers,
+                Loggers = loggers,
                 LogTaskInputs = binaryLoggers.Length != 0,
             };
-
-            // Projects need to be created before BeginBuild is called, otherwise binlog doesn't contain evaluation data.
-            var restoreProject = NoRestore ? null : CreateProjectInstance(projectCollection, addGlobalProperties: AddRestoreGlobalProperties(MSBuildArgs.RestoreGlobalProperties));
-            var buildProject = NoBuild ? null : CreateProjectInstance(projectCollection);
 
             BuildManager.DefaultBuildManager.BeginBuild(parameters);
 
             // Do a restore first (equivalent to MSBuild's "implicit restore", i.e., `/restore`).
             // See https://github.com/dotnet/msbuild/blob/a1c2e7402ef0abe36bf493e395b04dd2cb1b3540/src/MSBuild/XMake.cs#L1838
             // and https://github.com/dotnet/msbuild/issues/11519.
-            if (restoreProject != null)
+            if (!NoRestore)
             {
                 var restoreRequest = new BuildRequestData(
-                    restoreProject,
+                    CreateProjectInstance(projectCollection, addGlobalProperties: AddRestoreGlobalProperties(MSBuildArgs.RestoreGlobalProperties)),
                     targetsToBuild: ["Restore"],
                     hostServices: null,
                     BuildRequestDataFlags.ClearCachesAfterBuild | BuildRequestDataFlags.SkipNonexistentTargets | BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports | BuildRequestDataFlags.FailOnUnresolvedSdk);
@@ -226,10 +223,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
 
             // Then do a build.
-            if (buildProject != null)
+            if (!NoBuild)
             {
                 var buildRequest = new BuildRequestData(
-                    buildProject,
+                    CreateProjectInstance(projectCollection),
                     targetsToBuild: MSBuildArgs.RequestedTargets ?? ["Build"]);
 
                 var buildResult = BuildManager.DefaultBuildManager.BuildRequest(buildRequest);
@@ -258,7 +255,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 Environment.SetEnvironmentVariable(key, value);
             }
 
-            binaryLogger?.Shutdown();
+            binaryLogger?.ReallyShutdown();
             consoleLogger.Shutdown();
         }
 
@@ -286,7 +283,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             };
         }
 
-        static ILogger? GetBinaryLogger(IReadOnlyList<string>? args)
+        static FacadeLogger? GetBinaryLogger(IReadOnlyList<string>? args)
         {
             if (args is null) return null;
             // Like in MSBuild, only the last binary logger is used.
@@ -295,12 +292,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 var arg = args[i];
                 if (LoggerUtility.IsBinLogArgument(arg))
                 {
-                    return new BinaryLogger
+                    var logger = new BinaryLogger
                     {
                         Parameters = arg.IndexOf(':') is >= 0 and var index
                             ? arg[(index + 1)..]
                             : "msbuild.binlog",
                     };
+                    return LoggerUtility.CreateFacadeLogger([logger]);
                 }
             }
 
