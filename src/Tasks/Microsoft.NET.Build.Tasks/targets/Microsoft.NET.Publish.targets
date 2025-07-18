@@ -1289,7 +1289,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <GetEmbeddedApphostPaths
-      PackagedShimOutputDirectory="$([System.IO.Path]::Combine($(PackagedShimOutputRootDirectory), 'shims', $(TargetFramework)))"
+      PackagedShimOutputDirectory="$([MSBuild]::NormalizePath($(PackagedShimOutputRootDirectory), 'shims', $(TargetFramework)))"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
       ToolCommandName="$(ToolCommandName)"
       >
