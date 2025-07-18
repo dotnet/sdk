@@ -63,6 +63,18 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         "MSBuild.rsp",
     ];
 
+    /// <remarks>
+    /// Kept in sync with the default <c>dotnet new console</c> project file (enforced by <c>DotnetProjectAddTests.SameAsTemplate</c>).
+    /// </remarks>
+    private static readonly FrozenDictionary<string, string> s_defaultProperties = FrozenDictionary.Create<string, string>(StringComparer.OrdinalIgnoreCase,
+    [
+        new("OutputType", "Exe"),
+        new("TargetFramework", "net10.0"),
+        new("ImplicitUsings", "enable"),
+        new("Nullable", "enable"),
+        new("PublishAot", "true"),
+    ]);
+
     internal static readonly string TargetOverrides = """
           <!--
             Override targets which don't work with project files that are not present on disk.
@@ -698,33 +710,37 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             writer.WriteLine();
         }
 
-        // Kept in sync with the default `dotnet new console` project file (enforced by `DotnetProjectAddTests.SameAsTemplate`).
-        writer.WriteLine($"""
-              <PropertyGroup>
-                <OutputType>Exe</OutputType>
-                <TargetFramework>net10.0</TargetFramework>
-                <ImplicitUsings>enable</ImplicitUsings>
-                <Nullable>enable</Nullable>
-                <PublishAot>true</PublishAot>
-              </PropertyGroup>
-            """);
+        // Write default properties unless they are overridden by custom directives.
+        var propertyDirectiveNames = propertyDirectives.Select(d => d.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (!s_defaultProperties.Keys.All(propertyDirectiveNames.Contains))
+        {
+            writer.WriteLine("  <PropertyGroup>");
+            foreach (var (name, value) in s_defaultProperties)
+            {
+                if (!propertyDirectiveNames.Contains(name))
+                {
+                    writer.WriteLine($"""
+                            <{name}>{EscapeValue(value)}</{name}>
+                        """);
+                }
+            }
+            writer.WriteLine("  </PropertyGroup>");
+            writer.WriteLine();
+        }
 
         if (isVirtualProject)
         {
             writer.WriteLine("""
-
                   <PropertyGroup>
                     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                   </PropertyGroup>
+
                 """);
         }
 
         if (propertyDirectives.Any())
         {
-            writer.WriteLine("""
-
-                  <PropertyGroup>
-                """);
+            writer.WriteLine("  <PropertyGroup>");
 
             foreach (var property in propertyDirectives)
             {
@@ -736,25 +752,23 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
 
             writer.WriteLine("  </PropertyGroup>");
+            writer.WriteLine();
         }
 
         if (isVirtualProject)
         {
             // After `#:property` directives so they don't override this.
             writer.WriteLine("""
-
                   <PropertyGroup>
                     <Features>$(Features);FileBasedProgram</Features>
                   </PropertyGroup>
+
                 """);
         }
 
         if (packageDirectives.Any())
         {
-            writer.WriteLine("""
-
-                  <ItemGroup>
-                """);
+            writer.WriteLine("  <ItemGroup>");
 
             foreach (var package in packageDirectives)
             {
@@ -775,14 +789,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
 
             writer.WriteLine("  </ItemGroup>");
+            writer.WriteLine();
         }
 
         if (projectDirectives.Any())
         {
-            writer.WriteLine("""
-
-                  <ItemGroup>
-                """);
+            writer.WriteLine("  <ItemGroup>");
 
             foreach (var projectReference in projectDirectives)
             {
@@ -794,6 +806,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
 
             writer.WriteLine("  </ItemGroup>");
+            writer.WriteLine();
         }
 
         Debug.Assert(processedDirectives + directives.OfType<CSharpDirective.Shebang>().Count() == directives.Length);
@@ -803,7 +816,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             Debug.Assert(targetFilePath is not null);
 
             writer.WriteLine($"""
-
                   <ItemGroup>
                     <Compile Include="{EscapeValue(targetFilePath)}" />
                   </ItemGroup>
@@ -837,12 +849,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             writer.WriteLine();
             writer.WriteLine(TargetOverrides);
+            writer.WriteLine();
         }
 
-        writer.WriteLine("""
-
-            </Project>
-            """);
+        writer.WriteLine("</Project>");
 
         static string EscapeValue(string value) => SecurityElement.Escape(value);
 

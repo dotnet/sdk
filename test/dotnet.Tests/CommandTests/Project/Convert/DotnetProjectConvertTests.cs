@@ -642,32 +642,69 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 #!/program
                 #:sdk Microsoft.NET.Sdk
                 #:sdk Aspire.Hosting.Sdk@9.1.0
-                #:property TargetFramework=net11.0
+                #:property TargetFramework=net472
                 #:package System.CommandLine@2.0.0-beta4.22272.1
                 #:property LangVersion=preview
                 Console.WriteLine();
                 """,
-            expectedProject: $"""
+            expectedProject: """
                 <Project Sdk="Microsoft.NET.Sdk">
 
                   <Sdk Name="Aspire.Hosting.Sdk" Version="9.1.0" />
 
                   <PropertyGroup>
                     <OutputType>Exe</OutputType>
-                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
-                    <TargetFramework>net11.0</TargetFramework>
+                    <TargetFramework>net472</TargetFramework>
                     <LangVersion>preview</LangVersion>
                   </PropertyGroup>
 
                   <ItemGroup>
                     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
                   </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: """
+                Console.WriteLine();
+                """);
+    }
+
+    /// <summary>
+    /// There should be only one <c>PropertyGroup</c> element when the default properties are overridden.
+    /// </summary>
+    [Fact]
+    public void Directives_AllDefaultOverridden()
+    {
+        VerifyConversion(
+            inputCSharp: """
+                #!/program
+                #:sdk Microsoft.NET.Web.Sdk
+                #:property OutputType=Exe
+                #:property TargetFramework=net472
+                #:property Nullable=disable
+                #:property PublishAot=false
+                #:property Custom=1
+                #:property ImplicitUsings=disable
+                Console.WriteLine();
+                """,
+            expectedProject: """
+                <Project Sdk="Microsoft.NET.Web.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>net472</TargetFramework>
+                    <Nullable>disable</Nullable>
+                    <PublishAot>false</PublishAot>
+                    <Custom>1</Custom>
+                    <ImplicitUsings>disable</ImplicitUsings>
+                  </PropertyGroup>
 
                 </Project>
 
