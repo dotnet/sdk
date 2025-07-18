@@ -91,7 +91,7 @@ internal static class PackCommandParser
 
         command.Arguments.Add(SlnOrProjectArgument);
         command.Options.Add(OutputOption);
-        command.Options.Add(CommonOptions.ArtifactsPathOption)
+        command.Options.Add(CommonOptions.ArtifactsPathOption);
         command.Options.Add(NoBuildOption);
         command.Options.Add(IncludeSymbolsOption);
         command.Options.Add(IncludeSourceOption);
