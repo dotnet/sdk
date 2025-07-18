@@ -211,7 +211,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
 
             // Set up MSBuild.
-            ReadOnlySpan<ILogger> binaryLoggers = binaryLogger is null ? [] : [binaryLogger];
+            ReadOnlySpan<ILogger> binaryLoggers = binaryLogger is null ? [] : [binaryLogger.Value];
             IEnumerable<ILogger> loggers = [.. binaryLoggers, consoleLogger];
             var projectCollection = new ProjectCollection(
                 MSBuildArgs.GlobalProperties,
@@ -276,7 +276,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 Environment.SetEnvironmentVariable(key, value);
             }
 
-            binaryLogger?.ReallyShutdown();
+            binaryLogger?.Value.ReallyShutdown();
             consoleLogger.Shutdown();
         }
 
@@ -304,7 +304,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             };
         }
 
-        static FacadeLogger? GetBinaryLogger(IReadOnlyList<string>? args)
+        static Lazy<FacadeLogger>? GetBinaryLogger(IReadOnlyList<string>? args)
         {
             if (args is null) return null;
             // Like in MSBuild, only the last binary logger is used.
@@ -313,13 +313,17 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 var arg = args[i];
                 if (LoggerUtility.IsBinLogArgument(arg))
                 {
-                    var logger = new BinaryLogger
+                    // We don't want to create the binlog file until actually needed, hence we wrap this in a Lazy.
+                    return new(() =>
                     {
-                        Parameters = arg.IndexOf(':') is >= 0 and var index
-                            ? arg[(index + 1)..]
-                            : "msbuild.binlog",
-                    };
-                    return LoggerUtility.CreateFacadeLogger([logger]);
+                        var logger = new BinaryLogger
+                        {
+                            Parameters = arg.IndexOf(':') is >= 0 and var index
+                                ? arg[(index + 1)..]
+                                : "msbuild.binlog",
+                        };
+                        return LoggerUtility.CreateFacadeLogger([logger]);
+                    });
                 }
             }
 
