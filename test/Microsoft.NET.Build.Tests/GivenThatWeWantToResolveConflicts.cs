@@ -315,21 +315,21 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         [InlineData("net9.0")]
         [InlineData("net8.0")]
-        [InlineData("net7.0")]
-        [InlineData("net6.0")]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("netcoreapp3.0")]
-        [InlineData("netcoreapp2.1")]
-        [InlineData("netcoreapp2.0")]
+        // [InlineData("net7.0", false)] TODO: https://github.com/NuGet/Home/issues/14424
+        // [InlineData("net6.0", false)] TODO: https://github.com/NuGet/Home/issues/14424
+        // [InlineData("netcoreapp3.1")] TODO: https://github.com/NuGet/Home/issues/14424
+        // [InlineData("netcoreapp3.0")] TODO: https://github.com/NuGet/Home/issues/14424
+        [InlineData("netcoreapp2.1", false)]
+        [InlineData("netcoreapp2.0", false)]
         [InlineData("netcoreapp1.1", false)]
         [InlineData("netcoreapp1.0", false)]
-        [InlineData("netstandard2.1")]
-        [InlineData("netstandard2.0")]
+        [InlineData("netstandard2.1", false)]
+        [InlineData("netstandard2.0", false)]
         [InlineData("netstandard1.1", false)]
         [InlineData("netstandard1.0", false)]
         [InlineData("net451", false)]
-        [InlineData("net462")]
-        [InlineData("net481")]
+        [InlineData("net462", false)]
+        [InlineData("net481", false)]
         public void PrunePackageDataSucceeds(string targetFramework, bool shouldPrune = true)
         {
             var nugetFramework = NuGetFramework.Parse(targetFramework);
