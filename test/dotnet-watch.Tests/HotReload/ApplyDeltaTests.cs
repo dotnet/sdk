@@ -136,7 +136,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 }
                 """);
 
-            App.Start(testAsset, [], "AppWithDeps");
+            App.Start(testAsset, ["--non-interactive"], "AppWithDeps");
 
             await App.AssertWaitingForChanges();
             await App.WaitUntilOutputContains($"{symbolName} set");
@@ -144,14 +144,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             UpdateSourceFile(buildFilePath, src => src.Replace(symbolName, ""));
 
-            // TODO: https://github.com/dotnet/roslyn/issues/78921
-
-            // Roslyn should detect change in build constant and apply it or flag it as rude edit.
-            //await App.WaitUntilOutputContains($"dotnet watch 🔥 [App.WithDeps ({ToolsetInfo.CurrentTargetFramework})] Hot reload succeeded.");
-            //await App.WaitUntilOutputContains("BUILD_CONST not set");
-
-            await App.AssertOutputLineStartsWith(MessageDescriptor.NoCSharpChangesToApply);
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
             App.AssertOutputContains(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
+            App.AssertOutputContains("dotnet watch ⌚ [auto-restart] error ENC1102: Changing project setting 'DefineConstants'");
+
+            await App.WaitUntilOutputContains($"{symbolName} not set");
         }
 
         [Fact(Skip = "https://github.com/dotnet/msbuild/issues/12001")]
