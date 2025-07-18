@@ -82,21 +82,21 @@
       <!-- Get full framework msbuild end -->
 
       <!-- include .dotnet folder. So there is no extra first run experience run during the test -->
-      <DotnetCliHome Include="$(ArtifactsTmpDir).dotnet\**\*.*" />
+      <DotnetCliHome Include="$(TestLayoutDir).dotnet\**\*.*" />
 
-      <Testpackages Include="$(ArtifactsTmpDir)testpackages\**\*.*" />
+      <Testpackages Include="$(TestLayoutDir)testpackages\**\*.*" />
 
       <!-- include Container artifacts for running test in Helix -->
-      <ContainerFiles Include="$(ArtifactsTmpDir)Container\**\*.*" />
+      <ContainerFiles Include="$(TestLayoutDir)Container\**\*.*" />
 
       <LockFiles Include="..\src\Tasks\Microsoft.NET.Build.Tasks.UnitTests\LockFiles\**\*.*" />
 
       <AssetFiles Include="TestAssets\**\*.*" />
 
       <!-- Files in testExecutionDirectory to prevent environment interference -->
-      <TestExecutionDirectoryFiles Include="$(ArtifactsTmpDir)NuGet.config" />
-      <TestExecutionDirectoryFiles Include="$(ArtifactsTmpDir)Directory.Build.props" />
-      <TestExecutionDirectoryFiles Include="$(ArtifactsTmpDir)Directory.Build.targets" />
+      <TestExecutionDirectoryFiles Include="$(TestLayoutDir)NuGet.config" />
+      <TestExecutionDirectoryFiles Include="$(TestLayoutDir)Directory.Build.props" />
+      <TestExecutionDirectoryFiles Include="$(TestLayoutDir)Directory.Build.targets" />
       <TestExecutionDirectoryFiles Include="$(RepoRoot)testAsset.props" />
       <TestExecutionDirectoryFiles Include="$(RepoRoot)eng\Versions.props">
         <DestinationFolder>eng/</DestinationFolder>
@@ -105,7 +105,7 @@
         <DestinationFolder>eng/</DestinationFolder>
       </TestExecutionDirectoryFiles>
 
-      <FilesInHelixRoot Include="$(RepoRoot)artifacts\tmp\$(Configuration)\NuGet.config" />
+      <FilesInHelixRoot Include="$(TestLayoutDir)\NuGet.config" />
       <FilesInHelixRoot Condition="$([MSBuild]::IsOSPlatform(`Windows`))" Include="$(RepoRoot)build\RunTestsOnHelix.cmd" />
       <FilesInHelixRoot Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' " Include="$(RepoRoot)build\RunTestsOnHelix.sh" />
     </ItemGroup>

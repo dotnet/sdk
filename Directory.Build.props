@@ -33,6 +33,7 @@
     <TestHostFolder>$([MSBuild]::NormalizeDirectory('$(ArtifactsBinDir)', 'redist', '$(Configuration)'))</TestHostFolder>
     <TestHostDotNetRoot>$([MSBuild]::NormalizeDirectory('$(TestHostFolder)', 'dotnet'))</TestHostDotNetRoot>
     <TestHostDotNetTool>$(TestHostDotNetRoot)$([System.IO.Path]::GetFileName('$(DotNetTool)'))</TestHostDotNetTool>
+    <TestLayoutDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsTmpDir)', 'testing'))</TestLayoutDir>
 
     <PackageProjectUrl>https://github.com/dotnet/sdk</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
