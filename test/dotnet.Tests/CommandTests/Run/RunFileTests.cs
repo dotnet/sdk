@@ -939,8 +939,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         new FileInfo(binaryLogPath).Should().Exist();
 
         var records = BinaryLog.ReadRecords(binaryLogPath).ToList();
-        records.Any(static r => r.Args is ProjectEvaluationStartedEventArgs).Should().BeTrue();
-        records.Any(static r => r.Args is ProjectEvaluationFinishedEventArgs).Should().BeTrue();
+        records.Count(static r => r.Args is ProjectEvaluationStartedEventArgs).Should().Be(2);
+        records.Count(static r => r.Args is ProjectEvaluationFinishedEventArgs).Should().Be(2);
     }
 
     /// <summary>
