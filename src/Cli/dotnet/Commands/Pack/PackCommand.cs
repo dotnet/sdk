@@ -52,6 +52,13 @@ public class PackCommand(
     public static int RunPackCommand(ParseResult parseResult)
     {
         var args = parseResult.GetValue(PackCommandParser.SlnOrProjectArgument)?.ToList() ?? new List<string>();
+
+        if (args.Count != 1)
+        {
+            Console.Error.WriteLine("Error: Only one .nuspec file can be packed at at time");
+            return 1;
+        }
+
         var nuspecPath = args[0];
 
         var packArgs = new PackArgs()

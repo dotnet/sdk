@@ -71,7 +71,7 @@ internal static class PackCommandParser
         Hidden = false
     }.ForwardAsSingle(o => $"-Version={o}");
 
-    public static readonly Option<string[]> PropertiesOption = new ForwardedOption<string[]>("--property")
+    public static readonly Option<string[]> PropertiesOption = new ForwardedOption<string[]>("--properties")
     {
         Description = CliCommandStrings.PackCmdPropertiesDescription,
         HelpName = CliCommandStrings.PackCmdProperties,
@@ -91,7 +91,7 @@ internal static class PackCommandParser
 
         command.Arguments.Add(SlnOrProjectArgument);
         command.Options.Add(OutputOption);
-        command.Options.Add(CommonOptions.ArtifactsPathOption);
+        command.Options.Add(CommonOptions.ArtifactsPathOption)
         command.Options.Add(NoBuildOption);
         command.Options.Add(IncludeSymbolsOption);
         command.Options.Add(IncludeSourceOption);
@@ -100,11 +100,12 @@ internal static class PackCommandParser
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
         command.Options.Add(NoRestoreOption);
         command.Options.Add(BuildCommandParser.VerbosityOption);
-        command.Options.Add(VersionOption);
         command.Options.Add(CommonOptions.VersionSuffixOption);
         command.Options.Add(ConfigurationOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
-        command.Options.Add(TargetOption); 
+        command.Options.Add(TargetOption);
+        command.Options.Add(PropertiesOption);
+        command.Options.Add(VersionOption);
 
         // Don't include runtime option because we want to include it specifically and allow the short version ("-r") to be used
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);

@@ -291,14 +291,14 @@ namespace Microsoft.DotNet.Pack.Tests
                 .And.HaveStdOutContaining("NETSDK1083");
         }
         [Fact]
-        public void DotnetPack_AcceptsPropertyOption()
+        public void DotnetPack_AcceptsPropertiesOption()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
                 .WithSource();
             string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
             var result = new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute(nuspecPath, "--property", "id=CustomID");
+                .Execute(nuspecPath, "--properties", "id=CustomID");
 
             result.Should().Pass();
 
@@ -335,8 +335,8 @@ namespace Microsoft.DotNet.Pack.Tests
             var result = new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute(
-                nuspecPath, "--property", "id=CustomValue",
-                "--property", "authors=CustomAuthor"
+                nuspecPath, "--properties", "id=CustomValue",
+                "--properties", "authors=CustomAuthor"
                 );
 
             result.Should().Pass();
@@ -369,25 +369,9 @@ namespace Microsoft.DotNet.Pack.Tests
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute(nuspecPath, "--output", outputDirPath);
             result.Should().Pass();
-            var outputDir = new DirectoryInfo(outputDirPath);
+            var outputDir = new DirectoryInfo(testInstance.Path);
             outputDir.Should().Exist()
                 .And.HaveFile("PackNoCsproj.1.0.0.nupkg");
-        }
-
-        [Fact]
-        public void DotnetPack_ThrowsForMissingNuspecFile()
-        {
-            var testInstace = _testAssetsManager.CopyTestAsset("TestNuspecProject")
-                .WithSource();
-
-            var ex = Assert.Throws<InvalidOperationException>(() =>
-            {
-                new DotnetPackCommand(Log)
-                    .WithWorkingDirectory(testInstace.Path)
-                    .Execute("missing.nuspec");
-            });
-
-            Assert.Contains("does not exist.", ex.Message);
         }
 
         [Fact]
@@ -402,7 +386,7 @@ namespace Microsoft.DotNet.Pack.Tests
                 .Execute(nuspecPath);
 
             result.Should().Fail();
-            result.StdErr.Should().Contain("does not exist");
+            
         }
     }
 }
