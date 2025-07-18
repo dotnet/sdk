@@ -137,7 +137,9 @@ public class RunCommand
             if (EntryPointFileFullPath is not null)
             {
                 Debug.Assert(!ReadCodeFromStdin);
-                projectFactory = CreateVirtualCommand().CreateProjectInstance;
+                var command = CreateVirtualCommand();
+                command.MarkArtifactsFolderUsed();
+                projectFactory = command.CreateProjectInstance;
             }
         }
 
@@ -571,7 +573,7 @@ public class RunCommand
             // If '-' is specified as the input file, read all text from stdin into a temporary file and use that as the entry point.
             // We create a new directory for each file so other files are not included in the compilation.
             // We fail if the file already exists to avoid reusing the same file for multiple stdin runs (in case the random name is duplicate).
-            string directory = VirtualProjectBuildingCommand.GetTempSubdirectory(Path.GetRandomFileName());
+            string directory = VirtualProjectBuildingCommand.GetTempSubpath(Path.GetRandomFileName());
             VirtualProjectBuildingCommand.CreateTempSubdirectory(directory);
             entryPointFilePath = Path.Join(directory, "app.cs");
             using (var stdinStream = Console.OpenStandardInput())

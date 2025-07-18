@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.Build.Traversal" DefaultTargets="Pack">
+
   <ItemGroup>
     <ProjectReference Include="**\*.Manifest.proj" />
   </ItemGroup>
