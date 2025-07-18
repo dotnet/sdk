@@ -1092,6 +1092,12 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">진단 출력을 사용하도록 설정합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DirectivesRemoved">
+        <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
+        <target state="new">Removed '{0}' directives ({1}) for '{2}' from: {3}</target>
+        <note>{0} is a directive kind (like '#:package'). {1} is number of removed directives.
+    {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</note>
+      </trans-unit>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
         <target state="translated">대상 디렉터리가 이미 있습니다. '{0}'</target>
@@ -1491,10 +1497,10 @@ Make the profile names distinct.</source>
         <target state="translated">지정한 파일이 존재해야 하며 '.cs' 파일 확장명이 있어야 합니다. '{0}'.</target>
         <note>{Locked=".cs"}</note>
       </trans-unit>
-      <trans-unit id="InvalidOptionCombination">
-        <source>Cannot combine option '{0}' and '{1}'.</source>
-        <target state="translated">옵션 '{0}'와(과) '{1}'을(를) 결합할 수 없습니다.</target>
-        <note>{0} and {1} are option names like '--no-build'.</note>
+      <trans-unit id="InvalidOptionForFileBasedApp">
+        <source>Cannot specify option '{0}' when operating on a file-based app.</source>
+        <target state="new">Cannot specify option '{0}' when operating on a file-based app.</target>
+        <note>{0} is an option name like '--source'.</note>
       </trans-unit>
       <trans-unit id="InvalidOptionForStdin">
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
