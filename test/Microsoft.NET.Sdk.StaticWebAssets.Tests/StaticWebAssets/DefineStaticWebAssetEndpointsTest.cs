@@ -438,7 +438,7 @@ public class DefineStaticWebAssetEndpointsTest
                     ["AssetRole"] = "Alternative",
                     ["AssetTraitValue"] = "gzip",
                     ["AssetTraitName"] = "Content-Encoding",
-                    ["OriginalItemSpec"] = Path.Combine("D:", "work", "dotnet-sdk", "artifacts", "tmp", "Release", "Publish60Host---0200F604", "Client", "bin", "Debug", "net6.0", "wwwroot", "_framework", "dotnet.timezones.blat"),
+                    ["OriginalItemSpec"] = Path.Combine("D:", "work", "dotnet-sdk", "artifacts", "tmp", "Release", "testing", "Publish60Host---0200F604", "Client", "bin", "Debug", "net6.0", "wwwroot", "_framework", "dotnet.timezones.blat"),
                     ["CopyToPublishDirectory"] = "Never",
                     ["FileLength"] = "10",
                     ["LastWriteTime"] = lastWrite.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
