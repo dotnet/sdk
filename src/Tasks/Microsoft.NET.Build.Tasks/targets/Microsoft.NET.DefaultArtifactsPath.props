@@ -40,4 +40,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ArtifactsPath>$(MSBuildProjectDirectory)\artifacts</ArtifactsPath>
     <_ArtifactsPathLocationType>ProjectFolder</_ArtifactsPathLocationType>
   </PropertyGroup>
+
+  <!-- Use FileBasedAppArtifactsPath if set -->
+  <PropertyGroup Condition="'$(ArtifactsPath)' == '' And '$(FileBasedAppArtifactsPath)' != ''">
+    <UseArtifactsOutput Condition="'$(UseArtifactsOutput)' == '' And '$(UsingMicrosoftArtifactsSdk)' != 'true'">true</UseArtifactsOutput>
+    <ArtifactsPath>$(FileBasedAppArtifactsPath)</ArtifactsPath>
+    <IncludeProjectNameInArtifactsPaths Condition="'$(IncludeProjectNameInArtifactsPaths)' == ''">false</IncludeProjectNameInArtifactsPaths>
+    <_ArtifactsPathLocationType>FileBasedApp</_ArtifactsPathLocationType>
+  </PropertyGroup>
 </Project>
