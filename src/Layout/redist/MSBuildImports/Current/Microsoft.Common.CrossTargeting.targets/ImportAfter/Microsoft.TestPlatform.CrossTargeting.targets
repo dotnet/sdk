@@ -101,7 +101,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
 
   <Target Name="_MTPBuild" DependsOnTargets="_ComputeTargetFrameworkItems">
-    <CallTarget Targets="Build" />
+    <CallTarget Targets="Build" Condition="'$(ShouldRunBuild)' == 'true'"  />
   </Target>
 
 </Project>

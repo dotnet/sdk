@@ -217,6 +217,120 @@ internal static class SolutionAndProjectUtility
 
         return projects;
     }
+    public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties1(
+    string projectFilePath,
+    bool noLaunchProfile,
+    IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> collectedProperties)
+    {
+        var projects = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
+
+        if (!collectedProperties.TryGetValue(projectFilePath, out var propertySets) || propertySets == null || propertySets.Count == 0)
+            return projects;
+
+        // Find the "outer" context (meta-project) which has an empty TargetFramework
+        var outerProps = propertySets.FirstOrDefault(props =>
+            string.IsNullOrWhiteSpace(props.GetValueOrDefault(ProjectProperties.TargetFramework)));
+
+        // Determine if we should run TFMs in parallel
+        bool testTfmsInParallel = true;
+        if (outerProps != null)
+        {
+            if (!bool.TryParse(outerProps.GetValueOrDefault(ProjectProperties.TestTfmsInParallel), out testTfmsInParallel) &&
+                !bool.TryParse(outerProps.GetValueOrDefault(ProjectProperties.BuildInParallel), out testTfmsInParallel))
+            {
+                testTfmsInParallel = true;
+            }
+        }
+
+        // Filter out the "outer" context (meta-project) which has empty TargetFramework
+        var tfmPropertySets = propertySets
+            .Where(props => !string.IsNullOrWhiteSpace(props.GetValueOrDefault(ProjectProperties.TargetFramework)))
+            .ToList();
+
+        // Defensive: If no TFM property sets, return empty
+        if (tfmPropertySets.Count == 0)
+            return projects;
+
+        if (testTfmsInParallel)
+        {
+            // Each TFM gets its own group (parallelizable)
+            foreach (var properties in tfmPropertySets)
+            {
+                if (!TryCreateTestModule(properties, out var module, noLaunchProfile))
+                    continue;
+
+                projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
+            }
+        }
+        else
+        {
+            // All TFMs are grouped together and run sequentially
+            List<TestModule>? innerModules = null;
+            foreach (var properties in tfmPropertySets)
+            {
+                if (!TryCreateTestModule(properties, out var module, noLaunchProfile))
+                    continue;
+
+                innerModules ??= new List<TestModule>();
+                innerModules.Add(module);
+            }
+
+            if (innerModules is not null)
+            {
+                projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(innerModules));
+            }
+        }
+
+        return projects;
+    }
+
+    private static bool TryCreateTestModule(
+        IReadOnlyDictionary<string, string> properties,
+        out TestModule module,
+        bool noLaunchProfile)
+    {
+        module = null!;
+        bool.TryParse(properties.GetValueOrDefault(ProjectProperties.IsTestProject), out bool isTestProject);
+        bool.TryParse(properties.GetValueOrDefault(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
+
+        if (!isTestProject && !isTestingPlatformApplication)
+            return false;
+
+        string? targetFramework = properties.GetValueOrDefault(ProjectProperties.TargetFramework);
+        string? projectFullPath = properties.GetValueOrDefault(ProjectProperties.ProjectFullPath);
+        string? runCommand = properties.GetValueOrDefault(ProjectProperties.RunCommand);
+        string? runArguments = properties.GetValueOrDefault(ProjectProperties.RunArguments);
+        string? runWorkingDirectory = properties.GetValueOrDefault(ProjectProperties.RunWorkingDirectory);
+        string? appDesignerFolder = properties.GetValueOrDefault(ProjectProperties.AppDesignerFolder);
+
+        // Defensive: Ensure required properties are present
+        if (string.IsNullOrEmpty(projectFullPath))
+            return false;
+
+        var runProperties = RunProperties.FromPropertyValues(
+            runCommand ?? string.Empty,
+            runArguments,
+            runWorkingDirectory,
+            properties.GetValueOrDefault(ProjectProperties.TargetPath),
+            Array.Empty<string>(),
+            fallbackToTargetPath: true);
+
+        var launchSettings = TryGetLaunchProfileSettings(
+            Path.GetDirectoryName(projectFullPath)!,
+            appDesignerFolder ?? string.Empty,
+            noLaunchProfile,
+            profileName: null);
+
+        module = new TestModule(
+            runProperties,
+            PathUtility.FixFilePath(projectFullPath),
+            targetFramework,
+            isTestingPlatformApplication,
+            isTestProject,
+            launchSettings);
+
+        return true;
+    }
 
     private static TestModule? GetModuleFromProject(ProjectInstance project, ICollection<ILogger>? loggers, bool noLaunchProfile)
     {
