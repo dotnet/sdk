@@ -7,7 +7,7 @@
   ],
   "name": "Console App",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project for creating a command-line application that can run on .NET on Windows, Linux and macOS",
+  "description": "Create a simple app that runs in the command line, cross-platform",
   "groupIdentity": "Microsoft.Common.Console",
   "precedence": "12000",
   "identity": "Microsoft.Common.Console.FSharp.10.0",

@@ -1,6 +1,6 @@
 ﻿Console App (C#)
 Author: Microsoft
-Description: A project for creating a command-line application that can run on .NET on Windows, Linux and macOS
+Description: Create a simple app that runs in the command line, cross-platform
 
 Usage:
   dotnet new console [options] [template options]
