@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var manifestUpdater = new MockWorkloadManifestUpdater();
             var workloadInstaller = new MockPackWorkloadInstaller();
 
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "aspire" });
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", "aspire" });
 
             var command = new WorkloadInstallCommand(
                 parseResult,
@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var manifestUpdater = new MockWorkloadManifestUpdater();
             var workloadInstaller = new MockPackWorkloadInstaller();
 
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "aspire", "xamarin-android" });
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", "aspire", "xamarin-android" });
 
             var command = new WorkloadInstallCommand(
                 parseResult,
@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var manifestUpdater = new MockWorkloadManifestUpdater();
             var workloadInstaller = new MockPackWorkloadInstaller();
 
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "aspire", "xamarin-android" });
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", "aspire", "xamarin-android" });
 
             var command = new WorkloadInstallCommand(
                 parseResult,

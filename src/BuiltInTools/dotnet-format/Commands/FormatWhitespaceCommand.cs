@@ -28,8 +28,8 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
         internal static void EnsureFolderNotSpecifiedWithNoRestore(CommandResult symbolResult)
         {
             var folder = symbolResult.GetValue(FolderOption);
-            var noRestore = symbolResult.GetResult(NoRestoreOption);
-            if (folder && noRestore != null)
+            var noRestore = symbolResult.GetValue(NoRestoreOption);
+            if (folder && noRestore)
             {
                 symbolResult.AddError(Resources.Cannot_specify_the_folder_option_with_no_restore);
             }

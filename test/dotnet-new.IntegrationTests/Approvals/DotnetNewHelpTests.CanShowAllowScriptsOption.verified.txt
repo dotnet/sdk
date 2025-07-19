@@ -7,9 +7,9 @@ Usage:
 Options:
   -n, --name <name>                The name for the output being created. If no name is specified, the name of the output directory is used.
   -o, --output <output>            Location to place the generated output.
-  --dry-run                        Displays a summary of what would happen if the given command line were run if it would result in a template creation.
-  --force                          Forces content to be generated even if it would change existing files.
-  --no-update-check                Disables checking for the template package updates when instantiating a template.
+  --dry-run                        Displays a summary of what would happen if the given command line were run if it would result in a template creation. [default: False]
+  --force                          Forces content to be generated even if it would change existing files. [default: False]
+  --no-update-check                Disables checking for the template package updates when instantiating a template. [default: False]
   --project <project>              The project that should be used for context evaluation.
   --allow-scripts <No|Prompt|Yes>  Specifies if post action scripts should run. [default: Prompt]
 

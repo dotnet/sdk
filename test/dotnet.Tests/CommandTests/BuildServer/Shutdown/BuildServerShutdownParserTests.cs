@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void GivenNoOptionsAllFlagsAreFalse()
         {
-            var result = Parser.Instance.Parse("dotnet build-server shutdown");
+            var result = Parser.Parse(["dotnet", "build-server", "shutdown"]);
 
             result.GetValue<bool>(BuildServerShutdownCommandParser.MSBuildOption).Should().Be(false);
             result.GetValue<bool>(BuildServerShutdownCommandParser.VbcsOption).Should().Be(false);
@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void GivenMSBuildOptionIsItTrue()
         {
-            var result = Parser.Instance.Parse("dotnet build-server shutdown --msbuild");
+            var result = Parser.Parse(["dotnet", "build-server", "shutdown", "--msbuild"]);
 
             result.GetValue<bool>(BuildServerShutdownCommandParser.MSBuildOption).Should().Be(true);
             result.GetValue<bool>(BuildServerShutdownCommandParser.VbcsOption).Should().Be(false);
@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void GivenVBCSCompilerOptionIsItTrue()
         {
-            var result = Parser.Instance.Parse("dotnet build-server shutdown --vbcscompiler");
+            var result = Parser.Parse(["dotnet", "build-server", "shutdown", "--vbcscompiler"]);
 
             result.GetValue<bool>(BuildServerShutdownCommandParser.MSBuildOption).Should().Be(false);
             result.GetValue<bool>(BuildServerShutdownCommandParser.VbcsOption).Should().Be(true);
@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void GivenRazorOptionIsItTrue()
         {
-            var result = Parser.Instance.Parse("dotnet build-server shutdown --razor");
+            var result = Parser.Parse(["dotnet", "build-server", "shutdown", "--razor"]);
 
             result.GetValue<bool>(BuildServerShutdownCommandParser.MSBuildOption).Should().Be(false);
             result.GetValue<bool>(BuildServerShutdownCommandParser.VbcsOption).Should().Be(false);
@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void GivenMultipleOptionsThoseAreTrue()
         {
-            var result = Parser.Instance.Parse("dotnet build-server shutdown --razor --msbuild");
+            var result = Parser.Parse(["dotnet", "build-server", "shutdown", "--razor", "--msbuild"]);
 
             result.GetValue<bool>(BuildServerShutdownCommandParser.MSBuildOption).Should().Be(true);
             result.GetValue<bool>(BuildServerShutdownCommandParser.VbcsOption).Should().Be(false);

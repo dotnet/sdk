@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void UninstallToolParserCanGetPackageId()
         {
-            var result = Parser.Instance.Parse("dotnet tool uninstall -g console.test.app");
+            var result = Parser.Parse("dotnet tool uninstall -g console.test.app");
 
             var packageId = result.GetValue(ToolUninstallCommandParser.PackageIdArgument);
 
@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void UninstallToolParserCanGetGlobalOption()
         {
-            var result = Parser.Instance.Parse("dotnet tool uninstall -g console.test.app");
+            var result = Parser.Parse("dotnet tool uninstall -g console.test.app");
 
             result.GetValue<bool>(ToolUninstallCommandParser.GlobalOption).Should().Be(true);
         }
@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         public void UninstallToolParserCanParseToolPathOption()
         {
             var result =
-                Parser.Instance.Parse(@"dotnet tool uninstall --tool-path C:\Tools console.test.app");
+                Parser.Parse(@"dotnet tool uninstall --tool-path C:\Tools console.test.app");
 
             result.GetValue<string>(ToolUninstallCommandParser.ToolPathOption).Should().Be(@"C:\Tools");
         }
@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         public void UninstallToolParserCanParseLocalOption()
         {
             var result =
-                Parser.Instance.Parse(@"dotnet tool uninstall --local console.test.app");
+                Parser.Parse(@"dotnet tool uninstall --local console.test.app");
 
             result.GetValue<bool>(ToolUninstallCommandParser.LocalOption).Should().Be(true);
         }
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         public void UninstallToolParserCanParseToolManifestOption()
         {
             var result =
-                Parser.Instance.Parse(@"dotnet tool uninstall --tool-manifest folder/my-manifest.format console.test.app");
+                Parser.Parse(@"dotnet tool uninstall --tool-manifest folder/my-manifest.format console.test.app");
 
             result.GetValue<string>(ToolUninstallCommandParser.ToolManifestOption).Should().Be(@"folder/my-manifest.format");
         }

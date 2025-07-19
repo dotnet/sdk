@@ -124,7 +124,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Clear();
 
 
-            ParseResult result = Parser.Instance.Parse("dotnet tool uninstall " + $"-g {PackageId}");
+            ParseResult result = Parser.Parse("dotnet tool uninstall " + $"-g {PackageId}");
 
             (IToolPackageStore, IToolPackageStoreQuery, IToolPackageUninstaller) CreateToolPackageStoreAndUninstaller(
                 DirectoryPath? directoryPath)
@@ -227,7 +227,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         private ToolInstallGlobalOrToolPathCommand CreateInstallCommand(string options)
         {
-            ParseResult result = Parser.Instance.Parse("dotnet tool install " + options);
+            ParseResult result = Parser.Parse("dotnet tool install " + options);
 
             var store = new ToolPackageStoreMock(new DirectoryPath(_toolsDirectory), _fileSystem);
 
@@ -255,7 +255,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         private ToolUninstallGlobalOrToolPathCommand CreateUninstallCommand(string options, Action uninstallCallback = null)
         {
-            ParseResult result = Parser.Instance.Parse("dotnet tool uninstall " + options);
+            ParseResult result = Parser.Parse("dotnet tool uninstall " + options);
 
             (IToolPackageStore, IToolPackageStoreQuery, IToolPackageUninstaller) createToolPackageStoreAndUninstaller(
                 DirectoryPath? directoryPath)

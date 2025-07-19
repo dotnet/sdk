@@ -400,19 +400,13 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         [InlineData("run")]
         public void It_uses_correct_runtime_help_description(string command)
         {
-            CommandLineConfiguration sharedConfig = Parser.Instance;
-            CommandLineConfiguration localCopy = new(sharedConfig.RootCommand)
+            var output = new StringWriter();
+            var parseResult = Parser.Parse(new string[] { command, "-h" });
+            parseResult.Invoke(new()
             {
-                EnableDefaultExceptionHandler = sharedConfig.EnableDefaultExceptionHandler,
-                ResponseFileTokenReplacer = sharedConfig.ResponseFileTokenReplacer,
-                ProcessTerminationTimeout = sharedConfig.ProcessTerminationTimeout,
-                EnablePosixBundling = sharedConfig.EnablePosixBundling,
-                Output = new StringWriter()
-            };
-
-            var parseResult = localCopy.Parse(new string[] { command, "-h" });
-            parseResult.Invoke();
-            localCopy.Output.ToString().Should().Contain(command.Equals("build") ?
+                Output = output,
+            });
+            output.ToString().Should().Contain(command.Equals("build") ?
                 CliCommandStrings.BuildRuntimeOptionDescription :
                 CliCommandStrings.RunRuntimeOptionDescription);
         }

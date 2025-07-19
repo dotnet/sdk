@@ -25,8 +25,7 @@ public class InternalReportInstallSuccessCommand
 
     public static void ProcessInputAndSendTelemetry(string[] args, ITelemetry telemetry)
     {
-        var parser = Parser.Instance;
-        var result = parser.ParseFrom("dotnet internal-reportinstallsuccess", args);
+        var result = Parser.Parse(["dotnet", "internal-reportinstallsuccess", ..args]);
         ProcessInputAndSendTelemetry(result, telemetry);
     }
 
