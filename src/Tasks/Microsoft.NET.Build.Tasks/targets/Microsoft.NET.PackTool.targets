@@ -415,7 +415,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
         <_rids Include="$(_PackageRids)" />
         <_ridsWithoutAny Include="@(_rids)" Condition="%(Identity) != 'any'" />
         <_ridsWithAny Include="@(_rids)" Condition="%(Identity) == 'any'" />
-        <_RidSpecificToolPackageProject Include="$(MSBuildProjectFullPath)" AdditionalProperties="RuntimeIdentifier=%(_ridsWithoutAny.Identity);" />
+        <_RidSpecificToolPackageProject Include="$(MSBuildProjectFullPath)" AdditionalProperties="RuntimeIdentifier=%(_ridsWithoutAny.Identity);" Condition="@(_ridsWithoutAny->Count()) &gt; 0" />
         <_RidSpecificToolPackageProject Include="$(MSBuildProjectFullPath)" AdditionalProperties="UseAppHost=false;RuntimeIdentifier=any;" Condition="@(_ridsWithAny->Count()) &gt; 0" />
     </ItemGroup>
 
