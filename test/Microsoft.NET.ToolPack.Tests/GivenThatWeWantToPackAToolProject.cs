@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Runtime.CompilerServices;
+using Microsoft.DotNet.Cli.Utils;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 
@@ -194,7 +195,7 @@ namespace Microsoft.NET.ToolPack.Tests
                     .Should().Pass();
                 var runCommand = new FileInfo(getValuesCommand.GetValues().Single());
                 runCommand.Name
-                    .Should().StartWith("consoledemo", because: "The RunCommand should recognize that this is an AppHost project and should use the muxer to launch it for non-tool use cases.");
+                    .Should().Be("consoledemo" + Constants.ExeSuffix, because: "The RunCommand should recognize that this is an AppHost-using project and should use the AppHost for non-tool use cases.");
             }
         }
 
