@@ -345,7 +345,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains($"dotnet watch ❌ The project file could not be loaded. Could not find a part of the path '{Path.Combine(testAsset.Path, "AppWithDeps", "NonExistentDirectory", "X.csproj")}'");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task ListsFiles()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchGlobbingApp")
