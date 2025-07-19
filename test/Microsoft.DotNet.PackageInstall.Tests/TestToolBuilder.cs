@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
 
-        public string CreateTestTool(ITestOutputHelper log, TestToolSettings toolSettings, bool collectBinlogs = false)
+        public string CreateTestTool(ITestOutputHelper log, TestToolSettings toolSettings, bool collectBinlogs = true)
         {
             var targetDirectory = Path.Combine(TestContext.Current.TestExecutionDirectory, "TestTools", toolSettings.GetIdentifier());
 
