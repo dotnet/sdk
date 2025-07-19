@@ -262,8 +262,127 @@ function Build {
   ExitWithExitCode 0
 }
 
+function Stop-ArtifactLockers {
+  # Terminates dotnet processes that are holding locks on artifacts shared libraries
+  #
+  # This function finds dotnet processes spawned from <repo>/.dotnet/dotnet that have file handles
+  # open to shared library files in the artifacts directory and terminates them to prevent build conflicts.
+  #
+  # Parameters:
+  #   $1 - RepoRoot: The root directory of the repository (required)
+
+  local repo_root="${1:-$(pwd)}"
+  local artifacts_path="$repo_root/artifacts"
+
+  # Exit early if artifacts directory doesn't exist
+  if [[ ! -d "$artifacts_path" ]]; then
+    return 0
+  fi
+
+  # Find dotnet processes spawned from this repository's .dotnet directory
+  local repo_dotnet_path="$repo_root/.dotnet/dotnet"
+  local dotnet_pids=()
+
+  # Get all dotnet processes and filter by exact path
+  if command -v pgrep >/dev/null 2>&1; then
+    # Use pgrep if available (more efficient)
+    while IFS= read -r line; do
+      local pid
+      local path
+      pid=$(echo "$line" | cut -d' ' -f1)
+      path=$(echo "$line" | cut -d' ' -f2-)
+      if [[ "$path" == "$repo_dotnet_path" ]]; then
+        dotnet_pids+=("$pid")
+      fi
+    done < <(pgrep -f dotnet -l 2>/dev/null | grep -E "^[0-9]+ .*dotnet$" || true)
+  else
+    # Fallback to ps if pgrep is not available
+    while IFS= read -r line; do
+      local pid
+      local cmd
+      pid=$(echo "$line" | awk '{print $2}')
+      cmd=$(echo "$line" | awk '{for(i=11;i<=NF;i++) printf "%s ", $i; print ""}' | sed 's/ $//')
+      if [[ "$cmd" == "$repo_dotnet_path" ]]; then
+        dotnet_pids+=("$pid")
+      fi
+    done < <(ps aux | grep dotnet | grep -v grep || true)
+  fi
+
+  if [[ ${#dotnet_pids[@]} -eq 0 ]]; then
+    return 0
+  fi
+
+  # Check each dotnet process for command lines pointing to artifacts DLLs
+  local pids_to_kill=()
+  for pid in "${dotnet_pids[@]}"; do
+    # Skip if process no longer exists
+    if ! kill -0 "$pid" 2>/dev/null; then
+      continue
+    fi
+
+    local has_artifact_dll=false
+
+    # Get the command line for this process
+    local cmdline=""
+    if [[ -r "/proc/$pid/cmdline" ]]; then
+      # Linux: read from /proc/pid/cmdline
+      cmdline=$(tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null || true)
+    elif command -v ps >/dev/null 2>&1; then
+      # macOS/other: use ps to get command line
+      cmdline=$(ps -p "$pid" -o command= 2>/dev/null || true)
+    fi
+
+    # Check if command line contains any DLL path under artifacts
+    if [[ -n "$cmdline" && "$cmdline" == *"$artifacts_path"*.dll* ]]; then
+      has_artifact_dll=true
+    fi
+
+    if [[ "$has_artifact_dll" == true ]]; then
+      echo "Terminating dotnet process $pid with artifacts DLL in command line"
+      pids_to_kill+=("$pid")
+    fi
+  done
+
+  # Kill all identified processes in parallel
+  if [[ ${#pids_to_kill[@]} -gt 0 ]]; then
+    # Send SIGTERM to all processes
+    for pid in "${pids_to_kill[@]}"; do
+      kill "$pid" 2>/dev/null || true
+    done
+
+    # Wait up to 5 seconds for all processes to exit
+    local count=0
+    local still_running=()
+    while [[ $count -lt 50 ]]; do
+      still_running=()
+      for pid in "${pids_to_kill[@]}"; do
+        if kill -0 "$pid" 2>/dev/null; then
+          still_running+=("$pid")
+        fi
+      done
+
+      if [[ ${#still_running[@]} -eq 0 ]]; then
+        break
+      fi
+
+      sleep 0.1
+      ((count++))
+    done
+
+    # Force kill any processes still running after 5 seconds
+    for pid in "${still_running[@]}"; do
+      if kill -0 "$pid" 2>/dev/null; then
+        echo "Force killing dotnet process $pid"
+        kill -9 "$pid" 2>/dev/null || true
+      fi
+    done
+  fi
+}
+
 if [[ "$clean" == true ]]; then
   if [ -d "$artifacts_dir" ]; then
+    # Kill any lingering dotnet processes that might be holding onto artifacts
+    Stop-ArtifactLockers "$repo_root"
     rm -rf $artifacts_dir
     echo "Artifacts directory deleted."
   fi
@@ -273,5 +392,8 @@ fi
 if [[ "$restore" == true ]]; then
   InitializeNativeTools
 fi
+
+# Kill any lingering dotnet processes that might be holding onto artifacts
+Stop-ArtifactLockers "$repo_root"
 
 Build

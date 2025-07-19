@@ -37,7 +37,7 @@ Param(
 # Unset 'Platform' environment variable to avoid unwanted collision in InstallDotNetCore.targets file
 # some computer has this env var defined (e.g. Some HP)
 if($env:Platform) {
-  $env:Platform=""  
+  $env:Platform=""
 }
 function Print-Usage() {
   Write-Host "Common settings:"
@@ -108,10 +108,10 @@ function Build {
     # Re-assign properties to a new variable because PowerShell doesn't let us append properties directly for unclear reasons.
     # Explicitly set the type as string[] because otherwise PowerShell would make this char[] if $properties is empty.
     [string[]] $msbuildArgs = $properties
-    
-    # Resolve relative project paths into full paths 
+
+    # Resolve relative project paths into full paths
     $projects = ($projects.Split(';').ForEach({Resolve-Path $_}) -join ';')
-    
+
     $msbuildArgs += "/p:Projects=$projects"
     $properties = $msbuildArgs
   }
@@ -139,9 +139,59 @@ function Build {
     @properties
 }
 
+function Stop-ArtifactLockers {
+  <#
+  .SYNOPSIS
+  Terminates dotnet processes that are holding locks on artifacts DLLs
+
+  .DESCRIPTION
+  This function finds dotnet processes spawned from .dotnet/dotnet.exe that have file handles
+  open to DLL files in the artifacts directory and terminates them to prevent build conflicts.
+
+  .PARAMETER RepoRoot
+  The root directory of the repository. Defaults to current location.
+  #>
+  param(
+    [string]$RepoRoot = (Get-Location).Path
+  )
+
+  $artifactsPath = Join-Path $RepoRoot 'artifacts'
+
+  # Exit early if artifacts directory doesn't exist
+  if (-not (Test-Path $artifactsPath)) {
+    return
+  }
+
+  # Find dotnet processes spawned from this repository's .dotnet directory
+  $repoDotnetPath = Join-Path $RepoRoot '.dotnet\dotnet.exe'
+  $artifactsRoot = Join-Path $RepoRoot 'artifacts'
+  $dotnetExes = @()
+  try {
+    $dotnetExes = Get-Process -Name 'dotnet' -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $repoDotnetPath -and $_.CommandLine.StartsWith($artifactsRoot) }
+  }
+  catch {
+    return
+  }
+
+  if ($dotnetExes.Count -eq 0) {
+    return
+  }
+
+  # Check each dotnet process for locks on artifacts DLLs
+  foreach ($process in $dotnetExes) {
+    try {
+      $process.Kill()
+    }
+    catch {
+      # Silently continue if we can't check or kill a process
+    }
+  }
+}
+
 try {
   if ($clean) {
     if (Test-Path $ArtifactsDir) {
+      Stop-ArtifactLockers -RepoRoot $RepoRoot
       Remove-Item -Recurse -Force $ArtifactsDir
       Write-Host 'Artifacts directory deleted.'
     }
@@ -166,6 +216,8 @@ try {
   if ($restore) {
     InitializeNativeTools
   }
+
+  Stop-ArtifactLockers -RepoRoot $RepoRoot
 
   Build
 }
