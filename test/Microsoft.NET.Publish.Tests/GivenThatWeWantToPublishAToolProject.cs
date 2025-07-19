@@ -35,7 +35,7 @@ namespace Microsoft.NET.Publish.Tests
             publishCommand.Execute();
 
             publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework)
-                .EnumerateFiles().Should().Contain(f => f.Name == "consoledemo" + Constants.ExeSuffix);
+                .Should().HaveFile("consoledemo" + Constants.ExeSuffix);
         }
     }
 }
