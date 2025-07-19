@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _toolPackageDownloaderMock = new ToolPackageDownloaderMock(
                 _toolPackageStore,
-                _fileSystem,    
+                _fileSystem,
                 _reporter,
                 new List<MockFeed>
                 {
@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 },
                 downloadCallback: () => _installCalledCount++);
 
-            _parseResult = Parser.Instance.Parse("dotnet tool restore");
+            _parseResult = Parser.Parse("dotnet tool restore");
 
             _localToolsResolverCache
                 = new LocalToolsResolverCache(

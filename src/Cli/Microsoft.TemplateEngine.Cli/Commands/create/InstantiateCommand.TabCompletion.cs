@@ -60,11 +60,11 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                                 templateGroup,
                                 template);
 
-                            CommandLineConfiguration parser = ParserFactory.CreateParser(command);
+                            System.CommandLine.Command parser = ParserFactory.CreateParser(command);
 
                             //it is important to pass raw text to get the completion
                             //completions for args passed as array are not supported
-                            ParseResult parseResult = parser.Parse(context.CommandLineText);
+                            ParseResult parseResult = parser.Parse(context.CommandLineText, ParserFactory.ParserConfiguration);
                             foreach (CompletionItem completion in parseResult.GetCompletions(context.CursorPosition))
                             {
                                 ////TODO: conditionals tab completion here

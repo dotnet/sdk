@@ -24,8 +24,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             };
             File.WriteAllLines(tempFilePath, lines);
 
-            var parser = Parser.Instance;
-            var parseResult = parser.Parse(new[] { "dotnet", $"@{tempFilePath}" });
+            var parseResult = Parser.Parse(new[] { "dotnet", $"@{tempFilePath}" });
 
             var tokens = parseResult.Tokens.Select(t => t.Value);
             var tokenString = string.Join(", ", tokens);
@@ -57,8 +56,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             };
             File.WriteAllLines(tempFilePath, lines);
 
-            var parser = Parser.Instance;
-            var parseResult = parser.Parse(new[] { "dotnet", $"@{tempFilePath}" });
+            var parseResult = Parser.Parse(new[] { "dotnet", $"@{tempFilePath}" });
             var tokens = parseResult.Tokens.Select(t => t.Value);
             var tokenized = new[] {
                 "build",

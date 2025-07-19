@@ -151,8 +151,7 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
         public void ForwardAsWorks()
         {
             var cmd = Microsoft.DotNet.Cli.Commands.Package.Add.PackageAddCommandParser.GetCommand();
-            var parser = new System.CommandLine.CommandLineConfiguration(cmd);
-            var parseResult = parser.Parse(["package", "add", "thing", "--prerelease"]);
+            var parseResult = cmd.Parse(["package", "add", "thing", "--prerelease"]);
             var forwardedValues = parseResult.OptionValuesToBeForwarded();
             forwardedValues.Should().Contain("--prerelease");
         }

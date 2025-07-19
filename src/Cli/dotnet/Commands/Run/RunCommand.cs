@@ -516,7 +516,7 @@ public class RunCommand
 
     public static RunCommand FromArgs(string[] args)
     {
-        var parseResult = Parser.Instance.ParseFrom("dotnet run", args);
+        var parseResult = Parser.Parse(["dotnet", "run", ..args]);
         return FromParseResult(parseResult);
     }
 
@@ -654,7 +654,7 @@ public class RunCommand
         tokensMinusProject.Add(possibleProject);
 
         var tokensToParse = tokensMinusProject.ToArray();
-        var newParseResult = Parser.Instance.Parse(tokensToParse);
+        var newParseResult = Parser.Parse(tokensToParse);
         return newParseResult;
     }
 }

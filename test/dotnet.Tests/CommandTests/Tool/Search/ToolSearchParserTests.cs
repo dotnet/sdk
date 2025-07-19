@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void DotnetToolSearchShouldThrowWhenNoSearchTerm()
         {
-            var result = Parser.Instance.Parse("dotnet tool search");
+            var result = Parser.Parse("dotnet tool search");
             Action a = () => new ToolSearchCommand(result);
             a.Should().Throw<CommandParsingException>();
         }
@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void ListSearchParserCanGetArguments()
         {
-            var result = Parser.Instance.Parse("dotnet tool search mytool --detail --skip 3 --take 4 --prerelease");
+            var result = Parser.Parse("dotnet tool search mytool --detail --skip 3 --take 4 --prerelease");
 
             var packageId = result.GetValue<string>(ToolSearchCommandParser.SearchTermArgument);
 

@@ -19,8 +19,7 @@ public class StoreCommand : MSBuildForwardingApp
 
     public static StoreCommand FromArgs(string[] args, string msbuildPath = null)
     {
-        var parser = Parser.Instance;
-        var result = parser.ParseFrom("dotnet store", args);
+        var result = Parser.Parse(["dotnet", "store", ..args]);
         return FromParseResult(result, msbuildPath);
     }
 

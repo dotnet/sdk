@@ -347,7 +347,7 @@ class Program
         [InlineData(true, "--deprecated", "--outdated")]
         public void ItEnforcesOptionRules(bool throws, params string[] options)
         {
-            var parseResult = Parser.Instance.Parse($"dotnet list package {string.Join(' ', options)}");
+            var parseResult = Parser.Parse(["dotnet", "list", "package", ..options]);
             Action checkRules = () => Microsoft.DotNet.Cli.Commands.Package.List.PackageListCommand.EnforceOptionRules(parseResult);
 
             if (throws)

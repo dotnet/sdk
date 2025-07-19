@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _toolPackageDownloaderMock = new ToolPackageDownloaderMock(
                 store: _toolPackageStore,
                 fileSystem: _fileSystem,
-                reporter: _reporter,       
+                reporter: _reporter,
                 new List<MockFeed>
                 {
                     _mockFeed
@@ -104,8 +104,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new FakeDangerousFileDetector());
             _toolManifestEditor = new ToolManifestEditor(_fileSystem, new FakeDangerousFileDetector());
 
-            _parseResult = Parser.Instance.Parse($"dotnet tool update {_packageIdA.ToString()}");
-            _parseResultUpdateAll = Parser.Instance.Parse($"dotnet tool update --all --local");
+            _parseResult = Parser.Parse($"dotnet tool update {_packageIdA.ToString()}");
+            _parseResultUpdateAll = Parser.Parse($"dotnet tool update --all --local");
 
             _toolRestoreCommand = new ToolRestoreCommand(
                 _parseResult,
@@ -136,7 +136,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenPassingRestoreActionConfigOptions()
         {
-            var parseResult = Parser.Instance.Parse($"dotnet tool update {_packageIdA.ToString()} --ignore-failed-sources");
+            var parseResult = Parser.Parse($"dotnet tool update {_packageIdA.ToString()} --ignore-failed-sources");
             var command = new ToolUpdateLocalCommand(parseResult);
             command._toolInstallLocalCommand.Value.restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
         }
@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void WhenPassingIgnoreFailedSourcesItShouldNotThrow()
         {
             _fileSystem.File.WriteAllText(Path.Combine(_temporaryDirectory, "nuget.config"), _nugetConfigWithInvalidSources);
-            var parseResult = Parser.Instance.Parse($"dotnet tool update {_packageIdA.ToString()} --ignore-failed-sources");
+            var parseResult = Parser.Parse($"dotnet tool update {_packageIdA.ToString()} --ignore-failed-sources");
             var updateLocalCommand = new ToolUpdateLocalCommand(
                 parseResult,
                 _toolPackageDownloaderMock,
@@ -175,7 +175,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             _toolRestoreCommand.Execute();
             new ToolRestoreCommand(
-                Parser.Instance.Parse($"dotnet tool restore"),
+                Parser.Parse($"dotnet tool restore"),
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _localToolsResolverCache,
@@ -250,7 +250,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.WriteAllText(explicitManifestFilePath, _jsonContent);
 
             ParseResult parseResult
-                = Parser.Instance.Parse(
+                = Parser.Parse(
                     $"dotnet tool update {_packageIdA.ToString()} --tool-manifest {explicitManifestFilePath}");
 
             _toolRestoreCommand.Execute();
@@ -271,7 +271,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunFromToolUpdateRedirectCommandWithPackageIdItShouldUpdateFromManifestFile()
         {
-            ParseResult parseResult = Parser.Instance.Parse($"dotnet tool update {_packageIdA.ToString()}");
+            ParseResult parseResult = Parser.Parse($"dotnet tool update {_packageIdA.ToString()}");
 
             _toolRestoreCommand.Execute();
             _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
@@ -382,7 +382,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Clear();
 
             ParseResult parseResult
-                = Parser.Instance.Parse(
+                = Parser.Parse(
                     $"dotnet tool update {_packageIdA.ToString()} --version 0.9.0 --allow-downgrade");
 
             _toolRestoreCommand.Execute();

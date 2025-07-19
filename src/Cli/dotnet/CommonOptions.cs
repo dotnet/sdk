@@ -273,7 +273,7 @@ internal static class CommonOptions
             Description = CliStrings.DisableBuildServersOptionDescription,
             Arity = ArgumentArity.Zero
         }
-        .ForwardAsMany(_ => ["--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false"]);
+        .ForwardIfEnabled(["--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false"]);
 
     public static Option<string> ArchitectureOption =
         new ForwardedOption<string>("--arch", "-a")
@@ -311,7 +311,7 @@ internal static class CommonOptions
         {
             Description = CliStrings.SelfContainedOptionDescription
         }
-        .SetForwardingFunction(ForwardSelfContainedOptions);
+        .ForwardIfEnabled([$"--property:SelfContained=true", "--property:_CommandLineDefinedSelfContained=true"]);
 
     public static Option<bool> NoSelfContainedOption =
         new ForwardedOption<bool>("--no-self-contained")
@@ -319,7 +319,7 @@ internal static class CommonOptions
             Description = CliStrings.FrameworkDependentOptionDescription,
             Arity = ArgumentArity.Zero
         }
-        .SetForwardingFunction((_, p) => ForwardSelfContainedOptions(false, p));
+        .ForwardIfEnabled([$"--property:SelfContained=false", "--property:_CommandLineDefinedSelfContained=true"]);
 
     public static readonly Option<IReadOnlyDictionary<string, string>> EnvOption = new("--environment", "-e")
     {
@@ -445,12 +445,6 @@ internal static class CommonOptions
     private static string GetOsFromRid(string rid) => rid.Substring(0, rid.LastIndexOf("-", StringComparison.InvariantCulture));
 
     private static string GetArchFromRid(string rid) => rid.Substring(rid.LastIndexOf("-", StringComparison.InvariantCulture) + 1, rid.Length - rid.LastIndexOf("-", StringComparison.InvariantCulture) - 1);
-
-    private static IEnumerable<string> ForwardSelfContainedOptions(bool isSelfContained, ParseResult parseResult)
-    {
-        IEnumerable<string> selfContainedProperties = [$"--property:SelfContained={isSelfContained}", "--property:_CommandLineDefinedSelfContained=true"];
-        return selfContainedProperties;
-    }
 
     internal static Option<T> AddCompletions<T>(this Option<T> option, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
     {
