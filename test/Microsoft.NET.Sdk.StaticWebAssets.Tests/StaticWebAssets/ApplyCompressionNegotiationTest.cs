@@ -931,6 +931,65 @@ public class ApplyCompressionNegotiationTest
     }
 
     [Fact]
+    public void AppliesContentNegotiationRules_DoesNotFailWithCollectionModifiedException()
+    {
+        // This test reproduces the bug where shared lists were being modified during enumeration
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var task = new ApplyCompressionNegotiation
+        {
+            BuildEngine = buildEngine.Object,
+            CandidateAssets =
+            [
+                CreateCandidate(
+                    Path.Combine("wwwroot", "candidate.js"),
+                    "MyPackage",
+                    "Discovered",
+                    "candidate.js",
+                    "All",
+                    "All",
+                    "original-fingerprint",
+                    "original",
+                    fileLength: 20
+                ),
+                CreateCandidate(
+                    Path.Combine("compressed", "candidate.js.gz"),
+                    "MyPackage",
+                    "Discovered",
+                    "candidate.js",
+                    "All",
+                    "All",
+                    "compressed-fingerprint",
+                    "compressed",
+                    Path.Combine("wwwroot", "candidate.js"),
+                    "Content-Encoding",
+                    "gzip",
+                    9
+                )
+            ],
+            CandidateEndpoints =
+            [
+                CreateCandidateEndpoint(
+                    "candidate.js",
+                    Path.Combine("wwwroot", "candidate.js"),
+                    CreateHeaders("text/javascript", [("Content-Length", "20"), ("Cache-Control", "max-age=3600"), ("ETag", "\"original-etag\""), ("Last-Modified", "Wed, 01 Jan 2020 00:00:00 GMT")])),
+
+                CreateCandidateEndpoint(
+                    "candidate.js.gz",
+                    Path.Combine("compressed", "candidate.js.gz"),
+                    CreateHeaders("text/javascript", [("Content-Length", "9"), ("Cache-Control", "max-age=3600"), ("ETag", "\"compressed-etag\""), ("Last-Modified", "Wed, 01 Jan 2020 00:00:00 GMT")]))
+            ],
+        };
+
+        // Act & Assert - This should not throw a CollectionModifiedException
+        var result = task.Execute();
+        result.Should().Be(true);
+    }
+
+    [Fact]
     public void AppliesContentNegotiationRules_IgnoresAlreadyProcessedEndpoints()
     {
         var errorMessages = new List<string>();

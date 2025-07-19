@@ -51,12 +51,16 @@ public class GenerateStaticWebAssetEndpointsPropsFile : Task
             var path = asset.ReplaceTokens(asset.RelativePath, StaticWebAssetTokenResolver.Instance);
             var fullPathExpression = $"""$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\{StaticWebAsset.Normalize(PackagePathPrefix)}\{StaticWebAsset.Normalize(path).Replace("/", "\\")}'))""";
 
+            // Use internal string properties directly to avoid allocations
+            var selectorsXml = element.SelectorsString ?? "";
+            var headersXml = element.ResponseHeadersString ?? "";
+            var propertiesXml = element.EndpointPropertiesString ?? "";
             itemGroup.Add(new XElement(nameof(StaticWebAssetEndpoint),
                 new XAttribute("Include", element.Route),
                 new XElement(nameof(StaticWebAssetEndpoint.AssetFile), fullPathExpression),
-                new XElement(nameof(StaticWebAssetEndpoint.Selectors), new XCData(StaticWebAssetEndpointSelector.ToMetadataValue(element.Selectors))),
-                new XElement(nameof(StaticWebAssetEndpoint.EndpointProperties), new XCData(StaticWebAssetEndpointProperty.ToMetadataValue(element.EndpointProperties))),
-                new XElement(nameof(StaticWebAssetEndpoint.ResponseHeaders), new XCData(StaticWebAssetEndpointResponseHeader.ToMetadataValue(element.ResponseHeaders)))));
+                new XElement(nameof(StaticWebAssetEndpoint.Selectors), new XCData(selectorsXml)),
+                new XElement(nameof(StaticWebAssetEndpoint.EndpointProperties), new XCData(propertiesXml)),
+                new XElement(nameof(StaticWebAssetEndpoint.ResponseHeaders), new XCData(headersXml))));
         }
 
         var document = new XDocument(new XDeclaration("1.0", "utf-8", "yes"));

@@ -39,7 +39,11 @@ public class DefineStaticWebAssetEndpoints : Task
                 Log,
                 contentTypeProvider),
             static (i, loop, state) => state.Process(i, loop),
-            static worker => worker.Finally());
+            static (worker) =>
+            {
+                worker.Finally();
+                worker.Dispose();
+            });
 
         Endpoints = StaticWebAssetEndpoint.ToTaskItems(endpoints);
 
@@ -116,6 +120,11 @@ public class DefineStaticWebAssetEndpoints : Task
 
         private readonly List<StaticWebAsset.StaticWebAssetResolvedRoute> _resolvedRoutes = new(2);
 
+        private readonly List<StaticWebAssetEndpointResponseHeader> _headersList = new(6);
+        private readonly List<StaticWebAssetEndpointProperty> _propertiesList = new(10);
+
+        private readonly JsonWriterContext _serializationContext = new();
+
         private void CreateAnAddEndpoints(
             StaticWebAsset asset,
             string length,
@@ -125,55 +134,32 @@ public class DefineStaticWebAssetEndpoints : Task
             foreach (var (label, route, values) in _resolvedRoutes)
             {
                 var (mimeType, cacheSetting) = ResolveContentType(asset, ContentTypeProvider, matchContext, Log);
-                var headers = new StaticWebAssetEndpointResponseHeader[6]
-                {
-                    new()
-                    {
-                        Name = "Accept-Ranges",
-                        Value = "bytes"
-                    },
-                    new()
-                    {
-                        Name = "Content-Length",
-                        Value = length,
-                    },
-                    new()
-                    {
-                        Name = "Content-Type",
-                        Value = mimeType,
-                    },
-                    new()
-                    {
-                        Name = "ETag",
-                        Value = $"\"{asset.Integrity}\"",
-                    },
-                    new()
-                    {
-                        Name = "Last-Modified",
-                        Value = lastModified,
-                    },
-                    default
-                };
+
+                _headersList.Clear();
+                _headersList.Add(new() { Name = "Accept-Ranges", Value = "bytes" });
+                _headersList.Add(new() { Name = "Content-Length", Value = length });
+                _headersList.Add(new() { Name = "Content-Type", Value = mimeType });
+                _headersList.Add(new() { Name = "ETag", Value = $"\"{asset.Integrity}\"" });
+                _headersList.Add(new() { Name = "Last-Modified", Value = lastModified });
 
                 if (values.ContainsKey("fingerprint"))
                 {
                     // max-age=31536000 is one year in seconds. immutable means that the asset will never change.
                     // max-age is for browsers that do not support immutable.
-                    headers[5] = new() { Name = "Cache-Control", Value = "max-age=31536000, immutable" };
+                    _headersList.Add(new() { Name = "Cache-Control", Value = "max-age=31536000, immutable" });
                 }
                 else
                 {
                     // Force revalidation on non-fingerprinted assets. We can be more granular here and have rules based on the content type.
                     // These values can later be changed at runtime by modifying the endpoint. For example, it might be safer to cache images
                     // for a longer period of time than scripts or stylesheets.
-                    headers[5] = new() { Name = "Cache-Control", Value = !string.IsNullOrEmpty(cacheSetting) ? cacheSetting : "no-cache" };
+                    _headersList.Add(new() { Name = "Cache-Control", Value = !string.IsNullOrEmpty(cacheSetting) ? cacheSetting : "no-cache" });
                 }
 
-                var properties = new StaticWebAssetEndpointProperty[values.Count + (values.Count > 0 ? 2 : 1)];
-                var i = 0;
+                _propertiesList.Clear();
                 foreach (var value in values)
                 {
-                    properties[i++] = new StaticWebAssetEndpointProperty { Name = value.Key, Value = value.Value };
+                    _propertiesList.Add(new StaticWebAssetEndpointProperty { Name = value.Key, Value = value.Value });
                 }
 
                 if (values.Count > 0)
@@ -182,22 +168,26 @@ public class DefineStaticWebAssetEndpoints : Task
                     // The combination of label and list of values should be unique.
                     // In this way, we can identify an endpoint resource.fingerprint.ext by its label (for example resource.ext) and its values
                     // (fingerprint).
-                    properties[i++] = new StaticWebAssetEndpointProperty { Name = "label", Value = label };
+                    _propertiesList.Add(new StaticWebAssetEndpointProperty { Name = "label", Value = label });
                 }
 
                 // We append the integrity in the format expected by the browser so that it can be opaque to the runtime.
                 // If in the future we change it to sha384 or sha512, the runtime will not need to be updated.
-                properties[i++] = new StaticWebAssetEndpointProperty { Name = "integrity", Value = $"sha256-{asset.Integrity}" };
+                _propertiesList.Add(new StaticWebAssetEndpointProperty { Name = "integrity", Value = $"sha256-{asset.Integrity}" });
 
-                    var finalRoute = asset.IsProject() || asset.IsPackage() ? StaticWebAsset.Normalize(Path.Combine(asset.BasePath, route)) : route;
+                var finalRoute = asset.IsProject() || asset.IsPackage() ? StaticWebAsset.Normalize(Path.Combine(asset.BasePath, route)) : route;
+
+                var headersString = StaticWebAssetEndpointResponseHeader.ToMetadataValue(_headersList, _serializationContext);
+                var propertiesString = StaticWebAssetEndpointProperty.ToMetadataValue(_propertiesList, _serializationContext);
 
                 var endpoint = new StaticWebAssetEndpoint()
                 {
                     Route = finalRoute,
                     AssetFile = asset.Identity,
-                    EndpointProperties = properties,
-                    ResponseHeaders = headers
                 };
+
+                endpoint.SetResponseHeadersString(headersString);
+                endpoint.SetEndpointPropertiesString(propertiesString);
 
                 Log.LogMessage(MessageImportance.Low, $"Adding endpoint {endpoint.Route} for asset {asset.Identity}.");
                 CurrentEndpoints.Add(endpoint);
@@ -227,6 +217,11 @@ public class DefineStaticWebAssetEndpoints : Task
             {
                 CollectedEndpoints.AddRange(CurrentEndpoints);
             }
+        }
+
+        public void Dispose()
+        {
+            _serializationContext.Dispose();
         }
 
         internal ParallelWorker Process(int i, ParallelLoopState _)
