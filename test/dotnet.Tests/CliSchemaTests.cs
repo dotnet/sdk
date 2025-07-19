@@ -220,6 +220,7 @@ public class CliSchemaTests : SdkTest
           "hidden": true,
           "valueType": "System.Boolean",
           "hasDefaultValue": true,
+          "defaultValue": false,
           "arity": {
             "minimum": 0,
             "maximum": 1
@@ -244,7 +245,8 @@ public class CliSchemaTests : SdkTest
           "description": "Determines changes without actually modifying the file system",
           "hidden": false,
           "valueType": "System.Boolean",
-          "hasDefaultValue": false,
+          "hasDefaultValue": true,
+          "defaultValue": false,
           "arity": {
             "minimum": 0,
             "maximum": 0
@@ -1100,7 +1102,7 @@ public class CliSchemaTests : SdkTest
         stream.Position = 0;
         var reader = new StreamReader(stream);
         var output = reader.ReadToEnd();
-        output.Should().BeEquivalentTo(json.ReplaceLineEndings("\n"));
+        output.Should().BeVisuallyEquivalentTo(json);
     }
 
     [Fact]
