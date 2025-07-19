@@ -20,7 +20,7 @@ internal partial class FrameworkPackages
             { "System.Formats.Asn1", "5.0.0" },
             { "System.IO.FileSystem.AccessControl", "5.0.0" },
             { "System.Net.Http.Json", "5.0.0" },
-            { "System.Reflection.DispatchProxy", "4.7.1" },
+            { "System.Reflection.DispatchProxy", "4.8.2" },
             { "System.Reflection.Metadata", "5.0.0" },
             { "System.Runtime.CompilerServices.Unsafe", "5.0.0" },
             { "System.Security.AccessControl", "5.0.0" },
