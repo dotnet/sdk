@@ -61,6 +61,7 @@
     <PackageReference Include="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" />
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
+    <PackageReference Include="Spectre.Console" />
     <PackageReference Include="System.ServiceProcess.ServiceController" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" PrivateAssets="All" ExcludeAssets="Runtime" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
     <PackageReference Include="Microsoft.Windows.CsWin32" IncludeAssets="all" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />

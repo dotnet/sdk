@@ -17,7 +17,7 @@ internal static class SdkUpdateCommandParser
 
     public static readonly Option<bool> UpdateGlobalJsonOption = new("--update-global-json")
     {
-        Description = "Update the sdk version in global.json files to the updated SDK version",
+        Description = "Update the sdk version in applicable global.json files to the updated SDK version",
         Arity = ArgumentArity.Zero
     };
 

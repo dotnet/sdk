@@ -23,12 +23,18 @@ internal static class SdkInstallCommandParser
         Description = "The path to install the .NET SDK to",
     };
 
-    //  TODO: Ideally you could just specify --set-default-root, as well as --set-default-root true or --set-default-root false
-    //  This would help for interactivity
-    public static readonly Option<bool> SetDefaultRootOption = new("--set-default-root")
+    public static readonly Option<bool?> SetDefaultInstallOption = new("--set-default-install")
     {
-        Description = "Add installation path to PATH and set DOTNET_ROOT",
-        Arity = ArgumentArity.Zero
+        Description = "Set the install path as the default dotnet install.  This will update the PATH and DOTNET_ROOT environhment variables.",
+        Arity = ArgumentArity.ZeroOrOne,
+        DefaultValueFactory = r => null
+    };
+
+    public static readonly Option<bool?> UpdateGlobalJsonOption = new("--update-global-json")
+    {
+        Description = "Update the sdk version in applicable global.json files to the installed SDK version",
+        Arity = ArgumentArity.ZeroOrOne,
+        DefaultValueFactory = r => null
     };
 
     public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption();
@@ -41,7 +47,7 @@ internal static class SdkInstallCommandParser
     }
 
     //  Trying to use the same command object for both "dotnet install" and "dotnet sdk install" causes the following exception:
-    //  System.InvalidOperationException: Command install has more than one child named "versionOrChannel".
+    //  System.InvalidOperationException: Command install has more than one child named "channel".
     //  So we create a separate instance for each case
     private static readonly Command RootInstallCommand = ConstructCommand();
 
@@ -54,10 +60,11 @@ internal static class SdkInstallCommandParser
     {
         Command command = new("install", "Installs the .NET SDK");
 
-        command.Arguments.Add(VersionOrChannelArgument);
+        command.Arguments.Add(ChannelArgument);
 
         command.Options.Add(InstallPathOption);
-        command.Options.Add(SetDefaultRootOption);
+        command.Options.Add(SetDefaultInstallOption);
+        command.Options.Add(UpdateGlobalJsonOption);
 
         command.Options.Add(InteractiveOption);
 
