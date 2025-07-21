@@ -1,8 +1,7 @@
 {
   "profiles": {
     "dotnet": {
-      "commandName": "Project",
-      "commandLineArgs": "pack \"C:\\Users\\t-kalfikadu\\sdk\\test\\TestAssets\\TestProjects\\TestLibraryWithConfiguration\\TestLibraryWithConfiguration.csproj\" --version 1.2.3"
+      "commandName": "Project"
     }
   }
 }
