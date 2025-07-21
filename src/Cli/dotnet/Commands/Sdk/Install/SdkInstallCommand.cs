@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Net.Http;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Utils;
 using Spectre.Console;
+
 
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
@@ -105,7 +108,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         if (channelFromGlobalJson != null)
         {
-            Console.WriteLine($".NET SDK {channelFromGlobalJson} will be installed since {globalJsonPath} specifies that version.");
+            SpectreAnsiConsole.WriteLine($".NET SDK {channelFromGlobalJson} will be installed since {globalJsonPath} specifies that version.");
 
             resolvedChannel = channelFromGlobalJson;
         }
@@ -118,8 +121,8 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             if (_interactive)
             {
 
-                Console.WriteLine("Available supported channels: " + string.Join(' ', GetAvailableChannels()));
-                Console.WriteLine("You can also specify a specific version (for example 9.0.304).");
+                SpectreAnsiConsole.WriteLine("Available supported channels: " + string.Join(' ', GetAvailableChannels()));
+                SpectreAnsiConsole.WriteLine("You can also specify a specific version (for example 9.0.304).");
 
                 resolvedChannel = SpectreAnsiConsole.Prompt(
                     new TextPrompt<string>("Which channel of the .NET SDK do you want to install?")
@@ -141,7 +144,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                 if (defaultInstallState == DefaultInstall.None)
                 {
                     resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
-                        "Do you want to set this install path as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
+                        $"Do you want to set the install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
                         defaultValue: true);
                 }
                 else if (defaultInstallState == DefaultInstall.User)
@@ -160,11 +163,11 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                 }
                 else if (defaultInstallState == DefaultInstall.Admin)
                 {
-                    Console.WriteLine($"You have an existing admin install of .NET in {currentInstallPath}. We can configure your system to use the new install of .NET " +
+                    SpectreAnsiConsole.WriteLine($"You have an existing admin install of .NET in {currentInstallPath}. We can configure your system to use the new install of .NET " +
                         $"in {resolvedInstallPath} instead. This would mean that the admin install of .NET would no longer be accessible from the PATH or from Visual Studio.");
-                    Console.WriteLine("You can change this later with the \"dotnet defaultinstall\" command.");
+                    SpectreAnsiConsole.WriteLine("You can change this later with the \"dotnet defaultinstall\" command.");
                     resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
-                        "Do you want to set this install path as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
+                        $"Do you want to set the user install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
                         defaultValue: true);
                 }
                 else if (defaultInstallState == DefaultInstall.Inconsistent)
@@ -179,46 +182,103 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             }
         }
 
-        SpectreAnsiConsole.MarkupInterpolated($"Installing .NET SDK [blue]{resolvedChannel}[/] to [blue]{resolvedInstallPath}[/]...");
+        List<string> additionalVersionsToInstall = new();
+
+        var resolvedChannelVersion = ResolveChannelVersion(resolvedChannel);
+
+        if (resolvedSetDefaultInstall == true && defaultInstallState == DefaultInstall.Admin)
+        {
+            if (_interactive)
+            {
+                var latestAdminVersion = GetLatestInstalledAdminVersion();
+                if (new ReleaseVersion(resolvedChannelVersion) < new ReleaseVersion(latestAdminVersion))
+                {
+                    SpectreAnsiConsole.WriteLine($"Since the admin installs of the .NET SDK will no longer be accessible, we recommend installing the latest admin installed " +
+                        $"version ({latestAdminVersion}) to the new user install location.  This will make sure this version of the .NET SDK continues to be used for projects that don't specify a .NET SDK version in global.json.");
+
+                    if (SpectreAnsiConsole.Confirm($"Also install .NET SDK {latestAdminVersion}?",
+                        defaultValue: true))
+                    {
+                        additionalVersionsToInstall.Add(latestAdminVersion);
+                    }
+                }
+            }
+            else
+            {
+                //  TODO: Add command-linen option for installing admin versions locally
+            }
+        }
+
+        
+
+        SpectreAnsiConsole.MarkupInterpolated($"Installing .NET SDK [blue]{resolvedChannelVersion}[/] to [blue]{resolvedInstallPath}[/]...");
 
         string downloadLink = "https://builds.dotnet.microsoft.com/dotnet/Sdk/9.0.303/dotnet-sdk-9.0.303-win-x64.exe";
 
         // Download the file to a temp path with progress
-        string tempFilePath = Path.Combine(Path.GetTempPath(), Path.GetFileName(downloadLink));
         using (var httpClient = new System.Net.Http.HttpClient())
         {
             SpectreAnsiConsole.Progress()
                 .Start(ctx =>
                 {
-                    var task = ctx.AddTask($"Downloading");
-                    using (var response = httpClient.GetAsync(downloadLink, System.Net.Http.HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult())
+                    var task = ctx.AddTask($"Downloading .NET SDK {resolvedChannelVersion}");
+
+                    List<Action> additionalDownloads = additionalVersionsToInstall.Select(version =>
                     {
-                        response.EnsureSuccessStatusCode();
-                        var contentLength = response.Content.Headers.ContentLength ?? 0;
-                        using (var stream = response.Content.ReadAsStream())
-                        using (var fileStream = File.Create(tempFilePath))
+                        var additionalTask = ctx.AddTask($"Downloading .NET SDK {version}");
+                        return (Action) (() =>
                         {
-                            var buffer = new byte[81920];
-                            long totalRead = 0;
-                            int read;
-                            while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
-                            {
-                                fileStream.Write(buffer, 0, read);
-                                totalRead += read;
-                                if (contentLength > 0)
-                                {
-                                    task.Value = (double)totalRead / contentLength * 100;
-                                }
-                            }
-                            task.Value = 100;
-                        }
+                            Download(downloadLink, httpClient, additionalTask);
+                        });
+                    }).ToList();
+                        
+                    Download(downloadLink, httpClient, task);
+
+
+                    foreach (var additionalDownload in additionalDownloads)
+                    {
+                        additionalDownload();
                     }
                 });
         }
-        Console.WriteLine($"Complete!");
+        SpectreAnsiConsole.WriteLine($"Complete!");
 
 
         return 0;
+    }
+
+    void Download(string url, HttpClient httpClient, ProgressTask task)
+    {
+        //string tempFilePath = Path.Combine(Path.GetTempPath(), Path.GetFileName(url));
+        //using (var response = httpClient.GetAsync(url, System.Net.Http.HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult())
+        //{
+        //    response.EnsureSuccessStatusCode();
+        //    var contentLength = response.Content.Headers.ContentLength ?? 0;
+        //    using (var stream = response.Content.ReadAsStream())
+        //    using (var fileStream = File.Create(tempFilePath))
+        //    {
+        //        var buffer = new byte[81920];
+        //        long totalRead = 0;
+        //        int read;
+        //        while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+        //        {
+        //            fileStream.Write(buffer, 0, read);
+        //            totalRead += read;
+        //            if (contentLength > 0)
+        //            {
+        //                task.Value = (double)totalRead / contentLength * 100;
+        //            }
+        //        }
+        //        task.Value = 100;
+        //    }
+        //}
+
+        for (int i=0; i < 100; i++)
+        {
+            task.Increment(1);
+            Thread.Sleep(20); // Simulate some work
+        }
+        task.Value = 100;
     }
 
 
@@ -247,7 +307,38 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
     List<string> GetAvailableChannels()
     {
-        return ["latest", "preview", "10", "10.0.1xx", "9", "9.0.3xx", "9.0.2xx", "9.0.1xx"];
+        return ["latest", "preview", "10", "10.0.1xx", "10.0.2xx", "9", "9.0.3xx", "9.0.2xx", "9.0.1xx"];
+    }
+
+    string ResolveChannelVersion(string channel)
+    {
+        if (channel == "preview")
+        {
+            return "11.0.100-preview.1.42424";
+        }
+        else if (channel == "latest" || channel == "10" || channel == "10.0.2xx")
+        {
+            return "10.0.203";
+        }
+        else if (channel == "10.0.1xx")
+        {
+            return "10.0.106";
+        }
+        else if (channel == "9" || channel == "9.0.3xx")
+        {
+            return "9.0.309";
+        }
+        else if (channel == "9.0.2xx")
+        {
+            return "9.0.212";
+        }
+        else if (channel == "9.0.1xx")
+        {
+            return "9.0.115";
+        }
+
+        return channel;
+        
     }
 
     enum DefaultInstall
@@ -269,6 +360,16 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         }
         currentInstallPath = Env.GetEnvironmentVariable("DOTNET_TESTHOOK_CURRENT_INSTALL_PATH");
         return returnValue;
+    }
+
+    string GetLatestInstalledAdminVersion()
+    {
+        var latestAdminVersion = Env.GetEnvironmentVariable("DOTNET_TESTHOOK_LATEST_ADMIN_VERSION");
+        if (string.IsNullOrEmpty(latestAdminVersion))
+        {
+            latestAdminVersion = "10.0.203";
+        }
+        return latestAdminVersion;
     }
 
     bool IsElevated()
