@@ -127,7 +127,7 @@
 
   <Target Name="GenerateTemplatesMsis"
           DependsOnTargets="GenerateInstallerLayout;MsiTargetsSetupInputOutputs;CalculateTemplatesVersions"
-          Inputs="@(TemplatesComponents);C:\git\forks\sdk\src\Layout\pkg\windows\msis\**\*"
+          Inputs="@(TemplatesComponents);$(RepoRoot)src\Layout\pkg\windows\msis\**\*"
           Returns="@(ChainMsi)"
           Outputs="%(TemplatesComponents.MSIInstallerFile)">
 
