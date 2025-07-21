@@ -69,17 +69,17 @@ public sealed class RunCsWinRTGenerator : ToolTask
     /// <summary>
     /// Gets whether to validate the assembly version of <c>WinRT.Runtime.dll</c>, to ensure it matches the generator.
     /// </summary>
-    public bool ValidateWinRTRuntimeAssemblyVersion { get; init; } = true;
+    public bool ValidateWinRTRuntimeAssemblyVersion { get; set; } = true;
 
     /// <summary>
     /// Gets whether to validate that any references to <c>WinRT.Runtime.dll</c> version 2 are present across any assemblies.
     /// </summary>
-    public bool ValidateWinRTRuntimeDllVersion2References { get; init; } = true;
+    public bool ValidateWinRTRuntimeDllVersion2References { get; set; } = true;
 
     /// <summary>
     /// Gets whether to treat warnings coming from 'cswinrtgen' as errors (regardless of the global 'TreatWarningsAsErrors' setting).
     /// </summary>
-    public bool TreatWarningsAsErrors { get; init; } = false;
+    public bool TreatWarningsAsErrors { get; set; } = false;
 
     /// <summary>
     /// Gets or sets the maximum number of parallel tasks to use for execution.
