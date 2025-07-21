@@ -261,42 +261,42 @@ Aranan yollar: '{1}', '{2}'.</target>
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsCommandDescription">
         <source>Removes artifacts created for file-based apps</source>
-        <target state="new">Removes artifacts created for file-based apps</target>
+        <target state="translated">Dosya tabanlı uygulamalar için oluşturulan yapıtları kaldırır</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsDays">
         <source>How many days an artifact folder needs to be unused in order to be removed</source>
-        <target state="new">How many days an artifact folder needs to be unused in order to be removed</target>
+        <target state="translated">Bir yapıt klasörünün kaldırılabilmesi için kaç gün kullanılmaması gerekir?</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsDirectoryNotFound">
         <source>Warning: Artifacts directory does not exist: {0}</source>
-        <target state="new">Warning: Artifacts directory does not exist: {0}</target>
+        <target state="translated">Uyarı: Yapıtlar dizini mevcut değil: {0}</target>
         <note>{0} is directory path.</note>
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsDryRun">
         <source>Determines changes without actually modifying the file system</source>
-        <target state="new">Determines changes without actually modifying the file system</target>
+        <target state="translated">Dosya sistemini gerçekten değiştirmeden değişiklikleri belirler</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsErrorRemovingFolder">
         <source>Error removing folder '{0}': {1}</source>
-        <target state="new">Error removing folder '{0}': {1}</target>
+        <target state="translated">‘{0}’ klasörünü kaldırırken hata oluştu: {1}</target>
         <note>{0} is folder path. {1} is inner error message.</note>
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsScanning">
         <source>Scanning for folders to remove in: {0}</source>
-        <target state="new">Scanning for folders to remove in: {0}</target>
+        <target state="translated">Kaldırılacak klasörler için tarama: {0}</target>
         <note>{0} is directory path.</note>
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsTotalFoldersRemoved">
         <source>Total folders removed: {0}</source>
-        <target state="new">Total folders removed: {0}</target>
+        <target state="translated">Toplam silinen klasör sayısı: {0}</target>
         <note>{0} is count.</note>
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsWouldRemoveFolders">
         <source>Would remove folders: {0}</source>
-        <target state="new">Would remove folders: {0}</target>
+        <target state="translated">Şu klasörleri siler: {0}</target>
         <note>{0} is count.</note>
       </trans-unit>
       <trans-unit id="CleanFrameworkOptionDescription">
