@@ -44,7 +44,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var contents = JsonSerializer.Deserialize<JsonDocument>(BootJsonDataLoader.GetJsonContent(blazorBootJson.FullName));
             contents.RootElement.TryGetProperty("resources", out var resources).Should().BeTrue();
             resources.TryGetProperty("libraryInitializers", out var initializers).Should().BeTrue();
-            initializers.TryGetProperty("blazorwasm-minimal.lib.module.js", out _).Should().BeTrue();
+            initializers.ValueKind.Should().Be(JsonValueKind.Array);
+            initializers
+                .EnumerateArray()
+                .Single(i => i.TryGetProperty("name", out var name) && name.GetString() == "blazorwasm-minimal.lib.module.js")
+                .TryGetProperty("hash", out _).Should().BeTrue();
 
             new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorwasm-minimal.modules.json")).Should().NotExist();
         }
@@ -86,8 +90,15 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var contents = JsonSerializer.Deserialize<JsonDocument>(BootJsonDataLoader.GetJsonContent(blazorBootJson.FullName));
             contents.RootElement.TryGetProperty("resources", out var resources).Should().BeTrue();
             resources.TryGetProperty("libraryInitializers", out var initializers).Should().BeTrue();
-            initializers.TryGetProperty("blazorwasm.lib.module.js", out _).Should().BeTrue();
-            initializers.TryGetProperty("_content/RazorClassLibrary/razorclasslibrary.lib.module.js", out var hash).Should().BeTrue();
+            initializers.ValueKind.Should().Be(JsonValueKind.Array);
+            initializers
+                .EnumerateArray()
+                .Single(i => i.TryGetProperty("name", out var name) && name.GetString() == "blazorwasm.lib.module.js")
+                .TryGetProperty("hash", out _).Should().BeTrue();
+            initializers
+                .EnumerateArray()
+                .Single(i => i.TryGetProperty("name", out var name) && name.GetString() == "_content/RazorClassLibrary/razorclasslibrary.lib.module.js")
+                .TryGetProperty("hash", out var hash).Should().BeTrue();
 
             // Do some validation to ensure the hash is included
             Convert.TryFromBase64String(hash.GetString().Substring("SHA256-".Length), new byte[256], out _).Should().BeTrue();
@@ -128,7 +139,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var contents = JsonSerializer.Deserialize<JsonDocument>(BootJsonDataLoader.GetJsonContent(blazorBootJson.FullName));
             contents.RootElement.TryGetProperty("resources", out var resources).Should().BeTrue();
             resources.TryGetProperty("libraryInitializers", out var initializers).Should().BeTrue();
-            initializers.TryGetProperty("blazorwasm-minimal.lib.module.js", out var hash).Should().BeTrue();
+            initializers.ValueKind.Should().Be(JsonValueKind.Array);
+            initializers
+                .EnumerateArray()
+                .Single(i => i.TryGetProperty("name", out var name) && name.GetString() == "blazorwasm-minimal.lib.module.js")
+                .TryGetProperty("hash", out var hash).Should().BeTrue();
+
             Convert.TryFromBase64String(hash.GetString().Substring("SHA256-".Length), new byte[256], out _).Should().BeTrue();
 
             new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorwasm-minimal.modules.json")).Should().NotExist();
@@ -209,8 +225,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 var contents = JsonSerializer.Deserialize<JsonDocument>(BootJsonDataLoader.GetJsonContent(path));
                 contents.RootElement.TryGetProperty("resources", out var resources).Should().BeTrue();
                 resources.TryGetProperty("libraryInitializers", out var initializers).Should().BeTrue();
-                initializers.TryGetProperty("blazorwasm-minimal.lib.module.js", out var buildLibrary).Should().BeTrue();
-                return buildLibrary;
+                initializers
+                    .EnumerateArray()
+                    .Single(i => i.TryGetProperty("name", out var name) && name.GetString() == "blazorwasm-minimal.lib.module.js")
+                    .TryGetProperty("hash", out var hash).Should().BeTrue();
+
+                return hash;
             }
         }
 
