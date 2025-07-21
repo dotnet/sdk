@@ -412,7 +412,7 @@ public class ReferencedExeProgram
             }
 
             var result = new BuildCommand(Log, mtpProjectDirectory).Execute();
-            result.Should().HaveStdOutContaining("NETSDK1151").And.ExitWith(1);
+            result.Should().Fail().And.HaveStdOutContaining("NETSDK1151");
         }
 
         [Theory]
