@@ -503,21 +503,11 @@ public class ReferencedExeProgram
                 .Should()
                 .Pass();
 
-            if (buildWithSelfContainedFromCommandLine)
-            {
-                new DotnetCommand(Log, "build", "--self-contained")
-                    .WithWorkingDirectory(consoleProjectDirectory)
-                    .Execute()
-                    .Should()
-                    .Pass();
-            }
-            else
-            {
-                new BuildCommand(Log, consoleProjectDirectory)
-                    .Execute()
-                    .Should()
-                    .Pass();
-            }
+            new BuildCommand(testAsset)
+                .WithWorkingDirectory(consoleProjectDirectory)
+                .Execute(buildWithSelfContainedFromCommandLine ? ["-p:SelfContained=true"] : Array.Empty<string>())
+                .Should()
+                .Pass();
         }
 
         [Theory]
