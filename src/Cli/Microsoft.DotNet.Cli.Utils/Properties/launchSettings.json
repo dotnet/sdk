@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Microsoft.DotNet.Cli.Utils": {
+      "commandName": "Project",
+      "commandLineArgs": "pack \"C:\\Users\\t-kalfikadu\\sdk\\test\\TestAssets\\TestProjects\\TestNuspecProject\\PackNoCsproj.nuspec\" --nologo --property id=CustomId"
+    }
+  }
+}

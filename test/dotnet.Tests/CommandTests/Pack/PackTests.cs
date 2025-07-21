@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Pack.Tests
             var packCommand = new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path);
 
-            var result = packCommand.Execute("-c", "Test");
+            var result = packCommand.Execute("-c", "Test", "--version", "1.2.3");
 
             result.Should().Pass();
 
@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Pack.Tests
             outputDir.Should().Exist()
                           .And.HaveFiles(new[]
                                             {
-                                                "TestLibraryWithConfiguration.1.0.0.nupkg"
+                                                "TestLibraryWithConfiguration.1.2.3.nupkg"
                                             });
         }
 
@@ -298,7 +298,7 @@ namespace Microsoft.DotNet.Pack.Tests
             string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
             var result = new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute(nuspecPath, "--properties", "id=CustomID");
+                .Execute(nuspecPath, "--property", "id=CustomID");
 
             result.Should().Pass();
 
@@ -325,6 +325,20 @@ namespace Microsoft.DotNet.Pack.Tests
         }
 
         [Fact]
+        public void DotnetPack_FailsWhenVersionOptionHasNoValue()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
+                .WithSource();
+            string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
+            var result = new DotnetPackCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(nuspecPath, "--version");
+
+            result.Should().Fail();
+            result.StdErr.Should().Contain("Required argument missing for option: '--version'.");
+        }
+
+        [Fact]
         public void DotnetPack_AcceptsCustomProperties()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
@@ -335,8 +349,8 @@ namespace Microsoft.DotNet.Pack.Tests
             var result = new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute(
-                nuspecPath, "--properties", "id=CustomValue",
-                "--properties", "authors=CustomAuthor"
+                nuspecPath, "--property", "id=CustomValue",
+                "--property", "authors=CustomAuthor"
                 );
 
             result.Should().Pass();

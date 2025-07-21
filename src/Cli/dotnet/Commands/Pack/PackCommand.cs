@@ -1,13 +1,17 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.ObjectModel;
 using System.CommandLine;
+using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Commands;
 using NuGet.Packaging.Core;
+using NuGet.Common;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
@@ -48,7 +52,17 @@ public class PackCommand(
             noRestore,
             msbuildPath);
     }
-
+    private static LogLevel MappingVerbosityToNugetLogLevel(VerbosityOptions? verbosity)
+    {
+        return verbosity switch
+        {
+            VerbosityOptions.diagnostic or VerbosityOptions.diag => LogLevel.Debug,
+            VerbosityOptions.minimal or VerbosityOptions.m => LogLevel.Minimal,
+            VerbosityOptions.normal or VerbosityOptions.n => LogLevel.Information,
+            VerbosityOptions.detailed or VerbosityOptions.d => LogLevel.Verbose,
+            _ => LogLevel.Minimal
+        };
+    }
     public static int RunPackCommand(ParseResult parseResult)
     {
         var args = parseResult.GetValue(PackCommandParser.SlnOrProjectArgument)?.ToList() ?? new List<string>();
@@ -66,18 +80,22 @@ public class PackCommand(
             Path = nuspecPath,
             BasePath = Path.GetDirectoryName(nuspecPath),
             Logger = new NuGetConsoleLogger(),
-            Exclude = new List<string>()
+            Exclude = new List<string>(),
+            OutputDirectory = parseResult.GetValue(PackCommandParser.OutputOption),
+            LogLevel = MappingVerbosityToNugetLogLevel(parseResult.GetValue(BuildCommandParser.VerbosityOption)),
         };
 
-        var properties = parseResult.GetValue(CommonOptions.PropertiesOption);
-        if (properties != null)
+        var globalProperties = parseResult.GetResult("--property") is OptionResult propResult ? propResult.GetValueOrDefault<ReadOnlyDictionary<string, string>?>() : null;
+        if (globalProperties != null)
         {
-            foreach (var kvp in properties)
+            foreach (var kvp in globalProperties)
                 packArgs.Properties[kvp.Key] = kvp.Value;
         }
 
+
+
         var version = parseResult.GetValue(CommonOptions.VersionOption);
-        if (version is not null)
+        if (version != null)
             packArgs.Version = version.ToNormalizedString();
 
         var packCommandRunner = new PackCommandRunner(packArgs, null);

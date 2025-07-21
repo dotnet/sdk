@@ -92,7 +92,7 @@ internal static class PackCommandParser
         command.Options.Add(ConfigurationOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(TargetOption);
-        command.Options.Add(CommonOptions.PropertiesOption);
+        //command.Options.Add(CommonOptions.PropertiesOption);
         command.Options.Add(CommonOptions.VersionOption);
 
         // Don't include runtime option because we want to include it specifically and allow the short version ("-r") to be used
