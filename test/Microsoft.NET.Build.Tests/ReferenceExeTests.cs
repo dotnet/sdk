@@ -323,9 +323,10 @@ public class ReferencedExeProgram
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData("xunit")]
-        [InlineData("mstest")]
-        public void TestProjectCanReferenceExe(string testTemplateName)
+        [CombinatorialData]
+        public void TestProjectCanReferenceExe(
+            [CombinatorialValues("xunit", "mstest")] string testTemplateName,
+            bool setSelfContainedProperty)
         {
             var testConsoleProject = new TestProject("ConsoleApp")
             {
@@ -333,6 +334,11 @@ public class ReferencedExeProgram
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid()
             };
+
+            if (setSelfContainedProperty)
+            {
+                testConsoleProject.SelfContained = "true";
+            }
 
             var testAsset = _testAssetsManager.CreateTestProject(testConsoleProject, identifier: testTemplateName);
 
@@ -359,10 +365,111 @@ public class ReferencedExeProgram
 
         }
 
+        [Theory]
+        [CombinatorialData]
+        public void SelfContainedExecutableCannotBeReferencedByNonSelfContainedMTPTestProject(bool setIsTestingPlatformApplicationEarly)
+        {
+            // The setup of this test is as follows:
+            // ConsoleApp is a self-contained executable project.
+            // MTPTestProject is an executable test project that references ConsoleApp.
+            // Building MTPTestProject should fail because it references a self-contained executable project.
+            // A self-contained executable cannot be referenced by a non self-contained executable.
+            var testConsoleProjectSelfContained = new TestProject("ConsoleApp")
+            {
+                IsExe = true,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                SelfContained = "true",
+            };
+
+            var mtpNotSelfContained = new TestProject("MTPTestProject")
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+            };
+
+            mtpNotSelfContained.AdditionalProperties["IsTestProject"] = "true";
+
+            if (setIsTestingPlatformApplicationEarly)
+            {
+                mtpNotSelfContained.AdditionalProperties["IsTestingPlatformApplication"] = "true";
+            }
+
+            mtpNotSelfContained.ReferencedProjects.Add(testConsoleProjectSelfContained);
+
+            var testAssetMTP = _testAssetsManager.CreateTestProject(mtpNotSelfContained);
+
+            var mtpProjectDirectory = Path.Combine(testAssetMTP.Path, "MTPTestProject");
+            
+            if (!setIsTestingPlatformApplicationEarly)
+            {
+                File.WriteAllText(Path.Combine(mtpProjectDirectory, "Directory.Build.targets"), """
+                    <Project>
+                        <PropertyGroup>
+                            <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+                        </PropertyGroup>
+                    </Project>
+                    """);
+            }
+
+            var result = new BuildCommand(Log, mtpProjectDirectory).Execute();
+            result.Should().Fail().And.HaveStdOutContaining("NETSDK1151");
+        }
+
+        [Theory]
+        [CombinatorialData]
+        public void MTPNonSelfContainedExecutableCannotBeReferencedBySelfContained(bool setIsTestingPlatformApplicationEarly)
+        {
+            // The setup of this test is as follows:
+            // ConsoleApp is a self-contained executable project, which references a non-self-contained MTP executable test project.
+            // Building ConsoleApp should fail because it references a non-self-contained MTP executable project.
+            // A non self-contained executable cannot be referenced by a self-contained executable.
+            var testConsoleProjectSelfContained = new TestProject("ConsoleApp")
+            {
+                IsExe = true,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                SelfContained = "true",
+            };
+
+            var mtpNotSelfContained = new TestProject("MTPTestProject")
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+            };
+
+            mtpNotSelfContained.AdditionalProperties["IsTestProject"] = "true";
+
+            if (setIsTestingPlatformApplicationEarly)
+            {
+                mtpNotSelfContained.AdditionalProperties["IsTestingPlatformApplication"] = "true";
+            }
+
+            testConsoleProjectSelfContained.ReferencedProjects.Add(mtpNotSelfContained);
+
+            var testAssetSelfContained = _testAssetsManager.CreateTestProject(testConsoleProjectSelfContained);
+            
+            if (!setIsTestingPlatformApplicationEarly)
+            {
+                File.WriteAllText(Path.Combine(testAssetSelfContained.TestRoot, mtpNotSelfContained.Name, "Directory.Build.targets"), """
+                    <Project>
+                        <PropertyGroup>
+                            <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+                        </PropertyGroup>
+                    </Project>
+                    """);
+            }
+
+            var consoleAppDirectory = Path.Combine(testAssetSelfContained.Path, testConsoleProjectSelfContained.Name);
+
+            var result = new BuildCommand(Log, consoleAppDirectory).Execute();
+            result.Should().HaveStdOutContaining("NETSDK1150").And.ExitWith(1);
+        }
+
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData("xunit")]
-        [InlineData("mstest")]
-        public void ExeProjectCanReferenceTestProject(string testTemplateName)
+        [CombinatorialData]
+        public void ExeProjectCanReferenceTestProject(
+            [CombinatorialValues("xunit", "mstest")] string testTemplateName,
+            bool setSelfContainedProperty,
+            bool buildWithSelfContainedFromCommandLine)
         {
             var testConsoleProject = new TestProject("ConsoleApp")
             {
@@ -370,6 +477,11 @@ public class ReferencedExeProgram
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid()
             };
+
+            if (setSelfContainedProperty)
+            {
+                testConsoleProject.SelfContained = "true";
+            }
 
             var testAsset = _testAssetsManager.CreateTestProject(testConsoleProject, identifier: testTemplateName);
 
@@ -391,7 +503,47 @@ public class ReferencedExeProgram
                 .Should()
                 .Pass();
 
-            new BuildCommand(Log, consoleProjectDirectory)
+            new BuildCommand(testAsset)
+                .WithWorkingDirectory(consoleProjectDirectory)
+                .Execute(buildWithSelfContainedFromCommandLine ? ["-p:SelfContained=true"] : Array.Empty<string>())
+                .Should()
+                .Pass();
+        }
+
+        [Theory]
+        [CombinatorialData]
+        public void MTPCanBeBuiltAsSelfContained(bool setIsTestingPlatformApplicationEarly)
+        {
+            var mtpSelfContained = new TestProject("MTPTestProject")
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+                SelfContained = "true",
+            };
+
+            mtpSelfContained.AdditionalProperties["IsTestProject"] = "true";
+
+            if (setIsTestingPlatformApplicationEarly)
+            {
+                mtpSelfContained.AdditionalProperties["IsTestingPlatformApplication"] = "true";
+            }
+
+            var testAssetMTP = _testAssetsManager.CreateTestProject(mtpSelfContained);
+
+            var mtpProjectDirectory = Path.Combine(testAssetMTP.Path, mtpSelfContained.Name);
+
+            if (!setIsTestingPlatformApplicationEarly)
+            {
+                File.WriteAllText(Path.Combine(mtpProjectDirectory, "Directory.Build.targets"), """
+                    <Project>
+                        <PropertyGroup>
+                            <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+                        </PropertyGroup>
+                    </Project>
+                    """);
+            }
+
+            new BuildCommand(Log, mtpProjectDirectory)
                 .Execute()
                 .Should()
                 .Pass();
