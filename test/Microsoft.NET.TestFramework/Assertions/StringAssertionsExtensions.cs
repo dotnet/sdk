@@ -35,7 +35,7 @@ namespace Microsoft.NET.TestFramework.Assertions
             if (!areSame)
             {
                 var diff = UnidiffRenderer.GenerateUnidiff(oldText: normalizedExpected, newText: normalizedActual, oldFileName: "expected", newFileName: "actual", ignoreWhitespace: true);
-                areSame.Should().Be(true, because: string.IsNullOrEmpty(because) ? $"The input strings are not visually equivalent. Diff is:\n{diff}" : because, becauseArgs: [.. becauseArgs, diff]);
+                areSame.Should().Be(true, because: string.IsNullOrEmpty(because) ? $"The input strings are not visually equivalent. Diff is:\n" + diff : because, becauseArgs: [.. becauseArgs, diff]);
             }
 
             return new AndConstraint<StringAssertions>(assertions);
