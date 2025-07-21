@@ -1893,8 +1893,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
                       <Import Project="Sdk.targets" Sdk="Aspire.Hosting.Sdk" Version="9.1.0" />
 
-                    {VirtualProjectBuildingCommand.TargetOverrides}
-
                     </Project>
 
                     """)}},"Diagnostics":[]}
@@ -1960,8 +1958,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       </ItemGroup>
 
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-
-                    {VirtualProjectBuildingCommand.TargetOverrides}
 
                     </Project>
 
@@ -2032,8 +2028,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       </ItemGroup>
 
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-
-                    {VirtualProjectBuildingCommand.TargetOverrides}
 
                     </Project>
 
