@@ -160,7 +160,10 @@ public sealed class RunCsWinRTGenerator : ToolTask
             return false;
         }
 
-        if (MaxDegreesOfParallelism is 0 or < -1)
+        // The degrees of parallelism matches the semantics of the 'MaxDegreesOfParallelism' property of 'Parallel.For'. That is, it must either be exactly '-1', which is a special
+        // value meaning "use as many parallel threads as the runtime deems appropriate", or it must be set to a positive integer, to explicitly control the number of threads.
+        // See: https://learn.microsoft.com/dotnet/api/system.threading.tasks.paralleloptions.maxdegreeofparallelism#system-threading-tasks-paralleloptions-maxdegreeofparallelism.
+        if (MaxDegreesOfParallelism is not (-1 or > 0))
         {
             Log.LogWarning("Invalid 'MaxDegreesOfParallelism' value. It must be '-1' or greater than '0' (but was '{0}').", MaxDegreesOfParallelism);
 
