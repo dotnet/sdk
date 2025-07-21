@@ -161,7 +161,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                 else if (defaultInstallState == DefaultInstall.Admin)
                 {
                     Console.WriteLine($"You have an existing admin install of .NET in {currentInstallPath}. We can configure your system to use the new install of .NET " +
-                        "in {resolvedInstallPath} instead. This would mean that the admin install of .NET would no longer be accessible from the PATH or from Visual Studio.");
+                        $"in {resolvedInstallPath} instead. This would mean that the admin install of .NET would no longer be accessible from the PATH or from Visual Studio.");
                     Console.WriteLine("You can change this later with the \"dotnet defaultinstall\" command.");
                     resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
                         "Do you want to set this install path as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
@@ -179,10 +179,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             }
         }
 
-
-
-
-        Console.WriteLine($"Installing .NET SDK '{resolvedChannel}' to '{resolvedInstallPath}'...");
+        SpectreAnsiConsole.MarkupInterpolated($"Installing .NET SDK [blue]{resolvedChannel}[/] to [blue]{resolvedInstallPath}[/]...");
 
         string downloadLink = "https://builds.dotnet.microsoft.com/dotnet/Sdk/9.0.303/dotnet-sdk-9.0.303-win-x64.exe";
 
@@ -193,7 +190,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             SpectreAnsiConsole.Progress()
                 .Start(ctx =>
                 {
-                    var task = ctx.AddTask($"Downloading {Path.GetFileName(downloadLink)}");
+                    var task = ctx.AddTask($"Downloading");
                     using (var response = httpClient.GetAsync(downloadLink, System.Net.Http.HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult())
                     {
                         response.EnsureSuccessStatusCode();
@@ -218,7 +215,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                     }
                 });
         }
-        Console.WriteLine($"Downloaded to: {tempFilePath}");
+        Console.WriteLine($"Complete!");
 
 
         return 0;
@@ -264,8 +261,14 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
     DefaultInstall GetDefaultInstallState(out string? currentInstallPath)
     {
-        currentInstallPath = null;
-        return DefaultInstall.None;
+        var testHookDefaultInstall = Env.GetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_INSTALL");
+        DefaultInstall returnValue = DefaultInstall.None;
+        if (!Enum.TryParse<DefaultInstall>(testHookDefaultInstall, out returnValue))
+        {
+            returnValue = DefaultInstall.None;
+        }
+        currentInstallPath = Env.GetEnvironmentVariable("DOTNET_TESTHOOK_CURRENT_INSTALL_PATH");
+        return returnValue;
     }
 
     bool IsElevated()
