@@ -158,6 +158,16 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("""
                 Hello from Program
                 """);
+
+        new DotnetCommand(Log, "Program.cs", "arg1", "arg2")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:arg1;arg2
+                Hello from Program
+                Release config
+                """);
     }
 
     /// <summary>
