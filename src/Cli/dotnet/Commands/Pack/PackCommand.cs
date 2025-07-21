@@ -55,7 +55,7 @@ public class PackCommand(
 
         if (args.Count != 1)
         {
-            Console.Error.WriteLine("Error: Only one .nuspec file can be packed at at time");
+            Console.Error.WriteLine("Error: Only one .nuspec file can be packed at a time");
             return 1;
         }
 
@@ -69,20 +69,16 @@ public class PackCommand(
             Exclude = new List<string>()
         };
 
-        var properties = parseResult.GetValue(PackCommandParser.PropertiesOption);
+        var properties = parseResult.GetValue(CommonOptions.PropertiesOption);
         if (properties != null)
         {
-            foreach (var prop in properties)
-            {
-                var split = prop.Split('=', 2);
-                if (split.Length == 2)
-                    packArgs.Properties[split[0]] = split[1];
-            }
+            foreach (var kvp in properties)
+                packArgs.Properties[kvp.Key] = kvp.Value;
         }
 
-        var version = parseResult.GetValue(PackCommandParser.VersionOption);
-        if (!string.IsNullOrEmpty(version))
-            packArgs.Version = version;
+        var version = parseResult.GetValue(CommonOptions.VersionOption);
+        if (version is not null)
+            packArgs.Version = version.ToNormalizedString();
 
         var packCommandRunner = new PackCommandRunner(packArgs, null);
         if (!packCommandRunner.RunPackageBuild())

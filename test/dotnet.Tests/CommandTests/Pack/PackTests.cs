@@ -369,7 +369,7 @@ namespace Microsoft.DotNet.Pack.Tests
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute(nuspecPath, "--output", outputDirPath);
             result.Should().Pass();
-            var outputDir = new DirectoryInfo(testInstance.Path);
+            var outputDir = new DirectoryInfo(outputDirPath);
             outputDir.Should().Exist()
                 .And.HaveFile("PackNoCsproj.1.0.0.nupkg");
         }
