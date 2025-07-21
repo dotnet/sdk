@@ -227,43 +227,37 @@ public class Telemetry : ITelemetry
 
     private IDictionary<string, double>? GetEventMeasures(IDictionary<string, double>? measurements)
     {
-        if (measurements is null)
+        return (measurements, _commonMeasurements) switch
         {
-            return _commonMeasurements;
-        }
-        if (_commonMeasurements == null)
-        {
-            return measurements;
-        }
-
-        IDictionary<string, double> eventMeasurements = new Dictionary<string, double>(_commonMeasurements);
-        foreach (KeyValuePair<string, double> measurement in measurements)
-        {
-            eventMeasurements[measurement.Key] = measurement.Value;
-        }
-        return eventMeasurements;
+            (null, null) => null,
+            (null, not null) => _commonMeasurements == FrozenDictionary<string, double>.Empty ? null : new Dictionary<string, double>(_commonMeasurements),
+            (not null, null) => measurements,
+            (not null, not null) => Combine(_commonMeasurements, measurements),
+        };
     }
 
     private IDictionary<string, string>? GetEventProperties(IDictionary<string, string>? properties)
     {
-        if (properties is null)
+        return (properties, _commonProperties) switch
         {
-            return _commonProperties;
-        }
-        if (_commonProperties == null)
-        {
-            return properties;
-        }
-
-        var eventProperties = new Dictionary<string, string>(_commonProperties);
-        if (properties != null)
-        {
-            foreach (KeyValuePair<string, string> property in properties)
-            {
-                eventProperties[property.Key] = property.Value;
-            }
-        }
-
-        return eventProperties;
+            (null, null) => null,
+            (null, not null) => _commonProperties == FrozenDictionary<string, string>.Empty ? null : new Dictionary<string, string>(_commonProperties),
+            (not null, null) => properties,
+            (not null, not null) => Combine(_commonProperties, properties),
+        };
     }
+
+    static IDictionary<TKey, TValue> Combine<TKey, TValue>(IDictionary<TKey, TValue> common, IDictionary<TKey, TValue> specific) where TKey : notnull
+    {
+        IDictionary<TKey, TValue> eventMeasurements = new Dictionary<TKey, TValue>(capacity: common.Count + specific.Count);
+        foreach (KeyValuePair<TKey, TValue> measurement in common)
+        {
+            eventMeasurements[measurement.Key] = measurement.Value;
+        }
+        foreach (KeyValuePair<TKey, TValue> measurement in specific)
+        {
+            eventMeasurements[measurement.Key] = measurement.Value;
+        }
+            return eventMeasurements;
+        }
 }
