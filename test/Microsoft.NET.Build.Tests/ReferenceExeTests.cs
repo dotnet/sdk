@@ -468,7 +468,8 @@ public class ReferencedExeProgram
         [CombinatorialData]
         public void ExeProjectCanReferenceTestProject(
             [CombinatorialValues("xunit", "mstest")] string testTemplateName,
-            bool setSelfContainedProperty)
+            bool setSelfContainedProperty,
+            bool buildWithSelfContainedFromCommandLine)
         {
             var testConsoleProject = new TestProject("ConsoleApp")
             {
@@ -502,10 +503,21 @@ public class ReferencedExeProgram
                 .Should()
                 .Pass();
 
-            new BuildCommand(Log, consoleProjectDirectory)
-                .Execute()
-                .Should()
-                .Pass();
+            if (buildWithSelfContainedFromCommandLine)
+            {
+                new DotnetCommand(Log, "build", "--self-contained")
+                    .WithWorkingDirectory(consoleProjectDirectory)
+                    .Execute()
+                    .Should()
+                    .Pass();
+            }
+            else
+            {
+                new BuildCommand(Log, consoleProjectDirectory)
+                    .Execute()
+                    .Should()
+                    .Pass();
+            }
         }
 
         [Theory]

@@ -115,7 +115,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Set the IsRidAgnostic property if this project should NOT accept global RuntimeIdentifier and SelfContained
        property values from referencing projects. -->
   <PropertyGroup Condition="'$(IsRidAgnostic)' == ''">
-    <IsRidAgnostic Condition="('$(_IsExecutable)' == 'true') Or
+    <!-- It's preferred to read IsTestingPlatformApplication in an actual MSBuild target and not in evaluation, but it's best we can do here -->
+    <!-- NOTE: A VSTest non-MTP test project will have IsTestProject=true AND IsTestingPlatformApplication!=true -->
+    <!-- We want to make VSTest non-MTP test project to be rid agnostic because it doesn't really produce a runnable executable -->
+    <IsRidAgnostic Condition="('$(_IsExecutable)' == 'true' And ('$(IsTestProject)' != 'true' Or '$(IsTestingPlatformApplication)' == 'true')) Or
                               '$(RuntimeIdentifier)' != '' Or
                               '$(RuntimeIdentifiers)' != ''">false</IsRidAgnostic>
     <IsRidAgnostic Condition="'$(IsRidAgnostic)' == ''">true</IsRidAgnostic>
