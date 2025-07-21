@@ -261,17 +261,17 @@ Paths searched: '{1}', '{2}'.</source>
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsCommandDescription">
         <source>Removes artifacts created for file-based apps</source>
-        <target state="new">Removes artifacts created for file-based apps</target>
+        <target state="translated">移除針對檔案型應用程式建立的成品</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsDays">
         <source>How many days an artifact folder needs to be unused in order to be removed</source>
-        <target state="new">How many days an artifact folder needs to be unused in order to be removed</target>
+        <target state="translated">成品資料夾需要閒置多少天才能移除</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsDirectoryNotFound">
         <source>Warning: Artifacts directory does not exist: {0}</source>
-        <target state="new">Warning: Artifacts directory does not exist: {0}</target>
+        <target state="translated">警告: 成品目錄不存在: {0}</target>
         <note>{0} is directory path.</note>
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsDryRun">
@@ -281,22 +281,22 @@ Paths searched: '{1}', '{2}'.</source>
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsErrorRemovingFolder">
         <source>Error removing folder '{0}': {1}</source>
-        <target state="new">Error removing folder '{0}': {1}</target>
+        <target state="translated">移除資料夾 '{0}' 時發生錯誤: {1}</target>
         <note>{0} is folder path. {1} is inner error message.</note>
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsScanning">
         <source>Scanning for folders to remove in: {0}</source>
-        <target state="new">Scanning for folders to remove in: {0}</target>
+        <target state="translated">正在掃描要移除的資料夾位置: {0}</target>
         <note>{0} is directory path.</note>
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsTotalFoldersRemoved">
         <source>Total folders removed: {0}</source>
-        <target state="new">Total folders removed: {0}</target>
+        <target state="translated">已移除的資料夾總數: {0}</target>
         <note>{0} is count.</note>
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsWouldRemoveFolders">
         <source>Would remove folders: {0}</source>
-        <target state="new">Would remove folders: {0}</target>
+        <target state="translated">將移除的資料夾數量: {0}</target>
         <note>{0} is count.</note>
       </trans-unit>
       <trans-unit id="CleanFrameworkOptionDescription">
