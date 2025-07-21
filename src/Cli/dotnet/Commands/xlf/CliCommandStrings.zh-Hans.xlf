@@ -276,7 +276,7 @@ Paths searched: '{1}', '{2}'.</source>
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsDryRun">
         <source>Determines changes without actually modifying the file system</source>
-        <target state="new">Determines changes without actually modifying the file system</target>
+        <target state="translated">确定更改但不实际修改文件系统</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsErrorRemovingFolder">

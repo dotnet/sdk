@@ -276,7 +276,7 @@ Percorsi cercati: '{1}', '{2}'.</target>
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsDryRun">
         <source>Determines changes without actually modifying the file system</source>
-        <target state="new">Determines changes without actually modifying the file system</target>
+        <target state="translated">Determina le modifiche senza modificare effettivamente il file system</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsErrorRemovingFolder">
