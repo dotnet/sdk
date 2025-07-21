@@ -33,14 +33,15 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         string? globalJsonPath = FindGlobalJson();
 
-        string? currentUserInstallPath;
-        DefaultInstall defaultInstallState = GetDefaultInstallState(out currentUserInstallPath);
+        string? currentInstallPath;
+        DefaultInstall defaultInstallState = GetDefaultInstallState(out currentInstallPath);
 
         string? resolvedInstallPath = null;
 
+        string? installPathFromGlobalJson = null;
         if (globalJsonPath != null)
         {
-            string? installPathFromGlobalJson = ResolveInstallPathFromGlobalJson(globalJsonPath);
+            installPathFromGlobalJson = ResolveInstallPathFromGlobalJson(globalJsonPath);
 
             if (installPathFromGlobalJson != null && _installPath != null &&
                 //  TODO: Is there a better way to compare paths that takes into account whether the file system is case-sensitive?
@@ -62,7 +63,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         if (resolvedInstallPath == null && defaultInstallState == DefaultInstall.User)
         {
             //  If a user installation is already set up, we don't need to prompt for the install path
-            resolvedInstallPath = currentUserInstallPath;
+            resolvedInstallPath = currentInstallPath;
         }
 
         if (resolvedInstallPath == null)
@@ -104,6 +105,8 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         if (channelFromGlobalJson != null)
         {
+            Console.WriteLine($".NET SDK {channelFromGlobalJson} will be installed since {globalJsonPath} specifies that version.");
+
             resolvedChannel = channelFromGlobalJson;
         }
         else if (_versionOrChannel != null)
@@ -132,11 +135,43 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         if (resolvedSetDefaultInstall == null)
         {
-            if (_interactive)
+            //  If global.json specified an install path, we don't prompt for setting the default install path (since you probably don't want to do that for a repo-local path)
+            if (_interactive && installPathFromGlobalJson == null)
             {
-                resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
-                    "Do you want to set this install path as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
-                    defaultValue: true);
+                if (defaultInstallState == DefaultInstall.None)
+                {
+                    resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
+                        "Do you want to set this install path as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
+                        defaultValue: true);
+                }
+                else if (defaultInstallState == DefaultInstall.User)
+                {
+                    //  Another case where we need to compare paths and the comparison may or may not need to be case-sensitive
+                    if (resolvedInstallPath.Equals(currentInstallPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        //  No need to prompt here, the default install is already set up.
+                    }
+                    else
+                    {
+                        resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
+                            $"The default dotnet install is currently set to {currentInstallPath}.  Do you want to change it to {resolvedInstallPath}?",
+                            defaultValue: false);
+                    }
+                }
+                else if (defaultInstallState == DefaultInstall.Admin)
+                {
+                    Console.WriteLine($"You have an existing admin install of .NET in {currentInstallPath}. We can configure your system to use the new install of .NET " +
+                        "in {resolvedInstallPath} instead. This would mean that the admin install of .NET would no longer be accessible from the PATH or from Visual Studio.");
+                    Console.WriteLine("You can change this later with the \"dotnet defaultinstall\" command.");
+                    resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
+                        "Do you want to set this install path as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
+                        defaultValue: true);
+                }
+                else if (defaultInstallState == DefaultInstall.Inconsistent)
+                {
+                    //  TODO: Figure out what to do here
+                    resolvedSetDefaultInstall = false;
+                }
             }
             else
             {
@@ -148,6 +183,43 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
 
         Console.WriteLine($"Installing .NET SDK '{resolvedChannel}' to '{resolvedInstallPath}'...");
+
+        string downloadLink = "https://builds.dotnet.microsoft.com/dotnet/Sdk/9.0.303/dotnet-sdk-9.0.303-win-x64.exe";
+
+        // Download the file to a temp path with progress
+        string tempFilePath = Path.Combine(Path.GetTempPath(), Path.GetFileName(downloadLink));
+        using (var httpClient = new System.Net.Http.HttpClient())
+        {
+            SpectreAnsiConsole.Progress()
+                .Start(ctx =>
+                {
+                    var task = ctx.AddTask($"Downloading {Path.GetFileName(downloadLink)}");
+                    using (var response = httpClient.GetAsync(downloadLink, System.Net.Http.HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult())
+                    {
+                        response.EnsureSuccessStatusCode();
+                        var contentLength = response.Content.Headers.ContentLength ?? 0;
+                        using (var stream = response.Content.ReadAsStream())
+                        using (var fileStream = File.Create(tempFilePath))
+                        {
+                            var buffer = new byte[81920];
+                            long totalRead = 0;
+                            int read;
+                            while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+                            {
+                                fileStream.Write(buffer, 0, read);
+                                totalRead += read;
+                                if (contentLength > 0)
+                                {
+                                    task.Value = (double)totalRead / contentLength * 100;
+                                }
+                            }
+                            task.Value = 100;
+                        }
+                    }
+                });
+        }
+        Console.WriteLine($"Downloaded to: {tempFilePath}");
+
 
         return 0;
     }
@@ -161,13 +233,14 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
     string? ResolveInstallPathFromGlobalJson(string globalJsonPath)
     {
-        return null;
+        return Env.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_SDK_INSTALL_PATH");
     }
 
     string? ResolveChannelFromGlobalJson(string globalJsonPath)
     {
         //return null;
-        return "9.0";
+        //return "9.0";
+        return Env.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_SDK_CHANNEL");
     }
 
     string GetDefaultInstallPath()
@@ -189,9 +262,14 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         User
     }
 
-    DefaultInstall GetDefaultInstallState(out string? userInstallPath)
+    DefaultInstall GetDefaultInstallState(out string? currentInstallPath)
     {
-        userInstallPath = null;
+        currentInstallPath = null;
         return DefaultInstall.None;
+    }
+
+    bool IsElevated()
+    {
+        return false;
     }
 }
