@@ -34,17 +34,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
             _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
-            
-            // Ensure parent directories exist to avoid DirectoryNotFoundException during traversal
-            string? currentPath = targetBasePath;
-            while (!string.IsNullOrEmpty(currentPath) && currentPath != Path.GetPathRoot(currentPath))
-            {
-                if (!_engineEnvironmentSettings.Host.FileSystem.DirectoryExists(currentPath))
-                {
-                    _engineEnvironmentSettings.Host.FileSystem.CreateDirectory(currentPath);
-                }
-                currentPath = Path.GetDirectoryName(currentPath);
-            }
+            EnsureParentDirectoriesExist(targetBasePath);
             
             string solutionFileFullPath = Path.Combine(targetBasePath, "MySln.slnx");
             _engineEnvironmentSettings.Host.FileSystem.WriteAllText(solutionFileFullPath, string.Empty);
@@ -59,17 +49,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
             _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
-            
-            // Ensure parent directories exist to avoid DirectoryNotFoundException during traversal
-            string? currentPath = targetBasePath;
-            while (!string.IsNullOrEmpty(currentPath) && currentPath != Path.GetPathRoot(currentPath))
-            {
-                if (!_engineEnvironmentSettings.Host.FileSystem.DirectoryExists(currentPath))
-                {
-                    _engineEnvironmentSettings.Host.FileSystem.CreateDirectory(currentPath);
-                }
-                currentPath = Path.GetDirectoryName(currentPath);
-            }
+            EnsureParentDirectoriesExist(targetBasePath);
             
             string slnFileFullPath = Path.Combine(targetBasePath, "MySln.sln");
             string slnxFileFullPath = Path.Combine(targetBasePath, "MySln.slnx");
@@ -362,6 +342,20 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 targetBasePath);
 
             Assert.False(result);
+        }
+
+        private void EnsureParentDirectoriesExist(string targetBasePath)
+        {
+            // Ensure parent directories exist to avoid DirectoryNotFoundException during traversal
+            string? currentPath = targetBasePath;
+            while (!string.IsNullOrEmpty(currentPath) && currentPath != Path.GetPathRoot(currentPath))
+            {
+                if (!_engineEnvironmentSettings.Host.FileSystem.DirectoryExists(currentPath))
+                {
+                    _engineEnvironmentSettings.Host.FileSystem.CreateDirectory(currentPath);
+                }
+                currentPath = Path.GetDirectoryName(currentPath);
+            }
         }
 
         private class MockAddProjectToSolutionCallback
