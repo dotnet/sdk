@@ -30,7 +30,8 @@ internal partial class FrameworkPackages
             { "System.Security.AccessControl", "4.6.0" },
             { "System.Security.Cryptography.Cng", "4.6.0" },
             { "System.Security.Cryptography.OpenSsl", "4.6.0" },
-            { "System.Security.Cryptography.Xml", "4.4.0" },
+            // this package was listed in the package overrides.txt for netcoreapp3.0, but it is not actually in the targeting pack
+            // { "System.Security.Cryptography.Xml", "4.4.0" },
             { "System.Security.Principal.Windows", "4.6.0" },
             { "System.Text.Encoding.CodePages", "4.6.0" },
             { "System.Text.Encodings.Web", "4.6.0" },
