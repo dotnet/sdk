@@ -159,6 +159,13 @@ internal partial class FrameworkPackages
             { "System.IO.Pipelines", "6.0.0" },
             { "System.Security.Cryptography.Pkcs", "6.0.0" },
             { "System.Security.Cryptography.Xml", "6.0.0" },
+            // removed packages
+            { "Microsoft.Win32.Registry", null },
+            { "System.Security.AccessControl", null },
+            { "System.Security.Cryptography.Cng", null },
+            { "System.Security.Permissions", null },
+            { "System.Security.Principal.Windows", null },
+            { "System.Windows.Extensions", null },
         };
 
         internal static FrameworkPackages WindowsDesktop { get; } = new(Net60, FrameworkNames.WindowsDesktopApp, NETCoreApp50.WindowsDesktop)
@@ -178,6 +185,13 @@ internal partial class FrameworkPackages
             { "System.Security.Permissions", "6.0.0" },
             { "System.Threading.AccessControl", "6.0.0" },
             { "System.Windows.Extensions", "6.0.0" },
+            // removed packages
+            { "Microsoft.Win32.Registry", null },
+            { "System.IO.FileSystem.AccessControl", null },
+            { "System.IO.Pipes.AccessControl", null },
+            { "System.Security.AccessControl", null },
+            { "System.Security.Cryptography.Cng", null },
+            { "System.Security.Principal.Windows", null },
         };
 
         internal static void Register() => FrameworkPackages.Register(Instance, AspNetCore, WindowsDesktop);

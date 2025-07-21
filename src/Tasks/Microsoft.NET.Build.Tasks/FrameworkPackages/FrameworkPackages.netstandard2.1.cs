@@ -37,7 +37,8 @@ internal partial class FrameworkPackages
             { "System.Runtime.Numerics", "4.3.0" },
             { "System.Runtime.Serialization.Json", "4.3.0" },
             { "System.Security.AccessControl", "4.4.0" },
-            { "System.Security.Cryptography.Xml", "4.4.0" },
+            // this package was listed in the package overrides.txt for netstandard2.1, but it is not actually in the targeting pack
+            // { "System.Security.Cryptography.Xml", "4.4.0" },
             { "System.Security.Principal", "4.3.0" },
             { "System.Security.Principal.Windows", "4.4.0" },
             { "System.Threading", "4.3.0" },
