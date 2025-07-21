@@ -175,7 +175,7 @@ internal sealed partial class FrameworkPackages : IEnumerable<KeyValuePair<strin
         {
             // intentionally redirect to indexer to allow for overwrite
             this.Packages[id] = NuGetVersion.Parse(version);
-        }   
+        }
     }
 
     public bool IsAFrameworkComponent(string id, NuGetVersion version) => this.Packages.TryGetValue(id, out var frameworkPackageVersion) && frameworkPackageVersion >= version;
