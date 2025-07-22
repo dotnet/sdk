@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
@@ -121,45 +122,72 @@ internal sealed class FileBasedAppSourceEditor
 
         // If there is a comment at the top of the file, we add the directive after it
         // (the comment might be a license which should always stay at the top).
-        int i = 0;
-        bool anyComments = false;
+        int insertAfterIndex = -1;
         int trailingNewLines = 0;
-        for (; i < leadingTrivia.Count; i++)
+        for (int i = 0; i < leadingTrivia.Count; i++)
         {
             var trivia = leadingTrivia[i];
-            bool isComment = IsComment(trivia);
-            if (isComment)
-            {
-                anyComments = true;
-                trailingNewLines = 0;
-            }
 
-            bool isEndOfLine = trivia.IsKind(SyntaxKind.EndOfLineTrivia);
-            if (isEndOfLine)
+            switch (trivia.Kind())
             {
-                trailingNewLines++;
-            }
+                case SyntaxKind.SingleLineCommentTrivia:
+                case SyntaxKind.MultiLineCommentTrivia:
+                case SyntaxKind.MultiLineDocumentationCommentTrivia:
+                    // Do not consider block comments that do not end with a line break (unless at the end of the file).
+                    if (result.Token.IsKind(SyntaxKind.EndOfFileToken))
+                    {
+                        insertAfterIndex = i;
+                    }
+                    else if (i < leadingTrivia.Count - 1 &&
+                        leadingTrivia[i + 1].IsKind(SyntaxKind.EndOfLineTrivia))
+                    {
+                        i++;
+                        trailingNewLines = 1;
+                        insertAfterIndex = i;
+                    }
+                    else
+                    {
+                        Debug.Assert(!trivia.IsKind(SyntaxKind.SingleLineCommentTrivia),
+                            "Only block comments might not end with a line break.");
+                    }
+                    break;
 
-            if (!isComment && !isEndOfLine && !trivia.IsKind(SyntaxKind.WhitespaceTrivia))
-            {
-                break;
-            }
-        }
+                case SyntaxKind.SingleLineDocumentationCommentTrivia:
+                    if (trivia.GetStructure() is DocumentationCommentTriviaSyntax s &&
+                        s.ChildNodes().LastOrDefault() is XmlTextSyntax { TextTokens: [.., { RawKind: (int)SyntaxKind.XmlTextLiteralNewLineToken }] })
+                    {
+                        trailingNewLines = 1;
+                        insertAfterIndex = i;
+                    }
+                    break;
 
-        if (!anyComments)
-        {
-            i = -1;
+                case SyntaxKind.EndOfLineTrivia:
+                    if (insertAfterIndex >= 0)
+                    {
+                        trailingNewLines++;
+                        insertAfterIndex = i;
+                    }
+                    break;
+
+                case SyntaxKind.WhitespaceTrivia:
+                    break;
+
+                default:
+                    i = leadingTrivia.Count; // Break the loop.
+                    break;
+            }
         }
 
         string prefix = string.Empty;
         string suffix = NewLine;
 
-        if (i > 0)
+        if (insertAfterIndex >= 0)
         {
-            var lastCommentOrWhiteSpace = leadingTrivia[i - 1];
+            var insertAfter = leadingTrivia[insertAfterIndex];
+            start = insertAfter.FullSpan.End;
 
-            // Add newline after the comment if there is not one already (can happen with block comments).
-            if (!lastCommentOrWhiteSpace.IsKind(SyntaxKind.EndOfLineTrivia))
+            // Add newline after the comment if there is not one already (can happen at the end of file).
+            if (trailingNewLines < 1)
             {
                 prefix += NewLine;
             }
@@ -169,25 +197,18 @@ internal sealed class FileBasedAppSourceEditor
             {
                 prefix += NewLine;
             }
-
-            start = lastCommentOrWhiteSpace.FullSpan.End;
         }
 
         // Add a blank line after the directive unless there are no other tokens (i.e., the first token is EOF),
         // or there is already a blank line or another directive before the first C# token.
-        if (!result.Token.IsKind(SyntaxKind.EndOfFileToken) &&
-            !leadingTrivia.Skip(i).Any(static t => t.IsKind(SyntaxKind.EndOfLineTrivia) || t.IsDirective))
+        var remainingLeadingTrivia = leadingTrivia.Skip(insertAfterIndex + 1);
+        if (!(result.Token.IsKind(SyntaxKind.EndOfFileToken) && !remainingLeadingTrivia.Any() && !result.Token.HasTrailingTrivia) &&
+            !remainingLeadingTrivia.Any(static t => t.Kind() is SyntaxKind.EndOfLineTrivia or SyntaxKind.IgnoredDirectiveTrivia))
         {
             suffix += NewLine;
         }
 
         return new TextChange(new TextSpan(start: start, length: 0), newText: prefix + directive.ToString() + suffix);
-
-        static bool IsComment(SyntaxTrivia trivia)
-        {
-            return trivia.Kind() is SyntaxKind.SingleLineCommentTrivia or SyntaxKind.MultiLineCommentTrivia
-                or SyntaxKind.SingleLineDocumentationCommentTrivia or SyntaxKind.MultiLineDocumentationCommentTrivia;
-        }
     }
 
     public void Remove(CSharpDirective directive)

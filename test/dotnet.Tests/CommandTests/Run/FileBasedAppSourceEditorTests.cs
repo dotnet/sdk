@@ -50,23 +50,23 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             """));
     }
 
-    [Fact]
-    public void OnlyComment()
+    [Theory]
+    [InlineData("// only comment")]
+    [InlineData("/* only comment */")]
+    public void OnlyComment(string comment)
     {
         Verify(
-            """
-            // only comment
-            """,
+            comment,
             (static editor => editor.Add(new CSharpDirective.Package(default) { Name = "MyPackage", Version = "1.0.0" }),
-            """
-            // only comment
+            $"""
+            {comment}
 
             #:package MyPackage@1.0.0
 
             """),
             (static editor => editor.Remove(editor.Directives.Single()),
-            """
-            // only comment
+            $"""
+            {comment}
 
 
             """));
@@ -176,11 +176,36 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
     }
 
     [Fact]
+    public void Comment_Documentation()
+    {
+        Verify(
+            """
+            /// doc comment
+            Console.WriteLine();
+            """,
+            (static editor => editor.Add(new CSharpDirective.Package(default) { Name = "MyPackage", Version = "1.0.0" }),
+            """
+            /// doc comment
+
+            #:package MyPackage@1.0.0
+
+            Console.WriteLine();
+            """),
+            (static editor => editor.Remove(editor.Directives.Single()),
+            """
+            /// doc comment
+
+            Console.WriteLine();
+            """));
+    }
+
+    [Fact]
     public void Comment_MultiLine()
     {
         Verify(
             """
-            /* test */Console.WriteLine();
+            /* test */
+            Console.WriteLine();
             """,
             (static editor => editor.Add(new CSharpDirective.Package(default) { Name = "MyPackage", Version = "1.0.0" }),
             """
@@ -195,6 +220,49 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             /* test */
 
             Console.WriteLine();
+            """));
+    }
+
+    [Fact]
+    public void Comment_MultiLine_NoNewLine()
+    {
+        Verify(
+            """
+            /* test */Console.WriteLine();
+            """,
+            (static editor => editor.Add(new CSharpDirective.Package(default) { Name = "MyPackage", Version = "1.0.0" }),
+            """
+            #:package MyPackage@1.0.0
+
+            /* test */Console.WriteLine();
+            """),
+            (static editor => editor.Remove(editor.Directives.Single()),
+            """
+            /* test */Console.WriteLine();
+            """));
+    }
+
+    [Fact]
+    public void Comment_MultiLine_NoNewLine_Multiple()
+    {
+        Verify(
+            """
+            // test
+            /* test */Console.WriteLine();
+            """,
+            (static editor => editor.Add(new CSharpDirective.Package(default) { Name = "MyPackage", Version = "1.0.0" }),
+            """
+            // test
+
+            #:package MyPackage@1.0.0
+
+            /* test */Console.WriteLine();
+            """),
+            (static editor => editor.Remove(editor.Directives.Single()),
+            """
+            // test
+
+            /* test */Console.WriteLine();
             """));
     }
 
@@ -331,6 +399,31 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             #:package A
 
             Console.WriteLine();
+            """));
+    }
+
+    [Fact]
+    public void SkippedTokensTrivia()
+    {
+        Verify(
+            """
+            #if false
+            Test
+            #endif
+            """,
+            (static editor => editor.Add(new CSharpDirective.Package(default) { Name = "MyPackage", Version = "1.0.0" }),
+            """
+            #:package MyPackage@1.0.0
+
+            #if false
+            Test
+            #endif
+            """),
+            (static editor => editor.Remove(editor.Directives[0]),
+            """
+            #if false
+            Test
+            #endif
             """));
     }
 
