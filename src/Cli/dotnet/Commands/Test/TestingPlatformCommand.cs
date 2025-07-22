@@ -129,7 +129,7 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
         var noProgress = parseResult.HasOption(TestingPlatformOptions.NoProgressOption);
         var noAnsi = parseResult.HasOption(TestingPlatformOptions.NoAnsiOption);
 
-        // TODO: Replace this with proper CI detection that we already have in telemetry. https://github.com/microsoft/testfx/issues/5533#issuecomment-2838893327
+        // TODO: Replace this with proper CI detection that we already have in _telemetry. https://github.com/microsoft/testfx/issues/5533#issuecomment-2838893327
         bool inCI = string.Equals(Environment.GetEnvironmentVariable("TF_BUILD"), "true", StringComparison.OrdinalIgnoreCase) || string.Equals(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), "true", StringComparison.OrdinalIgnoreCase);
 
         _output = new TerminalTestReporter(console, new TerminalTestReporterOptions()

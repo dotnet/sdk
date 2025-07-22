@@ -280,6 +280,10 @@ dotnet_diagnostic.IDE0200.severity = none
 dotnet_diagnostic.IDE0240.severity = warning
 
 # Additional rules for template engine source code
+
+# Default severity for analyzer diagnostics with category 'StyleCop.CSharp.SpacingRules'
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.SpacingRules.severity = none
+
 [{src,test}/**{Microsoft.TemplateEngine.*,dotnet-new?*}/**.cs]
 # Default analyzed API surface = 'public' (public APIs)
 dotnet_code_quality.api_surface = public

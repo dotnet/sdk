@@ -1,105 +1,78 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
+using System.Collections.Frozen;
 using System.Diagnostics;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Configurer;
-using CLIRuntimeEnvironment = Microsoft.DotNet.Cli.Utils.RuntimeEnvironment;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
 public class Telemetry : ITelemetry
 {
-    internal static string CurrentSessionId = null;
-    internal static bool DisabledForTests = false;
-    private readonly int _senderCount;
-    private TelemetryClient _client = null;
-    private Dictionary<string, string> _commonProperties = null;
-    private Dictionary<string, double> _commonMeasurements = null;
-    private Task _trackEventTask = null;
+    internal static string? s_currentSessionId = null;
+    internal static bool s_disabledForTests = false;
+    private static readonly FrozenDictionary<string, object?> s_commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties();
+    private Task? _trackEventTask;
 
-    private const string ConnectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
-
+    public static string ConnectionString { get; } = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
+    public static string DefaultStorageFolderName { get; } = "TelemetryStorageService";
     public bool Enabled { get; }
 
     public Telemetry() : this(null) { }
 
-    public Telemetry(IFirstTimeUseNoticeSentinel sentinel) : this(sentinel, null) { }
-
-    public Telemetry(
-        IFirstTimeUseNoticeSentinel sentinel,
-        string sessionId,
-        bool blockThreadInitialization = false,
-        IEnvironmentProvider environmentProvider = null,
-        int senderCount = 3)
+    public Telemetry(string? sessionId, IEnvironmentProvider? environmentProvider = null)
     {
-
-        if (DisabledForTests)
+        if (s_disabledForTests)
         {
             return;
         }
 
         environmentProvider ??= new EnvironmentProvider();
-
-        Enabled = !environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, defaultValue: CompileOptions.TelemetryOptOutDefault)
-                    && PermissionExists(sentinel);
-
+        Enabled = !environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, defaultValue: CompileOptions.TelemetryOptOutDefault);
         if (!Enabled)
         {
             return;
         }
 
         // Store the session ID in a static field so that it can be reused
-        CurrentSessionId = sessionId ?? Guid.NewGuid().ToString();
-        _senderCount = senderCount;
-        if (blockThreadInitialization)
+        if (!string.IsNullOrEmpty(sessionId))
         {
-            InitializeTelemetry();
+            s_currentSessionId = sessionId;
         }
         else
         {
-            //initialize in task to offload to parallel thread
-            _trackEventTask = Task.Run(() => InitializeTelemetry());
+            // Generate a new session ID if not provided
+            s_currentSessionId ??= Guid.NewGuid().ToString();
         }
     }
 
     internal static void DisableForTests()
     {
-        DisabledForTests = true;
-        CurrentSessionId = null;
+        s_disabledForTests = true;
+        s_currentSessionId = null;
     }
 
     internal static void EnableForTests()
     {
-        DisabledForTests = false;
+        s_disabledForTests = false;
     }
 
-    private static bool PermissionExists(IFirstTimeUseNoticeSentinel sentinel)
-    {
-        if (sentinel == null)
-        {
-            return false;
-        }
-
-        return sentinel.Exists();
-    }
-
-    public void TrackEvent(string eventName, IDictionary<string, string> properties,
-        IDictionary<string, double> measurements)
+    public void TrackEvent(string eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)
     {
         if (!Enabled)
         {
             return;
         }
 
-        //continue the task in different threads
-        _trackEventTask = _trackEventTask.ContinueWith(
-            x => TrackEventTask(eventName, properties, measurements)
-        );
+        // Continue the task in different threads.
+        if (_trackEventTask == null)
+        {
+            _trackEventTask = Task.Run(() => TrackEventTask(eventName, properties, measurements));
+        }
+        else
+        {
+            _trackEventTask = _trackEventTask.ContinueWith(_ => TrackEventTask(eventName, properties, measurements));
+        }
     }
 
     public void Flush()
@@ -112,17 +85,7 @@ public class Telemetry : ITelemetry
         _trackEventTask.Wait();
     }
 
-    // Adding dispose on graceful shutdown per https://github.com/microsoft/ApplicationInsights-dotnet/issues/1152#issuecomment-518742922
-    public void Dispose()
-    {
-        if (_client != null)
-        {
-            _client.TelemetryConfiguration.Dispose();
-            _client = null;
-        }
-    }
-
-    public void ThreadBlockingTrackEvent(string eventName, IDictionary<string, string> properties, IDictionary<string, double> measurements)
+    public void ThreadBlockingTrackEvent(string eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)
     {
         if (!Enabled)
         {
@@ -131,51 +94,12 @@ public class Telemetry : ITelemetry
         TrackEventTask(eventName, properties, measurements);
     }
 
-    private void InitializeTelemetry()
+    private static void TrackEventTask(string eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)
     {
         try
         {
-            var persistenceChannel = new PersistenceChannel.PersistenceChannel(sendersCount: _senderCount)
-            {
-                SendingInterval = TimeSpan.FromMilliseconds(1)
-            };
-
-            var config = TelemetryConfiguration.CreateDefault();
-            config.TelemetryChannel = persistenceChannel;
-            config.ConnectionString = ConnectionString;
-            _client = new TelemetryClient(config);
-            _client.Context.Session.Id = CurrentSessionId;
-            _client.Context.Device.OperatingSystem = CLIRuntimeEnvironment.OperatingSystem;
-
-            _commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties();
-            _commonMeasurements = [];
-        }
-        catch (Exception e)
-        {
-            _client = null;
-            // we dont want to fail the tool if telemetry fails.
-            Debug.Fail(e.ToString());
-        }
-    }
-
-    private void TrackEventTask(
-        string eventName,
-        IDictionary<string, string> properties,
-        IDictionary<string, double> measurements)
-    {
-        if (_client == null)
-        {
-            return;
-        }
-
-        try
-        {
-            Dictionary<string, string> eventProperties = GetEventProperties(properties);
-            Dictionary<string, double> eventMeasurements = GetEventMeasures(measurements);
-
-            eventProperties.Add("event id", Guid.NewGuid().ToString());
-
-            _client.TrackEvent(PrependProducerNamespace(eventName), eventProperties, eventMeasurements);
+            var activity = new ActivityEvent($"dotnet/cli/{eventName}", tags: MakeTags(properties, measurements));
+            Activity.Current?.AddEvent(activity);
         }
         catch (Exception e)
         {
@@ -183,35 +107,43 @@ public class Telemetry : ITelemetry
         }
     }
 
-    private static string PrependProducerNamespace(string eventName)
+    private static ActivityTagsCollection MakeTags(IDictionary<string, string?>? eventProperties, IDictionary<string, double>? eventMeasurements)
     {
-        return "dotnet/cli/" + eventName;
-    }
-
-    private Dictionary<string, double> GetEventMeasures(IDictionary<string, double> measurements)
-    {
-        Dictionary<string, double> eventMeasurements = new(_commonMeasurements);
-        if (measurements != null)
+        var tags = new ActivityTagsCollection(s_commonProperties);
+        if (s_currentSessionId is not null)
         {
-            foreach (KeyValuePair<string, double> measurement in measurements)
-            {
-                eventMeasurements[measurement.Key] = measurement.Value;
-            }
-        }
-        return eventMeasurements;
-    }
-
-    private Dictionary<string, string> GetEventProperties(IDictionary<string, string> properties)
-    {
-        var eventProperties = new Dictionary<string, string>(_commonProperties);
-        if (properties != null)
-        {
-            foreach (KeyValuePair<string, string> property in properties)
-            {
-                eventProperties[property.Key] = property.Value;
-            }
+            tags.Add("sessionId", s_currentSessionId);
         }
 
-        return eventProperties;
+        foreach (var property in s_commonProperties)
+        {
+            if (property.Value is null)
+            {
+                continue; // Skip null properties
+            }
+            tags.TryAdd(property.Key, property.Value);
+        }
+
+        if (eventProperties is not null)
+        {
+            foreach (var property in eventProperties)
+            {
+                if (property.Value is null)
+                {
+                    continue; // Skip null properties
+                }
+                tags.TryAdd(property.Key, property.Value);
+            }
+        }
+
+        if (eventMeasurements is not null)
+        {
+            foreach (var measurement in eventMeasurements)
+            {
+                tags.TryAdd(measurement.Key, measurement.Value);
+            }
+        }
+
+        return tags;
     }
 }

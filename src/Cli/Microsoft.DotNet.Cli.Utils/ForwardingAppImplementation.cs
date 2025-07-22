@@ -19,7 +19,7 @@ internal class ForwardingAppImplementation
     private readonly string? _depsFile;
     private readonly string? _runtimeConfig;
     private readonly string? _additionalProbingPath;
-    private Dictionary<string, string> _environmentVariables;
+    private Dictionary<string, string?> _environmentVariables;
 
     private readonly string[] _allArgs;
 
@@ -29,7 +29,7 @@ internal class ForwardingAppImplementation
         string? depsFile = null,
         string? runtimeConfig = null,
         string? additionalProbingPath = null,
-        Dictionary<string, string>? environmentVariables = null)
+        Dictionary<string, string?>? environmentVariables = null)
     {
         _forwardApplicationPath = forwardApplicationPath;
         _argsToForward = argsToForward;
@@ -86,7 +86,7 @@ internal class ForwardingAppImplementation
         return processInfo;
     }
 
-    public ForwardingAppImplementation WithEnvironmentVariable(string name, string value)
+    public ForwardingAppImplementation WithEnvironmentVariable(string name, string? value)
     {
         _environmentVariables.Add(name, value);
 

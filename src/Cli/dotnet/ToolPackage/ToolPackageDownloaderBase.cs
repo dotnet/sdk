@@ -187,8 +187,10 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                 //  Create parent directory in global tool store, for example dotnet\tools\.store\powershell
                 _fileSystem.Directory.CreateDirectory(toolStoreTargetDirectory.GetParentPath().Value);
 
+                var _moveContentActivity = Activities.Source.StartActivity("move-global-tool-content");
                 //  Move tool files from stage to final location
                 FileAccessRetrier.RetryOnMoveAccessFailure(() => _fileSystem.Directory.Move(_globalToolStageDir.Value, toolStoreTargetDirectory.Value));
+                _moveContentActivity?.Dispose();
 
                 rollbackDirectory = toolStoreTargetDirectory.Value;
 
@@ -374,6 +376,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         ToolPackageInstance toolPackageInstance
         )
     {
+        using var _updateRuntimeConfigActivity = Activities.Source.StartActivity("update-runtimeconfig");
         var runtimeConfigFilePath = Path.ChangeExtension(toolPackageInstance.Command.Executable.Value, ".runtimeconfig.json");
 
         // Update the runtimeconfig.json file

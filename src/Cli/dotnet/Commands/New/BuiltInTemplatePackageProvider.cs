@@ -1,8 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using NuGet.Versioning;
@@ -18,14 +17,16 @@ internal sealed class BuiltInTemplatePackageProvider(BuiltInTemplatePackageProvi
 
     public ITemplatePackageProviderFactory Factory { get; } = factory;
 
-#pragma warning disable CS0067
     /// <summary>
     /// We don't trigger this event, we could complicate our life with FileSystemWatcher.
-    /// But since "dotnet new" is short lived process is not worth it, plus it would cause
-    /// some perf hit...
+    /// But since "dotnet new" is short lived process is not worth it, plus it would cause some perf hit...
+    /// To avoid warnings about being unused, implement empty add/remove accessors.
     /// </summary>
-    public event Action TemplatePackagesChanged;
-#pragma warning restore CS0067
+    public event Action? TemplatePackagesChanged
+    {
+        add { }
+        remove { }
+    }
 
     public Task<IReadOnlyList<ITemplatePackage>> GetAllTemplatePackagesAsync(CancellationToken cancellationToken)
     {
@@ -44,11 +45,12 @@ internal sealed class BuiltInTemplatePackageProvider(BuiltInTemplatePackageProvi
     {
         var templateFoldersToInstall = new List<string>();
 
-        var sdkDirectory = Path.GetDirectoryName(typeof(Utils.DotnetFiles).Assembly.Location);
-        var dotnetRootPath = Path.GetDirectoryName(Path.GetDirectoryName(sdkDirectory));
-
+        var sdksDirectory = new DirectoryInfo(MSBuildForwardingAppWithoutLogging.GetMSBuildSDKsPath());
+        var sdkDirectory = sdksDirectory.Parent!;
+        var sdkVersion = sdkDirectory.Name;
+        var dotnetRootPath = sdkDirectory.Parent!.Parent!;
         // First grab templates from dotnet\templates\M.m folders, in ascending order, up to our version
-        string templatesRootFolder = Path.GetFullPath(Path.Combine(dotnetRootPath, "templates"));
+        string templatesRootFolder = Path.Combine(dotnetRootPath.FullName, "templates");
         if (Directory.Exists(templatesRootFolder))
         {
             IReadOnlyDictionary<string, SemanticVersion> parsedNames = GetVersionDirectoriesInDirectory(templatesRootFolder);
@@ -59,7 +61,7 @@ internal sealed class BuiltInTemplatePackageProvider(BuiltInTemplatePackageProvi
         }
 
         // Now grab templates from our base folder, if present.
-        string templatesDir = Path.Combine(sdkDirectory, "Templates");
+        string templatesDir = Path.Combine(sdkDirectory.FullName, "Templates");
         if (Directory.Exists(templatesDir))
         {
             templateFoldersToInstall.Add(templatesDir);
@@ -76,7 +78,7 @@ internal sealed class BuiltInTemplatePackageProvider(BuiltInTemplatePackageProvi
 
         foreach (string directory in Directory.EnumerateDirectories(fullPath, "*.*", SearchOption.TopDirectoryOnly))
         {
-            if (SemanticVersion.TryParse(Path.GetFileName(directory), out SemanticVersion versionInfo))
+            if (SemanticVersion.TryParse(Path.GetFileName(directory), out SemanticVersion? versionInfo) && versionInfo is not null)
             {
                 versionFileInfo.Add(directory, versionInfo);
             }
@@ -89,7 +91,7 @@ internal sealed class BuiltInTemplatePackageProvider(BuiltInTemplatePackageProvi
     {
         IDictionary<string, (string path, SemanticVersion version)> bestVersionsByBucket = new Dictionary<string, (string path, SemanticVersion version)>();
 
-        Version sdkVersion = typeof(NewCommandParser).Assembly.GetName().Version;
+        Version? sdkVersion = typeof(NewCommandParser).Assembly.GetName().Version;
         foreach (KeyValuePair<string, SemanticVersion> dirInfo in versionDirInfo)
         {
             var majorMinorDirVersion = new Version(dirInfo.Value.Major, dirInfo.Value.Minor);
