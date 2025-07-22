@@ -1057,6 +1057,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // wait until after DCP session started:
             await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #1");
 
+            // working directory of the service should be it's project directory:
+            await App.WaitUntilOutputContains($"ApiService working directory: '{Path.GetDirectoryName(serviceProjectPath)}'");
+
             // Service -- valid code change:
             UpdateSourceFile(
                 serviceSourcePath,
@@ -1081,7 +1084,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("  ❔ Do you want to restart these projects? Yes (y) / No (n) / Always (a) / Never (v)");
 
             App.AssertOutputContains("dotnet watch ⌚ Restart is needed to apply the changes.");
-            App.AssertOutputContains($"dotnet watch ❌ {serviceSourcePath}(36,1): error ENC0020: Renaming record 'WeatherForecast' requires restarting the application.");
+            App.AssertOutputContains($"dotnet watch ❌ {serviceSourcePath}(40,1): error ENC0020: Renaming record 'WeatherForecast' requires restarting the application.");
             App.AssertOutputContains("dotnet watch ⌚ Affected projects:");
             App.AssertOutputContains("dotnet watch ⌚   WatchAspire.ApiService");
             App.Process.ClearOutput();
