@@ -173,8 +173,10 @@ internal sealed class FileBasedAppSourceEditor
             start = lastCommentOrWhiteSpace.FullSpan.End;
         }
 
-        // Add a blank line after the directive unless there is already a blank line or another directive before the first C# token.
-        if (!leadingTrivia.Skip(i).Any(static t => t.IsKind(SyntaxKind.EndOfLineTrivia) || t.IsDirective))
+        // Add a blank line after the directive unless there are no other tokens (i.e., the first token is EOF),
+        // or there is already a blank line or another directive before the first C# token.
+        if (!result.Token.IsKind(SyntaxKind.EndOfFileToken) &&
+            !leadingTrivia.Skip(i).Any(static t => t.IsKind(SyntaxKind.EndOfLineTrivia) || t.IsDirective))
         {
             suffix += NewLine;
         }

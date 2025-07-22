@@ -51,6 +51,42 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
     }
 
     [Fact]
+    public void OnlyComment()
+    {
+        Verify(
+            """
+            // only comment
+            """,
+            (static editor => editor.Add(new CSharpDirective.Package(default) { Name = "MyPackage", Version = "1.0.0" }),
+            """
+            // only comment
+
+            #:package MyPackage@1.0.0
+
+            """),
+            (static editor => editor.Remove(editor.Directives.Single()),
+            """
+            // only comment
+
+
+            """));
+    }
+
+    [Fact]
+    public void Empty()
+    {
+        Verify(
+            "",
+            (static editor => editor.Add(new CSharpDirective.Package(default) { Name = "MyPackage", Version = "1.0.0" }),
+            """
+            #:package MyPackage@1.0.0
+
+            """),
+            (static editor => editor.Remove(editor.Directives.Single()),
+            ""));
+    }
+
+    [Fact]
     public void PreExistingWhiteSpace()
     {
         Verify(
@@ -333,10 +369,11 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             var actualOutput = editor.SourceFile.Text.ToString();
             if (actualOutput != expectedOutput)
             {
-                Log.WriteLine("Expected output:");
+                Log.WriteLine("Expected output:\n---");
                 Log.WriteLine(expectedOutput);
-                Log.WriteLine("\nActual output:");
+                Log.WriteLine("---\nActual output:\n---");
                 Log.WriteLine(actualOutput);
+                Log.WriteLine("---");
                 Assert.Fail($"Output mismatch at index {index}.");
             }
             index++;
