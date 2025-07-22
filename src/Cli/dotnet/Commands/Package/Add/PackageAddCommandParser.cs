@@ -12,11 +12,17 @@ namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
 public static class PackageAddCommandParser
 {
+    public static readonly Option<bool> PrereleaseOption = new ForwardedOption<bool>("--prerelease")
+    {
+        Description = CliStrings.CommandPrereleaseOptionDescription,
+        Arity = ArgumentArity.Zero
+    }.ForwardAs("--prerelease");
+
     public static readonly Argument<PackageIdentityWithRange> CmdPackageArgument = CommonArguments.RequiredPackageIdentityArgument()
     .AddCompletions((context) =>
     {
         // we should take --prerelease flags into account for version completion
-        var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption!);
+        var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption);
         return QueryNuGet(context.WordToComplete, allowPrerelease, CancellationToken.None).Result.Select(packageId => new CompletionItem(packageId));
     });
 
@@ -31,7 +37,7 @@ public static class PackageAddCommandParser
             if (context.ParseResult.GetValue(CmdPackageArgument) is { HasVersion: false } packageId)
             {
                 // we should take --prerelease flags into account for version completion
-                var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption!);
+                var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption);
                 return QueryVersionsForPackage(packageId.Id, context.WordToComplete, allowPrerelease, CancellationToken.None)
                     .Result
                     .Select(version => new CompletionItem(version.ToNormalizedString()));
@@ -67,12 +73,6 @@ public static class PackageAddCommandParser
     }.ForwardAsSingle(o => $"--package-directory {o}");
 
     public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
-
-    public static readonly Option<bool> PrereleaseOption = new ForwardedOption<bool>("--prerelease")
-    {
-        Description = CliStrings.CommandPrereleaseOptionDescription,
-        Arity = ArgumentArity.Zero
-    }.ForwardAs("--prerelease");
 
     private static readonly Command Command = ConstructCommand();
 

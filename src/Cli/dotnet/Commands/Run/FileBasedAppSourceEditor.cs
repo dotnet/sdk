@@ -32,7 +32,7 @@ internal sealed class FileBasedAppSourceEditor
         {
             if (field.IsDefault)
             {
-                field = LoadDirectives(SourceFile);
+                field = VirtualProjectBuildingCommand.FindDirectives(SourceFile, reportAllErrors: false, DiagnosticBag.Ignore());
                 Debug.Assert(!field.IsDefault);
             }
 
@@ -53,7 +53,6 @@ internal sealed class FileBasedAppSourceEditor
         return new FileBasedAppSourceEditor
         {
             SourceFile = sourceFile,
-            Directives = LoadDirectives(sourceFile),
             NewLine = GetNewLine(sourceFile.Text),
         };
 
@@ -76,48 +75,41 @@ internal sealed class FileBasedAppSourceEditor
         }
     }
 
-    private static ImmutableArray<CSharpDirective> LoadDirectives(SourceFile sourceFile)
-    {
-        return VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: false, DiagnosticBag.Ignore());
-    }
-
     public void Add(CSharpDirective directive)
     {
-        TextSpan span = DetermineWhereToAdd(directive, out var append);
-        string newText = append.Prefix + directive.ToString() + NewLine + append.Suffix;
-        SourceFile = SourceFile.WithText(SourceFile.Text.Replace(span, newText: newText));
+        var change = DetermineAddChange(directive);
+        SourceFile = SourceFile.WithText(SourceFile.Text.WithChanges([change]));
     }
 
-    private TextSpan DetermineWhereToAdd(CSharpDirective directive, out (string? Prefix, string? Suffix) append)
+    private TextChange DetermineAddChange(CSharpDirective directive)
     {
-        append = default;
-
         // Find one that has the same kind and name.
         // If found, we will replace it with the new directive.
         if (directive is CSharpDirective.Named named &&
             Directives.OfType<CSharpDirective.Named>().FirstOrDefault(d => NamedDirectiveComparer.Instance.Equals(d, named)) is { } toReplace)
         {
-            return toReplace.Info.Span;
+            return new TextChange(toReplace.Info.Span, newText: directive.ToString() + NewLine);
         }
 
         // Find the last directive of the first group of directives of the same kind.
         // If found, we will insert the new directive after it.
-        CSharpDirective? addAfer = null;
+        CSharpDirective? addAfter = null;
         foreach (var existingDirective in Directives)
         {
             if (existingDirective.GetType() == directive.GetType())
             {
-                addAfer = existingDirective;
+                addAfter = existingDirective;
             }
-            else if (addAfer != null)
+            else if (addAfter != null)
             {
                 break;
             }
         }
 
-        if (addAfer != null)
+        if (addAfter != null)
         {
-            return new TextSpan(start: addAfer.Info.Span.End, length: 0);
+            var span = new TextSpan(start: addAfter.Info.Span.End, length: 0);
+            return new TextChange(span, newText: directive.ToString() + NewLine);
         }
 
         // Otherwise, we will add the directive to the top of the file.
@@ -159,6 +151,9 @@ internal sealed class FileBasedAppSourceEditor
             i = -1;
         }
 
+        string prefix = string.Empty;
+        string suffix = NewLine;
+
         if (i > 0)
         {
             var lastCommentOrWhiteSpace = leadingTrivia[i - 1];
@@ -166,13 +161,13 @@ internal sealed class FileBasedAppSourceEditor
             // Add newline after the comment if there is not one already (can happen with block comments).
             if (!lastCommentOrWhiteSpace.IsKind(SyntaxKind.EndOfLineTrivia))
             {
-                append.Prefix += NewLine;
+                prefix += NewLine;
             }
 
             // Add a blank separating line between the comment and the directive (unless there is already one).
             if (trailingNewLines < 2)
             {
-                append.Prefix += NewLine;
+                prefix += NewLine;
             }
 
             start = lastCommentOrWhiteSpace.FullSpan.End;
@@ -181,10 +176,10 @@ internal sealed class FileBasedAppSourceEditor
         // Add a blank line after the directive unless there is already a blank line or another directive before the first C# token.
         if (!leadingTrivia.Skip(i).Any(static t => t.IsKind(SyntaxKind.EndOfLineTrivia) || t.IsDirective))
         {
-            append.Suffix += NewLine;
+            suffix += NewLine;
         }
 
-        return new TextSpan(start: start, length: 0);
+        return new TextChange(new TextSpan(start: start, length: 0), newText: prefix + directive.ToString() + suffix);
 
         static bool IsComment(SyntaxTrivia trivia)
         {

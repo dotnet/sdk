@@ -3,7 +3,9 @@
 
 using System.CommandLine;
 using System.Diagnostics;
+using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
+using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -310,13 +312,7 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
                         static void Unreachable(string value) => Debug.Fail("Unreachable.");
                     }
 
-                    return (Revert, Update, Save);
-
-                    void Update(string value)
-                    {
-                        versionAttribute.Value = value;
-                        directoryPackagesPropsProject.Save();
-                    }
+                    return (Revert, v => Update(versionAttribute, v), Save);
                 }
             }
 
@@ -332,13 +328,13 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
                 var metadata = item.AddMetadata(versionAttributeName, version, expressAsAttribute: true);
                 directoryPackagesPropsProject.Save();
 
-                return (Revert, Update, Save);
+                return (Revert, v => Update(metadata, v), Save);
+            }
 
-                void Update(string value)
-                {
-                    metadata.Value = value;
-                    directoryPackagesPropsProject.Save();
-                }
+            void Update(ProjectMetadataElement element, string value)
+            {
+                element.Value = value;
+                directoryPackagesPropsProject.Save();
             }
 
             void Revert()

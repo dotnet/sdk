@@ -16,12 +16,10 @@ internal class PackageRemoveCommand(ParseResult parseResult) : CommandBase(parse
     {
         var arguments = _parseResult.GetValue(PackageRemoveCommandParser.CmdPackageArgument) ?? [];
 
-        if (arguments.Length != 1)
+        if (arguments is not [{ } packageToRemove])
         {
             throw new GracefulException(CliCommandStrings.PackageRemoveSpecifyExactlyOnePackageReference);
         }
-
-        var packageToRemove = arguments.Single();
 
         var (fileOrDirectory, allowedAppKinds) = PackageCommandParser.ProcessPathOptions(_parseResult);
 
