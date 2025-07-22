@@ -906,7 +906,7 @@ The following are names of parameters or literal values and should not be transl
 {1}</source>
         <target state="needs-review-translation">NETSDK1197: plusieurs projets de solution contiennent des valeurs '{0}' en conflit ; assurez-vous que les valeurs correspondent. Envisagez d'utiliser un fichier Directory.build.props pour définir la propriété pour tous les projets. Projets conflictuels : 
 {1}</target>
-        <note />
+        <note>{StrBegins="NETSDK1197: "}</note>
       </trans-unit>
       <trans-unit id="TargetFrameworkIsEol">
         <source>NETSDK1138: The target framework '{0}' is out of support and will not receive security updates in the future. Please refer to {1} for more information about the support policy.</source>
