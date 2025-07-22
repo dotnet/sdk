@@ -1856,6 +1856,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
+                        <FileBasedProgram>true</FileBasedProgram>
                       </PropertyGroup>
 
                       <ItemGroup>
@@ -1935,6 +1936,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
+                        <FileBasedProgram>true</FileBasedProgram>
                       </PropertyGroup>
 
                       <ItemGroup>
@@ -2007,6 +2009,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
+                        <FileBasedProgram>true</FileBasedProgram>
                       </PropertyGroup>
 
                       <ItemGroup>

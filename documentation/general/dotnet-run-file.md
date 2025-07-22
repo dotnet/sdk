@@ -45,6 +45,8 @@ Additionally, the implicit project file has the following customizations:
     string? directoryPath = AppContext.GetData("EntryPointFileDirectoryPath") as string;
     ```
 
+  - `FileBasedProgram` property is set to `true` and can be used by SDK targets to detect file-based apps.
+
 ## Grow up
 
 When file-based programs reach an inflection point where build customizations in a project file are needed,

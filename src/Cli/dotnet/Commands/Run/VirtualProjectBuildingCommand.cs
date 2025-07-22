@@ -652,6 +652,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                     <ArtifactsPath>{EscapeValue(artifactsPath)}</ArtifactsPath>
                     <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
+                    <FileBasedProgram>true</FileBasedProgram>
                   </PropertyGroup>
 
                   <ItemGroup>
