@@ -875,6 +875,7 @@ You may need to build the project on another operating system or architecture, o
   <data name="SolutionProjectConfigurationsConflict" xml:space="preserve">
     <value>NETSDK1197: Multiple solution project(s) contain conflicting '{0}' values; ensure the values match. Consider using a Directory.build.props file to set the property for all projects. Conflicting projects:
 {1}</value>
+  <comment>{StrBegins="NETSDK1197: "}</comment>
   </data>
   <data name="PublishProfileNotPresent" xml:space="preserve">
     <value>NETSDK1198: A publish profile with the name '{0}' was not found in the project. Set the PublishProfile property to a valid file name.</value>
