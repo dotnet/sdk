@@ -16,6 +16,8 @@ namespace Microsoft.NET.TestFramework.Commands
         string _valueName;
         ValueType _valueType;
 
+        public bool ShouldEscapeItems { get; set; } = false;
+
         public bool ShouldCompile { get; set; } = true;
 
         public string DependsOnTargets { get; set; } = "Compile";
@@ -80,6 +82,13 @@ namespace Microsoft.NET.TestFramework.Commands
                 foreach (var metadataName in MetadataNames)
                 {
                     linesAttribute += $"%09%({_valueName}.{metadataName})";
+                }
+
+                if (ShouldEscapeItems)
+                {
+                    // items with semi-colon delimited values need to be escaped to avoid creating separate items
+                    // when the include attribute is evaluated.
+                    linesAttribute = $"$([MSBuild]::Escape({linesAttribute}))";
                 }
             }
 
