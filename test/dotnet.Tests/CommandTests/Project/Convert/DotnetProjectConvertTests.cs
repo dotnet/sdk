@@ -1156,6 +1156,33 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             ]);
     }
 
+    [Fact] // https://github.com/dotnet/sdk/issues/49797
+    public void Directives_VersionedSdkFirst()
+    {
+        VerifyConversion(
+            inputCSharp: """
+                #:sdk Microsoft.NET.Sdk@9.0.0
+                Console.WriteLine();
+                """,
+            expectedProject: $"""
+                <Project Sdk="Microsoft.NET.Sdk/9.0.0">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                  </PropertyGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: """
+                Console.WriteLine();
+                """);
+    }
+
     private static void Convert(string inputCSharp, out string actualProject, out string? actualCSharp, bool force, string? filePath)
     {
         var sourceFile = new SourceFile(filePath ?? "/app/Program.cs", SourceText.From(inputCSharp, Encoding.UTF8));
