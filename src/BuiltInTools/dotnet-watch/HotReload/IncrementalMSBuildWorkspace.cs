@@ -18,6 +18,7 @@ internal class IncrementalMSBuildWorkspace : Workspace
     public IncrementalMSBuildWorkspace(IReporter reporter)
         : base(MSBuildMefHostServices.DefaultServices, WorkspaceKind.MSBuild)
     {
+#pragma warning disable CS0618 // https://github.com/dotnet/sdk/issues/49725
         WorkspaceFailed += (_sender, diag) =>
         {
             // Report both Warning and Failure as warnings.
@@ -26,6 +27,7 @@ internal class IncrementalMSBuildWorkspace : Workspace
             // https://github.com/dotnet/roslyn/issues/75170
             reporter.Warn($"msbuild: {diag.Diagnostic}", "⚠");
         };
+#pragma warning restore CS0618
 
         _reporter = reporter;
     }

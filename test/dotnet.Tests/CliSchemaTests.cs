@@ -1071,7 +1071,7 @@ public class CliSchemaTests : SdkTest
     {
         var stream = new MemoryStream();
         var writer = new StreamWriter(stream);
-        CliSchema.PrintCliSchema(Parser.Instance.Parse(commandArgs).CommandResult, writer, null);
+        CliSchema.PrintCliSchema(Parser.Parse(commandArgs).CommandResult, writer, null);
         stream.Position = 0;
         var reader = new StreamReader(stream);
         var output = reader.ReadToEnd();

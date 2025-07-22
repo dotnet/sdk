@@ -34,7 +34,7 @@ internal class PackageAddCommand(ParseResult parseResult, string fileOrDirectory
 
         var tempDgFilePath = string.Empty;
 
-        if (_parseResult.GetResult(PackageAddCommandParser.NoRestoreOption) is null)
+        if (!_parseResult.GetValue(PackageAddCommandParser.NoRestoreOption))
         {
 
             try
@@ -121,7 +121,7 @@ internal class PackageAddCommand(ParseResult parseResult, string fileOrDirectory
             .OptionValuesToBeForwarded()
             .SelectMany(a => a.Split(' ', 2)));
 
-        if (_parseResult.GetResult(PackageAddCommandParser.NoRestoreOption) is not null)
+        if (_parseResult.GetValue(PackageAddCommandParser.NoRestoreOption))
         {
             args.Add("--no-restore");
         }
