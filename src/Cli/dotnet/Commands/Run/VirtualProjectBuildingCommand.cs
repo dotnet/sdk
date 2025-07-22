@@ -657,38 +657,31 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             writer.WriteLine();
         }
 
-        // Write default properties unless they are overridden by custom directives.
-        var propertyDirectiveNames = propertyDirectives.Select(d => d.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        if (!s_defaultProperties.Keys.All(propertyDirectiveNames.Contains))
+        // Write default and custom properties.
         {
             writer.WriteLine("  <PropertyGroup>");
+
+            // First write the default properties except those specified by the user.
+            var customPropertyNames = propertyDirectives.Select(d => d.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
             foreach (var (name, value) in s_defaultProperties)
             {
-                if (!propertyDirectiveNames.Contains(name))
+                if (!customPropertyNames.Contains(name))
                 {
                     writer.WriteLine($"""
                             <{name}>{EscapeValue(value)}</{name}>
                         """);
                 }
             }
-            writer.WriteLine("  </PropertyGroup>");
-            writer.WriteLine();
-        }
 
-        if (isVirtualProject)
-        {
-            writer.WriteLine("""
-                  <PropertyGroup>
-                    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                  </PropertyGroup>
+            // Write virtual-only properties.
+            if (isVirtualProject)
+            {
+                writer.WriteLine("""
+                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                    """);
+            }
 
-                """);
-        }
-
-        if (propertyDirectives.Any())
-        {
-            writer.WriteLine("  <PropertyGroup>");
-
+            // Write custom properties.
             foreach (var property in propertyDirectives)
             {
                 writer.WriteLine($"""
@@ -698,19 +691,16 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 processedDirectives++;
             }
 
+            // Write virtual-only properties which cannot be overridden.
+            if (isVirtualProject)
+            {
+                writer.WriteLine("""
+                        <Features>$(Features);FileBasedProgram</Features>
+                    """);
+            }
+
             writer.WriteLine("  </PropertyGroup>");
             writer.WriteLine();
-        }
-
-        if (isVirtualProject)
-        {
-            // After `#:property` directives so they don't override this.
-            writer.WriteLine("""
-                  <PropertyGroup>
-                    <Features>$(Features);FileBasedProgram</Features>
-                  </PropertyGroup>
-
-                """);
         }
 
         if (packageDirectives.Any())

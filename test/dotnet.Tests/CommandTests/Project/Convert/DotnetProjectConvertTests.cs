@@ -650,9 +650,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <TargetFramework>net472</TargetFramework>
                     <LangVersion>preview</LangVersion>
                   </PropertyGroup>
@@ -724,9 +721,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <MyProp>MyValue</MyProp>
                   </PropertyGroup>
 
@@ -802,9 +796,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <Prop1>One=a/b</Prop1>
                     <Prop2>Two/a=b</Prop2>
                   </PropertyGroup>
@@ -914,9 +905,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <Prop>&lt;test&quot;&gt;</Prop>
                   </PropertyGroup>
 
@@ -951,9 +939,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <Name>Value</Name>
                     <NugetPackageDescription>&quot;My package with spaces&quot;</NugetPackageDescription>
                   </PropertyGroup>
@@ -998,9 +983,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <Prop1>1</Prop1>
                     <Prop2>2</Prop2>
                   </PropertyGroup>
@@ -1047,9 +1029,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <Prop1>1</Prop1>
                     <Prop2>2</Prop2>
                   </PropertyGroup>
@@ -1093,9 +1072,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <Prop1>1</Prop1>
                     <Prop2>2</Prop2>
                   </PropertyGroup>
