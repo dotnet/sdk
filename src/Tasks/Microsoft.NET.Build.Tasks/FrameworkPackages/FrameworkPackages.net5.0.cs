@@ -20,7 +20,7 @@ internal partial class FrameworkPackages
             { "System.Formats.Asn1", "5.0.0" },
             { "System.IO.FileSystem.AccessControl", "5.0.0" },
             { "System.Net.Http.Json", "5.0.0" },
-            { "System.Reflection.DispatchProxy", "4.7.1" },
+            { "System.Reflection.DispatchProxy", "4.8.2" },
             { "System.Reflection.Metadata", "5.0.0" },
             { "System.Runtime.CompilerServices.Unsafe", "5.0.0" },
             { "System.Security.AccessControl", "5.0.0" },
@@ -31,6 +31,10 @@ internal partial class FrameworkPackages
             { "System.Text.Json", "5.0.0" },
             { "System.Threading.Channels", "5.0.0" },
             { "System.Threading.Tasks.Dataflow", "5.0.0" },
+            // removed packages
+            { "System.Runtime.InteropServices.WindowsRuntime", null },
+            { "System.Runtime.WindowsRuntime", null },
+            { "System.Runtime.WindowsRuntime.UI.Xaml", null },
         };
 
         internal static FrameworkPackages AspNetCore { get; } = new(Net50, FrameworkNames.AspNetCoreApp, NETCoreApp31.AspNetCore)
@@ -169,6 +173,9 @@ internal partial class FrameworkPackages
             { "System.Security.Permissions", "5.0.0" },
             { "System.Security.Principal.Windows", "5.0.0" },
             { "System.Windows.Extensions", "5.0.0" },
+            // removed packages
+            { "Microsoft.Win32.SystemEvents", null },
+            { "System.Drawing.Common", null },
         };
 
         internal static FrameworkPackages WindowsDesktop { get; } = new(Net50, FrameworkNames.WindowsDesktopApp, NETCoreApp31.WindowsDesktop)
@@ -196,6 +203,8 @@ internal partial class FrameworkPackages
             { "System.Security.Principal.Windows", "5.0.0" },
             { "System.Threading.AccessControl", "5.0.0" },
             { "System.Windows.Extensions", "5.0.0" },
+            // removed packages
+            { "System.Formats.Asn1", null },
         };
 
         internal static void Register() => FrameworkPackages.Register(Instance, AspNetCore, WindowsDesktop);

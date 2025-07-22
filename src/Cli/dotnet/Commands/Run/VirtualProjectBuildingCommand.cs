@@ -63,6 +63,18 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         "MSBuild.rsp",
     ];
 
+    /// <remarks>
+    /// Kept in sync with the default <c>dotnet new console</c> project file (enforced by <c>DotnetProjectAddTests.SameAsTemplate</c>).
+    /// </remarks>
+    private static readonly FrozenDictionary<string, string> s_defaultProperties = FrozenDictionary.Create<string, string>(StringComparer.OrdinalIgnoreCase,
+    [
+        new("OutputType", "Exe"),
+        new("TargetFramework", "net10.0"),
+        new("ImplicitUsings", "enable"),
+        new("Nullable", "enable"),
+        new("PublishAot", "true"),
+    ]);
+
     internal static readonly string TargetOverrides = """
           <!--
             Override targets which don't work with project files that are not present on disk.
@@ -630,12 +642,19 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         var packageDirectives = directives.OfType<CSharpDirective.Package>();
         var projectDirectives = directives.OfType<CSharpDirective.Project>();
 
-        string sdkValue = "Microsoft.NET.Sdk";
+        string firstSdkName;
+        string? firstSdkVersion;
 
         if (sdkDirectives.FirstOrDefault() is { } firstSdk)
         {
-            sdkValue = firstSdk.ToSlashDelimitedString();
+            firstSdkName = firstSdk.Name;
+            firstSdkVersion = firstSdk.Version;
             processedDirectives++;
+        }
+        else
+        {
+            firstSdkName = "Microsoft.NET.Sdk";
+            firstSdkVersion = null;
         }
 
         if (isVirtualProject)
@@ -652,6 +671,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                     <ArtifactsPath>{EscapeValue(artifactsPath)}</ArtifactsPath>
                     <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
+                    <FileBasedProgram>true</FileBasedProgram>
                   </PropertyGroup>
 
                   <ItemGroup>
@@ -659,13 +679,28 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                   </ItemGroup>
 
                   <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
-                  <Import Project="Sdk.props" Sdk="{EscapeValue(sdkValue)}" />
                 """);
+
+            if (firstSdkVersion is null)
+            {
+                writer.WriteLine($"""
+                      <Import Project="Sdk.props" Sdk="{EscapeValue(firstSdkName)}" />
+                    """);
+            }
+            else
+            {
+                writer.WriteLine($"""
+                      <Import Project="Sdk.props" Sdk="{EscapeValue(firstSdkName)}" Version="{EscapeValue(firstSdkVersion)}" />
+                    """);
+            }
         }
         else
         {
+            string slashDelimited = firstSdkVersion is null
+                ? firstSdkName
+                : $"{firstSdkName}/{firstSdkVersion}";
             writer.WriteLine($"""
-                <Project Sdk="{EscapeValue(sdkValue)}">
+                <Project Sdk="{EscapeValue(slashDelimited)}">
 
                 """);
         }
@@ -697,34 +732,33 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             writer.WriteLine();
         }
 
-        // Kept in sync with the default `dotnet new console` project file (enforced by `DotnetProjectAddTests.SameAsTemplate`).
-        writer.WriteLine($"""
-              <PropertyGroup>
-                <OutputType>Exe</OutputType>
-                <TargetFramework>net10.0</TargetFramework>
-                <ImplicitUsings>enable</ImplicitUsings>
-                <Nullable>enable</Nullable>
-                <PublishAot>true</PublishAot>
-              </PropertyGroup>
-            """);
-
-        if (isVirtualProject)
+        // Write default and custom properties.
         {
             writer.WriteLine("""
-
-                  <PropertyGroup>
-                    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                  </PropertyGroup>
-                """);
-        }
-
-        if (propertyDirectives.Any())
-        {
-            writer.WriteLine("""
-
                   <PropertyGroup>
                 """);
 
+            // First write the default properties except those specified by the user.
+            var customPropertyNames = propertyDirectives.Select(d => d.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            foreach (var (name, value) in s_defaultProperties)
+            {
+                if (!customPropertyNames.Contains(name))
+                {
+                    writer.WriteLine($"""
+                            <{name}>{EscapeValue(value)}</{name}>
+                        """);
+                }
+            }
+
+            // Write virtual-only properties.
+            if (isVirtualProject)
+            {
+                writer.WriteLine("""
+                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                    """);
+            }
+
+            // Write custom properties.
             foreach (var property in propertyDirectives)
             {
                 writer.WriteLine($"""
@@ -734,24 +768,23 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 processedDirectives++;
             }
 
-            writer.WriteLine("  </PropertyGroup>");
-        }
+            // Write virtual-only properties which cannot be overridden.
+            if (isVirtualProject)
+            {
+                writer.WriteLine("""
+                        <Features>$(Features);FileBasedProgram</Features>
+                    """);
+            }
 
-        if (isVirtualProject)
-        {
-            // After `#:property` directives so they don't override this.
             writer.WriteLine("""
-
-                  <PropertyGroup>
-                    <Features>$(Features);FileBasedProgram</Features>
                   </PropertyGroup>
+
                 """);
         }
 
         if (packageDirectives.Any())
         {
             writer.WriteLine("""
-
                   <ItemGroup>
                 """);
 
@@ -773,13 +806,15 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 processedDirectives++;
             }
 
-            writer.WriteLine("  </ItemGroup>");
+            writer.WriteLine("""
+                  </ItemGroup>
+
+                """);
         }
 
         if (projectDirectives.Any())
         {
             writer.WriteLine("""
-
                   <ItemGroup>
                 """);
 
@@ -792,7 +827,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 processedDirectives++;
             }
 
-            writer.WriteLine("  </ItemGroup>");
+            writer.WriteLine("""
+                  </ItemGroup>
+
+                """);
         }
 
         Debug.Assert(processedDirectives + directives.OfType<CSharpDirective.Shebang>().Count() == directives.Length);
@@ -802,7 +840,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             Debug.Assert(targetFilePath is not null);
 
             writer.WriteLine($"""
-
                   <ItemGroup>
                     <Compile Include="{EscapeValue(targetFilePath)}" />
                   </ItemGroup>
@@ -813,12 +850,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             {
                 var targetDirectory = Path.GetDirectoryName(targetFilePath) ?? "";
                 writer.WriteLine($"""
-                  <ItemGroup>
-                    <RuntimeHostConfigurationOption Include="EntryPointFilePath" Value="{EscapeValue(targetFilePath)}" />
-                    <RuntimeHostConfigurationOption Include="EntryPointFileDirectoryPath" Value="{EscapeValue(targetDirectory)}" />
-                  </ItemGroup>
+                      <ItemGroup>
+                        <RuntimeHostConfigurationOption Include="EntryPointFilePath" Value="{EscapeValue(targetFilePath)}" />
+                        <RuntimeHostConfigurationOption Include="EntryPointFileDirectoryPath" Value="{EscapeValue(targetDirectory)}" />
+                      </ItemGroup>
 
-                """);
+                    """);
             }
 
             foreach (var sdk in sdkDirectives)
@@ -828,18 +865,20 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             if (!sdkDirectives.Any())
             {
-                Debug.Assert(sdkValue == "Microsoft.NET.Sdk");
+                Debug.Assert(firstSdkName == "Microsoft.NET.Sdk" && firstSdkVersion == null);
                 writer.WriteLine("""
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
                     """);
             }
 
-            writer.WriteLine();
-            writer.WriteLine(TargetOverrides);
+            writer.WriteLine($"""
+
+                {TargetOverrides}
+
+                """);
         }
 
         writer.WriteLine("""
-
             </Project>
             """);
 
@@ -1187,11 +1226,6 @@ internal abstract class CSharpDirective
                 Name = sdkName,
                 Version = sdkVersion,
             };
-        }
-
-        public string ToSlashDelimitedString()
-        {
-            return Version is null ? Name : $"{Name}/{Version}";
         }
     }
 
