@@ -659,7 +659,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         // Write default and custom properties.
         {
-            writer.WriteLine("  <PropertyGroup>");
+            writer.WriteLine("""
+                  <PropertyGroup>
+                """);
 
             // First write the default properties except those specified by the user.
             var customPropertyNames = propertyDirectives.Select(d => d.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -699,13 +701,17 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     """);
             }
 
-            writer.WriteLine("  </PropertyGroup>");
-            writer.WriteLine();
+            writer.WriteLine("""
+                  </PropertyGroup>
+
+                """);
         }
 
         if (packageDirectives.Any())
         {
-            writer.WriteLine("  <ItemGroup>");
+            writer.WriteLine("""
+                  <ItemGroup>
+                """);
 
             foreach (var package in packageDirectives)
             {
@@ -725,13 +731,17 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 processedDirectives++;
             }
 
-            writer.WriteLine("  </ItemGroup>");
-            writer.WriteLine();
+            writer.WriteLine("""
+                  </ItemGroup>
+
+                """);
         }
 
         if (projectDirectives.Any())
         {
-            writer.WriteLine("  <ItemGroup>");
+            writer.WriteLine("""
+                  <ItemGroup>
+                """);
 
             foreach (var projectReference in projectDirectives)
             {
@@ -742,8 +752,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 processedDirectives++;
             }
 
-            writer.WriteLine("  </ItemGroup>");
-            writer.WriteLine();
+            writer.WriteLine("""
+                  </ItemGroup>
+
+                """);
         }
 
         Debug.Assert(processedDirectives + directives.OfType<CSharpDirective.Shebang>().Count() == directives.Length);
@@ -763,12 +775,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             {
                 var targetDirectory = Path.GetDirectoryName(targetFilePath) ?? "";
                 writer.WriteLine($"""
-                  <ItemGroup>
-                    <RuntimeHostConfigurationOption Include="EntryPointFilePath" Value="{EscapeValue(targetFilePath)}" />
-                    <RuntimeHostConfigurationOption Include="EntryPointFileDirectoryPath" Value="{EscapeValue(targetDirectory)}" />
-                  </ItemGroup>
+                      <ItemGroup>
+                        <RuntimeHostConfigurationOption Include="EntryPointFilePath" Value="{EscapeValue(targetFilePath)}" />
+                        <RuntimeHostConfigurationOption Include="EntryPointFileDirectoryPath" Value="{EscapeValue(targetDirectory)}" />
+                      </ItemGroup>
 
-                """);
+                    """);
             }
 
             foreach (var sdk in sdkDirectives)
@@ -784,12 +796,16 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     """);
             }
 
-            writer.WriteLine();
-            writer.WriteLine(TargetOverrides);
-            writer.WriteLine();
+            writer.WriteLine($"""
+
+                {TargetOverrides}
+
+                """);
         }
 
-        writer.WriteLine("</Project>");
+        writer.WriteLine("""
+            </Project>
+            """);
 
         static string EscapeValue(string value) => SecurityElement.Escape(value);
 
