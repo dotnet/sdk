@@ -15,6 +15,7 @@ using NuGet.Common;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
+
 public class PackCommand(
     MSBuildArgs msbuildArgs,
     bool noRestore,
@@ -30,7 +31,6 @@ public class PackCommand(
 
     public static PackCommand FromParseResult(ParseResult parseResult, string? msbuildPath = null)
     {
-
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(PackCommandParser.GetCommand()).Concat(parseResult.GetValue(PackCommandParser.SlnOrProjectArgument) ?? []);
 
         ReleasePropertyProjectLocator projectLocator = new(parseResult, MSBuildPropertyNames.PACK_RELEASE,
@@ -52,6 +52,7 @@ public class PackCommand(
             noRestore,
             msbuildPath);
     }
+
     private static LogLevel MappingVerbosityToNugetLogLevel(VerbosityOptions? verbosity)
     {
         return verbosity switch
@@ -63,13 +64,14 @@ public class PackCommand(
             _ => LogLevel.Minimal
         };
     }
+
     public static int RunPackCommand(ParseResult parseResult)
     {
         var args = parseResult.GetValue(PackCommandParser.SlnOrProjectArgument)?.ToList() ?? new List<string>();
 
         if (args.Count != 1)
         {
-            Console.Error.WriteLine("Error: Only one .nuspec file can be packed at a time");
+            Console.Error.WriteLine(CliStrings.PackCmd_OneNuspecAllowed); 
             return 1;
         }
 

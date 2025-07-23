@@ -2530,10 +2530,4 @@ Proceed?</value>
   <data name="PackCmdVersion" xml:space="preserve">
     <value>VERSION</value>
   </data>
-  <data name="PackCmdPropertiesDescription" xml:space="preserve">
-    <value>Sets properties for the pack operation</value>
-  </data>
-  <data name="PackCmdProperties" xml:space="preserve">
-    <value>PROPERTY</value>
-  </data>
 </root>
