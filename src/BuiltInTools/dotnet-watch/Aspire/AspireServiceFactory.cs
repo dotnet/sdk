@@ -157,11 +157,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
                         await _service.NotifyLogMessageAsync(dcpId, sessionId, isStdErr: line.IsError, data: line.Content, cancellationToken);
                     }
                 }
-                catch (OperationCanceledException)
-                {
-                    // nop
-                }
-                catch (Exception e)
+                catch (Exception e) when (e is not OperationCanceledException)
                 {
                     Reporter.Error($"Unexpected error reading output of session '{sessionId}': {e}");
                 }
