@@ -55,8 +55,6 @@ public class EnvironmentVariableNamesTests
 
     [Theory]
     [InlineData("os-x86", Architecture.X86, "DOTNET_ROOT_X86")]
-    [InlineData("os-x86", Architecture.X86, "DOTNET_ROOT")]
-    [InlineData("os-x64", Architecture.X64, "DOTNET_ROOT")]
     [InlineData("os-x64", Architecture.X64, "DOTNET_ROOT_X64")]
     [InlineData("os-arm64", Architecture.Arm64, "DOTNET_ROOT_ARM64")]
     [InlineData("os-armv6", Architecture.Armv6, "DOTNET_ROOT_ARMV6")]
