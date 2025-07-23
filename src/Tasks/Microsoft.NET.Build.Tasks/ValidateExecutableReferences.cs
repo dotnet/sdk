@@ -5,6 +5,7 @@
 
 using System.Runtime.Versioning;
 using Microsoft.Build.Framework;
+using Microsoft.DotNet.Cli;
 
 namespace Microsoft.NET.Build.Tasks
 {
