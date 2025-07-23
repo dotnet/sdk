@@ -102,6 +102,9 @@ To opt out, use `#:property PublishAot=false` directive in your `.cs` file.
 
 Command `dotnet clean file.cs` can be used to clean build artifacts of the file-based program.
 
+Commands `dotnet package add PackageName --file app.cs` and `dotnet package remove PackageName --file app.cs`
+can be used to manipulate `#:package` directives in the C# files, similarly to what the commands do for project-based apps.
+
 ## Entry points
 
 If a file is given to `dotnet run`, it has to be an *entry-point file*, otherwise an error is reported.
@@ -378,8 +381,7 @@ We could also add `dotnet compile` command that would be the equivalent of `dotn
 `dotnet clean` could be extended to support cleaning all file-based app outputs,
 e.g., `dotnet clean --all-file-based-apps`.
 
-Adding references via `dotnet package add`/`dotnet reference add` could be supported for file-based programs as well,
-i.e., the command would add a `#:package`/`#:project` directive to the top of a `.cs` file.
+More NuGet commands (like `dotnet nuget why` or `dotnet package list`) could be supported for file-based programs as well.
 
 ### Explicit importing
 

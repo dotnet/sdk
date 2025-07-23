@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -960,6 +959,53 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 """);
     }
 
+    [Fact]
+    public void Directives_BlankLines()
+    {
+        var expectedProject = $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <PublishAot>true</PublishAot>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="A" Version="B" />
+              </ItemGroup>
+
+            </Project>
+
+            """;
+
+        VerifyConversion(
+            inputCSharp: """
+                #:package A@B
+
+                Console.WriteLine();
+                """,
+            expectedProject: expectedProject,
+            expectedCSharp: """
+
+                Console.WriteLine();
+                """);
+
+        VerifyConversion(
+            inputCSharp: """
+
+                #:package A@B
+                Console.WriteLine();
+                """,
+            expectedProject: expectedProject,
+            expectedCSharp: """
+
+                Console.WriteLine();
+                """);
+    }
+
     /// <summary>
     /// <c>#:</c> directives after C# code are ignored.
     /// </summary>
@@ -1199,7 +1245,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     private static void Convert(string inputCSharp, out string actualProject, out string? actualCSharp, bool force, string? filePath)
     {
         var sourceFile = new SourceFile(filePath ?? "/app/Program.cs", SourceText.From(inputCSharp, Encoding.UTF8));
-        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !force, errors: null);
+        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !force, DiagnosticBag.ThrowOnFirst());
         var projectWriter = new StringWriter();
         VirtualProjectBuildingCommand.WriteProjectFile(projectWriter, directives, isVirtualProject: false);
         actualProject = projectWriter.ToString();
@@ -1225,8 +1271,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     private static void VerifyDirectiveConversionErrors(string inputCSharp, IEnumerable<string> expectedErrors)
     {
         var sourceFile = new SourceFile("/app/Program.cs", SourceText.From(inputCSharp, Encoding.UTF8));
-        var errors = ImmutableArray.CreateBuilder<SimpleDiagnostic>();
-        VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: true, errors: errors);
-        errors.Select(e => e.Message).Should().BeEquivalentTo(expectedErrors);
+        VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: true, DiagnosticBag.Collect(out var diagnostics));
+        diagnostics.Select(e => e.Message).Should().BeEquivalentTo(expectedErrors);
     }
 }

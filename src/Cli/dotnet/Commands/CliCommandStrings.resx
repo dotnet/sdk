@@ -1280,6 +1280,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   <data name="PackageRemoveSpecifyExactlyOnePackageReference" xml:space="preserve">
     <value>Specify only one package reference to remove.</value>
   </data>
+  <data name="DirectivesRemoved" xml:space="preserve">
+    <value>Removed '{0}' directives ({1}) for '{2}' from: {3}</value>
+    <comment>{0} is a directive kind (like '#:package'). {1} is number of removed directives.
+    {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</comment>
+  </data>
   <data name="PackagesCommandNameCollisionConclusion" xml:space="preserve">
     <value>Command names conflict. Command names are case insensitive.
 {0}</value>
@@ -1590,13 +1595,13 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <value>Duplicate directives are not supported: {0} at {1}</value>
     <comment>{0} is the directive type and name. {1} is the file path and line number.</comment>
   </data>
-  <data name="InvalidOptionCombination" xml:space="preserve">
-    <value>Cannot combine option '{0}' and '{1}'.</value>
-    <comment>{0} and {1} are option names like '--no-build'.</comment>
-  </data>
   <data name="InvalidOptionForStdin" xml:space="preserve">
     <value>Cannot specify option '{0}' when also using '-' to read the file from standard input.</value>
     <comment>{0} is an option name like '--no-build'.</comment>
+  </data>
+  <data name="InvalidOptionForFileBasedApp" xml:space="preserve">
+    <value>Cannot specify option '{0}' when operating on a file-based app.</value>
+    <comment>{0} is an option name like '--source'.</comment>
   </data>
   <data name="NoBinaryLogBecauseUpToDate" xml:space="preserve">
     <value>Warning: Binary log option was specified but build will be skipped because output is up to date, specify '--no-cache' to force build.</value>

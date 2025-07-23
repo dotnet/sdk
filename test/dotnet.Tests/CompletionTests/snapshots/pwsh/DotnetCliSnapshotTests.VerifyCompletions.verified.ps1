@@ -617,6 +617,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--prerelease', '--prerelease', [CompletionResultType]::ParameterName, "Allows prerelease packages to be installed.")
                 [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "The project file to operate on. If a file is not specified, the command will search the current directory for one.")
+                [CompletionResult]::new('--file', '--file', [CompletionResultType]::ParameterName, "The file-based app to operate on.")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
@@ -659,6 +660,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
             $staticCompletions = @(
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "The project file to operate on. If a file is not specified, the command will search the current directory for one.")
+                [CompletionResult]::new('--file', '--file', [CompletionResultType]::ParameterName, "The file-based app to operate on.")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )

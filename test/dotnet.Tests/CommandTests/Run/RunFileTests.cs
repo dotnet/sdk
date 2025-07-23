@@ -1831,7 +1831,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name));
     }
 
     private static string ToJson(string s) => JsonSerializer.Serialize(s);

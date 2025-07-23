@@ -1067,7 +1067,7 @@ _testhost_package_add() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--version --framework --no-restore --source --package-directory --interactive --prerelease --project --help" 
+    opts="--version --framework --no-restore --source --package-directory --interactive --prerelease --project --file --help" 
     opts="$opts $(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
@@ -1120,7 +1120,7 @@ _testhost_package_remove() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--interactive --project --help" 
+    opts="--interactive --project --file --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
