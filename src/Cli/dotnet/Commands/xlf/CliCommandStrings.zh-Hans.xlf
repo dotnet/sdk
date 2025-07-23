@@ -2572,6 +2572,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">“{0}”不是有效的项目文件。</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandWarningRunJsonNotUsed">
+        <source>Warning: Settings from '{0}' are not used because '{1}' has precedence.</source>
+        <target state="new">Warning: Settings from '{0}' are not used because '{1}' has precedence.</target>
+        <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
+      </trans-unit>
       <trans-unit id="RunConfigurationOptionDescription">
         <source>The configuration to run for. The default for most projects is 'Debug'.</source>
         <target state="translated">要运行的配置。大多数项目的默认值是 "Debug"。</target>

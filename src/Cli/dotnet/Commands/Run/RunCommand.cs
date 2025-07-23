@@ -252,15 +252,24 @@ public class RunCommand
                 propsDirectory = "Properties";
             }
 
-            var launchSettingsPath = CommonRunHelpers.GetPropertiesLaunchSettingsPath(buildPathContainer, propsDirectory);
-            if (File.Exists(launchSettingsPath))
-            {
-                return launchSettingsPath;
-            }
+            string launchSettingsPath = CommonRunHelpers.GetPropertiesLaunchSettingsPath(buildPathContainer, propsDirectory);
+            bool hasLaunchSetttings = File.Exists(launchSettingsPath);
 
             string appName = Path.GetFileNameWithoutExtension(projectOrEntryPointFilePath);
             string runJsonPath = CommonRunHelpers.GetFlatLaunchSettingsPath(buildPathContainer, appName);
-            if (File.Exists(runJsonPath))
+            bool hasRunJson = File.Exists(runJsonPath);
+
+            if (hasLaunchSetttings)
+            {
+                if (hasRunJson)
+                {
+                    Reporter.Output.WriteLine(string.Format(CliCommandStrings.RunCommandWarningRunJsonNotUsed, runJsonPath, launchSettingsPath).Yellow());
+                }
+
+                return launchSettingsPath;
+            }
+
+            if (hasRunJson)
             {
                 return runJsonPath;
             }

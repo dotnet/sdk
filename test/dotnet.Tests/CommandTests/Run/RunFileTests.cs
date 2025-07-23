@@ -1471,8 +1471,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             Console.WriteLine($"Message: '{Environment.GetEnvironmentVariable("Message")}'");
             """);
         Directory.CreateDirectory(Path.Join(testInstance.Path, "Properties"));
-        File.WriteAllText(Path.Join(testInstance.Path, "Properties", "launchSettings.json"), s_launchSettings.Replace("TestProfileMessage", "PropertiesLaunchSettingsJson"));
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.run.json"), s_launchSettings.Replace("TestProfileMessage", "ProgramRunJson"));
+        string launchSettings = Path.Join(testInstance.Path, "Properties", "launchSettings.json");
+        File.WriteAllText(launchSettings, s_launchSettings.Replace("TestProfileMessage", "PropertiesLaunchSettingsJson"));
+        string runJson = Path.Join(testInstance.Path, "Program.run.json");
+        File.WriteAllText(runJson, s_launchSettings.Replace("TestProfileMessage", "ProgramRunJson"));
 
         new DotnetCommand(Log, "run", "--no-launch-profile", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
@@ -1487,7 +1489,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOutContaining("""
+            .And.HaveStdOut($"""
+                {string.Format(CliCommandStrings.RunCommandWarningRunJsonNotUsed, runJson, launchSettings)}
                 Hello from Program
                 Message: 'PropertiesLaunchSettingsJson1'
                 """);
@@ -1496,7 +1499,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOutContaining("""
+            .And.HaveStdOut($"""
+                {string.Format(CliCommandStrings.RunCommandWarningRunJsonNotUsed, runJson, launchSettings)}
                 Hello from Program
                 Message: 'PropertiesLaunchSettingsJson2'
                 """);

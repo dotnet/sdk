@@ -2572,6 +2572,11 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
         <target state="translated">'{0}' geçerli bir proje dosyası değil.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandWarningRunJsonNotUsed">
+        <source>Warning: Settings from '{0}' are not used because '{1}' has precedence.</source>
+        <target state="new">Warning: Settings from '{0}' are not used because '{1}' has precedence.</target>
+        <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
+      </trans-unit>
       <trans-unit id="RunConfigurationOptionDescription">
         <source>The configuration to run for. The default for most projects is 'Debug'.</source>
         <target state="translated">Çalıştırılacak yapılandırma. Çoğu proje için varsayılan, ‘Hata Ayıklama’ seçeneğidir.</target>

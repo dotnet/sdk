@@ -1676,6 +1676,10 @@ The default is to publish a framework-dependent application.</value>
     <value>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
 {1}</value>
   </data>
+  <data name="RunCommandWarningRunJsonNotUsed" xml:space="preserve">
+    <value>Warning: Settings from '{0}' are not used because '{1}' has precedence.</value>
+    <comment>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</comment>
+  </data>
   <data name="RunCommandExceptionMultipleProjects" xml:space="preserve">
     <value>Specify which project file to use because {0} contains more than one project file.</value>
   </data>

@@ -2572,6 +2572,11 @@ Votre projet cible plusieurs frameworks. Spécifiez le framework à exécuter à
         <target state="translated">'{0}' n'est pas un fichier projet valide.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandWarningRunJsonNotUsed">
+        <source>Warning: Settings from '{0}' are not used because '{1}' has precedence.</source>
+        <target state="new">Warning: Settings from '{0}' are not used because '{1}' has precedence.</target>
+        <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
+      </trans-unit>
       <trans-unit id="RunConfigurationOptionDescription">
         <source>The configuration to run for. The default for most projects is 'Debug'.</source>
         <target state="translated">Configuration pour laquelle l'exécution est effectuée. La valeur par défaut pour la plupart des projets est 'Debug'.</target>

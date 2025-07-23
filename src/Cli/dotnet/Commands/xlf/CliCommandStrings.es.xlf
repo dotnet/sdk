@@ -2572,6 +2572,11 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <target state="translated">"{0}" no es un archivo de proyecto válido.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandWarningRunJsonNotUsed">
+        <source>Warning: Settings from '{0}' are not used because '{1}' has precedence.</source>
+        <target state="new">Warning: Settings from '{0}' are not used because '{1}' has precedence.</target>
+        <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
+      </trans-unit>
       <trans-unit id="RunConfigurationOptionDescription">
         <source>The configuration to run for. The default for most projects is 'Debug'.</source>
         <target state="translated">La configuración para la que se ejecuta. El valor predeterminado para la mayoría de los proyectos es "Debug".</target>

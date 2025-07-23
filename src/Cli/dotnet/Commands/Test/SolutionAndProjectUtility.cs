@@ -278,13 +278,25 @@ internal static class SolutionAndProjectUtility
         }
 
         var launchSettingsPath = CommonRunHelpers.GetPropertiesLaunchSettingsPath(projectDirectory, appDesignerFolder);
-        if (!File.Exists(launchSettingsPath))
+        bool hasLaunchSettings = File.Exists(launchSettingsPath);
+
+        var runJsonPath = CommonRunHelpers.GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
+        bool hasRunJson = File.Exists(runJsonPath);
+
+        if (hasLaunchSettings)
         {
-            launchSettingsPath = CommonRunHelpers.GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
-            if (!File.Exists(launchSettingsPath))
+            if (hasRunJson)
             {
-                return null;
+                Reporter.Output.WriteLine(string.Format(CliCommandStrings.RunCommandWarningRunJsonNotUsed, runJsonPath, launchSettingsPath).Yellow());
             }
+        }
+        else if (hasRunJson)
+        {
+            launchSettingsPath = runJsonPath;
+        }
+        else
+        {
+            return null;
         }
 
         var result = LaunchSettingsManager.TryApplyLaunchSettings(launchSettingsPath, profileName);

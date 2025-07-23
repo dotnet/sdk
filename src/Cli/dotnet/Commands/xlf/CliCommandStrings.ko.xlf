@@ -2572,6 +2572,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">'{0}'은(는) 유효한 프로젝트 파일이 아닙니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunCommandWarningRunJsonNotUsed">
+        <source>Warning: Settings from '{0}' are not used because '{1}' has precedence.</source>
+        <target state="new">Warning: Settings from '{0}' are not used because '{1}' has precedence.</target>
+        <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
+      </trans-unit>
       <trans-unit id="RunConfigurationOptionDescription">
         <source>The configuration to run for. The default for most projects is 'Debug'.</source>
         <target state="translated">실행할 구성입니다. 대부분의 프로젝트에서 기본값은 'Debug'입니다.</target>

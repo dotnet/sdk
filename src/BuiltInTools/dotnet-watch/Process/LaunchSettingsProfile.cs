@@ -5,6 +5,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
 
 namespace Microsoft.DotNet.Watch
@@ -30,14 +31,26 @@ namespace Microsoft.DotNet.Watch
             Debug.Assert(projectDirectory != null);
 
             var launchSettingsPath = CommonRunHelpers.GetPropertiesLaunchSettingsPath(projectDirectory, "Properties");
-            if (!File.Exists(launchSettingsPath))
+            bool hasLaunchSettings = File.Exists(launchSettingsPath);
+
+            var projectNameWithoutExtension = Path.GetFileNameWithoutExtension(projectPath);
+            var runJsonPath = CommonRunHelpers.GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
+            bool hasRunJson = File.Exists(runJsonPath);
+
+            if (hasLaunchSettings)
             {
-                var projectNameWithoutExtension = Path.GetFileNameWithoutExtension(projectPath);
-                launchSettingsPath = CommonRunHelpers.GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
-                if (!File.Exists(launchSettingsPath))
+                if (hasRunJson)
                 {
-                    return null;
+                    reporter.Warn(string.Format(CliCommandStrings.RunCommandWarningRunJsonNotUsed, runJsonPath, launchSettingsPath));
                 }
+            }
+            else if (hasRunJson)
+            {
+                launchSettingsPath = runJsonPath;
+            }
+            else
+            {
+                return null;
             }
 
             LaunchSettingsJson? launchSettings;
