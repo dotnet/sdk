@@ -549,6 +549,12 @@ public class RunCommand
                 .Any(static t => t is { Type: TokenType.Argument, Value: "-" });
 
         string? projectOption = parseResult.GetValue(RunCommandParser.ProjectOption);
+        string? fileOption = parseResult.GetValue(RunCommandParser.FileOption);
+
+        if (projectOption != null && fileOption != null)
+        {
+            throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandParser.ProjectOption.Name, RunCommandParser.FileOption.Name);
+        }
 
         string[] args = [.. nonBinLogArgs];
         string? projectFilePath = DiscoverProjectFilePath(projectOption, readCodeFromStdin, ref args, out string? entryPointFilePath);
