@@ -456,7 +456,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 """);
     }
 
-    [Fact]
+    [Fact(Skip = " Waiting for VMR codeflow from runtime: https://github.com/dotnet/dotnet/pull/1563")]
     public void ProjectInCurrentDirectory_NoRunVerb()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
