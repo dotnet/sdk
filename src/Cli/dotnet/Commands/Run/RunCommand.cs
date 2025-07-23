@@ -382,8 +382,7 @@ public class RunCommand
 
             var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootVariableName(
                 project.GetPropertyValue("RuntimeIdentifier"),
-                project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"),
-                project.GetPropertyValue("TargetFrameworkVersion"));
+                project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"));
 
             if (rootVariableName != null && Environment.GetEnvironmentVariable(rootVariableName) == null)
             {

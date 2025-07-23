@@ -27,15 +27,11 @@ static class EnvironmentVariableNames
     public static readonly string DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK = nameof(DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK);
 
 #if NET7_0_OR_GREATER
-    private static readonly Version s_version6_0 = new(6, 0);
 
-    public static string? TryGetDotNetRootVariableName(string runtimeIdentifier, string defaultAppHostRuntimeIdentifier, string targetFrameworkVersion)
-        => TryGetDotNetRootVariableName(runtimeIdentifier, defaultAppHostRuntimeIdentifier, TryParseTargetFrameworkVersion(targetFrameworkVersion));
+    public static string? TryGetDotNetRootVariableName(string runtimeIdentifier, string defaultAppHostRuntimeIdentifier)
+        => TryGetDotNetRootVariableNameImpl(runtimeIdentifier, defaultAppHostRuntimeIdentifier, RuntimeInformation.ProcessArchitecture);
 
-    public static string? TryGetDotNetRootVariableName(string runtimeIdentifier, string defaultAppHostRuntimeIdentifier, Version? targetFrameworkVersion)
-        => TryGetDotNetRootVariableNameImpl(runtimeIdentifier, defaultAppHostRuntimeIdentifier, targetFrameworkVersion, RuntimeInformation.ProcessArchitecture, Environment.Is64BitProcess);
-
-    internal static string? TryGetDotNetRootVariableNameImpl(string runtimeIdentifier, string defaultAppHostRuntimeIdentifier, Version? targetFrameworkVersion, Architecture currentArchitecture, bool is64bit)
+    internal static string? TryGetDotNetRootVariableNameImpl(string runtimeIdentifier, string defaultAppHostRuntimeIdentifier, Architecture currentArchitecture)
     {
         // If the app targets the same architecture as SDK is running on or an unknown architecture, set DOTNET_ROOT, DOTNET_ROOT(x86) for 32-bit, DOTNET_ROOT_arch for TFM 6+.
         // If the app targets different architecture from the SDK, do not set DOTNET_ROOT.
@@ -43,11 +39,7 @@ static class EnvironmentVariableNames
         if (!TryParseArchitecture(runtimeIdentifier, out var targetArchitecture) && !TryParseArchitecture(defaultAppHostRuntimeIdentifier, out targetArchitecture) ||
             targetArchitecture == currentArchitecture)
         {
-            var suffix = targetFrameworkVersion != null && targetFrameworkVersion >= s_version6_0 ?
-                $"_{currentArchitecture.ToString().ToUpperInvariant()}" :
-                is64bit ? "" : "(x86)";
-
-            return DOTNET_ROOT + suffix;
+            return $"{DOTNET_ROOT}_{currentArchitecture.ToString().ToUpperInvariant()}";
         }
 
         return null;
