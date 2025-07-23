@@ -270,7 +270,7 @@ public class RunCommand
                 Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile, launchProfile, $"""
                     {launchSettingsPath}
                     {runJsonPath}
-                    """).Red());
+                    """).Bold().Red());
             }
 
             return null;
