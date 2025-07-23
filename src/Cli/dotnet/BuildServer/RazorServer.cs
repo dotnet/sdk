@@ -22,14 +22,15 @@ internal class RazorServer(
 
     public RazorPidFile PidFile { get; } = pidFile ?? throw new ArgumentNullException(nameof(pidFile));
 
-    public void Shutdown()
+    public Task ShutdownAsync()
     {
         if (!_fileSystem.File.Exists(PidFile.ServerPath.Value))
         {
             // The razor server path doesn't exist anymore so trying to shut it down would fail
             // Ensure the pid file is cleaned up so we don't try to shut it down again
             DeletePidFile();
-            return;
+
+            return Task.CompletedTask;
         }
 
         var command = _commandFactory
@@ -57,6 +58,8 @@ internal class RazorServer(
         // After a successful shutdown, ensure the pid file is deleted
         // If the pid file was left behind due to a rude exit, this ensures we don't try to shut it down again
         DeletePidFile();
+
+        return Task.CompletedTask;
     }
 
     void DeletePidFile()

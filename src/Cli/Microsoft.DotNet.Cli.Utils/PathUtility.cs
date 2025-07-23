@@ -89,6 +89,27 @@ public static class PathUtility
         }
     }
 
+    public static string GetUserRestrictedTempDirectory()
+    {
+        // We want a location where permissions are expected to be restricted to the current user.
+        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? Path.GetTempPath()
+            : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+    }
+
+    public static void CreateUserRestrictedDirectory(string path)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            Directory.CreateDirectory(path);
+        }
+        else
+        {
+            // NOTE: This modifies the permissions if needed, and throws if not possible.
+            Directory.CreateDirectory(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        }
+    }
+
     public static bool TryDeleteDirectory(string directoryPath)
     {
         try

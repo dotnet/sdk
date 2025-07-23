@@ -12,7 +12,8 @@ internal enum ServerEnumerationFlags
     MSBuild = 1,
     VBCSCompiler = 2,
     Razor = 4,
-    All = MSBuild | VBCSCompiler | Razor
+    Unified = 5,
+    All = MSBuild | VBCSCompiler | Razor | Unified
 }
 
 internal interface IBuildServerProvider

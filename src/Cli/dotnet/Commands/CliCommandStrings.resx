@@ -1863,6 +1863,15 @@ Your project targets multiple frameworks. Specify which framework to run using '
   <data name="ShuttingDownServerWithPid" xml:space="preserve">
     <value>Shutting down {0} (process {1})...</value>
   </data>
+  <data name="ShuttingDownUnifiedBuildServers" xml:space="preserve">
+    <value>Shutting down unified build servers via named pipe ({0})...</value>
+  </data>
+  <data name="UnifiedBuildServer" xml:space="preserve">
+    <value>Unified build server</value>
+  </data>
+  <data name="UnifiedOptionDescription" xml:space="preserve">
+    <value>Shut down unified build servers via named pipes.</value>
+  </data>
   <data name="SkipManifestUpdateOptionDescription" xml:space="preserve">
     <value>Skip updating the workload manifests.</value>
   </data>

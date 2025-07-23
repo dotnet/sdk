@@ -28,7 +28,8 @@ internal class BuildServerShutdownCommand : CommandBase
         bool msbuild = result.GetValue(BuildServerShutdownCommandParser.MSBuildOption);
         bool vbcscompiler = result.GetValue(BuildServerShutdownCommandParser.VbcsOption);
         bool razor = result.GetValue(BuildServerShutdownCommandParser.RazorOption);
-        bool all = !msbuild && !vbcscompiler && !razor;
+        bool unified = result.GetValue(BuildServerShutdownCommandParser.UnifiedOption);
+        bool all = !msbuild && !vbcscompiler && !razor && !unified;
 
         _enumerationFlags = ServerEnumerationFlags.None;
         if (msbuild || all)
@@ -44,6 +45,11 @@ internal class BuildServerShutdownCommand : CommandBase
         if (razor || all)
         {
             _enumerationFlags |= ServerEnumerationFlags.Razor;
+        }
+
+        if (unified || all)
+        {
+            _enumerationFlags |= ServerEnumerationFlags.Unified;
         }
 
         _serverProvider = serverProvider ?? new BuildServerProvider();
@@ -90,7 +96,7 @@ internal class BuildServerShutdownCommand : CommandBase
         foreach (var server in _serverProvider.EnumerateBuildServers(_enumerationFlags))
         {
             WriteShutdownMessage(server);
-            tasks.Add((server, Task.Run(() => server.Shutdown())));
+            tasks.Add((server, Task.Run(() => server.ShutdownAsync())));
         }
 
         return tasks;

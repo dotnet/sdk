@@ -2820,6 +2820,11 @@ Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches 
         <target state="translated">"{0}" (Prozess "{1}") wird heruntergefahren...</target>
         <note />
       </trans-unit>
+      <trans-unit id="ShuttingDownUnifiedBuildServers">
+        <source>Shutting down unified build servers via named pipe ({0})...</source>
+        <target state="new">Shutting down unified build servers via named pipe ({0})...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SkipManifestUpdateOptionDescription">
         <source>Skip updating the workload manifests.</source>
         <target state="translated">Überspringen Sie die Aktualisierung der Workload-Manifeste.</target>
@@ -3425,6 +3430,16 @@ und die zugehörigen Paket-IDs für installierte Tools über den Befehl
         <source>try {0}</source>
         <target state="translated">{0} testen</target>
         <note>number or tries of the current test assembly when test assembly is being retried. {0} is number that starts at 1</note>
+      </trans-unit>
+      <trans-unit id="UnifiedBuildServer">
+        <source>Unified build server</source>
+        <target state="new">Unified build server</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnifiedOptionDescription">
+        <source>Shut down unified build servers via named pipes.</source>
+        <target state="new">Shut down unified build servers via named pipes.</target>
+        <note />
       </trans-unit>
       <trans-unit id="UninstallLocalToolSucceeded">
         <source>Tool '{0}' was successfully uninstalled and removed from manifest file {1}.</source>

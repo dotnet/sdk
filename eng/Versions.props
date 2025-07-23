@@ -213,6 +213,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
+    <MicrosoftNetBuildServerUtilsVersion>5.0.0-1.25359.101</MicrosoftNetBuildServerUtilsVersion>
     <MicrosoftNetCompilersToolsetVersion>5.0.0-1.25359.101</MicrosoftNetCompilersToolsetVersion>
     <MicrosoftNetCompilersToolsetFrameworkPackageVersion>5.0.0-1.25359.101</MicrosoftNetCompilersToolsetFrameworkPackageVersion>
     <MicrosoftCodeAnalysisPackageVersion>5.0.0-1.25359.101</MicrosoftCodeAnalysisPackageVersion>

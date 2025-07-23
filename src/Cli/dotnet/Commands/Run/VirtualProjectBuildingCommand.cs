@@ -592,11 +592,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </summary>
     public static string GetTempSubdirectory()
     {
-        // We want a location where permissions are expected to be restricted to the current user.
-        string directory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? Path.GetTempPath()
-            : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-
+        string directory = PathUtility.GetUserRestrictedTempDirectory();
         return Path.Join(directory, "dotnet", "runfile");
     }
 
@@ -614,17 +610,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </summary>
     public static void CreateTempSubdirectory(string path)
     {
-        if (OperatingSystem.IsWindows())
-        {
-            Directory.CreateDirectory(path);
-        }
-        else
-        {
-            // Ensure only the current user has access to the directory to avoid leaking the program to other users.
-            // We don't mind that permissions might be different if the directory already exists,
-            // since it's under user's local directory and its path should be unique.
-            Directory.CreateDirectory(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
-        }
+        // Ensure only the current user has access to the directory to avoid leaking the program to other users.
+        // We don't mind that permissions might be different if the directory already exists,
+        // since it's under user's local directory and its path should be unique.
+        PathUtility.CreateUserRestrictedDirectory(path);
     }
 
     public static void WriteProjectFile(
