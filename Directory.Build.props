@@ -103,6 +103,7 @@
          numbers of the shared frameworks. -->
     <MicrosoftWindowsDesktopAppRuntimePackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftWindowsDesktopAppRuntimePackageVersion>
     <MicrosoftWindowsDesktopAppRefPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftWindowsDesktopAppRefPackageVersion>
+    <MicrosoftNETSdkWindowsDesktopPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</MicrosoftNETSdkWindowsDesktopPackageVersion>
     <MicrosoftWindowsDesktopAppInternalPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</MicrosoftWindowsDesktopAppInternalPackageVersion>
 
     <HostFxrVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</HostFxrVersion>
