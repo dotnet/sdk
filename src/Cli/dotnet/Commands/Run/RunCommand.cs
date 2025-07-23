@@ -561,7 +561,7 @@ public class RunCommand
 
         if (projectOption != null && fileOption != null)
         {
-            throw new GracefulException(CliCommandStrings.InvalidOptionCombination, RunCommandParser.ProjectOption.Name, RunCommandParser.FileOption.Name);
+            throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandParser.ProjectOption.Name, RunCommandParser.FileOption.Name);
         }
 
         string[] args = [.. nonBinLogArgs];
