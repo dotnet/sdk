@@ -236,7 +236,7 @@ public class RunCommand
 
         static string? TryFindLaunchSettings(string projectOrEntryPointFilePath, string? launchProfile)
         {
-            var buildPathContainer = File.Exists(projectOrEntryPointFilePath) ? Path.GetDirectoryName(projectOrEntryPointFilePath)! : projectOrEntryPointFilePath;
+            var buildPathContainer = Path.GetDirectoryName(projectOrEntryPointFilePath)!;
 
             string propsDirectory;
 
