@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
     //  global packages folder to ensure that the newly built package is used the next time a test tries to install it.
     //
     //  The main thing this class can't handle is if the way the .NET SDK builds packages changes.  In CI runs, we should use a clean test execution folder each time (I think!), so this shouldn't be an issue.
-    //  For local testing, you may need to delete the artifacts\tmp\Debug\TestTools folder if the SDK changes in a way that affects the built package.
+    //  For local testing, you may need to delete the artifacts\tmp\Debug\testing\TestTools folder if the SDK changes in a way that affects the built package.
     public class TestToolBuilder
     {
         public class TestToolSettings
@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
 
-        public string CreateTestTool(ITestOutputHelper log, TestToolSettings toolSettings, bool collectBinlogs = false)
+        public string CreateTestTool(ITestOutputHelper log, TestToolSettings toolSettings, bool collectBinlogs = true)
         {
             var targetDirectory = Path.Combine(TestContext.Current.TestExecutionDirectory, "TestTools", toolSettings.GetIdentifier());
 

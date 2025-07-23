@@ -197,7 +197,7 @@ public class CliSchemaTests : SdkTest
         "-v"
       ],
       "helpName": "LEVEL",
-      "valueType": "Microsoft.DotNet.Cli.VerbosityOptions",
+      "valueType": "Microsoft.DotNet.Cli.Utils.VerbosityOptions",
       "hasDefaultValue": true,
       "defaultValue": "normal",
       "arity": {
@@ -206,6 +206,50 @@ public class CliSchemaTests : SdkTest
       },
       "required": false,
       "recursive": false
+    }
+  },
+  "subcommands": {
+    "file-based-apps": {
+      "description": "Removes artifacts created for file-based apps",
+      "hidden": true,
+      "options": {
+        "--automatic": {
+          "hidden": true,
+          "valueType": "System.Boolean",
+          "hasDefaultValue": false,
+          "arity": {
+            "minimum": 0,
+            "maximum": 1
+          },
+          "required": false,
+          "recursive": false
+        },
+        "--days": {
+          "description": "How many days an artifact folder needs to be unused in order to be removed",
+          "hidden": false,
+          "valueType": "System.Int32",
+          "hasDefaultValue": true,
+          "defaultValue": 30,
+          "arity": {
+            "minimum": 1,
+            "maximum": 1
+          },
+          "required": false,
+          "recursive": false
+        },
+        "--dry-run": {
+          "description": "Determines changes without actually modifying the file system",
+          "hidden": false,
+          "valueType": "System.Boolean",
+          "hasDefaultValue": false,
+          "arity": {
+            "minimum": 0,
+            "maximum": 0
+          },
+          "required": false,
+          "recursive": false
+        }
+      }
     }
   }
 }
@@ -548,7 +592,7 @@ public class CliSchemaTests : SdkTest
         "-v"
       ],
       "helpName": "LEVEL",
-      "valueType": "Microsoft.DotNet.Cli.VerbosityOptions",
+      "valueType": "Microsoft.DotNet.Cli.Utils.VerbosityOptions",
       "hasDefaultValue": true,
       "defaultValue": "normal",
       "arity": {
@@ -979,10 +1023,14 @@ public class CliSchemaTests : SdkTest
       "description": "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].",
       "hidden": false,
       "aliases": [
-        "-v"
+        "--v",
+        "-v",
+        "-verbosity",
+        "/v",
+        "/verbosity"
       ],
       "helpName": "LEVEL",
-      "valueType": "System.Nullable<Microsoft.DotNet.Cli.VerbosityOptions>",
+      "valueType": "System.Nullable<Microsoft.DotNet.Cli.Utils.VerbosityOptions>",
       "hasDefaultValue": false,
       "arity": {
         "minimum": 1,

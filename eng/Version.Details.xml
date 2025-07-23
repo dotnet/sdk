@@ -189,17 +189,17 @@
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>c21ba3b47e224cf84490bdc53b89e7f9ebcc1841</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.15.0-preview-25359-101">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
+    <Dependency Name="Microsoft.NET.Test.Sdk" Version="18.0.0-preview-25366-05">
+      <Uri>https://github.com/microsoft/vstest</Uri>
+      <Sha>ab6e14292ec4aac0c228a6c75e420f0a0461b0e1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.15.0-preview-25359-101">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
+    <Dependency Name="Microsoft.TestPlatform.CLI" Version="18.0.0-preview-25366-05">
+      <Uri>https://github.com/microsoft/vstest</Uri>
+      <Sha>ab6e14292ec4aac0c228a6c75e420f0a0461b0e1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.15.0-preview-25359-101">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
+    <Dependency Name="Microsoft.TestPlatform.Build" Version="18.0.0-preview-25366-05">
+      <Uri>https://github.com/microsoft/vstest</Uri>
+      <Sha>ab6e14292ec4aac0c228a6c75e420f0a0461b0e1</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="10.0.0-preview.7.25359.101">
       <Uri>https://github.com/dotnet/dotnet</Uri>
@@ -225,6 +225,19 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
     </Dependency>
+    <!-- Do not use properties based on:
+         - Microsoft.WindowsDesktop.App.Ref
+         - Microsoft.WindowsDesktop.App.Internal
+         - Microsoft.NET.Sdk.WindowsDesktop
+         - Microsoft.Dotnet.WinForms.ProjectTemplates
+         - Microsoft.DotNet.Wpf.ProjectTemplates
+         In VMR builds on non-Windows, they aren't built. Instead, use the following:
+         - Microsoft.WindowsDesktop.App.Ref - Microsoft.NETCore.App.Ref
+         - Microsoft.WindowsDesktop.App.Internal - Microsoft.NETCore.Platforms
+         - Microsoft.NET.Sdk.WindowsDesktop - Microsoft.NETCore.App.Ref
+         - Microsoft.Dotnet.WinForms.ProjectTemplates - Microsoft.NETCore.Platforms
+         - Microsoft.DotNet.Wpf.ProjectTemplates - Microsoft.NETCore.Platforms
+    -->
     <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-preview.7.25359.101">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
@@ -234,6 +247,14 @@
       <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="10.0.0-preview.7.25359.101">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="10.0.0-preview.7.25359.101">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="10.0.0-preview.7.25359.101">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
     </Dependency>
@@ -359,15 +380,6 @@
       <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="10.0.0-preview.25359.101">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
-    </Dependency>
-    <!-- For coherency purposes, these versions should be gated by the versions of winforms and wpf routed via windowsdesktop -->
-    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="10.0.0-preview.7.25359.101">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="10.0.0-preview.7.25359.101">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
     </Dependency>
@@ -541,21 +553,21 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.25358.3">
+    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.25367.1">
       <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>afa79da3b68fd0fe48d90ea7fcbffbf7789c6d7f</Sha>
+      <Sha>448a29d2d2e4e27303f728202602708ed45838f5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.25358.3">
+    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.25367.1">
       <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>afa79da3b68fd0fe48d90ea7fcbffbf7789c6d7f</Sha>
+      <Sha>448a29d2d2e4e27303f728202602708ed45838f5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="1.8.0-preview.25358.4">
+    <Dependency Name="Microsoft.Testing.Platform" Version="1.8.0-preview.25372.9">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>94360dfccacfc549d3a385300dba6ab40ca4736d</Sha>
+      <Sha>171ae1e9b5fb101f8c47ab2e8dff0fbb250d3bf9</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="3.10.0-preview.25358.4">
+    <Dependency Name="MSTest" Version="3.10.0-preview.25372.9">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>94360dfccacfc549d3a385300dba6ab40ca4736d</Sha>
+      <Sha>171ae1e9b5fb101f8c47ab2e8dff0fbb250d3bf9</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="10.0.0-preview.7.25359.101">
       <Uri>https://github.com/dotnet/dotnet</Uri>

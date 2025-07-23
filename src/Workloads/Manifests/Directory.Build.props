@@ -23,7 +23,8 @@
 
   <PropertyGroup>
     <!-- NU5128: This package doesn't contain any lib or ref assemblies because it's a tooling package. -->
-    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <!-- NU5039: NuGet is unable to find the readme file in the package. -->
+    <NoWarn>$(NoWarn);NU5128;NU5039</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
