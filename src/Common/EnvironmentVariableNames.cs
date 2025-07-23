@@ -33,7 +33,7 @@ static class EnvironmentVariableNames
 
     internal static string? TryGetDotNetRootVariableNameImpl(string runtimeIdentifier, string defaultAppHostRuntimeIdentifier, Architecture currentArchitecture)
     {
-        // If the app targets the same architecture as SDK is running on or an unknown architecture, set DOTNET_ROOT, DOTNET_ROOT(x86) for 32-bit, DOTNET_ROOT_arch for TFM 6+.
+        // If the app targets the same architecture as SDK is running on or an unknown architecture, set DOTNET_ROOT_arch.
         // If the app targets different architecture from the SDK, do not set DOTNET_ROOT.
 
         if (!TryParseArchitecture(runtimeIdentifier, out var targetArchitecture) && !TryParseArchitecture(defaultAppHostRuntimeIdentifier, out targetArchitecture) ||
