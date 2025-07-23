@@ -871,6 +871,7 @@ _testhost() {
                         '--runtime=[The target runtime to run for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '-r=[The target runtime to run for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--project=[The path to the project file to run (defaults to the current directory if there is only one project).]:PROJECT_PATH: ' \
+                        '--file=[The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).]:FILE_PATH: ' \
                         '--launch-profile=[The name of the launch profile (if any) to use when launching the application.]:LAUNCH_PROFILE: ' \
                         '-lp=[The name of the launch profile (if any) to use when launching the application.]:LAUNCH_PROFILE: ' \
                         '--no-launch-profile[Do not attempt to use launchSettings.json to configure the application.]' \

@@ -456,6 +456,42 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 """);
     }
 
+    [Fact]
+    public void ProjectInCurrentDirectory_NoRunVerb()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "file"));
+        File.WriteAllText(Path.Join(testInstance.Path, "file", "Program.cs"), s_program);
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "proj"));
+        File.WriteAllText(Path.Join(testInstance.Path, "proj", "App.csproj"), s_consoleProject);
+
+        new DotnetCommand(Log, "../file/Program.cs")
+            .WithWorkingDirectory(Path.Join(testInstance.Path, "proj"))
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("""
+                Hello from Program
+                """);
+    }
+
+    [Fact]
+    public void ProjectInCurrentDirectory_FileOption()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "file"));
+        File.WriteAllText(Path.Join(testInstance.Path, "file", "Program.cs"), s_program);
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "proj"));
+        File.WriteAllText(Path.Join(testInstance.Path, "proj", "App.csproj"), s_consoleProject);
+
+        new DotnetCommand(Log, "run", "--file", "../file/Program.cs")
+            .WithWorkingDirectory(Path.Join(testInstance.Path, "proj"))
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("""
+                Hello from Program
+                """);
+    }
+
     /// <summary>
     /// When a file is not a .cs file, we probe the first characters of the file for <c>#!</c>, and
     /// execute as a single file program if we find them.
