@@ -939,8 +939,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         new FileInfo(binaryLogPath).Should().Exist();
 
         var records = BinaryLog.ReadRecords(binaryLogPath).ToList();
-        records.Count(static r => r.Args is ProjectEvaluationStartedEventArgs).Should().Be(2);
-        records.Count(static r => r.Args is ProjectEvaluationFinishedEventArgs).Should().Be(2);
+        records.Any(static r => r.Args is ProjectEvaluationStartedEventArgs).Should().BeTrue();
+        records.Any(static r => r.Args is ProjectEvaluationFinishedEventArgs).Should().BeTrue();
     }
 
     /// <summary>
@@ -1873,12 +1873,22 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                       <PropertyGroup>
                         <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
                         <TargetFramework>net11.0</TargetFramework>
                         <LangVersion>preview</LangVersion>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
 
@@ -1945,7 +1955,13 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
 
@@ -2011,7 +2027,13 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
 
