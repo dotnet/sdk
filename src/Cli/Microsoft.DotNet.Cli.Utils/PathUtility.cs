@@ -97,6 +97,7 @@ public static class PathUtility
             : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
     }
 
+#if NET
     public static void CreateUserRestrictedDirectory(string path)
     {
         if (OperatingSystem.IsWindows())
@@ -109,6 +110,7 @@ public static class PathUtility
             Directory.CreateDirectory(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
         }
     }
+#endif
 
     public static bool TryDeleteDirectory(string directoryPath)
     {
