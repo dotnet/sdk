@@ -486,6 +486,42 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 """);
     }
 
+    [Fact]
+    public void ProjectInCurrentDirectory_NoRunVerb()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "file"));
+        File.WriteAllText(Path.Join(testInstance.Path, "file", "Program.cs"), s_program);
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "proj"));
+        File.WriteAllText(Path.Join(testInstance.Path, "proj", "App.csproj"), s_consoleProject);
+
+        new DotnetCommand(Log, "../file/Program.cs")
+            .WithWorkingDirectory(Path.Join(testInstance.Path, "proj"))
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("""
+                Hello from Program
+                """);
+    }
+
+    [Fact]
+    public void ProjectInCurrentDirectory_FileOption()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "file"));
+        File.WriteAllText(Path.Join(testInstance.Path, "file", "Program.cs"), s_program);
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "proj"));
+        File.WriteAllText(Path.Join(testInstance.Path, "proj", "App.csproj"), s_consoleProject);
+
+        new DotnetCommand(Log, "run", "--file", "../file/Program.cs")
+            .WithWorkingDirectory(Path.Join(testInstance.Path, "proj"))
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("""
+                Hello from Program
+                """);
+    }
+
     /// <summary>
     /// When a file is not a .cs file, we probe the first characters of the file for <c>#!</c>, and
     /// execute as a single file program if we find them.
@@ -1595,6 +1631,21 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Pass();
     }
 
+    [Fact] // https://github.com/dotnet/sdk/issues/49797
+    public void SdkReference_VersionedSdkFirst()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:sdk Microsoft.NET.Sdk@9.0.0
+            Console.WriteLine();
+            """);
+
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+    }
+
     [Theory]
     [InlineData("../Lib/Lib.csproj")]
     [InlineData("../Lib")]
@@ -1846,7 +1897,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name));
     }
 
     private static string ToJson(string s) => JsonSerializer.Serialize(s);
@@ -1899,22 +1950,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                       <PropertyGroup>
                         <OutputType>Exe</OutputType>
-                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
-                      </PropertyGroup>
-
-                      <PropertyGroup>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                      </PropertyGroup>
-
-                      <PropertyGroup>
                         <TargetFramework>net11.0</TargetFramework>
                         <LangVersion>preview</LangVersion>
-                      </PropertyGroup>
-
-                      <PropertyGroup>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
 
@@ -1982,13 +2023,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
-                      </PropertyGroup>
-
-                      <PropertyGroup>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                      </PropertyGroup>
-
-                      <PropertyGroup>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
 
@@ -2055,13 +2090,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
-                      </PropertyGroup>
-
-                      <PropertyGroup>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                      </PropertyGroup>
-
-                      <PropertyGroup>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
 
