@@ -217,11 +217,11 @@ namespace Microsoft.DotNet.Tests.Commands
 
             if (exceptionMessage == null)
             {
-                mock.Setup(s => s.Shutdown());
+                mock.Setup(s => s.ShutdownAsync());
             }
             else
             {
-                mock.Setup(s => s.Shutdown()).Throws(new Exception(exceptionMessage));
+                mock.Setup(s => s.ShutdownAsync()).Throws(new Exception(exceptionMessage));
             }
 
             return mock;
@@ -231,7 +231,7 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             foreach (var mock in mocks)
             {
-                mock.Verify(s => s.Shutdown(), Times.Once);
+                mock.Verify(s => s.ShutdownAsync(), Times.Once);
             }
         }
 
