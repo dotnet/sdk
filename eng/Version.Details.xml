@@ -209,6 +209,10 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>b64f1193459ddeba61d78aa61f90604410734e0f</Sha>
     </Dependency>
+    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="10.0.0-preview.7.25373.105">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>b64f1193459ddeba61d78aa61f90604410734e0f</Sha>
+    </Dependency>
     <Dependency Name="System.Formats.Asn1" Version="10.0.0-preview.7.25373.105">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>b64f1193459ddeba61d78aa61f90604410734e0f</Sha>
