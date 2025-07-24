@@ -71,7 +71,7 @@ internal class MSBuildForwardingAppWithoutLogging
 
         EnvironmentVariable("MSBUILDUSESERVER", UseMSBuildServer ? "1" : "0");
 
-        EnvironmentVariable(BuildServerUtility.DotNetHostServerPath, GetHostServerPath());
+        EnvironmentVariable(BuildServerUtility.DotNetHostServerPath, GetHostServerPath(createDirectory: true));
 
         // If DOTNET_CLI_RUN_MSBUILD_OUTOFPROC is set or we're asked to execute a non-default binary, call MSBuild out-of-proc.
         if (AlwaysExecuteMSBuildOutOfProc || !string.Equals(MSBuildPath, defaultMSBuildPath, StringComparison.OrdinalIgnoreCase))
@@ -139,7 +139,7 @@ internal class MSBuildForwardingAppWithoutLogging
     }
 
 
-    public static string GetHostServerPath()
+    public static string GetHostServerPath(bool createDirectory)
     {
         // If the path is set from outside, reuse it.
         var hostServerPath = Env.GetEnvironmentVariable(BuildServerUtility.DotNetHostServerPath);
@@ -150,8 +150,11 @@ internal class MSBuildForwardingAppWithoutLogging
             hostServerPath = Path.Join(baseDirectory, "dotnet", "server", Product.TargetFrameworkVersion);
         }
 
-        // Create the directory.
-        PathUtility.CreateUserRestrictedDirectory(hostServerPath);
+        // Create the directory on Linux (it's not a real directory on Windows, it's a virtual \\.\pipe\ namespace there).
+        if (createDirectory && !OperatingSystem.IsWindows())
+        {
+            PathUtility.CreateUserRestrictedDirectory(hostServerPath);
+        }
 
         return hostServerPath;
     }

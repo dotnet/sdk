@@ -16,7 +16,7 @@ internal sealed class UnifiedBuildServer : IBuildServer
 
     public Task ShutdownAsync()
     {
-        var hostServerPath = MSBuildForwardingAppWithoutLogging.GetHostServerPath();
+        var hostServerPath = MSBuildForwardingAppWithoutLogging.GetHostServerPath(createDirectory: false);
         Reporter.Output.WriteLine(CliCommandStrings.ShuttingDownUnifiedBuildServers, hostServerPath);
 
         return BuildServerUtility.ShutdownServersAsync(
