@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void AddReferenceHasDefaultArgumentSetToCurrentDirectory()
         {
-            var result = Parser.Instance.Parse("dotnet add reference my.csproj");
+            var result = Parser.Parse(["dotnet", "add", "reference", "my.csproj"]);
 
             result.GetValue<string>(PackageCommandParser.ProjectOrFileArgument)
                 .Should()
@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void AddReferenceHasInteractiveFlag()
         {
-            var result = Parser.Instance.Parse("dotnet add reference my.csproj --interactive");
+            var result = Parser.Parse(["dotnet", "add", "reference", "my.csproj", "--interactive"]);
 
             result.GetValue<bool>(ReferenceAddCommandParser.InteractiveOption)
                 .Should().BeTrue();
@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void AddReferenceWithoutArgumentResultsInAnError()
         {
-            var result = Parser.Instance.Parse("dotnet add reference");
+            var result = Parser.Parse(["dotnet", "add", "reference"]);
 
             result.Errors.Should().NotBeEmpty();
 
