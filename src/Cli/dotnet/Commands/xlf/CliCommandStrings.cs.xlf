@@ -1827,16 +1827,6 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
         <target state="translated">Výstupní adresář, kam se mají umístit sestavené balíčky</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackCmdProperties">
-        <source>PROPERTY</source>
-        <target state="new">PROPERTY</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackCmdPropertiesDescription">
-        <source>Sets properties for the pack operation</source>
-        <target state="new">Sets properties for the pack operation</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackCmdVersion">
         <source>VERSION</source>
         <target state="new">VERSION</target>

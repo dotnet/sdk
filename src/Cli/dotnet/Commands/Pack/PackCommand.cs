@@ -15,7 +15,6 @@ using NuGet.Common;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
-
 public class PackCommand(
     MSBuildArgs msbuildArgs,
     bool noRestore,
@@ -94,8 +93,6 @@ public class PackCommand(
                 packArgs.Properties[kvp.Key] = kvp.Value;
         }
 
-
-
         var version = parseResult.GetValue(CommonOptions.VersionOption);
         if (version != null)
             packArgs.Version = version.ToNormalizedString();
@@ -105,7 +102,6 @@ public class PackCommand(
             return 1;
         return 0;
     }
-
 
     public static int Run(ParseResult parseResult)
     {

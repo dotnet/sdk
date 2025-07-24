@@ -1827,16 +1827,6 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
         <target state="translated">Directorio de salida en el que se ubicarán los paquetes compilados.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackCmdProperties">
-        <source>PROPERTY</source>
-        <target state="new">PROPERTY</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackCmdPropertiesDescription">
-        <source>Sets properties for the pack operation</source>
-        <target state="new">Sets properties for the pack operation</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackCmdVersion">
         <source>VERSION</source>
         <target state="new">VERSION</target>

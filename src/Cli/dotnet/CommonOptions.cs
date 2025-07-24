@@ -217,13 +217,13 @@ internal static class CommonOptions
 
 
     public static Option<NuGetVersion> VersionOption =
-     new ForwardedOption<NuGetVersion>("--version")
-     {
-         Description = CliCommandStrings.PackCmdVersionDescription,
-         HelpName = CliCommandStrings.PackCmdVersion,
-         Arity = ArgumentArity.ExactlyOne,
-         CustomParser = r =>
-         {
+        new ForwardedOption<NuGetVersion>("--version")
+        {
+            Description = CliCommandStrings.PackCmdVersionDescription,
+            HelpName = CliCommandStrings.PackCmdVersion,
+            Arity = ArgumentArity.ExactlyOne,
+            CustomParser = r =>
+            {
              if (r.Tokens.Count == 0)
                  return null;
              var value = r.Tokens[0].Value;
@@ -232,8 +232,8 @@ internal static class CommonOptions
              r.AddError(string.Format(CliStrings.InvalidVersion, value));
              return null;
 
-         }
-     }.ForwardAsSingle(o => $"--property:Version={o}");
+            }
+        }.ForwardAsSingle(o => $"--property:Version={o}");
 
 
     public static Lazy<string> NormalizedCurrentDirectory = new(() => PathUtility.EnsureTrailingSlash(Directory.GetCurrentDirectory()));

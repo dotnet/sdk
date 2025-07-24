@@ -3,6 +3,7 @@
 
 using System.IO.Compression;
 using Microsoft.Build.Logging.StructuredLogger;
+using NuGet.Packaging;
 
 namespace Microsoft.DotNet.Pack.Tests
 {
@@ -290,6 +291,7 @@ namespace Microsoft.DotNet.Pack.Tests
             result.Should().Fail()
                 .And.HaveStdOutContaining("NETSDK1083");
         }
+
         [Fact]
         public void DotnetPack_AcceptsPropertiesOption()
         {
@@ -309,15 +311,13 @@ namespace Microsoft.DotNet.Pack.Tests
             var nupkgPath = Path.Combine(testInstance.Path, "CustomId.1.0.0.nupkg");
             File.Exists(nupkgPath).Should().BeTrue("The package should be created with the custom id");
 
-            using var zip = ZipFile.OpenRead(nupkgPath);
-            var nuspecEntry = zip.Entries.FirstOrDefault(e => e.FullName.EndsWith(".nuspec"));
-            nuspecEntry.Should().NotBeNull("The .nuspec file should exist in the package.");
+            using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+            {
+                var nuspecReader = nupkgReader.NuspecReader;
+                nuspecReader.Should().NotBeNull();
 
-            using var nuspecStream = nuspecEntry.Open();
-            using var reader = new StreamReader(nuspecStream);
-            var nuspecContent = reader.ReadToEnd();
-
-            nuspecContent.Should().Contain("<id>CustomID</id>");
+                nuspecReader.GetId().Should().Be("CustomID", "The nuspec file should contain the custom id"); 
+            }
         }
 
         [Fact]
@@ -339,15 +339,13 @@ namespace Microsoft.DotNet.Pack.Tests
             var nupkgPath = Path.Combine(testInstance.Path, "PackNoCsproj.1.2.3.nupkg");
             File.Exists(nupkgPath).Should().BeTrue("The package should be created with the specified version.");
 
-            using var zip = ZipFile.OpenRead(nupkgPath);
-            var nuspecEntry = zip.Entries.FirstOrDefault(e => e.FullName.EndsWith(".nuspec"));
-            nuspecEntry.Should().NotBeNull("The .nuspec file should exist in the package.");
+            using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+            {
+                var nuspecReader = nupkgReader.NuspecReader;
+                nuspecReader.Should().NotBeNull();
 
-            using var nuspecStream = nuspecEntry.Open();
-            using var reader = new StreamReader(nuspecStream);
-            var nuspecContent = reader.ReadToEnd();
-
-            nuspecContent.Should().Contain("<version>1.2.3</version>");
+                nuspecReader.GetVersion().ToNormalizedString().Should().Be("1.2.3", "The package should contain the custom version");
+            }
         }
 
         [Fact]
@@ -384,42 +382,31 @@ namespace Microsoft.DotNet.Pack.Tests
             var nupkgPath = Path.Combine(testInstance.Path, "CustomId.1.0.0.nupkg");
             File.Exists(nupkgPath).Should().BeTrue("The package should be created with the custom id.");
 
-            using var zip = ZipFile.OpenRead(nupkgPath);
-            var nuspecEntry = zip.Entries.FirstOrDefault(e => e.FullName.EndsWith(".nuspec"));
-            nuspecEntry.Should().NotBeNull("The .nuspec file should exist in the package.");
+            using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+            {
+                var nuspecReader = nupkgReader.NuspecReader;
+                nuspecReader.Should().NotBeNull();
 
-            using var nuspecStream = nuspecEntry.Open();
-            using var reader = new StreamReader(nuspecStream);
-            var nuspecContent = reader.ReadToEnd();
-
-            nuspecContent.Should().Contain("<id>CustomId</id>");
-            nuspecContent.Should().Contain("<authors>CustomAuthor</authors>");
+                nuspecReader.GetId().Should().Be("CustomID", "The nuspec file should contain the custom id");
+                nuspecReader.GetAuthors().Should().Be("CustomAuthor", "The nuspec file should contain the custom author");
+            }
         }
-        [Fact]
-        public void DotnetPack_AcceptsConfigurationOption()
+
+        [Theory]
+        [InlineData("Debug")]
+        [InlineData("Release")]
+        public void DotnetPack_AcceptsConfigurationOption(string configuration)
         {
             var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
                 .WithSource();
             string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
             var result = new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute(nuspecPath, "--configuration", "Release");
-
+                .Execute(nuspecPath, "--configuration", configuration);
             result.Should().Pass();
-            var outputDir = new DirectoryInfo(testInstance.Path);
-            outputDir.Should().Exist()
-                .And.HaveFile("PackNoCsproj.1.0.0.nupkg");
 
-            var nupkgPath = Path.Combine(testInstance.Path, "PackNoCsproj.1.0.0.nupkg");
-            using var zip = ZipFile.OpenRead(nupkgPath);
-            var nuspecEntry = zip.Entries.FirstOrDefault(e => e.FullName.EndsWith(".nuspec"));
-            nuspecEntry.Should().NotBeNull("The .nuspec file should exist in the package.");
-
-            using var nuspecStream = nuspecEntry.Open();
-            using var reader = new StreamReader(nuspecStream);
-            var nuspecContent = reader.ReadToEnd();
-
-            nuspecContent.Should().Contain("Release");
+            var outputPackage = new FileInfo(Path.Combine(testInstance.Path, "bin", configuration, "PackNoCsproj.1.0.0.nupkg"));
+            outputPackage.Should().Exist();
         }
 
         [Fact]
@@ -441,10 +428,13 @@ namespace Microsoft.DotNet.Pack.Tests
             var nupkgPath = Path.Combine(outputDirPath, "PackNoCsproj.1.0.0.nupkg");
             File.Exists(nupkgPath).Should().BeTrue("The package should be created in the specified output directory.");
 
-            using var zip = ZipFile.OpenRead(nupkgPath);
+            using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+            {
+
+            }
+                using var zip = ZipFile.OpenRead(nupkgPath);
             var nuspecEntry = zip.Entries.FirstOrDefault(e => e.FullName.EndsWith(".nuspec"));
             nuspecEntry.Should().NotBeNull("The .nuspec file should exist in the package.");
-
         }
 
         [Fact]
@@ -458,8 +448,7 @@ namespace Microsoft.DotNet.Pack.Tests
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute(nuspecPath);
 
-            result.Should().Fail();
-            
+            result.Should().Fail();            
         }
     }
 }

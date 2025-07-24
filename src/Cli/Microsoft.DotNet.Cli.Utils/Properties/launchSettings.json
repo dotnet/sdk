@@ -1,7 +1,0 @@
-{
-  "profiles": {
-    "Microsoft.DotNet.Cli.Utils": {
-      "commandName": "Project"
-    }
-  }
-}

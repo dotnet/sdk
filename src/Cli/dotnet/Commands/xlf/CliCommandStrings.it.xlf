@@ -1827,16 +1827,6 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
         <target state="translated">Directory di output in cui inserire i pacchetti compilati.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackCmdProperties">
-        <source>PROPERTY</source>
-        <target state="new">PROPERTY</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackCmdPropertiesDescription">
-        <source>Sets properties for the pack operation</source>
-        <target state="new">Sets properties for the pack operation</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackCmdVersion">
         <source>VERSION</source>
         <target state="new">VERSION</target>
