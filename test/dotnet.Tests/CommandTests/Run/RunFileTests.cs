@@ -142,14 +142,34 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             {s_program}
             """);
 
+        string expectedOutput = """
+            Hello from Program
+            Release config
+            """;
+
         new DotnetCommand(Log, "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOut("""
-                Hello from Program
-                Release config
-                """);
+            .And.HaveStdOut(expectedOutput);
+
+        new DotnetCommand(Log, "./Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        new DotnetCommand(Log, $".{Path.DirectorySeparatorChar}Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        new DotnetCommand(Log, Path.Join(testInstance.Path, "Program.cs"))
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
 
         new DotnetCommand(Log, "Program.cs", "-c", "Debug")
             .WithWorkingDirectory(testInstance.Path)
@@ -165,6 +185,16 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Pass()
             .And.HaveStdOut("""
                 echo args:arg1;arg2
+                Hello from Program
+                Release config
+                """);
+
+        new DotnetCommand(Log, "Program.cs", "build")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:build
                 Hello from Program
                 Release config
                 """);

@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.Equal(solutionFileFullPath, solutionFiles[0]);
         }
 
-        [Fact(DisplayName = nameof(AddProjectToSolutionPostActionFindSlnxFileAtOutputPath))]
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/49923
         public void AddProjectToSolutionPostActionFindSlnxFileAtOutputPath()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
