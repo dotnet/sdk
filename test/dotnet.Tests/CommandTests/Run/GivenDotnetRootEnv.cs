@@ -20,7 +20,9 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         public void ItShouldSetDotnetRootToDirectoryOfMuxer(string targetFramework)
         {
             string expectDotnetRoot = TestContext.Current.ToolsetUnderTest.DotNetRoot;
-            string expectOutput = GetExpectOutput(expectDotnetRoot, targetFramework);
+            string processArchitecture = RuntimeInformation.ProcessArchitecture.ToString().ToUpperInvariant();
+            string expectOutput = $"DOTNET_ROOT='';DOTNET_ROOT(x86)='';DOTNET_ROOT_{processArchitecture}='{expectDotnetRoot}'";
+
 
             var projectRoot = SetupDotnetRootEchoProject(null, targetFramework);
 
@@ -37,8 +39,9 @@ namespace Microsoft.DotNet.Cli.Run.Tests
 
         //  https://github.com/dotnet/sdk/issues/49665
         //  Failed to load /private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, error: dlopen(/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), '/System/Volumes/Preboot/Cryptexes/OS/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (no such file), '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64'))
-        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
-        public void WhenDotnetRootIsSetItShouldSetDotnetRootToDirectoryOfMuxer()
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [CombinatorialData]
+        public void WhenDotnetRootIsSetItShouldSetDotnetRootToDirectoryOfMuxer(bool overrideDotnetRootArch)
         {
             string expectDotnetRoot = "OVERRIDE VALUE";
 
@@ -49,20 +52,25 @@ namespace Microsoft.DotNet.Cli.Run.Tests
 
             if (Environment.Is64BitProcess)
             {
-                runCommand = runCommand.WithEnvironmentVariable("DOTNET_ROOT", expectDotnetRoot);
+                runCommand = runCommand.WithEnvironmentVariable(overrideDotnetRootArch ? "DOTNET_ROOT_X64" : "DOTNET_ROOT", expectDotnetRoot);
                 runCommand.EnvironmentToRemove.Add("DOTNET_ROOT(x86)");
             }
             else
             {
-                runCommand = runCommand.WithEnvironmentVariable("DOTNET_ROOT(x86)", expectDotnetRoot);
+                runCommand = runCommand.WithEnvironmentVariable(overrideDotnetRootArch ? "DOTNET_ROOT_X86" : "DOTNET_ROOT(x86)", expectDotnetRoot);
                 runCommand.EnvironmentToRemove.Add("DOTNET_ROOT");
             }
+
+            var expectedDotnetRoot = Environment.Is64BitProcess && overrideDotnetRootArch ? expectDotnetRoot : string.Empty;
+            var expectedDotnetRootX86 = !Environment.Is64BitProcess && !overrideDotnetRootArch ? expectDotnetRoot : string.Empty;
+            var expectedDotnetRootArch = overrideDotnetRootArch ? expectDotnetRoot : string.Empty;
+            var expectedOutput = $"DOTNET_ROOT='{expectDotnetRoot}';DOTNET_ROOT(x86)='{expectedDotnetRootX86}';DOTNET_ROOT_{processArchitecture}='{expectedDotnetRootArch}'";
 
             runCommand.EnvironmentToRemove.Add($"DOTNET_ROOT_{processArchitecture}");
             runCommand
                 .Execute("--no-build")
                 .Should().Pass()
-                .And.HaveStdOutContaining(GetExpectOutput(expectDotnetRoot));
+                .And.HaveStdOutContaining(expectedOutput);
         }
 
         private string SetupDotnetRootEchoProject([CallerMemberName] string callingMethod = null, string targetFramework = null)
@@ -79,26 +87,6 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Pass();
 
             return testAsset.Path;
-        }
-
-        private static string GetExpectOutput(string expectDotnetRoot, string targetFramework = null)
-        {
-            string expectOutput;
-            string processArchitecture = RuntimeInformation.ProcessArchitecture.ToString().ToUpperInvariant();
-            if (!string.IsNullOrEmpty(targetFramework) && Version.Parse(targetFramework.AsSpan(3)) >= Version6_0)
-            {
-                expectOutput = $"DOTNET_ROOT='';DOTNET_ROOT(x86)='';DOTNET_ROOT_{processArchitecture}='{expectDotnetRoot}'";
-            }
-            else if (Environment.Is64BitProcess)
-            {
-                expectOutput = @$"DOTNET_ROOT='{expectDotnetRoot}';DOTNET_ROOT(x86)='';DOTNET_ROOT_{processArchitecture}=''";
-            }
-            else
-            {
-                expectOutput = @$"DOTNET_ROOT='';DOTNET_ROOT(x86)='{expectDotnetRoot}';DOTNET_ROOT_{processArchitecture}=''";
-            }
-
-            return expectOutput;
         }
     }
 }
