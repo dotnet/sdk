@@ -138,7 +138,6 @@ internal class MSBuildForwardingAppWithoutLogging
         }
     }
 
-
     public static string GetHostServerPath(bool createDirectory)
     {
         // If the path is set from outside, reuse it.
