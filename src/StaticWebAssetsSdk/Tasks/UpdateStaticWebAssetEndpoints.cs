@@ -4,6 +4,7 @@
 #nullable disable
 
 using Microsoft.Build.Framework;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -39,8 +40,16 @@ public class UpdateStaticWebAssetEndpoints : Task
 
     [Output] public ITaskItem[] UpdatedEndpoints { get; set; }
 
+    // Reusable collections to avoid allocations
+    private readonly List<StaticWebAssetEndpointSelector> _selectorsList = new(4);
+    private readonly List<StaticWebAssetEndpointResponseHeader> _headersList = new(8);
+    private readonly List<StaticWebAssetEndpointProperty> _propertiesList = new(8);
+    private JsonWriterContext _serializationContext;
+
     public override bool Execute()
     {
+        _serializationContext = new JsonWriterContext();
+
         var endpointsToUpdate = StaticWebAssetEndpoint.FromItemGroup(EndpointsToUpdate)
             .GroupBy(e => e.Route)
             .ToDictionary(e => e.Key, e => e.ToHashSet());
@@ -79,10 +88,11 @@ public class UpdateStaticWebAssetEndpoints : Task
 
         UpdatedEndpoints = StaticWebAssetEndpoint.ToTaskItems(result);
 
+        _serializationContext.Dispose();
         return !Log.HasLoggedErrors;
     }
 
-    private static bool TryUpdateEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation[] operations, List<StaticWebAssetEndpoint> result)
+    private bool TryUpdateEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation[] operations, List<StaticWebAssetEndpoint> result)
     {
         var updated = false;
         for (var i = 0; i < operations.Length; i++)
@@ -116,31 +126,34 @@ public class UpdateStaticWebAssetEndpoints : Task
         return updated;
     }
 
-    private static bool RemoveAllFromEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation operation)
+    private bool RemoveAllFromEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation operation)
     {
         switch (operation.Target)
         {
             case "Selector":
-                var (selectors, selectorRemoved) = RemoveAllIfFound(endpoint.Selectors, s => s.Name, s => s.Value, operation.Name, operation.Value);
-                if (selectorRemoved)
+                StaticWebAssetEndpointSelector.PopulateFromMetadataValue(endpoint.SelectorsString, _selectorsList);
+                if (RemoveAllIfFound(_selectorsList, s => s.Name, s => s.Value, operation.Name, operation.Value))
                 {
-                    endpoint.Selectors = selectors;
+                    var selectorsString = StaticWebAssetEndpointSelector.ToMetadataValue(_selectorsList, _serializationContext);
+                    endpoint.SetSelectorsString(selectorsString);
                     return true;
                 }
                 break;
             case "Header":
-                var (headers, headerRemoved) = RemoveAllIfFound(endpoint.ResponseHeaders, h => h.Name, h => h.Value, operation.Name, operation.Value);
-                if (headerRemoved)
+                StaticWebAssetEndpointResponseHeader.PopulateFromMetadataValue(endpoint.ResponseHeadersString, _headersList);
+                if (RemoveAllIfFound(_headersList, h => h.Name, h => h.Value, operation.Name, operation.Value))
                 {
-                    endpoint.ResponseHeaders = headers;
+                    var headersString = StaticWebAssetEndpointResponseHeader.ToMetadataValue(_headersList, _serializationContext);
+                    endpoint.SetResponseHeadersString(headersString);
                     return true;
                 }
                 break;
             case "Property":
-                var (properties, propertyRemoved) = RemoveAllIfFound(endpoint.EndpointProperties, p => p.Name, p => p.Value, operation.Name, operation.Value);
-                if (propertyRemoved)
+                StaticWebAssetEndpointProperty.PopulateFromMetadataValue(endpoint.EndpointPropertiesString, _propertiesList);
+                if (RemoveAllIfFound(_propertiesList, p => p.Name, p => p.Value, operation.Name, operation.Value))
                 {
-                    endpoint.EndpointProperties = properties;
+                    var propertiesString = StaticWebAssetEndpointProperty.ToMetadataValue(_propertiesList, _serializationContext);
+                    endpoint.SetEndpointPropertiesString(propertiesString);
                     return true;
                 }
                 break;
@@ -151,98 +164,85 @@ public class UpdateStaticWebAssetEndpoints : Task
         return false;
     }
 
-    private static (T[], bool replaced) RemoveAllIfFound<T>(T[] elements, Func<T, string> getName, Func<T, string> getValue, string name, string value)
+    private static bool RemoveAllIfFound<T>(List<T> elements, Func<T, string> getName, Func<T, string> getValue, string name, string value)
     {
-        List<T> selectors = null;
-        for (var i = 0; i < elements.Length; i++)
+        var removed = false;
+        for (var i = elements.Count - 1; i >= 0; i--)
         {
             if (string.Equals(getName(elements[i]), name, StringComparison.OrdinalIgnoreCase) &&
                 (string.IsNullOrEmpty(value) || string.Equals(getValue(elements[i]), value, StringComparison.Ordinal)))
             {
-                if (selectors == null)
-                {
-                    selectors = [];
-                    for (var j = 0; j < i; j++)
-                    {
-                        selectors.Add(elements[j]);
-                    }
-                }
-            }
-            else
-            {
-                selectors?.Add(elements[i]);
+                elements.RemoveAt(i);
+                removed = true;
             }
         }
-        if (selectors != null)
-        {
-            return ([.. selectors], true);
-        }
-
-        return (elements, false);
+        return removed;
     }
 
-    private static (T[], bool replaced) RemoveFirstIfFound<T>(T[] elements, Func<T, string> getName, Func<T, string> getValue, string name, string value)
+    private static bool RemoveFirstIfFound<T>(List<T> elements, Func<T, string> getName, Func<T, string> getValue, string name, string value)
     {
-        for (var i = 0; i < elements.Length; i++)
+        for (var i = 0; i < elements.Count; i++)
         {
             if (string.Equals(getName(elements[i]), name, StringComparison.OrdinalIgnoreCase) &&
                 (string.IsNullOrEmpty(value) || string.Equals(getValue(elements[i]), value, StringComparison.Ordinal)))
             {
-                var prefix = elements.Take(i);
-                var suffix = prefix.Skip(1);
-                return ([.. prefix, .. suffix], true);
+                elements.RemoveAt(i);
+                return true;
             }
         }
 
-        return (elements, false);
+        return false;
     }
 
-    private static bool ReplaceInEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation operation)
+    private bool ReplaceInEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation operation)
     {
         switch (operation.Target)
         {
             case "Selector":
-                var (selectors, selectorReplaced) = ReplaceFirstIfFound(
-                    endpoint.Selectors,
+                StaticWebAssetEndpointSelector.PopulateFromMetadataValue(endpoint.SelectorsString, _selectorsList);
+                if (ReplaceFirstIfFound(
+                    _selectorsList,
                     s => s.Name,
                     s => s.Value,
                     (name, value) => new StaticWebAssetEndpointSelector { Name = name, Value = value, Quality = operation.Quality },
                     operation.Name,
                     operation.Value,
-                    operation.NewValue);
-                if (selectorReplaced)
+                    operation.NewValue))
                 {
-                    endpoint.Selectors = selectors;
+                    var selectorsString = StaticWebAssetEndpointSelector.ToMetadataValue(_selectorsList, _serializationContext);
+                    endpoint.SetSelectorsString(selectorsString);
                     return true;
                 }
                 break;
             case "Header":
-                var (headers, headerReplaced) = ReplaceFirstIfFound(
-                    endpoint.ResponseHeaders,
+                StaticWebAssetEndpointResponseHeader.PopulateFromMetadataValue(endpoint.ResponseHeadersString, _headersList);
+                if (ReplaceFirstIfFound(
+                    _headersList,
                     h => h.Name,
                     h => h.Value,
                     (name, value) => new StaticWebAssetEndpointResponseHeader { Name = name, Value = value },
                     operation.Name,
                     operation.Value,
-                    operation.NewValue);
-                if (headerReplaced)
+                    operation.NewValue))
                 {
-                    endpoint.ResponseHeaders = headers;
+                    var headersString = StaticWebAssetEndpointResponseHeader.ToMetadataValue(_headersList, _serializationContext);
+                    endpoint.SetResponseHeadersString(headersString);
                     return true;
                 }
                 break;
             case "Property":
-                var (properties, propertyReplaced) = ReplaceFirstIfFound(
-                    endpoint.EndpointProperties,
+                StaticWebAssetEndpointProperty.PopulateFromMetadataValue(endpoint.EndpointPropertiesString, _propertiesList);
+                if (ReplaceFirstIfFound(
+                    _propertiesList,
                     p => p.Name,
                     p => p.Value,
                     (name, value) => new StaticWebAssetEndpointProperty { Name = name, Value = value },
                     operation.Name,
                     operation.Value,
-                    operation.NewValue);
-                if (propertyReplaced)
+                    operation.NewValue))
                 {
-                    endpoint.EndpointProperties = properties;
+                    var propertiesString = StaticWebAssetEndpointProperty.ToMetadataValue(_propertiesList, _serializationContext);
+                    endpoint.SetEndpointPropertiesString(propertiesString);
                     return true;
                 }
                 break;
@@ -253,52 +253,54 @@ public class UpdateStaticWebAssetEndpoints : Task
         return false;
     }
 
-    private static (T[], bool replaced) ReplaceFirstIfFound<T>(
-        T[] elements,
+    private static bool ReplaceFirstIfFound<T>(
+        List<T> elements,
         Func<T, string> getName,
         Func<T, string> getValue,
         Func<string, string, T> createNew,
         string name, string value, string newValue)
     {
-        for (var i = 0; i < elements.Length; i++)
+        for (var i = 0; i < elements.Count; i++)
         {
             if (string.Equals(getName(elements[i]), name, StringComparison.OrdinalIgnoreCase) &&
                 (string.IsNullOrEmpty(value) || string.Equals(getValue(elements[i]), value, StringComparison.Ordinal)))
             {
-                var prefix = elements.Take(i);
-                var suffix = elements.Skip(i + 1);
-                return ([.. prefix, createNew(name, newValue), .. suffix], true);
+                elements[i] = createNew(name, newValue);
+                return true;
             }
         }
 
-        return (elements, false);
+        return false;
     }
 
-    private static bool RemoveFromEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation operation)
+    private bool RemoveFromEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation operation)
     {
         switch (operation.Target)
         {
             case "Selector":
-                var (selectors, selectorRemoved) = RemoveFirstIfFound(endpoint.Selectors, s => s.Name, s => s.Value, operation.Name, operation.Value);
-                if (selectorRemoved)
+                StaticWebAssetEndpointSelector.PopulateFromMetadataValue(endpoint.SelectorsString, _selectorsList);
+                if (RemoveFirstIfFound(_selectorsList, s => s.Name, s => s.Value, operation.Name, operation.Value))
                 {
-                    endpoint.Selectors = selectors;
+                    var selectorsString = StaticWebAssetEndpointSelector.ToMetadataValue(_selectorsList, _serializationContext);
+                    endpoint.SetSelectorsString(selectorsString);
                     return true;
                 }
                 break;
             case "Header":
-                var (headers, headerRemoved) = RemoveFirstIfFound(endpoint.ResponseHeaders, h => h.Name, h => h.Value, operation.Name, operation.Value);
-                if (headerRemoved)
+                StaticWebAssetEndpointResponseHeader.PopulateFromMetadataValue(endpoint.ResponseHeadersString, _headersList);
+                if (RemoveFirstIfFound(_headersList, h => h.Name, h => h.Value, operation.Name, operation.Value))
                 {
-                    endpoint.ResponseHeaders = headers;
+                    var headersString = StaticWebAssetEndpointResponseHeader.ToMetadataValue(_headersList, _serializationContext);
+                    endpoint.SetResponseHeadersString(headersString);
                     return true;
                 }
                 break;
             case "Property":
-                var (properties, propertyRemoved) = RemoveFirstIfFound(endpoint.EndpointProperties, p => p.Name, p => p.Value, operation.Name, operation.Value);
-                if (propertyRemoved)
+                StaticWebAssetEndpointProperty.PopulateFromMetadataValue(endpoint.EndpointPropertiesString, _propertiesList);
+                if (RemoveFirstIfFound(_propertiesList, p => p.Name, p => p.Value, operation.Name, operation.Value))
                 {
-                    endpoint.EndpointProperties = properties;
+                    var propertiesString = StaticWebAssetEndpointProperty.ToMetadataValue(_propertiesList, _serializationContext);
+                    endpoint.SetEndpointPropertiesString(propertiesString);
                     return true;
                 }
                 break;
@@ -309,37 +311,40 @@ public class UpdateStaticWebAssetEndpoints : Task
         return false;
     }
 
-    private static void AppendToEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation operation)
+    private void AppendToEndpoint(StaticWebAssetEndpoint endpoint, StaticWebAssetEndpointOperation operation)
     {
         switch (operation.Target)
         {
             case "Selector":
-                endpoint.Selectors = [
-                    ..endpoint.Selectors,
-                                    new StaticWebAssetEndpointSelector
-                                    {
-                                        Name = operation.Name,
-                                        Value = operation.Value,
-                                        Quality = operation.Quality
-                                    }];
+                StaticWebAssetEndpointSelector.PopulateFromMetadataValue(endpoint.SelectorsString, _selectorsList);
+                _selectorsList.Add(new StaticWebAssetEndpointSelector
+                {
+                    Name = operation.Name,
+                    Value = operation.Value,
+                    Quality = operation.Quality
+                });
+                var selectorsString = StaticWebAssetEndpointSelector.ToMetadataValue(_selectorsList, _serializationContext);
+                endpoint.SetSelectorsString(selectorsString);
                 break;
             case "Header":
-                endpoint.ResponseHeaders = [
-                    ..endpoint.ResponseHeaders,
-                                    new StaticWebAssetEndpointResponseHeader
-                                    {
-                                        Name = operation.Name,
-                                        Value = operation.Value
-                                    }];
+                StaticWebAssetEndpointResponseHeader.PopulateFromMetadataValue(endpoint.ResponseHeadersString, _headersList);
+                _headersList.Add(new StaticWebAssetEndpointResponseHeader
+                {
+                    Name = operation.Name,
+                    Value = operation.Value
+                });
+                var headersString = StaticWebAssetEndpointResponseHeader.ToMetadataValue(_headersList, _serializationContext);
+                endpoint.SetResponseHeadersString(headersString);
                 break;
             case "Property":
-                endpoint.EndpointProperties = [
-                    ..endpoint.EndpointProperties,
-                                    new StaticWebAssetEndpointProperty
-                                    {
-                                        Name = operation.Name,
-                                        Value = operation.Value
-                                    }];
+                StaticWebAssetEndpointProperty.PopulateFromMetadataValue(endpoint.EndpointPropertiesString, _propertiesList);
+                _propertiesList.Add(new StaticWebAssetEndpointProperty
+                {
+                    Name = operation.Name,
+                    Value = operation.Value
+                });
+                var propertiesString = StaticWebAssetEndpointProperty.ToMetadataValue(_propertiesList, _serializationContext);
+                endpoint.SetEndpointPropertiesString(propertiesString);
                 break;
             default:
                 throw new InvalidOperationException($"Unknown target {operation.Target}");

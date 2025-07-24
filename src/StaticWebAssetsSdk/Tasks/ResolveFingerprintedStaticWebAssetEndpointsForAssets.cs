@@ -23,6 +23,9 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssets : Task
 
     [Output] public ITaskItem[] ResolvedEndpoints { get; set; }
 
+    // Reusable collection to avoid allocations
+    private readonly List<StaticWebAssetEndpointProperty> _propertiesList = new(10);
+
     public override bool Execute()
     {
         var candidateEndpoints = StaticWebAssetEndpoint.FromItemGroup(CandidateEndpoints);
@@ -96,11 +99,14 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssets : Task
         return !Log.HasLoggedErrors;
     }
 
-    private static bool HasFingerprint(StaticWebAssetEndpoint endpoint)
+    private bool HasFingerprint(StaticWebAssetEndpoint endpoint)
     {
-        for (var i = 0; i < endpoint.EndpointProperties.Length; i++)
+        // Use the reusable list to avoid allocations
+        StaticWebAssetEndpointProperty.PopulateFromMetadataValue(endpoint.EndpointPropertiesString, _propertiesList);
+
+        for (var i = 0; i < _propertiesList.Count; i++)
         {
-            var property = endpoint.EndpointProperties[i];
+            var property = _propertiesList[i];
             if (string.Equals(property.Name, "fingerprint", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
