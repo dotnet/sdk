@@ -227,7 +227,7 @@ namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests
                 command.AddRange(args);
             }
 
-            var uninstallParseResult = Parser.Parse(command);
+            var uninstallParseResult = Parser.Parse([.. command]);
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
             var uninstallCommand = new WorkloadUninstallCommand(uninstallParseResult, reporter: _reporter, workloadResolverFactory, nugetDownloader);
             return uninstallCommand.Execute();

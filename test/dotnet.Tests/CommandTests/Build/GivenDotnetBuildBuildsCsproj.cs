@@ -401,7 +401,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         public void It_uses_correct_runtime_help_description(string command)
         {
             var output = new StringWriter();
-            var parseResult = localCopy.Parse(new string[] { command, "-h" });
+            var parseResult = Parser.Parse(new string[] { command, "-h" });
             parseResult.Invoke(new()
             {
                 Output = output,
