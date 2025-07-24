@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
 
             var expectedDotnetRoot = Environment.Is64BitProcess && overrideDotnetRootArch ? expectDotnetRoot : string.Empty;
             var expectedDotnetRootX86 = !Environment.Is64BitProcess && !overrideDotnetRootArch ? expectDotnetRoot : string.Empty;
-            var expectedDotnetRootArch = overrideDotnetRootArch ? expectDotnetRoot : string.Empty;
+            var expectedDotnetRootArch = overrideDotnetRootArch ? expectDotnetRoot : TestContext.Current.ToolsetUnderTest.DotNetRoot;
             var expectedOutput = $"DOTNET_ROOT='{expectDotnetRoot}';DOTNET_ROOT(x86)='{expectedDotnetRootX86}';DOTNET_ROOT_{processArchitecture}='{expectedDotnetRootArch}'";
 
             runCommand.EnvironmentToRemove.Add($"DOTNET_ROOT_{processArchitecture}");
