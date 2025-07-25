@@ -143,26 +143,8 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             }
         }
 
-        // forcibly change the media type if required
-        if (ImageFormat is not null)
-        {
-            if (Enum.TryParse<KnownImageFormats>(ImageFormat, out var imageFormat))
-            {
-                imageBuilder.ManifestMediaType = imageFormat switch
-                {
-                    KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
-                    KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
-                    _ => imageBuilder.ManifestMediaType // should be impossible unless we add to the enum
-                };
-            }
-            else
-            {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
-            }
-        }
-
         Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType);
-        imageBuilder.AddLayer(newLayer);
+        imageBuilder.AddLayer(newLayer, LayerKind.App);
         imageBuilder.SetWorkingDirectory(WorkingDirectory);
 
         (string[] entrypoint, string[] cmd) = DetermineEntrypointAndCmd(baseImageEntrypoint: imageBuilder.BaseImageConfig.GetEntrypoint());
@@ -205,7 +187,41 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             return false;
         }
 
+        if (AdditionalLayers?.Length > 0)
+        {
+            foreach (ITaskItem layer in AdditionalLayers)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var digest = DigestUtils.IsValidDigest(layer.ItemSpec) ? layer.ItemSpec : throw new ArgumentException($"Invalid digest: {layer.ItemSpec}");
+                var repository = layer.GetMetadata("Repository") ?? throw new ArgumentException($"Missing repository for digest: {layer.ItemSpec}");
+                var layerRegistry = layer.GetMetadata("Registry") ?? throw new ArgumentException($"Missing registry for digest: {layer.ItemSpec}");
+                var mediaType = layer.GetMetadata("MediaType") ?? throw new ArgumentException($"Missing media type for digest: {layer.ItemSpec}");
+                var size = long.Parse(layer.GetMetadata("Size") ?? throw new ArgumentException($"Missing size for digest: {layer.ItemSpec}"));
+                var registryMode = layerRegistry.Equals(OutputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
+                var reg = new Registry(layerRegistry, logger, registryMode);
+                var descriptor = new Descriptor(mediaType, digest, size);
+                var localLayer = Layer.FromDescriptor(descriptor);
+                imageBuilder.AddLayer(localLayer);
+                // have to download the layer here because the layer may not come from the same registry as the base image layers
+                await reg.DownloadBlobAsync(repository, descriptor, cancellationToken);
+            }
+        }
+
         BuiltImage builtImage = imageBuilder.Build();
+
+        // ensure base image layers are available locally
+        foreach (var (layer, kind) in builtImage.Layers ?? [])
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (kind != LayerKind.BaseImage)
+            {
+                continue;
+            }
+            var descriptor = new Descriptor(layer.mediaType, layer.digest, layer.size);
+            logger.LogInformation($"Downloading layer {layer.digest} from {sourceImageReference.Registry?.RegistryName}/{sourceImageReference.Repository} with media type {layer.mediaType} and size {layer.size}");
+            await sourceRegistry.DownloadBlobAsync(sourceImageReference.Repository, descriptor, cancellationToken);
+        }
+
         cancellationToken.ThrowIfCancellationRequested();
 
         // at this point we're done with modifications and are just pushing the data other places

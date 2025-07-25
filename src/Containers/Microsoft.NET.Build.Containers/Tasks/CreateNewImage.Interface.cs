@@ -174,6 +174,8 @@ partial class CreateNewImage
     /// </summary>
     public bool SkipPublishing { get; set; }
 
+    public ITaskItem[] AdditionalLayers { get; set; }
+
     [Output]
     public string GeneratedContainerManifest { get; set; }
 
@@ -236,5 +238,7 @@ partial class CreateNewImage
         GenerateDigestLabel = false;
 
         TaskResources = Resource.Manager;
+
+        AdditionalLayers = Array.Empty<ITaskItem>();
     }
 }
