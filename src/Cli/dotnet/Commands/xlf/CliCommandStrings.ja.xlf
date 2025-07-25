@@ -1689,6 +1689,21 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">名前</target>
         <note />
       </trans-unit>
+      <trans-unit id="NamedPipeFileBadFormat">
+        <source>Cannot parse pipe file name: {0}</source>
+        <target state="new">Cannot parse pipe file name: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NamedPipeFolderNotFound">
+        <source>Named pipe folder not found: {0}</source>
+        <target state="new">Named pipe folder not found: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NamedPipeShutdownError">
+        <source>Error while shutting down server for pipe '{0}': {1}</source>
+        <target state="new">Error while shutting down server for pipe '{0}': {1}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NeedNuGetInConfig">
         <source>The 'dotnet tool search' command unconditionally accesses nuget.org to find tools, but it is not present in your nuget.config. Add it to run this command.
     This can be done with this command:

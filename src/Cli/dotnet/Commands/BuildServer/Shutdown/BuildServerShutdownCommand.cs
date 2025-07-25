@@ -134,7 +134,7 @@ internal class BuildServerShutdownCommand : CommandBase
     {
         if (server.ProcessId != 0)
         {
-            _reporter.WriteLine(
+            _errorReporter.WriteLine(
                 string.Format(
                     CliCommandStrings.ShutDownFailedWithPid,
                     server.Name,
@@ -143,7 +143,7 @@ internal class BuildServerShutdownCommand : CommandBase
         }
         else
         {
-            _reporter.WriteLine(
+            _errorReporter.WriteLine(
                 string.Format(
                     CliCommandStrings.ShutDownFailed,
                     server.Name,

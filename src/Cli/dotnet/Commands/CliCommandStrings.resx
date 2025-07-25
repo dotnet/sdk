@@ -1866,6 +1866,15 @@ Your project targets multiple frameworks. Specify which framework to run using '
   <data name="ShuttingDownUnifiedBuildServers" xml:space="preserve">
     <value>Shutting down unified build servers via named pipe ({0})...</value>
   </data>
+  <data name="NamedPipeFolderNotFound" xml:space="preserve">
+    <value>Named pipe folder not found: {0}</value>
+  </data>
+  <data name="NamedPipeFileBadFormat" xml:space="preserve">
+    <value>Cannot parse pipe file name: {0}</value>
+  </data>
+  <data name="NamedPipeShutdownError" xml:space="preserve">
+    <value>Error while shutting down server for pipe '{0}': {1}</value>
+  </data>
   <data name="UnifiedBuildServer" xml:space="preserve">
     <value>Unified build server</value>
   </data>
