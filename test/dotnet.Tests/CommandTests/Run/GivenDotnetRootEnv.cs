@@ -66,7 +66,11 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             var expectedDotnetRootArch = overrideDotnetRootArch ? expectDotnetRoot : TestContext.Current.ToolsetUnderTest.DotNetRoot;
             var expectedOutput = $"DOTNET_ROOT='{expectDotnetRoot}';DOTNET_ROOT(x86)='{expectedDotnetRootX86}';DOTNET_ROOT_{processArchitecture}='{expectedDotnetRootArch}'";
 
-            runCommand.EnvironmentToRemove.Add($"DOTNET_ROOT_{processArchitecture}");
+            if (!overrideDotnetRootArch)
+            {
+                runCommand.EnvironmentToRemove.Add($"DOTNET_ROOT_{processArchitecture}");
+            }
+
             runCommand
                 .Execute("--no-build")
                 .Should().Pass()
