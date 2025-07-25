@@ -1,20 +1,17 @@
 {
-  // Use IntelliSense to learn about possible attributes.
-  // Hover to view descriptions of existing attributes.
-  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
     {
       "name": ".NET Core Launch (console)",
       "type": "coreclr",
       "request": "launch",
-      "program": "${workspaceFolder}/artifacts/bin/redist/Debug/dotnet/sdk/10.0.100-dev/dotnet.dll",
+      "program": "${workspaceFolder}${/}artifacts${/}bin${/}redist${/}Debug${/}dotnet${/}sdk${/}10.0.100--dev${/}dotnet.dll",
       "args": [
       ],
       "env": {
-        "MSBuildExtensionsPath": "${workspaceFolder}/artifacts/bin/redist/Debug/dotnet/sdk/10.0.100-dev",
-        "MSBuildSDKsPath": "${workspaceFolder}/artifacts/bin/redist/Debug/dotnet/sdk/10.0.100-dev/Sdks",
-        "DOTNET_ROOT": "${workspaceFolder}/artifacts/bin/redist/Debug/dotnet",
+        "MSBuildExtensionsPath": "${workspaceFolder}${/}artifacts${/}bin${/}redist${/}Debug${/}dotnet${/}sdk${/}10.0.100-dev",
+        "MSBuildSDKsPath": "${workspaceFolder}${/}artifacts${/}bin${/}redist${/}Debug${/}dotnet${/}sdk${/}10.0.100-dev${/}Sdks",
+        "DOTNET_ROOT": "${workspaceFolder}${/}artifacts${/}bin${/}redist${/}Debug${/}dotnet",
       },
       "stopAtEntry": false,
       "console": "integratedTerminal",
