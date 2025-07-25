@@ -69,6 +69,8 @@ namespace Microsoft.NET.TestFramework
 
         public string? SdkResolverPath { get; set; }
 
+        public string? RepoRoot { get; set; }
+
         public ToolsetInfo(string dotNetRoot)
         {
             DotNetRoot = dotNetRoot;
@@ -292,7 +294,10 @@ namespace Microsoft.NET.TestFramework
                 throw new FileNotFoundException($"Host '{dotnetHost}' not found. {hostNotFoundReason}");
             }
 
-            var ret = new ToolsetInfo(dotnetRoot);
+            var ret = new ToolsetInfo(dotnetRoot)
+            {
+                RepoRoot = repoRoot,
+            };
 
             if (!string.IsNullOrEmpty(commandLine.FullFrameworkMSBuildPath))
             {

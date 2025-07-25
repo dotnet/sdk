@@ -202,13 +202,9 @@ public class RunCommand
             return true;
         }
 
-        var launchSettingsPath = ReadCodeFromStdin ? null : TryFindLaunchSettings(ProjectFileFullPath ?? EntryPointFileFullPath!);
-        if (!File.Exists(launchSettingsPath))
+        var launchSettingsPath = ReadCodeFromStdin ? null : TryFindLaunchSettings(projectOrEntryPointFilePath: ProjectFileFullPath ?? EntryPointFileFullPath!, launchProfile: LaunchProfile);
+        if (launchSettingsPath is null)
         {
-            if (!string.IsNullOrEmpty(LaunchProfile))
-            {
-                Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile, launchSettingsPath).Bold().Red());
-            }
             return true;
         }
 
@@ -221,8 +217,7 @@ public class RunCommand
 
         try
         {
-            var launchSettingsFileContents = File.ReadAllText(launchSettingsPath);
-            var applyResult = LaunchSettingsManager.TryApplyLaunchSettings(launchSettingsFileContents, LaunchProfile);
+            var applyResult = LaunchSettingsManager.TryApplyLaunchSettings(launchSettingsPath, LaunchProfile);
             if (!applyResult.Success)
             {
                 Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, applyResult.FailureReason).Bold().Red());
@@ -241,13 +236,9 @@ public class RunCommand
 
         return true;
 
-        static string? TryFindLaunchSettings(string projectOrEntryPointFilePath)
+        static string? TryFindLaunchSettings(string projectOrEntryPointFilePath, string? launchProfile)
         {
-            var buildPathContainer = File.Exists(projectOrEntryPointFilePath) ? Path.GetDirectoryName(projectOrEntryPointFilePath) : projectOrEntryPointFilePath;
-            if (buildPathContainer is null)
-            {
-                return null;
-            }
+            var buildPathContainer = Path.GetDirectoryName(projectOrEntryPointFilePath)!;
 
             string propsDirectory;
 
@@ -263,8 +254,37 @@ public class RunCommand
                 propsDirectory = "Properties";
             }
 
-            var launchSettingsPath = Path.Combine(buildPathContainer, propsDirectory, "launchSettings.json");
-            return launchSettingsPath;
+            string launchSettingsPath = CommonRunHelpers.GetPropertiesLaunchSettingsPath(buildPathContainer, propsDirectory);
+            bool hasLaunchSetttings = File.Exists(launchSettingsPath);
+
+            string appName = Path.GetFileNameWithoutExtension(projectOrEntryPointFilePath);
+            string runJsonPath = CommonRunHelpers.GetFlatLaunchSettingsPath(buildPathContainer, appName);
+            bool hasRunJson = File.Exists(runJsonPath);
+
+            if (hasLaunchSetttings)
+            {
+                if (hasRunJson)
+                {
+                    Reporter.Output.WriteLine(string.Format(CliCommandStrings.RunCommandWarningRunJsonNotUsed, runJsonPath, launchSettingsPath).Yellow());
+                }
+
+                return launchSettingsPath;
+            }
+
+            if (hasRunJson)
+            {
+                return runJsonPath;
+            }
+
+            if (!string.IsNullOrEmpty(launchProfile))
+            {
+                Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile, launchProfile, $"""
+                    {launchSettingsPath}
+                    {runJsonPath}
+                    """).Bold().Red());
+            }
+
+            return null;
         }
     }
 
@@ -274,8 +294,8 @@ public class RunCommand
         if (EntryPointFileFullPath is not null)
         {
             var command = CreateVirtualCommand();
-            projectFactory = command.CreateProjectInstance;
             buildResult = command.Execute();
+            projectFactory = command.LastBuildLevel is BuildLevel.Csc ? null : command.CreateProjectInstance;
         }
         else
         {
@@ -328,6 +348,14 @@ public class RunCommand
 
     internal ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
     {
+        if (projectFactory is null && ProjectFileFullPath is null)
+        {
+            // If we are running a file-based app and projectFactory is null, it means csc was used instead of full msbuild.
+            // So we can skip project evaluation to continue the optimized path.
+            Debug.Assert(EntryPointFileFullPath is not null);
+            return CreateCommandForCscBuiltProgram(EntryPointFileFullPath);
+        }
+
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([..MSBuildArgs.OtherMSBuildArgs], "dotnet-run");
         var project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
         ValidatePreconditions(project);
@@ -382,15 +410,41 @@ public class RunCommand
             var command = CommandFactoryUsingResolver.Create(commandSpec)
                 .WorkingDirectory(runProperties.RunWorkingDirectory);
 
-            var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootVariableName(
+            SetRootVariableName(
+                command,
                 project.GetPropertyValue("RuntimeIdentifier"),
                 project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"),
                 project.GetPropertyValue("TargetFrameworkVersion"));
 
+            return command;
+        }
+
+        static void SetRootVariableName(ICommand command, string runtimeIdentifier, string defaultAppHostRuntimeIdentifier, string targetFrameworkVersion)
+        {
+            var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootVariableName(
+                runtimeIdentifier,
+                defaultAppHostRuntimeIdentifier,
+                targetFrameworkVersion);
             if (rootVariableName != null && Environment.GetEnvironmentVariable(rootVariableName) == null)
             {
                 command.EnvironmentVariable(rootVariableName, Path.GetDirectoryName(new Muxer().MuxerPath));
             }
+        }
+
+        static ICommand CreateCommandForCscBuiltProgram(string entryPointFileFullPath)
+        {
+            var artifactsPath = VirtualProjectBuildingCommand.GetArtifactsPath(entryPointFileFullPath);
+            var exePath = Path.Join(artifactsPath, "bin", "debug", Path.GetFileNameWithoutExtension(entryPointFileFullPath) + FileNameSuffixes.CurrentPlatform.Exe);
+            var commandSpec = new CommandSpec(path: exePath, args: null);
+            var command = CommandFactoryUsingResolver.Create(commandSpec)
+                .WorkingDirectory(Path.GetDirectoryName(entryPointFileFullPath));
+
+            SetRootVariableName(
+                command,
+                runtimeIdentifier: RuntimeInformation.RuntimeIdentifier,
+                defaultAppHostRuntimeIdentifier: RuntimeInformation.RuntimeIdentifier,
+                targetFrameworkVersion: $"v{VirtualProjectBuildingCommand.TargetFrameworkVersion}");
+
             return command;
         }
 
@@ -573,6 +627,7 @@ public class RunCommand
             out string? entryPointFilePath);
 
         bool noBuild = parseResult.HasOption(RunCommandParser.NoBuildOption);
+        string launchProfile = parseResult.GetValue(RunCommandParser.LaunchProfileOption) ?? string.Empty;
 
         if (readCodeFromStdin && entryPointFilePath != null)
         {
@@ -581,6 +636,11 @@ public class RunCommand
             if (noBuild)
             {
                 throw new GracefulException(CliCommandStrings.InvalidOptionForStdin, RunCommandParser.NoBuildOption.Name);
+            }
+
+            if (!string.IsNullOrWhiteSpace(launchProfile))
+            {
+                throw new GracefulException(CliCommandStrings.InvalidOptionForStdin, RunCommandParser.LaunchProfileOption.Name);
             }
 
             // If '-' is specified as the input file, read all text from stdin into a temporary file and use that as the entry point.
@@ -605,7 +665,7 @@ public class RunCommand
             noBuild: noBuild,
             projectFileFullPath: projectFilePath,
             entryPointFileFullPath: entryPointFilePath,
-            launchProfile: parseResult.GetValue(RunCommandParser.LaunchProfileOption) ?? string.Empty,
+            launchProfile: launchProfile,
             noLaunchProfile: parseResult.HasOption(RunCommandParser.NoLaunchProfileOption),
             noLaunchProfileArguments: parseResult.HasOption(RunCommandParser.NoLaunchProfileArgumentsOption),
             noRestore: parseResult.HasOption(RunCommandParser.NoRestoreOption) || parseResult.HasOption(RunCommandParser.NoBuildOption),

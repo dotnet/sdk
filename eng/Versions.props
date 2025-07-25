@@ -218,6 +218,7 @@
     <MicrosoftNetCompilersToolsetVersion>5.0.0-2.25374.102</MicrosoftNetCompilersToolsetVersion>
     <MicrosoftNetCompilersToolsetFrameworkPackageVersion>5.0.0-2.25374.102</MicrosoftNetCompilersToolsetFrameworkPackageVersion>
     <MicrosoftCodeAnalysisPackageVersion>5.0.0-2.25374.102</MicrosoftCodeAnalysisPackageVersion>
+    <MicrosoftCodeAnalysisBuildClientVersion>5.0.0-2.25374.102</MicrosoftCodeAnalysisBuildClientVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>5.0.0-2.25374.102</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>5.0.0-2.25374.102</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
     <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>5.0.0-2.25374.102</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>

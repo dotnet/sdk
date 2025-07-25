@@ -956,9 +956,9 @@ dotnet.config is a name don't translate.</note>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileDescription">
-        <source>Do not attempt to use launchSettings.json to configure the application.</source>
-        <target state="translated">No intente usar launchSettings.json para configurar la aplicación.</target>
-        <note />
+        <source>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</source>
+        <target state="needs-review-translation">No intente usar launchSettings.json para configurar la aplicación.</target>
+        <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
       </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
         <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
@@ -1081,11 +1081,9 @@ dotnet.config is a name don't translate.</note>
         <note />
       </trans-unit>
       <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading launchSettings.json.
-{0}</source>
-        <target state="translated">Se produjo un error al leer launchSettings.json.
-{0}</target>
-        <note />
+        <source>An error was encountered when reading '{0}': {1}</source>
+        <target state="new">An error was encountered when reading '{0}': {1}</target>
+        <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
@@ -1733,9 +1731,14 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
         <target state="translated">Instalando la versión de carga de trabajo {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoBinaryLogBecauseRunningJustCsc">
+        <source>Warning: Binary log option was specified but MSBuild will be skipped because running just csc is enough. Specify '--no-cache' to force full build.</source>
+        <target state="new">Warning: Binary log option was specified but MSBuild will be skipped because running just csc is enough. Specify '--no-cache' to force full build.</target>
+        <note>{Locked="--no-cache"}{Locked="MSBuild"}{Locked="csc"}</note>
+      </trans-unit>
       <trans-unit id="NoBinaryLogBecauseUpToDate">
-        <source>Warning: Binary log option was specified but build will be skipped because output is up to date, specify '--no-cache' to force build.</source>
-        <target state="translated">Advertencia: Se especificó la opción de registro binario, pero se omitirá la compilación porque la salida está actualizada, especifique “--no-cache” para forzar la compilación.</target>
+        <source>Warning: Binary log option was specified but build will be skipped because output is up to date. Specify '--no-cache' to force build.</source>
+        <target state="needs-review-translation">Advertencia: Se especificó la opción de registro binario, pero se omitirá la compilación porque la salida está actualizada, especifique “--no-cache” para forzar la compilación.</target>
         <note>{Locked="--no-cache"}</note>
       </trans-unit>
       <trans-unit id="NoBuildOptionDescription">
@@ -2626,8 +2629,10 @@ El valor predeterminado es publicar una aplicación dependiente del marco.</targ
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
-        <source>The specified launch profile '{0}' could not be located.</source>
-        <target state="translated">No se ha podido encontrar el perfil de inicio especificado "{0}".</target>
+        <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
+{1}</source>
+        <target state="new">Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
+{1}</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionMultipleProjects">
@@ -2667,6 +2672,11 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <source>'{0}' is not a valid project file.</source>
         <target state="translated">"{0}" no es un archivo de proyecto válido.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="RunCommandWarningRunJsonNotUsed">
+        <source>Warning: Settings from '{0}' are not used because '{1}' has precedence.</source>
+        <target state="new">Warning: Settings from '{0}' are not used because '{1}' has precedence.</target>
+        <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
       </trans-unit>
       <trans-unit id="RunConfigurationOptionDescription">
         <source>The configuration to run for. The default for most projects is 'Debug'.</source>
