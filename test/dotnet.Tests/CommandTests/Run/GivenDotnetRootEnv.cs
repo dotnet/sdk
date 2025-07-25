@@ -70,6 +70,10 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             {
                 runCommand.EnvironmentToRemove.Add($"DOTNET_ROOT_{processArchitecture}");
             }
+            else
+            {
+                runCommand.EnvironmentToRemove.Add("DOTNET_ROOT");
+            }
 
             runCommand
                 .Execute("--no-build")
