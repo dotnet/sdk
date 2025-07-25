@@ -466,6 +466,10 @@ dotnet_diagnostic.SA1202.severity = none
 # Static elements should appear before instance elements
 dotnet_diagnostic.SA1204.severity = none
 
+# Code files
+[*.{cs,vb,fs}]
+charset = utf-8-bom
+
 # C++ Files
 [*.{cpp,h,in}]
 curly_bracket_next_line = true
