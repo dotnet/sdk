@@ -22,7 +22,7 @@ internal sealed class UnifiedBuildServer : IBuildServer
         return BuildServerUtility.ShutdownServersAsync(
             onProcessShutdownBegin: static (process) =>
             {
-                Reporter.Error.WriteLine(string.Format(CliCommandStrings.ShuttingDownServerWithPid, process.ProcessName, process.Id).Red());
+                Reporter.Output.WriteLine(string.Format(CliCommandStrings.ShuttingDownServerWithPid, process.ProcessName, process.Id));
             },
             onError: static (error) =>
             {
