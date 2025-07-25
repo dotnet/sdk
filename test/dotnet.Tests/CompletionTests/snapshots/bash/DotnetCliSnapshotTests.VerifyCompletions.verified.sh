@@ -1137,12 +1137,23 @@ _testhost_package_update() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--project --help" 
+    opts="--project --interactive --verbosity --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
         return
     fi
+    
+    case $prev in
+        --interactive)
+            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
+            return
+        ;;
+        --verbosity|-v)
+            COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
+            return
+        ;;
+    esac
     
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
