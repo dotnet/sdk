@@ -435,8 +435,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     template,
                     validateDefaultLanguage);
 
-                CommandLineConfiguration parser = ParserFactory.CreateParser(command);
-                ParseResult parseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>());
+                System.CommandLine.Command parser = ParserFactory.CreateParser(command);
+                ParseResult parseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>(), ParserFactory.ParserConfiguration);
                 return (command, parseResult);
             }
             catch (InvalidTemplateParametersException e)

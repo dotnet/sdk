@@ -129,7 +129,7 @@ public class Program
         ParseResult parseResult;
         using (new PerformanceMeasurement(performanceData, "Parse Time"))
         {
-            parseResult = Parser.Instance.Parse(args);
+            parseResult = Parser.Parse(args);
 
             // Avoid create temp directory with root permission and later prevent access in non sudo
             // This method need to be run very early before temp folder get created
@@ -298,7 +298,7 @@ public class Program
                         otherTokens.Add(token.Value);
                     }
                 }
-                parseResult = Parser.Instance.Parse(["run", unmatchedCommandOrFile, .. otherTokens]);
+                parseResult = Parser.Parse(["run", unmatchedCommandOrFile, .. otherTokens]);
 
                 InvokeBuiltInCommand(parseResult, out var exitCode);
                 return exitCode;

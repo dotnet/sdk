@@ -200,7 +200,7 @@ namespace Microsoft.DotNet.Tests.Commands
             IEnumerable<IBuildServer> buildServers = null,
             ServerEnumerationFlags expectedFlags = ServerEnumerationFlags.None)
         {
-            ParseResult result = Parser.Instance.Parse($"dotnet build-server shutdown {options}".Trim());
+            ParseResult result = Parser.Parse(["dotnet", "build-server", "shutdown", options]);
             return new BuildServerShutdownCommand(
                 result: result,
                 serverProvider: serverProvider,
