@@ -266,16 +266,17 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         else
         {
             LastBuildLevel = BuildLevel.None;
+
+            if (!NoWriteBuildMarkers)
+            {
+                CreateTempSubdirectory(ArtifactsPath);
+                MarkArtifactsFolderUsed();
+            }
         }
 
         if (!NoWriteBuildMarkers)
         {
             CleanFileBasedAppArtifactsCommand.StartAutomaticCleanupIfNeeded();
-        }
-        else if (!NoWriteBuildMarkers)
-        {
-            CreateTempSubdirectory(ArtifactsPath);
-            MarkArtifactsFolderUsed();
         }
 
         Dictionary<string, string?> savedEnvironmentVariables = [];
