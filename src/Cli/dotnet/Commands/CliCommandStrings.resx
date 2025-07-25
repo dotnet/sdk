@@ -692,7 +692,8 @@ dotnet.config is a name don't translate.</comment>
     <value>Do not use arguments specified in launch profile to run the application.</value>
   </data>
   <data name="CommandOptionNoLaunchProfileDescription" xml:space="preserve">
-    <value>Do not attempt to use launchSettings.json to configure the application.</value>
+    <value>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</value>
+    <comment>{Locked="launchSettings.json"}{Locked=".run.json"}</comment>
   </data>
   <data name="CommandOptionProjectDescription" xml:space="preserve">
     <value>The path to the project file to run (defaults to the current directory if there is only one project).</value>
@@ -766,8 +767,8 @@ dotnet.config is a name don't translate.</comment>
     <value>Description</value>
   </data>
   <data name="DeserializationExceptionMessage" xml:space="preserve">
-    <value>An error was encountered when reading launchSettings.json.
-{0}</value>
+    <value>An error was encountered when reading '{0}': {1}</value>
+    <comment>{0} is file path. {1} is exception message.</comment>
   </data>
   <data name="DetailDescription" xml:space="preserve">
     <value>Show detail result of the query.</value>
@@ -1743,7 +1744,12 @@ The default is to publish a framework-dependent application.</value>
 {1}</value>
   </data>
   <data name="RunCommandExceptionCouldNotLocateALaunchSettingsFile" xml:space="preserve">
-    <value>The specified launch profile '{0}' could not be located.</value>
+    <value>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
+{1}</value>
+  </data>
+  <data name="RunCommandWarningRunJsonNotUsed" xml:space="preserve">
+    <value>Warning: Settings from '{0}' are not used because '{1}' has precedence.</value>
+    <comment>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</comment>
   </data>
   <data name="RunCommandExceptionMultipleProjects" xml:space="preserve">
     <value>Specify which project file to use because {0} contains more than one project file.</value>

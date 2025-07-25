@@ -248,7 +248,7 @@ internal static class SolutionAndProjectUtility
         string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
 
         // TODO: Support --launch-profile and pass it here.
-        var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath)!, project.GetPropertyValue(ProjectProperties.AppDesignerFolder), noLaunchProfile, profileName: null);
+        var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath)!, Path.GetFileNameWithoutExtension(projectFullPath), project.GetPropertyValue(ProjectProperties.AppDesignerFolder), noLaunchProfile, profileName: null);
 
         return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, isTestProject, launchSettings, project.GetPropertyValue(ProjectProperties.TargetPath));
 
@@ -270,20 +270,36 @@ internal static class SolutionAndProjectUtility
         }
     }
 
-    private static ProjectLaunchSettingsModel? TryGetLaunchProfileSettings(string projectDirectory, string appDesignerFolder, bool noLaunchProfile, string? profileName)
+    private static ProjectLaunchSettingsModel? TryGetLaunchProfileSettings(string projectDirectory, string projectNameWithoutExtension, string appDesignerFolder, bool noLaunchProfile, string? profileName)
     {
         if (noLaunchProfile)
         {
             return null;
         }
 
-        var launchSettingsPath = Path.Combine(projectDirectory, appDesignerFolder, "launchSettings.json");
-        if (!File.Exists(launchSettingsPath))
+        var launchSettingsPath = CommonRunHelpers.GetPropertiesLaunchSettingsPath(projectDirectory, appDesignerFolder);
+        bool hasLaunchSettings = File.Exists(launchSettingsPath);
+
+        var runJsonPath = CommonRunHelpers.GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
+        bool hasRunJson = File.Exists(runJsonPath);
+
+        if (hasLaunchSettings)
+        {
+            if (hasRunJson)
+            {
+                Reporter.Output.WriteLine(string.Format(CliCommandStrings.RunCommandWarningRunJsonNotUsed, runJsonPath, launchSettingsPath).Yellow());
+            }
+        }
+        else if (hasRunJson)
+        {
+            launchSettingsPath = runJsonPath;
+        }
+        else
         {
             return null;
         }
 
-        var result = LaunchSettingsManager.TryApplyLaunchSettings(File.ReadAllText(launchSettingsPath), profileName);
+        var result = LaunchSettingsManager.TryApplyLaunchSettings(launchSettingsPath, profileName);
         if (!result.Success)
         {
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, result.FailureReason).Bold().Red());

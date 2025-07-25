@@ -405,6 +405,15 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, RunCommandParser.NoBuildOption.Name));
     }
 
+    [Fact]
+    public void ReadFromStdin_LaunchProfile()
+    {
+        new DotnetCommand(Log, "run", "-", "--launch-profile=test")
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, RunCommandParser.LaunchProfileOption.Name));
+    }
+
     /// <summary>
     /// <c>dotnet run -- -</c> should NOT read the C# file from stdin,
     /// the hyphen should be considred an app argument instead since it's after <c>--</c>.
@@ -1484,16 +1493,19 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Be(actualMode, artifactsDir);
     }
 
-    [Fact]
-    public void LaunchProfile()
+    [Theory]
+    [InlineData("Properties/launchSettings.json")]
+    [InlineData("Program.run.json")]
+    public void LaunchProfile(string relativePath)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program + """
 
             Console.WriteLine($"Message: '{Environment.GetEnvironmentVariable("Message")}'");
             """);
-        Directory.CreateDirectory(Path.Join(testInstance.Path, "Properties"));
-        File.WriteAllText(Path.Join(testInstance.Path, "Properties", "launchSettings.json"), s_launchSettings);
+        var fullPath = Path.Join(testInstance.Path, relativePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+        File.WriteAllText(fullPath, s_launchSettings);
 
         new DotnetCommand(Log, "run", "--no-launch-profile", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
@@ -1520,6 +1532,88 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOutContaining("""
                 Hello from Program
                 Message: 'TestProfileMessage2'
+                """);
+    }
+
+    /// <summary>
+    /// <c>Properties/launchSettings.json</c> takes precedence over <c>Program.run.json</c>.
+    /// </summary>
+    [Fact]
+    public void LaunchProfile_Precedence()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program + """
+
+            Console.WriteLine($"Message: '{Environment.GetEnvironmentVariable("Message")}'");
+            """);
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "Properties"));
+        string launchSettings = Path.Join(testInstance.Path, "Properties", "launchSettings.json");
+        File.WriteAllText(launchSettings, s_launchSettings.Replace("TestProfileMessage", "PropertiesLaunchSettingsJson"));
+        string runJson = Path.Join(testInstance.Path, "Program.run.json");
+        File.WriteAllText(runJson, s_launchSettings.Replace("TestProfileMessage", "ProgramRunJson"));
+
+        new DotnetCommand(Log, "run", "--no-launch-profile", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                Hello from Program
+                Message: ''
+                """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($"""
+                {string.Format(CliCommandStrings.RunCommandWarningRunJsonNotUsed, runJson, launchSettings)}
+                Hello from Program
+                Message: 'PropertiesLaunchSettingsJson1'
+                """);
+
+        new DotnetCommand(Log, "run", "-lp", "TestProfile2", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($"""
+                {string.Format(CliCommandStrings.RunCommandWarningRunJsonNotUsed, runJson, launchSettings)}
+                Hello from Program
+                Message: 'PropertiesLaunchSettingsJson2'
+                """);
+    }
+
+    /// <summary>
+    /// Each file-based app in a folder can have separate launch profile.
+    /// </summary>
+    [Fact]
+    public void LaunchProfile_Multiple()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var source = s_program + """
+
+            Console.WriteLine($"Message: '{Environment.GetEnvironmentVariable("Message")}'");
+            """;
+        File.WriteAllText(Path.Join(testInstance.Path, "First.cs"), source);
+        File.WriteAllText(Path.Join(testInstance.Path, "First.run.json"), s_launchSettings.Replace("TestProfileMessage", "First"));
+        File.WriteAllText(Path.Join(testInstance.Path, "Second.cs"), source);
+        File.WriteAllText(Path.Join(testInstance.Path, "Second.run.json"), s_launchSettings.Replace("TestProfileMessage", "Second"));
+
+        new DotnetCommand(Log, "run", "First.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                Hello from First
+                Message: 'First1'
+                """);
+
+        new DotnetCommand(Log, "run", "Second.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                Hello from Second
+                Message: 'Second1'
                 """);
     }
 
