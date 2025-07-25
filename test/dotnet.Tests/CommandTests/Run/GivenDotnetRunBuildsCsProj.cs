@@ -1025,8 +1025,6 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 // After the fix, we should get a clear error message about the file not existing
                 var stderr = result.StdErr;
                 
-                Log.WriteLine($"Actual stderr: '{stderr}'");
-                
                 // Should provide a clear error message about the project file not existing
                 var hasExpectedErrorMessage = stderr.Contains("does not exist") || 
                                               stderr.Contains("not found") || 
