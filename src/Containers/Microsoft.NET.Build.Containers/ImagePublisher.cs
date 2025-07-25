@@ -107,6 +107,10 @@ internal static class ImagePublisher
             await loadFunc(image, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
             Log.LogMessage(MessageImportance.High, Strings.ContainerBuilder_ImageUploadedToLocalDaemon, destinationImageReference, localRegistry);
         }
+        catch (UnableToDownloadFromRepositoryException)
+        {
+            Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToDownloadFromRepository), sourceImageReference);
+        }
         catch (ContainerHttpException e)
         {
             Log.LogErrorFromException(e, true);

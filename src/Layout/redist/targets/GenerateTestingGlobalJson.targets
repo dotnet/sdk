@@ -1,14 +1,14 @@
 <Project>
-  <PropertyGroup>
-    <!-- We put this in the root of the artifacts dir so that any usage (not just from ./tmp, but also from ./bin) gets redirected. -->
-    <_TestingGlobalJsonPath>$(ArtifactsDir)global.json</_TestingGlobalJsonPath>
-  </PropertyGroup>
+  <ItemGroup>
+    <_TestingGlobalJsonPath Include="$(ArtifactsBinDir)global.json" />
+    <_TestingGlobalJsonPath Include="$(TestLayoutDir)global.json" />
+  </ItemGroup>
 
   <!-- Since the dotnet binary respects sdk.paths in global.json now, and we use this in the repo root to make sure that we consistently use the repo-local
        SDK for building/etc, we need to put something in place so that tests don't use the repo-local SDK and instead use the redist SDK. -->
   <Target Name="CreateRedistGlobalJsonForTesting"
     BeforeTargets="AfterBuild"
-    Outputs="$(_TestingGlobalJsonPath)">
+    Outputs="@(_TestingGlobalJsonPath)">
     <PropertyGroup>
       <_TestingRedistDotnetPath>$(TestHostDotNetRoot.Replace('\', '\\'))</_TestingRedistDotnetPath>
     </PropertyGroup>
@@ -21,13 +21,13 @@
       <_RedistGlobalJsonLines Include="  }" />
       <_RedistGlobalJsonLines Include="}" />
     </ItemGroup>
-    <WriteLinesToFile File="$(_TestingGlobalJsonPath)"
+    <WriteLinesToFile File="%(_TestingGlobalJsonPath.Identity)"
                        Lines="@(_RedistGlobalJsonLines)"
                        Overwrite="true"
                        Encoding="utf-8"
                        WriteOnlyWhenDifferent="true" />
     <ItemGroup>
-      <FileWrites Include="$(_TestingGlobalJsonPath)" />
+      <FileWrites Include="@(_TestingGlobalJsonPath)" />
     </ItemGroup>
   </Target>
 </Project>

@@ -6,6 +6,7 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
@@ -64,7 +65,7 @@ internal class ToolUpdateCommand : CommandBase
         string message)
     {
         List<string> options = [];
-        if (parseResult.GetResult(ToolAppliedOption.UpdateAllOption) is not null)
+        if (parseResult.HasOption(ToolAppliedOption.UpdateAllOption))
         {
             options.Add(ToolAppliedOption.UpdateAllOption.Name);
         }
