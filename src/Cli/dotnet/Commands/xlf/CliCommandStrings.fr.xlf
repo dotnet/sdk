@@ -922,12 +922,12 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="CommandOptionFileDescription">
         <source>The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).</source>
-        <target state="new">The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).</target>
+        <target state="translated">Chemin de l’application basée sur des fichiers à exécuter (peut également être transmis en tant que premier argument s’il n’existe pas de projet dans le répertoire courant).</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionFileHelpName">
         <source>FILE_PATH</source>
-        <target state="new">FILE_PATH</target>
+        <target state="translated">FILE_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionLaunchProfileDescription">
@@ -1102,7 +1102,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
-        <target state="new">Removed '{0}' directives ({1}) for '{2}' from: {3}</target>
+        <target state="translated">Instructions « {0} » ({1}) supprimées pour « {2} » dans : {3}</target>
         <note>{0} is a directive kind (like '#:package'). {1} is number of removed directives.
     {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</note>
       </trans-unit>
@@ -1507,7 +1507,7 @@ Faites en sorte que les noms de profil soient distincts.</target>
       </trans-unit>
       <trans-unit id="InvalidOptionForFileBasedApp">
         <source>Cannot specify option '{0}' when operating on a file-based app.</source>
-        <target state="new">Cannot specify option '{0}' when operating on a file-based app.</target>
+        <target state="translated">Nous ne pouvons pas spécifier l’option « {0} » lors de l’utilisation d’une application basée sur des fichiers.</target>
         <note>{0} is an option name like '--source'.</note>
       </trans-unit>
       <trans-unit id="InvalidOptionForStdin">
