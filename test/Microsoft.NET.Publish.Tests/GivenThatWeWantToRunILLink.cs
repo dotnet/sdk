@@ -966,14 +966,20 @@ namespace Microsoft.NET.Publish.Tests
                     "ILLink : Trim analysis warning IL2026: System.ComponentModel.DefaultValueAttribute.DefaultValueAttribute(Type, String): Using member"
                 });
             }
-            // windows-only COM warnings
-            if (Net10Plus.Any(tfm => (string)tfm[0] == targetFramework) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (Net10Plus.Any(tfm => (string)tfm[0] == targetFramework))
             {
                 expectedWarnings.AddRange(new string[] {
-                    "ILLink : Trim analysis warning IL2045: Internal.Runtime.InteropServices.ComActivator.BasicClassFactory.CreateValidatedInterfaceType(Type, Guid&, Object): Attribute 'System.Runtime.InteropServices.ClassInterfaceAttribute' is being referenced in code but the trimmer was instructed to remove all instances of this attribute. If the attribute instances are necessary make sure to either remove the trimmer attribute XML portion which removes the attribute instances, or override the removal by using the trimmer XML descriptor to keep the attribute type (which in turn keeps all of its instances).",
-                    "ILLink : Trim analysis warning IL2045: Internal.Runtime.InteropServices.ComActivator.BasicClassFactory.CreateValidatedInterfaceType(Type, Guid&, Object): Attribute 'System.Runtime.InteropServices.ClassInterfaceAttribute' is being referenced in code but the trimmer was instructed to remove all instances of this attribute. If the attribute instances are necessary make sure to either remove the trimmer attribute XML portion which removes the attribute instances, or override the removal by using the trimmer XML descriptor to keep the attribute type (which in turn keeps all of its instances).",
-                    "ILLink : Trim analysis warning IL2045: Internal.Runtime.InteropServices.ComActivator.BasicClassFactory.CreateValidatedInterfaceType(Type, Guid&, Object): Attribute 'System.Runtime.InteropServices.ClassInterfaceAttribute' is being referenced in code but the trimmer was instructed to remove all instances of this attribute. If the attribute instances are necessary make sure to either remove the trimmer attribute XML portion which removes the attribute instances, or override the removal by using the trimmer XML descriptor to keep the attribute type (which in turn keeps all of its instances)."
+                    "ILLink : Trim analysis warning IL2067: System.ComponentModel.DefaultValueAttribute.DefaultValueAttribute(Type, String): 'typeToConvert' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'System.ComponentModel.DefaultValueAttribute"
                 });
+                // windows-only COM warnings
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    expectedWarnings.AddRange(new string[] {
+                        "ILLink : Trim analysis warning IL2045: Internal.Runtime.InteropServices.ComActivator.BasicClassFactory.CreateValidatedInterfaceType(Type, Guid&, Object): Attribute 'System.Runtime.InteropServices.ClassInterfaceAttribute' is being referenced in code but the trimmer was instructed to remove all instances of this attribute. If the attribute instances are necessary make sure to either remove the trimmer attribute XML portion which removes the attribute instances, or override the removal by using the trimmer XML descriptor to keep the attribute type (which in turn keeps all of its instances).",
+                        "ILLink : Trim analysis warning IL2045: Internal.Runtime.InteropServices.ComActivator.BasicClassFactory.CreateValidatedInterfaceType(Type, Guid&, Object): Attribute 'System.Runtime.InteropServices.ClassInterfaceAttribute' is being referenced in code but the trimmer was instructed to remove all instances of this attribute. If the attribute instances are necessary make sure to either remove the trimmer attribute XML portion which removes the attribute instances, or override the removal by using the trimmer XML descriptor to keep the attribute type (which in turn keeps all of its instances).",
+                        "ILLink : Trim analysis warning IL2045: Internal.Runtime.InteropServices.ComActivator.BasicClassFactory.CreateValidatedInterfaceType(Type, Guid&, Object): Attribute 'System.Runtime.InteropServices.ClassInterfaceAttribute' is being referenced in code but the trimmer was instructed to remove all instances of this attribute. If the attribute instances are necessary make sure to either remove the trimmer attribute XML portion which removes the attribute instances, or override the removal by using the trimmer XML descriptor to keep the attribute type (which in turn keeps all of its instances)."
+                    });
+                }
             }
 
             var testProject = CreateTestProjectForILLinkTesting(_testAssetsManager, targetFramework, projectName);

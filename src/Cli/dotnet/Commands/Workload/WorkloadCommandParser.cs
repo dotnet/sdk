@@ -159,7 +159,7 @@ internal static class WorkloadCommandParser
 
         command.Validators.Add(commandResult =>
         {
-            if (commandResult.GetResult(InfoOption) is null && commandResult.GetResult(VersionOption) is null && !commandResult.Children.Any(child => child is System.CommandLine.Parsing.CommandResult))
+            if (commandResult.HasOption(InfoOption) && commandResult.HasOption(VersionOption) && !commandResult.Children.Any(child => child is System.CommandLine.Parsing.CommandResult))
             {
                 commandResult.AddError(CliStrings.RequiredCommandNotPassed);
             }
