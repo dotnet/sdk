@@ -123,7 +123,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     /// <summary>
     /// <c>dotnet file.cs</c> is equivalent to <c>dotnet run file.cs</c>.
     /// </summary>
-    [Fact]
+    [Fact(Skip = "Waiting for VMR codeflow from runtime: https://github.com/dotnet/dotnet/pull/1563")]
     public void FilePath_WithoutRun()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -142,14 +142,34 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             {s_program}
             """);
 
+        string expectedOutput = """
+            Hello from Program
+            Release config
+            """;
+
         new DotnetCommand(Log, "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOut("""
-                Hello from Program
-                Release config
-                """);
+            .And.HaveStdOut(expectedOutput);
+
+        new DotnetCommand(Log, "./Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        new DotnetCommand(Log, $".{Path.DirectorySeparatorChar}Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        new DotnetCommand(Log, Path.Join(testInstance.Path, "Program.cs"))
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
 
         new DotnetCommand(Log, "Program.cs", "-c", "Debug")
             .WithWorkingDirectory(testInstance.Path)
@@ -165,6 +185,16 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Pass()
             .And.HaveStdOut("""
                 echo args:arg1;arg2
+                Hello from Program
+                Release config
+                """);
+
+        new DotnetCommand(Log, "Program.cs", "build")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:build
                 Hello from Program
                 Release config
                 """);
@@ -235,7 +265,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     /// <summary>
     /// Even if there is a file-based app <c>./build</c>, <c>dotnet build</c> should not execute that.
     /// </summary>
-    [Theory]
+    [Theory(Skip="Waiting for VMR codeflow from runtime: https://github.com/dotnet/dotnet/pull/1563")]
     // error MSB1003: Specify a project or solution file. The current working directory does not contain a project or solution file.
     [InlineData("build", "MSB1003")]
     // dotnet watch: Could not find a MSBuild project file in '...'. Specify which project to use with the --project option.
@@ -306,7 +336,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
     //  https://github.com/dotnet/sdk/issues/49665
     //  Failed to load /private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, error: dlopen(/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), '/System/Volumes/Preboot/Cryptexes/OS/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (no such file), '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64'))
-    [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
+    [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX, Skip = " Waiting for VMR codeflow from runtime: https://github.com/dotnet/dotnet/pull/1563")]
     public void Precedence_NuGetTool()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -373,6 +403,15 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, RunCommandParser.NoBuildOption.Name));
+    }
+
+    [Fact]
+    public void ReadFromStdin_LaunchProfile()
+    {
+        new DotnetCommand(Log, "run", "-", "--launch-profile=test")
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, RunCommandParser.LaunchProfileOption.Name));
     }
 
     /// <summary>
@@ -456,7 +495,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 """);
     }
 
-    [Fact]
+    [Fact(Skip = " Waiting for VMR codeflow from runtime: https://github.com/dotnet/dotnet/pull/1563")]
     public void ProjectInCurrentDirectory_NoRunVerb()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -1454,16 +1493,19 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Be(actualMode, artifactsDir);
     }
 
-    [Fact]
-    public void LaunchProfile()
+    [Theory]
+    [InlineData("Properties/launchSettings.json")]
+    [InlineData("Program.run.json")]
+    public void LaunchProfile(string relativePath)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program + """
 
             Console.WriteLine($"Message: '{Environment.GetEnvironmentVariable("Message")}'");
             """);
-        Directory.CreateDirectory(Path.Join(testInstance.Path, "Properties"));
-        File.WriteAllText(Path.Join(testInstance.Path, "Properties", "launchSettings.json"), s_launchSettings);
+        var fullPath = Path.Join(testInstance.Path, relativePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+        File.WriteAllText(fullPath, s_launchSettings);
 
         new DotnetCommand(Log, "run", "--no-launch-profile", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
@@ -1490,6 +1532,88 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOutContaining("""
                 Hello from Program
                 Message: 'TestProfileMessage2'
+                """);
+    }
+
+    /// <summary>
+    /// <c>Properties/launchSettings.json</c> takes precedence over <c>Program.run.json</c>.
+    /// </summary>
+    [Fact]
+    public void LaunchProfile_Precedence()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program + """
+
+            Console.WriteLine($"Message: '{Environment.GetEnvironmentVariable("Message")}'");
+            """);
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "Properties"));
+        string launchSettings = Path.Join(testInstance.Path, "Properties", "launchSettings.json");
+        File.WriteAllText(launchSettings, s_launchSettings.Replace("TestProfileMessage", "PropertiesLaunchSettingsJson"));
+        string runJson = Path.Join(testInstance.Path, "Program.run.json");
+        File.WriteAllText(runJson, s_launchSettings.Replace("TestProfileMessage", "ProgramRunJson"));
+
+        new DotnetCommand(Log, "run", "--no-launch-profile", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                Hello from Program
+                Message: ''
+                """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($"""
+                {string.Format(CliCommandStrings.RunCommandWarningRunJsonNotUsed, runJson, launchSettings)}
+                Hello from Program
+                Message: 'PropertiesLaunchSettingsJson1'
+                """);
+
+        new DotnetCommand(Log, "run", "-lp", "TestProfile2", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($"""
+                {string.Format(CliCommandStrings.RunCommandWarningRunJsonNotUsed, runJson, launchSettings)}
+                Hello from Program
+                Message: 'PropertiesLaunchSettingsJson2'
+                """);
+    }
+
+    /// <summary>
+    /// Each file-based app in a folder can have separate launch profile.
+    /// </summary>
+    [Fact]
+    public void LaunchProfile_Multiple()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var source = s_program + """
+
+            Console.WriteLine($"Message: '{Environment.GetEnvironmentVariable("Message")}'");
+            """;
+        File.WriteAllText(Path.Join(testInstance.Path, "First.cs"), source);
+        File.WriteAllText(Path.Join(testInstance.Path, "First.run.json"), s_launchSettings.Replace("TestProfileMessage", "First"));
+        File.WriteAllText(Path.Join(testInstance.Path, "Second.cs"), source);
+        File.WriteAllText(Path.Join(testInstance.Path, "Second.run.json"), s_launchSettings.Replace("TestProfileMessage", "Second"));
+
+        new DotnetCommand(Log, "run", "First.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                Hello from First
+                Message: 'First1'
+                """);
+
+        new DotnetCommand(Log, "run", "Second.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                Hello from Second
+                Message: 'Second1'
                 """);
     }
 

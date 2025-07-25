@@ -956,9 +956,9 @@ dotnet.config is a name don't translate.</note>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileDescription">
-        <source>Do not attempt to use launchSettings.json to configure the application.</source>
-        <target state="translated">launchSettings.json을 사용하여 애플리케이션을 구성하지 마세요.</target>
-        <note />
+        <source>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</source>
+        <target state="needs-review-translation">launchSettings.json을 사용하여 애플리케이션을 구성하지 마세요.</target>
+        <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
       </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
         <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
@@ -1081,11 +1081,9 @@ dotnet.config is a name don't translate.</note>
         <note />
       </trans-unit>
       <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading launchSettings.json.
-{0}</source>
-        <target state="translated">launchSettings.json을 읽는 동안 오류가 발생했습니다.
-{0}</target>
-        <note />
+        <source>An error was encountered when reading '{0}': {1}</source>
+        <target state="new">An error was encountered when reading '{0}': {1}</target>
+        <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
@@ -2641,8 +2639,10 @@ The default is to publish a framework-dependent application.</source>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
-        <source>The specified launch profile '{0}' could not be located.</source>
-        <target state="translated">지정한 '{0}' 시작 프로필을 찾을 수 없습니다.</target>
+        <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
+{1}</source>
+        <target state="new">Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
+{1}</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionMultipleProjects">
@@ -2682,6 +2682,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <source>'{0}' is not a valid project file.</source>
         <target state="translated">'{0}'은(는) 유효한 프로젝트 파일이 아닙니다.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="RunCommandWarningRunJsonNotUsed">
+        <source>Warning: Settings from '{0}' are not used because '{1}' has precedence.</source>
+        <target state="new">Warning: Settings from '{0}' are not used because '{1}' has precedence.</target>
+        <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
       </trans-unit>
       <trans-unit id="RunConfigurationOptionDescription">
         <source>The configuration to run for. The default for most projects is 'Debug'.</source>

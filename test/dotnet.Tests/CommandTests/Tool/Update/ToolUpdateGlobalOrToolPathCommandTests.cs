@@ -106,7 +106,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenPassingRestoreActionConfigOptions()
         {
-            var parseResult = Parser.Instance.Parse($"dotnet tool update -g {_packageId} --ignore-failed-sources");
+            var parseResult = Parser.Parse($"dotnet tool update -g {_packageId} --ignore-failed-sources");
             var toolUpdateCommand = new ToolUpdateGlobalOrToolPathCommand(parseResult);
             toolUpdateCommand._toolInstallGlobalOrToolPathCommand.restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
         }
@@ -179,7 +179,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
 
-            ParseResult result = Parser.Instance.Parse("dotnet tool update " + $"-g {_packageId}");
+            ParseResult result = Parser.Parse("dotnet tool update " + $"-g {_packageId}");
 
             var toolUpdateGlobalOrToolPathCommand = new ToolUpdateGlobalOrToolPathCommand(
                 result,
@@ -360,7 +360,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
             _reporter.Lines.Clear();
 
-            ParseResult result = Parser.Instance.Parse("dotnet tool update " + $"-g {_packageId}");
+            ParseResult result = Parser.Parse("dotnet tool update " + $"-g {_packageId}");
 
             var command = new ToolUpdateGlobalOrToolPathCommand(
                 result,
@@ -387,7 +387,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
             _reporter.Lines.Clear();
 
-            ParseResult result = Parser.Instance.Parse("dotnet tool update " + $"-g {_packageId}");
+            ParseResult result = Parser.Parse("dotnet tool update " + $"-g {_packageId}");
 
             var command = new ToolUpdateGlobalOrToolPathCommand(
                 result,
@@ -425,7 +425,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Clear();
 
             string options = $"-g {_packageId}";
-            ParseResult result = Parser.Instance.Parse("dotnet tool update " + options);
+            ParseResult result = Parser.Parse("dotnet tool update " + options);
 
             var command = new ToolUpdateGlobalOrToolPathCommand(
                 result,
@@ -439,7 +439,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             string ExpectedCommandPath()
             {
-                
+
                 return Path.Combine(
                     _shimsDirectory,
                     "SimulatorCommand" + extension);
@@ -448,7 +448,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         private ToolInstallGlobalOrToolPathCommand CreateInstallCommand(string options, string packageId = null)
         {
-            ParseResult result = Parser.Instance.Parse("dotnet tool install " + options);
+            ParseResult result = Parser.Parse("dotnet tool install " + options);
 
             return new ToolInstallGlobalOrToolPathCommand(
                 result,
@@ -461,7 +461,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         private ToolUpdateGlobalOrToolPathCommand CreateUpdateCommand(string options)
         {
-            ParseResult result = Parser.Instance.Parse("dotnet tool update " + options);
+            ParseResult result = Parser.Parse("dotnet tool update " + options);
 
             return new ToolUpdateGlobalOrToolPathCommand(
                 result,
