@@ -34,12 +34,16 @@
 /test/dotnet-format.UnitTests @arunchndr
 
 # Area-NuGet
-/src/Cli/dotnet/commands/dotnet-add/dotnet-add-package @dotnet/nuget-team
-/test/dotnet-add-package.Tests @dotnet/nuget-team
-/src/Cli/dotnet/commands/dotnet-nuget @dotnet/nuget-team
-/test/dotnet-nuget.UnitTests @dotnet/nuget-team
-/src/Cli/dotnet/commands/dotnet-list/dotnet-list-package @dotnet/nuget-team
-/test/dotnet-list-package.Tests @dotnet/nuget-team
+/src/Cli/dotnet/Commands/NuGet @dotnet/nuget-team
+/src/Cli/dotnet/Commands/Pack @dotnet/nuget-team
+/src/Cli/dotnet/Commands/Package @dotnet/nuget-team
+/src/Cli/dotnet/Commands/Restore @dotnet/nuget-team
+/test/Microsoft.NET.Restore.Tests @dotnet/nuget-team
+/test/Microsoft.NET.Pack.Tests @dotnet/nuget-team
+/test/dotnet.Tests/CommandTests/NuGet @dotnet/nuget-team
+/test/dotnet.Tests/CommandTests/Pack @dotnet/nuget-team
+/test/dotnet.Tests/CommandTests/Package @dotnet/nuget-team
+/test/dotnet.Tests/CommandTests/Restore @dotnet/nuget-team
 
 # Area-FSharp
 /src/Cli/dotnet/commands/dotnet-fsi @dotnet/fsharp

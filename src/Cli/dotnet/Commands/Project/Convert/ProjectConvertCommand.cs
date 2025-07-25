@@ -28,8 +28,8 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         string targetDirectory = DetermineOutputDirectory(file);
 
         // Find directives (this can fail, so do this before creating the target directory).
-        var sourceFile = VirtualProjectBuildingCommand.LoadSourceFile(file);
-        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !_force, errors: null);
+        var sourceFile = SourceFile.Load(file);
+        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !_force, DiagnosticBag.ThrowOnFirst());
 
         // Find other items to copy over, e.g., default Content items like JSON files in Web apps.
         var includeItems = FindIncludedItems().ToList();

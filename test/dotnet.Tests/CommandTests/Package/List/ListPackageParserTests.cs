@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void ListPackageCanForwardInteractiveFlag()
         {
-            var result = Parser.Instance.Parse("dotnet list package --interactive");
+            var result = Parser.Parse(["dotnet", "list", "package", "--interactive"]);
 
             result.OptionValuesToBeForwarded(ListPackageCommandParser.GetCommand()).Should().ContainSingle("--interactive");
             result.Errors.Should().BeEmpty();
@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [InlineData("-v", "")]
         public void ListPackageRejectsInvalidVerbosityFlags(string inputOption, string value)
         {
-            var result = Parser.Instance.Parse($"dotnet list package {inputOption} {value}");
+            var result = Parser.Parse(["dotnet", "list", "package", inputOption, value]);
 
             result.Errors.Should().NotBeEmpty();
         }
@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [InlineData("-v", "QUIET")]
         public void ListPackageCanForwardVerbosityFlag(string inputOption, string value)
         {
-            var result = Parser.Instance.Parse($"dotnet list package {inputOption} {value}");
+            var result = Parser.Parse(["dotnet", "list", "package", inputOption, value]);
 
             result
                 .OptionValuesToBeForwarded(ListPackageCommandParser.GetCommand())
@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void ListPackageDoesNotForwardVerbosityByDefault()
         {
-            var result = Parser.Instance.Parse($"dotnet list package");
+            var result = Parser.Parse(["dotnet", "list", "package"]);
 
             result
                 .OptionValuesToBeForwarded(ListPackageCommandParser.GetCommand())

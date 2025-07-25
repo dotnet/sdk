@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public void InstallAndRunToolGlobal()
         {
             var toolSettings = new TestToolBuilder.TestToolSettings();
-            string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings);
+            string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings, collectBinlogs: true);
 
             var testDirectory = _testAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
