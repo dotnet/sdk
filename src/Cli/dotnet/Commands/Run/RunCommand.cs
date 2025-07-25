@@ -131,7 +131,7 @@ public class RunCommand
         {
             if (NoCache)
             {
-                throw new GracefulException(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name);
+                throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name);
             }
 
             if (EntryPointFileFullPath is not null)
@@ -447,8 +447,16 @@ public class RunCommand
                     project.GetPropertyValue("OutputType")));
     }
 
-    private static string? DiscoverProjectFilePath(string? projectFileOrDirectoryPath, bool readCodeFromStdin, ref string[] args, out string? entryPointFilePath)
+    private static string? DiscoverProjectFilePath(string? filePath, string? projectFileOrDirectoryPath, bool readCodeFromStdin, ref string[] args, out string? entryPointFilePath)
     {
+        // If `--file` is explicitly specified, just use that.
+        if (filePath != null)
+        {
+            Debug.Assert(projectFileOrDirectoryPath == null);
+            entryPointFilePath = Path.GetFullPath(filePath);
+            return null;
+        }
+
         bool emptyProjectOption = false;
         if (string.IsNullOrWhiteSpace(projectFileOrDirectoryPath))
         {
@@ -549,9 +557,20 @@ public class RunCommand
                 .Any(static t => t is { Type: TokenType.Argument, Value: "-" });
 
         string? projectOption = parseResult.GetValue(RunCommandParser.ProjectOption);
+        string? fileOption = parseResult.GetValue(RunCommandParser.FileOption);
+
+        if (projectOption != null && fileOption != null)
+        {
+            throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandParser.ProjectOption.Name, RunCommandParser.FileOption.Name);
+        }
 
         string[] args = [.. nonBinLogArgs];
-        string? projectFilePath = DiscoverProjectFilePath(projectOption, readCodeFromStdin, ref args, out string? entryPointFilePath);
+        string? projectFilePath = DiscoverProjectFilePath(
+            filePath: fileOption,
+            projectFileOrDirectoryPath: projectOption,
+            readCodeFromStdin: readCodeFromStdin,
+            ref args,
+            out string? entryPointFilePath);
 
         bool noBuild = parseResult.HasOption(RunCommandParser.NoBuildOption);
 

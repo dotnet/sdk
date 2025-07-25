@@ -18,7 +18,7 @@ internal partial class FrameworkPackages
             { "System.Formats.Asn1", "6.0.0" },
             { "System.Net.Http.Json", "6.0.0" },
             { "System.Reflection.Metadata", "6.0.0" },
-            { "System.Runtime.CompilerServices.Unsafe", "6.0.0" },
+            { "System.Runtime.CompilerServices.Unsafe", "6.1.2" },
             { "System.Security.AccessControl", "6.0.0" },
             { "System.Text.Encoding.CodePages", "6.0.0" },
             { "System.Text.Encodings.Web", "6.0.0" },
