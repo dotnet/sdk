@@ -123,7 +123,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     /// <summary>
     /// <c>dotnet file.cs</c> is equivalent to <c>dotnet run file.cs</c>.
     /// </summary>
-    [Fact(Skip = "Waiting for VMR codeflow from runtime: https://github.com/dotnet/dotnet/pull/1563")]
+    [Fact]
     public void FilePath_WithoutRun()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -225,7 +225,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     /// <summary>
     /// Even if there is a file-based app <c>./build</c>, <c>dotnet build</c> should not execute that.
     /// </summary>
-    [Theory(Skip="Waiting for VMR codeflow from runtime: https://github.com/dotnet/dotnet/pull/1563")]
+    [Theory]
     // error MSB1003: Specify a project or solution file. The current working directory does not contain a project or solution file.
     [InlineData("build", "MSB1003")]
     // dotnet watch: Could not find a MSBuild project file in '...'. Specify which project to use with the --project option.
@@ -443,42 +443,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOutContaining("""
                 echo args:./App.csproj
                 Hello from App
-                """);
-    }
-
-    [Fact(Skip = " Waiting for VMR codeflow from runtime: https://github.com/dotnet/dotnet/pull/1563")]
-    public void ProjectInCurrentDirectory_NoRunVerb()
-    {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
-        Directory.CreateDirectory(Path.Join(testInstance.Path, "file"));
-        File.WriteAllText(Path.Join(testInstance.Path, "file", "Program.cs"), s_program);
-        Directory.CreateDirectory(Path.Join(testInstance.Path, "proj"));
-        File.WriteAllText(Path.Join(testInstance.Path, "proj", "App.csproj"), s_consoleProject);
-
-        new DotnetCommand(Log, "../file/Program.cs")
-            .WithWorkingDirectory(Path.Join(testInstance.Path, "proj"))
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOutContaining("""
-                Hello from Program
-                """);
-    }
-
-    [Fact]
-    public void ProjectInCurrentDirectory_FileOption()
-    {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
-        Directory.CreateDirectory(Path.Join(testInstance.Path, "file"));
-        File.WriteAllText(Path.Join(testInstance.Path, "file", "Program.cs"), s_program);
-        Directory.CreateDirectory(Path.Join(testInstance.Path, "proj"));
-        File.WriteAllText(Path.Join(testInstance.Path, "proj", "App.csproj"), s_consoleProject);
-
-        new DotnetCommand(Log, "run", "--file", "../file/Program.cs")
-            .WithWorkingDirectory(Path.Join(testInstance.Path, "proj"))
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOutContaining("""
-                Hello from Program
                 """);
     }
 
