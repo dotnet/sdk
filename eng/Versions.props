@@ -31,13 +31,6 @@
     <FlagNetStandard1XDependencies Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</FlagNetStandard1XDependencies>
     <!-- This property is only used in the dotnet test integration tests. -->
     <MicrosoftTestingPlatformVersion>1.8.0-preview.25373.2</MicrosoftTestingPlatformVersion>
-    <NuGetCommandsVersion>7.0.0-preview.1.46</NuGetCommandsVersion>
-    <NuGetCredentialsVersion>7.0.0-preview.1.46</NuGetCredentialsVersion>
-    <NuGetDependencyResolverCoreVersion>7.0.0-preview.1.46</NuGetDependencyResolverCoreVersion>
-    <NuGetLibraryModelVersion>7.0.0-preview.1.46</NuGetLibraryModelVersion>
-    <NuGetProtocolVersion>7.0.0-preview.1.46</NuGetProtocolVersion>
-    <MicrosoftWindowsDesktopAppRefVersion>10.0.0-preview.7.25374.102</MicrosoftWindowsDesktopAppRefVersion>
-    <MicrosoftWindowsDesktopAppInternalVersion>10.0.0-preview.7.25374.102</MicrosoftWindowsDesktopAppInternalVersion>
   </PropertyGroup>
   <PropertyGroup Label="Servicing version information">
     <VersionFeature21>30</VersionFeature21>
@@ -282,10 +275,6 @@
     <EmscriptenVersionNet8>3.1.34</EmscriptenVersionNet8>
     <EmscriptenVersionNet7>3.1.12</EmscriptenVersionNet7>
     <EmscriptenVersionNet6>2.0.23</EmscriptenVersionNet6>
-  </PropertyGroup>
-  <PropertyGroup>
-    <!-- Dependencies from https://github.com/dotnet/wpf -->
-    <MicrosoftNETSdkWindowsDesktopPackageVersion>10.0.0-preview.7.25374.102</MicrosoftNETSdkWindowsDesktopPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Infrastructure and test only dependencies">
     <VersionToolsVersion>2.2.0-beta.19072.10</VersionToolsVersion>
