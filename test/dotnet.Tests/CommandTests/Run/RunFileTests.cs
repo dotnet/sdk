@@ -2229,7 +2229,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 hasErrors = true;
             }
         }
-        hasErrors.Should().BeFalse();
+        hasErrors.Should().BeFalse("some file contents do not match, see the test output for details");
     }
 
     [Fact]

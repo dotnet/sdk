@@ -264,6 +264,7 @@ internal sealed partial class CSharpCompilerCommand
                       "System.Data.DataSet.XmlSerializationIsSupported": false,
                       "System.Diagnostics.Tracing.EventSource.IsSupported": false,
                       "System.Linq.Enumerable.IsSizeOptimized": true,
+                      "System.Net.SocketsHttpHandler.Http3Support": false,
                       "System.Reflection.Metadata.MetadataUpdater.IsSupported": false,
                       "System.Resources.ResourceManager.AllowCustomResourceTypes": false,
                       "System.Resources.UseSystemResourceKeys": false,
