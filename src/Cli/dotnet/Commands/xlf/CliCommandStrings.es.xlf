@@ -1731,9 +1731,14 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
         <target state="translated">Instalando la versión de carga de trabajo {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoBinaryLogBecauseRunningJustCsc">
+        <source>Warning: Binary log option was specified but MSBuild will be skipped because running just csc is enough. Specify '--no-cache' to force full build.</source>
+        <target state="new">Warning: Binary log option was specified but MSBuild will be skipped because running just csc is enough. Specify '--no-cache' to force full build.</target>
+        <note>{Locked="--no-cache"}{Locked="MSBuild"}{Locked="csc"}</note>
+      </trans-unit>
       <trans-unit id="NoBinaryLogBecauseUpToDate">
-        <source>Warning: Binary log option was specified but build will be skipped because output is up to date, specify '--no-cache' to force build.</source>
-        <target state="translated">Advertencia: Se especificó la opción de registro binario, pero se omitirá la compilación porque la salida está actualizada, especifique “--no-cache” para forzar la compilación.</target>
+        <source>Warning: Binary log option was specified but build will be skipped because output is up to date. Specify '--no-cache' to force build.</source>
+        <target state="needs-review-translation">Advertencia: Se especificó la opción de registro binario, pero se omitirá la compilación porque la salida está actualizada, especifique “--no-cache” para forzar la compilación.</target>
         <note>{Locked="--no-cache"}</note>
       </trans-unit>
       <trans-unit id="NoBuildOptionDescription">
