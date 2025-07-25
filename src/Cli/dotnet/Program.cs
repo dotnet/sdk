@@ -129,7 +129,7 @@ public class Program
         ParseResult parseResult;
         using (new PerformanceMeasurement(performanceData, "Parse Time"))
         {
-            parseResult = Parser.Instance.Parse(args);
+            parseResult = Parser.Parse(args);
 
             // Avoid create temp directory with root permission and later prevent access in non sudo
             // This method need to be run very early before temp folder get created
@@ -286,8 +286,7 @@ public class Program
         {
             // If we didn't match any built-in commands, and a C# file path is the first argument,
             // parse as `dotnet run --file file.cs ..rest_of_args` instead.
-            if (parseResult.CommandResult.Command is RootCommand
-                && parseResult.GetValue(Parser.DotnetSubCommand) is { } unmatchedCommandOrFile
+            if (parseResult.GetValue(Parser.DotnetSubCommand) is { } unmatchedCommandOrFile
                 && VirtualProjectBuildingCommand.IsValidEntryPointPath(unmatchedCommandOrFile))
             {
                 List<string> otherTokens = new(parseResult.Tokens.Count - 1);
@@ -298,7 +297,8 @@ public class Program
                         otherTokens.Add(token.Value);
                     }
                 }
-                parseResult = Parser.Instance.Parse(["run", "--file", unmatchedCommandOrFile, .. otherTokens]);
+
+                parseResult = Parser.Parse(["run", "--file", unmatchedCommandOrFile, .. otherTokens]);
 
                 InvokeBuiltInCommand(parseResult, out var exitCode);
                 return exitCode;
@@ -315,7 +315,7 @@ public class Program
 
             try
             {
-                exitCode = parseResult.Invoke();
+                exitCode = Parser.Invoke(parseResult);
                 exitCode = AdjustExitCode(parseResult, exitCode);
             }
             catch (Exception exception)
