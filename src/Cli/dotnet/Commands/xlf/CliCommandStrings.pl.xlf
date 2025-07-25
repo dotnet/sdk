@@ -922,12 +922,12 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="CommandOptionFileDescription">
         <source>The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).</source>
-        <target state="new">The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).</target>
+        <target state="translated">Ścieżka do aplikacji opartej na plikach do uruchomienia (można ją również przekazać jako pierwszy argument, jeśli w bieżącym katalogu nie ma projektu).</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionFileHelpName">
         <source>FILE_PATH</source>
-        <target state="new">FILE_PATH</target>
+        <target state="translated">FILE_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionLaunchProfileDescription">
@@ -957,7 +957,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileDescription">
         <source>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</source>
-        <target state="needs-review-translation">Nie próbuj konfigurować aplikacji za pomocą pliku launchSettings.json.</target>
+        <target state="new">Do not attempt to use launchSettings.json or [app].run.json to configure the application.</target>
         <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
       </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
@@ -1102,7 +1102,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
-        <target state="new">Removed '{0}' directives ({1}) for '{2}' from: {3}</target>
+        <target state="translated">Usunięto dyrektywy „{0}” ({1}) dla „{2}” z pliku: {3}</target>
         <note>{0} is a directive kind (like '#:package'). {1} is number of removed directives.
     {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</note>
       </trans-unit>
@@ -1507,7 +1507,7 @@ Rozróżnij nazwy profilów.</target>
       </trans-unit>
       <trans-unit id="InvalidOptionForFileBasedApp">
         <source>Cannot specify option '{0}' when operating on a file-based app.</source>
-        <target state="new">Cannot specify option '{0}' when operating on a file-based app.</target>
+        <target state="translated">Nie można określić opcji „{0}” podczas pracy z aplikacją opartą na plikach.</target>
         <note>{0} is an option name like '--source'.</note>
       </trans-unit>
       <trans-unit id="InvalidOptionForStdin">
@@ -1738,7 +1738,7 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
       </trans-unit>
       <trans-unit id="NoBinaryLogBecauseUpToDate">
         <source>Warning: Binary log option was specified but build will be skipped because output is up to date. Specify '--no-cache' to force build.</source>
-        <target state="needs-review-translation">Ostrzeżenie: określono opcję dziennika binarnego, ale kompilacja zostanie pominięta, ponieważ dane wyjściowe są aktualne. Określ wartość „--no-cache”, aby wymusić kompilację.</target>
+        <target state="new">Warning: Binary log option was specified but build will be skipped because output is up to date. Specify '--no-cache' to force build.</target>
         <note>{Locked="--no-cache"}</note>
       </trans-unit>
       <trans-unit id="NoBuildOptionDescription">

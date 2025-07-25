@@ -453,7 +453,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="FileArgumentDescription">
         <source>The file-based app to operate on.</source>
-        <target state="new">The file-based app to operate on.</target>
+        <target state="translated">작동할 파일 기반 앱입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="FormatVersionIsHigher">
@@ -853,12 +853,12 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ProjectOrFileArgumentDescription">
         <source>The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file.</source>
-        <target state="new">The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file.</target>
+        <target state="translated">작업할 프로젝트 파일 또는 C# 파일 기반 앱입니다. 파일을 지정하지 않으면 명령이 현재 디렉터리에서 프로젝트 파일을 검색합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectOrFileArgumentName">
         <source>PROJECT | FILE</source>
-        <target state="new">PROJECT | FILE</target>
+        <target state="translated">프로젝트 | 파일</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectReference">

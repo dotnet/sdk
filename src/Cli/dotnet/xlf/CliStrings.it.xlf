@@ -453,7 +453,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="FileArgumentDescription">
         <source>The file-based app to operate on.</source>
-        <target state="new">The file-based app to operate on.</target>
+        <target state="translated">L'app basata su file su cui eseguire operazioni.</target>
         <note />
       </trans-unit>
       <trans-unit id="FormatVersionIsHigher">
@@ -853,12 +853,12 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ProjectOrFileArgumentDescription">
         <source>The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file.</source>
-        <target state="new">The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file.</target>
+        <target state="translated">Il file di progetto o l'app basata su file C# su cui eseguire operazioni. Se non si specifica un file, il comando cercherà un progetto o una soluzione nella directory corrente.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectOrFileArgumentName">
         <source>PROJECT | FILE</source>
-        <target state="new">PROJECT | FILE</target>
+        <target state="translated">FILE DI | PROGETTO</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectReference">

@@ -922,12 +922,12 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="CommandOptionFileDescription">
         <source>The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).</source>
-        <target state="new">The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).</target>
+        <target state="translated">실행할 파일 기반 앱의 경로입니다(현재 디렉터리에 프로젝트가 없는 경우 첫 번째 인수로도 전달할 수 있습니다).</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionFileHelpName">
         <source>FILE_PATH</source>
-        <target state="new">FILE_PATH</target>
+        <target state="translated">FILE_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionLaunchProfileDescription">
@@ -957,7 +957,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileDescription">
         <source>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</source>
-        <target state="needs-review-translation">launchSettings.json을 사용하여 애플리케이션을 구성하지 마세요.</target>
+        <target state="new">Do not attempt to use launchSettings.json or [app].run.json to configure the application.</target>
         <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
       </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
@@ -1102,7 +1102,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
-        <target state="new">Removed '{0}' directives ({1}) for '{2}' from: {3}</target>
+        <target state="translated">다음에서 '{2}'에 대한 '{0}' 지시문({1})을 제거했습니다. {3}</target>
         <note>{0} is a directive kind (like '#:package'). {1} is number of removed directives.
     {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</note>
       </trans-unit>
@@ -1507,7 +1507,7 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="InvalidOptionForFileBasedApp">
         <source>Cannot specify option '{0}' when operating on a file-based app.</source>
-        <target state="new">Cannot specify option '{0}' when operating on a file-based app.</target>
+        <target state="translated">파일 기반 앱에서 작업할 때 '{0}' 옵션을 지정할 수 없습니다.</target>
         <note>{0} is an option name like '--source'.</note>
       </trans-unit>
       <trans-unit id="InvalidOptionForStdin">
@@ -1738,7 +1738,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoBinaryLogBecauseUpToDate">
         <source>Warning: Binary log option was specified but build will be skipped because output is up to date. Specify '--no-cache' to force build.</source>
-        <target state="needs-review-translation">경고: 이진 로그 옵션이 지정되었지만 출력이 최신 상태이므로 빌드를 건너뜁니다. 빌드를 강제로 진행하려면 '--no-cache'를 지정하세요.</target>
+        <target state="new">Warning: Binary log option was specified but build will be skipped because output is up to date. Specify '--no-cache' to force build.</target>
         <note>{Locked="--no-cache"}</note>
       </trans-unit>
       <trans-unit id="NoBuildOptionDescription">
