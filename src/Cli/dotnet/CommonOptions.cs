@@ -245,23 +245,25 @@ internal static class CommonOptions
     private static bool IsCIEnvironmentOrRedirected() =>
         new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected;
 
+    public const string InteractiveOptionName = "--interactive";
+
     /// <summary>
     /// A 'template' for interactive usage across the whole dotnet CLI. Use this as a base and then specialize it for your use cases.
     /// Despite being a 'forwarded option' there is no default forwarding configured, so if you want forwarding you can add it on a per-command basis.
     /// </summary>
     /// <param name="acceptArgument">Whether the option accepts an boolean argument. If false, the option will be a flag.</param>
     /// <remarks>
-    // If not set by a user, this will default to true if the user is not in a CI environment as detected by <see cref="Telemetry.CIEnvironmentDetectorForTelemetry.IsCIEnvironment"/>.
-    // If this is set to function as a flag, then there is no simple user-provided way to circumvent the behavior.
-    // </remarks>
+    /// If not set by a user, this will default to true if the user is not in a CI environment as detected by <see cref="Telemetry.CIEnvironmentDetectorForTelemetry.IsCIEnvironment"/>.
+    /// If this is set to function as a flag, then there is no simple user-provided way to circumvent the behavior.
+    /// </remarks>
     public static ForwardedOption<bool> InteractiveOption(bool acceptArgument = false) =>
-         new("--interactive")
-         {
-             Description = CliStrings.CommandInteractiveOptionDescription,
-             Arity = acceptArgument ? ArgumentArity.ZeroOrOne : ArgumentArity.Zero,
-             // this default is called when no tokens/options are passed on the CLI args
-             DefaultValueFactory = (ar) => !IsCIEnvironmentOrRedirected()
-         };
+        new(InteractiveOptionName)
+        {
+            Description = CliStrings.CommandInteractiveOptionDescription,
+            Arity = acceptArgument ? ArgumentArity.ZeroOrOne : ArgumentArity.Zero,
+            // this default is called when no tokens/options are passed on the CLI args
+            DefaultValueFactory = (ar) => !IsCIEnvironmentOrRedirected()
+        };
 
     public static Option<bool> InteractiveMsBuildForwardOption = InteractiveOption(acceptArgument: true).ForwardAsSingle(b => $"--property:NuGetInteractive={(b ? "true" : "false")}");
 
@@ -271,7 +273,7 @@ internal static class CommonOptions
             Description = CliStrings.DisableBuildServersOptionDescription,
             Arity = ArgumentArity.Zero
         }
-        .ForwardAsMany(_ => ["--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false"]);
+        .ForwardIfEnabled(["--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false"]);
 
     public static Option<string> ArchitectureOption =
         new ForwardedOption<string>("--arch", "-a")
@@ -309,7 +311,7 @@ internal static class CommonOptions
         {
             Description = CliStrings.SelfContainedOptionDescription
         }
-        .SetForwardingFunction(ForwardSelfContainedOptions);
+        .ForwardIfEnabled([$"--property:SelfContained=true", "--property:_CommandLineDefinedSelfContained=true"]);
 
     public static Option<bool> NoSelfContainedOption =
         new ForwardedOption<bool>("--no-self-contained")
@@ -317,7 +319,7 @@ internal static class CommonOptions
             Description = CliStrings.FrameworkDependentOptionDescription,
             Arity = ArgumentArity.Zero
         }
-        .SetForwardingFunction((_, p) => ForwardSelfContainedOptions(false, p));
+        .ForwardIfEnabled([$"--property:SelfContained=false", "--property:_CommandLineDefinedSelfContained=true"]);
 
     public static readonly Option<IReadOnlyDictionary<string, string>> EnvOption = new("--environment", "-e")
     {
@@ -443,12 +445,6 @@ internal static class CommonOptions
     private static string GetOsFromRid(string rid) => rid.Substring(0, rid.LastIndexOf("-", StringComparison.InvariantCulture));
 
     private static string GetArchFromRid(string rid) => rid.Substring(rid.LastIndexOf("-", StringComparison.InvariantCulture) + 1, rid.Length - rid.LastIndexOf("-", StringComparison.InvariantCulture) - 1);
-
-    private static IEnumerable<string> ForwardSelfContainedOptions(bool isSelfContained, ParseResult parseResult)
-    {
-        IEnumerable<string> selfContainedProperties = [$"--property:SelfContained={isSelfContained}", "--property:_CommandLineDefinedSelfContained=true"];
-        return selfContainedProperties;
-    }
 
     internal static Option<T> AddCompletions<T>(this Option<T> option, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
     {

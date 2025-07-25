@@ -259,6 +259,46 @@ Przeszukane ścieżki: „{1}”, „{2}”.</target>
         <target state="translated">Wyczyść dane wyjściowe kompilacji projektu platformy .NET.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsCommandDescription">
+        <source>Removes artifacts created for file-based apps</source>
+        <target state="translated">Usuwa artefakty utworzone dla aplikacji opartych na plikach</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsDays">
+        <source>How many days an artifact folder needs to be unused in order to be removed</source>
+        <target state="translated">Ile dni folder artefaktów musi pozostawać nieużywany, aby został usunięty</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsDirectoryNotFound">
+        <source>Warning: Artifacts directory does not exist: {0}</source>
+        <target state="translated">Ostrzeżenie: katalog artefaktów nie istnieje — {0}</target>
+        <note>{0} is directory path.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsDryRun">
+        <source>Determines changes without actually modifying the file system</source>
+        <target state="translated">Określa zmiany bez faktycznej modyfikacji systemu plików</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsErrorRemovingFolder">
+        <source>Error removing folder '{0}': {1}</source>
+        <target state="translated">Błąd podczas usuwania folderu „{0}”: {1}</target>
+        <note>{0} is folder path. {1} is inner error message.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsScanning">
+        <source>Scanning for folders to remove in: {0}</source>
+        <target state="translated">Skanowanie w poszukiwaniu folderów do usunięcia w ścieżce {0}</target>
+        <note>{0} is directory path.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsTotalFoldersRemoved">
+        <source>Total folders removed: {0}</source>
+        <target state="translated">Łączna liczba usuniętych folderów: {0}</target>
+        <note>{0} is count.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsWouldRemoveFolders">
+        <source>Would remove folders: {0}</source>
+        <target state="translated">Usunie następującą liczbę folderów: {0}</target>
+        <note>{0} is count.</note>
+      </trans-unit>
       <trans-unit id="CleanFrameworkOptionDescription">
         <source>The target framework to clean for. The target framework must also be specified in the project file.</source>
         <target state="translated">Platforma docelowa czyszczenia. Platforma docelowa musi być również określona w pliku projektu.</target>
@@ -880,6 +920,16 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">COMMAND_NAME</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionFileDescription">
+        <source>The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).</source>
+        <target state="new">The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionFileHelpName">
+        <source>FILE_PATH</source>
+        <target state="new">FILE_PATH</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionLaunchProfileDescription">
         <source>The name of the launch profile (if any) to use when launching the application.</source>
         <target state="translated">Nazwa profilu uruchamiania (jeśli istnieje), który ma być używany podczas uruchamiania aplikacji.</target>
@@ -1049,6 +1099,12 @@ dotnet.config is a name don't translate.</note>
         <source>Enables diagnostic output.</source>
         <target state="translated">Włącza dane wyjściowe diagnostyki.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="DirectivesRemoved">
+        <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
+        <target state="new">Removed '{0}' directives ({1}) for '{2}' from: {3}</target>
+        <note>{0} is a directive kind (like '#:package'). {1} is number of removed directives.
+    {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</note>
       </trans-unit>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
@@ -1449,10 +1505,10 @@ Rozróżnij nazwy profilów.</target>
         <target state="translated">Określony plik musi istnieć i mieć rozszerzenie pliku „.cs”: „{0}”</target>
         <note>{Locked=".cs"}</note>
       </trans-unit>
-      <trans-unit id="InvalidOptionCombination">
-        <source>Cannot combine option '{0}' and '{1}'.</source>
-        <target state="translated">Nie można połączyć opcji „{0}” i „{1}”.</target>
-        <note>{0} and {1} are option names like '--no-build'.</note>
+      <trans-unit id="InvalidOptionForFileBasedApp">
+        <source>Cannot specify option '{0}' when operating on a file-based app.</source>
+        <target state="new">Cannot specify option '{0}' when operating on a file-based app.</target>
+        <note>{0} is an option name like '--source'.</note>
       </trans-unit>
       <trans-unit id="InvalidOptionForStdin">
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
@@ -2287,6 +2343,46 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
         <source>Convert a file-based program to a project-based program.</source>
         <target state="translated">Konwertuj program oparty na plikach na program oparty na projekcie.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertAskForOutputDirectory">
+        <source>Specify the output directory ({0}):</source>
+        <target state="translated">Określ katalog wyjściowy ({0}):</target>
+        <note>{0} is the default value</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertDryRun">
+        <source>Determines changes without actually modifying the file system</source>
+        <target state="translated">Określa zmiany bez faktycznej modyfikacji systemu plików</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldConvertFile">
+        <source>Dry run: would remove file-level directives from file: {0}</source>
+        <target state="translated">Przebieg próbny: spowoduje usunięcie dyrektyw na poziomie pliku z pliku: {0}</target>
+        <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldCopyFile">
+        <source>Dry run: would copy file '{0}' to '{1}'.</source>
+        <target state="translated">Przebieg próbny: spowoduje skopiowanie pliku „{0}” do „{1}”.</target>
+        <note>{0} and {1} are file full paths.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldCreateDirectory">
+        <source>Dry run: would create directory: {0}</source>
+        <target state="translated">Przebieg próbny: spowoduje utworzenie katalogu: {0}</target>
+        <note>{0} is the directory full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldCreateFile">
+        <source>Dry run: would create file: {0}</source>
+        <target state="translated">Przebieg próbny: spowoduje utworzenie pliku: {0}</target>
+        <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldDeleteFile">
+        <source>Dry run: would delete file: {0}</source>
+        <target state="translated">Przebieg próbny: spowoduje usunięcie pliku: {0}</target>
+        <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldMoveFile">
+        <source>Dry run: would move file '{0}' to '{1}'.</source>
+        <target state="translated">Przebieg próbny: spowoduje przeniesienie pliku „{0}” do „{1}”.</target>
+        <note>{0} and {1} are file full paths.</note>
       </trans-unit>
       <trans-unit id="ProjectManifest">
         <source>PROJECT_MANIFEST</source>

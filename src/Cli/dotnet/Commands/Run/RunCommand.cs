@@ -131,13 +131,15 @@ public class RunCommand
         {
             if (NoCache)
             {
-                throw new GracefulException(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name);
+                throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name);
             }
 
             if (EntryPointFileFullPath is not null)
             {
                 Debug.Assert(!ReadCodeFromStdin);
-                projectFactory = CreateVirtualCommand().CreateProjectInstance;
+                var command = CreateVirtualCommand();
+                command.MarkArtifactsFolderUsed();
+                projectFactory = command.CreateProjectInstance;
             }
         }
 
@@ -465,8 +467,16 @@ public class RunCommand
                     project.GetPropertyValue("OutputType")));
     }
 
-    private static string? DiscoverProjectFilePath(string? projectFileOrDirectoryPath, bool readCodeFromStdin, ref string[] args, out string? entryPointFilePath)
+    private static string? DiscoverProjectFilePath(string? filePath, string? projectFileOrDirectoryPath, bool readCodeFromStdin, ref string[] args, out string? entryPointFilePath)
     {
+        // If `--file` is explicitly specified, just use that.
+        if (filePath != null)
+        {
+            Debug.Assert(projectFileOrDirectoryPath == null);
+            entryPointFilePath = Path.GetFullPath(filePath);
+            return null;
+        }
+
         bool emptyProjectOption = false;
         if (string.IsNullOrWhiteSpace(projectFileOrDirectoryPath))
         {
@@ -534,7 +544,7 @@ public class RunCommand
 
     public static RunCommand FromArgs(string[] args)
     {
-        var parseResult = Parser.Instance.ParseFrom("dotnet run", args);
+        var parseResult = Parser.Parse(["dotnet", "run", ..args]);
         return FromParseResult(parseResult);
     }
 
@@ -567,9 +577,20 @@ public class RunCommand
                 .Any(static t => t is { Type: TokenType.Argument, Value: "-" });
 
         string? projectOption = parseResult.GetValue(RunCommandParser.ProjectOption);
+        string? fileOption = parseResult.GetValue(RunCommandParser.FileOption);
+
+        if (projectOption != null && fileOption != null)
+        {
+            throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandParser.ProjectOption.Name, RunCommandParser.FileOption.Name);
+        }
 
         string[] args = [.. nonBinLogArgs];
-        string? projectFilePath = DiscoverProjectFilePath(projectOption, readCodeFromStdin, ref args, out string? entryPointFilePath);
+        string? projectFilePath = DiscoverProjectFilePath(
+            filePath: fileOption,
+            projectFileOrDirectoryPath: projectOption,
+            readCodeFromStdin: readCodeFromStdin,
+            ref args,
+            out string? entryPointFilePath);
 
         bool noBuild = parseResult.HasOption(RunCommandParser.NoBuildOption);
         string launchProfile = parseResult.GetValue(RunCommandParser.LaunchProfileOption) ?? string.Empty;
@@ -591,7 +612,7 @@ public class RunCommand
             // If '-' is specified as the input file, read all text from stdin into a temporary file and use that as the entry point.
             // We create a new directory for each file so other files are not included in the compilation.
             // We fail if the file already exists to avoid reusing the same file for multiple stdin runs (in case the random name is duplicate).
-            string directory = VirtualProjectBuildingCommand.GetTempSubdirectory(Path.GetRandomFileName());
+            string directory = VirtualProjectBuildingCommand.GetTempSubpath(Path.GetRandomFileName());
             VirtualProjectBuildingCommand.CreateTempSubdirectory(directory);
             entryPointFilePath = Path.Join(directory, "app.cs");
             using (var stdinStream = Console.OpenStandardInput())
@@ -678,7 +699,7 @@ public class RunCommand
         tokensMinusProject.Add(possibleProject);
 
         var tokensToParse = tokensMinusProject.ToArray();
-        var newParseResult = Parser.Instance.Parse(tokensToParse);
+        var newParseResult = Parser.Parse(tokensToParse);
         return newParseResult;
     }
 }

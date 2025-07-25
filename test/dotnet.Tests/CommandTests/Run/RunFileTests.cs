@@ -123,7 +123,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     /// <summary>
     /// <c>dotnet file.cs</c> is equivalent to <c>dotnet run file.cs</c>.
     /// </summary>
-    [Fact]
+    [Fact(Skip = "Waiting for VMR codeflow from runtime: https://github.com/dotnet/dotnet/pull/1563")]
     public void FilePath_WithoutRun()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -142,14 +142,34 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             {s_program}
             """);
 
+        string expectedOutput = """
+            Hello from Program
+            Release config
+            """;
+
         new DotnetCommand(Log, "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOut("""
-                Hello from Program
-                Release config
-                """);
+            .And.HaveStdOut(expectedOutput);
+
+        new DotnetCommand(Log, "./Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        new DotnetCommand(Log, $".{Path.DirectorySeparatorChar}Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        new DotnetCommand(Log, Path.Join(testInstance.Path, "Program.cs"))
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
 
         new DotnetCommand(Log, "Program.cs", "-c", "Debug")
             .WithWorkingDirectory(testInstance.Path)
@@ -157,6 +177,26 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Pass()
             .And.HaveStdOut("""
                 Hello from Program
+                """);
+
+        new DotnetCommand(Log, "Program.cs", "arg1", "arg2")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:arg1;arg2
+                Hello from Program
+                Release config
+                """);
+
+        new DotnetCommand(Log, "Program.cs", "build")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:build
+                Hello from Program
+                Release config
                 """);
     }
 
@@ -225,7 +265,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     /// <summary>
     /// Even if there is a file-based app <c>./build</c>, <c>dotnet build</c> should not execute that.
     /// </summary>
-    [Theory]
+    [Theory(Skip="Waiting for VMR codeflow from runtime: https://github.com/dotnet/dotnet/pull/1563")]
     // error MSB1003: Specify a project or solution file. The current working directory does not contain a project or solution file.
     [InlineData("build", "MSB1003")]
     // dotnet watch: Could not find a MSBuild project file in '...'. Specify which project to use with the --project option.
@@ -296,7 +336,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
     //  https://github.com/dotnet/sdk/issues/49665
     //  Failed to load /private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, error: dlopen(/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), '/System/Volumes/Preboot/Cryptexes/OS/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (no such file), '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64'))
-    [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
+    [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX, Skip = " Waiting for VMR codeflow from runtime: https://github.com/dotnet/dotnet/pull/1563")]
     public void Precedence_NuGetTool()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -452,6 +492,42 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOutContaining("""
                 echo args:./App.csproj
                 Hello from App
+                """);
+    }
+
+    [Fact(Skip = " Waiting for VMR codeflow from runtime: https://github.com/dotnet/dotnet/pull/1563")]
+    public void ProjectInCurrentDirectory_NoRunVerb()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "file"));
+        File.WriteAllText(Path.Join(testInstance.Path, "file", "Program.cs"), s_program);
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "proj"));
+        File.WriteAllText(Path.Join(testInstance.Path, "proj", "App.csproj"), s_consoleProject);
+
+        new DotnetCommand(Log, "../file/Program.cs")
+            .WithWorkingDirectory(Path.Join(testInstance.Path, "proj"))
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("""
+                Hello from Program
+                """);
+    }
+
+    [Fact]
+    public void ProjectInCurrentDirectory_FileOption()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "file"));
+        File.WriteAllText(Path.Join(testInstance.Path, "file", "Program.cs"), s_program);
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "proj"));
+        File.WriteAllText(Path.Join(testInstance.Path, "proj", "App.csproj"), s_consoleProject);
+
+        new DotnetCommand(Log, "run", "--file", "../file/Program.cs")
+            .WithWorkingDirectory(Path.Join(testInstance.Path, "proj"))
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("""
+                Hello from Program
                 """);
     }
 
@@ -948,8 +1024,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         new FileInfo(binaryLogPath).Should().Exist();
 
         var records = BinaryLog.ReadRecords(binaryLogPath).ToList();
-        records.Any(static r => r.Args is ProjectEvaluationStartedEventArgs).Should().BeTrue();
-        records.Any(static r => r.Args is ProjectEvaluationFinishedEventArgs).Should().BeTrue();
+        records.Count(static r => r.Args is ProjectEvaluationStartedEventArgs).Should().Be(2);
+        records.Count(static r => r.Args is ProjectEvaluationFinishedEventArgs).Should().Be(2);
     }
 
     /// <summary>
@@ -1649,6 +1725,21 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Pass();
     }
 
+    [Fact] // https://github.com/dotnet/sdk/issues/49797
+    public void SdkReference_VersionedSdkFirst()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:sdk Microsoft.NET.Sdk@9.0.0
+            Console.WriteLine();
+            """);
+
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+    }
+
     [Theory]
     [InlineData("../Lib/Lib.csproj")]
     [InlineData("../Lib")]
@@ -1900,7 +1991,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name));
     }
 
     private static string ToJson(string s) => JsonSerializer.Serialize(s);
@@ -1940,6 +2031,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
+                        <FileBasedProgram>true</FileBasedProgram>
                       </PropertyGroup>
 
                       <ItemGroup>
@@ -1952,22 +2044,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                       <PropertyGroup>
                         <OutputType>Exe</OutputType>
-                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
-                      </PropertyGroup>
-
-                      <PropertyGroup>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                      </PropertyGroup>
-
-                      <PropertyGroup>
                         <TargetFramework>net11.0</TargetFramework>
                         <LangVersion>preview</LangVersion>
-                      </PropertyGroup>
-
-                      <PropertyGroup>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
 
@@ -2019,6 +2101,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
+                        <FileBasedProgram>true</FileBasedProgram>
                       </PropertyGroup>
 
                       <ItemGroup>
@@ -2034,13 +2117,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
-                      </PropertyGroup>
-
-                      <PropertyGroup>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                      </PropertyGroup>
-
-                      <PropertyGroup>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
 
@@ -2091,6 +2168,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
+                        <FileBasedProgram>true</FileBasedProgram>
                       </PropertyGroup>
 
                       <ItemGroup>
@@ -2106,13 +2184,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
-                      </PropertyGroup>
-
-                      <PropertyGroup>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                      </PropertyGroup>
-
-                      <PropertyGroup>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
 
