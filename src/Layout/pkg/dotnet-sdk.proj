@@ -39,13 +39,13 @@
     <!-- These project references ensure that package references for WiX extensions are correctly restored. The Idle target is a no-op as the
          projects are built later when computed properties are available. These properties do not exist when projects are evaluated. -->
     <ProjectReference Include="windows\msis\placeholder\placeholder.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true"
-                      Targets="Idle"/>
+                      Targets="Idle" />
     <ProjectReference Include="windows\msis\templates\templates.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true"
-                      Targets="Idle"/>
+                      Targets="Idle" />
     <ProjectReference Include="windows\msis\toolset\toolset.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true"
-                      Targets="Idle"/>
+                      Targets="Idle" />
     <ProjectReference Include="windows\bundles\sdk\bundle.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true"
-                      Targets="Idle"/>
+                      Targets="Idle" />
   </ItemGroup>
 
   <ItemGroup>
