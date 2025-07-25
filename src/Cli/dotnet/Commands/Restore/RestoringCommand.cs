@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Frozen;
 using System.Collections.ObjectModel;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
@@ -12,7 +11,6 @@ namespace Microsoft.DotNet.Cli.Commands.Restore;
 
 public class RestoringCommand : MSBuildForwardingApp
 {
-
     /// <summary>
     /// This dictionary contains properties that are set to disable the default items
     /// that are added to the project by default. These Item types are not needed
@@ -22,7 +20,9 @@ public class RestoringCommand : MSBuildForwardingApp
     public static ReadOnlyDictionary<string, string> RestoreOptimizationProperties =>
         new(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { Constants.EnableDefaultItems, "false" },
+            // note that we do not disable all default items - Razor at least needs Content
+            // in order to do implicit PackageReferences if Razor files are present
+            { Constants.EnableDefaultCompileItems, "false" },
             { Constants.EnableDefaultEmbeddedResourceItems, "false" },
             { Constants.EnableDefaultNoneItems, "false" },
         });
@@ -126,8 +126,12 @@ public class RestoringCommand : MSBuildForwardingApp
         var restoreMSBuildArgs =
             MSBuildArgs.FromProperties(RestoreOptimizationProperties)
                        .CloneWithAdditionalTarget("Restore")
-                       .CloneWithExplicitArgs([..newArgumentsToAdd, ..existingArgumentsToForward])
+                       .CloneWithExplicitArgs([.. newArgumentsToAdd, .. existingArgumentsToForward])
                        .CloneWithAdditionalProperties(restoreProperties);
+        if (msbuildArgs.Verbosity is {} verbosity)
+        {
+            restoreMSBuildArgs = restoreMSBuildArgs.CloneWithVerbosity(verbosity);
+        }
         return RestoreCommand.CreateForwarding(restoreMSBuildArgs, msbuildPath);
     }
 
@@ -203,7 +207,7 @@ public class RestoringCommand : MSBuildForwardingApp
                     newArgumentsToAdd.Add("-nologo");
                     hasSetNologo = true;
                 }
-                newArgumentsToAdd.Add("-verbosity:quiet");
+                newArgumentsToAdd.Add("--verbosity:quiet");
             }
         }
         return (newArgumentsToAdd.ToArray(), existingArgumentsToForward.ToArray());

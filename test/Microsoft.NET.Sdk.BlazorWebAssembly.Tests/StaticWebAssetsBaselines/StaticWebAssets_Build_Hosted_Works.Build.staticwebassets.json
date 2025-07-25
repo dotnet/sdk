@@ -47,6 +47,75 @@
   ],
   "Assets": [
     {
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\_content\\Microsoft.DotNet.HotReload.WebAssembly.Browser\\Microsoft.DotNet.HotReload.WebAssembly.Browser.__fingerprint__.lib.module.js.gz",
+      "SourceId": "Microsoft.DotNet.HotReload.WebAssembly.Browser",
+      "SourceType": "Package",
+      "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\",
+      "BasePath": "_content/Microsoft.DotNet.HotReload.WebAssembly.Browser",
+      "RelativePath": "Microsoft.DotNet.HotReload.WebAssembly.Browser.__fingerprint__.lib.module.js.gz",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${RestorePath}\\microsoft.dotnet.hotreload.webassembly.browser\\${PackageVersion}\\staticwebassets\\Microsoft.DotNet.HotReload.WebAssembly.Browser.__fingerprint__.lib.module.js",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${RestorePath}\\microsoft.dotnet.hotreload.webassembly.browser\\${PackageVersion}\\staticwebassets\\_content\\Microsoft.DotNet.HotReload.WebAssembly.Browser\\Microsoft.DotNet.HotReload.WebAssembly.Browser.__fingerprint__.lib.module.js.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\blazorhosted.modules.json.gz",
+      "SourceId": "blazorhosted",
+      "SourceType": "Computed",
+      "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\",
+      "BasePath": "/",
+      "RelativePath": "blazorhosted.modules.json.gz",
+      "AssetKind": "Build",
+      "AssetMode": "CurrentProject",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\jsmodules\\jsmodules.build.manifest.json",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\jsmodules\\blazorhosted.modules.json.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\jsmodules\\jsmodules.build.manifest.json",
+      "SourceId": "blazorhosted",
+      "SourceType": "Computed",
+      "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\jsmodules\\",
+      "BasePath": "/",
+      "RelativePath": "blazorhosted.modules.json",
+      "AssetKind": "Build",
+      "AssetMode": "CurrentProject",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "JSModule",
+      "AssetTraitValue": "JSModuleManifest",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\jsmodules\\jsmodules.build.manifest.json",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
       "Identity": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\Microsoft.AspNetCore.Authorization.wasm",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
@@ -204,6 +273,29 @@
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.CSharp.wasm",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\Microsoft.DotNet.HotReload.WebAssembly.Browser.wasm",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/Microsoft.DotNet.HotReload.WebAssembly.Browser.wasm",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "WasmResource",
+      "AssetTraitValue": "runtime",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\Microsoft.DotNet.HotReload.WebAssembly.Browser.wasm",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -3865,6 +3957,29 @@
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
+      "Identity": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Threading.AccessControl.wasm",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/System.Threading.AccessControl.wasm",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "WasmResource",
+      "AssetTraitValue": "runtime",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\System.Threading.AccessControl.wasm",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
       "Identity": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Threading.Channels.wasm",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
@@ -4988,6 +5103,29 @@
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\Microsoft.CSharp.wasm.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.DotNet.HotReload.WebAssembly.Browser.wasm.gz",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/Microsoft.DotNet.HotReload.WebAssembly.Browser.wasm.gz",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\Microsoft.DotNet.HotReload.WebAssembly.Browser.wasm",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\Microsoft.DotNet.HotReload.WebAssembly.Browser.wasm.gz",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -8649,6 +8787,29 @@
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
+      "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\System.Threading.AccessControl.wasm.gz",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/System.Threading.AccessControl.wasm.gz",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Threading.AccessControl.wasm",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\System.Threading.AccessControl.wasm.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\System.Threading.Channels.wasm.gz",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
@@ -9889,9 +10050,277 @@
       "OriginalItemSpec": "wwwroot\\wwwroot\\exampleJsInterop.js",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${RestorePath}\\microsoft.dotnet.hotreload.webassembly.browser\\${PackageVersion}\\staticwebassets\\Microsoft.DotNet.HotReload.WebAssembly.Browser.__fingerprint__.lib.module.js",
+      "SourceId": "Microsoft.DotNet.HotReload.WebAssembly.Browser",
+      "SourceType": "Package",
+      "ContentRoot": "${RestorePath}\\microsoft.dotnet.hotreload.webassembly.browser\\${PackageVersion}\\staticwebassets\\",
+      "BasePath": "_content/Microsoft.DotNet.HotReload.WebAssembly.Browser",
+      "RelativePath": "Microsoft.DotNet.HotReload.WebAssembly.Browser.__fingerprint__.lib.module.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "JSModule",
+      "AssetTraitValue": "JSLibraryModule",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${RestorePath}\\microsoft.dotnet.hotreload.webassembly.browser\\${PackageVersion}\\staticwebassets\\Microsoft.DotNet.HotReload.WebAssembly.Browser.__fingerprint__.lib.module.js",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     }
   ],
   "Endpoints": [
+    {
+      "Route": "_content/Microsoft.DotNet.HotReload.WebAssembly.Browser/Microsoft.DotNet.HotReload.WebAssembly.Browser.__fingerprint__.lib.module.js.gz",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\_content\\Microsoft.DotNet.HotReload.WebAssembly.Browser\\Microsoft.DotNet.HotReload.WebAssembly.Browser.__fingerprint__.lib.module.js.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/Microsoft.DotNet.HotReload.WebAssembly.Browser/Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\_content\\Microsoft.DotNet.HotReload.WebAssembly.Browser\\Microsoft.DotNet.HotReload.WebAssembly.Browser.__fingerprint__.lib.module.js.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "dependency-group",
+          "Value": "js-initializer"
+        },
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "script-type",
+          "Value": "module"
+        }
+      ]
+    },
+    {
+      "Route": "blazorhosted.modules.json.gz",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\blazorhosted.modules.json.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/json"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "blazorhosted.modules.json",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\blazorhosted.modules.json.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/json"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "blazorhosted.modules.json",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\jsmodules\\jsmodules.build.manifest.json",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/json"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
     {
       "Route": "_framework/Microsoft.AspNetCore.Authorization.wasm",
       "AssetFile": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\Microsoft.AspNetCore.Authorization.wasm",
@@ -10117,6 +10546,43 @@
     {
       "Route": "_framework/Microsoft.CSharp.wasm",
       "AssetFile": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\Microsoft.CSharp.wasm",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/wasm"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_framework/Microsoft.DotNet.HotReload.WebAssembly.Browser.wasm",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\Microsoft.DotNet.HotReload.WebAssembly.Browser.wasm",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -16035,6 +16501,43 @@
       ]
     },
     {
+      "Route": "_framework/System.Threading.AccessControl.wasm",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Threading.AccessControl.wasm",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/wasm"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
       "Route": "_framework/System.Threading.Channels.wasm",
       "AssetFile": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Threading.Channels.wasm",
       "Selectors": [],
@@ -18323,6 +18826,106 @@
     {
       "Route": "_framework/Microsoft.CSharp.wasm",
       "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.CSharp.wasm.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/wasm"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_framework/Microsoft.DotNet.HotReload.WebAssembly.Browser.wasm.gz",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.DotNet.HotReload.WebAssembly.Browser.wasm.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/wasm"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_framework/Microsoft.DotNet.HotReload.WebAssembly.Browser.wasm",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.DotNet.HotReload.WebAssembly.Browser.wasm.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -34276,6 +34879,106 @@
       ]
     },
     {
+      "Route": "_framework/System.Threading.AccessControl.wasm.gz",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\System.Threading.AccessControl.wasm.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/wasm"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_framework/System.Threading.AccessControl.wasm",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\System.Threading.AccessControl.wasm.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/wasm"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
       "Route": "_framework/System.Threading.Channels.wasm.gz",
       "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\System.Threading.Channels.wasm.gz",
       "Selectors": [],
@@ -39255,6 +39958,104 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_content/Microsoft.DotNet.HotReload.WebAssembly.Browser/Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js",
+      "AssetFile": "${RestorePath}\\microsoft.dotnet.hotreload.webassembly.browser\\${PackageVersion}\\staticwebassets\\Microsoft.DotNet.HotReload.WebAssembly.Browser.__fingerprint__.lib.module.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "dependency-group",
+          "Value": "js-initializer"
+        },
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "script-type",
+          "Value": "module"
+        }
+      ]
+    },
+    {
+      "Route": "_content/Microsoft.DotNet.HotReload.WebAssembly.Browser/Microsoft.DotNet.HotReload.WebAssembly.Browser.__fingerprint__.lib.module.js",
+      "AssetFile": "${RestorePath}\\microsoft.dotnet.hotreload.webassembly.browser\\${PackageVersion}\\staticwebassets\\Microsoft.DotNet.HotReload.WebAssembly.Browser.__fingerprint__.lib.module.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "dependency-group",
+          "Value": "js-initializer"
+        },
+        {
+          "Name": "fingerprint",
+          "Value": "__fingerprint__"
+        },
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "label",
+          "Value": "_content/Microsoft.DotNet.HotReload.WebAssembly.Browser/Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js"
+        },
+        {
+          "Name": "script-type",
+          "Value": "module"
         }
       ]
     }

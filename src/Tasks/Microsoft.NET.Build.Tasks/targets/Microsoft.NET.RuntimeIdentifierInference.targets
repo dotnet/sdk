@@ -103,7 +103,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup Condition="'$(UseCurrentRuntimeIdentifier)' == ''">
     <UseCurrentRuntimeIdentifier Condition="
                  '$(RuntimeIdentifier)' == '' and
-                 '$(_IsExecutable)' == 'true' and '$(IsTestProject)' != 'true' and
+                 '$(_IsExecutable)' == 'true' and
                  '$(IsRidAgnostic)' != 'true' and
                  '$(PackAsTool)' != true and
                  (
@@ -184,7 +184,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               $([MSBuild]::VersionLessThan($(_TargetFrameworkVersionWithoutV), '8.0'))">true</SelfContained>
 
     <SelfContained Condition="'$(SelfContained)' == ''">false</SelfContained>
-    <_RuntimeIdentifierUsesAppHost Condition="$(RuntimeIdentifier.StartsWith('ios')) or $(RuntimeIdentifier.StartsWith('tvos')) or $(RuntimeIdentifier.StartsWith('maccatalyst')) or $(RuntimeIdentifier.StartsWith('android')) or $(RuntimeIdentifier.StartsWith('browser')) or $(RuntimeIdentifier.StartsWith('wasi'))">false</_RuntimeIdentifierUsesAppHost>
+    <_RuntimeIdentifierUsesAppHost Condition="$(RuntimeIdentifier.StartsWith('ios')) or $(RuntimeIdentifier.StartsWith('tvos')) or $(RuntimeIdentifier.StartsWith('maccatalyst')) or $(RuntimeIdentifier.StartsWith('android')) or $(RuntimeIdentifier.StartsWith('browser')) or $(RuntimeIdentifier.StartsWith('wasi')) or $(RuntimeIdentifier) == 'any'">false</_RuntimeIdentifierUsesAppHost>
     <_RuntimeIdentifierUsesAppHost Condition="'$(_IsPublishing)' == 'true' and '$(PublishAot)' == 'true'">false</_RuntimeIdentifierUsesAppHost>
     <_RuntimeIdentifierUsesAppHost Condition="'$(_RuntimeIdentifierUsesAppHost)' == ''">true</_RuntimeIdentifierUsesAppHost>
     <UseAppHost Condition="'$(UseAppHost)' == '' and

@@ -74,11 +74,6 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     <_InnerToolsPublishAot Condition="$(_HasRIDSpecificTools) and '$(PublishAot)' == 'true'">true</_InnerToolsPublishAot>
     <PublishAot Condition="!$(_IsRidSpecific) and '$(MSBuildIsRestoring)' != 'true'">false</PublishAot>
 
-    <!-- we want to ensure that we don't publish any AppHosts for the 'outer', RID-agnostic builds -->
-    <UseAppHost Condition="!$(_IsRidSpecific)">false</UseAppHost>
-    <!-- we want to ensure that we _do_ publish any AppHosts for the 'inner', RID-specific builds -->
-    <UseAppHost Condition="$(_IsRidSpecific)">true</UseAppHost>
-
     <!-- Tool implementation files are not included in the primary package when the tool has RID-specific packages.  So only pack the tool implementation
        (and only depend on publish) if there are no RID-specific packages, or if the RuntimeIdentifier is set. -->
     <_ToolPackageShouldIncludeImplementation Condition=" '$(PackAsTool)' == 'true' And
@@ -132,14 +127,27 @@ NOTE: This file is imported from the following contexts, so be aware when writin
   <Target Name="SetPackToolProperties"
           BeforeTargets="_GenerateRestoreProjectSpec;_GenerateToolsSettingsFileInputCache;_GenerateShimInputCache;_GetOutputItemsFromPack">
 
+    <PropertyGroup>
+      <!-- Fun fact - UseAppHost is false for NativeAot because _RuntimeIdentifierUsesAppHost gets set to false.
+           So we need to check if PublishAot is set as part of this too. As far as I can tell there is no 'common'
+           property for 'you should expect a native binary here' -->
+      <_ToolUsesPlatformSpecificExecutable Condition="$(_IsRidSpecific) and ('$(UseAppHost)' == 'true' or '$(PublishAot)' == 'true')">true</_ToolUsesPlatformSpecificExecutable>
+      <_ToolUsesPlatformSpecificExecutable Condition="'$(_ToolUsesPlatformSpecificExecutable)' == ''">false</_ToolUsesPlatformSpecificExecutable>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(ToolCommandRunner)' == ''">
+      <ToolCommandRunner Condition="!$(_ToolUsesPlatformSpecificExecutable)">dotnet</ToolCommandRunner>
+      <ToolCommandRunner Condition="$(_ToolUsesPlatformSpecificExecutable)">executable</ToolCommandRunner>
+    </PropertyGroup>
+
     <!-- Needs to be in a target so we don't need to worry about evaluation order with NativeBinary property -->
     <PropertyGroup Condition="'$(ToolEntryPoint)' == ''">
-      <ToolEntryPoint>$(TargetFileName)</ToolEntryPoint>
-      <ToolEntryPoint Condition="$(_IsRidSpecific) and '$(UseAppHost)' == 'true' ">$(AssemblyName)$(_NativeExecutableExtension)</ToolEntryPoint>
+      <ToolEntryPoint Condition="!$(_ToolUsesPlatformSpecificExecutable)">$(TargetFileName)</ToolEntryPoint>
+      <ToolEntryPoint Condition="$(_ToolUsesPlatformSpecificExecutable)">$(AssemblyName)$(_NativeExecutableExtension)</ToolEntryPoint>
     </PropertyGroup>
 
     <!-- inner-build tool packages get a RID suffix -->
-    <PropertyGroup Condition="'$(_HasRIDSpecificTools)' != '' And $(RuntimeIdentifier) != ''">
+    <PropertyGroup Condition="'$(_HasRIDSpecificTools)' != '' And '$(RuntimeIdentifier)' != ''">
       <PackageId>$(PackageId).$(RuntimeIdentifier)</PackageId>
     </PropertyGroup>
   </Target>
@@ -157,15 +165,24 @@ NOTE: This file is imported from the following contexts, so be aware when writin
   <Target Name="PackToPublishDependencyIndirection"
           DependsOnTargets="$(_PackToolPublishDependency)"/>
 
-  <Target Name="PackTool" DependsOnTargets="SetPackToolProperties;GenerateToolsSettingsFileFromBuildProperty;PackToPublishDependencyIndirection;_PackToolValidation;PackToolImplementation" Condition=" '$(PackAsTool)' == 'true' ">
+  <Target Name="PackTool" DependsOnTargets="SetPackToolProperties;GenerateToolsSettingsFileFromBuildProperty;PackToPublishDependencyIndirection;_PackToolValidation;PackToolImplementation"
+    Condition=" '$(PackAsTool)' == 'true' "
+    Returns="@(TfmSpecificPackageFile)">
     <ItemGroup>
       <_GeneratedFiles Include="$(_ToolsSettingsFilePath)"/>
       <!-- Note here that we're _not_ computing relative directories inside the package anymore. In our packages, we essentially want to
           recreate the publish layout, but under a TFM- or RID-specific root path. Because we're globbing from the PublishDir,
           the MSBuild Items will have the RecursiveDir metadata - this is used by the PackLogic to combine with the PackagePath
           we set below to ensure we have the correct layout in the end. If the PackLogic didn't try to use RecursiveDir, then
-          we could just explicitly set everything ourselves.   -->
+          we could just explicitly set everything ourselves.
+
+          We _also_ have to filter out apphosts here from platform-agnostic builds, because we don't want to include them in the tool package.
+          This is because we try not to influence the selection of UseAppHost (so that we do not impact 'normal' publishing and end up
+          influencing the contents of the 'normal' publish directory), so it's possible that the 'publish' of an otherwise RID-agnostic
+          tool may include an apphost.
+      -->
       <_PublishFiles Condition="'$(_ToolPackageShouldIncludeImplementation)' == 'true'" Include="$(PublishDir)/**/*" />
+      <_PublishFiles Condition="'$(UseAppHost)' == 'true' and '$(RuntimeIdentifier)' == ''" Remove="$(PublishDir)$(AssemblyName)$(_NativeExecutableExtension)"/>
     </ItemGroup>
 
     <PropertyGroup>
@@ -191,11 +208,6 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     <ToolRuntimeIdentifier Condition=" '$(ToolRuntimeIdentifier)' == ''">$(RuntimeIdentifier)</ToolRuntimeIdentifier>
     <_GenerateToolsSettingsFileCacheFile Condition="'$(_GenerateToolsSettingsFileCacheFile)' == ''">$(IntermediateOutputPath)$(MSBuildProjectName).toolssettingsinput.cache</_GenerateToolsSettingsFileCacheFile>
     <_GenerateToolsSettingsFileCacheFile>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_GenerateToolsSettingsFileCacheFile)))</_GenerateToolsSettingsFileCacheFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(ToolCommandRunner)' == ''">
-    <ToolCommandRunner Condition="!$(UseAppHost)">dotnet</ToolCommandRunner>
-    <ToolCommandRunner Condition="$(UseAppHost)">executable</ToolCommandRunner>
   </PropertyGroup>
 
   <Target Name="_GenerateToolsSettingsFileInputCache">
@@ -293,7 +305,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
       ApphostsForShimRuntimeIdentifiers="@(_ApphostsForShimRuntimeIdentifiers)"
       IntermediateAssembly="@(IntermediateAssembly->'%(FullPath)')"
       OutputType="$(OutputType)"
-      PackagedShimOutputDirectory="$([System.IO.Path]::Combine($(PackagedShimOutputRootDirectory), 'shims', $(_ToolPackShortTargetFrameworkName)))"
+      PackagedShimOutputDirectory="$([MSBuild]::NormalizeDirectory($(PackagedShimOutputRootDirectory), 'shims', $(_ToolPackShortTargetFrameworkName)))"
       PackageId="$(PackageId)"
       PackageVersion="$(PackageVersion)"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
@@ -322,7 +334,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
 
   <Target Name="_ComputeExpectedEmbeddedApphostPaths">
     <GetEmbeddedApphostPaths
-      PackagedShimOutputDirectory="$([System.IO.Path]::Combine($(PackagedShimOutputRootDirectory), 'shims', $(_ToolPackShortTargetFrameworkName)))"
+      PackagedShimOutputDirectory="$([MSBuild]::NormalizeDirectory($(PackagedShimOutputRootDirectory), 'shims', $(_ToolPackShortTargetFrameworkName)))"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
       ToolCommandName="$(ToolCommandName)">
 
@@ -358,7 +370,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     </ItemGroup>
   </Target>
 
-  <Target Name="SetDotnetToolPackageType">
+  <Target Name="SetDotnetToolPackageType" Returns="$(_ToolPackageType)">
 
     <PropertyGroup>
       <_ToolPackageType Condition="'$(RuntimeIdentifier)' != '' And '$(_HasRIDSpecificTools)' != ''">DotnetToolRidPackage</_ToolPackageType>

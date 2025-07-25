@@ -13,8 +13,7 @@ public static class RestoreCommand
 {
     public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
-        var parser = Parser.Instance;
-        var result = parser.ParseFrom("dotnet restore", args);
+        var result = Parser.Parse(["dotnet", "restore", ..args]);
         return FromParseResult(result, msbuildPath);
     }
 
@@ -41,7 +40,7 @@ public static class RestoreCommand
             {
                 return CreateForwarding(msbuildArgs, msbuildPath);
             },
-            [CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, RestoreCommandParser.TargetOption],
+            [CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, RestoreCommandParser.TargetOption, RestoreCommandParser.VerbosityOption],
             result,
             msbuildPath
         );

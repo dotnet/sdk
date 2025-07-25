@@ -136,7 +136,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 }
                 """);
 
-            App.Start(testAsset, [], "AppWithDeps");
+            App.Start(testAsset, ["--non-interactive"], "AppWithDeps");
 
             await App.AssertWaitingForChanges();
             await App.WaitUntilOutputContains($"{symbolName} set");
@@ -144,14 +144,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             UpdateSourceFile(buildFilePath, src => src.Replace(symbolName, ""));
 
-            // TODO: https://github.com/dotnet/roslyn/issues/78921
-
-            // Roslyn should detect change in build constant and apply it or flag it as rude edit.
-            //await App.WaitUntilOutputContains($"dotnet watch 🔥 [App.WithDeps ({ToolsetInfo.CurrentTargetFramework})] Hot reload succeeded.");
-            //await App.WaitUntilOutputContains("BUILD_CONST not set");
-
-            await App.AssertOutputLineStartsWith(MessageDescriptor.NoCSharpChangesToApply);
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
             App.AssertOutputContains(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
+            App.AssertOutputContains("dotnet watch ⌚ [auto-restart] error ENC1102: Changing project setting 'DefineConstants'");
+
+            await App.WaitUntilOutputContains($"{symbolName} not set");
         }
 
         [Fact(Skip = "https://github.com/dotnet/msbuild/issues/12001")]
@@ -310,7 +307,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains($"dotnet watch ⌚ Ignoring change in output directory: Add '{objDirFilePath}'");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/49542")]
+        [Fact]
         public async Task ProjectChange_GlobalUsings()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -340,9 +337,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 <Using Include="System.Xml.Linq" />
                 """));
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded, $"WatchNoDepsApp ({ToolsetInfo.CurrentTargetFramework})");
+            await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded, $"WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})", failure: _ => false);
 
-            await App.WaitUntilOutputContains(">>> System.Linq.Enumerable");
+            await App.WaitUntilOutputContains(">>> System.Xml.Linq.XDocument");
 
             App.AssertOutputContains(MessageDescriptor.ReEvaluationCompleted);
         }
@@ -380,7 +377,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
 
             App.AssertOutputContains("⌚ Restart is needed to apply the changes");
-            App.AssertOutputContains($"⌚ [auto-restart] {programPath}(33,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
+            App.AssertOutputContains($"⌚ [auto-restart] {programPath}(38,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
             App.Process.ClearOutput();
@@ -410,7 +407,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("  ❔ Do you want to restart your app? Yes (y) / No (n) / Always (a) / Never (v)", failure: _ => false);
 
             App.AssertOutputContains("⌚ Restart is needed to apply the changes.");
-            App.AssertOutputContains($"❌ {programPath}(33,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
+            App.AssertOutputContains($"❌ {programPath}(38,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
             App.Process.ClearOutput();
 
             App.SendKey('a');
@@ -427,7 +424,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
 
             App.AssertOutputContains("⌚ Restart is needed to apply the changes");
-            App.AssertOutputContains($"⌚ [auto-restart] {programPath}(33,1): error ENC0033: Deleting method 'F()' requires restarting the application.");
+            App.AssertOutputContains($"⌚ [auto-restart] {programPath}(38,1): error ENC0033: Deleting method 'F()' requires restarting the application.");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
         }
@@ -669,7 +666,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+        [PlatformSpecificTheory(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/49928")] // https://github.com/dotnet/sdk/issues/49307
         [CombinatorialData]
         public async Task BlazorWasm(bool projectSpecifiesCapabilities)
         {
@@ -773,7 +770,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains($"dotnet watch ⌚ Reloading browser.");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/49928")] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task BlazorWasmHosted()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasmHosted")
@@ -1009,7 +1006,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Directory.CreateDirectory(oldSubdir);
             File.WriteAllText(Path.Combine(oldSubdir, "Foo.cs"), source);
 
-            App.Start(testAsset, [], "AppWithDeps");
+            App.Start(testAsset, ["--non-interactive"], "AppWithDeps");
 
             await App.AssertWaitingForChanges();
 
@@ -1027,7 +1024,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Log($"Renamed '{oldSubdir}' to '{newSubdir}'.");
 
-            await App.AssertOutputLineStartsWith("> NewSubdir");
+            // dotnet-watch may observe the delete separately from the new file write.
+            // If so, rude edit is reported, the app is auto-restarted and we should observe the final result.
+
+            await App.AssertOutputLineStartsWith("> NewSubdir", failure: _ => false);
         }
 
         [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")

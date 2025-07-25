@@ -196,17 +196,17 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                         minimumVSDefinedSDKVersion);
                 }
 
-                string? dotnetExe = dotnetRoot != null ?
-                    Path.Combine(dotnetRoot, Constants.DotNetExe) :
-                    null;
-                if (File.Exists(dotnetExe))
+                string? fullPathToMuxer =
+                    TryResolveMuxerFromSdkResolution(resolverResult)
+                    ?? Path.Combine(dotnetRoot, RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Constants.DotNetExe : Constants.DotNet);
+                if (File.Exists(fullPathToMuxer))
                 {
                     propertiesToAdd ??= new Dictionary<string, string?>();
-                    propertiesToAdd.Add(DotnetHostExperimentalKey, dotnetExe);
+                    propertiesToAdd.Add(DotnetHostExperimentalKey, fullPathToMuxer);
                 }
                 else
                 {
-                    logger?.LogMessage($"Could not set '{DotnetHostExperimentalKey}' because dotnet executable '{dotnetExe}' does not exist.");
+                    logger?.LogMessage($"Could not set '{DotnetHostExperimentalKey}' because dotnet executable '{fullPathToMuxer}' does not exist.");
                 }
 
                 string? runtimeVersion = dotnetRoot != null ?
@@ -286,6 +286,26 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             }
 
             return factory.IndicateSuccess(msbuildSdkDir, netcoreSdkVersion, propertiesToAdd, itemsToAdd, warnings);
+        }
+
+        /// <summary>
+        /// Try to find the muxer binary from the SDK resolution result.
+        /// </summary>
+        /// <remarks>
+        /// SDK layouts always have a defined relationship to the location of the muxer -
+        /// the muxer binary should be exactly two directories above the SDK directory.
+        /// </remarks>
+        private static string? TryResolveMuxerFromSdkResolution(SdkResolutionResult resolverResult)
+        {
+            var expectedFileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Constants.DotNetExe : Constants.DotNet;
+            var currentDir = resolverResult.ResolvedSdkDirectory;
+            var expectedDotnetRoot = Path.GetDirectoryName(Path.GetDirectoryName(currentDir));
+            var expectedMuxerPath = Path.Combine(expectedDotnetRoot, expectedFileName);
+            if (File.Exists(expectedMuxerPath))
+            {
+                return expectedMuxerPath;
+            }
+            return null;
         }
 
         private static string? GetMSbuildRuntimeVersion(string sdkDirectory, string dotnetRoot)
