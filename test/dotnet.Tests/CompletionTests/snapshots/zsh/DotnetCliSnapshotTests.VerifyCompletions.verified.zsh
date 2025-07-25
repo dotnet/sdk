@@ -668,6 +668,9 @@ _testhost() {
                                     (update)
                                         _arguments "${_arguments_options[@]}" : \
                                             '--project=[Path to a project or solution file, or a directory.]: : ' \
+                                            '--interactive=[Allow the command to block and require manual action for operations like authentication.]: :((False\:"False" True\:"True" ))' \
+                                            '--verbosity=[Set the verbosity level of the command. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]: :((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                            '-v=[Set the verbosity level of the command. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]: :((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             '*::packages -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.: ' \
