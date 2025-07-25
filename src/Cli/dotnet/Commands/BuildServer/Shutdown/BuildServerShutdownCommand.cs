@@ -77,7 +77,10 @@ internal class BuildServerShutdownCommand : CommandBase
             if (task.IsFaulted)
             {
                 success = false;
-                WriteFailureMessage(server, task.Exception);
+                foreach (var inner in task.Exception.InnerExceptions)
+                {
+                    WriteFailureMessage(server, inner);
+                }
             }
             else
             {
@@ -130,7 +133,7 @@ internal class BuildServerShutdownCommand : CommandBase
         }
     }
 
-    private void WriteFailureMessage(IBuildServer server, AggregateException exception)
+    private void WriteFailureMessage(IBuildServer server, Exception exception)
     {
         if (server.ProcessId != 0)
         {
@@ -139,7 +142,7 @@ internal class BuildServerShutdownCommand : CommandBase
                     CliCommandStrings.ShutDownFailedWithPid,
                     server.Name,
                     server.ProcessId,
-                    exception.InnerException.Message).Red());
+                    exception.Message).Red());
         }
         else
         {
@@ -147,7 +150,7 @@ internal class BuildServerShutdownCommand : CommandBase
                 string.Format(
                     CliCommandStrings.ShutDownFailed,
                     server.Name,
-                    exception.InnerException.Message).Red());
+                    exception.Message).Red());
         }
 
         if (CommandLoggingContext.IsVerbose)

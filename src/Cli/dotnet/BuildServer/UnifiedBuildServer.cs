@@ -28,7 +28,7 @@ internal sealed class UnifiedBuildServer : IBuildServer
             {
                 if (!BuildServerUtility.TryParsePipePath(file, out int pid, out ReadOnlySpan<char> label))
                 {
-                    throw new InvalidOperationException(string.Format(CliCommandStrings.NamedPipeFileBadFormat, file));
+                    throw new GracefulException(CliCommandStrings.NamedPipeFileBadFormat, file);
                 }
 
                 Reporter.Output.WriteLine(CliCommandStrings.ShuttingDownServerWithPid, label.ToString(), pid);
@@ -46,9 +46,9 @@ internal sealed class UnifiedBuildServer : IBuildServer
                 using var process = Process.GetProcessById(pid);
                 await process.WaitForExitAsync().ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not GracefulException)
             {
-                throw new InvalidOperationException(string.Format(CliCommandStrings.NamedPipeShutdownError, file, ex.Message), ex);
+                throw new GracefulException(string.Format(CliCommandStrings.NamedPipeShutdownError, file, ex.Message), ex);
             }
         }));
 
