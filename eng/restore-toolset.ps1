@@ -112,7 +112,7 @@ function CreateVSShortcut()
   $wsShell = New-Object -ComObject WScript.Shell
   $shortcut = $wsShell.CreateShortcut($shortcutPath)
   $shortcut.TargetPath = $powershellPath
-  $shortcut.Arguments = "-WindowStyle Hidden -Command ""$commandToLaunch"""
+  $shortcut.Arguments = "-WindowStyle Hidden -ExecutionPolicy Bypass -Command ""$commandToLaunch"""
   $shortcut.IconLocation = $devenvPath
   $shortcut.WindowStyle = 7 # Minimized
   $shortcut.Save()
