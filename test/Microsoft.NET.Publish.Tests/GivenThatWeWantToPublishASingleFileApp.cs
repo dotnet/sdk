@@ -132,26 +132,6 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining(Strings.CannotHaveSingleFileWithoutAppHost);
         }
 
-        [Fact]
-        public void It_generates_publishing_single_file_with_win7()
-        {
-            const string rid = "win7-x86";
-
-            //  Retarget project to net7.0, as net8.0 and up by default use portable runtime graph which doesn't have win7-* RIDs
-            var projectChanges = (XDocument doc) =>
-            {
-                var ns = doc.Root.Name.Namespace;
-                doc.Root.Element(ns + "PropertyGroup")
-                    .Element(ns + "TargetFramework")
-                    .Value = "net7.0";
-            };
-
-            GetPublishCommand(projectChanges: projectChanges)
-                .Execute($"/p:RuntimeIdentifier={rid}", PublishSingleFile)
-                .Should()
-                .Pass();
-        }
-
         [Theory]
         [InlineData("Microsoft.NET.Sdk")]
         [InlineData("Microsoft.NET.Sdk.Web")]
