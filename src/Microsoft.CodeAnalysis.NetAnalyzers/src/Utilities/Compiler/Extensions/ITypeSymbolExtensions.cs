@@ -12,6 +12,8 @@ namespace Analyzer.Utilities.Extensions
 {
     internal static class ITypeSymbolExtensions
     {
+        public const TypeKind ExtensionTypeKind = (TypeKind)14;
+
 #if CODEANALYSIS_V3_OR_BETTER
         public static bool IsAssignableTo(
             [NotNullWhen(returnValue: true)] this ITypeSymbol? fromSymbol,

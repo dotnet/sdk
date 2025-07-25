@@ -153,7 +153,6 @@ public sealed class InternalGetterTestAttribute : Attribute
     public string Name
     {
         get { return m_name; }
-
         internal set { m_name = value; }
     }
 }");
@@ -198,7 +197,6 @@ public sealed class InternalGetterTestAttribute : Attribute
     public string Name
     {
         get { return m_name; }
-
         internal set { m_name = value; }
     }
 }");
@@ -285,7 +283,6 @@ public sealed class PublicSetterTestAttribute : Attribute
     public string Name
     {
         get { return m_name; }
-
         internal set { m_name = value; }
     }
 }");

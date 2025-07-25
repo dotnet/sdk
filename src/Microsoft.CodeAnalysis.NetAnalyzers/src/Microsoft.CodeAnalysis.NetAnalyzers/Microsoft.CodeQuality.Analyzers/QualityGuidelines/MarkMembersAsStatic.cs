@@ -130,6 +130,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                             // This member cannot be made static.
                             isInstanceReferenced = true;
                         }
+                        else if (operation.Parameter.ContainingSymbol is ITypeSymbol { TypeKind: ITypeSymbolExtensions.ExtensionTypeKind })
+                        {
+                            // We're referencing an extension receiver.
+                            isInstanceReferenced = true;
+                        }
                     }, OperationKind.ParameterReference);
 
                     context.RegisterOperationBlockEndAction(context =>

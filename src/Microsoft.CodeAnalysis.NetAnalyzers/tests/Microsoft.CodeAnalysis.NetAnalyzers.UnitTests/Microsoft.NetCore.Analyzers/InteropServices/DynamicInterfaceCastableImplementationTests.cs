@@ -586,8 +586,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    private static void Method2(I2 @this)
-    { }
+    private static void Method2(I2 @this) { }
 }";
 
             await VerifyCSCodeFixAsync(source, codeFix);
@@ -787,8 +786,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    public static void Method2(I2 @this)
-    { }
+    public static void Method2(I2 @this) { }
 }";
 
             await VerifyCSCodeFixAsync(source, codeFix);
@@ -826,8 +824,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    public static void Method2(I2 @this)
-    { }
+    public static void Method2(I2 @this) { }
 }";
 
             await VerifyCSCodeFixAsync(source, codeFix);
@@ -865,8 +862,7 @@ interface I2 : I
 {
     void I.Method() {}
 
-    protected static void Method2(I2 @this)
-    { }
+    protected static void Method2(I2 @this) { }
 }";
 
             await VerifyCSCodeFixAsync(source, codeFix);

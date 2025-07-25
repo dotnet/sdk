@@ -1322,7 +1322,7 @@ public class C1
         get;
     }
 
-    public string [|P4|] // Because of the error there is no generated field
+    public string P4 // Because of the error there is no generated field
     {
         [DebuggerStepThrough]
         {|CS8051:set|};
@@ -1500,7 +1500,7 @@ public class Test
             }.RunAsync();
         }
 
-        [Fact(Skip = "Need update of roslyn to parse primary constructors properly"), WorkItem(6573, "https://github.com/dotnet/roslyn-analyzers/issues/6573")]
+        [Fact, WorkItem(6573, "https://github.com/dotnet/roslyn-analyzers/issues/6573")]
         public Task PrimaryConstructor()
         {
             return new VerifyCS.Test
@@ -1527,6 +1527,54 @@ public class Test
                     }
                     """,
                 LanguageVersion = LanguageVersion.Preview
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(78858, "https://github.com/dotnet/roslyn/issues/78858")]
+        public Task ExtensionMembers_Instance()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    public static class E
+                    {
+                        extension(int x)
+                        {
+                            public int M() => x + 1;
+                            public int P => x + 1;
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.Preview,
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(78858, "https://github.com/dotnet/roslyn/issues/78858")]
+        public Task ExtensionMembers_Static()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    public static class E
+                    {
+                        extension(int x)
+                        {
+                            public int [|M|]() => 1;
+                            public int [|P|] => 2;
+                        }
+                    }
+                    """,
+                FixedCode = """
+                    public static class E
+                    {
+                        extension(int x)
+                        {
+                            public static int M() => 1;
+                            public static int P => 2;
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.Preview,
             }.RunAsync();
         }
     }
