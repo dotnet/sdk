@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "-p", "prop1=true" }, new string[] { "--property:prop1=true" })]
         [InlineData(new string[] { "-p", "prop1=true", "-p", "prop2=false" }, new string[] { "--property:prop1=true", "--property:prop2=false" })]
         [InlineData(new string[] { "-p:prop1=true;prop2=false" }, new string[] { "--property:prop1=true", "--property:prop2=false" })]
-        [InlineData(new string[] { "-p", "MyProject.csproj", "-p:prop1=true" }, new string[] { "--property:prop1=true" })]
+        [InlineData(new string[] { "-p", "HelloWorld.csproj", "-p:prop1=true" }, new string[] { "--property:prop1=true" })]
         [InlineData(new string[] { "--disable-build-servers" }, new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
         public void MsbuildInvocationIsCorrect(string[] args, string[] expectedArgs)
         {
