@@ -15,13 +15,8 @@ namespace Microsoft.NET.Build.Containers.Tasks;
 public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
 {
     private readonly CancellationTokenSource _cancellationTokenSource = new();
-
     public void Cancel() => _cancellationTokenSource.Cancel();
-
-    public void Dispose()
-    {
-        _cancellationTokenSource.Dispose();
-    }
+    public void Dispose() => _cancellationTokenSource.Dispose();
 
     private bool IsLocalPull => string.IsNullOrWhiteSpace(BaseRegistry);
 
