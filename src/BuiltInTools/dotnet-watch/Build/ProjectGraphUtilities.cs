@@ -39,7 +39,7 @@ internal static class ProjectGraphUtilities
 
             return new ProjectGraph([entryPoint], collection, projectInstanceFactory: null, cancellationToken);
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not OperationCanceledException)
         {
             reporter.Verbose("Failed to load project graph.");
 

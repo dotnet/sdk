@@ -22,6 +22,11 @@ namespace Microsoft.DotNet.Watch
         /// This allows tests to trigger key based events.
         /// </summary>
         ReadKeyFromStdin = 1 << 3,
+
+        /// <summary>
+        /// Set if dotnet-watch should re-enable Ctrl+C handling on Windows.
+        /// </summary>
+        EnableWindowsCtrlCHandling = 1 << 4,
     }
 
     internal sealed record EnvironmentOptions(
