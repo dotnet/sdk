@@ -418,12 +418,11 @@ public class RunCommand
             return command;
         }
 
-        static void SetRootVariableName(ICommand command, string runtimeIdentifier, string defaultAppHostRuntimeIdentifier, string targetFrameworkVersion)
+        static void SetRootVariableName(ICommand command, string runtimeIdentifier, string defaultAppHostRuntimeIdentifier)
         {
             var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootVariableName(
                 runtimeIdentifier,
-                defaultAppHostRuntimeIdentifier,
-                targetFrameworkVersion);
+                defaultAppHostRuntimeIdentifier);
             if (rootVariableName != null && Environment.GetEnvironmentVariable(rootVariableName) == null)
             {
                 command.EnvironmentVariable(rootVariableName, Path.GetDirectoryName(new Muxer().MuxerPath));
