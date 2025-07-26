@@ -259,6 +259,46 @@ Paths searched: '{1}', '{2}'.</source>
         <target state="translated">清除 .NET 專案的組建輸出。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsCommandDescription">
+        <source>Removes artifacts created for file-based apps</source>
+        <target state="translated">移除針對檔案型應用程式建立的成品</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsDays">
+        <source>How many days an artifact folder needs to be unused in order to be removed</source>
+        <target state="translated">成品資料夾需要閒置多少天才能移除</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsDirectoryNotFound">
+        <source>Warning: Artifacts directory does not exist: {0}</source>
+        <target state="translated">警告: 成品目錄不存在: {0}</target>
+        <note>{0} is directory path.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsDryRun">
+        <source>Determines changes without actually modifying the file system</source>
+        <target state="translated">確定變更而不實際修改檔案系統</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsErrorRemovingFolder">
+        <source>Error removing folder '{0}': {1}</source>
+        <target state="translated">移除資料夾 '{0}' 時發生錯誤: {1}</target>
+        <note>{0} is folder path. {1} is inner error message.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsScanning">
+        <source>Scanning for folders to remove in: {0}</source>
+        <target state="translated">正在掃描要移除的資料夾位置: {0}</target>
+        <note>{0} is directory path.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsTotalFoldersRemoved">
+        <source>Total folders removed: {0}</source>
+        <target state="translated">已移除的資料夾總數: {0}</target>
+        <note>{0} is count.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsWouldRemoveFolders">
+        <source>Would remove folders: {0}</source>
+        <target state="translated">將移除的資料夾數量: {0}</target>
+        <note>{0} is count.</note>
+      </trans-unit>
       <trans-unit id="CleanFrameworkOptionDescription">
         <source>The target framework to clean for. The target framework must also be specified in the project file.</source>
         <target state="translated">要為其進行清理的目標架構。該目標架構必須在專案檔中指定。</target>
@@ -880,6 +920,16 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">COMMAND_NAME</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionFileDescription">
+        <source>The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).</source>
+        <target state="translated">執行檔案型應用程式的路徑 (如果目前目錄中沒有專案，也可以作為第一個引數傳遞)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionFileHelpName">
+        <source>FILE_PATH</source>
+        <target state="translated">FILE_PATH</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionLaunchProfileDescription">
         <source>The name of the launch profile (if any) to use when launching the application.</source>
         <target state="translated">啟動應用程式時，所要使用的啟動設定檔 (若有) 名稱。</target>
@@ -906,9 +956,9 @@ dotnet.config is a name don't translate.</note>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileDescription">
-        <source>Do not attempt to use launchSettings.json to configure the application.</source>
-        <target state="translated">請勿嘗試使用 launchSettings.json 設定該應用程式。</target>
-        <note />
+        <source>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</source>
+        <target state="new">Do not attempt to use launchSettings.json or [app].run.json to configure the application.</target>
+        <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
       </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
         <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
@@ -1031,11 +1081,9 @@ dotnet.config is a name don't translate.</note>
         <note />
       </trans-unit>
       <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading launchSettings.json.
-{0}</source>
-        <target state="translated">讀取 launchSettings.json 時發生錯誤。
-{0}</target>
-        <note />
+        <source>An error was encountered when reading '{0}': {1}</source>
+        <target state="new">An error was encountered when reading '{0}': {1}</target>
+        <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
@@ -1051,6 +1099,12 @@ dotnet.config is a name don't translate.</note>
         <source>Enables diagnostic output.</source>
         <target state="translated">啟用診斷輸出。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="DirectivesRemoved">
+        <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
+        <target state="translated">已從 {3} 移除 '{2}' 的 '{0}' 指令 ({1})</target>
+        <note>{0} is a directive kind (like '#:package'). {1} is number of removed directives.
+    {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</note>
       </trans-unit>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
@@ -1451,10 +1505,10 @@ Make the profile names distinct.</source>
         <target state="translated">指定的檔案必須存在，並具有 '.cs' 副檔名:'{0}'</target>
         <note>{Locked=".cs"}</note>
       </trans-unit>
-      <trans-unit id="InvalidOptionCombination">
-        <source>Cannot combine option '{0}' and '{1}'.</source>
-        <target state="translated">無法合併選項 '{0}' 與 '{1}'。</target>
-        <note>{0} and {1} are option names like '--no-build'.</note>
+      <trans-unit id="InvalidOptionForFileBasedApp">
+        <source>Cannot specify option '{0}' when operating on a file-based app.</source>
+        <target state="translated">在檔案型應用程式上執行時，無法指定選項 '{0}'。</target>
+        <note>{0} is an option name like '--source'.</note>
       </trans-unit>
       <trans-unit id="InvalidOptionForStdin">
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
@@ -1677,9 +1731,14 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">正在安裝工作負載版本 {0}。</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoBinaryLogBecauseRunningJustCsc">
+        <source>Warning: Binary log option was specified but MSBuild will be skipped because running just csc is enough. Specify '--no-cache' to force full build.</source>
+        <target state="new">Warning: Binary log option was specified but MSBuild will be skipped because running just csc is enough. Specify '--no-cache' to force full build.</target>
+        <note>{Locked="--no-cache"}{Locked="MSBuild"}{Locked="csc"}</note>
+      </trans-unit>
       <trans-unit id="NoBinaryLogBecauseUpToDate">
-        <source>Warning: Binary log option was specified but build will be skipped because output is up to date, specify '--no-cache' to force build.</source>
-        <target state="translated">警告: 已指定二進位記錄選項，但將會略過建置，因為輸出為最新內容，請指定 '--no-cache' 以強制建置。</target>
+        <source>Warning: Binary log option was specified but build will be skipped because output is up to date. Specify '--no-cache' to force build.</source>
+        <target state="new">Warning: Binary log option was specified but build will be skipped because output is up to date. Specify '--no-cache' to force build.</target>
         <note>{Locked="--no-cache"}</note>
       </trans-unit>
       <trans-unit id="NoBuildOptionDescription">
@@ -2292,42 +2351,42 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory ({0}):</source>
-        <target state="new">Specify the output directory ({0}):</target>
+        <target state="translated">指定輸出目錄 ({0}):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
         <source>Determines changes without actually modifying the file system</source>
-        <target state="new">Determines changes without actually modifying the file system</target>
+        <target state="translated">確定變更而不實際修改檔案系統</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>
-        <target state="new">Dry run: would remove file-level directives from file: {0}</target>
+        <target state="translated">試執行: 將從檔案移除檔案層級指示詞: {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldCopyFile">
         <source>Dry run: would copy file '{0}' to '{1}'.</source>
-        <target state="new">Dry run: would copy file '{0}' to '{1}'.</target>
+        <target state="translated">試執行: 將會把檔案 '{0}' 複製到 '{1}'。</target>
         <note>{0} and {1} are file full paths.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldCreateDirectory">
         <source>Dry run: would create directory: {0}</source>
-        <target state="new">Dry run: would create directory: {0}</target>
+        <target state="translated">試執行: 將會建立目錄: {0}</target>
         <note>{0} is the directory full path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldCreateFile">
         <source>Dry run: would create file: {0}</source>
-        <target state="new">Dry run: would create file: {0}</target>
+        <target state="translated">試執行: 將會建立檔案: {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldDeleteFile">
         <source>Dry run: would delete file: {0}</source>
-        <target state="new">Dry run: would delete file: {0}</target>
+        <target state="translated">試執行: 將會刪除檔案: {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldMoveFile">
         <source>Dry run: would move file '{0}' to '{1}'.</source>
-        <target state="new">Dry run: would move file '{0}' to '{1}'.</target>
+        <target state="translated">試執行: 將會把檔案 '{0}' 移至 '{1}'。</target>
         <note>{0} and {1} are file full paths.</note>
       </trans-unit>
       <trans-unit id="ProjectManifest">
@@ -2570,8 +2629,10 @@ The default is to publish a framework-dependent application.</source>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
-        <source>The specified launch profile '{0}' could not be located.</source>
-        <target state="translated">找不到指定的啟動設定檔 '{0}'。</target>
+        <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
+{1}</source>
+        <target state="new">Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
+{1}</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionMultipleProjects">
@@ -2611,6 +2672,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <source>'{0}' is not a valid project file.</source>
         <target state="translated">'{0}' 並非有效的專案名稱。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="RunCommandWarningRunJsonNotUsed">
+        <source>Warning: Settings from '{0}' are not used because '{1}' has precedence.</source>
+        <target state="new">Warning: Settings from '{0}' are not used because '{1}' has precedence.</target>
+        <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
       </trans-unit>
       <trans-unit id="RunConfigurationOptionDescription">
         <source>The configuration to run for. The default for most projects is 'Debug'.</source>

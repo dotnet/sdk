@@ -125,7 +125,7 @@ _testhost() {
                         '--disable-build-servers[Force the command to ignore any persistent build servers.]' \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
-                        '*::PROJECT | SOLUTION | FILE -- The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.: ' \
+                        '::PROJECT | SOLUTION | FILE -- The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.: ' \
                         && ret=0
                         case $state in
                             (dotnet_dynamic_complete)
@@ -135,6 +135,15 @@ _testhost() {
                                     completions+=(${(q)line})
                                 done
                                 _describe 'completions' $completions && ret=0
+                            ;;
+                        esac
+                        case $state in
+                            (clean)
+                                words=($line[2] "${words[@]}")
+                                (( CURRENT += 1 ))
+                                curcontext="${curcontext%:*:*}:testhost-clean-command-$line[2]:"
+                                case $line[2] in
+                                esac
                             ;;
                         esac
                     ;;
@@ -604,6 +613,7 @@ _testhost() {
                                             '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--prerelease[Allows prerelease packages to be installed.]' \
                                             '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]: : ' \
+                                            '--file=[The file-based app to operate on.]: : ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             ':packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.:->dotnet_dynamic_complete' \
@@ -649,6 +659,7 @@ _testhost() {
                                         _arguments "${_arguments_options[@]}" : \
                                             '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]: : ' \
+                                            '--file=[The file-based app to operate on.]: : ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             '*::PACKAGE_NAME -- The package reference to remove.: ' \
@@ -657,6 +668,9 @@ _testhost() {
                                     (update)
                                         _arguments "${_arguments_options[@]}" : \
                                             '--project=[Path to a project or solution file, or a directory.]: : ' \
+                                            '--interactive=[Allow the command to block and require manual action for operations like authentication.]: :((False\:"False" True\:"True" ))' \
+                                            '--verbosity=[Set the verbosity level of the command. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]: :((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                            '-v=[Set the verbosity level of the command. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]: :((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             '*::packages -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.: ' \
@@ -860,9 +874,10 @@ _testhost() {
                         '--runtime=[The target runtime to run for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '-r=[The target runtime to run for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--project=[The path to the project file to run (defaults to the current directory if there is only one project).]:PROJECT_PATH: ' \
+                        '--file=[The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).]:FILE_PATH: ' \
                         '--launch-profile=[The name of the launch profile (if any) to use when launching the application.]:LAUNCH_PROFILE: ' \
                         '-lp=[The name of the launch profile (if any) to use when launching the application.]:LAUNCH_PROFILE: ' \
-                        '--no-launch-profile[Do not attempt to use launchSettings.json to configure the application.]' \
+                        '--no-launch-profile[Do not attempt to use launchSettings.json or \[app\].run.json to configure the application.]' \
                         '--no-build[Do not build the project before running. Implies --no-restore.]' \
                         '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
                         '--no-restore[Do not restore the project before building.]' \

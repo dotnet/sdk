@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             SetupFileLayoutAndFeed(temporaryDirectory, toolPackageStoreMock);
 
-            _parseResult = Parser.Instance.Parse("dotnet tool restore");
+            _parseResult = Parser.Parse("dotnet tool restore");
 
             _localToolsResolverCache
                 = new LocalToolsResolverCache(

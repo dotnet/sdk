@@ -425,6 +425,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
                     var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
                     itemGroup.Add(serviceWorkerAssetsManifest);
                     itemGroup.Add(fingerprintAssets);
+                    itemGroup.Add(new XElement("WasmEnableHotReload", false));
                     doc.Root.Add(itemGroup);
                 }
             });
@@ -449,6 +450,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
                         var itemGroup = new XElement("PropertyGroup");
                         var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
                         itemGroup.Add(fingerprintAssets);
+                        itemGroup.Add(new XElement("WasmEnableHotReload", false));
                         doc.Root.Add(itemGroup);
                     }
                 });
@@ -475,6 +477,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
                     var itemGroup = new XElement("PropertyGroup");
                     var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
                     itemGroup.Add(fingerprintAssets);
+                    itemGroup.Add(new XElement("WasmEnableHotReload", false));
                     doc.Root.Add(itemGroup);
                 }
             });
@@ -500,6 +503,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
                     var itemGroup = new XElement("PropertyGroup");
                     var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
                     itemGroup.Add(fingerprintAssets);
+                    itemGroup.Add(new XElement("WasmEnableHotReload", false));
                     doc.Root.Add(itemGroup);
                 }
             });

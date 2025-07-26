@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
+using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Run;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -22,10 +25,30 @@ namespace Microsoft.DotNet.Watch
         public bool LaunchBrowser { get; init; }
         public string? LaunchUrl { get; init; }
 
-        internal static LaunchSettingsProfile? ReadLaunchProfile(string projectDirectory, string? launchProfileName, IReporter reporter)
+        internal static LaunchSettingsProfile? ReadLaunchProfile(string projectPath, string? launchProfileName, IReporter reporter)
         {
-            var launchSettingsPath = Path.Combine(projectDirectory, "Properties", "launchSettings.json");
-            if (!File.Exists(launchSettingsPath))
+            var projectDirectory = Path.GetDirectoryName(projectPath);
+            Debug.Assert(projectDirectory != null);
+
+            var launchSettingsPath = CommonRunHelpers.GetPropertiesLaunchSettingsPath(projectDirectory, "Properties");
+            bool hasLaunchSettings = File.Exists(launchSettingsPath);
+
+            var projectNameWithoutExtension = Path.GetFileNameWithoutExtension(projectPath);
+            var runJsonPath = CommonRunHelpers.GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
+            bool hasRunJson = File.Exists(runJsonPath);
+
+            if (hasLaunchSettings)
+            {
+                if (hasRunJson)
+                {
+                    reporter.Warn(string.Format(CliCommandStrings.RunCommandWarningRunJsonNotUsed, runJsonPath, launchSettingsPath));
+                }
+            }
+            else if (hasRunJson)
+            {
+                launchSettingsPath = runJsonPath;
+            }
+            else
             {
                 return null;
             }
@@ -39,7 +62,7 @@ namespace Microsoft.DotNet.Watch
             }
             catch (Exception ex)
             {
-                reporter.Verbose($"Error reading launchSettings.json: {ex}.");
+                reporter.Verbose($"Error reading '{launchSettingsPath}': {ex}.");
                 return null;
             }
 
