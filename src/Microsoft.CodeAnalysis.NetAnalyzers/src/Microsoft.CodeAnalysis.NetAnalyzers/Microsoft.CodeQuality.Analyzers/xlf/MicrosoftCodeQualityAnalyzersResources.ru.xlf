@@ -442,6 +442,76 @@
         <target state="translated">Добавить перегрузки 'System.Uri'</target>
         <note>{Locked="System.Uri"}</note>
       </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsDescription">
+        <source>This rule detects usage of platform-specific intrinsics that can be replaced with an equivalent cross-platform intrinsic instead.</source>
+        <target state="new">This rule detects usage of platform-specific intrinsics that can be replaced with an equivalent cross-platform intrinsic instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opAddition">
+        <source>The addition operator should be preferred</source>
+        <target state="new">The addition operator should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opBitwiseAnd">
+        <source>The bitwise-and operator should be preferred</source>
+        <target state="new">The bitwise-and operator should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opBitwiseOr">
+        <source>The bitwise-or operator should be preferred</source>
+        <target state="new">The bitwise-or operator should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opDivison">
+        <source>The division operator should be preferred</source>
+        <target state="new">The division operator should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opExclusiveOr">
+        <source>The exclusive-or operator should be preferred</source>
+        <target state="new">The exclusive-or operator should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opLeftShift">
+        <source>The left-shift operator should be preferred</source>
+        <target state="new">The left-shift operator should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opMultiply">
+        <source>The multiply operator should be preferred</source>
+        <target state="new">The multiply operator should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opOnesComplement">
+        <source>The ones-complement operator should be preferred</source>
+        <target state="new">The ones-complement operator should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opRightShift">
+        <source>The right-shift operator should be preferred</source>
+        <target state="new">The right-shift operator should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opSubtraction">
+        <source>The subtraction operator should be preferred</source>
+        <target state="new">The subtraction operator should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opUnaryNegation">
+        <source>The unary-negation operator should be preferred</source>
+        <target state="new">The unary-negation operator should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opUnsignedRightShift">
+        <source>The unsigned right-shift operator should be preferred</source>
+        <target state="new">The unsigned right-shift operator should be preferred</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseCrossPlatformIntrinsicsTitle">
+        <source>Use cross-platform intrinsics</source>
+        <target state="new">Use cross-platform intrinsics</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesTitle">
         <source>Use generic event handler instances</source>
         <target state="translated">Используйте экземпляры обработчика универсальных событий</target>

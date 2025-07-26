@@ -1323,4 +1323,46 @@
   <data name="DoNotPassDisposablesIntoUnawaitedTasksDescription" xml:space="preserve">
     <value>Unawaited tasks that use 'IDisposable' instances may use those instances long after they have been disposed. Ensure tasks using those instances are completed before the instances are disposed.</value>
   </data>
+  <data name="UseCrossPlatformIntrinsicsTitle" xml:space="preserve">
+    <value>Use cross-platform intrinsics</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsDescription" xml:space="preserve">
+    <value>This rule detects usage of platform-specific intrinsics that can be replaced with an equivalent cross-platform intrinsic instead.</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_opAddition" xml:space="preserve">
+    <value>The addition operator should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_opBitwiseAnd" xml:space="preserve">
+    <value>The bitwise-and operator should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_opBitwiseOr" xml:space="preserve">
+    <value>The bitwise-or operator should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_opDivison" xml:space="preserve">
+    <value>The division operator should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_opExclusiveOr" xml:space="preserve">
+    <value>The exclusive-or operator should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_opLeftShift" xml:space="preserve">
+    <value>The left-shift operator should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_opMultiply" xml:space="preserve">
+    <value>The multiply operator should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_opOnesComplement" xml:space="preserve">
+    <value>The ones-complement operator should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_opRightShift" xml:space="preserve">
+    <value>The right-shift operator should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_opSubtraction" xml:space="preserve">
+    <value>The subtraction operator should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_opUnaryNegation" xml:space="preserve">
+    <value>The unary-negation operator should be preferred</value>
+  </data>
+  <data name="UseCrossPlatformIntrinsicsMessage_opUnsignedRightShift" xml:space="preserve">
+    <value>The unsigned right-shift operator should be preferred</value>
+  </data>
 </root>

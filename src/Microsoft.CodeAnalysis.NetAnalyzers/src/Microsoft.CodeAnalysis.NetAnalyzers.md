@@ -936,6 +936,18 @@ Unlike a class library, an application's API isn't typically referenced publicly
 |CodeFix|True|
 ---
 
+## [CA1516](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1516): Use cross-platform intrinsics
+
+This rule detects usage of platform-specific intrinsics that can be replaced with an equivalent cross-platform intrinsic instead.
+
+|Item|Value|
+|-|-|
+|Category|Maintainability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA1700](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1700): Do not name enum values 'Reserved'
 
 This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.
