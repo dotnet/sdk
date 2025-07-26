@@ -3,6 +3,8 @@
 
 using System.Diagnostics;
 using System.IO.Pipes;
+using System.Reflection;
+using System.Runtime.Loader;
 using Microsoft.DotNet.HotReload;
 
 /// <summary>
@@ -19,12 +21,15 @@ internal sealed class StartupHook
     private static PosixSignalRegistration? s_signalRegistration;
 #endif
 
+    private static Func<AssemblyLoadContext, AssemblyName, Assembly?>? s_assemblyResolvingEventHandler;
+
     /// <summary>
     /// Invoked by the runtime when the containing assembly is listed in DOTNET_STARTUP_HOOKS.
     /// </summary>
     public static void Initialize()
     {
         var processPath = Environment.GetCommandLineArgs().FirstOrDefault();
+        var processDir = Path.GetDirectoryName(processPath)!;
 
         Log($"Loaded into process: {processPath} ({typeof(StartupHook).Assembly.Location})");
 
@@ -59,6 +64,14 @@ internal sealed class StartupHook
         }
 
         RegisterPosixSignalHandlers();
+
+        // prepare handler, it will be installed on first managed update:
+        s_assemblyResolvingEventHandler = (_, args) =>
+        {
+            Log($"Resolving {args.Name}");
+            var path = Path.Combine(processDir, args.Name + ".dll");
+            return File.Exists(path) ? AssemblyLoadContext.Default.LoadFromAssemblyPath(path) : null;
+        };
 
         var agent = new HotReloadAgent();
         try
@@ -126,6 +139,14 @@ internal sealed class StartupHook
                         // Shouldn't get initial managed code updates when the debugger is attached.
                         // The debugger itself applies these updates when launching process with the debugger attached.
                         Debug.Assert(!Debugger.IsAttached);
+
+                        var handler = s_assemblyResolvingEventHandler;
+                        if (handler != null)
+                        {
+                            AssemblyLoadContext.Default.Resolving += handler;
+                            s_assemblyResolvingEventHandler = null;
+                        }
+
                         await ReadAndApplyManagedCodeUpdateAsync(pipeClient, agent, cancellationToken);
                         break;
 
