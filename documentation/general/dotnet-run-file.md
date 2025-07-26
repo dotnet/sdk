@@ -80,6 +80,7 @@ The file-based build and run kicks in only when:
 - if the target file exists, and has the `.cs` file extension or contents that start with `#!`.
 
 Otherwise, project-based `dotnet run` fallback is used and you might get an error like "Couldn't find a project to run."
+You can explicitly use the `--file` option to avoid the fallback behavior.
 
 File-based programs are processed by `dotnet run` equivalently to project-based programs unless specified otherwise in this document.
 For example, the remaining command-line arguments after the first argument (the target path) are passed through to the target app
@@ -90,7 +91,7 @@ If a dash (`-`) is given instead of the target path (i.e., `dotnet run -`), the 
 In this case, the current working directory is not used to search for other files (launch profiles, other sources in case of multi-file apps);
 the compilation consists solely of the single file read from the standard input.
 
-`dotnet path.cs` is a shortcut for `dotnet run path.cs` provided that `path.cs` is a valid [target path](#target-path) (`dotnet -` is currently not supported).
+`dotnet path.cs` is a shortcut for `dotnet run --file path.cs` provided that `path.cs` is a valid [target path](#target-path) (`dotnet -` is currently not supported).
 
 ### Other commands
 
@@ -101,6 +102,9 @@ Note that file-based apps have implicitly set `PublishAot=true`, so publishing u
 To opt out, use `#:property PublishAot=false` directive in your `.cs` file.
 
 Command `dotnet clean file.cs` can be used to clean build artifacts of the file-based program.
+
+Commands `dotnet package add PackageName --file app.cs` and `dotnet package remove PackageName --file app.cs`
+can be used to manipulate `#:package` directives in the C# files, similarly to what the commands do for project-based apps.
 
 ## Entry points
 
@@ -308,7 +312,7 @@ would need to search for a file-based program in the current directory instead o
 
 We could add a universal option that works with both project-based and file-based programs,
 like `dotnet run --directory ./dir/`. For inspiration, `dotnet test` also has a `--directory` option.
-Furthermore, users might expect there to be a `--file` option, as well. Both could be unified as `--path`.
+We already have a `--file` option. Both could be unified as `--path`.
 
 If we want to also support [multi-entry-point scenarios](#multiple-entry-points),
 we might need an option like `dotnet run --entry ./dir/name` which would work for both `./dir/name.cs` and `./dir/name/name.csproj`.
@@ -378,8 +382,7 @@ We could also add `dotnet compile` command that would be the equivalent of `dotn
 `dotnet clean` could be extended to support cleaning all file-based app outputs,
 e.g., `dotnet clean --all-file-based-apps`.
 
-Adding references via `dotnet package add`/`dotnet reference add` could be supported for file-based programs as well,
-i.e., the command would add a `#:package`/`#:project` directive to the top of a `.cs` file.
+More NuGet commands (like `dotnet nuget why` or `dotnet package list`) could be supported for file-based programs as well.
 
 ### Explicit importing
 
