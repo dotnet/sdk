@@ -440,8 +440,7 @@ public class RunCommand
             SetRootVariableName(
                 command,
                 runtimeIdentifier: RuntimeInformation.RuntimeIdentifier,
-                defaultAppHostRuntimeIdentifier: RuntimeInformation.RuntimeIdentifier,
-                targetFrameworkVersion: $"v{VirtualProjectBuildingCommand.TargetFrameworkVersion}");
+                defaultAppHostRuntimeIdentifier: RuntimeInformation.RuntimeIdentifier);
 
             return command;
         }
