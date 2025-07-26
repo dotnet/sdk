@@ -64,14 +64,14 @@ internal sealed class ImageBuilder
 
         JsonObject config = _baseImageConfig.BuildConfig();
         string configAsString = JsonSerializer.Serialize(config);
-        string imageSha = DigestUtils.GetSha(configAsString);
+        (long size, string imageSha) = DigestUtils.GetSha(configAsString);
         string imageDigest = DigestUtils.GetDigestFromSha(imageSha);
 
         ManifestConfig newManifestConfig =
             new()
             {
                 digest = imageDigest,
-                size = DigestUtils.GetUtf8Length(configAsString),
+                size = size,
                 mediaType = ManifestMediaType switch
                 {
                     SchemaTypes.OciManifestV1 => SchemaTypes.OciImageConfigV1,
