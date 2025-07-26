@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void ListToolParserCanGetToolCommandNameArgument()
         {
-            var result = Parser.Instance.Parse("dotnet tool run dotnetsay");
+            var result = Parser.Parse("dotnet tool run dotnetsay");
 
             var packageId = result.GetValue<string>(ToolRunCommandParser.CommandNameArgument);
 
@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void ListToolParserCanGetCommandsArgumentInUnmatchedTokens()
         {
-            var result = Parser.Instance.Parse("dotnet tool run dotnetsay hi");
+            var result = Parser.Parse("dotnet tool run dotnetsay hi");
 
             result.ShowHelpOrErrorIfAppropriate(); // Should not throw error
         }
@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void ListToolParserCanGetCommandsArgumentInUnparsedTokens()
         {
-            var result = Parser.Instance.Parse("dotnet tool run dotnetsay -- hi");
+            var result = Parser.Parse("dotnet tool run dotnetsay -- hi");
 
             result.Errors.Should().BeEmpty();
         }
@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void ListToolParserCanGetCommandsArgumentInUnparsedTokens2()
         {
-            var result = Parser.Instance.Parse("dotnet tool run dotnetsay hi1 -- hi2");
+            var result = Parser.Parse("dotnet tool run dotnetsay hi1 -- hi2");
 
             result.ShowHelpOrErrorIfAppropriate(); // Should not throw error
         }
@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void RootSubCommandIsToolCommand()
         {
-            var result = Parser.Instance.Parse("dotnetsay run -v arg");
+            var result = Parser.Parse("dotnetsay run -v arg");
             result.RootSubCommandResult().Should().Be("dotnetsay");
         }
     }
