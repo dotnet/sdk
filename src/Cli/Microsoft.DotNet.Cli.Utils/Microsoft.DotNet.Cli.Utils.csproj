@@ -54,8 +54,11 @@
     <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" PrivateAssets="all" />
     <PackageReference Include="System.CommandLine" />
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
     <PackageReference Include="System.IO.Hashing" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
