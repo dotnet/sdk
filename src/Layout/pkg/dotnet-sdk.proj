@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.Build.NoTargets">
+﻿<Project Sdk="Microsoft.Build.NoTargets">
 
   <PropertyGroup>
     <BuildSdkRpm Condition="'$(BuildSdkRpm)' == '' and '$(IsRPMBasedDistro)' == 'true'">true</BuildSdkRpm>
@@ -33,6 +33,22 @@
 
   <ItemGroup>
     <ProjectReference Include="..\redist\redist.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+    <!-- These project references ensure that package references for WiX extensions are correctly restored. The Idle target is a no-op as the
+         projects are built later when computed properties are available. These properties do not exist when projects are evaluated. -->
+    <ProjectReference Include="windows\msis\placeholder\placeholder.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true"
+                      Targets="Idle" />
+    <ProjectReference Include="windows\msis\templates\templates.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true"
+                      Targets="Idle" />
+    <ProjectReference Include="windows\msis\toolset\toolset.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true"
+                      Targets="Idle" />
+    <ProjectReference Include="windows\bundles\sdk\bundle.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true"
+                      Targets="Idle" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" />
   </ItemGroup>
 

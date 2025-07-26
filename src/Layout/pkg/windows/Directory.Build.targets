@@ -1,0 +1,73 @@
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.wixproj'">
+    <!-- Example: Microsoft .NET SDK 10.0.100 -->
+    <DefineConstants>$(DefineConstants);SdkBrandName=$(SdkBrandName)</DefineConstants>
+    <!-- Example: Microsoft .NET SDK 10.0.100 (x64) -->
+    <DefineConstants>$(DefineConstants);SdkPlatformBrandName=$(SdkBrandName) ($(TargetArchitecture))</DefineConstants>
+
+    <!-- NativeMachine values match the expected values for image file machine constants
+         https://docs.microsoft.com/en-us/windows/win32/sysinfo/image-file-machine-constants -->
+    <DefineConstants>$(DefineConstants);NativeMachine_x86=332</DefineConstants>
+    <DefineConstants>$(DefineConstants);NativeMachine_x64=34404</DefineConstants>
+    <DefineConstants>$(DefineConstants);NativeMachine_arm64=43620</DefineConstants>
+
+    <!-- This is the full semenatic version of the SDK. -->
+    <DefineConstants>$(DefineConstants);Version=$(Version)</DefineConstants>
+    <!-- BundleVersion is used by MSIs when generating provider keys, but ProductVersion is never used when generating bundles. -->
+    <DefineConstants Condition="'$(ProductVersion)' != ''">$(DefineConstants);ProductVersion=$(ProductVersion)</DefineConstants>
+    <DefineConstants Condition="'$(BundleVersion)' != ''">$(DefineConstants);BundleVersion=$(BundleVersion)</DefineConstants>
+  </PropertyGroup>
+
+  <!-- MSI upgrade codes are generated based on the name of the installer, which typically includes the version and platform information. -->
+  <Target Name="GenerateUpgradeCode" BeforeTargets="CoreCompile">
+    <Error Condition="'$(InstallerPath)' == '' AND '$(UpgradeCode)' == ''"
+           Text="Unable to compute UpgradeCode. The InstallerPath property is not set." />
+
+    <!-- Only use the file name when generating the GUID. Full paths may be inconsistent across different build environments. -->
+    <GenerateGuidFromName Name="$([System.IO.Path]::GetFileName($(InstallerPath)))" Condition="'$(UpgradeCode)' == ''">
+      <Output TaskParameter="GeneratedGuid" PropertyName="UpgradeCode" />
+    </GenerateGuidFromName>
+
+    <PropertyGroup>
+      <DefineConstants>$(DefineConstants);UpgradeCode=$(UpgradeCode)</DefineConstants>
+    </PropertyGroup>
+  </Target>
+
+  <!-- This target does nothing. It's intended to allow ProjectReference items to specify a target that has
+       no build impact, but allow projects to participate in restore operations.  -->
+  <Target Name="Idle" />
+
+  <!-- This target is intended to catch changes that require someone to investigate. -->
+  <Target Name="ValidateBuild" BeforeTargets="CoreCompile">
+    <!-- Bundles must target x86 for back compat. -->
+    <Error Condition="'$(OutputType)' == 'Bundle' AND '$(InstallerPlatform)' != 'x86'"
+           Text="Bundles must target x86. InstallerPlatform=$(InstallerPlatform)" />
+  </Target>
+
+  <Target Name="GenerateWixpackPackage" AfterTargets="CoreCompile">
+    <PropertyGroup>
+      <WixpackWorkingDir>$(IntermediateOutputPath)wixpack</WixpackWorkingDir>
+      <WixpackOutputDir>$(ArtifactsNonShippingPackagesDir)</WixpackOutputDir>
+    </PropertyGroup>
+
+    <CreateWixBuildWixpack
+      BindTrackingFile="$(IntermediateOutputPath)$(BindTrackingFilePrefix)%(CultureGroup.OutputSuffix)$(BindTrackingFileExtension)"
+      Cultures="%(CultureGroup.Identity)"
+      DefineConstants="$(DefineConstants);$(SolutionDefineConstants);$(ProjectDefineConstants);$(ProjectReferenceDefineConstants)"
+      Extensions="@(_ResolvedWixExtensionPaths)"
+      InstallerPlatform="$(InstallerPlatform)"
+      InstallerFile="$(IntermediateOutputPath)%(CultureGroup.OutputFolder)$(TargetFileName)"
+      IntermediateDirectory="$(IntermediateOutputPath)%(CultureGroup.OutputFolder)"
+      OutputFolder="$(WixpackOutputDir)"
+      OutputType="$(OutputType)"
+      PdbFile="$(IntermediateOutputPath)%(CultureGroup.OutputFolder)$(TargetPdbFileName)"
+      PdbType="$(DebugType)"
+      SourceFiles="@(Compile)"
+      WixpackWorkingDir="$(WixpackWorkingDir)">
+      <Output TaskParameter="OutputFile" PropertyName="_WixBuildCommandPackageNameOutput" />
+    </CreateWixBuildWixpack>
+  </Target>
+</Project>
