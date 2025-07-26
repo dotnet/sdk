@@ -6,7 +6,6 @@
     <Compile Include="..\provider.wxs" />
   </ItemGroup>
 
-  <!-- Harvest directories using Heat. Heat is scheduled to become  -->
   <ItemGroup>
     <HarvestDirectory Include="$(TemplateLayoutDirectoryToHarvest)"
                       ComponentGroupName="InstallFiles"

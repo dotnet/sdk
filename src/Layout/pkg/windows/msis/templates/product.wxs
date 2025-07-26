@@ -16,8 +16,7 @@
 
     <FeatureRef Id="F_DependencyProvider" />
 
-    <!--<WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
-    <ui:WixUI Id="WixUI_Minimal" />-->
+    <WixVariable Id="WixUILicenseRtf" Value="..\..\dummyeula.rtf" />
 
     <Icon Id="icon.ico" SourceFile="..\..\dotnet.ico"/>
     <Property Id="ARPPRODUCTICON" Value="icon.ico" />
