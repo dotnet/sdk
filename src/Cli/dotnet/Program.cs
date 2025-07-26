@@ -16,6 +16,7 @@ using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Configurer;
+using Microsoft.Extensions.Configuration.DotnetCli;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
@@ -177,17 +178,19 @@ public class Program
             {
                 PerformanceLogEventSource.Log.FirstTimeConfigurationStart();
 
-                var environmentProvider = new EnvironmentProvider();
+                // Initialize the new configuration-based environment provider
+                var configuration = DotNetConfigurationFactory.Create();
 
-                bool generateAspNetCertificate = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_GENERATE_ASPNET_CERTIFICATE, defaultValue: true);
-                bool telemetryOptout = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, defaultValue: CompileOptions.TelemetryOptOutDefault);
-                bool addGlobalToolsToPath = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_ADD_GLOBAL_TOOLS_TO_PATH, defaultValue: true);
-                bool nologo = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_NOLOGO, defaultValue: false);
-                bool skipWorkloadIntegrityCheck = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK,
+                // Use typed configuration directly instead of environment variable calls
+                bool generateAspNetCertificate = configuration.FirstTimeUse.GenerateAspNetCertificate;
+                bool telemetryOptout = configuration.CliUserExperience.TelemetryOptOut;
+                bool addGlobalToolsToPath = configuration.FirstTimeUse.AddGlobalToolsToPath;
+                bool nologo = configuration.CliUserExperience.NoLogo;
+                bool skipWorkloadIntegrityCheck = configuration.Workload.SkipIntegrityCheck ||
                     // Default the workload integrity check skip to true if the command is being ran in CI. Otherwise, false.
-                    defaultValue: new CIEnvironmentDetectorForTelemetry().IsCIEnvironment());
+                    new CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
 
-                ReportDotnetHomeUsage(environmentProvider);
+                ReportDotnetHomeUsage(configuration);
 
                 var isDotnetBeingInvokedFromNativeInstaller = false;
                 if (parseResult.CommandResult.Command.Name.Equals(Parser.InstallSuccessCommand.Name))
@@ -217,7 +220,7 @@ public class Program
                     toolPathSentinel,
                     isDotnetBeingInvokedFromNativeInstaller,
                     dotnetFirstRunConfiguration,
-                    environmentProvider,
+                    new EnvironmentProvider(),
                     performanceData,
                     skipFirstTimeUseCheck: getStarOptionPassed);
                 PerformanceLogEventSource.Log.FirstTimeConfigurationStop();
@@ -349,10 +352,9 @@ public class Program
         return exitCode;
     }
 
-    private static void ReportDotnetHomeUsage(IEnvironmentProvider provider)
+    private static void ReportDotnetHomeUsage(DotNetCliConfiguration config)
     {
-        var home = provider.GetEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName);
-        if (string.IsNullOrEmpty(home))
+        if (string.IsNullOrEmpty(config.Development.CliHome))
         {
             return;
         }
@@ -360,7 +362,7 @@ public class Program
         Reporter.Verbose.WriteLine(
             string.Format(
                 LocalizableStrings.DotnetCliHomeUsed,
-                home,
+                config.Development.CliHome,
                 CliFolderPathCalculator.DotnetHomeVariableName));
     }
 

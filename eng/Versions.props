@@ -102,6 +102,10 @@
     <MicrosoftNETCoreAppRefPackageVersion>10.0.0-preview.7.25374.102</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>10.0.0-preview.7.25374.102</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftNETHostModelVersion>10.0.0-preview.7.25374.102</MicrosoftNETHostModelVersion>
+    <MicrosoftExtensionsConfigurationPackageVersion>10.0.0-preview.7.25374.102</MicrosoftExtensionsConfigurationPackageVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>10.0.0-preview.7.25374.102</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
+    <MicrosoftExtensionsConfigurationBinderPackageVersion>10.0.0-preview.7.25374.102</MicrosoftExtensionsConfigurationBinderPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>10.0.0-preview.7.25374.102</MicrosoftExtensionsConfigurationJsonPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>10.0.0-preview.7.25374.102</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
     <MicrosoftExtensionsLoggingAbstractionsVersion>10.0.0-preview.7.25374.102</MicrosoftExtensionsLoggingAbstractionsVersion>
     <MicrosoftExtensionsLoggingConsoleVersion>10.0.0-preview.7.25374.102</MicrosoftExtensionsLoggingConsoleVersion>
