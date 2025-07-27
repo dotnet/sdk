@@ -122,7 +122,7 @@ public class CreateImageIndexTests
 
         cni.OutputRegistry = outputRegistry;
         cni.LocalRegistry = DockerAvailableFactAttribute.LocalRegistry;
-        cni.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, rid, "publish"));
+        // cni.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, rid, "publish"));
         cni.Repository = repository;
         cni.ImageTags = tags.Select(t => $"{t}-{rid}").ToArray();
         cni.WorkingDirectory = "app/";

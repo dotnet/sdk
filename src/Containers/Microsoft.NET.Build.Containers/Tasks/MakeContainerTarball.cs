@@ -5,8 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
-using Microsoft.NET.Build.Containers.Logging;
-using Microsoft.NET.Build.Containers.Resources;
+using Microsoft.Extensions.Logging.MSBuild;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.NET.Build.Containers.Tasks;

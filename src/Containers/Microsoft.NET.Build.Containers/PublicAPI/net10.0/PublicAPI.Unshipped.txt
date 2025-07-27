@@ -48,16 +48,12 @@ Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.OutputRegistry.get -> stri
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.OutputRegistry.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Repository.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Repository.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedAppContainerLayer.get -> Microsoft.Build.Framework.ITaskItem!
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedAppContainerLayer.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedAppContainerConfig.get -> Microsoft.Build.Framework.ITaskItem!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedAppContainerConfig.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedAppContainerManifest.get -> Microsoft.Build.Framework.ITaskItem!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedAppContainerManifest.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedConfigurationPath.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedConfigurationPath.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedLayerPath.get -> string!
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedLayerPath.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedManifestPath.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedManifestPath.set -> void
 Microsoft.NET.Build.Containers.Tasks.MakeContainerTarball
@@ -268,8 +264,6 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageManifestPath.get ->
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Cancel() -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerEnvironmentVariables.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerEnvironmentVariables.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerizeDirectory.get -> string!
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerizeDirectory.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerUser.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerUser.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContentStoreRoot.get -> string!
@@ -312,10 +306,6 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.OutputRegistry.get -> string
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.OutputRegistry.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ArchiveOutputPath.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ArchiveOutputPath.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ToolExe.get -> string!
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ToolExe.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ToolPath.get -> string!
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ToolPath.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.WorkingDirectory.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.WorkingDirectory.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.get -> bool

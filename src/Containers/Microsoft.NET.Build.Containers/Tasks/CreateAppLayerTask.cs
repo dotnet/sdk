@@ -38,7 +38,9 @@ public sealed partial class CreateAppLayerTask : Microsoft.Build.Utilities.Task,
             .Select(f => (f.ItemSpec, f.GetMetadata("RelativePath")))
             .Where(x => !string.IsNullOrWhiteSpace(x.ItemSpec) && !string.IsNullOrWhiteSpace(x.Item2))
             .ToArray();
-        Layer newLayer = await Layer.FromFiles(filesWithRelativePaths, ContainerRootDirectory, TargetRuntimeIdentifier.StartsWith("win"), LayerMediaType, new(new(ContentStoreRoot)), new(GeneratedLayerPath), cancellationToken);
+        var isWindowsLayer = TargetRuntimeIdentifier.StartsWith("win", StringComparison.OrdinalIgnoreCase);
+        var userId = isWindowsLayer ? null : ContainerBuilder.TryParseUserId(ContainerUser);
+        Layer newLayer = await Layer.FromFiles(filesWithRelativePaths, ContainerRootDirectory, isWindowsLayer, LayerMediaType, new(new(ContentStoreRoot)), new(GeneratedLayerPath), cancellationToken, userId: userId);
         GeneratedAppContainerLayer = new Microsoft.Build.Utilities.TaskItem(GeneratedLayerPath, new Dictionary<string, string>(3)
         {
             ["Size"] = newLayer.Descriptor.Size.ToString(),
@@ -47,5 +49,5 @@ public sealed partial class CreateAppLayerTask : Microsoft.Build.Utilities.Task,
         });
         return true;
     }
-        
+
 }

@@ -358,32 +358,29 @@
        in a few different ways we can't express that dependency directly here. -->
   <!-- NOTE: the apphost screws with incrementality because it's marked with CopyToPublishDirectory=Always in _ComputeNETCoreBuildOutputFiles - we should find a better way to handle that. -->
   <Target Name="_CreateSingleContainer"
-    DependsOnTargets="_DownloadLayers;_GenerateContainerConfigTrackingFile;_CreateGeneratedContainerProperties;_GetItemsFromPublishDirForSingleContainerPublish"
-    Inputs="$(_ContainerGeneratedConfigTrackingFile);@(_BaseContainerThisArchLayer);@(_BaseContainerThisArchConfig);@(_BaseContainerThisArchManifest);@(_ContainerPublishItem)"
-    Outputs="$(_ContainerGeneratedManifestPath);$(_ContainerGeneratedConfigurationPath);$(_ContainerGeneratedLayerPath)"
-    Returns="@(GeneratedContainer);@(ContainerGeneratedAppLayer);@(ContainerGeneratedConfig);@(ContainerGeneratedManifest)">
+    DependsOnTargets="_DownloadLayers;_GenerateContainerConfigTrackingFile;_CreateGeneratedContainerProperties;_GetItemsFromPublishDirForSingleContainerPublish;_CreateApplicationLayer"
+    Inputs="$(_ContainerGeneratedConfigTrackingFile);@(_BaseContainerThisArchLayer);@(_BaseContainerThisArchConfig);@(_BaseContainerThisArchManifest);@(_ContainerPublishItem);@(_ContainerGeneratedApplicationLayer)"
+    Outputs="$(_ContainerGeneratedManifestPath);$(_ContainerGeneratedConfigurationPath)"
+    Returns="@(GeneratedContainer);@(_ContainerGeneratedApplicationLayer);@(ContainerGeneratedConfig);@(ContainerGeneratedManifest)">
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
       <DotNetHostDirectory>$(NetCoreRoot)</DotNetHostDirectory>
       <DotNetHostFileName>dotnet</DotNetHostFileName>
       <DotNetHostFileName Condition="'$(OS)' == 'Windows_NT'">dotnet.exe</DotNetHostFileName>
     </PropertyGroup>
 
-    <CreateNewImage ContainerizeDirectory="$(ContainerizeFolder)"
-                    ToolPath="$(DotNetHostDirectory)"
-                    ToolExe="$(DotNetHostFileName)"
-                    BaseRegistry="$(ContainerBaseRegistry)"
+    <CreateNewImage BaseRegistry="$(ContainerBaseRegistry)"
                     BaseImageName="$(ContainerBaseName)"
                     BaseImageTag="$(ContainerBaseTag)"
                     BaseImageDigest="$(ContainerBaseDigest)"
                     BaseImageManifestPath="@(_BaseContainerThisArchManifest)"
                     BaseImageConfigurationPath="@(_BaseContainerThisArchConfig)"
+                    GeneratedApplicationLayer="@(_ContainerGeneratedApplicationLayer)"
                     ImageFormat="$(ContainerImageFormat)"
                     LocalRegistry="$(LocalRegistry)"
                     OutputRegistry="$(ContainerRegistry)"
                     ArchiveOutputPath="$(ContainerArchiveOutputPath)"
                     Repository="$(ContainerRepository)"
                     ImageTags="@(ContainerImageTags)"
-                    PublishFiles="@(_ContainerPublishItem)"
                     WorkingDirectory="$(ContainerWorkingDirectory)"
                     Entrypoint="@(ContainerEntrypoint)"
                     EntrypointArgs="@(ContainerEntrypointArgs)"
@@ -405,15 +402,11 @@
       <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
       <Output TaskParameter="GeneratedContainerNames" ItemName="GeneratedContainerName" />
       <Output TaskParameter="GeneratedDigestLabel" ItemName="ContainerLabel" />
-      <Output TaskParameter="GeneratedAppContainerLayer" ItemName="_ContainerGeneratedAppLayer" />
       <Output TaskParameter="GeneratedAppContainerConfig" ItemName="_ContainerGeneratedConfig" />
       <Output TaskParameter="GeneratedAppContainerManifest" ItemName="_ContainerGeneratedManifest" />
     </CreateNewImage>
 
     <ItemGroup>
-      <ContainerGeneratedAppLayer Include="@(_ContainerGeneratedAppLayer)">
-        <RuntimeIdentifier>$(RuntimeIdentifier)</RuntimeIdentifier>
-      </ContainerGeneratedAppLayer>
       <ContainerGeneratedConfig Include="@(_ContainerGeneratedConfig)">
         <RuntimeIdentifier>$(RuntimeIdentifier)</RuntimeIdentifier>
       </ContainerGeneratedConfig>
@@ -422,7 +415,7 @@
       </ContainerGeneratedManifest>
 
       <!-- Track the generated files for cleanup later -->
-      <FileWrites Include="$(ContainerGeneratedManifest);$(ContainerGeneratedConfig);$(ContainerGeneratedAppLayer);" />
+      <FileWrites Include="$(ContainerGeneratedManifest);$(ContainerGeneratedConfig);" />
 
       <GeneratedContainer Include="GeneratedContainer">
         <ManifestPath>$(_ContainerGeneratedManifestPath)</ManifestPath>
@@ -440,7 +433,7 @@
 
   <Target Name="_PublishSingleContainer"
       DependsOnTargets="_CreateSingleContainer;_ContainerSinglePublishComputeTrackingFile"
-      Inputs="@(_BaseContainerThisArchLayer);@(ContainerGeneratedAppLayer);@(ContainerGeneratedManifest);@(ContainerGeneratedConfig)"
+      Inputs="@(_BaseContainerThisArchLayer);@(_ContainerGeneratedApplicationLayer);@(ContainerGeneratedManifest);@(ContainerGeneratedConfig)"
       Outputs="$(_ContainerSinglePublishTrackingFile)"
       >
         <PushContainerToRemoteRegistry Condition="'$(ContainerRegistry)' != ''"
@@ -449,7 +442,7 @@
           Tags="@(ContainerImageTags)"
           Manifest="@(ContainerGeneratedManifest)"
           Configuration="@(ContainerGeneratedConfig)"
-          Layers="@(_BaseContainerThisArchLayer);@(ContainerGeneratedAppLayer)" />
+          Layers="@(_BaseContainerThisArchLayer);@(_ContainerGeneratedApplicationLayer)" />
 
         <MakeContainerTarball Condition="'$(ContainerArchiveOutputPath)' != ''"
           ArchivePath="$(ContainerArchiveOutputPath)"
@@ -457,7 +450,7 @@
           Tags="@(ContainerImageTags)"
           Manifest="@(ContainerGeneratedManifest)"
           Configuration="@(ContainerGeneratedConfig)"
-          Layers="@(_BaseContainerThisArchLayer);@(ContainerGeneratedAppLayer)">
+          Layers="@(_BaseContainerThisArchLayer);@(_ContainerGeneratedApplicationLayer)">
           <Output TaskParameter="GeneratedArchiveFilePath" PropertyName="_GeneratedArchiveOutputPath" />
         </MakeContainerTarball>
 
@@ -467,7 +460,7 @@
           Tags="@(ContainerImageTags)"
           Manifest="@(ContainerGeneratedManifest)"
           Configuration="@(ContainerGeneratedConfig)"
-          Layers="@(_BaseContainerThisArchLayer);@(ContainerGeneratedAppLayer)" />
+          Layers="@(_BaseContainerThisArchLayer);@(_ContainerGeneratedApplicationLayer)" />
 
       <!-- These are the public-facing values that should trigger a different container publish -->
       <WriteLinesToFile

@@ -42,7 +42,7 @@ public class PushContainerToRemoteRegistry : Microsoft.Build.Utilities.Task, ICa
         ILoggerFactory msbuildLoggerFactory = new LoggerFactory(new[] { loggerProvider });
         ILogger logger = msbuildLoggerFactory.CreateLogger(nameof(PushContainerToRemoteRegistry));
         var destinationRegistry = new Registry(Registry, msbuildLoggerFactory.CreateLogger(Registry), RegistryMode.Push);
-    
+
         var telemetry = new Telemetry(new(null, null, Telemetry.GetRegistryType(destinationRegistry), null), Log);
         // functionally, we need to
         // * upload the layers
@@ -75,7 +75,7 @@ public class PushContainerToRemoteRegistry : Microsoft.Build.Utilities.Task, ICa
             ["Size"] = Configuration.GetMetadata("Size")!
         }))
         {
-            logger.LogTrace("Pushing config to {Registry}.");
+            logger.LogTrace($"Pushing config to {Registry}.");
             var configText = await File.ReadAllTextAsync(Configuration.ItemSpec, _cts.Token);
             var configBytes = Encoding.UTF8.GetBytes(configText);
             var configDigest = DigestUtils.GetDigest(configText);
@@ -106,11 +106,11 @@ public class PushContainerToRemoteRegistry : Microsoft.Build.Utilities.Task, ICa
         {
             if (manifestStructure.GetDigest() != Manifest.GetMetadata("Digest"))
             {
-                logger.LogError("Manifest digest {Digest} does not match the computed digest {ComputedDigest} from the manifest file itself.", manifestStructure.GetDigest());
+                logger.LogError($"Manifest digest {manifestStructure.GetDigest()} does not match the computed digest {Manifest.GetMetadata("Digest")} from the manifest file itself.");
             }
             if (manifestStructure.GetDigest() != DigestUtils.GetDigest(manifestStructure))
             {
-                logger.LogError("Manifest digest {Digest} does not match the computed digest {ComputedDigest} from the manifest structure itself.", DigestUtils.GetDigest(manifestStructure));
+                logger.LogError($"Manifest digest {manifestStructure.GetDigest()} does not match the computed digest {DigestUtils.GetDigest(manifestStructure)} from the manifest structure itself.");
             }
             // * upload the manifest as a digest
             _cts.Token.ThrowIfCancellationRequested();
