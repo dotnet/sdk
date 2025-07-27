@@ -1,0 +1,59 @@
+﻿<WixLocalization Culture="tr-TR" Language="1055" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  <String Id="Caption" Value="[WixBundleName] Yükleyicisi" />
+  <String Id="Title" Value="[BUNDLEMONIKER]" />
+  <String Id="ConfirmCancelMessage" Value="İptal etmek istediğinizden emin misiniz?" />
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Önceki sürüm" />
+  <String Id="HelpHeader" Value="Kurulum Yardımı" />
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]&quot;dizin&quot;[\]] - yüklemeler, onarımlar, kaldırmalar veya paketin tam bir yerel kopyasını dizinde oluşturur. '/install' varsayılandır. /passive | /quiet - kullanıcı arabirimini istem olmadan minimum düzeyde görüntüler veya kullanıcı arabirimi ve istem olmadan görüntüler. Varsayılan olarak kullanıcı arabirimi ve tüm istemler görüntülenir. /norestart - yeniden başlatma girişimlerini durdur. Varsayılan olarak kullanıcı arabirimi yeniden başlatmadan önce sorar. /log [\[]&quot;log.txt&quot;[\]] - belirli bir dosyaya kaydeder. Varsayılan olarak, %TEMP% içinde bir günlük dosyası oluşturulur." />
+  <String Id="HelpCloseButton" Value="&amp;Kapat" />
+  <String Id="InstallAcceptCheckbox" Value="Lisans hüküm ve koşullarını &amp;kabul ediyorum" />
+  <String Id="InstallOptionsButton" Value="&amp;Seçenekler" />
+  <String Id="InstallInstallButton" Value="Yü&amp;kle" />
+  <String Id="InstallCloseButton" Value="&amp;Kapat" />
+  <String Id="ProgressHeader" Value="Kurulum İlerleme Durumu" />
+  <String Id="ProgressLabel" Value="İşleniyor:" />
+  <String Id="OverallProgressPackageText" Value="Başlatılıyor..." />
+  <String Id="ProgressCancelButton" Value="İ&amp;ptal" />
+  <String Id="ModifyHeader" Value="Kurulumu değiştir" />
+  <String Id="ModifyRepairButton" Value="&amp;Onar" />
+  <String Id="ModifyUninstallButton" Value="&amp;Kaldır" />
+  <String Id="ModifyCloseButton" Value="&amp;Kapat" />
+  <String Id="SuccessRepairHeader" Value="Onarım Başarıyla Tamamlandı" />
+  <String Id="SuccessUninstallHeader" Value="Kaldırma Başarıyla Tamamlandı" />
+  <String Id="SuccessHeader" Value="Kurulum Başarılı" />
+  <String Id="SuccessLaunchButton" Value="&amp;Başlat" />
+  <String Id="SuccessRestartText" Value="Yazılım yükleme işlemini tamamlamak için bilgisayarınızı yeniden başlatmanız gerekir." />
+  <String Id="SuccessRestartButton" Value="&amp;Yeniden Başlat" />
+  <String Id="SuccessCloseButton" Value="&amp;Kapat" />
+  <String Id="FailureHeader" Value="Kurulum Başarısız" />
+  <String Id="FailureInstallHeader" Value="Kurulum Başarısız" />
+  <String Id="FailureUninstallHeader" Value="Kaldırma Başarısız" />
+  <String Id="FailureRepairHeader" Value="Onarım Başarısız" />
+  <String Id="FailureHyperlinkLogText" Value="Bir ya da daha fazla sorun nedeniyle kurulum başarısız oldu. Lütfen bu sorunları düzeltin ve kurulumu yeniden deneyin. Daha fazla bilgi için &lt;a href=&quot;#&quot;&gt;günlük dosyasına&lt;/a&gt; bakın." />
+  <String Id="FailureRestartText" Value="Yazılımın geri alınmasını tamamlamak için bilgisayarınızı yeniden başlatmanız gerekiyor." />
+  <String Id="FailureRestartButton" Value="&amp;Yeniden Başlat" />
+  <String Id="FailureCloseButton" Value="&amp;Kapat" />
+  <String Id="FilesInUseHeader" Value="Kullanımda Olan Dosyalar" />
+  <String Id="FilesInUseLabel" Value="Şu uygulamalar güncelleştirilmesi gereken dosyaları kullanıyor:" />
+  <String Id="FilesInUseCloseRadioButton" Value="&amp;Uygulamaları kapatın ve yeniden başlatmayı deneyin." />
+  <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Uygulamaları kapatmayın. Sistemi yeniden başlatmanız gerekir." />
+  <String Id="FilesInUseOkButton" Value="&amp;Tamam" />
+  <String Id="FilesInUseCancelButton" Value="İ&amp;ptal" />
+  <String Id="FirstTimeWelcomeMessage" Value="Yükleme başarılı oldu. Şu ürünler yüklendi: • .NET SDK [DOTNETSDKVERSION] • .NET Çalışma Zamanı [DOTNETRUNTIMEVERSION] • ASP.NET Çekirdek Çalışma Zamanı [ASPNETCOREVERSION] • .NET Windows Masaüstü Çalışma Zamanı [WINFORMSANDWPFVERSION] Bu ürün, kullanım verilerini toplar • Daha fazla bilgi ve geri çevirme https://aka.ms/dotnet-cli-telemetry Kaynaklar • .NET Belgeleri https://aka.ms/dotnet-docs • SDK Belgeleri https://aka.ms/dotnet-sdk-docs • Sürüm Notları https://aka.ms/dotnet[VERSIONMAJOR]-release-notes • Öğreticiler https://aka.ms/dotnet-tutorials" />
+  <String Id="WelcomeHeaderMessage" Value=".NET SDK" />
+  <String Id="WelcomeDescription" Value=".NET SDK, .NET uygulamalarını derlemek, çalıştırmak ve test etmek için kullanılır. Birden çok dil, düzenleyici ve geliştirici aracı arasından seçim yapabilirsiniz ve web, mobil, masaüstü, oyun ve IoT uygulamaları oluşturmak için büyük bir kitaplık ekosisteminden yararlanabilirsiniz. Beğeneceğinizi umuyoruz!" />
+  <String Id="LearnMoreTitle" Value=".NET hakkında daha fazla bilgi edinin" />
+  <String Id="ResourcesHeader" Value="Kaynaklar" />
+  <String Id="CoreDocumentationLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-docs&quot;&gt;.NET Belgeleri&lt;/A&gt;" />
+  <String Id="SDKDocumentation" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-docs&quot;&gt;SDK Belgeleri&lt;/A&gt;" />
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;Gizlilik Bildirimi&lt;/A&gt;" />
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;.NET için Lisans Bilgileri&lt;/A&gt;" />
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Telemetri koleksiyonu ve katılmamayı seçme&lt;/A&gt;" />
+  <String Id="InstallationNoteTitle" Value="Yükleme notu" />
+  <String Id="InstallationNote" Value="Yükleme işlemi sırasında, proje geri yükleme hızını artıran ve çevrimdışı erişimi etkinleştiren bir komut çalıştırılır. Tamamlanması bir dakikanızı alır." />
+  <String Id="VisualStudioWarning" Value="Visual Studio ile .NET [VERSIONMAJOR].[VERSIONMINOR] kullanmayı planlıyorsanız Visual Studio 2022 [MINIMUMVSVERSION] veya üzeri bir sürüm gerekir. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Daha fazla bilgi edinin&lt;/A&gt;." />
+  <String Id="LicenseAssent" Value="Yükle'ye tıklayarak aşağıdaki koşulları kabul etmiş olursunuz:" />
+  <String Id="InstallPathx64x86" Value="x64 SDK yüklemelerinin yükleme yolu (&quot;[DOTNETHOME_X64]&quot;), x86 SDK yüklemelerinin yükleme yolu (&quot;[DOTNETHOME_X86]&quot;) ile aynı olamaz" />
+  <String Id="InstallPathARM64x86" Value="ARM64 SDK yüklemeleri için yükleme yolu (&quot;[DOTNETHOME_ARM64]&quot;), x86 SDK yüklemelerinin yükleme yolu (&quot;[DOTNETHOME_X86]&quot;) ile aynı olamaz" />
+  <String Id="InstallPathARM64x64" Value="ARM64 SDK yüklemelerinin yükleme yolu (&quot;[DOTNETHOME_ARM64]&quot;), x64 SDK yüklemelerinin yükleme yolu (&quot;[DOTNETHOME_X64]&quot;) ile aynı olamaz" />
+</WixLocalization>
