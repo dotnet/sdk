@@ -69,7 +69,7 @@
     <Compile Include="DockerLoadException.cs" />
     <Compile Include="Registry/RegistryConstants.cs" />
     <Compile Include="Tasks/ParseContainerProperties.cs" />
-    <Compile Include="Tasks/CreateAppLayerTask.Interface.cs" />
+    <Compile Include="Tasks/CreateAppLayer.Interface.cs" />
     <Compile Include="Tasks/CreateAppLayerToolTask.cs" />
     <Compile Include="Tasks/ComputeDotnetBaseImageAndTag.cs" />
     <Compile Include="ContainerHelpers.cs" />

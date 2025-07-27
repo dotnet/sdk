@@ -10,7 +10,7 @@ namespace Microsoft.NET.Build.Containers.Tasks;
 /// An MSBuild Task whose job is to take a list of input files and some metadata about them, and create a single container image layer containing them.
 /// Since this is a tarball, on .NET Framework we use a ToolTask to shell out to a .NET tool to create the tarball.
 /// </summary>
-public partial class CreateAppLayerTask
+public partial class CreateAppLayer
 {
     /// <summary>
     /// The files to pack into the layer. Each file must have a RelativePath metadata item set, which will be used to determine the path of the file within the container.
@@ -31,10 +31,10 @@ public partial class CreateAppLayerTask
     public string TargetRuntimeIdentifier { get; set; } = string.Empty;
 
     /// <summary>
-    /// The media type of the layer to create. This is used to determine how the layer will be created and what format it will be in.
+    /// The <see cref="KnownImageFormats">format</see> or media type of the parent image of the layer to create. This is used to determine which mediatype should be used for the layer itself.
     /// </summary>
     [Required]
-    public string LayerMediaType { get; set; } = string.Empty;
+    public string ParentImageFormat { get; set; } = string.Empty;
 
     /// <summary>
     /// The path to the local storage location where the created layer will be stored for anything 'downstream' that looks up objects by digest.
@@ -60,15 +60,25 @@ public partial class CreateAppLayerTask
     public string ContainerUser { get; set; }
 
     /// <summary>
+    /// The path to the folder containing `CreateLayerTarball.dll`.
+    /// </summary>
+    /// <remarks>
+    /// Used only for the ToolTask implementation of this task.
+    /// </remarks>
+    [Required]
+    public string CreateLayerTarballDirectory { get; set; } = null!;
+
+    /// <summary>
     /// The output layer that was created by this task. This is the layer that can be used by other tasks or tools to create a container image.
     /// This will have Size, MediaType, and Digest metadata set on it, which can be used to determine the properties of the layer by other parts of the build process.
     /// </summary>
     [Output]
     public ITaskItem GeneratedAppContainerLayer { get; set; } = null!;
 
-    public CreateAppLayerTask()
+    public CreateAppLayer()
     {
-
         TaskResources = Resource.Manager;
+        ToolPath = null!;
+        ToolExe = null!;
     }
 }

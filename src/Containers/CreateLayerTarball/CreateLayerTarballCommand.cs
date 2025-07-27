@@ -55,9 +55,9 @@ internal class CreateLayerTarballCommand : RootCommand
         Description = "Used to determine what kind of layer to create. If this is a Windows RID, a Windows layer will be created; otherwise, a Linux layer will be created.",
         Required = true
     };
-    internal Option<string> LayerMediaTypeOption { get; } = new("--layer-media-type")
+    internal Option<string> ParentImageFormatOption { get; } = new("--parent-image-format")
     {
-        Description = "The media type of the layer to create. This is used to determine how the layer will be created and what format it will be in.",
+        Description = "The KnownImageFormats or media type of the parent image of the layer to create. This is used to determine which media type should be used for the layer itself.",
         Required = true
     };
     internal Option<string> ContentStoreRootOption { get; } = new("--content-store-root")
@@ -86,7 +86,7 @@ internal class CreateLayerTarballCommand : RootCommand
     {
         Options.Add(InputFilesOption);
         Options.Add(ContainerRootDirOption);
-        Options.Add(LayerMediaTypeOption);
+        Options.Add(ParentImageFormatOption);
         Options.Add(ContentStoreRootOption);
         Options.Add(TargetRuntimeIdentifierOption);
         Options.Add(GeneratedLayerPath);
@@ -97,11 +97,29 @@ internal class CreateLayerTarballCommand : RootCommand
             var inputFiles = parseResult.GetValue(InputFilesOption)!;
             var workingDir = parseResult.GetValue(ContainerRootDirOption)!;
             var targetRid = parseResult.GetValue(TargetRuntimeIdentifierOption)!;
-            var layerMediaType = parseResult.GetValue(LayerMediaTypeOption)!;
+            var parentImageFormat = parseResult.GetValue(ParentImageFormatOption)!;
             var contentStoreRoot = parseResult.GetValue(ContentStoreRootOption)!;
             var generatedLayerPath = parseResult.GetValue(GeneratedLayerPath)!;
             var isWindowsLayer = targetRid.StartsWith("win", StringComparison.OrdinalIgnoreCase);
             var containerUserId = isWindowsLayer ? null : ContainerBuilder.TryParseUserId(parseResult.GetValue(ContainerUserOption)!);
+            if (Enum.TryParse(parentImageFormat, out KnownImageFormats format))
+            {
+            }
+            else
+            {
+                format = parentImageFormat switch
+                {
+                    SchemaTypes.DockerManifestV2 => KnownImageFormats.Docker,
+                    SchemaTypes.OciManifestV1 => KnownImageFormats.OCI,
+                    _ => throw new ArgumentException(parentImageFormat),
+                };
+            }
+            string layerMediaType = format switch
+            {
+                KnownImageFormats.Docker => SchemaTypes.DockerLayerGzip,
+                KnownImageFormats.OCI => SchemaTypes.OciLayerGzipV1,
+                _ => throw new ArgumentException(parentImageFormat),
+            };
             var layer = await Layer.FromFiles(inputFiles, workingDir, isWindowsLayer, layerMediaType, new(new(contentStoreRoot)), new(generatedLayerPath), cancellationToken, userId: containerUserId);
             // Log the layer details as json output of a descriptor
             await parseResult.InvocationConfiguration.Output.WriteAsync(JsonSerializer.Serialize(layer.Descriptor, new JsonSerializerOptions { WriteIndented = false }));
