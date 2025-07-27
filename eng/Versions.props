@@ -31,17 +31,6 @@
     <FlagNetStandard1XDependencies Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</FlagNetStandard1XDependencies>
     <!-- This property is only used in the dotnet test integration tests. -->
     <MicrosoftTestingPlatformVersion>1.8.0-preview.25373.2</MicrosoftTestingPlatformVersion>
-    <NuGetCommandsVersion>7.0.0-preview.1.28</NuGetCommandsVersion>
-    <NuGetCredentialsVersion>7.0.0-preview.1.28</NuGetCredentialsVersion>
-    <NuGetDependencyResolverCoreVersion>7.0.0-preview.1.28</NuGetDependencyResolverCoreVersion>
-    <NuGetLibraryModelVersion>7.0.0-preview.1.28</NuGetLibraryModelVersion>
-    <NuGetProtocolVersion>7.0.0-preview.1.28</NuGetProtocolVersion>
-    <MicrosoftWindowsDesktopAppRefVersion>10.0.0-preview.7.25375.119</MicrosoftWindowsDesktopAppRefVersion>
-    <MicrosoftWindowsDesktopAppInternalVersion>10.0.0-preview.7.25375.119</MicrosoftWindowsDesktopAppInternalVersion>
-    <MicrosoftNETSdkWindowsDesktopVersion>10.0.0-preview.7.25375.119</MicrosoftNETSdkWindowsDesktopVersion>
-    <MicrosoftDotNetDarcVersion>1.1.0-beta.25367.1</MicrosoftDotNetDarcVersion>
-    <MicrosoftDotnetWinFormsProjectTemplatesVersion>10.0.0-preview.7.25359.101</MicrosoftDotnetWinFormsProjectTemplatesVersion>
-    <MicrosoftDotNetWpfProjectTemplatesVersion>10.0.0-preview.7.25359.101</MicrosoftDotNetWpfProjectTemplatesVersion>
   </PropertyGroup>
   <PropertyGroup Label="Servicing version information">
     <VersionFeature21>30</VersionFeature21>
