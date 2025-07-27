@@ -74,7 +74,7 @@ public static class RidMapping
         var ridDict = new Dictionary<string, PlatformSpecificOciManifest>();
         foreach (var manifest in manifestList)
         {
-            if (CreateRidForPlatform(manifest.platform) is { } rid)
+            if (manifest.platform is PlatformInformation platformInfo && CreateRidForPlatform(platformInfo) is { } rid)
             {
                 ridDict.TryAdd(rid, manifest);
             }
@@ -94,7 +94,7 @@ public static class RidMapping
         };
         // TODO: this part needs a lot of work, the RID graph isn't super precise here and version numbers (especially on windows) are _whack_
         // TODO: we _may_ need OS-specific version parsing. Need to do more research on what the field looks like across more manifest lists.
-        var versionPart = platform.version?.Split('.') switch
+        var versionPart = platform.osVersion?.Split('.') switch
         {
         [var major, ..] => major,
             _ => null

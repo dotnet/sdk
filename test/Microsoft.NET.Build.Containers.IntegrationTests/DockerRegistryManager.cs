@@ -34,12 +34,12 @@ public class DockerRegistryManager
     {
         public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> manifestList, string runtimeIdentifier)
         {
-            return manifestList.Values.SingleOrDefault(m => m.platform.os == "linux" && m.platform.architecture == "amd64");
+            return manifestList.Values.SingleOrDefault(m => m.platform is { os: "linux", architecture: "amd64" });
         }
 
         public PlatformSpecificOciManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificOciManifest> manifestList, string runtimeIdentifier)
         {
-            return manifestList.Values.SingleOrDefault(m => m.platform.os == "linux" && m.platform.architecture == "amd64");
+            return manifestList.Values.SingleOrDefault(m => m.platform is { os: "linux", architecture: "amd64" });
         }
     }
 
