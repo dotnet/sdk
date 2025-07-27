@@ -8,9 +8,9 @@ namespace Microsoft.NET.Build.Containers.Tasks;
 
 /// <summary>
 /// An MSBuild Task whose job is to take a list of input files and some metadata about them, and create a single container image layer containing them.
-/// Since this is a tarball, on .NET Framework we use a ToolTask to shell out to a .NET tool to create the tarball. 
+/// Since this is a tarball, on .NET Framework we use a ToolTask to shell out to a .NET tool to create the tarball.
 /// </summary>
-partial class CreateAppLayerTask
+public partial class CreateAppLayerTask
 {
     /// <summary>
     /// The files to pack into the layer. Each file must have a RelativePath metadata item set, which will be used to determine the path of the file within the container.
@@ -25,7 +25,7 @@ partial class CreateAppLayerTask
     public string ContainerRootDirectory { get; set; } = string.Empty;
 
     /// <summary>
-    /// Used to determine what kind of layer to create. If this is a Windows RID, a Windows layer will be created; otherwise, a Linux layer will be created. 
+    /// Used to determine what kind of layer to create. If this is a Windows RID, a Windows layer will be created; otherwise, a Linux layer will be created.
     /// </summary>
     [Required]
     public string TargetRuntimeIdentifier { get; set; } = string.Empty;
@@ -49,6 +49,15 @@ partial class CreateAppLayerTask
     /// </summary>
     [Required]
     public string GeneratedLayerPath { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The username or UID which is a platform-specific structure that allows specific control over which user the process run as.
+    /// This acts as a default value to use when the value is not specified when creating a container.
+    /// For Linux based systems, all of the following are valid: user, uid, user:group, uid:gid, uid:group, user:gid.
+    /// If group/gid is not specified, the default group and supplementary groups of the given user/uid in /etc/passwd and /etc/group from the container are applied.
+    /// If group/gid is specified, supplementary groups from the container are ignored.
+    /// </summary>
+    public string ContainerUser { get; set; }
 
     /// <summary>
     /// The output layer that was created by this task. This is the layer that can be used by other tasks or tools to create a container image.

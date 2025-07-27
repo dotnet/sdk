@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
-using Microsoft.NET.Build.Containers.Logging;
+using Microsoft.Extensions.Logging.MSBuild;
 using Microsoft.NET.Build.Containers.Resources;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -40,7 +40,7 @@ public class PushContainerToLocal : Microsoft.Build.Utilities.Task, ICancelableT
     public async Task<bool> ExecuteAsync()
     {
         using MSBuildLoggerProvider loggerProvider = new(Log);
-        ILoggerFactory msbuildLoggerFactory = new LoggerFactory(new[] { loggerProvider });
+        ILoggerFactory msbuildLoggerFactory = new LoggerFactory([loggerProvider]);
         ILogger logger = msbuildLoggerFactory.CreateLogger<CreateImageIndex>();
         (long manifestSize, string manifestDigest, ManifestV2 manifestStructure) = await ReadManifest();
         var configDigest = manifestStructure.Config.digest;

@@ -5,10 +5,10 @@
         <ContainerTaskFolderName>tasks</ContainerTaskFolderName>
         <ContainerTaskFramework Condition="'$(MSBuildRuntimeType)' == 'Core'">net11.0</ContainerTaskFramework>
         <ContainerTaskFramework Condition="'$(MSBuildRuntimeType)' == 'Full'">net472</ContainerTaskFramework>
-        <ContainerizeFolderName>containerize</ContainerizeFolderName>
+        <CreateLayerTarballFolderName>CreateLayerTarball</CreateLayerTarballFolderName>
         <!--The folder where the custom task will be present. It points to inside the nuget package. -->
         <ContainerCustomTasksFolder>$(MSBuildThisFileDirectory)..\$(ContainerTaskFolderName)\$(ContainerTaskFramework)\</ContainerCustomTasksFolder>
-        <ContainerizeFolder>$(MSBuildThisFileDirectory)..\$(ContainerizeFolderName)\</ContainerizeFolder>
+        <CreateLayerTarballFolder>$(MSBuildThisFileDirectory)..\$(CreateLayerTarballFolderName)\</CreateLayerTarballFolder>
         <!--Reference to the assembly which contains the MSBuild Task-->
         <ContainerCustomTasksAssembly Condition="'$(ContainerCustomTasksAssembly)' == ''">$(ContainerCustomTasksFolder)$(MSBuildThisFileName).dll</ContainerCustomTasksAssembly>
     </PropertyGroup>

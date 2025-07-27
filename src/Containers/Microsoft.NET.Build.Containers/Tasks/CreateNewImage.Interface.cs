@@ -9,14 +9,6 @@ namespace Microsoft.NET.Build.Containers.Tasks;
 partial class CreateNewImage
 {
     /// <summary>
-    /// The path to the folder containing `containerize.dll`.
-    /// </summary>
-    /// <remarks>
-    /// Used only for the ToolTask implementation of this task.
-    /// </remarks>
-    public string ContainerizeDirectory { get; set; }
-
-    /// <summary>
     /// The base registry to pull from.
     /// Ex: mcr.microsoft.com
     /// </summary>
@@ -75,11 +67,11 @@ partial class CreateNewImage
     public string[] ImageTags { get; set; }
 
     /// <summary>
-    /// The files to be published to the container.
-    /// MUST have RelativePath metadata..
+    /// The application layer that will be the 'top' layer of the container image.
+    /// MUST have Size, Digest, and MediaType metadata.
     /// </summary>
     [Required]
-    public ITaskItem[] PublishFiles { get; set; }
+    public ITaskItem GeneratedApplicationLayer { get; set; }
 
     /// <summary>
     /// The working directory of the container.
@@ -178,12 +170,6 @@ partial class CreateNewImage
     [Required]
     public string GeneratedConfigurationPath { get; set; } = "";
 
-    /// <summary>
-    /// Where to write the generated layer tarball.
-    /// </summary>
-    [Required]
-    public string GeneratedLayerPath { get; set; } = "";
-
     [Output]
     public string GeneratedContainerManifest { get; set; }
 
@@ -203,9 +189,6 @@ partial class CreateNewImage
     public ITaskItem[] GeneratedContainerNames { get; set; }
 
     [Output]
-    public ITaskItem GeneratedAppContainerLayer { get; set; }
-
-    [Output]
     public ITaskItem GeneratedAppContainerConfig { get; set; }
 
     [Output]
@@ -216,9 +199,6 @@ partial class CreateNewImage
 
     public CreateNewImage()
     {
-        ContainerizeDirectory = "";
-        ToolExe = "";
-        ToolPath = "";
         BaseRegistry = "";
         BaseImageName = "";
         BaseImageTag = "";
@@ -229,7 +209,6 @@ partial class CreateNewImage
         ArchiveOutputPath = "";
         Repository = "";
         ImageTags = Array.Empty<string>();
-        PublishFiles = [];
         WorkingDirectory = "";
         Entrypoint = Array.Empty<ITaskItem>();
         EntrypointArgs = Array.Empty<ITaskItem>();
@@ -243,6 +222,9 @@ partial class CreateNewImage
         LocalRegistry = "";
         ContainerUser = "";
         ContentStoreRoot = "";
+        GeneratedApplicationLayer = null!;
+        GenerateLabels = false;
+        GenerateDigestLabel = false;
 
         GeneratedContainerConfiguration = "";
         GeneratedContainerManifest = "";
@@ -251,13 +233,7 @@ partial class CreateNewImage
         GeneratedContainerMediaType = "";
         GeneratedContainerNames = Array.Empty<ITaskItem>();
         GeneratedDigestLabel = null;
-        GeneratedAppContainerLayer = null!;
         GeneratedAppContainerConfig = null!;
         GeneratedAppContainerManifest = null!;
-
-        GenerateLabels = false;
-        GenerateDigestLabel = false;
-
-        TaskResources = Resource.Manager;
     }
 }

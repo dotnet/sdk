@@ -15,16 +15,6 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 {
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
-    /// <summary>
-    /// Unused. For interface parity with the ToolTask implementation of the task.
-    /// </summary>
-    public string ToolExe { get; set; }
-
-    /// <summary>
-    /// Unused. For interface parity with the ToolTask implementation of the task.
-    /// </summary>
-    public string ToolPath { get; set; }
-
     private bool IsLocalPull => string.IsNullOrWhiteSpace(BaseRegistry);
 
     public void Cancel() => _cancellationTokenSource.Cancel();
@@ -103,14 +93,9 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         }
         var store = new ContentStore(storePath);
 
-        (string absolutefilePath, string relativeContainerPath)[] filesWithRelativePaths =
-            PublishFiles
-            .Select(f => (f.ItemSpec, f.GetMetadata("RelativePath")))
-            .Where(x => !string.IsNullOrWhiteSpace(x.ItemSpec) && !string.IsNullOrWhiteSpace(x.Item2))
-            .ToArray();
-        var userId = imageBuilder.IsWindows ? null : ContainerBuilder.TryParseUserId(ContainerUser);
-        Layer newLayer = await Layer.FromFiles(filesWithRelativePaths, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, store, new(GeneratedLayerPath), cancellationToken, userId: userId);
-        imageBuilder.AddLayer(newLayer);
+        var descriptor = GetDescriptor(GeneratedApplicationLayer);
+        var appLayer = Layer.FromBackingFile(new(GeneratedApplicationLayer.ItemSpec), descriptor);
+        imageBuilder.AddLayer(appLayer);
         imageBuilder.SetWorkingDirectory(WorkingDirectory);
 
         (string[] entrypoint, string[] cmd) = DetermineEntrypointAndCmd(baseImageEntrypoint: imageBuilder.BaseImageConfig.GetEntrypoint());
@@ -172,12 +157,6 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         GeneratedArchiveOutputPath = ArchiveOutputPath;
         GeneratedContainerMediaType = builtImage.ManifestMediaType;
         GeneratedContainerNames = destinationImageReference.FullyQualifiedImageNames().Select(name => new Microsoft.Build.Utilities.TaskItem(name)).ToArray();
-        GeneratedAppContainerLayer = new Microsoft.Build.Utilities.TaskItem(GeneratedLayerPath, new Dictionary<string, string>(4)
-        {
-            ["Size"] = newLayer.Descriptor.Size.ToString(),
-            ["MediaType"] = newLayer.Descriptor.MediaType,
-            ["Digest"] = newLayer.Descriptor.Digest,
-        });
 
         GeneratedAppContainerConfig = new Microsoft.Build.Utilities.TaskItem(GeneratedConfigurationPath, new Dictionary<string, string>(2)
         {
@@ -202,6 +181,13 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         return !Log.HasLoggedErrors;
     }
+
+    private static Descriptor GetDescriptor(ITaskItem generatedApplicationLayer) => new Descriptor
+    {
+        Size = generatedApplicationLayer.GetMetadata("Size") is string sizeStr && long.TryParse(sizeStr, out long size) ? size : throw new ArgumentException($"Invalid size for layer '{generatedApplicationLayer.ItemSpec}'."),
+        MediaType = generatedApplicationLayer.GetMetadata("MediaType"),
+        Digest = generatedApplicationLayer.GetMetadata("Digest")
+    };
 
     private void SetPorts(ImageBuilder image, ITaskItem[] exposedPorts)
     {

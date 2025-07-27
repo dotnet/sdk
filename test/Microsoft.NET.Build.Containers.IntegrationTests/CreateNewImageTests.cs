@@ -54,12 +54,12 @@ public class CreateNewImageTests
         task.OutputRegistry = "localhost:5010";
         task.LocalRegistry = DockerAvailableFactAttribute.LocalRegistry;
         var baseDir = Path.Combine(newProjectDir.FullName, "bin", "Release");
-        task.PublishFiles = MakeItemsForPublishDir(baseDir);
+        // task.PublishFiles = MakeItemsForPublishDir(baseDir);
         task.Repository = "dotnet/create-new-image-baseline";
         task.ImageTags = new[] { "latest" };
         task.WorkingDirectory = "app/";
         task.Entrypoint = new TaskItem[] { new("dotnet"), new("build") };
-        
+
         Assert.True(task.Execute(), FormatBuildMessages(errors));
         newProjectDir.Delete(true);
     }
@@ -131,7 +131,7 @@ public class CreateNewImageTests
         cni.BaseImageTag = pcp.ParsedContainerTag;
         cni.Repository = pcp.NewContainerRepository;
         cni.OutputRegistry = "localhost:5010";
-        cni.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework));
+        // cni.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework));
         cni.WorkingDirectory = "app/";
         cni.Entrypoint = new TaskItem[] { new(newProjectDir.Name) };
         cni.ImageTags = pcp.NewContainerTags;
@@ -204,7 +204,7 @@ public class CreateNewImageTests
         cni.BaseImageTag = pcp.ParsedContainerTag;
         cni.Repository = pcp.NewContainerRepository;
         cni.OutputRegistry = pcp.NewContainerRegistry;
-        cni.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "release", EndToEndTests._oldFramework, "linux-x64"));
+        // cni.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "release", EndToEndTests._oldFramework, "linux-x64"));
         cni.WorkingDirectory = "/app";
         cni.Entrypoint = new TaskItem[] { new($"/app/{newProjectDir.Name}") };
         cni.ImageTags = pcp.NewContainerTags;
@@ -285,7 +285,7 @@ public class CreateNewImageTests
         task.BaseImageTag = "latest";
 
         task.OutputRegistry = "localhost:5010";
-        task.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "linux-x64", "publish"));
+        // task.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "linux-x64", "publish"));
         task.Repository = AppImage;
         task.ImageTags = new[] { "latest" };
         task.WorkingDirectory = "app/";
@@ -355,7 +355,7 @@ public class CreateNewImageTests
         cni.BaseImageTag = pcp.ParsedContainerTag;
         cni.Repository = pcp.NewContainerRepository;
         cni.OutputRegistry = "localhost:5010";
-        cni.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework));
+        // cni.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework));
         cni.WorkingDirectory = "app/";
         cni.Entrypoint = new TaskItem[] { new(newProjectDir.Name) };
         cni.ImageTags = pcp.NewContainerTags;
