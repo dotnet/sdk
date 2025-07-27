@@ -235,5 +235,7 @@ partial class CreateNewImage
         GeneratedDigestLabel = null;
         GeneratedAppContainerConfig = null!;
         GeneratedAppContainerManifest = null!;
+
+        TaskResources = Strings.ResourceManager;
     }
 }

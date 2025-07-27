@@ -40,7 +40,7 @@ public class ImageIndexGeneratorTests
     [Fact]
     public void UnsupportedMediaTypeThrows()
     {
-        BuiltImage[] images = 
+        BuiltImage[] images =
         [
             EmptyWithMediaType("unsupported"),
         ];
@@ -54,7 +54,7 @@ public class ImageIndexGeneratorTests
     [InlineData(SchemaTypes.OciManifestV1)]
     public void ImagesWithMixedMediaTypes(string supportedMediaType)
     {
-        BuiltImage[] images = 
+        BuiltImage[] images =
         [
             EmptyWithMediaType(supportedMediaType),
             EmptyWithMediaType("unsupported"),
@@ -100,9 +100,35 @@ public class ImageIndexGeneratorTests
         ];
 
         var imageIndex = ImageIndexGenerator.GenerateImageIndex(images);
-        var imageIndexJson = JsonSerializer.Serialize(imageIndex);
-        Assert.Equal("{\"schemaVersion\":2,\"mediaType\":\"application/vnd.docker.distribution.manifest.list.v2+json\",\"manifests\":[{\"mediaType\":\"application/vnd.docker.distribution.manifest.v2+json\",\"size\":3,\"digest\":\"sha256:digest1\",\"platform\":{\"architecture\":\"arch1\",\"os\":\"os1\"}},{\"mediaType\":\"application/vnd.docker.distribution.manifest.v2+json\",\"size\":3,\"digest\":\"sha256:digest2\",\"platform\":{\"architecture\":\"arch2\",\"os\":\"os2\"}}]}", imageIndexJson);
-        Assert.Equal(SchemaTypes.DockerManifestListV2, imageIndex.MediaType);
+        var imageIndexJson = JsonSerializer.Serialize(imageIndex, new JsonSerializerOptions() { WriteIndented = true });
+        var expectedJson = """
+        {
+          "schemaVersion": 2,
+          "mediaType": "application/vnd.docker.distribution.manifest.list.v2+json",
+          "manifests": [
+            {
+              "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+              "size": 154,
+              "digest": "sha256:digest1",
+              "platform": {
+                "architecture": "arch1",
+                "os": "os1"
+              }
+            },
+            {
+              "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+              "size": 154,
+              "digest": "sha256:digest2",
+              "platform": {
+                "architecture": "arch2",
+                "os": "os2"
+              }
+            }
+          ]
+        }
+        """;
+        imageIndexJson.Should().BeVisuallyEquivalentTo(expectedJson);
+        imageIndex.MediaType.Should().Be(SchemaTypes.DockerManifestListV2);
     }
 
     [Fact]
@@ -141,16 +167,68 @@ public class ImageIndexGeneratorTests
         ];
 
         var imageIndex = ImageIndexGenerator.GenerateImageIndex(images);
-        var imageIndexJson = JsonSerializer.Serialize(imageIndex);
-        Assert.Equal("{\"schemaVersion\":2,\"mediaType\":\"application/vnd.oci.image.index.v1+json\",\"manifests\":[{\"mediaType\":\"application/vnd.oci.image.manifest.v1+json\",\"size\":3,\"digest\":\"sha256:digest1\",\"platform\":{\"architecture\":\"arch1\",\"os\":\"os1\"}},{\"mediaType\":\"application/vnd.oci.image.manifest.v1+json\",\"size\":3,\"digest\":\"sha256:digest2\",\"platform\":{\"architecture\":\"arch2\",\"os\":\"os2\"}}]}", imageIndexJson);
-        Assert.Equal(SchemaTypes.OciImageIndexV1, imageIndex.MediaType);
+        var imageIndexJson = JsonSerializer.Serialize(imageIndex, new JsonSerializerOptions() { WriteIndented = true });
+        var expectedJson = """
+        {
+          "schemaVersion": 2,
+          "mediaType": "application/vnd.oci.image.index.v1+json",
+          "manifests": [
+            {
+              "mediaType": "application/vnd.oci.image.manifest.v1+json",
+              "size": 144,
+              "digest": "sha256:digest1",
+              "platform": {
+                "architecture": "arch1",
+                "os": "os1"
+              }
+            },
+            {
+              "mediaType": "application/vnd.oci.image.manifest.v1+json",
+              "size": 144,
+              "digest": "sha256:digest2",
+              "platform": {
+                "architecture": "arch2",
+                "os": "os2"
+              }
+            }
+          ]
+        }
+        """;
+        imageIndexJson.Should().BeVisuallyEquivalentTo(expectedJson);
+        imageIndex.MediaType.Should().Be(SchemaTypes.OciImageIndexV1);
     }
 
     [Fact]
     public void GenerateImageIndexWithAnnotations()
     {
         var imageIndex = ImageIndexGenerator.GenerateImageIndexWithAnnotations("mediaType", "sha256:digest", 3, "repository", ["1.0", "2.0"]);
-        var imageIndexJson = JsonSerializer.Serialize(imageIndex);
-        Assert.Equal("{\"schemaVersion\":2,\"mediaType\":\"application/vnd.oci.image.index.v1+json\",\"manifests\":[{\"mediaType\":\"mediaType\",\"size\":3,\"digest\":\"sha256:digest\",\"platform\":{},\"annotations\":{\"io.containerd.image.name\":\"docker.io/library/repository:1.0\",\"org.opencontainers.image.ref.name\":\"1.0\"}},{\"mediaType\":\"mediaType\",\"size\":3,\"digest\":\"sha256:digest\",\"platform\":{},\"annotations\":{\"io.containerd.image.name\":\"docker.io/library/repository:2.0\",\"org.opencontainers.image.ref.name\":\"2.0\"}}]}", imageIndexJson);
+        var imageIndexJson = JsonSerializer.Serialize(imageIndex, new JsonSerializerOptions() { WriteIndented = true });
+        var expectedJson = """
+        {
+          "schemaVersion": 2,
+          "mediaType": "application/vnd.oci.image.index.v1+json",
+          "manifests": [
+            {
+              "mediaType": "mediaType",
+              "size": 3,
+              "digest": "sha256:digest",
+              "annotations": {
+                "io.containerd.image.name": "docker.io/library/repository:1.0",
+                "org.opencontainers.image.ref.name": "1.0"
+              }
+            },
+            {
+              "mediaType": "mediaType",
+              "size": 3,
+              "digest": "sha256:digest",
+              "annotations": {
+                "io.containerd.image.name": "docker.io/library/repository:2.0",
+                "org.opencontainers.image.ref.name": "2.0"
+              }
+            }
+          ]
+        }
+        """;
+        imageIndexJson.Should().BeVisuallyEquivalentTo(expectedJson);
     }
 }
