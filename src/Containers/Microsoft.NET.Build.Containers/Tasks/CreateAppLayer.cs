@@ -1,13 +1,24 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Mime;
 using Microsoft.Build.Framework;
 using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers.Tasks;
 
-public sealed partial class CreateAppLayerTask : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
+public sealed partial class CreateAppLayer : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
 {
+    /// <summary>
+    /// Unused. For interface parity with the ToolTask implementation of the task.
+    /// </summary>
+    public string ToolExe { get; set; } = null!;
+
+    /// <summary>
+    /// Unused. For interface parity with the ToolTask implementation of the task.
+    /// </summary>
+    public string ToolPath { get; set; } = null!;
+
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
     public void Cancel() => _cancellationTokenSource.Cancel();
@@ -40,7 +51,25 @@ public sealed partial class CreateAppLayerTask : Microsoft.Build.Utilities.Task,
             .ToArray();
         var isWindowsLayer = TargetRuntimeIdentifier.StartsWith("win", StringComparison.OrdinalIgnoreCase);
         var userId = isWindowsLayer ? null : ContainerBuilder.TryParseUserId(ContainerUser);
-        Layer newLayer = await Layer.FromFiles(filesWithRelativePaths, ContainerRootDirectory, isWindowsLayer, LayerMediaType, new(new(ContentStoreRoot)), new(GeneratedLayerPath), cancellationToken, userId: userId);
+        if (Enum.TryParse(ParentImageFormat, out KnownImageFormats format))
+        {
+        }
+        else
+        {
+            format = ParentImageFormat switch
+            {
+                SchemaTypes.DockerManifestV2 => KnownImageFormats.Docker,
+                SchemaTypes.OciManifestV1 => KnownImageFormats.OCI,
+                _ => throw new ArgumentException(string.Format(Strings.UnrecognizedMediaType, ParentImageFormat)),
+            };
+        }
+        string layerMediaType = format switch
+        {
+            KnownImageFormats.Docker => SchemaTypes.DockerLayerGzip,
+            KnownImageFormats.OCI => SchemaTypes.OciLayerGzipV1,
+            _ => throw new ArgumentException(string.Format(Strings.UnrecognizedMediaType, ParentImageFormat)),
+        };
+        Layer newLayer = await Layer.FromFiles(filesWithRelativePaths, ContainerRootDirectory, isWindowsLayer, layerMediaType, new(new(ContentStoreRoot)), new(GeneratedLayerPath), cancellationToken, userId: userId);
         GeneratedAppContainerLayer = new Microsoft.Build.Utilities.TaskItem(GeneratedLayerPath, new Dictionary<string, string>(3)
         {
             ["Size"] = newLayer.Descriptor.Size.ToString(),

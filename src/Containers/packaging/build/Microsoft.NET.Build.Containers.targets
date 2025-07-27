@@ -354,19 +354,39 @@
     </ItemGroup>
   </Target>
 
-  <!-- There is an implicit dependency here in that both of ComputeContainerConfig and _ComputeContainerExecutionArgs must have been run, but because we call this Target
-       in a few different ways we can't express that dependency directly here. -->
-  <!-- NOTE: the apphost screws with incrementality because it's marked with CopyToPublishDirectory=Always in _ComputeNETCoreBuildOutputFiles - we should find a better way to handle that. -->
-  <Target Name="_CreateSingleContainer"
-    DependsOnTargets="_DownloadLayers;_GenerateContainerConfigTrackingFile;_CreateGeneratedContainerProperties;_GetItemsFromPublishDirForSingleContainerPublish;_CreateApplicationLayer"
-    Inputs="$(_ContainerGeneratedConfigTrackingFile);@(_BaseContainerThisArchLayer);@(_BaseContainerThisArchConfig);@(_BaseContainerThisArchManifest);@(_ContainerPublishItem);@(_ContainerGeneratedApplicationLayer)"
-    Outputs="$(_ContainerGeneratedManifestPath);$(_ContainerGeneratedConfigurationPath)"
-    Returns="@(GeneratedContainer);@(_ContainerGeneratedApplicationLayer);@(ContainerGeneratedConfig);@(ContainerGeneratedManifest)">
+  <Target Name="_CreateApplicationLayer"
+    DependsOnTargets="_GetItemsFromPublishDirForSingleContainerPublish"
+    Inputs="@(_ContainerPublishItem);$(_GenerateContainerConfigTrackingFile);@(_BaseContainerThisArchManifest)"
+    Outputs="@(_ContainerGeneratedApplicationLayer)">
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
       <DotNetHostDirectory>$(NetCoreRoot)</DotNetHostDirectory>
       <DotNetHostFileName>dotnet</DotNetHostFileName>
       <DotNetHostFileName Condition="'$(OS)' == 'Windows_NT'">dotnet.exe</DotNetHostFileName>
     </PropertyGroup>
+
+    <CreateAppLayer
+      CreateLayerTarballDirectory="$(CreateLayerTarballFolder)"
+      ToolPath="$(DotNetHostDirectory)"
+      ToolExe="$(DotNetHostFileName)"
+      PublishFiles="@(_ContainerPublishItem)"
+      ContainerRootDirectory="$(ContainerWorkingDirectory)"
+      TargetRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
+      ParentImageFormat="$([MSBuild]::ValueOrDefault('$(ContainerImageFormat)', '@(_BaseContainerThisArchManifest->'MediaType')'))"
+      ContentStoreRoot="$(ContainerContentStoreRoot)"
+      ContainerUser="$(ContainerUser)"
+      GenerateLayerPath="$(_ContainerGeneratedLayerPath)">
+      <Output TaskParameter="GeneratedAppContainerLayer" ItemName="_ContainerGeneratedApplicationLayer" />
+    </CreateAppLayer>
+  </Target>
+
+  <!-- There is an implicit dependency here in that both of ComputeContainerConfig and _ComputeContainerExecutionArgs must have been run, but because we call this Target
+       in a few different ways we can't express that dependency directly here. -->
+  <!-- NOTE: the apphost screws with incrementality because it's marked with CopyToPublishDirectory=Always in _ComputeNETCoreBuildOutputFiles - we should find a better way to handle that. -->
+  <Target Name="_CreateSingleContainer"
+    DependsOnTargets="_DownloadLayers;_GenerateContainerConfigTrackingFile;_CreateGeneratedContainerProperties;_CreateApplicationLayer"
+    Inputs="$(_ContainerGeneratedConfigTrackingFile);@(_BaseContainerThisArchLayer);@(_BaseContainerThisArchConfig);@(_BaseContainerThisArchManifest);@(_ContainerPublishItem);@(_ContainerGeneratedApplicationLayer)"
+    Outputs="$(_ContainerGeneratedManifestPath);$(_ContainerGeneratedConfigurationPath)"
+    Returns="@(GeneratedContainer);@(_ContainerGeneratedApplicationLayer);@(ContainerGeneratedConfig);@(ContainerGeneratedManifest)">
 
     <CreateNewImage BaseRegistry="$(ContainerBaseRegistry)"
                     BaseImageName="$(ContainerBaseName)"
@@ -408,10 +428,10 @@
 
     <ItemGroup>
       <ContainerGeneratedConfig Include="@(_ContainerGeneratedConfig)">
-        <RuntimeIdentifier>$(RuntimeIdentifier)</RuntimeIdentifier>
+        <RuntimeIdentifier>$(ContainerRuntimeIdentifier)</RuntimeIdentifier>
       </ContainerGeneratedConfig>
       <ContainerGeneratedManifest Include="@(_ContainerGeneratedManifest)">
-        <RuntimeIdentifier>$(RuntimeIdentifier)</RuntimeIdentifier>
+        <RuntimeIdentifier>$(ContainerRuntimeIdentifier)</RuntimeIdentifier>
       </ContainerGeneratedManifest>
 
       <!-- Track the generated files for cleanup later -->

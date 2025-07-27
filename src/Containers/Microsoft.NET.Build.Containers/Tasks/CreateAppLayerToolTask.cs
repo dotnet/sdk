@@ -8,12 +8,13 @@ using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers.Tasks;
 
-public sealed partial class CreateAppLayerTask : Microsoft.Build.Utilities.ToolTask, IDisposable
+public sealed partial class CreateAppLayer : Microsoft.Build.Utilities.ToolTask, IDisposable
 {
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
     // Unused, ToolExe is set via targets and overrides this.
     protected override string ToolName => "dotnet";
+
     public void Dispose() => _cancellationTokenSource.Dispose();
 
     private StringBuilder stdout = new();
@@ -103,7 +104,7 @@ public sealed partial class CreateAppLayerTask : Microsoft.Build.Utilities.ToolT
         // and for each of publish files and relative paths, the matching indexes will be paired together.
         builder.AppendSwitchIfNotNull("--container-root-dir", ContainerRootDirectory);
         builder.AppendSwitchIfNotNull("--target-runtime-identifier", TargetRuntimeIdentifier);
-        builder.AppendSwitchIfNotNull("--layer-media-type", LayerMediaType);
+        builder.AppendSwitchIfNotNull("--parent-image-format", ParentImageFormat);
         builder.AppendSwitchIfNotNull("--content-store-root", ContentStoreRoot);
         builder.AppendSwitchIfNotNull("--generated-layer-path", GeneratedLayerPath);
         builder.AppendSwitchIfNotNull("--container-user", ContainerUser);
