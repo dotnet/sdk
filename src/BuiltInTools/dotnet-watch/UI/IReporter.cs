@@ -1,8 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -56,75 +58,62 @@ namespace Microsoft.DotNet.Watch
 
     internal readonly record struct MessageDescriptor(string Format, Emoji Emoji, MessageSeverity Severity, int? Id)
     {
-        private static readonly int s_id;
+        private static int s_id;
+        private static ImmutableDictionary<EventId, MessageDescriptor> s_descriptors = [];
 
-        public bool HasMessage
-            => Severity != MessageSeverity.None;
-
-        public bool TryGetMessage(string? prefix, object?[] args, [NotNullWhen(true)] out string? message)
+        private static EventId Create(string format, Emoji emoji, MessageSeverity severity)
         {
-            // Messages without Id are created by IReporter.Verbose|Output|Warn|Error helpers.
-            // They do not have arguments and we shouldn't interpret Format as a string with holes.
-            // Eventually, all messages should have a descriptor (so we can localize them) and this can be removed.
-            if (Id == null)
-            {
-                Debug.Assert(args is null or []);
-                Debug.Assert(HasMessage);
-                message = prefix + Format;
-                return true;
-            }
-
-            if (!HasMessage)
-            {
-                message = null;
-                return false;
-            }
-
-
-            message = prefix + string.Format(Format, args);
-            return true;
+            var id = new EventId(s_id++);
+            s_descriptors = s_descriptors.Add(id, new MessageDescriptor(format, emoji, severity, id.Id));
+            return id;
         }
 
-        public MessageDescriptor ToErrorWhen(bool condition)
-            => condition ? this with { Severity = MessageSeverity.Error, Emoji = Emoji.Error } : this;
+        public static MessageDescriptor GetDescriptor(EventId id)
+            => s_descriptors[id];
+
+        public string GetMessage(string? prefix, object?[] args)
+            => prefix + (Id == null ? Format : string.Format(Format, args));
+
+        public MessageDescriptor WithSeverityWhen(MessageSeverity severity, bool condition)
+            => condition ? this with { Severity = severity, Emoji = severity switch { MessageSeverity.Error => Emoji.Error, MessageSeverity.Warning => Emoji.Warning, _ => Emoji } } : this;
 
         // predefined messages used for testing:
-        public static readonly MessageDescriptor HotReloadSessionStarting = new("Hot reload session starting.", Emoji.HotReload, MessageSeverity.None, s_id++);
-        public static readonly MessageDescriptor HotReloadSessionStarted = new("Hot reload session started.", Emoji.HotReload, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor ProjectsRebuilt = new("Projects rebuilt ({0})", Emoji.HotReload, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor ProjectsRestarted = new("Projects restarted ({0})", Emoji.HotReload, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor ProjectDependenciesDeployed = new("Project dependencies deployed ({0})", Emoji.HotReload, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor FixBuildError = new("Fix the error to continue or press Ctrl+C to exit.", Emoji.Watch, MessageSeverity.Warning, s_id++);
-        public static readonly MessageDescriptor WaitingForChanges = new("Waiting for changes", Emoji.Watch, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor LaunchedProcess = new("Launched '{0}' with arguments '{1}': process id {2}", Emoji.Launch, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor HotReloadChangeHandled = new("Hot reload change handled in {0}ms.", Emoji.HotReload, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor HotReloadSucceeded = new("Hot reload succeeded.", Emoji.HotReload, MessageSeverity.Output, s_id++);
-        public static readonly MessageDescriptor UpdatesApplied = new("Updates applied: {0} out of {1}.", Emoji.HotReload, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor WaitingForFileChangeBeforeRestarting = new("Waiting for a file to change before restarting ...", Emoji.Wait, MessageSeverity.Warning, s_id++);
-        public static readonly MessageDescriptor WatchingWithHotReload = new("Watching with Hot Reload.", Emoji.Watch, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor RestartInProgress = new("Restart in progress.", Emoji.Restart, MessageSeverity.Output, s_id++);
-        public static readonly MessageDescriptor RestartRequested = new("Restart requested.", Emoji.Restart, MessageSeverity.Output, s_id++);
-        public static readonly MessageDescriptor ShutdownRequested = new("Shutdown requested. Press Ctrl+C again to force exit.", Emoji.Stop, MessageSeverity.Output, s_id++);
-        public static readonly MessageDescriptor ApplyUpdate_Error = new("{0}", Emoji.Error, MessageSeverity.Error, s_id++);
-        public static readonly MessageDescriptor ApplyUpdate_Warning = new("{0}", Emoji.Warning, MessageSeverity.Warning, s_id++);
-        public static readonly MessageDescriptor ApplyUpdate_Verbose = new("{0}", Emoji.Watch, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor ApplyUpdate_ChangingEntryPoint = new("{0} Press \"Ctrl + R\" to restart.", Emoji.Warning, MessageSeverity.Warning, s_id++);
-        public static readonly MessageDescriptor ApplyUpdate_FileContentDoesNotMatchBuiltSource = new("{0} Expected if a source file is updated that is linked to project whose build is not up-to-date.", Emoji.Watch, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor ConfiguredToLaunchBrowser = new("dotnet-watch is configured to launch a browser on ASP.NET Core application startup.", Emoji.Watch, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor ConfiguredToUseBrowserRefresh = new("Configuring the app to use browser-refresh middleware", Emoji.Watch, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor IgnoringChangeInHiddenDirectory = new("Ignoring change in hidden directory '{0}': {1} '{2}'", Emoji.Watch, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor IgnoringChangeInOutputDirectory = new("Ignoring change in output directory: {0} '{1}'", Emoji.Watch, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor IgnoringChangeInExcludedFile = new("Ignoring change in excluded file '{0}': {1}. Path matches {2} glob '{3}' set in '{4}'.", Emoji.Watch, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor FileAdditionTriggeredReEvaluation = new("File addition triggered re-evaluation.", Emoji.Watch, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor ReEvaluationCompleted = new("Re-evaluation completed.", Emoji.Watch, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor ProjectChangeTriggeredReEvaluation = new("Project change triggered re-evaluation.", Emoji.Watch, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor NoCSharpChangesToApply = new("No C# changes to apply.", Emoji.Watch, MessageSeverity.Output, s_id++);
-        public static readonly MessageDescriptor Exited = new("Exited", Emoji.Watch, MessageSeverity.Output, s_id++);
-        public static readonly MessageDescriptor ExitedWithUnknownErrorCode = new("Exited with unknown error code", Emoji.Error, MessageSeverity.Error, s_id++);
-        public static readonly MessageDescriptor ExitedWithErrorCode = new("Exited with error code {0}", Emoji.Error, MessageSeverity.Error, s_id++);
-        public static readonly MessageDescriptor SkippingConfiguringBrowserRefresh_SuppressedViaEnvironmentVariable = new("Skipping configuring browser-refresh middleware since its refresh server suppressed via environment variable {0}.", Emoji.Watch, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor SkippingConfiguringBrowserRefresh_TargetFrameworkNotSupported = new("Skipping configuring browser-refresh middleware since the target framework version is not supported. For more information see 'https://aka.ms/dotnet/watch/unsupported-tfm'.", Emoji.Watch, MessageSeverity.Warning, s_id++);
-        public static readonly MessageDescriptor SkippingConfiguringBrowserRefresh_NotWebApp = new("Skipping configuring browser-refresh middleware since this is not a webapp.", Emoji.Watch, MessageSeverity.Verbose, s_id++);
+        public static readonly EventId HotReloadSessionStarting = Create("Hot reload session starting.", Emoji.HotReload, MessageSeverity.None);
+        public static readonly EventId HotReloadSessionStarted = Create("Hot reload session started.", Emoji.HotReload, MessageSeverity.Verbose);
+        public static readonly EventId ProjectsRebuilt = Create("Projects rebuilt ({0})", Emoji.HotReload, MessageSeverity.Verbose);
+        public static readonly EventId ProjectsRestarted = Create("Projects restarted ({0})", Emoji.HotReload, MessageSeverity.Verbose);
+        public static readonly EventId ProjectDependenciesDeployed = Create("Project dependencies deployed ({0})", Emoji.HotReload, MessageSeverity.Verbose);
+        public static readonly EventId FixBuildError = Create("Fix the error to continue or press Ctrl+C to exit.", Emoji.Watch, MessageSeverity.Warning);
+        public static readonly EventId WaitingForChanges = Create("Waiting for changes", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly EventId LaunchedProcess = Create("Launched '{0}' with arguments '{1}': process id {2}", Emoji.Launch, MessageSeverity.Verbose);
+        public static readonly EventId HotReloadChangeHandled = Create("Hot reload change handled in {0}ms.", Emoji.HotReload, MessageSeverity.Verbose);
+        public static readonly EventId HotReloadSucceeded = Create("Hot reload succeeded.", Emoji.HotReload, MessageSeverity.Output);
+        public static readonly EventId UpdatesApplied = Create("Updates applied: {0} out of {1}.", Emoji.HotReload, MessageSeverity.Verbose);
+        public static readonly EventId WaitingForFileChangeBeforeRestarting = Create("Waiting for a file to change before restarting ...", Emoji.Wait, MessageSeverity.Warning);
+        public static readonly EventId WatchingWithHotReload = Create("Watching with Hot Reload.", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly EventId RestartInProgress = Create("Restart in progress.", Emoji.Restart, MessageSeverity.Output);
+        public static readonly EventId RestartRequested = Create("Restart requested.", Emoji.Restart, MessageSeverity.Output);
+        public static readonly EventId ShutdownRequested = Create("Shutdown requested. Press Ctrl+C again to force exit.", Emoji.Stop, MessageSeverity.Output);
+        public static readonly EventId ApplyUpdate_Error = Create("{0}", Emoji.Error, MessageSeverity.Error);
+        public static readonly EventId ApplyUpdate_Warning = Create("{0}", Emoji.Warning, MessageSeverity.Warning);
+        public static readonly EventId ApplyUpdate_Verbose = Create("{0}", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly EventId ApplyUpdate_ChangingEntryPoint = Create("{0} Press \"Ctrl + R\" to restart.", Emoji.Warning, MessageSeverity.Warning);
+        public static readonly EventId ApplyUpdate_FileContentDoesNotMatchBuiltSource = Create("{0} Expected if a source file is updated that is linked to project whose build is not up-to-date.", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly EventId ConfiguredToLaunchBrowser = Create("dotnet-watch is configured to launch a browser on ASP.NET Core application startup.", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly EventId ConfiguredToUseBrowserRefresh = Create("Configuring the app to use browser-refresh middleware", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly EventId IgnoringChangeInHiddenDirectory = Create("Ignoring change in hidden directory '{0}': {1} '{2}'", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly EventId IgnoringChangeInOutputDirectory = Create("Ignoring change in output directory: {0} '{1}'", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly EventId IgnoringChangeInExcludedFile = Create("Ignoring change in excluded file '{0}': {1}. Path matches {2} glob '{3}' set in '{4}'.", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly EventId FileAdditionTriggeredReEvaluation = Create("File addition triggered re-evaluation.", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly EventId ReEvaluationCompleted = Create("Re-evaluation completed.", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly EventId ProjectChangeTriggeredReEvaluation = Create("Project change triggered re-evaluation.", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly EventId NoCSharpChangesToApply = Create("No C# changes to apply.", Emoji.Watch, MessageSeverity.Output);
+        public static readonly EventId Exited = Create("Exited", Emoji.Watch, MessageSeverity.Output);
+        public static readonly EventId ExitedWithUnknownErrorCode = Create("Exited with unknown error code", Emoji.Error, MessageSeverity.Error);
+        public static readonly EventId ExitedWithErrorCode = Create("Exited with error code {0}", Emoji.Error, MessageSeverity.Error);
+        public static readonly EventId SkippingConfiguringBrowserRefresh_SuppressedViaEnvironmentVariable = Create("Skipping configuring browser-refresh middleware since its refresh server suppressed via environment variable {0}.", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly EventId SkippingConfiguringBrowserRefresh_TargetFrameworkNotSupported = Create("Skipping configuring browser-refresh middleware since the target framework version is not supported. For more information see 'https://aka.ms/dotnet/watch/unsupported-tfm'.", Emoji.Watch, MessageSeverity.Warning);
+        public static readonly EventId SkippingConfiguringBrowserRefresh_NotWebApp = Create("Skipping configuring browser-refresh middleware since this is not a webapp.", Emoji.Watch, MessageSeverity.Verbose);
     }
 
     internal interface IReporter
@@ -149,19 +138,25 @@ namespace Microsoft.DotNet.Watch
         /// </remarks>
         void ReportProcessOutput(OutputLine line);
 
-        void Report(MessageDescriptor descriptor, params object?[] args)
-            => Report(descriptor, prefix: "", args);
+        void Report(EventId eventId, string prefix, params object?[] args)
+            => Report(MessageDescriptor.GetDescriptor(eventId), prefix, args);
+
+        void Report(EventId eventId, params object?[] args)
+            => Report(eventId, prefix: "", args);
+
+        void ReportAs(EventId eventId, MessageSeverity severity, bool when, params object?[] args)
+            => Report(MessageDescriptor.GetDescriptor(eventId).WithSeverityWhen(severity, when), prefix: "", args);
 
         void Verbose(string message, Emoji emoji = Emoji.Watch)
-            => Report(new MessageDescriptor(message, emoji, MessageSeverity.Verbose, Id: null));
+            => Report(new MessageDescriptor(message, emoji, MessageSeverity.Verbose, Id: null), prefix: "", args: []);
 
         void Output(string message, Emoji emoji = Emoji.Watch)
-            => Report(new MessageDescriptor(message, emoji, MessageSeverity.Output, Id: null));
+            => Report(new MessageDescriptor(message, emoji, MessageSeverity.Output, Id: null), prefix: "", args: []);
 
         void Warn(string message)
-            => Report(new MessageDescriptor(message, Emoji.Warning, MessageSeverity.Warning, Id: null));
+            => Report(new MessageDescriptor(message, Emoji.Warning, MessageSeverity.Warning, Id: null), prefix: "", args: []);
 
         void Error(string message)
-            => Report(new MessageDescriptor(message, Emoji.Error, MessageSeverity.Error, Id: null));
+            => Report(new MessageDescriptor(message, Emoji.Error, MessageSeverity.Error, Id: null), prefix: "", args: []);
     }
 }

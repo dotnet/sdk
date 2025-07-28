@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Watch
             var argsDisplay = processSpec.GetArgumentsDisplay();
             if (launchException == null)
             {
-                reporter.Report(MessageDescriptor.LaunchedProcess, processSpec.Executable, argsDisplay, state.ProcessId);
+                reporter.Report(MessageDescriptor.LaunchedProcess, [processSpec.Executable, argsDisplay, state.ProcessId]);
             }
             else
             {

@@ -7,6 +7,7 @@ using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -416,7 +417,7 @@ namespace Microsoft.DotNet.Watch
                         continue;
                     }
 
-                    ReportDiagnostic(diagnostic, GetMessageDescriptor(diagnostic, verbose: false));
+                    ReportDiagnostic(diagnostic, GetLogEventId(diagnostic, verbose: false));
                 }
             }
 
@@ -444,8 +445,8 @@ namespace Microsoft.DotNet.Watch
                             projectsRebuiltDueToRudeEdits.Contains(projectId) ? "[auto-rebuild] " :
                             "";
 
-                        var descriptor = GetMessageDescriptor(diagnostic, verbose: prefix != "");
-                        ReportDiagnostic(diagnostic, descriptor, prefix);
+                        var eventId = GetLogEventId(diagnostic, verbose: prefix != "");
+                        ReportDiagnostic(diagnostic, eventId, prefix);
                     }
                 }
             }
@@ -453,20 +454,21 @@ namespace Microsoft.DotNet.Watch
             bool IsAutoRestartEnabled(ProjectId id)
                 => runningProjectInfos.TryGetValue(id, out var info) && info.RestartWhenChangesHaveNoEffect;
 
-            void ReportDiagnostic(Diagnostic diagnostic, MessageDescriptor descriptor, string prefix = "")
+            void ReportDiagnostic(Diagnostic diagnostic, EventId eventId, string prefix = "")
             {
                 var display = CSharpDiagnosticFormatter.Instance.Format(diagnostic);
-                _reporter.Report(descriptor, prefix, [display]);
+                _reporter.Report(eventId, prefix, [display]);
 
-                if (descriptor.TryGetMessage(prefix, [display], out var message))
+                var descriptor = MessageDescriptor.GetDescriptor(eventId);
+                if (descriptor.Severity != MessageSeverity.None)
                 {
-                    diagnosticsToDisplayInApp.Add(message);
+                    diagnosticsToDisplayInApp.Add(descriptor.GetMessage(prefix, [display]));
                 }
             }
 
             // Use the default severity of the diagnostic as it conveys impact on Hot Reload
             // (ignore warnings as errors and other severity configuration).
-            static MessageDescriptor GetMessageDescriptor(Diagnostic diagnostic, bool verbose)
+            static EventId GetLogEventId(Diagnostic diagnostic, bool verbose)
             {
                 if (verbose)
                 {
