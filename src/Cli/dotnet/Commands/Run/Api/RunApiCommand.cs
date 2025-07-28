@@ -63,9 +63,8 @@ internal abstract class RunApiInput
 
         public override RunApiOutput Execute()
         {
-            var sourceFile = VirtualProjectBuildingCommand.LoadSourceFile(EntryPointFileFullPath);
-            var errors = ImmutableArray.CreateBuilder<SimpleDiagnostic>();
-            var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: true, errors);
+            var sourceFile = SourceFile.Load(EntryPointFileFullPath);
+            var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: true, DiagnosticBag.Collect(out var diagnostics));
             string artifactsPath = ArtifactsPath ?? VirtualProjectBuildingCommand.GetArtifactsPath(EntryPointFileFullPath);
 
             var csprojWriter = new StringWriter();
@@ -74,7 +73,7 @@ internal abstract class RunApiInput
             return new RunApiOutput.Project
             {
                 Content = csprojWriter.ToString(),
-                Diagnostics = errors.ToImmutableArray(),
+                Diagnostics = diagnostics.ToImmutableArray(),
             };
         }
     }
@@ -86,13 +85,14 @@ internal abstract class RunApiInput
 
         public override RunApiOutput Execute()
         {
-            var msbuildArgs = MSBuildArgs.FromOtherArgs("-verbosity:quiet");
+            var msbuildArgs = MSBuildArgs.FromVerbosity(VerbosityOptions.quiet);
             var buildCommand = new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: EntryPointFileFullPath,
                 msbuildArgs: msbuildArgs)
             {
                 CustomArtifactsPath = ArtifactsPath,
             };
+            buildCommand.MarkArtifactsFolderUsed();
 
             var runCommand = new RunCommand(
                 noBuild: false,
@@ -104,7 +104,6 @@ internal abstract class RunApiInput
                 noRestore: false,
                 noCache: false,
                 interactive: false,
-                verbosity: VerbosityOptions.quiet,
                 msbuildArgs: msbuildArgs,
                 applicationArgs: [],
                 readCodeFromStdin: false,

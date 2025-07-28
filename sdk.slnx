@@ -50,6 +50,7 @@
     <Project Path="src/BuiltInTools/HotReloadAgent.Data/Microsoft.DotNet.HotReload.Agent.Data.shproj" />
     <Project Path="src/BuiltInTools/HotReloadAgent.PipeRpc/Microsoft.DotNet.HotReload.Agent.PipeRpc.Package.csproj" />
     <Project Path="src/BuiltInTools/HotReloadAgent.PipeRpc/Microsoft.DotNet.HotReload.Agent.PipeRpc.shproj" />
+    <Project Path="src/BuiltInTools/HotReloadAgent.WebAssembly.Browser/Microsoft.DotNet.HotReload.WebAssembly.Browser.csproj" />
     <Project Path="src/BuiltInTools/HotReloadAgent/Microsoft.DotNet.HotReload.Agent.Package.csproj" />
     <Project Path="src/BuiltInTools/HotReloadAgent/Microsoft.DotNet.HotReload.Agent.shproj" />
   </Folder>
@@ -271,7 +272,7 @@
   </Folder>
   <Folder Name="/src/Workloads/" />
   <Folder Name="/src/Workloads/Manifests/">
-    <Project Path="src/Workloads/Manifests/manifest-packages.proj" Type="C#" />
+    <Project Path="src/Workloads/Manifests/manifest-packages.csproj" />
   </Folder>
   <Folder Name="/src/Workloads/VSInsertion/">
     <Project Path="src/Workloads/VSInsertion/workloads.csproj" />

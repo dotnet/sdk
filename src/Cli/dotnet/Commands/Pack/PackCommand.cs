@@ -16,8 +16,7 @@ public class PackCommand(
 {
     public static PackCommand FromArgs(string[] args, string? msbuildPath = null)
     {
-        var parser = Parser.Instance;
-        var parseResult = parser.ParseFrom("dotnet pack", args);
+        var parseResult = Parser.Parse(["dotnet", "pack", ..args]);
         return FromParseResult(parseResult, msbuildPath);
     }
 
@@ -39,7 +38,8 @@ public class PackCommand(
             msbuildArgs,
             CommonOptions.PropertiesOption,
             CommonOptions.RestorePropertiesOption,
-            PackCommandParser.TargetOption);
+            PackCommandParser.TargetOption,
+            PackCommandParser.VerbosityOption);
         return new PackCommand(
             parsedMSBuildArgs.CloneWithAdditionalProperties(projectLocator.GetCustomDefaultConfigurationValueIfSpecified()),
             noRestore,

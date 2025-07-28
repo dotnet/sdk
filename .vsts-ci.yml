@@ -64,7 +64,7 @@ extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
     containers:
-      azureLinux30Net10BuildAmd64:
+      azureLinux30Amd64:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-build-amd64
 
     sdl:
@@ -192,7 +192,7 @@ extends:
               runTests: false
             ### musl ###
             - categoryName: musl
-              container: azureLinux30Net10BuildAmd64
+              container: azureLinux30Amd64
               runtimeIdentifier: linux-musl-x64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
@@ -201,14 +201,18 @@ extends:
               # SBOM generation is not supported for alpine.
               enableSbom: false
               runTests: false
+              # Helix is hanging on this job using the container. See: https://github.com/dotnet/dnceng/issues/6000
+              disableJob: true
             - categoryName: musl
-              container: azureLinux30Net10BuildAmd64
+              container: azureLinux30Amd64
               targetArchitecture: arm
               runtimeIdentifier: linux-musl-arm
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: /p:OSName=linux-musl
               runTests: false
+              # Helix is hanging on this job using the container. See: https://github.com/dotnet/dnceng/issues/6000
+              disableJob: true
             - categoryName: musl
               targetArchitecture: arm64
               runtimeIdentifier: linux-musl-arm64

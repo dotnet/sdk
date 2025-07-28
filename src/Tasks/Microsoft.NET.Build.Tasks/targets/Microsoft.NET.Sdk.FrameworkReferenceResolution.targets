@@ -53,7 +53,10 @@ Copyright (c) .NET Foundation. All rights reserved.
  
   <Target Name="AddPrunePackageReferences" BeforeTargets="CollectPrunePackageReferences"
           DependsOnTargets="ProcessFrameworkReferences"
-          Condition="'$(RestoreEnablePackagePruning)' == 'true'">
+          Condition="'$(RestoreEnablePackagePruning)' == 'true'
+          AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
+          AND '$(TargetFrameworkVersion)' != ''
+          AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0'))">
 
     <PropertyGroup>
       <PrunePackageDataRoot Condition="'$(PrunePackageDataRoot)' == ''">$(NetCoreRoot)\sdk\$(NETCoreSdkVersion)\PrunePackageData\</PrunePackageDataRoot>

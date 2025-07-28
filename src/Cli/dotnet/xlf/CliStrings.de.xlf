@@ -451,6 +451,11 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Datei</target>
         <note />
       </trans-unit>
+      <trans-unit id="FileArgumentDescription">
+        <source>The file-based app to operate on.</source>
+        <target state="translated">Die dateibasierte App, die verwendet werden soll.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FormatVersionIsHigher">
         <source>Format version is higher than supported. This tool may not be supported in this SDK version. Update your SDK.</source>
         <target state="translated">Die Formatversion ist höher als unterstützt. Dieses Tool wird in dieser SDK-Version möglicherweise nicht unterstützt. Aktualisieren Sie Ihr SDK.</target>
@@ -844,6 +849,16 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="ProjectNotFoundInTheSolution">
         <source>Project `{0}` could not be found in the solution.</source>
         <target state="translated">Das Projekt "{0}" wurde in der Projektmappe nicht gefunden.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectOrFileArgumentDescription">
+        <source>The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file.</source>
+        <target state="translated">Die Projekt- oder C#-Datei (dateibasiertes Programm), auf die zugegriffen werden soll. Wenn keine Datei angegeben ist, durchsucht der Befehl das aktuelle Verzeichnis nach einer Projektdatei.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectOrFileArgumentName">
+        <source>PROJECT | FILE</source>
+        <target state="translated">PROJEKT | DATEI</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectReference">

@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [InlineData("ignore list", "ignore")] // Global tool
         public void RootSubCommandResultReturnsCorrectSubCommand(string input, string expected)
         {
-            var result = Parser.Instance.Parse(input);
+            var result = Parser.Parse(input);
 
             result.RootSubCommandResult()
                 .Should()
