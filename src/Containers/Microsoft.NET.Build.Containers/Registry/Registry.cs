@@ -281,11 +281,14 @@ internal sealed class Registry
         {
 
             using var jsonStream = await _registryAPI.Blob.GetStreamAsync(repositoryName, digest, cancellationToken);
-            using var fsStream = File.OpenWrite(storagePath);
-            await jsonStream.CopyToAsync(fsStream, cancellationToken);
+            var storageWriteStream = File.OpenWrite(storagePath);
+            await jsonStream.CopyToAsync(storageWriteStream, cancellationToken);
+            // have to manually dispose the stream here so we ensure the write, because we're going to do a
+            // separate read stream
+            await storageWriteStream.DisposeAsync();
             // note: cannot just use the jsonStream here, as it may not be seekable
-            fsStream.Position = 0;
-            return (await JsonNode.ParseAsync(fsStream, cancellationToken: cancellationToken))!;
+            using var storageReadStream = File.OpenRead(storagePath);
+            return (await JsonNode.ParseAsync(storageReadStream, cancellationToken: cancellationToken))!;
         }
     }
 
@@ -400,9 +403,9 @@ internal sealed class Registry
             // Assume file is up to date and just return it
             return localPath;
         }
-    
+
         string tempTarballPath = _store.GetTempFile();
-        
+
         _logger.LogInformation($"Downloading layer {descriptor.Digest} from {repository} to content store.");
         int retryCount = 0;
         while (retryCount < MaxDownloadRetries)
@@ -411,12 +414,12 @@ internal sealed class Registry
             {
                 // No local copy, so download one
                 using Stream responseStream = await _registryAPI.Blob.GetStreamAsync(repository, descriptor.Digest, cancellationToken).ConfigureAwait(false);
-    
+
                 using (FileStream fs = File.Create(tempTarballPath))
                 {
                     await responseStream.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
                 }
-    
+
                 // Break the loop if successful
                 break;
             }
@@ -427,16 +430,16 @@ internal sealed class Registry
                 {
                     throw new UnableToDownloadFromRepositoryException(repository);
                 }
-    
+
                 _logger.LogTrace("Download attempt {0}/{1} for repository '{2}' failed. Error: {3}", retryCount, MaxDownloadRetries, repository, ex.ToString());
-    
+
                 // Wait before retrying
-                await Task.Delay(_retryDelayProvider(), cancellationToken).ConfigureAwait(false);   
+                await Task.Delay(_retryDelayProvider(), cancellationToken).ConfigureAwait(false);
             }
         }
 
         File.Move(tempTarballPath, localPath, overwrite: true);
-    
+
         return localPath;
     }
 
