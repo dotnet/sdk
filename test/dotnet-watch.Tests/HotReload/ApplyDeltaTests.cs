@@ -710,7 +710,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             if (verbose)
             {
-                await App.WaitUntilOutputContains($"dotnet watch 🕵️ [WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Deltas applied.");
+                await App.WaitUntilOutputContains($"dotnet watch 🕵️ [WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Updates applied.");
             }
             else
             {
@@ -1244,7 +1244,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             UpdateSourceFile(webSourcePath, src => src.Replace("Hello world!", "<Updated>"));
 
             await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
-            App.AssertOutputContains($"dotnet watch 🕵️ [WatchAspire.Web ({tfm})] Deltas applied.");
+            App.AssertOutputContains($"dotnet watch 🕵️ [WatchAspire.Web ({tfm})] Updates applied.");
             App.AssertOutputDoesNotContain("Projects rebuilt");
             App.AssertOutputDoesNotContain("Projects restarted");
             App.AssertOutputDoesNotContain("⚠");
