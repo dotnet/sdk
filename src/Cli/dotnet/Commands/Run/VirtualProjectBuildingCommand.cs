@@ -420,6 +420,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         public required RunFileBuildCacheEntry CurrentEntry { get; init; }
 
         /// <summary>
+        /// The first of <see cref="CurrentEntry"/>'s <see cref="RunFileBuildCacheEntry.ImplicitBuildFiles"/>
+        /// which is from the set of MSBuild <see cref="s_implicitBuildFiles"/>.
+        /// </summary>
+        public string? ExampleMSBuildFile { get; set; }
+
+        /// <summary>
         /// We cannot reuse auxiliary files like <c>csc.rsp</c> for example when SDK version changes.
         /// </summary>
         public bool CanReuseAuxiliaryFiles { get; set; } = true;
@@ -445,12 +451,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         // Collect current implicit build files.
         CollectImplicitBuildFiles(entryPointFile.Directory, cacheEntry.ImplicitBuildFiles, out var exampleMSBuildFile);
-        cacheEntry.ExampleMSBuildFile = exampleMSBuildFile;
 
         return new CacheInfo
         {
             EntryPointFile = entryPointFile,
             CurrentEntry = cacheEntry,
+            ExampleMSBuildFile = exampleMSBuildFile,
         };
     }
 
@@ -637,8 +643,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return BuildLevel.All;
         }
 
-        if (cacheEntry.ExampleMSBuildFile is { } exampleMSBuildFile)
+        if (cache.ExampleMSBuildFile is { } exampleMSBuildFile)
         {
+            Debug.Assert(cacheEntry.ImplicitBuildFiles.Count != 0);
             Reporter.Verbose.WriteLine($"Using MSBuild because there are implicit build files, for example '{exampleMSBuildFile}'.");
             return BuildLevel.All;
         }
@@ -1674,9 +1681,6 @@ internal sealed class RunFileBuildCacheEntry
     public string? SdkVersion { get; set; } // should be required and init-only but https://github.com/dotnet/runtime/issues/92877
 
     public string? RuntimeVersion { get; set; } // should be required and init-only but https://github.com/dotnet/runtime/issues/92877
-
-    [JsonIgnore]
-    public string? ExampleMSBuildFile { get; set; }
 
     [JsonConstructor]
     public RunFileBuildCacheEntry()
