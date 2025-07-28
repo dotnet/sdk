@@ -104,6 +104,9 @@ internal class Layer
             {
                 using (TarWriter writer = new(gz, TarEntryFormat.Pax, leaveOpen: true))
                 {
+                    // need to track directories that we have created so we only write each one once.
+                    // files that we will not include intermediate directories, so we need to be on the lookout
+                    HashSet<string> createdDirectories = new();
                     // Windows layers need a Files folder
                     if (isWindowsLayer)
                     {
@@ -130,6 +133,11 @@ internal class Layer
                         var file = new FileInfo(absolutePath);
                         var adjustedRelativePath = OperatingSystem.IsWindows() ? containerRelativePath.Replace('\\', '/') : containerRelativePath;
                         var finalRelativePath = $"{containerPath}/{adjustedRelativePath}";
+                        if (!createdDirectories.Contains(Path.GetDirectoryName(finalRelativePath)!))
+                        {
+                            await DiscoverAndAddIntermediateDirectories(writer, finalRelativePath, entryAttributes, createdDirectories, resolvedUserId, ct);
+
+                        }
                         await WriteTarEntryForFile(writer, file, finalRelativePath, entryAttributes, resolvedUserId, ct);
                     }
 
@@ -196,6 +204,33 @@ internal class Layer
                     // On Unix, we can determine the x-bit based on the filesystem permission.
                     // On Windows, we use executable permissions for all entries.
                     return (OperatingSystem.IsWindows() || ((file.UnixFileMode | UnixFileMode.UserExecute) != 0)) ? executeMode : nonExecuteMode;
+                }
+            }
+
+
+            static async Task DiscoverAndAddIntermediateDirectories(TarWriter writer, string finalRelativePath, Dictionary<string, string> entryAttributes, HashSet<string> createdDirectories, int? userId, CancellationToken ct)
+            {
+                string[] pathParts = finalRelativePath.Split('/');
+                string currentPath = string.Empty;
+
+                for (int i = 0; i < pathParts.Length - 1; i++)
+                {
+                    currentPath = currentPath == "" ? pathParts[i] : $"{currentPath}/{pathParts[i]}";
+                    if (!createdDirectories.Contains(currentPath))
+                    {
+                        var dirEntry = new PaxTarEntry(TarEntryType.Directory, currentPath, entryAttributes)
+                        {
+                            Mode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                                    UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+                                    UnixFileMode.OtherRead | UnixFileMode.OtherExecute
+                        };
+                        if (userId is int uid)
+                        {
+                            dirEntry.Uid = uid;
+                        }
+                        await writer.WriteEntryAsync(dirEntry, ct);
+                        createdDirectories.Add(currentPath);
+                    }
                 }
             }
         }

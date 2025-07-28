@@ -92,7 +92,7 @@ public sealed class LayerEndToEndTests : IDisposable
         File.WriteAllText(testFilePath, testString);
         var layerFilePath = new FileInfo(_store.GetTempFile());
 
-        Layer l = await Layer.FromFiles([(Path.GetFullPath(testFilePath), ".well-known/wwwroot")], containerPath: "/app", false, SchemaTypes.DockerManifestV2, _store, layerFilePath, CancellationToken.None);
+        Layer l = await Layer.FromFiles([(Path.GetFullPath(testFilePath), "wwwroot/.well-known/TestFile.txt")], containerPath: "/app", false, SchemaTypes.DockerManifestV2, _store, layerFilePath, CancellationToken.None);
 
         VerifyDescriptorInfo(l);
 
