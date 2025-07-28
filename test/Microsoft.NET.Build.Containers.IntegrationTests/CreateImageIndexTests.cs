@@ -22,7 +22,7 @@ public class CreateImageIndexTests
         _testOutput = testOutput;
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableFact()]
     public async Task CreateImageIndex_Baseline()
     {
         DirectoryInfo newProjectDir = CreateNewProject();
