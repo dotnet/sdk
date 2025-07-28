@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Watch
 
             if (!_context.Options.NonInteractive)
             {
-                _context.Reporter.Output($"{hotReloadEnabledMessage}{Environment.NewLine}  {(_context.EnvironmentOptions.SuppressEmojis ? string.Empty : "💡")} Press \"Ctrl + R\" to restart.", emoji: "🔥");
+                _context.Reporter.Output($"{hotReloadEnabledMessage}{Environment.NewLine}  {(_context.EnvironmentOptions.SuppressEmojis ? string.Empty : "💡")} Press \"Ctrl + R\" to restart.", Emoji.HotReload);
 
                 _console.KeyPressed += (key) =>
                 {
@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Watch
             }
             else
             {
-                _context.Reporter.Output(hotReloadEnabledMessage, emoji: "🔥");
+                _context.Reporter.Output(hotReloadEnabledMessage, Emoji.HotReload);
             }
 
             await using var browserConnector = new BrowserConnector(_context);
