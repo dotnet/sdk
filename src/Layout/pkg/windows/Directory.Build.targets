@@ -36,10 +36,6 @@
     </PropertyGroup>
   </Target>
 
-  <!-- This target does nothing. It's intended to allow ProjectReference items to specify a target that has
-       no build impact, but allow projects to participate in restore operations.  -->
-  <Target Name="Idle" />
-
   <!-- This target is intended to catch changes that require someone to investigate. -->
   <Target Name="ValidateBuild" BeforeTargets="CoreCompile">
     <!-- Bundles must target x86 for back compat. -->
