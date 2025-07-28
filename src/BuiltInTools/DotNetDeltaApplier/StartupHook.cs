@@ -179,7 +179,7 @@ internal sealed class StartupHook
         bool success;
         try
         {
-            agent.ApplyDeltas(request.Deltas);
+            agent.ApplyDeltas(request.Updates);
             success = true;
         }
         catch (Exception e)
