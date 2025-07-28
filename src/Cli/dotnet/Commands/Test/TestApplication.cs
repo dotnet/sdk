@@ -105,7 +105,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             ? args.Aggregate((a, b) => $"{a} {b}")
             : string.Empty);
 
-        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name}");
+        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} \"{_pipeNameDescription.Name}\"");
 
         return builder.ToString();
     }
