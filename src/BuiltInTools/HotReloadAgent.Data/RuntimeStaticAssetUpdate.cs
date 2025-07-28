@@ -5,11 +5,7 @@
 
 namespace Microsoft.DotNet.HotReload;
 
-internal readonly struct RuntimeStaticAssetUpdate(
-    string assemblyName,
-    string relativePath,
-    byte[] contents,
-    bool isApplicationProject)
+internal readonly struct RuntimeStaticAssetUpdate(string assemblyName, string relativePath, byte[] contents, bool isApplicationProject)
 {
     public string AssemblyName { get; } = assemblyName;
     public bool IsApplicationProject { get; } = isApplicationProject;

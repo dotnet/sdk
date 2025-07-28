@@ -4,7 +4,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO.Pipes;
-using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
 using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch
@@ -67,7 +66,7 @@ namespace Microsoft.DotNet.Watch
         private ResponseLoggingLevel ResponseLoggingLevel
             => Reporter.IsVerbose ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
 
-        public override async Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
+        public override async Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken cancellationToken)
         {
             // Should only be called after CreateConnection
             Debug.Assert(_capabilitiesTask != null);
@@ -88,15 +87,8 @@ namespace Microsoft.DotNet.Watch
                 return ApplyStatus.NoChangesApplied;
             }
 
-            var request = new ManagedCodeUpdateRequest(
-                deltas: [.. applicableUpdates.Select(update => new UpdateDelta(
-                    update.ModuleId,
-                    metadataDelta: [.. update.MetadataDelta],
-                    ilDelta: [.. update.ILDelta],
-                    pdbDelta: [.. update.PdbDelta],
-                    updatedTypes: [.. update.UpdatedTypes]))],
-                responseLoggingLevel: ResponseLoggingLevel);
-
+            var request = new ManagedCodeUpdateRequest(ToRuntimeUpdates(applicableUpdates), ResponseLoggingLevel);
+        
             var success = false;
             var canceled = false;
             try
@@ -133,19 +125,27 @@ namespace Microsoft.DotNet.Watch
             return
                 !success ? ApplyStatus.Failed :
                 (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
+
+            static ImmutableArray<RuntimeManagedCodeUpdate> ToRuntimeUpdates(IEnumerable<HotReloadManagedCodeUpdate> updates)
+                => [.. updates.Select(static update => new RuntimeManagedCodeUpdate(update.ModuleId,
+                   ImmutableCollectionsMarshal.AsArray(update.MetadataDelta)!,
+                   ImmutableCollectionsMarshal.AsArray(update.ILDelta)!,
+                   ImmutableCollectionsMarshal.AsArray(update.PdbDelta)!,
+                   ImmutableCollectionsMarshal.AsArray(update.UpdatedTypes)!))];
         }
 
-        public async override Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<StaticAssetUpdate> updates, CancellationToken cancellationToken)
+        public async override Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<HotReloadStaticAssetUpdate> updates, CancellationToken cancellationToken)
         {
             var appliedUpdateCount = 0;
 
             foreach (var update in updates)
             {
                 var request = new StaticAssetUpdateRequest(
-                    update.AssemblyName,
-                    update.RelativePath,
-                    update.Content,
-                    update.IsApplicationProject,
+                    new RuntimeStaticAssetUpdate(
+                        update.AssemblyName,
+                        update.RelativePath,
+                        ImmutableCollectionsMarshal.AsArray(update.Content)!,
+                        update.IsApplicationProject),
                     ResponseLoggingLevel);
 
                 var success = false;

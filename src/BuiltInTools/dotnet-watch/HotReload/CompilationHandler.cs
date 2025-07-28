@@ -163,7 +163,7 @@ namespace Microsoft.DotNet.Watch
                 var updatesToApply = _previousUpdates.Skip(appliedUpdateCount).ToImmutableArray();
                 if (updatesToApply.Any())
                 {
-                    _ = await deltaApplier.ApplyManagedCodeUpdates(updatesToApply, processCommunicationCancellationSource.Token);
+                    _ = await deltaApplier.ApplyManagedCodeUpdates(ToManagedCodeUpdates(updatesToApply), processCommunicationCancellationSource.Token);
                 }
 
                 appliedUpdateCount += updatesToApply.Length;
@@ -320,7 +320,7 @@ namespace Microsoft.DotNet.Watch
                 try
                 {
                     using var processCommunicationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(runningProject.ProcessExitedSource.Token, cancellationToken);
-                    var applySucceded = await runningProject.DeltaApplier.ApplyManagedCodeUpdates(updates, processCommunicationCancellationSource.Token) != ApplyStatus.Failed;
+                    var applySucceded = await runningProject.DeltaApplier.ApplyManagedCodeUpdates(ToManagedCodeUpdates(updates), processCommunicationCancellationSource.Token) != ApplyStatus.Failed;
                     if (applySucceded)
                     {
                         runningProject.Reporter.Report(MessageDescriptor.HotReloadSucceeded);
@@ -549,14 +549,14 @@ namespace Microsoft.DotNet.Watch
                 }
                 else
                 {
-                    var updates = new List<StaticAssetUpdate>();
+                    var updates = new List<HotReloadStaticAssetUpdate>();
 
                     foreach (var (filePath, relativeUrl, containingProject) in assets)
                     {
-                        byte[] content;
+                        ImmutableArray<byte> content;
                         try
                         {
-                            content = await File.ReadAllBytesAsync(filePath, cancellationToken);
+                            content = ImmutableCollectionsMarshal.AsImmutableArray(await File.ReadAllBytesAsync(filePath, cancellationToken));
                         }
                         catch (Exception e)
                         {
@@ -564,9 +564,9 @@ namespace Microsoft.DotNet.Watch
                             continue;
                         }
 
-                        updates.Add(new StaticAssetUpdate(
-                            relativePath: relativeUrl,
+                        updates.Add(new HotReloadStaticAssetUpdate(
                             assemblyName: containingProject.GetAssemblyName(),
+                            relativePath: relativeUrl,
                             content: content,
                             isApplicationProject: containingProject == runningProject.ProjectNode));
 
@@ -674,5 +674,8 @@ namespace Microsoft.DotNet.Watch
 
         private static Task ForEachProjectAsync(ImmutableDictionary<string, ImmutableArray<RunningProject>> projects, Func<RunningProject, CancellationToken, Task> action, CancellationToken cancellationToken)
             => Task.WhenAll(projects.SelectMany(entry => entry.Value).Select(project => action(project, cancellationToken))).WaitAsync(cancellationToken);
+
+        private static ImmutableArray<HotReloadManagedCodeUpdate> ToManagedCodeUpdates(ImmutableArray<WatchHotReloadService.Update> updates)
+            => [.. updates.Select(update => new HotReloadManagedCodeUpdate(update.ModuleId, update.MetadataDelta, update.ILDelta, update.PdbDelta, update.UpdatedTypes, update.RequiredCapabilities))];
     }
 }
