@@ -712,13 +712,10 @@ namespace Microsoft.DotNet.Watch
 
         private void ReportWatchingForChanges()
         {
-            var waitingForChanges = MessageDescriptor.WaitingForChanges;
-            if (_context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.ElevateWaitingForChangesMessageSeverity))
-            {
-                waitingForChanges = waitingForChanges with { Severity = MessageSeverity.Output };
-            }
-
-            _context.Reporter.Report(waitingForChanges);
+            _context.Reporter.ReportAs(
+                MessageDescriptor.WaitingForChanges,
+                MessageSeverity.Output,
+                when: _context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.ElevateWaitingForChangesMessageSeverity));
         }
 
         private void ReportFileChanges(IReadOnlyList<ChangedFile> changedFiles)

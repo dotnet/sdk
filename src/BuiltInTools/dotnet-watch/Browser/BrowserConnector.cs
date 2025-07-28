@@ -276,20 +276,20 @@ namespace Microsoft.DotNet.Watch
         {
             if (context.EnvironmentOptions.SuppressBrowserRefresh)
             {
-                context.Reporter.Report(MessageDescriptor.SkippingConfiguringBrowserRefresh_SuppressedViaEnvironmentVariable.ToErrorWhen(appModel.RequiresBrowserRefresh), EnvironmentVariables.SuppressBrowserRefresh);
+                context.Reporter.ReportAs(MessageDescriptor.SkippingConfiguringBrowserRefresh_SuppressedViaEnvironmentVariable, MessageSeverity.Error, when: appModel.RequiresBrowserRefresh, EnvironmentVariables.SuppressBrowserRefresh);
                 return false;
             }
 
             if (!projectNode.IsNetCoreApp(minVersion: s_minimumSupportedVersion))
             {
-                context.Reporter.Report(MessageDescriptor.SkippingConfiguringBrowserRefresh_TargetFrameworkNotSupported.ToErrorWhen(appModel.RequiresBrowserRefresh));
+                context.Reporter.ReportAs(MessageDescriptor.SkippingConfiguringBrowserRefresh_TargetFrameworkNotSupported, MessageSeverity.Error, when: appModel.RequiresBrowserRefresh);
                 return false;
             }
 
             // We only want to enable browser refresh if this is a WebApp (ASP.NET Core / Blazor app).
             if (!projectNode.IsWebApp())
             {
-                context.Reporter.Report(MessageDescriptor.SkippingConfiguringBrowserRefresh_NotWebApp.ToErrorWhen(appModel.RequiresBrowserRefresh));
+                context.Reporter.ReportAs(MessageDescriptor.SkippingConfiguringBrowserRefresh_NotWebApp, MessageSeverity.Error, when: appModel.RequiresBrowserRefresh);
                 return false;
             }
 
