@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public bool UsePollingWatcher { get; set; }
 
         public static string GetLinePrefix(MessageDescriptor descriptor, string projectDisplay = null)
-            => $"dotnet watch {descriptor.Emoji}{(projectDisplay != null ? $" [{projectDisplay}]" : "")} {descriptor.Format}";
+            => $"dotnet watch {descriptor.Emoji.ToDisplay()}{(projectDisplay != null ? $" [{projectDisplay}]" : "")} {descriptor.Format}";
 
         public void AssertOutputContains(string message)
             => AssertEx.ContainsSubstring(message, Process.Output);

@@ -76,14 +76,14 @@ namespace Microsoft.DotNet.Watch
 
             if (_managedCodeUpdateFailedOrCancelled)
             {
-                Reporter.Verbose("Previous changes failed to apply. Further changes are not applied to this process.", "🔥");
+                Reporter.Verbose("Previous changes failed to apply. Further changes are not applied to this process.", Emoji.HotReload);
                 return ApplyStatus.Failed;
             }
 
             var applicableUpdates = await FilterApplicableUpdatesAsync(updates, cancellationToken);
             if (applicableUpdates.Count == 0)
             {
-                Reporter.Verbose("No updates applicable to this process", "🔥");
+                Reporter.Verbose("No updates applicable to this process", Emoji.HotReload);
                 return ApplyStatus.NoChangesApplied;
             }
 
@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.Watch
             {
                 success = false;
                 Reporter.Error($"Change failed to apply (error: '{e.Message}'). Further changes won't be applied to this process.");
-                Reporter.Verbose($"Exception stack trace: {e.StackTrace}", "❌");
+                Reporter.Verbose($"Exception stack trace: {e.StackTrace}", Emoji.Error);
             }
             finally
             {
@@ -111,7 +111,7 @@ namespace Microsoft.DotNet.Watch
                 {
                     if (canceled)
                     {
-                        Reporter.Verbose("Change application cancelled. Further changes won't be applied to this process.", "🔥");
+                        Reporter.Verbose("Change application cancelled. Further changes won't be applied to this process.", Emoji.HotReload);
                     }
 
                     _managedCodeUpdateFailedOrCancelled = true;
@@ -162,13 +162,13 @@ namespace Microsoft.DotNet.Watch
                 {
                     success = false;
                     Reporter.Error($"Change failed to apply (error: '{e.Message}').");
-                    Reporter.Verbose($"Exception stack trace: {e.StackTrace}", "❌");
+                    Reporter.Verbose($"Exception stack trace: {e.StackTrace}", Emoji.Error);
                 }
                 finally
                 {
                     if (canceled)
                     {
-                        Reporter.Verbose("Change application cancelled.", "🔥");
+                        Reporter.Verbose("Change application cancelled.", Emoji.HotReload);
                     }
                 }
 

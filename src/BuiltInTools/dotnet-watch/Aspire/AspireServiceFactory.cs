@@ -265,7 +265,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
         }
     }
 
-    public const string MessageEmoji = "⭐";
+    public const Emoji MessageEmoji = Emoji.Aspire;
 
     public static readonly AspireServiceFactory Instance = new();
     public const string AppHostProjectCapability = "Aspire";

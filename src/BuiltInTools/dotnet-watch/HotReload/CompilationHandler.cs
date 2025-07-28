@@ -220,7 +220,7 @@ namespace Microsoft.DotNet.Watch
                 .Distinct(StringComparer.Ordinal)
                 .ToImmutableArray();
 
-            _reporter.Verbose($"Hot reload capabilities: {string.Join(" ", capabilities)}.", emoji: "🔥");
+            _reporter.Verbose($"Hot reload capabilities: {string.Join(" ", capabilities)}.", Emoji.HotReload);
             return capabilities;
         }
 
@@ -276,7 +276,7 @@ namespace Microsoft.DotNet.Watch
             {
                 _hotReloadService.DiscardUpdate();
 
-                _reporter.Output("Hot reload suspended. To continue hot reload, press \"Ctrl + R\".", emoji: "🔥");
+                _reporter.Output("Hot reload suspended. To continue hot reload, press \"Ctrl + R\".", Emoji.HotReload);
                 await Task.Delay(-1, cancellationToken);
 
                 return ([], []);
@@ -315,7 +315,7 @@ namespace Microsoft.DotNet.Watch
                     }
                     catch (OperationCanceledException) when (runningProject.ProcessExitedSource.Token.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
                     {
-                        runningProject.Reporter.Verbose("Hot reload canceled because the process exited.", emoji: "🔥");
+                        runningProject.Reporter.Verbose("Hot reload canceled because the process exited.", Emoji.HotReload);
                     }
                 }, cancellationToken);
             }
@@ -577,7 +577,7 @@ namespace Microsoft.DotNet.Watch
 
             await Task.WhenAll(tasks).WaitAsync(cancellationToken);
 
-            _reporter.Output("Hot reload of static files succeeded.", emoji: "🔥");
+            _reporter.Output("Hot reload of static files succeeded.", Emoji.HotReload);
 
             return allFilesHandled;
         }
