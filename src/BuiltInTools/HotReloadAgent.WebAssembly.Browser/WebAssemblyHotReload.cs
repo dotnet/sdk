@@ -111,7 +111,7 @@ internal static partial class WebAssemblyHotReload
                     agent.Reporter.Report($"Reapplying update {i}/{updates.Length}.", AgentMessageSeverity.Verbose);
 
                     agent.ApplyDeltas(
-                        update.Deltas.Select(d => new UpdateDelta(Guid.Parse(d.ModuleId, CultureInfo.InvariantCulture), d.MetadataDelta, d.ILDelta, d.PdbDelta, d.UpdatedTypes)));
+                        update.Deltas.Select(d => new RuntimeManagedCodeUpdate(Guid.Parse(d.ModuleId, CultureInfo.InvariantCulture), d.MetadataDelta, d.ILDelta, d.PdbDelta, d.UpdatedTypes)));
 
                     i++;
                 }
@@ -141,7 +141,7 @@ internal static partial class WebAssemblyHotReload
         }
 
         agent.ApplyDeltas(
-            deltas.Select(d => new UpdateDelta(Guid.Parse(d.ModuleId, CultureInfo.InvariantCulture), d.MetadataDelta, d.ILDelta, d.PdbDelta, d.UpdatedTypes)));
+            deltas.Select(d => new RuntimeManagedCodeUpdate(Guid.Parse(d.ModuleId, CultureInfo.InvariantCulture), d.MetadataDelta, d.ILDelta, d.PdbDelta, d.UpdatedTypes)));
 
         return agent.Reporter.GetAndClearLogEntries((ResponseLoggingLevel)loggingLevel)
             .Select(log => new LogEntry() { Message = log.message, Severity = (int)log.severity }).ToArray();

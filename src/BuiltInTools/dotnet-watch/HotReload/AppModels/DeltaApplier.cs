@@ -1,9 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
 using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch
@@ -22,8 +20,8 @@ namespace Microsoft.DotNet.Watch
 
         public abstract Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken);
 
-        public abstract Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken);
-        public abstract Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<StaticAssetUpdate> updates, CancellationToken cancellationToken);
+        public abstract Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken cancellationToken);
+        public abstract Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<HotReloadStaticAssetUpdate> updates, CancellationToken cancellationToken);
 
         public abstract Task InitialUpdatesApplied(CancellationToken cancellationToken);
 
