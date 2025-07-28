@@ -561,13 +561,13 @@
       <Uri>https://github.com/dotnet/arcade-services</Uri>
       <Sha>448a29d2d2e4e27303f728202602708ed45838f5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="1.8.0-preview.25373.2">
+    <Dependency Name="Microsoft.Testing.Platform" Version="1.8.0-preview.25374.11">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>7d305158d16bc674ed85e897b3e5b842867877d8</Sha>
+      <Sha>f1ea405d3997a828d15f68be2c239e9053ccb038</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="3.10.0-preview.25373.2">
+    <Dependency Name="MSTest" Version="3.10.0-preview.25374.11">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>7d305158d16bc674ed85e897b3e5b842867877d8</Sha>
+      <Sha>f1ea405d3997a828d15f68be2c239e9053ccb038</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="10.0.0-preview.7.25375.119">
       <Uri>https://github.com/dotnet/dotnet</Uri>
