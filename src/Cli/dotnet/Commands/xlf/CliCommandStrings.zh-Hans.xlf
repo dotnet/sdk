@@ -957,7 +957,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileDescription">
         <source>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</source>
-        <target state="new">Do not attempt to use launchSettings.json or [app].run.json to configure the application.</target>
+        <target state="translated">请勿尝试使用 launchSettings.json 或 [app].run.json 来配置应用程序。</target>
         <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
       </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
@@ -1082,7 +1082,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="DeserializationExceptionMessage">
         <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="new">An error was encountered when reading '{0}': {1}</target>
+        <target state="translated">读取 ‘{0}’ 时遇到错误: {1}</target>
         <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
@@ -1733,12 +1733,12 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoBinaryLogBecauseRunningJustCsc">
         <source>Warning: Binary log option was specified but MSBuild will be skipped because running just csc is enough. Specify '--no-cache' to force full build.</source>
-        <target state="new">Warning: Binary log option was specified but MSBuild will be skipped because running just csc is enough. Specify '--no-cache' to force full build.</target>
+        <target state="translated">警告: 指定了二进制日志选项，但将跳过 MSBuild，因为仅运行 csc 已足够。指定 ‘--no-cache’ 以强制完全生成。</target>
         <note>{Locked="--no-cache"}{Locked="MSBuild"}{Locked="csc"}</note>
       </trans-unit>
       <trans-unit id="NoBinaryLogBecauseUpToDate">
         <source>Warning: Binary log option was specified but build will be skipped because output is up to date. Specify '--no-cache' to force build.</source>
-        <target state="new">Warning: Binary log option was specified but build will be skipped because output is up to date. Specify '--no-cache' to force build.</target>
+        <target state="translated">警告: 指定了二进制日志选项，但将跳过生成，因为输出是最新的。指定 ‘--no-cache’ 以强制生成。</target>
         <note>{Locked="--no-cache"}</note>
       </trans-unit>
       <trans-unit id="NoBuildOptionDescription">
@@ -2631,7 +2631,7 @@ The default is to publish a framework-dependent application.</source>
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
         <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
 {1}</source>
-        <target state="new">Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
+        <target state="translated">无法使用启动配置文件 ‘{0}’，因为找不到启动设置文件。已尝试的位置:
 {1}</target>
         <note />
       </trans-unit>
@@ -2675,7 +2675,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="RunCommandWarningRunJsonNotUsed">
         <source>Warning: Settings from '{0}' are not used because '{1}' has precedence.</source>
-        <target state="new">Warning: Settings from '{0}' are not used because '{1}' has precedence.</target>
+        <target state="translated">警告: 不使用 ‘{0}’ 中的设置，因为 ‘{1}’ 具有优先级。</target>
         <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
       </trans-unit>
       <trans-unit id="RunConfigurationOptionDescription">
