@@ -57,7 +57,7 @@ public partial class CreateAppLayer
     /// If group/gid is not specified, the default group and supplementary groups of the given user/uid in /etc/passwd and /etc/group from the container are applied.
     /// If group/gid is specified, supplementary groups from the container are ignored.
     /// </summary>
-    public string ContainerUser { get; set; }
+    public string ContainerUser { get; set; } = string.Empty;
 
     /// <summary>
     /// The path to the folder containing `CreateLayerTarball.dll`.
