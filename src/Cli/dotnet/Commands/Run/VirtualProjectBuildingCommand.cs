@@ -273,6 +273,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
 
             BuildManager.DefaultBuildManager.EndBuild();
+            consoleLogger = null; // avoid double disposal which would throw
 
             return 0;
         }
@@ -289,7 +290,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
 
             binaryLogger?.Value.ReallyShutdown();
-            consoleLogger.Shutdown();
+            consoleLogger?.Shutdown();
         }
 
         static Action<IDictionary<string, string>> AddRestoreGlobalProperties(ReadOnlyDictionary<string, string>? restoreProperties)
