@@ -1,5 +1,5 @@
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <Project>
+
   <PropertyGroup>
     <GenerateMsisDependsOn Condition="'$(GenerateSdkBundleOnly)' != 'true'">
       GenerateSdkMsi;
@@ -146,7 +146,7 @@
                          OutputPath=$([System.IO.Path]::GetDirectoryName(%(MSIInstallerFile)));
                          OutputName=$([System.IO.Path]::GetFileNameWithoutExtension(%(MSIInstallerFile)));
                          DependencyKeyName=%(DependencyKeyName);TemplateLayoutDirectoryToHarvest=%(LayoutPath);
-                         BrandName=%(BrandName);UpgradeCode=%(UpgradeCode); 
+                         BrandName=%(BrandName);UpgradeCode=%(UpgradeCode);
                          DotnetSrc=%(LayoutPath)"/>
     <ItemGroup>
       <ChainMsi Include="%(TemplatesMsi.MSIInstallerFile)" />
