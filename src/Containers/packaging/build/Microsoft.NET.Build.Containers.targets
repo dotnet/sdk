@@ -357,11 +357,17 @@
   <Target Name="_CreateApplicationLayer"
     DependsOnTargets="_GetItemsFromPublishDirForSingleContainerPublish"
     Inputs="@(_ContainerPublishItem);$(_GenerateContainerConfigTrackingFile);@(_BaseContainerThisArchManifest)"
-    Outputs="@(_ContainerGeneratedApplicationLayer)">
+    Outputs="$(_ContainerGeneratedLayerPath)"
+    Returns="@(_ContainerGeneratedApplicationLayer)">
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
       <DotNetHostDirectory>$(NetCoreRoot)</DotNetHostDirectory>
       <DotNetHostFileName>dotnet</DotNetHostFileName>
       <DotNetHostFileName Condition="'$(OS)' == 'Windows_NT'">dotnet.exe</DotNetHostFileName>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <_ParentImageFormat Condition="'$(ContainerImageFormat)' != ''">$(ContainerImageFormat)</_ParentImageFormat>
+      <_ParentImageFormat>%(_BaseContainerThisArchManifest.MediaType)</_ParentImageFormat>
     </PropertyGroup>
 
     <CreateAppLayer
@@ -371,12 +377,16 @@
       PublishFiles="@(_ContainerPublishItem)"
       ContainerRootDirectory="$(ContainerWorkingDirectory)"
       TargetRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
-      ParentImageFormat="$([MSBuild]::ValueOrDefault('$(ContainerImageFormat)', '@(_BaseContainerThisArchManifest->'MediaType')'))"
+      ParentImageFormat="$(_ParentImageFormat)"
       ContentStoreRoot="$(ContainerContentStoreRoot)"
       ContainerUser="$(ContainerUser)"
-      GenerateLayerPath="$(_ContainerGeneratedLayerPath)">
+      GeneratedLayerPath="$(_ContainerGeneratedLayerPath)">
       <Output TaskParameter="GeneratedAppContainerLayer" ItemName="_ContainerGeneratedApplicationLayer" />
     </CreateAppLayer>
+
+    <ItemGroup>
+      <FileWrites Include="$(_ContainerGeneratedLayerPath)" />
+    </ItemGroup>
   </Target>
 
   <!-- There is an implicit dependency here in that both of ComputeContainerConfig and _ComputeContainerExecutionArgs must have been run, but because we call this Target
@@ -416,8 +426,7 @@
                     GenerateDigestLabel="$(ContainerGenerateLabelsImageBaseDigest)"
                     ContentStoreRoot="$(ContainerContentStoreRoot)"
                     GeneratedManifestPath="$(_ContainerGeneratedManifestPath)"
-                    GeneratedConfigurationPath="$(_ContainerGeneratedConfigurationPath)"
-                    GeneratedLayerPath="$(_ContainerGeneratedLayerPath)">
+                    GeneratedConfigurationPath="$(_ContainerGeneratedConfigurationPath)" >
 
       <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
       <Output TaskParameter="GeneratedContainerNames" ItemName="GeneratedContainerName" />

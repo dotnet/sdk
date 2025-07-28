@@ -21,10 +21,10 @@ internal class ContentStore(DirectoryInfo root)
             return artifactPath;
         }
     }
-    
+
     /// <summary>
-    /// Where all the blobs are stored in this ContentStore - these will be addressed purely by digest. The contents may be JSON blobs, 
-    /// layer tarballs, or other - you need to know the media type to interpret the contents. 
+    /// Where all the blobs are stored in this ContentStore - these will be addressed purely by digest. The contents may be JSON blobs,
+    /// layer tarballs, or other - you need to know the media type to interpret the contents.
     /// </summary>
     public string ContentRoot
     {
@@ -38,7 +38,7 @@ internal class ContentStore(DirectoryInfo root)
 
     /// <summary>
     /// Where all the reference pointers are stored in this ContentStore. These will be addressed by logical reference - registry, repository, tag.
-    /// The contents will be a digest and media type, which can then be looked up in the <see cref="ContentRoot"/>. 
+    /// The contents will be a digest and media type, which can then be looked up in the <see cref="ContentRoot"/>.
     /// </summary>
     public string ReferenceRoot
     {
@@ -85,9 +85,10 @@ internal class ContentStore(DirectoryInfo root)
                 => ".tar",
             SchemaTypes.DockerManifestListV2
             or SchemaTypes.DockerManifestV2
-            or SchemaTypes.OciImageIndexV1 
+            or SchemaTypes.OciImageIndexV1
             or SchemaTypes.OciManifestV1
-            or SchemaTypes.DockerContainerV1 => string.Empty,
+            or SchemaTypes.DockerContainerV1
+            or SchemaTypes.OciImageConfigV1 => string.Empty,
             _ => throw new ArgumentException(Resource.FormatString(nameof(Strings.UnrecognizedMediaType), descriptor.MediaType))
         };
 
