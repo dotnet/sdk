@@ -5,7 +5,7 @@
 
 namespace Microsoft.DotNet.HotReload;
 
-internal readonly struct StaticAssetUpdate(
+internal readonly struct RuntimeStaticAssetUpdate(
     string assemblyName,
     string relativePath,
     byte[] contents,

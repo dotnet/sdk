@@ -29,26 +29,26 @@ internal enum RequestType
     InitialUpdatesCompleted = 3,
 }
 
-internal readonly struct ManagedCodeUpdateRequest(IReadOnlyList<UpdateDelta> deltas, ResponseLoggingLevel responseLoggingLevel) : IUpdateRequest
+internal readonly struct ManagedCodeUpdateRequest(IReadOnlyList<RuntimeManagedCodeUpdate> updates, ResponseLoggingLevel responseLoggingLevel) : IUpdateRequest
 {
     private const byte Version = 4;
 
-    public IReadOnlyList<UpdateDelta> Deltas { get; } = deltas;
+    public IReadOnlyList<RuntimeManagedCodeUpdate> Updates { get; } = updates;
     public ResponseLoggingLevel ResponseLoggingLevel { get; } = responseLoggingLevel;
     public RequestType Type => RequestType.ManagedCodeUpdate;
 
     public async ValueTask WriteAsync(Stream stream, CancellationToken cancellationToken)
     {
         await stream.WriteAsync(Version, cancellationToken);
-        await stream.WriteAsync(Deltas.Count, cancellationToken);
+        await stream.WriteAsync(Updates.Count, cancellationToken);
 
-        foreach (var delta in Deltas)
+        foreach (var update in Updates)
         {
-            await stream.WriteAsync(delta.ModuleId, cancellationToken);
-            await stream.WriteByteArrayAsync(delta.MetadataDelta, cancellationToken);
-            await stream.WriteByteArrayAsync(delta.ILDelta, cancellationToken);
-            await stream.WriteByteArrayAsync(delta.PdbDelta, cancellationToken);
-            await stream.WriteAsync(delta.UpdatedTypes, cancellationToken);
+            await stream.WriteAsync(update.ModuleId, cancellationToken);
+            await stream.WriteByteArrayAsync(update.MetadataDelta, cancellationToken);
+            await stream.WriteByteArrayAsync(update.ILDelta, cancellationToken);
+            await stream.WriteByteArrayAsync(update.PdbDelta, cancellationToken);
+            await stream.WriteAsync(update.UpdatedTypes, cancellationToken);
         }
 
         await stream.WriteAsync((byte)ResponseLoggingLevel, cancellationToken);
@@ -64,7 +64,7 @@ internal readonly struct ManagedCodeUpdateRequest(IReadOnlyList<UpdateDelta> del
 
         var count = await stream.ReadInt32Async(cancellationToken);
 
-        var deltas = new UpdateDelta[count];
+        var updates = new RuntimeManagedCodeUpdate[count];
         for (var i = 0; i < count; i++)
         {
             var moduleId = await stream.ReadGuidAsync(cancellationToken);
@@ -73,11 +73,11 @@ internal readonly struct ManagedCodeUpdateRequest(IReadOnlyList<UpdateDelta> del
             var pdbDelta = await stream.ReadByteArrayAsync(cancellationToken);
             var updatedTypes = await stream.ReadIntArrayAsync(cancellationToken);
 
-            deltas[i] = new UpdateDelta(moduleId, metadataDelta: metadataDelta, ilDelta: ilDelta, pdbDelta: pdbDelta, updatedTypes);
+            updates[i] = new RuntimeManagedCodeUpdate(moduleId, metadataDelta: metadataDelta, ilDelta: ilDelta, pdbDelta: pdbDelta, updatedTypes);
         }
 
         var responseLoggingLevel = (ResponseLoggingLevel)await stream.ReadByteAsync(cancellationToken);
-        return new ManagedCodeUpdateRequest(deltas, responseLoggingLevel: responseLoggingLevel);
+        return new ManagedCodeUpdateRequest(updates, responseLoggingLevel: responseLoggingLevel);
     }
 }
 

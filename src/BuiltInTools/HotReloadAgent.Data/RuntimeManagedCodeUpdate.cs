@@ -7,7 +7,7 @@ using System;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal readonly struct UpdateDelta(Guid moduleId, byte[] metadataDelta, byte[] ilDelta, byte[] pdbDelta, int[] updatedTypes)
+internal readonly struct RuntimeManagedCodeUpdate(Guid moduleId, byte[] metadataDelta, byte[] ilDelta, byte[] pdbDelta, int[] updatedTypes)
 {
     public Guid ModuleId { get; } = moduleId;
     public byte[] MetadataDelta { get; } = metadataDelta;
