@@ -4,7 +4,6 @@
 using System.Buffers;
 using System.Collections.Immutable;
 using Microsoft.Build.Graph;
-using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
 using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch
@@ -67,7 +66,7 @@ namespace Microsoft.DotNet.Watch
             return Task.FromResult(capabilities);
         }
 
-        public override async Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
+        public override async Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken cancellationToken)
         {
             var applicableUpdates = await FilterApplicableUpdatesAsync(updates, cancellationToken);
             if (applicableUpdates.Count == 0)
@@ -87,13 +86,13 @@ namespace Microsoft.DotNet.Watch
             // Make sure to send the same update to all browsers, the only difference is the shared secret.
 
             var updateId = _updateId++;
-            var deltas = updates.Select(update => new JsonDelta
+            var deltas = updates.Select(static update => new JsonDelta
             {
                 ModuleId = update.ModuleId,
-                MetadataDelta = [.. update.MetadataDelta],
-                ILDelta = [.. update.ILDelta],
-                PdbDelta = [.. update.PdbDelta],
-                UpdatedTypes = [.. update.UpdatedTypes],
+                MetadataDelta = ImmutableCollectionsMarshal.AsArray(update.MetadataDelta)!,
+                ILDelta = ImmutableCollectionsMarshal.AsArray(update.ILDelta)!,
+                PdbDelta = ImmutableCollectionsMarshal.AsArray(update.PdbDelta)!,
+                UpdatedTypes = ImmutableCollectionsMarshal.AsArray(update.UpdatedTypes)!,
             }).ToArray();
 
             var loggingLevel = Reporter.IsVerbose ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
@@ -135,7 +134,7 @@ namespace Microsoft.DotNet.Watch
             return (!anySuccess && anyFailure) ? ApplyStatus.Failed : (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
         }
 
-        public override Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<StaticAssetUpdate> updates, CancellationToken cancellationToken)
+        public override Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<HotReloadStaticAssetUpdate> updates, CancellationToken cancellationToken)
             // static asset updates are handled by browser refresh server:
             => Task.FromResult(ApplyStatus.NoChangesApplied);
 

@@ -12,13 +12,13 @@ public class ManagedCodeUpdateRequestTests
     {
         var initial = new ManagedCodeUpdateRequest(
             [
-                new UpdateDelta(
+                new RuntimeManagedCodeUpdate(
                     moduleId: Guid.NewGuid(),
                     ilDelta: [0, 0, 1],
                     metadataDelta: [0, 1, 1],
                     pdbDelta: [],
                     updatedTypes: [60, 74, 22323]),
-                new UpdateDelta(
+                new RuntimeManagedCodeUpdate(
                     moduleId: Guid.NewGuid(),
                     ilDelta: [1, 0, 0],
                     metadataDelta: [1, 0, 1],
@@ -41,7 +41,7 @@ public class ManagedCodeUpdateRequestTests
     {
         var initial = new ManagedCodeUpdateRequest(
             [
-                new UpdateDelta(
+                new RuntimeManagedCodeUpdate(
                     moduleId: Guid.NewGuid(),
                     ilDelta: Enumerable.Range(0, 68200).Select(c => (byte)(c % 2)).ToArray(),
                     metadataDelta: [0, 1, 1],

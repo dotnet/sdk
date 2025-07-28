@@ -4,8 +4,6 @@
 
 using System.Collections.Immutable;
 
-using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
-
 namespace Microsoft.DotNet.Watch
 {
     internal abstract class SingleProcessDeltaApplier(IReporter reporter) : DeltaApplier(reporter)
@@ -16,10 +14,10 @@ namespace Microsoft.DotNet.Watch
         /// </summary>
         private readonly HashSet<Guid> _frozenModules = [];
 
-        public async Task<IReadOnlyList<WatchHotReloadService.Update>> FilterApplicableUpdatesAsync(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<HotReloadManagedCodeUpdate>> FilterApplicableUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken cancellationToken)
         {
             var availableCapabilities = await GetApplyUpdateCapabilitiesAsync(cancellationToken);
-            var applicableUpdates = new List<WatchHotReloadService.Update>();
+            var applicableUpdates = new List<HotReloadManagedCodeUpdate>();
 
             foreach (var update in updates)
             {
