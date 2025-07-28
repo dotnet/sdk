@@ -1611,8 +1611,12 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <comment>{0} is an option name like '--source'.</comment>
   </data>
   <data name="NoBinaryLogBecauseUpToDate" xml:space="preserve">
-    <value>Warning: Binary log option was specified but build will be skipped because output is up to date, specify '--no-cache' to force build.</value>
+    <value>Warning: Binary log option was specified but build will be skipped because output is up to date. Specify '--no-cache' to force build.</value>
     <comment>{Locked="--no-cache"}</comment>
+  </data>
+  <data name="NoBinaryLogBecauseRunningJustCsc" xml:space="preserve">
+    <value>Warning: Binary log option was specified but MSBuild will be skipped because running just csc is enough. Specify '--no-cache' to force full build.</value>
+    <comment>{Locked="--no-cache"}{Locked="MSBuild"}{Locked="csc"}</comment>
   </data>
   <data name="PublishAppDescription" xml:space="preserve">
     <value>Publisher for the .NET Platform</value>
