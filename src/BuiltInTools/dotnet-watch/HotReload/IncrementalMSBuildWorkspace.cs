@@ -25,7 +25,7 @@ internal class IncrementalMSBuildWorkspace : Workspace
             // MSBuildProjectLoader reports Failures for cases where we can safely continue loading projects
             // (e.g. non-C#/VB project is ignored).
             // https://github.com/dotnet/roslyn/issues/75170
-            reporter.Warn($"msbuild: {diag.Diagnostic}", "⚠");
+            reporter.Warn($"msbuild: {diag.Diagnostic}");
         };
 #pragma warning restore CS0618
 

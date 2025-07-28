@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Watch;
 
 internal static partial class BuildOutput
 {
-    private const string BuildEmoji = "🔨";
+    private const Emoji BuildEmoji = Emoji.Build;
     private static readonly Regex s_buildDiagnosticRegex = GetBuildDiagnosticRegex();
 
     [GeneratedRegex(@"[^:]+: (error|warning) [A-Za-z]+[0-9]+: .+")]

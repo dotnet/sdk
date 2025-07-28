@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             {
                 Messages.Add((descriptor.Severity, message));
 
-                WriteTestOutput($"{ToString(descriptor.Severity)} {descriptor.Emoji} {message}");
+                WriteTestOutput($"{ToString(descriptor.Severity)} {descriptor.Emoji.ToDisplay()} {message}");
             }
 
             if (descriptor.Id.HasValue && _actions.TryGetValue(descriptor.Id.Value, out var action))
