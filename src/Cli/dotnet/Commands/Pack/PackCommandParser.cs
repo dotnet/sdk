@@ -1,10 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.ObjectModel;
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using NuGet.Commands;
+using NuGet.Common;
+using NuGet.Versioning;
+using static Microsoft.DotNet.Cli.Commands.Run.CSharpDirective;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
@@ -87,6 +93,7 @@ internal static class PackCommandParser
         command.Options.Add(ConfigurationOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(TargetOption);
+        command.Options.Add(CommonOptions.VersionOption);
 
         // Don't include runtime option because we want to include it specifically and allow the short version ("-r") to be used
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);

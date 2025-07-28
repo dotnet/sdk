@@ -1908,6 +1908,16 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">빌드된 패키지를 배치할 출력 디렉터리입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackCmdVersion">
+        <source>VERSION</source>
+        <target state="new">VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersionDescription">
+        <source>The version of the package to create</source>
+        <target state="new">The version of the package to create</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PackConfigurationOptionDescription">
         <source>The configuration to use for building the package. The default is 'Release'.</source>
         <target state="translated">패키지를 빌드하는 데 사용할 구성입니다. 기본값은 'Release'입니다.</target>

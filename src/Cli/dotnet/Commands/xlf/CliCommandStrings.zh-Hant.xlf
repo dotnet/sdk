@@ -1908,6 +1908,16 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">放置組建套件所在的輸出目錄。</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackCmdVersion">
+        <source>VERSION</source>
+        <target state="new">VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersionDescription">
+        <source>The version of the package to create</source>
+        <target state="new">The version of the package to create</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PackConfigurationOptionDescription">
         <source>The configuration to use for building the package. The default is 'Release'.</source>
         <target state="translated">用於建置套件的設定。預設值為 'Release'。</target>

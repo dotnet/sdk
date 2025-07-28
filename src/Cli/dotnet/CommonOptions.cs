@@ -7,8 +7,10 @@ using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
 using System.CommandLine.StaticCompletions;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using NuGet.Versioning; 
 
 namespace Microsoft.DotNet.Cli;
 
@@ -217,6 +219,27 @@ internal static class CommonOptions
             Description = CliStrings.CmdVersionSuffixDescription,
             HelpName = CliStrings.VersionSuffixArgumentName
         }.ForwardAsSingle(o => $"--property:VersionSuffix={o}");
+
+
+    public static Option<NuGetVersion> VersionOption =
+        new ForwardedOption<NuGetVersion>("--version")
+        {
+            Description = CliCommandStrings.PackCmdVersionDescription,
+            HelpName = CliCommandStrings.PackCmdVersion,
+            Arity = ArgumentArity.ExactlyOne,
+            CustomParser = r =>
+            {
+             if (r.Tokens.Count == 0)
+                 return null;
+             var value = r.Tokens[0].Value;
+             if (NuGetVersion.TryParse(value, out var version))
+                 return version;
+             r.AddError(string.Format(CliStrings.InvalidVersion, value));
+             return null;
+
+            }
+        }.ForwardAsSingle(o => $"--property:Version={o}");
+
 
     public static Lazy<string> NormalizedCurrentDirectory = new(() => PathUtility.EnsureTrailingSlash(Directory.GetCurrentDirectory()));
 
