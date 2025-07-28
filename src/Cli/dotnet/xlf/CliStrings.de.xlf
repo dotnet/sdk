@@ -744,6 +744,11 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Projekt zu Projekt</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackCmd_OneNuspecAllowed">
+        <source>Only one .nuspec file can be packed at a time</source>
+        <target state="new">Only one .nuspec file can be packed at a time</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Package">
         <source>Package</source>
         <target state="translated">Paket</target>
