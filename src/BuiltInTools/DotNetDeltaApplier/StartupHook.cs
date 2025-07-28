@@ -202,7 +202,7 @@ internal sealed class StartupHook
     {
         var request = await StaticAssetUpdateRequest.ReadAsync(pipeClient, cancellationToken);
 
-        agent.ApplyStaticAssetUpdate(new StaticAssetUpdate(request.AssemblyName, request.RelativePath, request.Contents, request.IsApplicationProject));
+        agent.ApplyStaticAssetUpdate(request.Update);
 
         var logEntries = agent.GetAndClearLogEntries(request.ResponseLoggingLevel);
 

@@ -4,7 +4,6 @@
 
 using System.Collections.Immutable;
 using Microsoft.Build.Graph;
-using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -38,10 +37,10 @@ namespace Microsoft.DotNet.Watch
 
             // Allow updates that are supported by at least one process.
             // When applying changes we will filter updates applied to a specific process based on their required capabilities.
-            return result[0].Union(result[1], StringComparer.OrdinalIgnoreCase).ToImmutableArray();
+            return [.. result[0].Union(result[1], StringComparer.OrdinalIgnoreCase)];
         }
 
-        public override async Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
+        public override async Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken cancellationToken)
         {
             // Apply to both processes.
             // The module the change is for does not need to be loaded in either of the processes, yet we still consider it successful if the application does not fail.
@@ -80,7 +79,7 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        public override Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<StaticAssetUpdate> updates, CancellationToken cancellationToken)
+        public override Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<HotReloadStaticAssetUpdate> updates, CancellationToken cancellationToken)
             // static asset updates are handled by browser refresh server:
             => Task.FromResult(ApplyStatus.NoChangesApplied);
 

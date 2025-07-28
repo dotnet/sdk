@@ -142,18 +142,12 @@ internal readonly struct ClientInitializationResponse(string capabilities)
 }
 
 internal readonly struct StaticAssetUpdateRequest(
-    string assemblyName,
-    string relativePath,
-    byte[] contents,
-    bool isApplicationProject,
+    RuntimeStaticAssetUpdate update,
     ResponseLoggingLevel responseLoggingLevel) : IUpdateRequest
 {
     private const byte Version = 2;
 
-    public string AssemblyName { get; } = assemblyName;
-    public bool IsApplicationProject { get; } = isApplicationProject;
-    public string RelativePath { get; } = relativePath;
-    public byte[] Contents { get; } = contents;
+    public RuntimeStaticAssetUpdate Update { get; } = update;
     public ResponseLoggingLevel ResponseLoggingLevel { get; } = responseLoggingLevel;
 
     public RequestType Type => RequestType.StaticAssetUpdate;
@@ -161,10 +155,10 @@ internal readonly struct StaticAssetUpdateRequest(
     public async ValueTask WriteAsync(Stream stream, CancellationToken cancellationToken)
     {
         await stream.WriteAsync(Version, cancellationToken);
-        await stream.WriteAsync(AssemblyName, cancellationToken);
-        await stream.WriteAsync(IsApplicationProject, cancellationToken);
-        await stream.WriteAsync(RelativePath, cancellationToken);
-        await stream.WriteByteArrayAsync(Contents, cancellationToken);
+        await stream.WriteAsync(Update.AssemblyName, cancellationToken);
+        await stream.WriteAsync(Update.IsApplicationProject, cancellationToken);
+        await stream.WriteAsync(Update.RelativePath, cancellationToken);
+        await stream.WriteByteArrayAsync(Update.Contents, cancellationToken);
         await stream.WriteAsync((byte)ResponseLoggingLevel, cancellationToken);
     }
 
@@ -183,10 +177,11 @@ internal readonly struct StaticAssetUpdateRequest(
         var responseLoggingLevel = (ResponseLoggingLevel)await stream.ReadByteAsync(cancellationToken);
 
         return new StaticAssetUpdateRequest(
-            assemblyName: assemblyName,
-            relativePath: relativePath,
-            contents: contents,
-            isApplicationProject,
+            new RuntimeStaticAssetUpdate(
+                assemblyName: assemblyName,
+                relativePath: relativePath,
+                contents: contents,
+                isApplicationProject),
             responseLoggingLevel);
     }
 }
