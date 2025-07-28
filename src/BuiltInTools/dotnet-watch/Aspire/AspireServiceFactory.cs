@@ -211,7 +211,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
             {
                 IsRootProject = false,
                 ProjectPath = projectLaunchInfo.ProjectPath,
-                WorkingDirectory = _projectLauncher.EnvironmentOptions.WorkingDirectory,
+                WorkingDirectory = Path.GetDirectoryName(projectLaunchInfo.ProjectPath) ?? throw new InvalidOperationException(),
                 BuildArguments = _hostProjectOptions.BuildArguments,
                 Command = "run",
                 CommandArguments = GetRunCommandArguments(projectLaunchInfo, hostLaunchProfile),
