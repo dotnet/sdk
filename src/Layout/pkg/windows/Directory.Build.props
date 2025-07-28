@@ -24,5 +24,6 @@
     <!-- Technically we don't support .NET on any version of Windows where the version of Windows Installer is less than 5.0. -->
     <DefineConstants Condition="'$(InstallerPlatform)' != 'arm64'">$(DefineConstants);InstallerVersion=200</DefineConstants>
     <DefineConstants Condition="'$(InstallerPlatform)' == 'arm64'">$(DefineConstants);InstallerVersion=500</DefineConstants>
+  </PropertyGroup>
 
 </Project>
