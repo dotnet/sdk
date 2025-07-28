@@ -23,12 +23,12 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        private void WriteLine(TextWriter writer, string message, ConsoleColor? color, string emoji)
+        private void WriteLine(TextWriter writer, string message, ConsoleColor? color, Emoji emoji)
         {
             lock (_writeLock)
             {
                 console.ForegroundColor = ConsoleColor.DarkGray;
-                writer.Write($"dotnet watch {(SuppressEmojis ? ":" : emoji)} ");
+                writer.Write($"dotnet watch {(SuppressEmojis ? ":" : emoji.ToDisplay())} ");
                 console.ResetColor();
 
                 if (color.HasValue)

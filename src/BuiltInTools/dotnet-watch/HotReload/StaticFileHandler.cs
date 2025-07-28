@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Watch
 
             await Task.WhenAll(tasks).WaitAsync(cancellationToken);
 
-            reporter.Output("Hot reload of static files succeeded.", emoji: "🔥");
+            reporter.Output("Hot reload of static files succeeded.", Emoji.HotReload);
 
             return allFilesHandled;
         }

@@ -91,15 +91,15 @@ namespace Microsoft.DotNet.Watch
 
             if (successfulCount == buildResults.Length)
             {
-                reporter.Output("Hot reload of scoped css succeeded.", emoji: "🔥");
+                reporter.Output("Hot reload of scoped css succeeded.", Emoji.HotReload);
             }
             else if (successfulCount > 0)
             {
-                reporter.Output($"Hot reload of scoped css partially succeeded: {successfulCount} project(s) out of {buildResults.Length} were updated.", emoji: "🔥");
+                reporter.Output($"Hot reload of scoped css partially succeeded: {successfulCount} project(s) out of {buildResults.Length} were updated.", Emoji.HotReload);
             }
             else
             {
-                reporter.Output("Hot reload of scoped css failed.", emoji: "🔥");
+                reporter.Output("Hot reload of scoped css failed.", Emoji.HotReload);
             }
         }
     }

@@ -36,11 +36,11 @@ namespace Microsoft.DotNet.Watch
                     break;
 
                 case AgentMessageSeverity.Warning:
-                    reporter.Warn(message, emoji: "⚠");
+                    reporter.Warn(message);
                     break;
 
                 default:
-                    reporter.Verbose(message, emoji: "🕵️");
+                    reporter.Verbose(message, emoji: Emoji.Agent);
                     break;
             }
         }

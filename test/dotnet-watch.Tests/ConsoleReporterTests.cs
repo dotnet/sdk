@@ -35,32 +35,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             testConsole.Clear();
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void WritesToStandardStreamsWithCustomEmojis(bool suppressEmojis)
-        {
-            var testConsole = new TestConsole();
-            IReporter reporter = new ConsoleReporter(testConsole, verbose: true, quiet: false, suppressEmojis: suppressEmojis);
-            var dotnetWatchDefaultPrefix = $"dotnet watch {(suppressEmojis ? ":" : "😄")}";
-
-            reporter.Verbose("verbose", emoji: "😄");
-            Assert.Equal($"{dotnetWatchDefaultPrefix} verbose" + EOL, testConsole.GetOutput());
-            testConsole.Clear();
-
-            reporter.Output("out", emoji: "😄");
-            Assert.Equal($"{dotnetWatchDefaultPrefix} out" + EOL, testConsole.GetOutput());
-            testConsole.Clear();
-
-            reporter.Warn("warn", emoji: "😄");
-            Assert.Equal($"{dotnetWatchDefaultPrefix} warn" + EOL, testConsole.GetOutput());
-            testConsole.Clear();
-
-            reporter.Error("error", emoji: "😄");
-            Assert.Equal($"{dotnetWatchDefaultPrefix} error" + EOL, testConsole.GetOutput());
-            testConsole.Clear();
-        }
-
         private class TestConsole : IConsole
         {
             private readonly StringBuilder _out;
