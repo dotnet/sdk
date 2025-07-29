@@ -957,7 +957,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileDescription">
         <source>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</source>
-        <target state="new">Do not attempt to use launchSettings.json or [app].run.json to configure the application.</target>
+        <target state="translated">No intente usar launchSettings.json o [app].run.json para configurar la aplicación.</target>
         <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
       </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
@@ -1082,7 +1082,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="DeserializationExceptionMessage">
         <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="new">An error was encountered when reading '{0}': {1}</target>
+        <target state="translated">Error al leer '{0}': {1}</target>
         <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
@@ -1733,12 +1733,12 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="NoBinaryLogBecauseRunningJustCsc">
         <source>Warning: Binary log option was specified but MSBuild will be skipped because running just csc is enough. Specify '--no-cache' to force full build.</source>
-        <target state="new">Warning: Binary log option was specified but MSBuild will be skipped because running just csc is enough. Specify '--no-cache' to force full build.</target>
+        <target state="translated">Advertencia: se especificó la opción de registro binario, pero se omitirá MSBuild porque ejecutar solo csc es suficiente. Especifique "--no-cache" para forzar la compilación.</target>
         <note>{Locked="--no-cache"}{Locked="MSBuild"}{Locked="csc"}</note>
       </trans-unit>
       <trans-unit id="NoBinaryLogBecauseUpToDate">
         <source>Warning: Binary log option was specified but build will be skipped because output is up to date. Specify '--no-cache' to force build.</source>
-        <target state="new">Warning: Binary log option was specified but build will be skipped because output is up to date. Specify '--no-cache' to force build.</target>
+        <target state="translated">Advertencia: Se especificó la opción de registro binario, pero se omitirá la compilación porque la salida está actualizada. Especifique "--no-cache" para forzar la compilación.</target>
         <note>{Locked="--no-cache"}</note>
       </trans-unit>
       <trans-unit id="NoBuildOptionDescription">
@@ -2631,7 +2631,7 @@ El valor predeterminado es publicar una aplicación dependiente del marco.</targ
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
         <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
 {1}</source>
-        <target state="new">Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
+        <target state="translated">No se puede usar el perfil de inicio '{0}' porque no se pudo localizar el archivo de configuración de inicio. Ubicaciones probadas: 
 {1}</target>
         <note />
       </trans-unit>
@@ -2675,7 +2675,7 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
       </trans-unit>
       <trans-unit id="RunCommandWarningRunJsonNotUsed">
         <source>Warning: Settings from '{0}' are not used because '{1}' has precedence.</source>
-        <target state="new">Warning: Settings from '{0}' are not used because '{1}' has precedence.</target>
+        <target state="translated">Advertencia: la configuración de '{0}' no se utiliza porque '{1}' tiene prioridad.</target>
         <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
       </trans-unit>
       <trans-unit id="RunConfigurationOptionDescription">

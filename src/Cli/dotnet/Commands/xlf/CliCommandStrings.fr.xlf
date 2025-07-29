@@ -957,7 +957,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileDescription">
         <source>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</source>
-        <target state="new">Do not attempt to use launchSettings.json or [app].run.json to configure the application.</target>
+        <target state="translated">N’essayez pas d’utiliser launchSettings.json ou [app].run.json pour configurer l’application.</target>
         <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
       </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
@@ -1082,7 +1082,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="DeserializationExceptionMessage">
         <source>An error was encountered when reading '{0}': {1}</source>
-        <target state="new">An error was encountered when reading '{0}': {1}</target>
+        <target state="translated">Une erreur est survenue pendant la lecture de « {0} » : {1}</target>
         <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
@@ -1733,12 +1733,12 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
       </trans-unit>
       <trans-unit id="NoBinaryLogBecauseRunningJustCsc">
         <source>Warning: Binary log option was specified but MSBuild will be skipped because running just csc is enough. Specify '--no-cache' to force full build.</source>
-        <target state="new">Warning: Binary log option was specified but MSBuild will be skipped because running just csc is enough. Specify '--no-cache' to force full build.</target>
+        <target state="translated">Avertissement : l’option de journal binaire a été spécifiée, mais MSBuild sera ignoré, car l’exécution de csc est suffisante. Spécifiez « --no-cache » pour forcer le build complet.</target>
         <note>{Locked="--no-cache"}{Locked="MSBuild"}{Locked="csc"}</note>
       </trans-unit>
       <trans-unit id="NoBinaryLogBecauseUpToDate">
         <source>Warning: Binary log option was specified but build will be skipped because output is up to date. Specify '--no-cache' to force build.</source>
-        <target state="new">Warning: Binary log option was specified but build will be skipped because output is up to date. Specify '--no-cache' to force build.</target>
+        <target state="translated">Avertissement : l’option de journal binaire a été spécifiée, mais le build sera ignoré, car la sortie est à jour. Spécifiez « --no-cache » pour forcer le build.</target>
         <note>{Locked="--no-cache"}</note>
       </trans-unit>
       <trans-unit id="NoBuildOptionDescription">
@@ -2631,7 +2631,7 @@ La valeur par défaut est de publier une application dépendante du framework.</
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
         <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
 {1}</source>
-        <target state="new">Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
+        <target state="translated">Impossible d’utiliser le profil de lancement « {0} », car le fichier de paramètres de lancement est introuvable. Emplacements essayés : 
 {1}</target>
         <note />
       </trans-unit>
@@ -2675,7 +2675,7 @@ Votre projet cible plusieurs frameworks. Spécifiez le framework à exécuter à
       </trans-unit>
       <trans-unit id="RunCommandWarningRunJsonNotUsed">
         <source>Warning: Settings from '{0}' are not used because '{1}' has precedence.</source>
-        <target state="new">Warning: Settings from '{0}' are not used because '{1}' has precedence.</target>
+        <target state="translated">Avertissement : les paramètres de « {0} » ne sont pas utilisés, car « {1} » a la priorité.</target>
         <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
       </trans-unit>
       <trans-unit id="RunConfigurationOptionDescription">
