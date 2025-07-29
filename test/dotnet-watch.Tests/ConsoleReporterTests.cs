@@ -16,18 +16,17 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var testConsole = new TestConsole();
             IReporter reporter = new ConsoleReporter(testConsole, verbose: true, quiet: false, suppressEmojis: suppressEmojis);
-            var dotnetWatchDefaultPrefix = $"dotnet watch {(suppressEmojis ? ":" : "⌚")} ";
 
             reporter.Verbose("verbose {0}");
-            Assert.Equal($"{dotnetWatchDefaultPrefix}verbose {{0}}" + EOL, testConsole.GetOutput());
+            Assert.Equal($"dotnet watch {(suppressEmojis ? ":" : "⌚")} verbose {{0}}" + EOL, testConsole.GetOutput());
             testConsole.Clear();
 
             reporter.Output("out");
-            Assert.Equal($"{dotnetWatchDefaultPrefix}out" + EOL, testConsole.GetOutput());
+            Assert.Equal($"dotnet watch {(suppressEmojis ? ":" : "⌚")} out" + EOL, testConsole.GetOutput());
             testConsole.Clear();
 
             reporter.Warn("warn");
-            Assert.Equal($"{dotnetWatchDefaultPrefix}warn" + EOL, testConsole.GetOutput());
+            Assert.Equal($"dotnet watch {(suppressEmojis ? ":" : "⚠")} warn" + EOL, testConsole.GetOutput());
             testConsole.Clear();
 
             reporter.Error("error");
