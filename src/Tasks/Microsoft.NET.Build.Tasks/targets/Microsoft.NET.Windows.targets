@@ -252,7 +252,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorEnableIncrementalGeneration)" />
       <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorTreatWarningsAsErrors)" />
       <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorMaxDegreesOfParallelism)" />
-      <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorLogStandardErrorAsError)" />
+      <_RunCsWinRTGeneratorInputsCacheToHash Include="@(CsWinRTGeneratorAdditionalArgument)" />
       <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorStandardOutputImportance)" />
       <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorStandardErrorImportance)" />
       <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorLogStandardErrorAsError)" />
