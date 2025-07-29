@@ -76,12 +76,6 @@ namespace Microsoft.DotNet.Watch
             if (environmentOptions.TestFlags != TestFlags.None)
             {
                 reporter.Verbose($"Test flags: {environmentOptions.TestFlags}");
-
-//                if (environmentOptions.TestFlags.HasFlag(TestFlags.EnableWindowsCtrlCHandling) &&
-//                    RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-//                {
-//                    ProcessUtilities.EnableWindowsCtrlCHandling(m => reporter.Verbose($"Test: {m}"));
-//                }
             }
 
             if (!TryFindProject(workingDirectory, options, reporter, out var projectPath))

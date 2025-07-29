@@ -124,7 +124,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         public void Start(TestAsset asset, IEnumerable<string> arguments, string relativeProjectDirectory = null, string workingDirectory = null, TestFlags testFlags = TestFlags.None)
         {
-            testFlags |= TestFlags.RunningAsTest;// | TestFlags.EnableWindowsCtrlCHandling;
+            testFlags |= TestFlags.RunningAsTest;
 
             var projectDirectory = (relativeProjectDirectory != null) ? Path.Combine(asset.Path, relativeProjectDirectory) : asset.Path;
 
