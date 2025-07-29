@@ -4,13 +4,15 @@
 
 using System.Collections.Immutable;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.HotReload;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class BlazorWebAssemblyHostedDeltaApplier(IReporter reporter, BrowserRefreshServer browserRefreshServer, ProjectGraphNode clientProject) : DeltaApplier(reporter)
+    internal sealed class BlazorWebAssemblyHostedDeltaApplier(ILogger logger, BrowserRefreshServer browserRefreshServer, ProjectGraphNode clientProject) : DeltaApplier(logger)
     {
-        private readonly BlazorWebAssemblyDeltaApplier _wasmApplier = new(reporter, browserRefreshServer, clientProject);
-        private readonly DefaultDeltaApplier _hostApplier = new(reporter);
+        private readonly BlazorWebAssemblyDeltaApplier _wasmApplier = new(logger, browserRefreshServer, clientProject);
+        private readonly DefaultDeltaApplier _hostApplier = new(logger);
 
         public override void Dispose()
         {
@@ -70,11 +72,11 @@ namespace Microsoft.DotNet.Watch
             {
                 if (status == ApplyStatus.NoChangesApplied)
                 {
-                    Reporter.Warn($"No changes applied to {target} because they are not supported by the runtime.");
+                    Logger.LogWarning("No changes applied to {Target} because they are not supported by the runtime.", target);
                 }
                 else if (status == ApplyStatus.SomeChangesApplied)
                 {
-                    Reporter.Verbose($"Some changes not applied to {target} because they are not supported by the runtime.");
+                    Logger.LogWarning("Some changes not applied to {Target} because they are not supported by the runtime.", target);
                 }
             }
         }

@@ -4,6 +4,7 @@
 
 using System.Collections.Immutable;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch
 {

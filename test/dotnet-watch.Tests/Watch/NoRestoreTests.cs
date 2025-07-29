@@ -3,6 +3,8 @@
 
 #nullable disable
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class NoRestoreTests
@@ -14,6 +16,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             return new()
             {
                 Reporter = NullReporter.Singleton,
+                LoggerFactory = NullLoggerFactory.Instance,
                 ProcessRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout),
                 Options = new(),
                 RootProjectOptions = TestOptions.GetProjectOptions(args),

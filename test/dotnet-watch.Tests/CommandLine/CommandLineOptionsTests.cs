@@ -425,7 +425,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void ShortFormForProjectArgumentPrintsWarning()
         {
             var options = VerifyOptions(["-p", "MyProject.csproj"],
-                expectedMessages: [$"warning ⌚ {Resources.Warning_ProjectAbbreviationDeprecated}"]);
+                expectedMessages: [$"warning ⚠ {Resources.Warning_ProjectAbbreviationDeprecated}"]);
 
             Assert.Equal("MyProject.csproj", options.ProjectPath);
         }

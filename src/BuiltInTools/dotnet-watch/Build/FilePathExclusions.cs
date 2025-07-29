@@ -93,7 +93,7 @@ internal readonly struct FilePathExclusions(
         {
             if (glob.IsMatch(fullPath))
             {
-                reporter.Report(MessageDescriptor.IgnoringChangeInExcludedFile, fullPath, changeKind, "DefaultItemExcludes", globValue, projectDir);
+                reporter.Report(MessageDescriptor.IgnoringChangeInExcludedFile, [fullPath, changeKind, "DefaultItemExcludes", globValue, projectDir]);
                 return true;
             }
         }
