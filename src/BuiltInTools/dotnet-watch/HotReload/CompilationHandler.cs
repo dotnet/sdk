@@ -7,6 +7,7 @@ using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
+using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
@@ -101,13 +102,13 @@ namespace Microsoft.DotNet.Watch
             BrowserRefreshServer? browserRefreshServer,
             ProcessSpec processSpec,
             RestartOperation restartOperation,
-            IReporter processReporter,
+            ProjectSpecificReporter processReporter,
             CancellationTokenSource processTerminationSource,
             CancellationToken cancellationToken)
         {
             var projectPath = projectNode.ProjectInstance.FullPath;
 
-            var deltaApplier = appModel.CreateDeltaApplier(browserRefreshServer, processReporter);
+            var deltaApplier = appModel.CreateDeltaApplier(browserRefreshServer, processReporter.Logger);
             if (deltaApplier == null)
             {
                 // error already reported
