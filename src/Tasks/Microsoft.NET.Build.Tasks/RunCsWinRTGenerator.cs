@@ -77,6 +77,11 @@ public sealed class RunCsWinRTGenerator : ToolTask
     public bool ValidateWinRTRuntimeDllVersion2References { get; set; } = true;
 
     /// <summary>
+    /// Gets whether to enable incremental generation (i.e. with a cache file on disk saving the full set of types to generate).
+    /// </summary>
+    public bool EnableIncrementalGeneration { get; set; } = true;
+
+    /// <summary>
     /// Gets whether to treat warnings coming from 'cswinrtgen' as errors (regardless of the global 'TreatWarningsAsErrors' setting).
     /// </summary>
     public bool TreatWarningsAsErrors { get; set; } = false;
@@ -216,6 +221,7 @@ public sealed class RunCsWinRTGenerator : ToolTask
         AppendResponseFileCommand(args, "--use-windows-ui-xaml-projections", UseWindowsUIXamlProjections.ToString());
         AppendResponseFileCommand(args, "--validate-winrt-runtime-assembly-version", ValidateWinRTRuntimeAssemblyVersion.ToString());
         AppendResponseFileCommand(args, "--validate-winrt-runtime-dll-version-2-references", ValidateWinRTRuntimeDllVersion2References.ToString());
+        AppendResponseFileCommand(args, "--enable-incremental-generation", EnableIncrementalGeneration.ToString());
         AppendResponseFileCommand(args, "--treat-warnings-as-errors", TreatWarningsAsErrors.ToString());
         AppendResponseFileCommand(args, "--max-degrees-of-parallelism", MaxDegreesOfParallelism.ToString());
 
