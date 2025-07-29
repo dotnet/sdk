@@ -233,11 +233,11 @@ namespace Microsoft.DotNet.Watch
         /// </remarks>
         void ReportProcessOutput(OutputLine line);
 
-        void Report(EventId eventId, string prefix, params object?[] args)
+        void ReportWithPrefix(EventId eventId, string prefix, params object?[] args)
             => Report(MessageDescriptor.GetDescriptor(eventId), prefix, args);
 
         void Report(EventId eventId, params object?[] args)
-            => Report(eventId, prefix: "", args);
+            => ReportWithPrefix(eventId, prefix: "", args);
 
         void ReportAs(EventId eventId, MessageSeverity severity, bool when, params object?[] args)
             => Report(MessageDescriptor.GetDescriptor(eventId).WithSeverityWhen(severity, when), prefix: "", args);

@@ -456,7 +456,7 @@ namespace Microsoft.DotNet.Watch
             void ReportDiagnostic(Diagnostic diagnostic, EventId eventId, string prefix = "")
             {
                 var display = CSharpDiagnosticFormatter.Instance.Format(diagnostic);
-                _reporter.Report(eventId, prefix, [display]);
+                _reporter.ReportWithPrefix(eventId, prefix, [display]);
 
                 var descriptor = MessageDescriptor.GetDescriptor(eventId);
                 if (descriptor.Severity != MessageSeverity.None)
