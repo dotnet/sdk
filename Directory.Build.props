@@ -77,6 +77,8 @@
   <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GenerateProgramFile>false</GenerateProgramFile>
+    <TestRunnerName>XUnitV3</TestRunnerName>
+    <OutputType>Exe</OutputType>
     <!-- <TestRunnerAdditionalArguments>-parallel none</TestRunnerAdditionalArguments> -->
   </PropertyGroup>
 
