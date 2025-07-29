@@ -25,6 +25,8 @@ namespace Microsoft.DotNet.Watch
     /// </summary>
     internal sealed class BrowserRefreshServer : IAsyncDisposable, IStaticAssetChangeApplier
     {
+        public const string ServerLogComponentName = nameof(BrowserRefreshServer);
+        
         private static readonly ReadOnlyMemory<byte> s_reloadMessage = Encoding.UTF8.GetBytes("Reload");
         private static readonly ReadOnlyMemory<byte> s_waitMessage = Encoding.UTF8.GetBytes("Wait");
         private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web);
@@ -33,7 +35,8 @@ namespace Microsoft.DotNet.Watch
 
         private readonly List<BrowserConnection> _activeConnections = [];
         private readonly RSA _rsa;
-        private readonly IReporter _reporter;
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly ILogger _logger;
         private readonly TaskCompletionSource _terminateWebSocket;
         private readonly TaskCompletionSource _browserConnected;
         private readonly string? _environmentHostName;
@@ -44,11 +47,12 @@ namespace Microsoft.DotNet.Watch
 
         public readonly EnvironmentOptions Options;
 
-        public BrowserRefreshServer(EnvironmentOptions options, IReporter reporter)
+        public BrowserRefreshServer(EnvironmentOptions options, ILoggerFactory loggerFactory)
         {
             _rsa = RSA.Create(2048);
             Options = options;
-            _reporter = reporter;
+            _loggerFactory = loggerFactory;
+            _logger = loggerFactory.CreateLogger(ServerLogComponentName);
             _terminateWebSocket = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _browserConnected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _environmentHostName = EnvironmentVariables.AutoReloadWSHostName;
@@ -67,7 +71,7 @@ namespace Microsoft.DotNet.Watch
 
             foreach (var connection in connectionsToDispose)
             {
-                _reporter.Verbose($"Disconnecting from browser #{connection.Id}.");
+                connection.ServerLogger.LogDebug("Disconnecting from browser.");
                 await connection.DisposeAsync();
             }
 
@@ -87,7 +91,7 @@ namespace Microsoft.DotNet.Watch
             environmentBuilder.DotNetStartupHooks.Add(Path.Combine(AppContext.BaseDirectory, "middleware", "Microsoft.AspNetCore.Watch.BrowserRefresh.dll"));
             environmentBuilder.AspNetCoreHostingStartupAssemblies.Add("Microsoft.AspNetCore.Watch.BrowserRefresh");
 
-            if (_reporter.IsVerbose)
+            if (_logger.IsEnabled(LogLevel.Debug))
             {
                 // enable debug logging from middleware:
                 environmentBuilder.SetVariable("Logging__LogLevel__Microsoft.AspNetCore.Watch", "Debug");
@@ -129,7 +133,7 @@ namespace Microsoft.DotNet.Watch
             await _refreshServer.StartAsync(cancellationToken);
 
             var serverUrls = string.Join(',', GetServerUrls(_refreshServer));
-            _reporter.Verbose($"Refresh server running at {serverUrls}.");
+            _logger.LogDebug("Refresh server running at {0}.", serverUrls);
             _serverUrls = serverUrls;
         }
 
@@ -177,7 +181,7 @@ namespace Microsoft.DotNet.Watch
             }
 
             var clientSocket = await context.WebSockets.AcceptWebSocketAsync(subProtocol);
-            var connection = new BrowserConnection(clientSocket, sharedSecret, _reporter);
+            var connection = new BrowserConnection(clientSocket, sharedSecret, _loggerFactory);
 
             lock (_activeConnections)
             {
@@ -216,7 +220,7 @@ namespace Microsoft.DotNet.Watch
 
                     connectionAttemptReported = true;
                     reportDelayInSeconds = nextReportSeconds;
-                    _reporter.Output("Connecting to the browser ...");
+                    _logger.LogInformation("Connecting to the browser ...");
                 }
             }, progressCancellationSource.Token);
 
@@ -231,7 +235,7 @@ namespace Microsoft.DotNet.Watch
 
             if (connectionAttemptReported)
             {
-                _reporter.Output("Browser connection established.");
+                _logger.LogInformation("Browser connection established.");
             }
         }
 
@@ -296,7 +300,7 @@ namespace Microsoft.DotNet.Watch
 
         public async ValueTask SendAndReceiveAsync<TRequest>(
             Func<string?, TRequest> request,
-            Action<ReadOnlySpan<byte>, IReporter>? response,
+            Action<ReadOnlySpan<byte>, ILogger>? response,
             CancellationToken cancellationToken)
         {
             var responded = false;
@@ -321,7 +325,7 @@ namespace Microsoft.DotNet.Watch
 
             if (!responded)
             {
-                _reporter.Verbose($"Failed to receive response from a connected browser.");
+                _logger.LogDebug("Failed to receive response from a connected browser.");
             }
 
             await DisposeClosedBrowserConnectionsAsync();
@@ -355,7 +359,7 @@ namespace Microsoft.DotNet.Watch
 
         public ValueTask ReportCompilationErrorsInBrowserAsync(ImmutableArray<string> compilationErrors, CancellationToken cancellationToken)
         {
-            _reporter.Verbose($"Updating diagnostics in the browser.");
+            _logger.LogDebug("Updating diagnostics in connected browsers.");
             if (compilationErrors.IsEmpty)
             {
                 return SendJsonMessageAsync(new AspNetCoreHotReloadApplied(), cancellationToken);
@@ -371,7 +375,7 @@ namespace Microsoft.DotNet.Watch
             // Serialize all requests sent to a single server:
             foreach (var relativeUrl in relativeUrls)
             {
-                _reporter.Verbose($"Sending static asset update request to browser: '{relativeUrl}'.");
+                _logger.LogDebug("Sending static asset update request to connected browsers: '{RelativeUrl}'.", relativeUrl);
                 var message = JsonSerializer.SerializeToUtf8Bytes(new UpdateStaticFileMessage { Path = relativeUrl }, s_jsonSerializerOptions);
                 await SendAsync(message, cancellationToken);
             }

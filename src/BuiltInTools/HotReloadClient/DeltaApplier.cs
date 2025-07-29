@@ -1,14 +1,19 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
-using Microsoft.DotNet.HotReload;
+#nullable enable
 
-namespace Microsoft.DotNet.Watch
+using System;
+using System.Collections.Immutable;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+
+namespace Microsoft.DotNet.HotReload
 {
-    internal abstract class DeltaApplier(IReporter reporter) : IDisposable
+    internal abstract class DeltaApplier(ILogger logger) : IDisposable
     {
-        public readonly IReporter Reporter = reporter;
+        public readonly ILogger Logger = logger;
 
         public abstract void CreateConnection(string namedPipeName, CancellationToken cancellationToken);
 
@@ -27,22 +32,16 @@ namespace Microsoft.DotNet.Watch
 
         public abstract void Dispose();
 
-        public static void ReportLogEntry(IReporter reporter, string message, AgentMessageSeverity severity)
+        public static void ReportLogEntry(ILogger logger, string message, AgentMessageSeverity severity)
         {
-            switch (severity)
+            var level = severity switch
             {
-                case AgentMessageSeverity.Error:
-                    reporter.Error(message);
-                    break;
+                AgentMessageSeverity.Error => LogLevel.Error,
+                AgentMessageSeverity.Warning => LogLevel.Warning,
+                _ => LogLevel.Debug
+            };
 
-                case AgentMessageSeverity.Warning:
-                    reporter.Warn(message);
-                    break;
-
-                default:
-                    reporter.Verbose(message, emoji: Emoji.Agent);
-                    break;
-            }
+            logger.Log(level, message);
         }
     }
 

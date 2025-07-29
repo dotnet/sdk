@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.DotNet.Watch
 {
     internal sealed class DotNetWatchContext
@@ -9,6 +11,7 @@ namespace Microsoft.DotNet.Watch
         public required GlobalOptions Options { get; init; }
         public required EnvironmentOptions EnvironmentOptions { get; init; }
         public required IReporter Reporter { get; init; }
+        public required ILoggerFactory LoggerFactory { get; init; }
         public required ProcessRunner ProcessRunner { get; init; }
 
         public required ProjectOptions RootProjectOptions { get; init; }

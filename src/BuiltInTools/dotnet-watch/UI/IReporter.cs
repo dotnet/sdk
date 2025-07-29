@@ -3,7 +3,6 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
@@ -33,9 +32,10 @@ namespace Microsoft.DotNet.Watch
         Browser,
         Agent,
         Build,
+        Refresh,
     }
 
-    internal static class EmojiExtensions
+    internal static class Extensions
     {
         public static string ToDisplay(this Emoji emoji)
             => emoji switch
@@ -52,8 +52,95 @@ namespace Microsoft.DotNet.Watch
                 Emoji.Browser => "🌐",
                 Emoji.Agent => "🕵️",
                 Emoji.Build => "🔨",
+                Emoji.Refresh => "🔃",
                 _ => throw new InvalidOperationException()
             };
+
+        public static void Log(this ILogger logger, EventId eventId, params object?[] args)
+        {
+            var descriptor = MessageDescriptor.GetDescriptor(eventId);
+
+            logger.Log(
+                descriptor.Severity.ToLogLevel(),
+                eventId,
+                state: (descriptor, args),
+                exception: null,
+                formatter: static (state, _) => state.descriptor.GetMessage(prefix: "", state.args));
+        }
+
+        public static LogLevel ToLogLevel(this MessageSeverity severity)
+            => severity switch
+            {
+                MessageSeverity.Verbose => LogLevel.Debug,
+                MessageSeverity.Output => LogLevel.Information,
+                MessageSeverity.Warning => LogLevel.Warning,
+                MessageSeverity.Error => LogLevel.Error,
+                _ => throw new InvalidOperationException()
+            };
+
+        public static MessageSeverity ToSeverity(this LogLevel level)
+            => level switch
+            {
+                LogLevel.Debug => MessageSeverity.Verbose,
+                LogLevel.Information => MessageSeverity.Output,
+                LogLevel.Warning => MessageSeverity.Warning,
+                LogLevel.Error => MessageSeverity.Error,
+                _ => throw new InvalidOperationException()
+            };
+    }
+
+    internal sealed class LoggerFactory(IReporter reporter) : ILoggerFactory
+    {
+        private sealed class Logger(IReporter reporter, string categoryName) : ILogger
+        {
+            public bool IsEnabled(LogLevel logLevel)
+                => reporter.IsVerbose || logLevel > LogLevel.Debug;
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            {
+                var (name, display) = LoggingUtilities.ParseCategoryName(categoryName);
+                var prefix = display != null ? $"[{display}] " : "";
+
+                var severity = logLevel.ToSeverity();
+                var descriptor = eventId.Id != 0 ? MessageDescriptor.GetDescriptor(eventId) : default;
+
+                var emoji = severity switch
+                {
+                    MessageSeverity.Error => Emoji.Error,
+                    MessageSeverity.Warning => Emoji.Warning,
+                    _ when descriptor.Emoji != Emoji.Default => descriptor.Emoji,
+                    _ when MessageDescriptor.ComponentEmojis.TryGetValue(name, out var componentEmoji) => componentEmoji,
+                    _ => Emoji.Watch
+                };
+
+                object?[] args;
+                if (eventId.Id == 0)
+                {
+                    // ad-hoc message
+                    descriptor = new MessageDescriptor(formatter(state, exception), emoji, severity, Id: null);
+                    args = [];
+                }
+                else
+                {
+                    args = state is IReadOnlyList<KeyValuePair<string, object?>> namedArgs ? [.. namedArgs.Select(na => na.Value)] : [];
+                }
+
+                reporter.Report(descriptor, prefix, args);
+            }
+
+            public IDisposable? BeginScope<TState>(TState state) where TState : notnull
+                => throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+        }
+
+        public ILogger CreateLogger(string categoryName)
+            => new Logger(reporter, categoryName);
+
+        public void AddProvider(ILoggerProvider provider)
+            => throw new NotImplementedException();
     }
 
     internal readonly record struct MessageDescriptor(string Format, Emoji Emoji, MessageSeverity Severity, int? Id)
@@ -63,7 +150,8 @@ namespace Microsoft.DotNet.Watch
 
         private static EventId Create(string format, Emoji emoji, MessageSeverity severity)
         {
-            var id = new EventId(s_id++);
+            // reserve event id 0 for ad-hoc messages
+            var id = new EventId(++s_id);
             s_descriptors = s_descriptors.Add(id, new MessageDescriptor(format, emoji, severity, id.Id));
             return id;
         }
@@ -75,7 +163,15 @@ namespace Microsoft.DotNet.Watch
             => prefix + (Id == null ? Format : string.Format(Format, args));
 
         public MessageDescriptor WithSeverityWhen(MessageSeverity severity, bool condition)
-            => condition ? this with { Severity = severity, Emoji = severity switch { MessageSeverity.Error => Emoji.Error, MessageSeverity.Warning => Emoji.Warning, _ => Emoji } } : this;
+            => condition && Severity != severity
+                ? this with { Severity = severity, Emoji = severity switch { MessageSeverity.Error => Emoji.Error, MessageSeverity.Warning => Emoji.Warning, _ => Emoji } }
+                : this;
+
+        public static readonly ImmutableDictionary<string, Emoji> ComponentEmojis = ImmutableDictionary<string, Emoji>.Empty
+            .Add(HotReloadDotNetWatcher.LogComponentName, Emoji.HotReload)
+            .Add(BrowserRefreshServer.ServerLogComponentName, Emoji.Refresh)
+            .Add(BrowserConnection.AgentLogComponentName, Emoji.Agent)
+            .Add(BrowserConnection.ServerLogComponentName, Emoji.Browser);
 
         // predefined messages used for testing:
         public static readonly EventId HotReloadSessionStarting = Create("Hot reload session starting.", Emoji.HotReload, MessageSeverity.None);
@@ -138,25 +234,28 @@ namespace Microsoft.DotNet.Watch
         /// </remarks>
         void ReportProcessOutput(OutputLine line);
 
-        void Report(EventId eventId, string prefix, params object?[] args)
+        void ReportWithPrefix(EventId eventId, string prefix, params object?[] args)
             => Report(MessageDescriptor.GetDescriptor(eventId), prefix, args);
 
         void Report(EventId eventId, params object?[] args)
-            => Report(eventId, prefix: "", args);
+            => ReportWithPrefix(eventId, prefix: "", args);
 
         void ReportAs(EventId eventId, MessageSeverity severity, bool when, params object?[] args)
             => Report(MessageDescriptor.GetDescriptor(eventId).WithSeverityWhen(severity, when), prefix: "", args);
 
+        void Report(string message, Emoji emoji, MessageSeverity severity)
+            => Report(new MessageDescriptor(message, emoji, severity, Id: null), prefix: "", args: []);
+
         void Verbose(string message, Emoji emoji = Emoji.Watch)
-            => Report(new MessageDescriptor(message, emoji, MessageSeverity.Verbose, Id: null), prefix: "", args: []);
+            => Report(message, emoji, MessageSeverity.Verbose);
 
         void Output(string message, Emoji emoji = Emoji.Watch)
-            => Report(new MessageDescriptor(message, emoji, MessageSeverity.Output, Id: null), prefix: "", args: []);
+            => Report(message, emoji, MessageSeverity.Output);
 
         void Warn(string message)
-            => Report(new MessageDescriptor(message, Emoji.Warning, MessageSeverity.Warning, Id: null), prefix: "", args: []);
+            => Report(message, Emoji.Warning, MessageSeverity.Warning);
 
         void Error(string message)
-            => Report(new MessageDescriptor(message, Emoji.Error, MessageSeverity.Error, Id: null), prefix: "", args: []);
+            => Report(message, Emoji.Error, MessageSeverity.Error);
     }
 }

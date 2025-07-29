@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.HotReload;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -13,6 +15,6 @@ internal sealed class DefaultAppModel(ProjectGraphNode project)
 {
     public override bool RequiresBrowserRefresh => false;
 
-    public override DeltaApplier? CreateDeltaApplier(BrowserRefreshServer? browserRefreshServer, IReporter processReporter)
-        => new DefaultDeltaApplier(processReporter);
+    public override DeltaApplier? CreateDeltaApplier(BrowserRefreshServer? browserRefreshServer, ILogger processLogger)
+        => new DefaultDeltaApplier(processLogger);
 }

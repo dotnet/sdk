@@ -215,6 +215,7 @@ namespace Microsoft.DotNet.Watch
             => new()
             {
                 Reporter = reporter,
+                LoggerFactory = new LoggerFactory(reporter),
                 ProcessRunner = processRunner,
                 Options = options.GlobalOptions,
                 EnvironmentOptions = environmentOptions,

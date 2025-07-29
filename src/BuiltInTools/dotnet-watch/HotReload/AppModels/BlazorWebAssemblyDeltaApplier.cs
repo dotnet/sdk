@@ -5,10 +5,12 @@ using System.Buffers;
 using System.Collections.Immutable;
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.HotReload;
+using Microsoft.Extensions.Logging;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class BlazorWebAssemblyDeltaApplier(IReporter reporter, BrowserRefreshServer browserRefreshServer, ProjectGraphNode project) : SingleProcessDeltaApplier(reporter)
+    internal sealed class BlazorWebAssemblyDeltaApplier(ILogger logger, BrowserRefreshServer browserRefreshServer, ProjectGraphNode project) : SingleProcessDeltaApplier(logger)
     {
         private static readonly ImmutableArray<string> s_defaultCapabilities60 =
             ["Baseline"];
@@ -47,7 +49,7 @@ namespace Microsoft.DotNet.Watch
             {
                 var targetFramework = project.GetTargetFrameworkVersion();
 
-                Reporter.Verbose($"Using capabilities based on project '{project.GetDisplayName()}' target framework: '{targetFramework}'.");
+                Logger.LogDebug("Using capabilities based on project target framework: '{TargetFramework}'.", targetFramework);
 
                 capabilities = targetFramework?.Major switch
                 {
@@ -60,7 +62,7 @@ namespace Microsoft.DotNet.Watch
             }
             else
             {
-                Reporter.Verbose($"Project '{project.GetDisplayName()}' specifies capabilities: '{string.Join(' ', capabilities)}'");
+                Logger.LogDebug("Project specifies capabilities: '{Capabilities}'", string.Join(' ', capabilities));
             }
 
             return Task.FromResult(capabilities);
@@ -95,7 +97,7 @@ namespace Microsoft.DotNet.Watch
                 UpdatedTypes = ImmutableCollectionsMarshal.AsArray(update.UpdatedTypes)!,
             }).ToArray();
 
-            var loggingLevel = Reporter.IsVerbose ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
+            var loggingLevel = Logger.IsEnabled(LogLevel.Debug) ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
 
             await browserRefreshServer.SendAndReceiveAsync(
                 request: sharedSecret => new JsonApplyHotReloadDeltasRequest
@@ -105,7 +107,7 @@ namespace Microsoft.DotNet.Watch
                     Deltas = deltas,
                     ResponseLoggingLevel = (int)loggingLevel
                 },
-                response: (value, reporter) =>
+                response: (value, logger) =>
                 {
                     var data = BrowserRefreshServer.DeserializeJson<JsonApplyDeltasResponse>(value);
 
@@ -120,7 +122,7 @@ namespace Microsoft.DotNet.Watch
 
                     foreach (var entry in data.Log)
                     {
-                        ReportLogEntry(reporter, entry.Message, (AgentMessageSeverity)entry.Severity);
+                        ReportLogEntry(logger, entry.Message, (AgentMessageSeverity)entry.Severity);
                     }
                 },
                 cancellationToken);

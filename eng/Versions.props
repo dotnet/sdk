@@ -95,6 +95,7 @@
     <SystemTextJsonToolsetPackageVersion>8.0.5</SystemTextJsonToolsetPackageVersion>
     <SystemThreadingTasksExtensionsToolsetPackageVersion>4.5.4</SystemThreadingTasksExtensionsToolsetPackageVersion>
     <SystemResourcesExtensionsToolsetPackageVersion>8.0.0</SystemResourcesExtensionsToolsetPackageVersion>
+    <SystemValueTaskToolsetPackageVersion>8.0.0</SystemValueTaskToolsetPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/msbuild -->

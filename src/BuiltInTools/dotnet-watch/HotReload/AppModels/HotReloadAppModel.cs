@@ -3,6 +3,8 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.HotReload;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -10,7 +12,7 @@ internal abstract partial class HotReloadAppModel(ProjectGraphNode? agentInjecti
 {
     public abstract bool RequiresBrowserRefresh { get; }
 
-    public abstract DeltaApplier? CreateDeltaApplier(BrowserRefreshServer? browserRefreshServer, IReporter processReporter);
+    public abstract DeltaApplier? CreateDeltaApplier(BrowserRefreshServer? browserRefreshServer, ILogger processLogger);
 
     /// <summary>
     /// Returns true and the path to the client agent implementation binary if the application needs the agent to be injected.

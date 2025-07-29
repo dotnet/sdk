@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public partial class BuildEvaluatorTests
@@ -17,6 +19,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             return new DotNetWatchContext()
             {
                 Reporter = NullReporter.Singleton,
+                LoggerFactory = NullLoggerFactory.Instance,
                 ProcessRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout),
                 Options = new(),
                 RootProjectOptions = TestOptions.ProjectOptions,

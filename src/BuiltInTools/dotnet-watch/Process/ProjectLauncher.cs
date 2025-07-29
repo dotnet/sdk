@@ -109,7 +109,7 @@ internal sealed class ProjectLauncher(
 
         processSpec.Arguments = arguments;
 
-        var processReporter = new ProjectSpecificReporter(projectNode, Reporter);
+        var processReporter = new ProjectSpecificReporter(projectNode, Reporter, context.LoggerFactory);
 
         return await compilationHandler.TrackRunningProjectAsync(
             projectNode,

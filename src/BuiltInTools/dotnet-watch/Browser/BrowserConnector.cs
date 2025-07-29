@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Watch
                 hasExistingServer = _servers.TryGetValue(key, out server);
                 if (!hasExistingServer)
                 {
-                    server = IsServerSupported(projectNode, appModel) ? new BrowserRefreshServer(context.EnvironmentOptions, context.Reporter) : null;
+                    server = IsServerSupported(projectNode, appModel) ? new BrowserRefreshServer(context.EnvironmentOptions, context.LoggerFactory) : null;
                     _servers.Add(key, server);
                 }
             }
@@ -229,7 +229,7 @@ namespace Microsoft.DotNet.Watch
                     // From emperical observation, it's noted that failing to launch a browser results in either Process.Start returning a null-value
                     // or for the process to have immediately exited.
                     // We can use this to provide a helpful message.
-                    context.Reporter.Output($"Unable to launch the browser. Navigate to {launchUrl}", emoji: Emoji.Browser);
+                    context.Reporter.Output($"Unable to launch the browser. Browser to {launchUrl}", emoji: Emoji.Browser);
                 }
             }
             catch (Exception ex)
