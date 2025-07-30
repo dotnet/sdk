@@ -813,7 +813,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     <Clean Include="{EscapeValue(artifactsPath)}/*" />
                   </ItemGroup>
 
-                  <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                 """);
 
             if (firstSdkVersion is null)
@@ -1005,6 +1004,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
                     """);
             }
+
+            writer.WriteLine();
         }
 
         writer.WriteLine("""

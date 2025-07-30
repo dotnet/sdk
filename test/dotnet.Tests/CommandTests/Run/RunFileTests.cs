@@ -2653,7 +2653,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <Clean Include="/artifacts/*" />
                       </ItemGroup>
 
-                      <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
                       <Import Project="Sdk.props" Sdk="Aspire.Hosting.Sdk" Version="9.1.0" />
 
@@ -2721,7 +2720,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <Clean Include="/artifacts/*" />
                       </ItemGroup>
 
-                      <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
                       <PropertyGroup>
@@ -2786,7 +2784,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <Clean Include="/artifacts/*" />
                       </ItemGroup>
 
-                      <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
                       <PropertyGroup>
