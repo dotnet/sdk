@@ -95,7 +95,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var console = new TestConsole(Logger);
         var reporter = new TestReporter(Logger);
         var environmentOptions = TestOptions.GetEnvironmentOptions(workingDirectory, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset);
-        var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout, CancellationToken.None);
+        var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout);
 
         var program = Program.TryCreate(
            TestOptions.GetCommandLineOptions(["--verbose", ..args, "--project", projectPath]),
