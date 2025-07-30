@@ -682,10 +682,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return BuildLevel.All;
         }
 
-        if (cacheEntry.GlobalProperties.Keys.Except(s_ignorableProperties, cacheEntry.GlobalProperties.Comparer).Any())
+        var globalProperties = cacheEntry.GlobalProperties.Keys.Except(s_ignorableProperties, cacheEntry.GlobalProperties.Comparer);
+        if (globalProperties.FirstOrDefault() is { } exampleKey)
         {
-            var example = cacheEntry.GlobalProperties.First();
-            Reporter.Verbose.WriteLine($"Using MSBuild because there are global properties, for example '{example.Key}={example.Value}'.");
+            var exampleValue = cacheEntry.GlobalProperties[exampleKey];
+            Reporter.Verbose.WriteLine($"Using MSBuild because there are global properties, for example '{exampleKey}={exampleValue}'.");
             return BuildLevel.All;
         }
 
