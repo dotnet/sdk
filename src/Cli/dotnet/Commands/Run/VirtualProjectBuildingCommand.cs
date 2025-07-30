@@ -105,7 +105,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         EntryPointFileFullPath = entryPointFileFullPath;
         MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { "BuildNonexistentProjectsByDefault", bool.TrueString },
+            // See https://github.com/dotnet/msbuild/blob/main/documentation/specs/build-nonexistent-projects-by-default.md.
+            { "_BuildNonexistentProjectsByDefault", bool.TrueString },
             { "RestoreUseSkipNonexistentTargets", bool.FalseString },
         }
         .AsReadOnly());
