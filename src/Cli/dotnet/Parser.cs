@@ -165,7 +165,7 @@ public static class Parser
         rootCommand.Arguments.Add(DotnetSubCommand);
 
         // NuGet implements several commands in its own repo. Add them to the .NET SDK via the provided API.
-        NuGet.CommandLine.XPlat.NuGetCommands.Add(rootCommand, CommonOptions.InteractiveOption(true));
+        NuGet.CommandLine.XPlat.NuGetCommands.Add(rootCommand, CommonOptions.InteractiveOption(acceptArgument: true));
 
         rootCommand.SetAction(parseResult =>
         {
