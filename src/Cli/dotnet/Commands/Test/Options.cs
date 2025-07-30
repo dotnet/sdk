@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal record TestOptions(string Architecture, bool HasFilterMode, bool IsHelp);
+internal record TestOptions(bool HasFilterMode, bool IsHelp);
 
 internal record PathOptions(string? ProjectPath, string? SolutionPath, string? DirectoryPath);
 

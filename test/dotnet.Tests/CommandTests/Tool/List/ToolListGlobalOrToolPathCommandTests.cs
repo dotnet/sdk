@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Returns(new IToolPackage[0]);
 
             var toolPath = Path.GetTempPath();
-            var result = Parser.Instance.Parse("dotnet tool list " + $"--tool-path {toolPath}");
+            var result = Parser.Parse("dotnet tool list " + $"--tool-path {toolPath}");
             var toolListGlobalOrToolPathCommand = new ToolListGlobalOrToolPathCommand(
                 result,
                 toolPath1 =>
@@ -156,7 +156,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Should().Equal(EnumerateExpectedTableLines(store.Object));
         }
 
-        
+
         [Fact]
         public void GivenMultipleInstalledPackagesItPrintsThePackagesForJsonFormat()
         {
@@ -181,12 +181,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             command.Execute().Should().Be(0);
 
             _reporter.Lines.Count.Should().Be(1);
-            
+
             var versionedData = System.Text.Json.JsonSerializer.Deserialize<VersionedDataContract<ToolListJsonContract[]>>(_reporter.Lines[0]);
             versionedData.Should().NotBeNull();
             versionedData.Version.Should().Be(1);
             versionedData.Data.Length.Should().Be(2);
-            
+
             // another tool should be the first one, since there's OrderBy by PackageId
             versionedData.Data[0].PackageId.Should().Be("another.tool");
             versionedData.Data[0].Version.Should().Be("2.7.3");
@@ -323,7 +323,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         private ToolListGlobalOrToolPathCommand CreateCommand(IToolPackageStoreQuery store, string options = "", string expectedToolPath = null)
         {
-            var result = Parser.Instance.Parse("dotnet tool list " + options);
+            var result = Parser.Parse("dotnet tool list " + options);
             return new ToolListGlobalOrToolPathCommand(
                 result,
                 toolPath => { AssertExpectedToolPath(toolPath, expectedToolPath); return store; },

@@ -261,42 +261,42 @@ Caminhos pesquisados: "{1}", "{2}".</target>
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsCommandDescription">
         <source>Removes artifacts created for file-based apps</source>
-        <target state="new">Removes artifacts created for file-based apps</target>
+        <target state="translated">Remove artefatos criados para aplicativos baseados em arquivo</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsDays">
         <source>How many days an artifact folder needs to be unused in order to be removed</source>
-        <target state="new">How many days an artifact folder needs to be unused in order to be removed</target>
+        <target state="translated">Quantos dias uma pasta de artefato precisa ficar sem uso para ser removida</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsDirectoryNotFound">
         <source>Warning: Artifacts directory does not exist: {0}</source>
-        <target state="new">Warning: Artifacts directory does not exist: {0}</target>
+        <target state="translated">Aviso: o diretório de artefatos não existe: {0}</target>
         <note>{0} is directory path.</note>
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsDryRun">
         <source>Determines changes without actually modifying the file system</source>
-        <target state="new">Determines changes without actually modifying the file system</target>
+        <target state="translated">Determina alterações sem modificar o sistema de arquivos</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsErrorRemovingFolder">
         <source>Error removing folder '{0}': {1}</source>
-        <target state="new">Error removing folder '{0}': {1}</target>
+        <target state="translated">Erro ao remover a pasta '{0}': {1}</target>
         <note>{0} is folder path. {1} is inner error message.</note>
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsScanning">
         <source>Scanning for folders to remove in: {0}</source>
-        <target state="new">Scanning for folders to remove in: {0}</target>
+        <target state="translated">Procurando pastas para remover em: {0}</target>
         <note>{0} is directory path.</note>
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsTotalFoldersRemoved">
         <source>Total folders removed: {0}</source>
-        <target state="new">Total folders removed: {0}</target>
+        <target state="translated">Total de pastas removidas: {0}</target>
         <note>{0} is count.</note>
       </trans-unit>
       <trans-unit id="CleanFileBasedAppArtifactsWouldRemoveFolders">
         <source>Would remove folders: {0}</source>
-        <target state="new">Would remove folders: {0}</target>
+        <target state="translated">Pastas que seriam removidas: {0}</target>
         <note>{0} is count.</note>
       </trans-unit>
       <trans-unit id="CleanFrameworkOptionDescription">
@@ -920,6 +920,16 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">COMMAND_NAME</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionFileDescription">
+        <source>The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).</source>
+        <target state="translated">O caminho para o aplicativo baseado em arquivo a ser executado (também pode ser passado como o primeiro argumento se não houver nenhum projeto no diretório atual).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionFileHelpName">
+        <source>FILE_PATH</source>
+        <target state="translated">FILE_PATH</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionLaunchProfileDescription">
         <source>The name of the launch profile (if any) to use when launching the application.</source>
         <target state="translated">O nome do perfil de inicialização (se houver) a ser usado ao iniciar o aplicativo.</target>
@@ -946,9 +956,9 @@ dotnet.config is a name don't translate.</note>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileDescription">
-        <source>Do not attempt to use launchSettings.json to configure the application.</source>
-        <target state="translated">Não tente usar o launchSettings.json para configurar o aplicativo.</target>
-        <note />
+        <source>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</source>
+        <target state="translated">Não tente usar launchSettings.json ou [app].run.json para configurar o aplicativo.</target>
+        <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
       </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
         <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
@@ -1071,11 +1081,9 @@ dotnet.config is a name don't translate.</note>
         <note />
       </trans-unit>
       <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading launchSettings.json.
-{0}</source>
-        <target state="translated">Um erro foi encontrado durante a leitura do launchSettings.json.
-{0}</target>
-        <note />
+        <source>An error was encountered when reading '{0}': {1}</source>
+        <target state="translated">Ocorreu um erro ao ler '{0}': {1}</target>
+        <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
@@ -1091,6 +1099,12 @@ dotnet.config is a name don't translate.</note>
         <source>Enables diagnostic output.</source>
         <target state="translated">Habilita a saída de diagnóstico.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="DirectivesRemoved">
+        <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
+        <target state="translated">Diretivas "{0}" removidas ({1}) para "{2}" de: {3}</target>
+        <note>{0} is a directive kind (like '#:package'). {1} is number of removed directives.
+    {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</note>
       </trans-unit>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
@@ -1491,10 +1505,10 @@ Diferencie os nomes dos perfis.</target>
         <target state="translated">O arquivo especificado deve existir e ter a extensão de arquivo ".cs": "{0}"</target>
         <note>{Locked=".cs"}</note>
       </trans-unit>
-      <trans-unit id="InvalidOptionCombination">
-        <source>Cannot combine option '{0}' and '{1}'.</source>
-        <target state="translated">Não é possível combinar as opções "{0}" e "{1}".</target>
-        <note>{0} and {1} are option names like '--no-build'.</note>
+      <trans-unit id="InvalidOptionForFileBasedApp">
+        <source>Cannot specify option '{0}' when operating on a file-based app.</source>
+        <target state="translated">Não é possível especificar a opção "{0}" ao operar em um aplicativo baseado em arquivo.</target>
+        <note>{0} is an option name like '--source'.</note>
       </trans-unit>
       <trans-unit id="InvalidOptionForStdin">
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
@@ -1717,9 +1731,14 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
         <target state="translated">Instalando a versão da carga de trabalho {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoBinaryLogBecauseRunningJustCsc">
+        <source>Warning: Binary log option was specified but MSBuild will be skipped because running just csc is enough. Specify '--no-cache' to force full build.</source>
+        <target state="translated">Aviso: A opção de log binário foi especificada, mas o MSBuild será ignorado porque executar apenas o csc é suficiente. Especifique '--no-cache' para forçar uma compilação completa.</target>
+        <note>{Locked="--no-cache"}{Locked="MSBuild"}{Locked="csc"}</note>
+      </trans-unit>
       <trans-unit id="NoBinaryLogBecauseUpToDate">
-        <source>Warning: Binary log option was specified but build will be skipped because output is up to date, specify '--no-cache' to force build.</source>
-        <target state="translated">Aviso: a opção de log binário foi especificada, mas a compilação será ignorada porque a saída está atualizada, especifique "--no-cache" para forçar a compilação.</target>
+        <source>Warning: Binary log option was specified but build will be skipped because output is up to date. Specify '--no-cache' to force build.</source>
+        <target state="translated">Aviso: A opção de log binário foi especificada, mas a compilação será ignorada porque a saída está atualizada. Especifique '--no-cache' para forçar a compilação.</target>
         <note>{Locked="--no-cache"}</note>
       </trans-unit>
       <trans-unit id="NoBuildOptionDescription">
@@ -2332,42 +2351,42 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory ({0}):</source>
-        <target state="new">Specify the output directory ({0}):</target>
+        <target state="translated">Especificar o diretório de saída ({0}):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
         <source>Determines changes without actually modifying the file system</source>
-        <target state="new">Determines changes without actually modifying the file system</target>
+        <target state="translated">Determina alterações sem modificar o sistema de arquivos</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>
-        <target state="new">Dry run: would remove file-level directives from file: {0}</target>
+        <target state="translated">Execução de teste: diretivas de nível de arquivo a serem removidas do arquivo: {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldCopyFile">
         <source>Dry run: would copy file '{0}' to '{1}'.</source>
-        <target state="new">Dry run: would copy file '{0}' to '{1}'.</target>
+        <target state="translated">Execução de teste: arquivo '{0}' a ser copiado para '{1}'.</target>
         <note>{0} and {1} are file full paths.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldCreateDirectory">
         <source>Dry run: would create directory: {0}</source>
-        <target state="new">Dry run: would create directory: {0}</target>
+        <target state="translated">Execução de teste: diretório a ser criado: {0}</target>
         <note>{0} is the directory full path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldCreateFile">
         <source>Dry run: would create file: {0}</source>
-        <target state="new">Dry run: would create file: {0}</target>
+        <target state="translated">Execução de teste: arquivo a ser criado: {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldDeleteFile">
         <source>Dry run: would delete file: {0}</source>
-        <target state="new">Dry run: would delete file: {0}</target>
+        <target state="translated">Execução de teste: arquivo a ser excluído: {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldMoveFile">
         <source>Dry run: would move file '{0}' to '{1}'.</source>
-        <target state="new">Dry run: would move file '{0}' to '{1}'.</target>
+        <target state="translated">Execução de teste: arquivo '{0}' a ser movido para '{1}'.</target>
         <note>{0} and {1} are file full paths.</note>
       </trans-unit>
       <trans-unit id="ProjectManifest">
@@ -2610,8 +2629,10 @@ O padrão é publicar uma aplicação dependente de framework.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
-        <source>The specified launch profile '{0}' could not be located.</source>
-        <target state="translated">O perfil de inicialização especificado '{0}' não pôde ser localizado.</target>
+        <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
+{1}</source>
+        <target state="translated">Não é possível usar o perfil de inicialização '{0}' porque o arquivo de configurações de inicialização não pôde ser localizado. Localizações tentadas:
+{1}</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionMultipleProjects">
@@ -2651,6 +2672,11 @@ Ele tem diversas estruturas como destino. Especifique que estrutura executar usa
         <source>'{0}' is not a valid project file.</source>
         <target state="translated">'{0}' não é um arquivo de projeto válido.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="RunCommandWarningRunJsonNotUsed">
+        <source>Warning: Settings from '{0}' are not used because '{1}' has precedence.</source>
+        <target state="translated">Aviso: As configurações de '{0}' não são utilizadas porque '{1}' tem precedência.</target>
+        <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
       </trans-unit>
       <trans-unit id="RunConfigurationOptionDescription">
         <source>The configuration to run for. The default for most projects is 'Debug'.</source>

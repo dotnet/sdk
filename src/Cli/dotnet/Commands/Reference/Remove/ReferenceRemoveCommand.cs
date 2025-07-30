@@ -5,7 +5,7 @@
 
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
-using Microsoft.DotNet.Cli.Commands.Hidden.Remove;
+using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -21,7 +21,7 @@ internal class ReferenceRemoveCommand : CommandBase
     {
         _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
             parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
-            parseResult.GetValue(RemoveCommandParser.ProjectArgument);
+            parseResult.GetValue(PackageCommandParser.ProjectOrFileArgument);
         _arguments = parseResult.GetValue(ReferenceRemoveCommandParser.ProjectPathArgument).ToList().AsReadOnly();
 
         if (_arguments.Count == 0)

@@ -407,6 +407,7 @@ public class BootJsonDataLoader
         string jsonContent = GetJsonContent(bootConfigPath);
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         options.Converters.Add(new ResourcesConverter());
+
         BootJsonData config = JsonSerializer.Deserialize<BootJsonData>(jsonContent, options);
         if (config.resourcesRaw is AssetsData assets)
         {
