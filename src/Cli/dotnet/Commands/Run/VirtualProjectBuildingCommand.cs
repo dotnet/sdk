@@ -90,8 +90,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </remarks>
     private static readonly IEnumerable<string> s_ignorableProperties =
     [
-        // This is set by default by `dotnet run`, so it must be ignored otherwise the CSC optimization would not kick in by default.
+        // These are set by default by `dotnet run`, so at least these must be ignored otherwise the CSC optimization would not kick in by default.
         "NuGetInteractive",
+        "_BuildNonexistentProjectsByDefault",
+        "RestoreUseSkipNonexistentTargets",
     ];
 
     public static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
