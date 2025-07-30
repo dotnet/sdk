@@ -140,9 +140,8 @@ public class RunCommand
                 var command = CreateVirtualCommand();
                 command.MarkArtifactsFolderUsed();
 
-                // If we have run properties cached or we built with csc previously, we don't need to do evaluation.
                 var cacheEntry = command.GetPreviousCacheEntry();
-                projectFactory = CanSkipProjectEvaluation(BuildLevel.None, cacheEntry) ? null : command.CreateProjectInstance;
+                projectFactory = CanUseRunPropertiesForCscBuiltProgram(BuildLevel.None, cacheEntry) ? null : command.CreateProjectInstance;
                 cachedRunProperties = cacheEntry?.Run;
             }
         }
@@ -299,7 +298,7 @@ public class RunCommand
         {
             var command = CreateVirtualCommand();
             buildResult = command.Execute();
-            projectFactory = CanSkipProjectEvaluation(command.LastBuild.Level, command.LastBuild.Cache?.PreviousEntry) ? null : command.CreateProjectInstance;
+            projectFactory = CanUseRunPropertiesForCscBuiltProgram(command.LastBuild.Level, command.LastBuild.Cache?.PreviousEntry) ? null : command.CreateProjectInstance;
             cachedRunProperties = command.LastBuild.Cache?.CurrentEntry.Run;
         }
         else
@@ -322,7 +321,7 @@ public class RunCommand
         }
     }
 
-    private static bool CanSkipProjectEvaluation(BuildLevel level, RunFileBuildCacheEntry? previousCache)
+    private static bool CanUseRunPropertiesForCscBuiltProgram(BuildLevel level, RunFileBuildCacheEntry? previousCache)
     {
         return level == BuildLevel.Csc ||
             (level == BuildLevel.None && previousCache?.BuildLevel == BuildLevel.Csc);
