@@ -1053,7 +1053,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var records = BinaryLog.ReadRecords(binaryLogPath).ToList();
 
         // There should be at least two - one for restore, one for build.
-        // But the restore targets might re-evalute the project via inner MSBuild task invocations.
+        // But the restore targets might re-evaluate the project via inner MSBuild task invocations.
         records.Count(static r => r.Args is ProjectEvaluationStartedEventArgs).Should().BeGreaterThanOrEqualTo(2);
         records.Count(static r => r.Args is ProjectEvaluationFinishedEventArgs).Should().BeGreaterThanOrEqualTo(2);
     }
