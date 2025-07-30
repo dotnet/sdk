@@ -25,6 +25,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- JS Modules - We disable the manifest generation because we are going to inline the modules in the blazor.boot.json manifest -->
     <GenerateJSModuleManifest>false</GenerateJSModuleManifest>
 
+    <!-- Static web assets defaults -->
+    <StaticWebAssetMakeReferencedAssetOriginalItemSpecAbsolute Condition="'$(StaticWebAssetMakeReferencedAssetOriginalItemSpecAbsolute)' == ''">true</StaticWebAssetMakeReferencedAssetOriginalItemSpecAbsolute>
+
     <_WasmSdkImportsMicrosoftNETSdkPublish Condition="'$(UsingMicrosoftNETSdkPublish)' != 'true'">true</_WasmSdkImportsMicrosoftNETSdkPublish>
     <_WasmSdkImportsMicrosoftNETSdkStaticWebAssets Condition="'$(UsingMicrosoftNETSdkStaticWebAssets)' != 'true'">true</_WasmSdkImportsMicrosoftNETSdkStaticWebAssets>
     <_WasmSdkImportsMicrosoftNetSdk Condition="'$(UsingMicrosoftNETSdk)' != 'true'">true</_WasmSdkImportsMicrosoftNetSdk>
