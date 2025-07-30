@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests;
 
 public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 {
-    private static readonly string s_program = """
+    private static readonly string s_program = /* lang=C#-Test */ """
         if (args.Length > 0)
         {
             Console.WriteLine("echo args:" + string.Join(";", args));
@@ -29,7 +29,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         #endif
         """;
 
-    private static readonly string s_programDependingOnUtil = """
+    private static readonly string s_programDependingOnUtil = /* lang=C#-Test */ """
         if (args.Length > 0)
         {
             Console.WriteLine("echo args:" + string.Join(";", args));
@@ -37,7 +37,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Console.WriteLine("Hello, " + Util.GetMessage());
         """;
 
-    private static readonly string s_util = """
+    private static readonly string s_util = /* lang=C#-Test */ """
         static class Util
         {
             public static string GetMessage()
@@ -45,6 +45,29 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 return "String from Util";
             }
         }
+        """;
+
+    private static readonly string s_programReadingEmbeddedResource = /* lang=C#-Test */ """
+        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+        var resourceName = assembly.GetManifestResourceNames().SingleOrDefault();
+
+        if (resourceName is null)
+        {
+            Console.WriteLine("Resource not found");
+            return;
+        }
+
+        using var stream = assembly.GetManifestResourceStream(resourceName)!;
+        using var reader = new System.Resources.ResourceReader(stream);
+        Console.WriteLine(reader.Cast<System.Collections.DictionaryEntry>().Single());
+        """;
+
+    private static readonly string s_resx = """
+        <root>
+          <data name="MyString">
+            <value>TestValue</value>
+          </data>
+        </root>
         """;
 
     private static readonly string s_consoleProject = $"""
@@ -1062,26 +1085,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void EmbeddedResource()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        string code = """
-            using var stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("Program.Resources.resources");
-
-            if (stream is null)
-            {
-                Console.WriteLine("Resource not found");
-                return;
-            }
-
-            using var reader = new System.Resources.ResourceReader(stream);
-            Console.WriteLine(reader.Cast<System.Collections.DictionaryEntry>().Single());
-            """;
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), code);
-        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), """
-            <root>
-              <data name="MyString">
-                <value>TestValue</value>
-              </data>
-            </root>
-            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programReadingEmbeddedResource);
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
 
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
@@ -1094,8 +1099,29 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         // This behavior can be overridden.
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
             #:property EnableDefaultEmbeddedResourceItems=false
-            {code}
+            {s_programReadingEmbeddedResource}
             """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                Resource not found
+                """);
+    }
+
+    /// <summary>
+    /// Scripts in repo root should not include <c>.resx</c> files.
+    /// Part of <see href="https://github.com/dotnet/sdk/issues/49826"/>.
+    /// </summary>
+    [Fact]
+    public void EmbeddedResource_AlongsideSln()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programReadingEmbeddedResource);
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
+        File.WriteAllText(Path.Join(testInstance.Path, "repo.sln"), "");
 
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
@@ -2660,6 +2686,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <TargetFramework>net11.0</TargetFramework>
                         <LangVersion>preview</LangVersion>
                         <Features>$(Features);FileBasedProgram</Features>
@@ -2730,6 +2757,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
 
@@ -2797,6 +2825,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
 

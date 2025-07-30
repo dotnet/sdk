@@ -13,6 +13,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Don't get the default item globs by default when the flag is not set. -->
   <PropertyGroup Condition="'$(UsingNETSdkDefaults)' == 'true'">
+    <!-- Given DisableDefaultItemsInProjectFolder=true, set EnableDefaultItems=false
+         in case there is a solution/project in the current directory. -->
+    <EnableDefaultItems Condition="'$(EnableDefaultItems)' == '' And
+      '$(DisableDefaultItemsInProjectFolder)' == 'true' And
+      ('$([System.IO.Directory]::GetFiles($(MSBuildProjectDirectory), &quot;*.sln&quot;))' != '' Or
+      $([System.IO.Directory]::GetFiles($(MSBuildProjectDirectory), &quot;*.slnx&quot;)) != '' Or
+      $([System.IO.Directory]::GetFiles($(MSBuildProjectDirectory), &quot;*.*proj&quot;)) != '')">false</EnableDefaultItems>
+
     <EnableDefaultItems Condition=" '$(EnableDefaultItems)' == '' ">true</EnableDefaultItems>
     <EnableDefaultCompileItems Condition=" '$(EnableDefaultCompileItems)' == '' ">true</EnableDefaultCompileItems>
     <EnableDefaultEmbeddedResourceItems Condition=" '$(EnableDefaultEmbeddedResourceItems)' == '' ">true</EnableDefaultEmbeddedResourceItems>
