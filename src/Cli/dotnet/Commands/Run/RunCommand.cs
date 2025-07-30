@@ -331,9 +331,13 @@ public class RunCommand
     {
         Debug.Assert(EntryPointFileFullPath != null);
 
+        var args = MSBuildArgs.RequestedTargets is null or []
+            ? MSBuildArgs.CloneWithAdditionalTargets("Build", ComputeRunArgumentsTarget)
+            : MSBuildArgs.CloneWithAdditionalTargets(ComputeRunArgumentsTarget);
+
         return new(
             entryPointFileFullPath: EntryPointFileFullPath,
-            msbuildArgs: MSBuildArgs)
+            msbuildArgs: args)
         {
             NoRestore = NoRestore,
             NoCache = NoCache,
