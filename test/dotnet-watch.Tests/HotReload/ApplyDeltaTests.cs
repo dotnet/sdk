@@ -344,6 +344,59 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains(MessageDescriptor.ReEvaluationCompleted);
         }
 
+        [Fact]
+        public async Task BinaryLogs()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+                .WithSource();
+
+            var projectPath = Path.Combine(testAsset.Path, "WatchHotReloadApp.csproj");
+            var logDir = Path.Combine(testAsset.Path, "logs");
+            var binLogPath = Path.Combine(logDir, "Test.binlog");
+            var binLogPathBase = Path.ChangeExtension(binLogPath, "").TrimEnd('.');
+
+            Assert.False(Directory.Exists(logDir));
+
+            App.DotnetWatchArgs.Clear();
+            App.Start(testAsset, ["--verbose", $"-bl:{binLogPath}"], testFlags: TestFlags.None);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges);
+
+            var expectedLogs = new List<string>()
+            {
+                // dotnet build log
+                binLogPath,
+                // dotnet run log
+                binLogPathBase + "-dotnet-run.binlog",
+                // initial DTB:
+                binLogPathBase + "-dotnet-watch.DesignTimeBuild.WatchHotReloadApp.csproj.1.binlog"
+            };
+
+            VerifyExpectedLogFiles();
+
+            UpdateSourceFile(projectPath, content => content.Replace("""
+                <!-- items placeholder -->
+                """,
+                """
+                <Using Include="System.Xml.Linq" />
+                """));
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.ReEvaluationCompleted);
+
+            // project update triggered restore and DTB:
+            expectedLogs.Add(binLogPathBase + "-dotnet-watch.Restore.WatchHotReloadApp.csproj.2.binlog");
+            expectedLogs.Add(binLogPathBase + "-dotnet-watch.DesignTimeBuild.WatchHotReloadApp.csproj.3.binlog");
+
+            VerifyExpectedLogFiles();
+
+            void VerifyExpectedLogFiles()
+            {
+                AssertEx.SequenceEqual(
+                    expectedLogs.Order(),
+                    Directory.EnumerateFileSystemEntries(logDir, "*.*", SearchOption.AllDirectories).Order());
+            }
+        }
+
         [Theory]
         [CombinatorialData]
         public async Task AutoRestartOnRudeEdit(bool nonInteractive)
