@@ -30,16 +30,7 @@
     <UsingToolVSSDK>true</UsingToolVSSDK>
     <FlagNetStandard1XDependencies Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</FlagNetStandard1XDependencies>
     <!-- This property is only used in the dotnet test integration tests. -->
-    <MicrosoftTestingPlatformVersion>1.8.0-preview.25378.9</MicrosoftTestingPlatformVersion>
-    <NuGetCommandsVersion>7.0.0-preview.1.67</NuGetCommandsVersion>
-    <NuGetCredentialsVersion>7.0.0-preview.1.67</NuGetCredentialsVersion>
-    <NuGetDependencyResolverCoreVersion>7.0.0-preview.1.67</NuGetDependencyResolverCoreVersion>
-    <NuGetLibraryModelVersion>7.0.0-preview.1.67</NuGetLibraryModelVersion>
-    <NuGetProtocolVersion>7.0.0-preview.1.67</NuGetProtocolVersion>
-    <MicrosoftWindowsDesktopAppRefVersion>10.0.0-preview.7.25377.103</MicrosoftWindowsDesktopAppRefVersion>
-    <MicrosoftWindowsDesktopAppInternalVersion>10.0.0-preview.7.25377.103</MicrosoftWindowsDesktopAppInternalVersion>
-    <MicrosoftNETSdkWindowsDesktopVersion>10.0.0-preview.7.25377.103</MicrosoftNETSdkWindowsDesktopVersion>
-    <MicrosoftDotNetDarcVersion>1.1.0-beta.25374.1</MicrosoftDotNetDarcVersion>
+    <MicrosoftTestingPlatformVersion>1.9.0-preview.25379.21</MicrosoftTestingPlatformVersion>
   </PropertyGroup>
   <PropertyGroup Label="Servicing version information">
     <VersionFeature21>30</VersionFeature21>
@@ -322,7 +313,7 @@
     <AwesomeAssertionsVersion>8.0.2</AwesomeAssertionsVersion>
     <AwesomeAssertionsJsonVersion>8.0.0</AwesomeAssertionsJsonVersion>
     <MoqPackageVersion>4.18.4</MoqPackageVersion>
-    <MSTestVersion>3.10.0-preview.25374.7</MSTestVersion>
+    <MSTestVersion>3.11.0-preview.25379.21</MSTestVersion>
     <XunitCombinatorialVersion>1.3.2</XunitCombinatorialVersion>
     <MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion>8.0.0-beta.23607.1</MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion>
     <BenchmarkDotNetPackageVersion>0.14.0</BenchmarkDotNetPackageVersion>
