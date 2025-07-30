@@ -13,9 +13,10 @@ internal class MockReporter : IReporter
 
     public void Report(MessageDescriptor descriptor, string prefix, object?[] args)
     {
-        if (descriptor.TryGetMessage(prefix, args, out var message))
+        if (descriptor.Severity != MessageSeverity.None)
         {
-            Messages.Add($"{ToString(descriptor.Severity)} {descriptor.Emoji} {message}");
+            var message = descriptor.GetMessage(prefix, args);
+            Messages.Add($"{ToString(descriptor.Severity)} {descriptor.Emoji.ToDisplay()} {message}");
         }
     }
 

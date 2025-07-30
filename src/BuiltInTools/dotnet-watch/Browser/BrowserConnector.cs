@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Watch
                 hasExistingServer = _servers.TryGetValue(key, out server);
                 if (!hasExistingServer)
                 {
-                    server = IsServerSupported(projectNode, appModel) ? new BrowserRefreshServer(context.EnvironmentOptions, context.Reporter) : null;
+                    server = IsServerSupported(projectNode, appModel) ? new BrowserRefreshServer(context.EnvironmentOptions, context.LoggerFactory) : null;
                     _servers.Add(key, server);
                 }
             }
@@ -229,7 +229,7 @@ namespace Microsoft.DotNet.Watch
                     // From emperical observation, it's noted that failing to launch a browser results in either Process.Start returning a null-value
                     // or for the process to have immediately exited.
                     // We can use this to provide a helpful message.
-                    context.Reporter.Output($"Unable to launch the browser. Navigate to {launchUrl}", emoji: "🌐");
+                    context.Reporter.Output($"Unable to launch the browser. Browser to {launchUrl}", emoji: Emoji.Browser);
                 }
             }
             catch (Exception ex)
@@ -276,20 +276,20 @@ namespace Microsoft.DotNet.Watch
         {
             if (context.EnvironmentOptions.SuppressBrowserRefresh)
             {
-                context.Reporter.Report(MessageDescriptor.SkippingConfiguringBrowserRefresh_SuppressedViaEnvironmentVariable.ToErrorWhen(appModel.RequiresBrowserRefresh), EnvironmentVariables.SuppressBrowserRefresh);
+                context.Reporter.ReportAs(MessageDescriptor.SkippingConfiguringBrowserRefresh_SuppressedViaEnvironmentVariable, MessageSeverity.Error, when: appModel.RequiresBrowserRefresh, EnvironmentVariables.SuppressBrowserRefresh);
                 return false;
             }
 
             if (!projectNode.IsNetCoreApp(minVersion: s_minimumSupportedVersion))
             {
-                context.Reporter.Report(MessageDescriptor.SkippingConfiguringBrowserRefresh_TargetFrameworkNotSupported.ToErrorWhen(appModel.RequiresBrowserRefresh));
+                context.Reporter.ReportAs(MessageDescriptor.SkippingConfiguringBrowserRefresh_TargetFrameworkNotSupported, MessageSeverity.Error, when: appModel.RequiresBrowserRefresh);
                 return false;
             }
 
             // We only want to enable browser refresh if this is a WebApp (ASP.NET Core / Blazor app).
             if (!projectNode.IsWebApp())
             {
-                context.Reporter.Report(MessageDescriptor.SkippingConfiguringBrowserRefresh_NotWebApp.ToErrorWhen(appModel.RequiresBrowserRefresh));
+                context.Reporter.ReportAs(MessageDescriptor.SkippingConfiguringBrowserRefresh_NotWebApp, MessageSeverity.Error, when: appModel.RequiresBrowserRefresh);
                 return false;
             }
 

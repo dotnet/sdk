@@ -9,6 +9,8 @@ namespace Microsoft.DotNet.Watch
 {
     internal sealed class HotReloadDotNetWatcher
     {
+        public const string LogComponentName = nameof(HotReloadDotNetWatcher);
+
         private readonly IConsole _console;
         private readonly IRuntimeProcessLauncherFactory? _runtimeProcessLauncherFactory;
         private readonly RestartPrompt? _rudeEditRestartPrompt;
@@ -43,7 +45,7 @@ namespace Microsoft.DotNet.Watch
 
             if (!_context.Options.NonInteractive)
             {
-                _context.Reporter.Output($"{hotReloadEnabledMessage}{Environment.NewLine}  {(_context.EnvironmentOptions.SuppressEmojis ? string.Empty : "💡")} Press \"Ctrl + R\" to restart.", emoji: "🔥");
+                _context.Reporter.Output($"{hotReloadEnabledMessage}{Environment.NewLine}  {(_context.EnvironmentOptions.SuppressEmojis ? string.Empty : "💡")} Press \"Ctrl + R\" to restart.", Emoji.HotReload);
 
                 _console.KeyPressed += (key) =>
                 {
@@ -57,7 +59,7 @@ namespace Microsoft.DotNet.Watch
             }
             else
             {
-                _context.Reporter.Output(hotReloadEnabledMessage, emoji: "🔥");
+                _context.Reporter.Output(hotReloadEnabledMessage, Emoji.HotReload);
             }
 
             await using var browserConnector = new BrowserConnector(_context);
@@ -707,13 +709,10 @@ namespace Microsoft.DotNet.Watch
 
         private void ReportWatchingForChanges()
         {
-            var waitingForChanges = MessageDescriptor.WaitingForChanges;
-            if (_context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.ElevateWaitingForChangesMessageSeverity))
-            {
-                waitingForChanges = waitingForChanges with { Severity = MessageSeverity.Output };
-            }
-
-            _context.Reporter.Report(waitingForChanges);
+            _context.Reporter.ReportAs(
+                MessageDescriptor.WaitingForChanges,
+                MessageSeverity.Output,
+                when: _context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.ElevateWaitingForChangesMessageSeverity));
         }
 
         private void ReportFileChanges(IReadOnlyList<ChangedFile> changedFiles)

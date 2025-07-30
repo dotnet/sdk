@@ -4,12 +4,13 @@
 using System.Buffers;
 using System.Collections.Immutable;
 using Microsoft.Build.Graph;
-using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
 using Microsoft.DotNet.HotReload;
+using Microsoft.Extensions.Logging;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class BlazorWebAssemblyDeltaApplier(IReporter reporter, BrowserRefreshServer browserRefreshServer, ProjectGraphNode project) : SingleProcessDeltaApplier(reporter)
+    internal sealed class BlazorWebAssemblyDeltaApplier(ILogger logger, BrowserRefreshServer browserRefreshServer, ProjectGraphNode project) : SingleProcessDeltaApplier(logger)
     {
         private static readonly ImmutableArray<string> s_defaultCapabilities60 =
             ["Baseline"];
@@ -48,7 +49,7 @@ namespace Microsoft.DotNet.Watch
             {
                 var targetFramework = project.GetTargetFrameworkVersion();
 
-                Reporter.Verbose($"Using capabilities based on project '{project.GetDisplayName()}' target framework: '{targetFramework}'.");
+                Logger.LogDebug("Using capabilities based on project target framework: '{TargetFramework}'.", targetFramework);
 
                 capabilities = targetFramework?.Major switch
                 {
@@ -61,13 +62,13 @@ namespace Microsoft.DotNet.Watch
             }
             else
             {
-                Reporter.Verbose($"Project '{project.GetDisplayName()}' specifies capabilities: '{string.Join(' ', capabilities)}'");
+                Logger.LogDebug("Project specifies capabilities: '{Capabilities}'", string.Join(' ', capabilities));
             }
 
             return Task.FromResult(capabilities);
         }
 
-        public override async Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
+        public override async Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken cancellationToken)
         {
             var applicableUpdates = await FilterApplicableUpdatesAsync(updates, cancellationToken);
             if (applicableUpdates.Count == 0)
@@ -87,16 +88,16 @@ namespace Microsoft.DotNet.Watch
             // Make sure to send the same update to all browsers, the only difference is the shared secret.
 
             var updateId = _updateId++;
-            var deltas = updates.Select(update => new JsonDelta
+            var deltas = updates.Select(static update => new JsonDelta
             {
                 ModuleId = update.ModuleId,
-                MetadataDelta = [.. update.MetadataDelta],
-                ILDelta = [.. update.ILDelta],
-                PdbDelta = [.. update.PdbDelta],
-                UpdatedTypes = [.. update.UpdatedTypes],
+                MetadataDelta = ImmutableCollectionsMarshal.AsArray(update.MetadataDelta)!,
+                ILDelta = ImmutableCollectionsMarshal.AsArray(update.ILDelta)!,
+                PdbDelta = ImmutableCollectionsMarshal.AsArray(update.PdbDelta)!,
+                UpdatedTypes = ImmutableCollectionsMarshal.AsArray(update.UpdatedTypes)!,
             }).ToArray();
 
-            var loggingLevel = Reporter.IsVerbose ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
+            var loggingLevel = Logger.IsEnabled(LogLevel.Debug) ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
 
             await browserRefreshServer.SendAndReceiveAsync(
                 request: sharedSecret => new JsonApplyHotReloadDeltasRequest
@@ -106,7 +107,7 @@ namespace Microsoft.DotNet.Watch
                     Deltas = deltas,
                     ResponseLoggingLevel = (int)loggingLevel
                 },
-                response: (value, reporter) =>
+                response: (value, logger) =>
                 {
                     var data = BrowserRefreshServer.DeserializeJson<JsonApplyDeltasResponse>(value);
 
@@ -121,7 +122,7 @@ namespace Microsoft.DotNet.Watch
 
                     foreach (var entry in data.Log)
                     {
-                        ReportLogEntry(reporter, entry.Message, (AgentMessageSeverity)entry.Severity);
+                        ReportLogEntry(logger, entry.Message, (AgentMessageSeverity)entry.Severity);
                     }
                 },
                 cancellationToken);
@@ -135,7 +136,7 @@ namespace Microsoft.DotNet.Watch
             return (!anySuccess && anyFailure) ? ApplyStatus.Failed : (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
         }
 
-        public override Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<StaticAssetUpdate> updates, CancellationToken cancellationToken)
+        public override Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<HotReloadStaticAssetUpdate> updates, CancellationToken cancellationToken)
             // static asset updates are handled by browser refresh server:
             => Task.FromResult(ApplyStatus.NoChangesApplied);
 

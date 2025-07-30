@@ -1,14 +1,19 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
 
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
-using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
-
-namespace Microsoft.DotNet.Watch
+namespace Microsoft.DotNet.HotReload
 {
-    internal abstract class SingleProcessDeltaApplier(IReporter reporter) : DeltaApplier(reporter)
+    internal abstract class SingleProcessDeltaApplier(ILogger logger) : DeltaApplier(logger)
     {
         /// <summary>
         /// List of modules that can't receive changes anymore.
@@ -16,10 +21,10 @@ namespace Microsoft.DotNet.Watch
         /// </summary>
         private readonly HashSet<Guid> _frozenModules = [];
 
-        public async Task<IReadOnlyList<WatchHotReloadService.Update>> FilterApplicableUpdatesAsync(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<HotReloadManagedCodeUpdate>> FilterApplicableUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken cancellationToken)
         {
             var availableCapabilities = await GetApplyUpdateCapabilitiesAsync(cancellationToken);
-            var applicableUpdates = new List<WatchHotReloadService.Update>();
+            var applicableUpdates = new List<HotReloadManagedCodeUpdate>();
 
             foreach (var update in updates)
             {

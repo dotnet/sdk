@@ -7,6 +7,8 @@ using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
+using Microsoft.DotNet.HotReload;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -100,13 +102,13 @@ namespace Microsoft.DotNet.Watch
             BrowserRefreshServer? browserRefreshServer,
             ProcessSpec processSpec,
             RestartOperation restartOperation,
-            IReporter processReporter,
+            ProjectSpecificReporter processReporter,
             CancellationTokenSource processTerminationSource,
             CancellationToken cancellationToken)
         {
             var projectPath = projectNode.ProjectInstance.FullPath;
 
-            var deltaApplier = appModel.CreateDeltaApplier(browserRefreshServer, processReporter);
+            var deltaApplier = appModel.CreateDeltaApplier(browserRefreshServer, processReporter.Logger);
             if (deltaApplier == null)
             {
                 // error already reported
@@ -168,7 +170,7 @@ namespace Microsoft.DotNet.Watch
                 var updatesToApply = _previousUpdates.Skip(appliedUpdateCount).ToImmutableArray();
                 if (updatesToApply.Any())
                 {
-                    _ = await deltaApplier.ApplyManagedCodeUpdates(updatesToApply, processCommunicationCancellationSource.Token);
+                    _ = await deltaApplier.ApplyManagedCodeUpdates(ToManagedCodeUpdates(updatesToApply), processCommunicationCancellationSource.Token);
                 }
 
                 appliedUpdateCount += updatesToApply.Length;
@@ -220,7 +222,7 @@ namespace Microsoft.DotNet.Watch
                 .Distinct(StringComparer.Ordinal)
                 .ToImmutableArray();
 
-            _reporter.Verbose($"Hot reload capabilities: {string.Join(" ", capabilities)}.", emoji: "🔥");
+            _reporter.Verbose($"Hot reload capabilities: {string.Join(" ", capabilities)}.", Emoji.HotReload);
             return capabilities;
         }
 
@@ -276,7 +278,7 @@ namespace Microsoft.DotNet.Watch
             {
                 _hotReloadService.DiscardUpdate();
 
-                _reporter.Output("Hot reload suspended. To continue hot reload, press \"Ctrl + R\".", emoji: "🔥");
+                _reporter.Output("Hot reload suspended. To continue hot reload, press \"Ctrl + R\".", Emoji.HotReload);
                 await Task.Delay(-1, cancellationToken);
 
                 return ([], []);
@@ -302,7 +304,7 @@ namespace Microsoft.DotNet.Watch
                     try
                     {
                         using var processCommunicationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(runningProject.ProcessExitedSource.Token, cancellationToken);
-                        var applySucceded = await runningProject.DeltaApplier.ApplyManagedCodeUpdates(updates.ProjectUpdates, processCommunicationCancellationSource.Token) != ApplyStatus.Failed;
+                        var applySucceded = await runningProject.DeltaApplier.ApplyManagedCodeUpdates(ToManagedCodeUpdates(updates.ProjectUpdates), processCommunicationCancellationSource.Token) != ApplyStatus.Failed;
                         if (applySucceded)
                         {
                             runningProject.Reporter.Report(MessageDescriptor.HotReloadSucceeded);
@@ -315,7 +317,7 @@ namespace Microsoft.DotNet.Watch
                     }
                     catch (OperationCanceledException) when (runningProject.ProcessExitedSource.Token.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
                     {
-                        runningProject.Reporter.Verbose("Hot reload canceled because the process exited.", emoji: "🔥");
+                        runningProject.Reporter.Verbose("Hot reload canceled because the process exited.", Emoji.HotReload);
                     }
                 }, cancellationToken);
             }
@@ -414,7 +416,7 @@ namespace Microsoft.DotNet.Watch
                         continue;
                     }
 
-                    ReportDiagnostic(diagnostic, GetMessageDescriptor(diagnostic, verbose: false));
+                    ReportDiagnostic(diagnostic, GetLogEventId(diagnostic, verbose: false));
                 }
             }
 
@@ -442,8 +444,8 @@ namespace Microsoft.DotNet.Watch
                             projectsRebuiltDueToRudeEdits.Contains(projectId) ? "[auto-rebuild] " :
                             "";
 
-                        var descriptor = GetMessageDescriptor(diagnostic, verbose: prefix != "");
-                        ReportDiagnostic(diagnostic, descriptor, prefix);
+                        var eventId = GetLogEventId(diagnostic, verbose: prefix != "");
+                        ReportDiagnostic(diagnostic, eventId, prefix);
                     }
                 }
             }
@@ -451,20 +453,21 @@ namespace Microsoft.DotNet.Watch
             bool IsAutoRestartEnabled(ProjectId id)
                 => runningProjectInfos.TryGetValue(id, out var info) && info.RestartWhenChangesHaveNoEffect;
 
-            void ReportDiagnostic(Diagnostic diagnostic, MessageDescriptor descriptor, string prefix = "")
+            void ReportDiagnostic(Diagnostic diagnostic, EventId eventId, string prefix = "")
             {
                 var display = CSharpDiagnosticFormatter.Instance.Format(diagnostic);
-                _reporter.Report(descriptor, prefix, [display]);
+                _reporter.ReportWithPrefix(eventId, prefix, [display]);
 
-                if (descriptor.TryGetMessage(prefix, [display], out var message))
+                var descriptor = MessageDescriptor.GetDescriptor(eventId);
+                if (descriptor.Severity != MessageSeverity.None)
                 {
-                    diagnosticsToDisplayInApp.Add(message);
+                    diagnosticsToDisplayInApp.Add(descriptor.GetMessage(prefix, [display]));
                 }
             }
 
             // Use the default severity of the diagnostic as it conveys impact on Hot Reload
             // (ignore warnings as errors and other severity configuration).
-            static MessageDescriptor GetMessageDescriptor(Diagnostic diagnostic, bool verbose)
+            static EventId GetLogEventId(Diagnostic diagnostic, bool verbose)
             {
                 if (verbose)
                 {
@@ -547,14 +550,14 @@ namespace Microsoft.DotNet.Watch
                 }
                 else
                 {
-                    var updates = new List<StaticAssetUpdate>();
+                    var updates = new List<HotReloadStaticAssetUpdate>();
 
                     foreach (var (filePath, relativeUrl, containingProject) in assets)
                     {
-                        byte[] content;
+                        ImmutableArray<byte> content;
                         try
                         {
-                            content = await File.ReadAllBytesAsync(filePath, cancellationToken);
+                            content = ImmutableCollectionsMarshal.AsImmutableArray(await File.ReadAllBytesAsync(filePath, cancellationToken));
                         }
                         catch (Exception e)
                         {
@@ -562,9 +565,9 @@ namespace Microsoft.DotNet.Watch
                             continue;
                         }
 
-                        updates.Add(new StaticAssetUpdate(
-                            relativePath: relativeUrl,
+                        updates.Add(new HotReloadStaticAssetUpdate(
                             assemblyName: containingProject.GetAssemblyName(),
+                            relativePath: relativeUrl,
                             content: content,
                             isApplicationProject: containingProject == runningProject.ProjectNode));
 
@@ -577,7 +580,7 @@ namespace Microsoft.DotNet.Watch
 
             await Task.WhenAll(tasks).WaitAsync(cancellationToken);
 
-            _reporter.Output("Hot reload of static files succeeded.", emoji: "🔥");
+            _reporter.Output("Hot reload of static files succeeded.", Emoji.HotReload);
 
             return allFilesHandled;
         }
@@ -672,5 +675,8 @@ namespace Microsoft.DotNet.Watch
 
         private static Task ForEachProjectAsync(ImmutableDictionary<string, ImmutableArray<RunningProject>> projects, Func<RunningProject, CancellationToken, Task> action, CancellationToken cancellationToken)
             => Task.WhenAll(projects.SelectMany(entry => entry.Value).Select(project => action(project, cancellationToken))).WaitAsync(cancellationToken);
+
+        private static ImmutableArray<HotReloadManagedCodeUpdate> ToManagedCodeUpdates(ImmutableArray<WatchHotReloadService.Update> updates)
+            => [.. updates.Select(update => new HotReloadManagedCodeUpdate(update.ModuleId, update.MetadataDelta, update.ILDelta, update.PdbDelta, update.UpdatedTypes, update.RequiredCapabilities))];
     }
 }

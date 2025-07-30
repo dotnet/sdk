@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.HotReload;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -15,7 +17,7 @@ internal sealed class BlazorWebAssemblyHostedAppModel(ProjectGraphNode clientPro
 {
     public override bool RequiresBrowserRefresh => true;
 
-    public override DeltaApplier? CreateDeltaApplier(BrowserRefreshServer? browserRefreshServer, IReporter processReporter)
+    public override DeltaApplier? CreateDeltaApplier(BrowserRefreshServer? browserRefreshServer, ILogger processLogger)
     {
         if (browserRefreshServer == null)
         {
@@ -23,6 +25,6 @@ internal sealed class BlazorWebAssemblyHostedAppModel(ProjectGraphNode clientPro
             return null;
         }
 
-        return new BlazorWebAssemblyHostedDeltaApplier(processReporter, browserRefreshServer, clientProject);
+        return new BlazorWebAssemblyHostedDeltaApplier(processLogger, browserRefreshServer, clientProject);
     }
 }

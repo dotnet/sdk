@@ -1,15 +1,23 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.IO;
 using System.IO.Pipes;
-using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
-using Microsoft.DotNet.HotReload;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
-namespace Microsoft.DotNet.Watch
+namespace Microsoft.DotNet.HotReload
 {
-    internal sealed class DefaultDeltaApplier(IReporter reporter) : SingleProcessDeltaApplier(reporter)
+    internal sealed class DefaultDeltaApplier(ILogger logger) : SingleProcessDeltaApplier(logger)
     {
         private Task<ImmutableArray<string>>? _capabilitiesTask;
         private NamedPipeServerStream? _pipe;
@@ -17,7 +25,12 @@ namespace Microsoft.DotNet.Watch
 
         public override void CreateConnection(string namedPipeName, CancellationToken cancellationToken)
         {
-            _pipe = new NamedPipeServerStream(namedPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
+#if NET
+            var options = PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly;
+#else
+            var options = PipeOptions.Asynchronous;
+#endif
+            _pipe = new NamedPipeServerStream(namedPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, options);
 
             // It is important to establish the connection (WaitForConnectionAsync) before we return,
             // otherwise the client wouldn't be able to connect.
@@ -28,14 +41,14 @@ namespace Microsoft.DotNet.Watch
             {
                 try
                 {
-                    Reporter.Verbose($"Waiting for application to connect to pipe {namedPipeName}.");
+                    Logger.LogDebug("Waiting for application to connect to pipe {NamedPipeName}.", namedPipeName);
 
                     await _pipe.WaitForConnectionAsync(cancellationToken);
 
                     // When the client connects, the first payload it sends is the initialization payload which includes the apply capabilities.
 
                     var capabilities = (await ClientInitializationResponse.ReadAsync(_pipe, cancellationToken)).Capabilities;
-                    Reporter.Verbose($"Capabilities: '{capabilities}'");
+                    Logger.LogDebug("Capabilities: '{Capabilities}'", capabilities);
                     return [.. capabilities.Split(' ')];
                 }
                 catch (EndOfStreamException)
@@ -48,7 +61,7 @@ namespace Microsoft.DotNet.Watch
                     // pipe might throw another exception when forcibly closed on process termination:
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        Reporter.Error($"Failed to read capabilities: {e.Message}");
+                        Logger.LogError("Failed to read capabilities: {Message}", e.Message);
                     }
 
                     return [];
@@ -65,9 +78,9 @@ namespace Microsoft.DotNet.Watch
             => _capabilitiesTask ?? throw new InvalidOperationException();
 
         private ResponseLoggingLevel ResponseLoggingLevel
-            => Reporter.IsVerbose ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
+            => Logger.IsEnabled(LogLevel.Debug) ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
 
-        public override async Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
+        public override async Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken cancellationToken)
         {
             // Should only be called after CreateConnection
             Debug.Assert(_capabilitiesTask != null);
@@ -77,26 +90,19 @@ namespace Microsoft.DotNet.Watch
 
             if (_managedCodeUpdateFailedOrCancelled)
             {
-                Reporter.Verbose("Previous changes failed to apply. Further changes are not applied to this process.", "🔥");
+                Logger.LogDebug("Previous changes failed to apply. Further changes are not applied to this process.");
                 return ApplyStatus.Failed;
             }
 
             var applicableUpdates = await FilterApplicableUpdatesAsync(updates, cancellationToken);
             if (applicableUpdates.Count == 0)
             {
-                Reporter.Verbose("No updates applicable to this process", "🔥");
+                Logger.LogDebug("No updates applicable to this process");
                 return ApplyStatus.NoChangesApplied;
             }
 
-            var request = new ManagedCodeUpdateRequest(
-                deltas: [.. applicableUpdates.Select(update => new UpdateDelta(
-                    update.ModuleId,
-                    metadataDelta: [.. update.MetadataDelta],
-                    ilDelta: [.. update.ILDelta],
-                    pdbDelta: [.. update.PdbDelta],
-                    updatedTypes: [.. update.UpdatedTypes]))],
-                responseLoggingLevel: ResponseLoggingLevel);
-
+            var request = new ManagedCodeUpdateRequest(ToRuntimeUpdates(applicableUpdates), ResponseLoggingLevel);
+        
             var success = false;
             var canceled = false;
             try
@@ -110,8 +116,8 @@ namespace Microsoft.DotNet.Watch
             catch (Exception e) when (e is not OperationCanceledException)
             {
                 success = false;
-                Reporter.Error($"Change failed to apply (error: '{e.Message}'). Further changes won't be applied to this process.");
-                Reporter.Verbose($"Exception stack trace: {e.StackTrace}", "❌");
+                Logger.LogError("Change failed to apply (error: '{Message}'). Further changes won't be applied to this process.", e.Message);
+                Logger.LogDebug("Exception stack trace: {StackTrace}", e.StackTrace);
             }
             finally
             {
@@ -119,7 +125,7 @@ namespace Microsoft.DotNet.Watch
                 {
                     if (canceled)
                     {
-                        Reporter.Verbose("Change application cancelled. Further changes won't be applied to this process.", "🔥");
+                        Logger.LogDebug("Change application cancelled. Further changes won't be applied to this process.");
                     }
 
                     _managedCodeUpdateFailedOrCancelled = true;
@@ -128,24 +134,32 @@ namespace Microsoft.DotNet.Watch
                 }
             }
 
-            Reporter.Report(MessageDescriptor.UpdatesApplied, applicableUpdates.Count, updates.Length);
+            Logger.LogDebug("Updates applied: {AppliedCount} out of {TotalCount}.", applicableUpdates.Count, updates.Length);
 
             return
                 !success ? ApplyStatus.Failed :
                 (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
+
+            static ImmutableArray<RuntimeManagedCodeUpdate> ToRuntimeUpdates(IEnumerable<HotReloadManagedCodeUpdate> updates)
+                => [.. updates.Select(static update => new RuntimeManagedCodeUpdate(update.ModuleId,
+                   ImmutableCollectionsMarshal.AsArray(update.MetadataDelta)!,
+                   ImmutableCollectionsMarshal.AsArray(update.ILDelta)!,
+                   ImmutableCollectionsMarshal.AsArray(update.PdbDelta)!,
+                   ImmutableCollectionsMarshal.AsArray(update.UpdatedTypes)!))];
         }
 
-        public async override Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<StaticAssetUpdate> updates, CancellationToken cancellationToken)
+        public async override Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<HotReloadStaticAssetUpdate> updates, CancellationToken cancellationToken)
         {
             var appliedUpdateCount = 0;
 
             foreach (var update in updates)
             {
                 var request = new StaticAssetUpdateRequest(
-                    update.AssemblyName,
-                    update.RelativePath,
-                    update.Content,
-                    update.IsApplicationProject,
+                    new RuntimeStaticAssetUpdate(
+                        update.AssemblyName,
+                        update.RelativePath,
+                        ImmutableCollectionsMarshal.AsArray(update.Content)!,
+                        update.IsApplicationProject),
                     ResponseLoggingLevel);
 
                 var success = false;
@@ -161,14 +175,14 @@ namespace Microsoft.DotNet.Watch
                 catch (Exception e) when (e is not OperationCanceledException)
                 {
                     success = false;
-                    Reporter.Error($"Change failed to apply (error: '{e.Message}').");
-                    Reporter.Verbose($"Exception stack trace: {e.StackTrace}", "❌");
+                    Logger.LogError("Change failed to apply (error: '{Message}').", e.Message);
+                    Logger.LogDebug("Exception stack trace: {StackTrace}", e.StackTrace);
                 }
                 finally
                 {
                     if (canceled)
                     {
-                        Reporter.Verbose("Change application cancelled.", "🔥");
+                        Logger.LogDebug("Change application cancelled.");
                     }
                 }
 
@@ -178,7 +192,7 @@ namespace Microsoft.DotNet.Watch
                 }
             }
 
-            Reporter.Report(MessageDescriptor.UpdatesApplied, appliedUpdateCount, updates.Length);
+            Logger.LogDebug("Updates applied: {AppliedCount} out of {TotalCount}.", appliedUpdateCount, updates.Length);
 
             return
                 (appliedUpdateCount == 0) ? ApplyStatus.Failed :
@@ -199,7 +213,7 @@ namespace Microsoft.DotNet.Watch
 
             await foreach (var (message, severity) in log)
             {
-                ReportLogEntry(Reporter, message, severity);
+                ReportLogEntry(Logger, message, severity);
             }
 
             return success;
@@ -224,7 +238,7 @@ namespace Microsoft.DotNet.Watch
 
         private void DisposePipe()
         {
-            Reporter.Verbose("Disposing agent communication pipe");
+            Logger.LogDebug("Disposing agent communication pipe");
             _pipe?.Dispose();
             _pipe = null;
         }

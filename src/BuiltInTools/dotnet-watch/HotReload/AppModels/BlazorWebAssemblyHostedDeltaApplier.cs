@@ -4,14 +4,15 @@
 
 using System.Collections.Immutable;
 using Microsoft.Build.Graph;
-using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
+using Microsoft.DotNet.HotReload;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class BlazorWebAssemblyHostedDeltaApplier(IReporter reporter, BrowserRefreshServer browserRefreshServer, ProjectGraphNode clientProject) : DeltaApplier(reporter)
+    internal sealed class BlazorWebAssemblyHostedDeltaApplier(ILogger logger, BrowserRefreshServer browserRefreshServer, ProjectGraphNode clientProject) : DeltaApplier(logger)
     {
-        private readonly BlazorWebAssemblyDeltaApplier _wasmApplier = new(reporter, browserRefreshServer, clientProject);
-        private readonly DefaultDeltaApplier _hostApplier = new(reporter);
+        private readonly BlazorWebAssemblyDeltaApplier _wasmApplier = new(logger, browserRefreshServer, clientProject);
+        private readonly DefaultDeltaApplier _hostApplier = new(logger);
 
         public override void Dispose()
         {
@@ -38,10 +39,10 @@ namespace Microsoft.DotNet.Watch
 
             // Allow updates that are supported by at least one process.
             // When applying changes we will filter updates applied to a specific process based on their required capabilities.
-            return result[0].Union(result[1], StringComparer.OrdinalIgnoreCase).ToImmutableArray();
+            return [.. result[0].Union(result[1], StringComparer.OrdinalIgnoreCase)];
         }
 
-        public override async Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
+        public override async Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken cancellationToken)
         {
             // Apply to both processes.
             // The module the change is for does not need to be loaded in either of the processes, yet we still consider it successful if the application does not fail.
@@ -71,16 +72,16 @@ namespace Microsoft.DotNet.Watch
             {
                 if (status == ApplyStatus.NoChangesApplied)
                 {
-                    Reporter.Warn($"No changes applied to {target} because they are not supported by the runtime.");
+                    Logger.LogWarning("No changes applied to {Target} because they are not supported by the runtime.", target);
                 }
                 else if (status == ApplyStatus.SomeChangesApplied)
                 {
-                    Reporter.Verbose($"Some changes not applied to {target} because they are not supported by the runtime.");
+                    Logger.LogWarning("Some changes not applied to {Target} because they are not supported by the runtime.", target);
                 }
             }
         }
 
-        public override Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<StaticAssetUpdate> updates, CancellationToken cancellationToken)
+        public override Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<HotReloadStaticAssetUpdate> updates, CancellationToken cancellationToken)
             // static asset updates are handled by browser refresh server:
             => Task.FromResult(ApplyStatus.NoChangesApplied);
 
