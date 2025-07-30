@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -36,11 +34,18 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             _tempDirectory = GetUniqueTempProjectPathEachTest();
             _logger = new NuGetTestLogger();
             _installer =
-                new NuGetPackageDownloader(_tempDirectory, null, new MockFirstPartyNuGetPackageSigningVerifier(), _logger,
-                    restoreActionConfig: new RestoreActionConfig(NoCache: true), timer: () => ExponentialRetry.Timer(ExponentialRetry.TestingIntervals));
+                new NuGetPackageDownloader(
+                    packageInstallDir: _tempDirectory,
+                    firstPartyNuGetPackageSigningVerifier: new MockFirstPartyNuGetPackageSigningVerifier(),
+                    verboseLogger: _logger,
+                    restoreActionConfig: new RestoreActionConfig(NoCache: true));
             _toolInstaller =
-                new NuGetPackageDownloader(_tempDirectory, null, new MockFirstPartyNuGetPackageSigningVerifier(), _logger,
-                    restoreActionConfig: new RestoreActionConfig(NoCache: true), timer: () => ExponentialRetry.Timer(ExponentialRetry.TestingIntervals), shouldUsePackageSourceMapping: true);
+                new NuGetPackageDownloader(
+                    packageInstallDir: _tempDirectory,
+                    firstPartyNuGetPackageSigningVerifier: new MockFirstPartyNuGetPackageSigningVerifier(),
+                    verboseLogger: _logger,
+                    restoreActionConfig: new RestoreActionConfig(NoCache: true),
+                    shouldUsePackageSourceMapping: true);
         }
 
         [Fact]
@@ -76,8 +81,11 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public async Task GivenAFailedSourceAndIgnoreFailedSourcesItShouldNotThrowFatalProtocolException()
         {
             var installer =
-                new NuGetPackageDownloader(_tempDirectory, null, new MockFirstPartyNuGetPackageSigningVerifier(),
-                    _logger, restoreActionConfig: new RestoreActionConfig(IgnoreFailedSources: true, NoCache: true));
+                new NuGetPackageDownloader(
+                    packageInstallDir: _tempDirectory,
+                    firstPartyNuGetPackageSigningVerifier: new MockFirstPartyNuGetPackageSigningVerifier(),
+                    verboseLogger: _logger,
+                    restoreActionConfig: new RestoreActionConfig(IgnoreFailedSources: true, NoCache: true));
 
             // should not throw FatalProtocolException
             // when there is at least one valid source, it should pass.
@@ -145,7 +153,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [Fact]
         public async Task GivenNoPackageVersionItCanInstallLatestVersionOfPackage()
         {
-            NuGetVersion packageVersion = null;
+            NuGetVersion? packageVersion = null;
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
                 packageVersion,
@@ -232,9 +240,12 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public async Task GivenANonSignedSdkItShouldPrintMessageOnce()
         {
             BufferedReporter bufferedReporter = new();
-            NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory, null,
-                new MockFirstPartyNuGetPackageSigningVerifier(),
-                _logger, bufferedReporter, restoreActionConfig: new RestoreActionConfig(NoCache: true));
+            NuGetPackageDownloader nuGetPackageDownloader = new(
+                packageInstallDir: _tempDirectory,
+                firstPartyNuGetPackageSigningVerifier: new MockFirstPartyNuGetPackageSigningVerifier(),
+                verboseLogger: _logger,
+                reporter: bufferedReporter,
+                restoreActionConfig: new RestoreActionConfig(NoCache: true));
             await nuGetPackageDownloader.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
@@ -256,9 +267,13 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public async Task GivenANonSignedSdkItShouldNotPrintMessageInQuiet()
         {
             BufferedReporter bufferedReporter = new BufferedReporter();
-            NuGetPackageDownloader nuGetPackageDownloader = new NuGetPackageDownloader(_tempDirectory, null,
-                new MockFirstPartyNuGetPackageSigningVerifier(),
-                _logger, bufferedReporter, restoreActionConfig: new RestoreActionConfig(NoCache: true), verbosityOptions: VerbosityOptions.quiet);
+            NuGetPackageDownloader nuGetPackageDownloader = new NuGetPackageDownloader(
+                packageInstallDir: _tempDirectory,
+                firstPartyNuGetPackageSigningVerifier: new MockFirstPartyNuGetPackageSigningVerifier(),
+                verboseLogger: _logger,
+                reporter: bufferedReporter,
+                restoreActionConfig: new RestoreActionConfig(NoCache: true),
+                verbosityOptions: VerbosityOptions.quiet);
             await nuGetPackageDownloader.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
@@ -281,20 +296,22 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var samplePackage = DownloadSamplePackage(new PackageId("Microsoft.iOS.Ref"));
 
             var firstPartyNuGetPackageSigningVerifier = new FirstPartyNuGetPackageSigningVerifier();
-            string shaFromPackage = GetShaFromSamplePackage(samplePackage);
+            string? shaFromPackage = GetShaFromSamplePackage(samplePackage);
 
             firstPartyNuGetPackageSigningVerifier._firstPartyCertificateThumbprints.Contains(shaFromPackage).Should()
                 .BeTrue(
                     $"Add {shaFromPackage} to the _firstPartyCertificateThumbprints of FirstPartyNuGetPackageSigningVerifier class. More info https://aka.ms/netsdkinternal-certificate-rotate");
         }
 
-        private string DownloadSamplePackage(PackageId packageId)
+        private string DownloadSamplePackage(PackageId _)
         {
-            NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory, null,
-                new MockFirstPartyNuGetPackageSigningVerifier(),
-                _logger, restoreActionConfig: new RestoreActionConfig(NoCache: true));
+            NuGetPackageDownloader nuGetPackageDownloader = new(
+                packageInstallDir: _tempDirectory,
+                firstPartyNuGetPackageSigningVerifier: new MockFirstPartyNuGetPackageSigningVerifier(),
+                verboseLogger: _logger,
+                restoreActionConfig: new RestoreActionConfig(NoCache: true));
 
-            return ExponentialRetry.ExecuteWithRetry<string>(
+            return ExponentialRetry.ExecuteWithRetry(
                     action: DownloadMostRecentSamplePackageFromPublicFeed,
                     shouldStopRetry: result => result != null,
                     maxRetryCount: 3,
@@ -309,12 +326,13 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     return nuGetPackageDownloader.DownloadPackageAsync(
                             new PackageId("Microsoft.iOS.Ref"), null, includePreview: true,
                             packageSourceLocation: new PackageSourceLocation(
-                                sourceFeedOverrides: new[] { "https://api.nuget.org/v3/index.json" })).GetAwaiter()
+                                sourceFeedOverrides: ["https://api.nuget.org/v3/index.json"])).GetAwaiter()
                         .GetResult();
                 }
                 catch (Exception)
                 {
-                    return null;
+                    Log.WriteLine("Failed to download sample package from public feed - this is catastrophic for the test, as it relies on the package being present.");
+                    throw;
                 }
             }
         }
@@ -390,6 +408,6 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         private static string GetTestLocalFeedPath() =>
-            Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestAssetLocalNugetFeed");
+            Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "TestAssetLocalNugetFeed");
     }
 }

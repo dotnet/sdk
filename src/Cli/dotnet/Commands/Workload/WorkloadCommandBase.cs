@@ -121,9 +121,9 @@ internal abstract class WorkloadCommandBase : CommandBase
             PackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
                 TempPackagesDirectory,
                 filePermissionSetter: null,
-                new FirstPartyNuGetPackageSigningVerifier(),
-                nugetLogger,
-                Reporter,
+                firstPartyNuGetPackageSigningVerifier: new FirstPartyNuGetPackageSigningVerifier(),
+                verboseLogger: nugetLogger,
+                reporter: Reporter,
                 restoreActionConfig: RestoreActionConfiguration,
                 verifySignatures: VerifySignatures,
                 shouldUsePackageSourceMapping: true);

@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
         List<MockFeedPackage>? _packages = null;
 
-        public ToolPackageDownloaderMock2(IToolPackageStore store, string runtimeJsonPathForTests, string currentWorkingDirectory, IFileSystem fileSystem) : base(store, runtimeJsonPathForTests, currentWorkingDirectory, fileSystem)
+        public ToolPackageDownloaderMock2(IToolPackageStore store, string runtimeJsonPathForTests, string? currentWorkingDirectory, IFileSystem fileSystem) : base(store, runtimeJsonPathForTests, currentWorkingDirectory, fileSystem)
         {
         }
 
