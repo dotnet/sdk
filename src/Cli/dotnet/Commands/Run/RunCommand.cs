@@ -522,6 +522,12 @@ public class RunCommand
             ? TryFindSingleProjectInDirectory(projectFileOrDirectoryPath)
             : projectFileOrDirectoryPath;
 
+        // Check if the project file actually exists when it's specified as a direct file path
+        if (projectFilePath is not null && !emptyProjectOption && !File.Exists(projectFilePath))
+        {
+            throw new GracefulException(CliCommandStrings.CmdNonExistentFileErrorDescription, projectFilePath);
+        }
+
         // If no project exists in the directory and no --project was given,
         // try to resolve an entry-point file instead.
         entryPointFilePath = projectFilePath is null && emptyProjectOption

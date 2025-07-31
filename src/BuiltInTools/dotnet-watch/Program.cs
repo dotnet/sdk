@@ -140,7 +140,7 @@ namespace Microsoft.DotNet.Watch
             var shutdownCancellationSourceDisposed = false;
             var shutdownCancellationSource = new CancellationTokenSource();
             var shutdownCancellationToken = shutdownCancellationSource.Token;
-            var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout, shutdownCancellationToken);
+            var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout);
 
             console.KeyPressed += key =>
             {

@@ -6,24 +6,29 @@ using System.Diagnostics;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class ProcessRunner(
-        TimeSpan processCleanupTimeout,
-        CancellationToken shutdownCancellationToken)
+    internal sealed class ProcessRunner(TimeSpan processCleanupTimeout)
     {
-        private const int SIGKILL = 9;
-        private const int SIGTERM = 15;
-
         private sealed class ProcessState
         {
             public int ProcessId;
             public bool HasExited;
         }
 
+        // For testing purposes only, lock on access.
+        private static readonly HashSet<int> s_runningApplicationProcesses = [];
+
+        public static IReadOnlyCollection<int> GetRunningApplicationProcesses()
+        {
+            lock (s_runningApplicationProcesses)
+            {
+                return [.. s_runningApplicationProcesses];
+            }
+        }
+
         /// <summary>
         /// Launches a process.
         /// </summary>
-        /// <param name="isUserApplication">True if the process is a user application, false if it is a helper process (e.g. msbuild).</param>
-        public async Task<int> RunAsync(ProcessSpec processSpec, IReporter reporter, bool isUserApplication, ProcessLaunchResult? launchResult, CancellationToken processTerminationToken)
+        public async Task<int> RunAsync(ProcessSpec processSpec, IReporter reporter, ProcessLaunchResult? launchResult, CancellationToken processTerminationToken)
         {
             var state = new ProcessState();
             var stopwatch = new Stopwatch();
@@ -48,6 +53,14 @@ namespace Microsoft.DotNet.Watch
                 }
 
                 state.ProcessId = process.Id;
+
+                if (processSpec.IsUserApplication)
+                {
+                    lock (s_runningApplicationProcesses)
+                    {
+                        s_runningApplicationProcesses.Add(state.ProcessId);
+                    }
+                }
 
                 if (onOutput != null)
                 {
@@ -90,12 +103,12 @@ namespace Microsoft.DotNet.Watch
                     // Either Ctrl+C was pressed or the process is being restarted.
 
                     // Non-cancellable to not leave orphaned processes around blocking resources:
-                    await TerminateProcessAsync(process, state, reporter, CancellationToken.None);
+                    await TerminateProcessAsync(process, processSpec, state, reporter, CancellationToken.None);
                 }
             }
             catch (Exception e)
             {
-                if (isUserApplication)
+                if (processSpec.IsUserApplication)
                 {
                     reporter.Error($"Application failed: {e.Message}");
                 }
@@ -103,6 +116,14 @@ namespace Microsoft.DotNet.Watch
             finally
             {
                 stopwatch.Stop();
+
+                if (processSpec.IsUserApplication)
+                {
+                    lock (s_runningApplicationProcesses)
+                    {
+                        s_runningApplicationProcesses.Remove(state.ProcessId);
+                    }
+                }
 
                 state.HasExited = true;
 
@@ -117,7 +138,7 @@ namespace Microsoft.DotNet.Watch
 
                 reporter.Verbose($"Process id {process.Id} ran for {stopwatch.ElapsedMilliseconds}ms and exited with exit code {exitCode}.");
 
-                if (isUserApplication)
+                if (processSpec.IsUserApplication)
                 {
                     if (exitCode == 0)
                     {
@@ -156,6 +177,11 @@ namespace Microsoft.DotNet.Watch
                     RedirectStandardError = onOutput != null,
                 }
             };
+
+            if (processSpec.IsUserApplication && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                process.StartInfo.CreateNewProcessGroup = true;
+            }
 
             if (processSpec.EscapedArguments is not null)
             {
@@ -210,28 +236,21 @@ namespace Microsoft.DotNet.Watch
             return process;
         }
 
-        private async ValueTask TerminateProcessAsync(Process process, ProcessState state, IReporter reporter, CancellationToken cancellationToken)
+        private async ValueTask TerminateProcessAsync(Process process, ProcessSpec processSpec, ProcessState state, IReporter reporter, CancellationToken cancellationToken)
         {
-            if (!shutdownCancellationToken.IsCancellationRequested)
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    // Ctrl+C hasn't been sent, force termination.
-                    // We don't have means to terminate gracefully on Windows (https://github.com/dotnet/runtime/issues/109432)
-                    TerminateProcess(process, state, reporter, force: true);
-                    _ = await WaitForExitAsync(process, state, timeout: null, reporter, cancellationToken);
+            var forceOnly = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !processSpec.IsUserApplication;
 
-                    return;
-                }
-                else
-                {
-                    // Ctrl+C hasn't been sent, send SIGTERM now:
-                    TerminateProcess(process, state, reporter, force: false);
-                }
+            // Ctrl+C hasn't been sent.
+            TerminateProcess(process, state, reporter, forceOnly);
+
+            if (forceOnly)
+            {
+                _ = await WaitForExitAsync(process, state, timeout: null, reporter, cancellationToken);
+                return;
             }
 
             // Ctlr+C/SIGTERM has been sent, wait for the process to exit gracefully.
-            if (processCleanupTimeout.Milliseconds == 0 ||
+            if (processCleanupTimeout.TotalMilliseconds == 0 ||
                 !await WaitForExitAsync(process, state, processCleanupTimeout, reporter, cancellationToken))
             {
                 // Force termination if the process is still running after the timeout.
@@ -327,55 +346,28 @@ namespace Microsoft.DotNet.Watch
 
         private static void TerminateWindowsProcess(Process process, ProcessState state, IReporter reporter, bool force)
         {
-            // Needs API: https://github.com/dotnet/runtime/issues/109432
-            // Code below does not work because the process creation needs CREATE_NEW_PROCESS_GROUP flag.
+            var processId = state.ProcessId;
 
-            reporter.Verbose($"Terminating process {state.ProcessId}.");
+            reporter.Verbose($"Terminating process {processId} ({(force ? "Kill" : "Ctrl+C")}).");
 
             if (force)
             {
                 process.Kill();
             }
-#if TODO
             else
             {
-                const uint CTRL_C_EVENT = 0;
-
-                [DllImport("kernel32.dll", SetLastError = true)]
-                static extern bool GenerateConsoleCtrlEvent(uint dwCtrlEvent, uint dwProcessGroupId);
-
-                [DllImport("kernel32.dll", SetLastError = true)]
-                static extern bool AttachConsole(uint dwProcessId);
-
-                [DllImport("kernel32.dll", SetLastError = true)]
-                static extern bool FreeConsole();
-
-                if (AttachConsole((uint)state.ProcessId) &&
-                    GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0) &&
-                    FreeConsole())
-                {
-                    return;
-                }
-
-                var error = Marshal.GetLastPInvokeError();
-                reporter.Verbose($"Failed to send Ctrl+C to process {state.ProcessId}: {Marshal.GetPInvokeErrorMessage(error)} (code {error})");
+                ProcessUtilities.SendWindowsCtrlCEvent(processId, m => reporter.Verbose(m));
             }
-#endif
         }
 
         private static void TerminateUnixProcess(ProcessState state, IReporter reporter, bool force)
         {
-            [DllImport("libc", SetLastError = true, EntryPoint = "kill")]
-            static extern int sys_kill(int pid, int sig);
-
             reporter.Verbose($"Terminating process {state.ProcessId} ({(force ? "SIGKILL" : "SIGTERM")}).");
 
-            var result = sys_kill(state.ProcessId, force ? SIGKILL : SIGTERM);
-            if (result != 0)
-            {
-                var error = Marshal.GetLastPInvokeError();
-                reporter.Verbose($"Error while sending SIGTERM to process {state.ProcessId}: {Marshal.GetPInvokeErrorMessage(error)} (code {error}).");
-            }
+            ProcessUtilities.SendPosixSignal(
+                state.ProcessId,
+                signal: force ? ProcessUtilities.SIGKILL : ProcessUtilities.SIGTERM,
+                log: m => reporter.Verbose(m));
         }
     }
 }

@@ -53,6 +53,7 @@ namespace Microsoft.DotNet.Watch
                 {
                     Executable = context.EnvironmentOptions.MuxerPath,
                     WorkingDirectory = context.EnvironmentOptions.WorkingDirectory,
+                    IsUserApplication = true,
                     Arguments = buildEvaluator.GetProcessArguments(iteration),
                     EnvironmentVariables =
                     {
@@ -81,7 +82,7 @@ namespace Microsoft.DotNet.Watch
 
                 fileSetWatcher.WatchContainingDirectories(evaluationResult.Files.Keys, includeSubdirectories: true);
 
-                var processTask = context.ProcessRunner.RunAsync(processSpec, context.Reporter, isUserApplication: true, launchResult: null, combinedCancellationSource.Token);
+                var processTask = context.ProcessRunner.RunAsync(processSpec, context.Reporter, launchResult: null, combinedCancellationSource.Token);
 
                 Task<ChangedFile?> fileSetTask;
                 Task finishedTask;
