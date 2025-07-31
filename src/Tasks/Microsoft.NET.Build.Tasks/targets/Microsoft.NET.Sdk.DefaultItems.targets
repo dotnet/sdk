@@ -19,7 +19,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       '$(DisableDefaultItemsInProjectFolder)' == 'true' And
       ('$([System.IO.Directory]::GetFiles($(MSBuildProjectDirectory), &quot;*.sln&quot;).Length)' != '0' Or
       '$([System.IO.Directory]::GetFiles($(MSBuildProjectDirectory), &quot;*.slnx&quot;).Length)' != '0' Or
-      '$([System.IO.Directory]::GetFiles($(MSBuildProjectDirectory), &quot;*.*proj&quot;).Length)' != '0')">false</EnableDefaultItems>
+      '$([System.IO.Directory]::GetFiles($(MSBuildProjectDirectory), &quot;*.csproj&quot;).Length)' != '0')">false</EnableDefaultItems>
 
     <EnableDefaultItems Condition=" '$(EnableDefaultItems)' == '' ">true</EnableDefaultItems>
     <EnableDefaultCompileItems Condition=" '$(EnableDefaultCompileItems)' == '' ">true</EnableDefaultCompileItems>
