@@ -3,7 +3,6 @@
 
 using System.Collections.Concurrent;
 using System.CommandLine;
-using System.Diagnostics;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
@@ -12,7 +11,6 @@ using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.Testing.TestInfrastructure;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using NuGet.Packaging;
 
@@ -24,7 +22,6 @@ internal static class MSBuildUtility
 
     public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, bool IsBuiltOrRestored) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
     {
-        DebuggerUtility.AttachCurrentProcessToVSProcessPID(113660);
         SolutionModel solutionModel = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath, includeSolutionFilterFiles: true, includeSolutionXmlFiles: true);
 
         (bool isBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> collectedProperties) = BuildOrRestoreProjectOrSolution1(solutionFilePath, buildOptions);
@@ -98,53 +95,101 @@ internal static class MSBuildUtility
 
     public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, bool IsBuiltOrRestored) GetProjectsFromProject1(string projectFilePath, BuildOptions buildOptions)
     {
-        Debugger.Launch();
+        //Debugger.Launch();
 
-        // Set up the project file path and targets
-        string[] targets = new[] { "Restore", "Build" };
+        //// Set up the project file path and targets
+        //string[] targets = new[] { "Restore", "Build" };
 
-        // Set up global properties if needed
-        var globalProperties = new Dictionary<string, string?>();
+        //// Set up global properties if needed
+        //var globalProperties = new Dictionary<string, string?>();
 
-        // Create a ProjectCollection (optional, for advanced scenarios)
-        var projectCollection = new ProjectCollection(globalProperties);
+        //// Create a ProjectCollection (optional, for advanced scenarios)
+        //var projectCollection = new ProjectCollection(globalProperties);
 
-        // Set up loggers (optional)
-        var loggers = new List<ILogger> { new ConsoleLogger() };
+        //// Set up loggers (optional)
+        //var loggers = new List<ILogger> { new ConsoleLogger() };
 
-        // Build parameters
-        var buildParameters = new BuildParameters(projectCollection)
-        {
-            Loggers = loggers
-        };
-        var projectInstance = new ProjectInstance(projectFilePath);
-        projectInstance.SetProperty("BuildProjectReferences", "True");
-        var buildRequestData = new BuildRequestData(projectInstance, new[] { "Restore", "Build" });
-        var buildResult = BuildManager.DefaultBuildManager.Build(buildParameters, buildRequestData);
-        return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), buildResult.OverallResult == BuildResultCode.Success);
-
-        //// Build or restore the project and collect properties
-        //(bool isBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> collectedProperties) =
-        //    BuildOrRestoreProjectOrSolution1(projectFilePath, buildOptions);
-
-        //if (!isBuiltOrRestored)
+        //// Build parameters
+        //var buildParameters = new BuildParameters(projectCollection)
         //{
-        //    return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), isBuiltOrRestored);
-        //}
+        //    Loggers = loggers
+        //};
+        //var projectInstance = new ProjectInstance(projectFilePath);
+        //projectInstance.SetProperty("BuildProjectReferences", "True");
+        //var buildRequestData = new BuildRequestData(projectInstance, new[] { "Restore", "Build" });
+        //var buildResult = BuildManager.DefaultBuildManager.Build(buildParameters, buildRequestData);
+        //return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), buildResult.OverallResult == BuildResultCode.Success);
 
-        //// Use the collected properties to get project properties (single project)
-        //var projects = SolutionAndProjectUtility.GetProjectProperties1(
+        //var collection = new ProjectCollection();
+        //var propertyLogger = new PropertyCollectingLogger();
+        //var binaryLogger = new BinaryLogger
+        //{
+        //    Parameters = "msbuild.binlog"
+        //};
+
+        //var buildParameters = new BuildParameters(collection)
+        //{
+        //    Loggers = new ILogger[] { propertyLogger, binaryLogger }
+        //};
+
+        //var buildRequest = new BuildRequestData(
         //    projectFilePath,
-        //    buildOptions.NoLaunchProfile,
-        //    collectedProperties);
+        //    new Dictionary<string, string?>(),
+        //    null,
+        //    new[] { "Restore", "Build" },
+        //    null
+        //);
 
-        //return (projects, isBuiltOrRestored);
+        //try
+        //{
+        //    var buildResult = BuildManager.DefaultBuildManager.Build(buildParameters, buildRequest);
+
+        //    if (buildResult.OverallResult != BuildResultCode.Success)
+        //    {
+        //        Console.Error.WriteLine("Solution build failed.");
+        //        if (buildResult.Exception != null)
+        //        {
+        //            Console.Error.WriteLine(buildResult.Exception.ToString());
+        //        }
+        //    }
+
+        //    // Output collected properties
+        //    //foreach (var project in propertyLogger._buildContexts)
+        //    //{
+        //    //	Console.WriteLine($"Project: {project.Key}");
+        //    //	foreach (var prop in project.Value)
+        //    //	{
+        //    //		Console.WriteLine($"  {prop.Key}: {prop.Value}");
+        //    //	}
+        //    //}
+        //}
+        //finally
+        //{
+        //    collection.UnregisterAllLoggers();
+        //    collection.Dispose();
+        //}
+        //return ([], true);
+        // Build or restore the project and collect properties
+        (bool isBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> collectedProperties) =
+            BuildOrRestoreProjectOrSolution1(projectFilePath, buildOptions);
+
+        if (!isBuiltOrRestored)
+        {
+            return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), isBuiltOrRestored);
+        }
+
+        // Use the collected properties to get project properties (single project)
+        var projects = SolutionAndProjectUtility.GetProjectProperties1(
+            projectFilePath,
+            buildOptions.NoLaunchProfile,
+            collectedProperties);
+
+        return (projects, isBuiltOrRestored);
     }
 
     public static BuildOptions GetBuildOptions(ParseResult parseResult, int degreeOfParallelism)
     {
         LoggerUtility.SeparateBinLogArguments(parseResult.UnmatchedTokens, out var binLogArgs, out var otherArgs);
-        DebuggerUtility.AttachCurrentProcessToVSProcessPID(113660);
 
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand());
 
