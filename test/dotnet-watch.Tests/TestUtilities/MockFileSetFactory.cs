@@ -6,7 +6,7 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 internal class MockFileSetFactory() : MSBuildFileSetFactory(
     rootProjectFile: "test.csproj",
     buildArguments: [],
-    new ProcessRunner((TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory, "dotnet") is var options ? options : options).ProcessCleanupTimeout, CancellationToken.None),
+    new ProcessRunner((TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory, "dotnet") is var options ? options : options).ProcessCleanupTimeout),
     new BuildReporter(NullReporter.Singleton, options))
 {
     public Func<EvaluationResult?>? TryCreateImpl;
