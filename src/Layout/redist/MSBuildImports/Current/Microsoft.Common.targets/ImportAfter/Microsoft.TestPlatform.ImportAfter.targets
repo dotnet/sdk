@@ -24,6 +24,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="CollectDotNetTestProperties"
+         DependsOnTargets="ComputeRunArguments"
          AfterTargets="Build"
          Condition="'$(IsTestProject)' == 'true' OR '$(IsTestingPlatformApplication)' == 'true'">
 
