@@ -15,6 +15,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <UsingTask TaskName="Microsoft.TestPlatform.Build.Tasks.VSTestLogsTask" AssemblyFile="$(VSTestTaskAssemblyFile)" />
+
   <!--
   ===================================================================================
                DispatchToInnerBuildsWithVSTestTarget
@@ -32,7 +33,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   ===================================================================================
   -->
-
   <Target Name="DispatchToInnerBuildsWithVSTestTarget" Returns="@(InnerOutput)">
     <PropertyGroup>
       <!-- 
@@ -49,6 +49,32 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuild Projects="@(_ProjectToTestWithTFM)"
              Condition="'$(TargetFrameworks)' != '' "
              Targets="$(InnerVSTestTargets)"
+             ContinueOnError="ErrorAndContinue"
+             BuildInParallel="$(_TestTfmsInParallel)">
+      <Output ItemName="InnerOutput" TaskParameter="TargetOutputs" />
+    </MSBuild>
+  </Target>
+
+  <!--
+  ===================================================================================
+               DispatchToInnerBuildsWithMTPTarget
+
+     Calls _MTPBuild with /p:TargetFramework=X for each value X in $(TargetFrameworks)
+     This ensures property collection happens for each TFM even when build is skipped
+
+  ===================================================================================
+  -->
+  <Target Name="DispatchToInnerBuildsWithMTPTarget" Returns="@(InnerOutput)">
+    <PropertyGroup>
+      <_TestTfmsInParallel>$([MSBuild]::ValueOrDefault('$(TestTfmsInParallel)', '$(BuildInParallel)'))</_TestTfmsInParallel>
+    </PropertyGroup>
+    <ItemGroup>
+      <_TargetFramework Include="$(TargetFrameworks)" />
+      <_ProjectToCollectPropsWithTFM Include="$(MSBuildProjectFile)" Properties="TargetFramework=%(_TargetFramework.Identity)" />
+    </ItemGroup>
+    <MSBuild Projects="@(_ProjectToCollectPropsWithTFM)"
+             Condition="'$(TargetFrameworks)' != '' "
+             Targets="_MTPBuild"
              ContinueOnError="ErrorAndContinue"
              BuildInParallel="$(_TestTfmsInParallel)">
       <Output ItemName="InnerOutput" TaskParameter="TargetOutputs" />
@@ -95,13 +121,14 @@ Copyright (c) .NET Foundation. All rights reserved.
   ==================================================================================
                                    _MTPBuild
 
-   Cross-targeting version of MTP.
+   Cross-targeting version of MTP. This dispatches to inner builds to ensure
+   property collection happens for each target framework.
 
   =================================================================================
   -->
-
   <Target Name="_MTPBuild" DependsOnTargets="_ComputeTargetFrameworkItems">
     <CallTarget Targets="Build" Condition="'$(ShouldRunBuild)' == 'true'"  />
+    <CallTarget Targets="DispatchToInnerBuildsWithMTPTarget" Condition="'$(ShouldRunBuild)' == 'false'" />
   </Target>
 
 </Project>
