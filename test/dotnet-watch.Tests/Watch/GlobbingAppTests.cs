@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
         }
 
-        [ConditionalTheory(Skip = "https://github.com/dotnet/sdk/issues/42921")]
+        [ConditionalTheory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task ChangeCompiledFile(bool usePollingWatcher)
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertStarted();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
+        [Fact]
         public async Task ChangeExcludedFile()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
