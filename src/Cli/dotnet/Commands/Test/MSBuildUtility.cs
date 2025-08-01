@@ -235,13 +235,8 @@ internal static class MSBuildUtility
     private static (bool IsBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> CollectedProperties)
      BuildOrRestoreProjectOrSolution1(string filePath, BuildOptions buildOptions)
     {
-        var msbuildArgs = new List<string>(buildOptions.OtherMSBuildArgs) { filePath };
-        MSBuildArgs parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
-            msbuildArgs,
-            CommonOptions.PropertiesOption,
-            CommonOptions.RestorePropertiesOption,
-            TestCommandParser.MTPTargetOption
-        );
+        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(new List<string>(buildOptions.OtherMSBuildArgs) { filePath }, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, TestCommandParser.MTPTargetOption, TestCommandParser.VerbosityOption);
+
 
         var globalProperties = CreateGlobalProperties(buildOptions, parsedMSBuildArgs);
         using var collection = new ProjectCollection(globalProperties)
