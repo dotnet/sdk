@@ -35,19 +35,12 @@ namespace Microsoft.DotNet.Cli.New.Tests
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
             _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
             EnsureParentDirectoriesExist(targetBasePath);
-
-            DirectoryInfo dirInfo = new DirectoryInfo(targetBasePath);
-            Console.WriteLine($"targetBasePath Attributes: {dirInfo.Attributes}");
+            Console.WriteLine($"targetBasePath Value: {targetBasePath}");
 
             string solutionFileFullPath = Path.Combine(targetBasePath, "MySln.slnx");
             _engineEnvironmentSettings.Host.FileSystem.WriteAllText(solutionFileFullPath, string.Empty);
-            FileInfo fileInfo = new FileInfo(solutionFileFullPath);
-            Console.WriteLine($"solutionFileFullPath Attributes: {fileInfo.Attributes}");
-            if (!_engineEnvironmentSettings.Host.FileSystem.FileExists(solutionFileFullPath))
-            {
-                Console.WriteLine($"Solution file does not exist: {solutionFileFullPath}");
-                //_engineEnvironmentSettings.Host.FileSystem.CreateDirectory(solutionFileFullPath);
-            }
+            Console.WriteLine($"solutionFileFullPath Value: {solutionFileFullPath}");
+
 
             IReadOnlyList<string> solutionFiles = DotnetSlnPostActionProcessor.FindSolutionFilesAtOrAbovePath(_engineEnvironmentSettings.Host.FileSystem, targetBasePath);
             Assert.Single(solutionFiles);
