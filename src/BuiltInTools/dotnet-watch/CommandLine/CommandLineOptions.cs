@@ -75,12 +75,6 @@ internal sealed class CommandLineOptions
         var launchProfileOption = new Option<string>("--launch-profile", "-lp") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
         var noLaunchProfileOption = new Option<bool>("--no-launch-profile") { Hidden = true, Arity = ArgumentArity.Zero };
 
-        //var binaryLogOption = new Option<string>(s_binaryLogOptionNames[0], [.. s_binaryLogOptionNames])
-        //{
-        //    Arity = ArgumentArity.ZeroOrOne,
-        //    CustomParser = static r => r.Tokens.FirstOrDefault()?.ToString() ?? ""
-        //};
-
         var rootCommand = new RootCommand(Resources.Help)
         {
             Directives = { new EnvironmentVariablesDirective() },
@@ -95,7 +89,6 @@ internal sealed class CommandLineOptions
         rootCommand.Options.Add(shortProjectOption);
         rootCommand.Options.Add(launchProfileOption);
         rootCommand.Options.Add(noLaunchProfileOption);
-        //rootCommand.Options.Add(binaryLogOption);
 
         // We process all tokens that do not match any of the above options
         // to find the subcommand (the first unmatched token preceding "--")
