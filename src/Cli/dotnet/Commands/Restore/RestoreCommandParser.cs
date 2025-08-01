@@ -25,11 +25,12 @@ internal static class RestoreCommandParser
     .AllowSingleArgPerToken();
 
     public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Restore");
+    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.minimal);
 
     private static IEnumerable<Option> FullRestoreOptions() =>
         ImplicitRestoreOptions(true, true, true, true).Concat(
             [
-                CommonOptions.VerbosityOption(VerbosityOptions.minimal),
+                VerbosityOption,
                 CommonOptions.InteractiveMsBuildForwardOption,
                 CommonOptions.ArtifactsPathOption,
                 new ForwardedOption<bool>("--use-lock-file")

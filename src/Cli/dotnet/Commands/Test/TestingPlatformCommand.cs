@@ -92,7 +92,7 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
         bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
 
         var arguments = parseResult.GetArguments();
-        testOptions = GetTestOptions(parseResult, filterModeEnabled, isHelp: ContainsHelpOption(arguments));
+        testOptions = GetTestOptions(filterModeEnabled, isHelp: ContainsHelpOption(arguments));
 
         _isDiscovery = ContainsListTestsOption(arguments);
 
@@ -180,10 +180,8 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
         return degreeOfParallelism;
     }
 
-    private static TestOptions GetTestOptions(ParseResult parseResult, bool hasFilterMode, bool isHelp) =>
-        new(parseResult.GetValue(CommonOptions.ArchitectureOption),
-            hasFilterMode,
-            isHelp);
+    private static TestOptions GetTestOptions(bool hasFilterMode, bool isHelp) =>
+        new(hasFilterMode, isHelp);
 
     private static bool ContainsHelpOption(IEnumerable<string> args)
     {

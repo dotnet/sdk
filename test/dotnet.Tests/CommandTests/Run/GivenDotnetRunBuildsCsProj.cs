@@ -375,19 +375,13 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute("--launch-profile", "test");
 
-            string[] expectedErrorWords = CliCommandStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile
-                .Replace("\'{0}\'", "")
-                .Split(" ")
-                .Where(word => !string.IsNullOrEmpty(word))
-                .ToArray();
-
             runResult
-                .Should()
-                .Pass()
-                .And
-                .HaveStdOutContaining("Hello World!");
-
-            expectedErrorWords.ForEach(word => runResult.Should().HaveStdErrContaining(word));
+                .Should().Pass()
+                .And.HaveStdOutContaining("Hello World!")
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile, "test", $"""
+                    {Path.Join(testInstance.Path, "Properties", "launchSettings.json")}
+                    {Path.Join(testInstance.Path, "MSBuildTestApp.run.json")}
+                    """));
         }
 
         [Fact]
@@ -714,8 +708,12 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.NotHaveStdOutContaining("Important text");
         }
 
+        /// <summary>
+        /// default verbosity for `run` is as quiet as possible, so it does not show important messages.
+        /// NuGet authentication messages _are_ shown, but all other non-warning/-error messages are not.
+        /// </summary>
         [Fact]
-        public void ItShowImportantLevelMessageWhenPassInteractive()
+        public void ItDoesNotShowImportantLevelMessageWhenPassInteractive()
         {
             var testAppName = "MSBuildTestApp";
             var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
@@ -727,8 +725,25 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute("--interactive");
 
             result.Should().Pass()
+                .And.NotHaveStdOutContaining("Important text");
+        }
+
+        [Fact]
+        public void ItShowsImportantLevelMessageWhenPassInteractiveAndVerbose()
+        {
+            var testAppName = "MSBuildTestApp";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                .WithSource()
+                .WithProjectChanges(ProjectModification.AddDisplayMessageBeforeRestoreToProject);
+
+            var result = new DotnetCommand(Log, "run", "/v", "d")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("--interactive");
+
+            result.Should().Pass()
                 .And.HaveStdOutContaining("Important text");
         }
+
 
         [Fact]
         public void ItPrintsDuplicateArguments()
@@ -986,6 +1001,32 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .Pass()
                .And
                .HaveStdOutContaining("env: Configuration=XYZ");
+        }
+
+        [Fact]
+        public void ItProvidesConsistentErrorMessageWhenProjectFileDoesNotExistWithNoBuild()
+        {
+            var tempDir = _testAssetsManager.CreateTestDirectory();
+            var nonExistentProject = Path.Combine(tempDir.Path, "nonexistent.csproj");
+
+            var result = new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(tempDir.Path)
+                .Execute("--project", nonExistentProject, "--no-build");
+
+            result.Should().Fail();
+            if (!TestContext.IsLocalized())
+            {
+                // After the fix, we should get a clear error message about the file not existing
+                var stderr = result.StdErr;
+                
+                // Should provide a clear error message about the project file not existing
+                var hasExpectedErrorMessage = stderr.Contains("does not exist") || 
+                                              stderr.Contains("not found") || 
+                                              stderr.Contains("cannot find") || 
+                                              stderr.Contains("could not find");
+                                              
+                hasExpectedErrorMessage.Should().BeTrue($"Expected error message to clearly indicate file doesn't exist, but got: {stderr}");
+            }
         }
     }
 }

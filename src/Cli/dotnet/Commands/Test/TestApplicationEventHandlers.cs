@@ -26,7 +26,7 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
             var executionId = args.Handshake.Properties[HandshakeMessagePropertyNames.ExecutionId];
             var arch = args.Handshake.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
             var tfm = TargetFrameworkParser.GetShortTargetFramework(args.Handshake.Properties[HandshakeMessagePropertyNames.Framework]);
-            (string ModulePath, string TargetFramework, string Architecture, string ExecutionId) appInfo = new(testApplication.Module.RunProperties.RunCommand, tfm, arch, executionId);
+            (string ModulePath, string TargetFramework, string Architecture, string ExecutionId) appInfo = new(testApplication.Module.TargetPath, tfm, arch, executionId);
             _executions[testApplication] = appInfo;
             _output.AssemblyRunStarted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId);
         }
@@ -80,6 +80,7 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
                 args.InstanceId,
                 testResult.Uid,
                 testResult.DisplayName,
+                testResult.Reason,
                 ToOutcome(testResult.State),
                 TimeSpan.FromTicks(testResult.Duration ?? 0),
                 exceptions: null,
@@ -94,6 +95,7 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
             _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId, args.InstanceId,
                 testResult.Uid,
                 testResult.DisplayName,
+                testResult.Reason,
                 ToOutcome(testResult.State),
                 TimeSpan.FromTicks(testResult.Duration ?? 0),
                 exceptions: [.. testResult.Exceptions.Select(fe => new Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace))],
@@ -147,7 +149,7 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
         }
         else
         {
-            _output.AssemblyRunCompleted(testApplication.Module.RunProperties.RunCommand ?? testApplication.Module.ProjectFullPath, testApplication.Module.TargetFramework, architecture: null, null, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
+            _output.AssemblyRunCompleted(testApplication.Module.TargetPath ?? testApplication.Module.ProjectFullPath, testApplication.Module.TargetFramework, architecture: null, null, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
         }
 
         LogTestProcessExit(args);

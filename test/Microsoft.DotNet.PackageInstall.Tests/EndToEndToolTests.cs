@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public void InstallAndRunToolGlobal()
         {
             var toolSettings = new TestToolBuilder.TestToolSettings();
-            string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings);
+            string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings, collectBinlogs: true);
 
             var testDirectory = _testAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
@@ -45,7 +45,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .And.HaveStdOutContaining("Hello Tool!");
         }
 
-        [Fact]
+        //  https://github.com/dotnet/sdk/issues/49665
+        //  The tool does not support the current architecture or operating system (osx-arm64). Supported runtimes: win-x64 win-x86 osx-x64 linux-x64 linux-musl-x64
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void InstallAndRunNativeAotGlobalTool()
         {
             var toolSettings = new TestToolBuilder.TestToolSettings()
@@ -105,7 +107,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .And.HaveStdOutContaining("Hello Tool!");
         }
 
-        [Fact]
+        //  https://github.com/dotnet/sdk/issues/49665
+        //  The tool does not support the current architecture or operating system (osx-arm64). Supported runtimes: win-x64 win-x86 osx-x64 linux-x64 linux-musl-x64
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void InstallAndRunNativeAotLocalTool()
         {
             var toolSettings = new TestToolBuilder.TestToolSettings()

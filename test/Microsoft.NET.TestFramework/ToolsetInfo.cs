@@ -10,6 +10,7 @@ namespace Microsoft.NET.TestFramework
     {
         public const string CurrentTargetFramework = "net10.0";
         public const string CurrentTargetFrameworkVersion = "10.0";
+        public const string CurrentTargetFrameworkMoniker = ".NETCoreApp,Version=v" + CurrentTargetFrameworkVersion;
         public const string NextTargetFramework = "net11.0";
         public const string NextTargetFrameworkVersion = "11.0";
 
@@ -67,6 +68,8 @@ namespace Microsoft.NET.TestFramework
         public string? FullFrameworkMSBuildPath { get; set; }
 
         public string? SdkResolverPath { get; set; }
+
+        public string? RepoRoot { get; set; }
 
         public ToolsetInfo(string dotNetRoot)
         {
@@ -291,7 +294,10 @@ namespace Microsoft.NET.TestFramework
                 throw new FileNotFoundException($"Host '{dotnetHost}' not found. {hostNotFoundReason}");
             }
 
-            var ret = new ToolsetInfo(dotnetRoot);
+            var ret = new ToolsetInfo(dotnetRoot)
+            {
+                RepoRoot = repoRoot,
+            };
 
             if (!string.IsNullOrEmpty(commandLine.FullFrameworkMSBuildPath))
             {
@@ -345,7 +351,7 @@ namespace Microsoft.NET.TestFramework
 
             if (repoRoot != null && repoArtifactsDir is not null)
             {
-                ret.CliHomePath = Path.Combine(repoArtifactsDir, "tmp", configuration);
+                ret.CliHomePath = Path.Combine(repoArtifactsDir, "tmp", configuration, "testing");
             }
 
             return ret;
@@ -404,18 +410,19 @@ namespace Microsoft.NET.TestFramework
                 .Where(a => a.Key is not null && a.Key.EndsWith("PackageVersion"))
                 .Select(a => (a.Key ?? string.Empty, a.Value ?? string.Empty));
 
-        private static readonly Lazy<string> _NewtonsoftJsonPackageVersion = new Lazy<string>(() => GetPackageVersionProperties().Single(p => p.versionPropertyName == "NewtonsoftJsonPackageVersion").version);
+        public static string GetPackageVersion(string packageName)
+        {
+            var propertyName = packageName.Replace(".", "") + "PackageVersion";
+            return GetPackageVersionProperties().Single(p => p.versionPropertyName == propertyName).version;
+        }
+
+        private static readonly Lazy<string> s_newtonsoftJsonPackageVersion = new(() => GetPackageVersion("Newtonsoft.Json"));
+        private static readonly Lazy<string> s_systemDataSqlClientPackageVersion = new(() => GetPackageVersion("System.Data.SqlClient"));
 
         public static string GetNewtonsoftJsonPackageVersion()
-        {
-            return _NewtonsoftJsonPackageVersion.Value;
-        }
-
-        private static readonly Lazy<string> _SystemDataSqlClientPackageVersion = new(() => GetPackageVersionProperties().Single(p => p.versionPropertyName == "SystemDataSqlClientPackageVersion").version);
+            =>s_newtonsoftJsonPackageVersion.Value;
 
         public static string GetSystemDataSqlClientPackageVersion()
-        {
-            return _SystemDataSqlClientPackageVersion.Value;
-        }
+            => s_systemDataSqlClientPackageVersion.Value;
     }
 }

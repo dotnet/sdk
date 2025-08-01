@@ -140,7 +140,7 @@ namespace Microsoft.DotNet.Watch
             var shutdownCancellationSourceDisposed = false;
             var shutdownCancellationSource = new CancellationTokenSource();
             var shutdownCancellationToken = shutdownCancellationSource.Token;
-            var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout, shutdownCancellationToken);
+            var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout);
 
             console.KeyPressed += key =>
             {
@@ -244,9 +244,8 @@ namespace Microsoft.DotNet.Watch
             var fileSetFactory = new MSBuildFileSetFactory(
                 rootProjectOptions.ProjectPath,
                 rootProjectOptions.BuildArguments,
-                environmentOptions,
                 processRunner,
-                reporter);
+                new BuildReporter(reporter, environmentOptions));
 
             if (await fileSetFactory.TryCreateAsync(requireProjectGraph: null, cancellationToken) is not { } evaluationResult)
             {

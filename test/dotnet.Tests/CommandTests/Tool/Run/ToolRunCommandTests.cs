@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithRollForwardOptionItShouldIncludeRollForwardInNativeHost()
         {
-            var parseResult = Parser.Instance.Parse($"dotnet tool run dotnet-a --allow-roll-forward");
+            var parseResult = Parser.Parse($"dotnet tool run dotnet-a --allow-roll-forward");
 
             var toolRunCommand = new ToolRunCommand(parseResult);
 
@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithoutRollForwardOptionItShouldNotIncludeRollForwardInNativeHost()
         {
-            var parseResult = Parser.Instance.Parse($"dotnet tool run dotnet-a");
+            var parseResult = Parser.Parse($"dotnet tool run dotnet-a");
 
             var toolRunCommand = new ToolRunCommand(parseResult);
 

@@ -28,14 +28,15 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_cleans_the_project_successfully_with_static_graph_and_isolation()
         {
-            var (testAsset, outputDirectories) = BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new[] { "/graph" });
+            var (testAsset, outputDirectories) = BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new[] { "/graph", "/bl:build-{}.binlog" });
 
             var cleanCommand = new DotnetCommand(
                 Log,
                 "msbuild",
                 Path.Combine(testAsset.TestRoot, "1", "1.csproj"),
                 "/t:clean",
-                "/graph");
+                "/graph",
+                "/bl:clean-{}.binlog");
 
             cleanCommand
                 .Execute()

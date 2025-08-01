@@ -24,7 +24,7 @@ internal static class CommonRunHelpers
             { Constants.MSBuildExtensionsPath, AppContext.BaseDirectory }
         };
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(args, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption());
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(args, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.VerbosityOption());
         if (msbuildArgs.GlobalProperties is null)
         {
             return globalProperties;
@@ -36,4 +36,10 @@ internal static class CommonRunHelpers
         }
         return globalProperties;
     }
+
+    public static string GetPropertiesLaunchSettingsPath(string directoryPath, string propertiesDirectoryName)
+        => Path.Combine(directoryPath, propertiesDirectoryName, "launchSettings.json");
+
+    public static string GetFlatLaunchSettingsPath(string directoryPath, string projectNameWithoutExtension)
+        => Path.Join(directoryPath, $"{projectNameWithoutExtension}.run.json");
 }

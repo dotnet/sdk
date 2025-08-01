@@ -53,11 +53,11 @@ internal sealed class NamedPipeServer : NamedPipeBase, IServer
     }
 
     public NamedPipeServer(
-    PipeNameDescription pipeNameDescription,
-    Func<IRequest, Task<IResponse>> callback,
-    int maxNumberOfServerInstances,
-    CancellationToken cancellationToken,
-    bool skipUnknownMessages)
+        PipeNameDescription pipeNameDescription,
+        Func<IRequest, Task<IResponse>> callback,
+        int maxNumberOfServerInstances,
+        CancellationToken cancellationToken,
+        bool skipUnknownMessages)
     {
         _namedPipeServerStream = new((PipeName = pipeNameDescription).Name, PipeDirection.InOut, maxNumberOfServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
         _callback = callback;
@@ -252,7 +252,7 @@ internal sealed class NamedPipeServer : NamedPipeBase, IServer
             return new PipeNameDescription($"testingplatform.pipe.{name.Replace('\\', '.')}", false);
         }
 
-        string directoryId = Path.Combine(Path.GetTempPath(), name);
+        string directoryId = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), name);
         Directory.CreateDirectory(directoryId);
         return new PipeNameDescription(
             !Directory.Exists(directoryId)
