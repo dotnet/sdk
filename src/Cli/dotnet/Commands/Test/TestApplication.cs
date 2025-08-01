@@ -96,6 +96,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         // So, we keep that first always.
         // RunArguments is intentionally not escaped. It can contain multiple arguments and spaces there shouldn't cause the whole
         // value to be wrapped in double quotes. This matches dotnet run behavior.
+        // In short, it's expected to already be escaped properly.
         StringBuilder builder = new(Module.RunProperties.RunArguments);
 
         if (testOptions.IsHelp)
