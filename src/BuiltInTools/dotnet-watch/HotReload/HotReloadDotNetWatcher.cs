@@ -111,7 +111,7 @@ namespace Microsoft.DotNet.Watch
 
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, _context.Reporter);
                     compilationHandler = new CompilationHandler(_context.Reporter, _context.ProcessRunner);
-                    var scopedCssFileHandler = new ScopedCssFileHandler(_context.Reporter, projectMap, browserConnector, _context.EnvironmentOptions);
+                    var scopedCssFileHandler = new ScopedCssFileHandler(_context.Reporter, projectMap, browserConnector, _context.Options, _context.EnvironmentOptions);
                     var projectLauncher = new ProjectLauncher(_context, projectMap, browserConnector, compilationHandler, iteration);
                     evaluationResult.ItemExclusions.Report(_context.Reporter);
 
@@ -620,6 +620,11 @@ namespace Microsoft.DotNet.Watch
         {
             var (path, kind) = change;
 
+            if (Path.GetExtension(path) == ".binlog")
+            {
+                return false;
+            }
+
             if (PathUtilities.GetContainingDirectories(path).FirstOrDefault(IsHiddenDirectory) is { } containingHiddenDir)
             {
                 _context.Reporter.Report(MessageDescriptor.IgnoringChangeInHiddenDirectory, containingHiddenDir, kind, path);
@@ -765,6 +770,7 @@ namespace Microsoft.DotNet.Watch
                     _context.RootProjectOptions.ProjectPath,
                     _context.RootProjectOptions.BuildArguments,
                     _context.Reporter,
+                    _context.Options,
                     _context.EnvironmentOptions,
                     restore,
                     cancellationToken);
@@ -788,10 +794,6 @@ namespace Microsoft.DotNet.Watch
         {
             var buildOutput = new List<OutputLine>();
 
-            string[] binLogArguments = _context.EnvironmentOptions.GetTestBinLogPath(projectPath, "Build") is { } binLogPath
-                ? [$"-bl:{binLogPath}"]
-                : [];
-
             var processSpec = new ProcessSpec
             {
                 Executable = _context.EnvironmentOptions.MuxerPath,
@@ -805,7 +807,7 @@ namespace Microsoft.DotNet.Watch
                     }
                 },
                 // pass user-specified build arguments last to override defaults:
-                Arguments = ["build", projectPath, "-consoleLoggerParameters:NoSummary;Verbosity=minimal", .. binLogArguments, .. buildArguments],
+                Arguments = ["build", projectPath, "-consoleLoggerParameters:NoSummary;Verbosity=minimal", .. buildArguments]
             };
 
             _context.Reporter.Output($"Building {projectPath} ...");

@@ -6,7 +6,7 @@ using Microsoft.Build.Graph;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class ScopedCssFileHandler(IReporter reporter, ProjectNodeMap projectMap, BrowserConnector browserConnector, EnvironmentOptions environmentOptions)
+    internal sealed class ScopedCssFileHandler(IReporter reporter, ProjectNodeMap projectMap, BrowserConnector browserConnector, GlobalOptions options, EnvironmentOptions environmentOptions)
     {
         private const string BuildTargetName = TargetNames.GenerateComputedBuildStaticWebAssets;
 
@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Watch
                 return;
             }
 
-            var buildReporter = new BuildReporter(reporter, environmentOptions);
+            var buildReporter = new BuildReporter(reporter, options, environmentOptions);
 
             var buildTasks = projectsToRefresh.Select(projectNode => Task.Run(() =>
             {

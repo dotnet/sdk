@@ -9,4 +9,10 @@ internal sealed class GlobalOptions
     public bool Verbose { get; init; }
     public bool NoHotReload { get; init; }
     public bool NonInteractive { get; init; }
+
+    /// <summary>
+    /// Path to binlog file (absolute or relative to working directory, includes .binlog extension),
+    /// or null to not generate binlog files.
+    /// </summary>
+    public string? BinaryLogPath { get; init; }
 }

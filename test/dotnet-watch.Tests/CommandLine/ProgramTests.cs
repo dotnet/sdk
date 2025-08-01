@@ -58,6 +58,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: string.Join(",", arguments))
                 .WithSource();
 
+            App.DotnetWatchArgs.Clear();
             App.Start(testAsset, arguments);
 
             Assert.Equal(expectedApplicationArgs, await App.AssertOutputLineStartsWith("Arguments = "));

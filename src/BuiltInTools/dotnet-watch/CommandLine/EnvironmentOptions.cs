@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Watch
             TestOutput: EnvironmentVariables.TestOutputDir
         );
 
-        private static int s_uniqueLogId;
+        private int _uniqueLogId;
 
         public bool RunningAsTest { get => (TestFlags & TestFlags.RunningAsTest) != TestFlags.None; }
 
@@ -64,9 +64,9 @@ namespace Microsoft.DotNet.Watch
             return muxerPath;
         }
 
-        public string? GetTestBinLogPath(string projectPath, string operationName)
-            => TestFlags.HasFlag(TestFlags.RunningAsTest)
-                ? Path.Combine(TestOutput, $"Watch.{operationName}.{Path.GetFileName(projectPath)}.{Interlocked.Increment(ref s_uniqueLogId)}.binlog")
-                : null;
+        public string? GetBinLogPath(string projectPath, string operationName, GlobalOptions options)
+            => options.BinaryLogPath != null
+               ? $"{Path.Combine(WorkingDirectory, options.BinaryLogPath)[..^".binlog".Length]}-dotnet-watch.{operationName}.{Path.GetFileName(projectPath)}.{Interlocked.Increment(ref _uniqueLogId)}.binlog"
+               : null;
     }
 }

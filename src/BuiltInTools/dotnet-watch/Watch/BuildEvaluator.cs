@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.Watch
                 _context.RootProjectOptions.ProjectPath,
                 _context.RootProjectOptions.BuildArguments,
                 _context.ProcessRunner,
-                new BuildReporter(_context.Reporter, _context.EnvironmentOptions));
+                new BuildReporter(_context.Reporter, _context.Options, _context.EnvironmentOptions));
 
         public IReadOnlyList<string> GetProcessArguments(int iteration)
         {

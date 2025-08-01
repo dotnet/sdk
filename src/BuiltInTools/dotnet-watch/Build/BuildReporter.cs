@@ -7,13 +7,13 @@ using Microsoft.Build.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
-internal sealed class BuildReporter(IReporter reporter, EnvironmentOptions environmentOptions)
+internal sealed class BuildReporter(IReporter reporter, GlobalOptions options, EnvironmentOptions environmentOptions)
 {
     public IReporter Reporter => reporter;
     public EnvironmentOptions EnvironmentOptions => environmentOptions;
 
     public Loggers GetLoggers(string projectPath, string operationName)
-        => new(reporter, environmentOptions.GetTestBinLogPath(projectPath, operationName));
+        => new(reporter, environmentOptions.GetBinLogPath(projectPath, operationName, options));
 
     public void ReportWatchedFiles(Dictionary<string, FileItem> fileItems)
     {
