@@ -329,7 +329,7 @@ internal static class SolutionAndProjectUtility
             isTestingPlatformApplication,
             isTestProject,
             launchSettings,
-            properties.GetValueOrDefault(ProjectProperties.TargetPath));
+            properties.GetValueOrDefault(ProjectProperties.TargetPath)!);
 
         return true;
     }
