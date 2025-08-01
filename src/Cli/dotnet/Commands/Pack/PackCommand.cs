@@ -4,14 +4,16 @@
 using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Configuration;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Commands;
-using NuGet.Packaging.Core;
 using NuGet.Common;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
@@ -76,25 +78,28 @@ public class PackCommand(
         var nuspecPath = args[0];
 
         var packArgs = new PackArgs()
-        {
-            Path = nuspecPath,
-            BasePath = Path.GetDirectoryName(nuspecPath),
+        { 
             Logger = new NuGetConsoleLogger(),
             Exclude = new List<string>(),
             OutputDirectory = parseResult.GetValue(PackCommandParser.OutputOption),
             LogLevel = MappingVerbosityToNugetLogLevel(parseResult.GetValue(BuildCommandParser.VerbosityOption)),
+            Arguments = [nuspecPath]
         };
+
+        packArgs.Path = PackCommandRunner.GetInputFile(packArgs);
+        packArgs.BasePath = Path.GetDirectoryName(packArgs.Path);
+        PackCommandRunner.SetupCurrentDirectory(packArgs);
 
         var globalProperties = parseResult.GetResult("--property") is OptionResult propResult ? propResult.GetValueOrDefault<ReadOnlyDictionary<string, string>?>() : null;
         if (globalProperties != null)
-        {
-            foreach (var kvp in globalProperties)
-                packArgs.Properties[kvp.Key] = kvp.Value;
-        }
+            packArgs.Properties.AddRange(globalProperties);
 
         var version = parseResult.GetValue(CommonOptions.VersionOption);
         if (version != null)
             packArgs.Version = version.ToNormalizedString();
+
+        var configuration = parseResult.GetValue(PackCommandParser.ConfigurationOption) ?? "Debug";
+        packArgs.Properties["configuration"] = configuration;
 
         var packCommandRunner = new PackCommandRunner(packArgs, null);
         if (!packCommandRunner.RunPackageBuild())
