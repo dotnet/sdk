@@ -235,7 +235,7 @@ internal static class SolutionAndProjectUtility
         // In dotnet test, we are additionally checking that RunCommand is not dll.
         // In any "default" scenario, RunCommand is never dll.
         // If we found it to be dll, that is user explicitly setting RunCommand incorrectly.
-        if (string.IsNullOrEmpty(runProperties.RunCommand) || runProperties.RunCommand.HasExtension(CliConstants.DLLExtension))
+        if (string.IsNullOrEmpty(runProperties.Command) || runProperties.Command.HasExtension(CliConstants.DLLExtension))
         {
             throw new GracefulException(
                 string.Format(
@@ -266,7 +266,7 @@ internal static class SolutionAndProjectUtility
                 }
             }
 
-            return RunProperties.FromProjectAndApplicationArguments(project, []);
+            return RunProperties.FromProject(project);
         }
     }
 
