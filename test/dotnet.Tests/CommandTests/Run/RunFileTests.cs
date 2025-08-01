@@ -1051,8 +1051,11 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         new FileInfo(binaryLogPath).Should().Exist();
 
         var records = BinaryLog.ReadRecords(binaryLogPath).ToList();
-        records.Count(static r => r.Args is ProjectEvaluationStartedEventArgs).Should().Be(2);
-        records.Count(static r => r.Args is ProjectEvaluationFinishedEventArgs).Should().Be(2);
+
+        // There should be at least two - one for restore, one for build.
+        // But the restore targets might re-evaluate the project via inner MSBuild task invocations.
+        records.Count(static r => r.Args is ProjectEvaluationStartedEventArgs).Should().BeGreaterThanOrEqualTo(2);
+        records.Count(static r => r.Args is ProjectEvaluationFinishedEventArgs).Should().BeGreaterThanOrEqualTo(2);
     }
 
     /// <summary>
@@ -2650,7 +2653,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <Clean Include="/artifacts/*" />
                       </ItemGroup>
 
-                      <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
                       <Import Project="Sdk.props" Sdk="Aspire.Hosting.Sdk" Version="9.1.0" />
 
@@ -2680,8 +2682,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
                       <Import Project="Sdk.targets" Sdk="Aspire.Hosting.Sdk" Version="9.1.0" />
-
-                    {VirtualProjectBuildingCommand.TargetOverrides}
 
                     </Project>
 
@@ -2720,7 +2720,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <Clean Include="/artifacts/*" />
                       </ItemGroup>
 
-                      <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
                       <PropertyGroup>
@@ -2743,8 +2742,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       </ItemGroup>
 
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-
-                    {VirtualProjectBuildingCommand.TargetOverrides}
 
                     </Project>
 
@@ -2787,7 +2784,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <Clean Include="/artifacts/*" />
                       </ItemGroup>
 
-                      <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
                       <PropertyGroup>
@@ -2810,8 +2806,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       </ItemGroup>
 
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-
-                    {VirtualProjectBuildingCommand.TargetOverrides}
 
                     </Project>
 
