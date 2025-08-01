@@ -467,20 +467,6 @@ public class RunCommand
 
     static readonly string ComputeRunArgumentsTarget = "ComputeRunArguments";
 
-    private static LoggerVerbosity ToLoggerVerbosity(VerbosityOptions? verbosity)
-    {
-        // map all cases of VerbosityOptions enum to the matching LoggerVerbosity enum
-        return verbosity switch
-        {
-            VerbosityOptions.quiet | VerbosityOptions.q => LoggerVerbosity.Quiet,
-            VerbosityOptions.minimal | VerbosityOptions.m => LoggerVerbosity.Minimal,
-            VerbosityOptions.normal | VerbosityOptions.n => LoggerVerbosity.Normal,
-            VerbosityOptions.detailed | VerbosityOptions.d => LoggerVerbosity.Detailed,
-            VerbosityOptions.diagnostic | VerbosityOptions.diag => LoggerVerbosity.Diagnostic,
-            _ => LoggerVerbosity.Quiet // default to quiet because run should be invisible if possible
-        };
-    }
-
     private static void ThrowUnableToRunError(ProjectInstance project)
     {
         string targetFrameworks = project.GetPropertyValue("TargetFrameworks");
