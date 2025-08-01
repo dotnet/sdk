@@ -76,7 +76,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
 
     <!-- Tool implementation files are not included in the primary package when the tool has RID-specific packages.  So only pack the tool implementation
        (and only depend on publish) if there are no RID-specific packages, or if the RuntimeIdentifier is set. -->
-    <_ToolPackageShouldIncludeImplementation Condition=" '$(PackAsTool)' == 'true' And
+    <_ToolPackageShouldIncludeImplementation Condition=" '$(_ToolPackageShouldIncludeImplementation)' == '' And '$(PackAsTool)' == 'true' And
                                                   ('$(_UserSpecifiedToolPackageRids)' == ''
                                                      or '$(RuntimeIdentifier)' != '')">true</_ToolPackageShouldIncludeImplementation>
     <_ToolPackageShouldIncludeImplementation Condition="'$(_ToolPackageShouldIncludeImplementation)' == ''">false</_ToolPackageShouldIncludeImplementation>
@@ -411,8 +411,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
   <Target Name="_CreateRIDSpecificToolPackages"
     Condition="'$(RuntimeIdentifier)' == ''
       and $(_HasRIDSpecificTools)
-      and !$(_InnerToolsPublishAot)
-      and !$(_ToolPackageShouldIncludeImplementation)">
+      and !$(_InnerToolsPublishAot)">
     <PropertyGroup>
         <_PackageRids>$(ToolPackageRuntimeIdentifiers)</_PackageRids>
         <_PackageRids Condition="'$(_PackageRids)' == ''">$(RuntimeIdentifiers)</_PackageRids>
