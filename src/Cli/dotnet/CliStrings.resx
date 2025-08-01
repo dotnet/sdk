@@ -823,4 +823,7 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
   <data name="SDKSchemaCommandDefinition" xml:space="preserve">
     <value>Display the command schema as JSON.</value>
   </data>
+  <data name="Warning_HttpSourceUsed" xml:space="preserve">
+    <value>warn : You are using an HTTP source. HTTP package sources are insecure and may expose your credentials in plaintext. Consider using HTTPS instead. See https://aka.ms/nuget-secure-feeds for more information.</value>
+  </data>
 </root>
