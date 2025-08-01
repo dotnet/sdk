@@ -317,6 +317,7 @@ internal static class SolutionAndProjectUtility
 
         var launchSettings = TryGetLaunchProfileSettings(
             Path.GetDirectoryName(projectFullPath)!,
+            Path.GetFileNameWithoutExtension(projectFullPath),
             appDesignerFolder ?? string.Empty,
             noLaunchProfile,
             profileName: null);
@@ -327,7 +328,8 @@ internal static class SolutionAndProjectUtility
             targetFramework,
             isTestingPlatformApplication,
             isTestProject,
-            launchSettings);
+            launchSettings,
+            properties.GetValueOrDefault(ProjectProperties.TargetPath));
 
         return true;
     }
