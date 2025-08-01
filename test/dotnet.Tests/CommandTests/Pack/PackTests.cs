@@ -397,16 +397,24 @@ namespace Microsoft.DotNet.Pack.Tests
         [InlineData("Release")]
         public void DotnetPack_AcceptsConfigurationOption(string configuration)
         {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
+            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecWithConfigFiles")
                 .WithSource();
-            string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
+            string nuspecPath = Path.Combine(testInstance.Path, "TestingPackWithConfig.nuspec");
+
             var result = new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute(nuspecPath, "--configuration", configuration);
+                .Execute(nuspecPath, "--configuration", configuration, "--output", Path.Combine("bin", configuration));
             result.Should().Pass();
 
-            var outputPackage = new FileInfo(Path.Combine(testInstance.Path, "bin", configuration, "PackNoCsproj.1.0.0.nupkg"));
+            var outputPackage = new FileInfo(Path.Combine(testInstance.Path, "bin", configuration, "TestPackWithConfig.1.0.0.nupkg"));
             outputPackage.Should().Exist();
+
+            using (var stream = outputPackage.OpenRead())
+            using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
+            {
+                var expectedPdbPath = "lib/net40/TestNuspecWithConfigFiles.pdb";
+                archive.Entries.Should().Contain(e => e.FullName == expectedPdbPath);
+            }
         }
 
         [Fact]
