@@ -29,15 +29,18 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.Equal(solutionFileFullPath, solutionFiles[0]);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/49923
+        [Fact(DisplayName = nameof(AddProjectToSolutionPostActionFindSlnxFileAtOutputPath))]
         public void AddProjectToSolutionPostActionFindSlnxFileAtOutputPath()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
             _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
             EnsureParentDirectoriesExist(targetBasePath);
-            
-            string solutionFileFullPath = Path.Combine(targetBasePath, "MySln.slnx");
+            Console.WriteLine($"targetBasePath Value: {targetBasePath}");
+
+            string solutionFileFullPath = Path.Combine(targetBasePath, "MySln.sln");
             _engineEnvironmentSettings.Host.FileSystem.WriteAllText(solutionFileFullPath, string.Empty);
+            Console.WriteLine($"solutionFileFullPath Value: {solutionFileFullPath}");
+
 
             IReadOnlyList<string> solutionFiles = DotnetSlnPostActionProcessor.FindSolutionFilesAtOrAbovePath(_engineEnvironmentSettings.Host.FileSystem, targetBasePath);
             Assert.Single(solutionFiles);
@@ -50,11 +53,13 @@ namespace Microsoft.DotNet.Cli.New.Tests
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
             _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
             EnsureParentDirectoriesExist(targetBasePath);
+            Console.WriteLine($"targetBasePath_Value: {targetBasePath}");
             
             string slnFileFullPath = Path.Combine(targetBasePath, "MySln.sln");
             string slnxFileFullPath = Path.Combine(targetBasePath, "MySln.slnx");
             _engineEnvironmentSettings.Host.FileSystem.WriteAllText(slnFileFullPath, string.Empty);
             _engineEnvironmentSettings.Host.FileSystem.WriteAllText(slnxFileFullPath, string.Empty);
+            Console.WriteLine($"solutionFileFullPath_Value: {slnFileFullPath}");
 
             IReadOnlyList<string> solutionFiles = DotnetSlnPostActionProcessor.FindSolutionFilesAtOrAbovePath(_engineEnvironmentSettings.Host.FileSystem, targetBasePath);
             Assert.Single(solutionFiles);
