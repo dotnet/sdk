@@ -90,10 +90,6 @@
     <MicrosoftDiaSymReaderVersion>2.2.0-beta.25377.103</MicrosoftDiaSymReaderVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <!-- Dependency from https://github.com/dotnet/arcade-services -->
-    <MicrosoftDotNetDarcLibVersion>1.1.0-beta.25381.4</MicrosoftDotNetDarcLibVersion>
-  </PropertyGroup>
-  <PropertyGroup>
     <!-- Dependency from https://github.com/dotnet/aspire -->
     <AspirePackageVersion>9.1.0-preview.1.24555.3</AspirePackageVersion>
   </PropertyGroup>
