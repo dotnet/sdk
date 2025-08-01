@@ -956,6 +956,35 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
   </packageSources>
 </configuration>
 }";
+
+        [Fact]
+        public void WhenRunWithHttpSourceItShouldDisplayWarning()
+        {
+            var httpNugetConfig = Path.Combine(_temporaryDirectory, "httpNuGet.config");
+            
+            _fileSystem.File.WriteAllText(httpNugetConfig, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""httpsource"" value=""http://insecure.nuget.org/v3/index.json"" />
+    <add key=""httpssource"" value=""https://api.nuget.org/v3/index.json"" />
+  </packageSources>
+</configuration>");
+
+            var parseResult = Parser.Parse($"dotnet tool install -g {PackageId} --configfile {httpNugetConfig}");
+
+            var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
+                parseResult,
+                _packageId,
+                _createToolPackageStoreDownloaderUninstaller,
+                _createShellShimRepository,
+                new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
+                _reporter);
+
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+
+            // Verify that HTTP warning is displayed
+            _reporter.Lines.Should().Contain(line => line.Contains("HTTP"));
+        }
     }
 }
 

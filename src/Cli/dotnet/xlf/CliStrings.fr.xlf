@@ -1180,6 +1180,11 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 o
         <target state="translated">VERSION_SUFFIX</target>
         <note />
       </trans-unit>
+      <trans-unit id="Warning_HttpSourceUsed">
+        <source>warn : You are using an HTTP source. HTTP package sources are insecure and may expose your credentials in plaintext. Consider using HTTPS instead. See https://aka.ms/nuget-secure-feeds for more information.</source>
+        <target state="new">warn : You are using an HTTP source. HTTP package sources are insecure and may expose your credentials in plaintext. Consider using HTTPS instead. See https://aka.ms/nuget-secure-feeds for more information.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadIntegrityCheckError">
         <source>An issue was encountered verifying workloads. For more information, run "dotnet workload update".</source>
         <target state="translated">Un problème s’est produit lors de la vérification des charges de travail. Pour plus d’informations, exécutez « dotnet workload update ».</target>
