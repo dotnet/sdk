@@ -553,14 +553,6 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>6a953e76162f3f079405f80e28664fa51b136740</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.25381.4">
-      <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>8309398221b4ec41d54a41285343d82e1ca7d069</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.25381.4">
-      <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>8309398221b4ec41d54a41285343d82e1ca7d069</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.Testing.Platform" Version="1.9.0-preview.25381.6">
       <Uri>https://github.com/microsoft/testfx</Uri>
       <Sha>f548433961344ee1629c5b04c35d99efc9fdd860</Sha>
