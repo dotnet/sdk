@@ -104,16 +104,17 @@ public sealed class LayerEndToEndTests : IDisposable
     }
 
     [Fact]
-    public void UserIdIsAppliedToFiles()
+    public async Task UserIdIsAppliedToFiles()
     {
         using TransientTestFolder folder = new();
 
         string testFilePath = Path.Join(folder.Path, "TestFile.txt");
         string testString = $"Test content for {nameof(SingleFileInFolder)}";
         File.WriteAllText(testFilePath, testString);
+        var layerFilePath = new FileInfo(_store.GetTempFile());
 
         var userId = 1234;
-        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "/app", false, SchemaTypes.DockerManifestV2, userId: userId);
+        Layer l = await Layer.FromFiles([(Path.GetFullPath(testFilePath), "TestFile.txt")], containerPath: "/app", false, SchemaTypes.DockerManifestV2, _store, layerFilePath, CancellationToken.None, userId: userId);
         var allEntries = LoadAllTarEntries(l.BackingFile);
         Assert.True(allEntries.TryGetValue("app", out var appEntry) && appEntry.EntryType == TarEntryType.Directory, "Missing app directory entry");
         Assert.True(allEntries.TryGetValue("app/TestFile.txt", out var fileEntry) && fileEntry.EntryType == TarEntryType.RegularFile, "Missing TestFile.txt file entry");
