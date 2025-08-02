@@ -75,7 +75,7 @@ public class ImageIndexGeneratorTests
 
                 },
                 Manifest =  new(){
-                    KnownDigest = "sha256:digest1",
+                    KnownDigest =  new Digest(DigestAlgorithm.sha256,"digest1"),
                     MediaType = SchemaTypes.DockerManifestV2,
                     SchemaVersion = 2,
                     Config = new(),
@@ -88,7 +88,7 @@ public class ImageIndexGeneratorTests
             {
                 Config = new(),
                 Manifest = new(){
-                    KnownDigest = "sha256:digest2",
+                    KnownDigest =  new Digest(DigestAlgorithm.sha256,"digest2"),
                     MediaType = SchemaTypes.DockerManifestV2,
                     SchemaVersion = 2,
                     Config = new(),
@@ -142,7 +142,7 @@ public class ImageIndexGeneratorTests
 
                 },
                 Manifest =  new(){
-                    KnownDigest = "sha256:digest1",
+                    KnownDigest = new Digest(DigestAlgorithm.sha256,"digest1"),
                     MediaType = SchemaTypes.OciManifestV1,
                     SchemaVersion = 2,
                     Config = new(),
@@ -155,7 +155,7 @@ public class ImageIndexGeneratorTests
             {
                 Config = new(),
                 Manifest = new(){
-                    KnownDigest = "sha256:digest2",
+                    KnownDigest = new Digest(DigestAlgorithm.sha256,"digest2"),
                     MediaType = SchemaTypes.OciManifestV1,
                     SchemaVersion = 2,
                     Config = new(),
@@ -201,7 +201,7 @@ public class ImageIndexGeneratorTests
     [Fact]
     public void GenerateImageIndexWithAnnotations()
     {
-        var imageIndex = ImageIndexGenerator.GenerateImageIndexWithAnnotations("mediaType", "sha256:digest", 3, "repository", ["1.0", "2.0"]);
+        var imageIndex = ImageIndexGenerator.GenerateImageIndexWithAnnotations("mediaType", new Digest(DigestAlgorithm.sha256,"digest"), 3, "repository", ["1.0", "2.0"]);
         var imageIndexJson = JsonSerializer.Serialize(imageIndex, new JsonSerializerOptions() { WriteIndented = true });
         var expectedJson = """
         {

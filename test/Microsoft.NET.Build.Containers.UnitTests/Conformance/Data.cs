@@ -26,7 +26,7 @@ public static class Data
         public static int ConformanceLayerContentLength = ConformanceLayerBytes.Length;
         public static Descriptor ConformanceLayerDescriptor = new(
             "application/vnd.oci.image.layer.v1.tar+gzip",
-            digest: ConformanceLayerSha256DigestString,
+            digest: new Digest(DigestAlgorithm.sha256, ConformanceLayerSha256DigestString),
             size: ConformanceLayerContentLength
             );
 

@@ -52,7 +52,7 @@ public class DownloadLayers : Microsoft.Build.Utilities.Task, ICancelableTask
                 logger.LogError(new EventId(123456, "layer_item_validation_failure"), $"Layer {layer.ItemSpec} must have Digest, Size, and MediaType metadata");
             }
 
-            var descriptor = new Descriptor(mediaType, digest, long.Parse(size));
+            var descriptor = new Descriptor(mediaType, Digest.Parse(digest), long.Parse(size));
             layerDownloadTasks.Add(
                 registry.DownloadBlobAsync(Repository, descriptor, _cts.Token).ContinueWith(t =>
                 {

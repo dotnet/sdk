@@ -68,12 +68,6 @@ public class ContentStore(DirectoryInfo root)
     /// <exception cref="ArgumentException">If the Descriptor isn't a layer mediatype</exception>
     public string PathForDescriptor(Descriptor descriptor)
     {
-        string digest = descriptor.Digest;
-
-        Debug.Assert(digest.StartsWith("sha256:", StringComparison.Ordinal));
-
-        string contentHash = digest.Substring("sha256:".Length);
-
         string extension = descriptor.MediaType switch
         {
             "application/vnd.docker.image.rootfs.diff.tar.gzip"
@@ -92,17 +86,18 @@ public class ContentStore(DirectoryInfo root)
             _ => throw new ArgumentException(Resource.FormatString(nameof(Strings.UnrecognizedMediaType), descriptor.MediaType))
         };
 
-        return GetPathForHash(contentHash) + extension;
+        return GetPathForHash(descriptor.Digest.Value) + extension;
     }
 
     /// <summary>
     /// Returns the path in the <see cref="ReferenceRoot"/> for the manifest reference for this registry/repository/tag.
     /// </summary>
-    /// <param name="registry"></param>
-    /// <param name="repository"></param>
-    /// <param name="tag"></param>
-    /// <returns></returns>
-    public string PathForManifestByReferenceOrDigest(string registry, string repository, string tag) => Path.Combine(ReferenceRoot, registry, repository, tag);
+    public string PathForManifestByTag(string registry, string repository, string tag) => Path.Combine(ReferenceRoot, registry, repository, tag);
+
+    /// <summary>
+    /// Returns the path in the <see cref="ReferenceRoot"/> for the manifest reference for this digest.
+    /// </summary>
+    public string PathForManifestByDigest(string registry, string repository, Digest digest) => Path.Combine(ReferenceRoot, registry, repository, digest.ToString());
 
     /// <summary>
     /// Returns the path to the content store for a given content hash (<c>algo</c>:<c>digest</c>) pair.

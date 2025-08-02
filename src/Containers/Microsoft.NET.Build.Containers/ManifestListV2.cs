@@ -54,7 +54,7 @@ public record struct PlatformSpecificManifest(
     [field:JsonConverter(typeof(MediaTypeConverter))]
     string mediaType,
     long size,
-    string digest,
+    Digest digest,
     PlatformInformation platform);
 
 public record struct ImageIndexV1(
@@ -76,7 +76,7 @@ public record struct PlatformSpecificOciManifest(
     [field:JsonConverter(typeof(MediaTypeConverter))]
     string mediaType,
     long size,
-    string digest,
+    Digest digest,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [field: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     PlatformInformation? platform,

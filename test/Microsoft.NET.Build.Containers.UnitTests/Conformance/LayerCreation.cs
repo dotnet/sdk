@@ -38,7 +38,7 @@ public class LayerCreation(ITestOutputHelper testOutput, TransientTestFolderFixt
     public async Task ComputesSameDescriptorForCanonicalLayerTarball()
     {
         var dataStream = new MemoryStream(Data.Layer.ConformanceLayerBytes);
-        var descriptor = await Layer.DescriptorFromStream(dataStream, SchemaTypes.OciLayerGzipV1, "sha256");
+        var descriptor = await Layer.DescriptorFromStream(dataStream, SchemaTypes.OciLayerGzipV1, DigestAlgorithm.sha256);
         descriptor.Should().Be(Data.Layer.ConformanceLayerDescriptor);
     }
 
@@ -53,7 +53,7 @@ public class LayerCreation(ITestOutputHelper testOutput, TransientTestFolderFixt
         var contentStream = testFile.OpenWrite();
         dataStream.CopyTo(contentStream);
         contentStream.Close();
-        var layer = await Layer.FromBackingFile(testFile, SchemaTypes.OciLayerGzipV1, "sha256");
+        var layer = await Layer.FromBackingFile(testFile, SchemaTypes.OciLayerGzipV1, DigestAlgorithm.sha256);
         layer.Descriptor.Should().Be(Data.Layer.ConformanceLayerDescriptor);
     }
 }

@@ -143,8 +143,8 @@ public sealed class LayerEndToEndTests : IDisposable
             }
         }
 
-        Assert.Equal(Convert.ToHexStringLower(hashBytes), l.Descriptor.Digest.Substring("sha256:".Length));
-        Assert.Equal(Convert.ToHexStringLower(uncompressedHashBytes), l.Descriptor.UncompressedDigest?.Substring("sha256:".Length));
+        Assert.Equal(Convert.ToHexStringLower(hashBytes), l.Descriptor.Digest.Value);
+        Assert.Equal(Convert.ToHexStringLower(uncompressedHashBytes), l.Descriptor.UncompressedDigest?.Value);
     }
 
     TransientTestFolder? testSpecificArtifactRoot;

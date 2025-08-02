@@ -60,40 +60,24 @@ internal class Layer
         return new(backingFile, descriptor);
     }
 
-    public static async Task<Layer> FromBackingFile(FileInfo backingFile, string mediaType, string digestType)
+    public static async Task<Layer> FromBackingFile(FileInfo backingFile, string mediaType, DigestAlgorithm digestType, CancellationToken cancellationToken = default)
     {
-        // need to compute the digest from the backing file
-        Func<Stream, ValueTask<byte[]>> hasher = digestType switch
-        {
-            "sha256" => s => SHA256.HashDataAsync(s),
-            "sha512" => s => SHA512.HashDataAsync(s),
-            _ => throw new ArgumentException(digestType)
-        };
         using (FileStream fs = backingFile.OpenRead())
         {
-            byte[] digest = await hasher(fs);
-            string digestString = Convert.ToHexStringLower(digest);
-            return new(backingFile, new Descriptor(mediaType, digestString, fs.Length));
+            var digest = await Digest.FromStream(digestType, fs, cancellationToken);
+            return new(backingFile, new Descriptor(mediaType, digest, fs.Length));
         }
     }
 
-    public static async Task<Descriptor> DescriptorFromStream(Stream stream, string mediaType, string digestType)
+    public static async Task<Descriptor> DescriptorFromStream(Stream stream, string mediaType, DigestAlgorithm digestType, CancellationToken cancellationToken = default)
     {
-        // need to compute the digest from the stream
-        Func<Stream, ValueTask<byte[]>> hasher = digestType switch
-        {
-            "sha256" => s => SHA256.HashDataAsync(s),
-            "sha512" => s => SHA512.HashDataAsync(s),
-            _ => throw new ArgumentException(digestType)
-        };
-        byte[] digest = await hasher(stream);
-        string digestString = Convert.ToHexStringLower(digest);
-        return new Descriptor(mediaType, digestString, stream.Length);
+        var digest = await Digest.FromStream(digestType, stream, cancellationToken);
+        return new Descriptor(mediaType, digest, stream.Length);
     }
 
-    public static async Task<Layer> FromStream(Stream stream, string mediaType, string digestType)
+    public static async Task<Layer> FromStream(Stream stream, string mediaType, DigestAlgorithm digestType, CancellationToken cancellationToken = default)
     {
-        Descriptor descriptor = await DescriptorFromStream(stream, mediaType, digestType);
+        Descriptor descriptor = await DescriptorFromStream(stream, mediaType, digestType, cancellationToken);
         return new Layer(null!, descriptor);
     }
 
@@ -290,8 +274,8 @@ internal class Layer
         {
             MediaType = layerMediaType,
             Size = fileSize,
-            Digest = $"sha256:{contentHash}",
-            UncompressedDigest = $"sha256:{uncompressedContentHash}",
+            Digest = new(DigestAlgorithm.sha256, contentHash),
+            UncompressedDigest = new(DigestAlgorithm.sha256, uncompressedContentHash),
         };
 
         string storedContent = store.PathForDescriptor(descriptor);

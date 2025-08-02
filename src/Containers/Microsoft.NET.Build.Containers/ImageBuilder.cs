@@ -7,6 +7,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 using System.Text.Json.Nodes;
+using System.Runtime.Intrinsics.Arm;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -51,7 +52,7 @@ internal sealed class ImageBuilder
     public bool IsWindows => _baseImageConfig.IsWindows;
 
     // For tests
-    internal string ManifestConfigDigest => _manifest.Config.Digest;
+    internal Digest ManifestConfigDigest => _manifest.Config.Digest;
 
     /// <summary>
     /// Builds the image configuration <see cref="BuiltImage"/> ready for further processing.
@@ -63,23 +64,13 @@ internal sealed class ImageBuilder
         AssignPortsFromEnvironment();
 
         JsonObject config = _baseImageConfig.BuildConfig();
-        string configAsString = JsonSerializer.Serialize(config);
-        (long size, string imageSha) = DigestUtils.GetSha(configAsString);
-        string imageDigest = DigestUtils.GetDigestFromSha(imageSha);
-
-        Descriptor newManifestConfig =
-            new()
-            {
-                Digest = imageDigest,
-                Size = size,
-                MediaType = ManifestMediaType switch
-                {
-                    SchemaTypes.OciManifestV1 => SchemaTypes.OciImageConfigV1,
-                    SchemaTypes.DockerManifestV2 => SchemaTypes.DockerContainerV1,
-                    _ => SchemaTypes.OciImageConfigV1 // opinion - defaulting to modern here, but really this should never happen
-                }
+        var mediaType = ManifestMediaType switch
+        {
+            SchemaTypes.OciManifestV1 => SchemaTypes.OciImageConfigV1,
+            SchemaTypes.DockerManifestV2 => SchemaTypes.DockerContainerV1,
+            _ => SchemaTypes.OciImageConfigV1 // opinion - defaulting to modern here, but really this should never happen
         };
-
+        Descriptor newManifestConfig = Descriptor.FromContent(mediaType, DigestAlgorithm.sha256, config);
         ManifestV2 newManifest = new ManifestV2()
         {
             Config = newManifestConfig,
@@ -107,7 +98,7 @@ internal sealed class ImageBuilder
 
     internal (string name, string value) AddBaseImageDigestLabel()
     {
-        var label = ("org.opencontainers.image.base.digest", _baseImageManifest.GetDigest());
+        var label = ("org.opencontainers.image.base.digest", _baseImageManifest.GetDigest().ToString());
         AddLabel(label.Item1, label.Item2);
         return label;
     }

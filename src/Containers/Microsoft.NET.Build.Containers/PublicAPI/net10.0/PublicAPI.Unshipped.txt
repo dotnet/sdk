@@ -123,14 +123,12 @@ Microsoft.NET.Build.Containers.Descriptor.Annotations.init -> void
 Microsoft.NET.Build.Containers.Descriptor.Data.get -> string?
 Microsoft.NET.Build.Containers.Descriptor.Data.init -> void
 Microsoft.NET.Build.Containers.Descriptor.Descriptor() -> void
-Microsoft.NET.Build.Containers.Descriptor.Descriptor(string! mediaType, string! digest, long size) -> void
-Microsoft.NET.Build.Containers.Descriptor.Digest.get -> string!
 Microsoft.NET.Build.Containers.Descriptor.Digest.init -> void
 Microsoft.NET.Build.Containers.Descriptor.MediaType.get -> string!
 Microsoft.NET.Build.Containers.Descriptor.MediaType.init -> void
 Microsoft.NET.Build.Containers.Descriptor.Size.get -> long
 Microsoft.NET.Build.Containers.Descriptor.Size.init -> void
-Microsoft.NET.Build.Containers.Descriptor.UncompressedDigest.get -> string?
+Microsoft.NET.Build.Containers.Descriptor.UncompressedDigest.get -> Microsoft.NET.Build.Containers.Digest?
 Microsoft.NET.Build.Containers.Descriptor.UncompressedDigest.init -> void
 Microsoft.NET.Build.Containers.Descriptor.Urls.get -> string![]?
 Microsoft.NET.Build.Containers.Descriptor.Urls.init -> void
@@ -155,8 +153,7 @@ Microsoft.NET.Build.Containers.ImageIndexV1.schemaVersion.set -> void
 Microsoft.NET.Build.Containers.ManifestV2
 Microsoft.NET.Build.Containers.ManifestV2.Config.get -> Microsoft.NET.Build.Containers.Descriptor
 Microsoft.NET.Build.Containers.ManifestV2.Config.init -> void
-Microsoft.NET.Build.Containers.ManifestV2.GetDigest() -> string!
-Microsoft.NET.Build.Containers.ManifestV2.KnownDigest.get -> string?
+Microsoft.NET.Build.Containers.ManifestV2.KnownDigest.get -> Microsoft.NET.Build.Containers.Digest?
 Microsoft.NET.Build.Containers.ManifestV2.KnownDigest.set -> void
 Microsoft.NET.Build.Containers.ManifestV2.Layers.get -> System.Collections.Generic.List<Microsoft.NET.Build.Containers.Descriptor>!
 Microsoft.NET.Build.Containers.ManifestV2.Layers.init -> void
@@ -175,17 +172,14 @@ Microsoft.NET.Build.Containers.PlatformInformation.PlatformInformation() -> void
 Microsoft.NET.Build.Containers.PlatformInformation.variant.get -> string?
 Microsoft.NET.Build.Containers.PlatformInformation.variant.set -> void
 Microsoft.NET.Build.Containers.PlatformSpecificManifest
-Microsoft.NET.Build.Containers.PlatformSpecificManifest.digest.get -> string!
 Microsoft.NET.Build.Containers.PlatformSpecificManifest.digest.set -> void
 Microsoft.NET.Build.Containers.PlatformSpecificManifest.mediaType.get -> string!
 Microsoft.NET.Build.Containers.PlatformSpecificManifest.mediaType.set -> void
 Microsoft.NET.Build.Containers.PlatformSpecificManifest.platform.set -> void
 Microsoft.NET.Build.Containers.PlatformSpecificManifest.PlatformSpecificManifest() -> void
-Microsoft.NET.Build.Containers.PlatformSpecificManifest.PlatformSpecificManifest(string! mediaType, long size, string! digest, Microsoft.NET.Build.Containers.PlatformInformation platform) -> void
 Microsoft.NET.Build.Containers.PlatformSpecificManifest.size.get -> long
 Microsoft.NET.Build.Containers.PlatformSpecificManifest.size.set -> void
 Microsoft.NET.Build.Containers.PlatformSpecificOciManifest
-Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.digest.get -> string!
 Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.digest.set -> void
 Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.mediaType.get -> string!
 Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.mediaType.set -> void
@@ -336,7 +330,6 @@ Microsoft.NET.Build.Containers.PlatformInformation.Equals(Microsoft.NET.Build.Co
 Microsoft.NET.Build.Containers.PlatformSpecificManifest.Equals(Microsoft.NET.Build.Containers.PlatformSpecificManifest other) -> bool
 Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.Equals(Microsoft.NET.Build.Containers.PlatformSpecificOciManifest other) -> bool
 static Microsoft.NET.Build.Containers.Descriptor.operator !=(Microsoft.NET.Build.Containers.Descriptor left, Microsoft.NET.Build.Containers.Descriptor right) -> bool
-Microsoft.NET.Build.Containers.PlatformSpecificManifest.Deconstruct(out string! mediaType, out long size, out string! digest, out Microsoft.NET.Build.Containers.PlatformInformation platform) -> void
 static Microsoft.NET.Build.Containers.Descriptor.operator ==(Microsoft.NET.Build.Containers.Descriptor left, Microsoft.NET.Build.Containers.Descriptor right) -> bool
 override Microsoft.NET.Build.Containers.Descriptor.GetHashCode() -> int
 ~override Microsoft.NET.Build.Containers.Descriptor.Equals(object obj) -> bool

@@ -144,16 +144,16 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         // at this point we're done with modifications and are just pushing the data other places
 
         var serializedManifest = JsonSerializer.Serialize(builtImage.Manifest);
-        var manifestWriteTask = File.WriteAllTextAsync(GeneratedManifestPath, serializedManifest, DigestUtils.UTF8);
+        var manifestWriteTask = File.WriteAllTextAsync(GeneratedManifestPath, serializedManifest, DigestAlgorithmExtensions.UTF8NoBom);
 
         var serializedConfig = JsonSerializer.Serialize(builtImage.Config);
-        var configWriteTask = File.WriteAllTextAsync(GeneratedConfigurationPath, serializedConfig, DigestUtils.UTF8);
+        var configWriteTask = File.WriteAllTextAsync(GeneratedConfigurationPath, serializedConfig, DigestAlgorithmExtensions.UTF8NoBom);
 
         await Task.WhenAll(manifestWriteTask, configWriteTask).ConfigureAwait(false);
 
         GeneratedContainerManifest = serializedManifest;
         GeneratedContainerConfiguration = serializedConfig;
-        GeneratedContainerDigest = builtImage.ManifestDigest;
+        GeneratedContainerDigest = builtImage.ManifestDigest.ToString();
         GeneratedArchiveOutputPath = ArchiveOutputPath;
         GeneratedContainerMediaType = builtImage.ManifestMediaType;
         GeneratedContainerNames = destinationImageReference.FullyQualifiedImageNames().Select(name => new Microsoft.Build.Utilities.TaskItem(name)).ToArray();
@@ -162,14 +162,14 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         {
             ["Size"] = builtImage.Manifest.Config.Size.ToString(),
             ["MediaType"] = builtImage.Manifest.Config.MediaType,
-            ["Digest"] = builtImage.Manifest.Config.Digest,
+            ["Digest"] = builtImage.Manifest.Config.Digest.ToString(),
         });
 
         GeneratedAppContainerManifest = new Microsoft.Build.Utilities.TaskItem(GeneratedManifestPath, new Dictionary<string, string>(2)
         {
             ["Size"] = new FileInfo(GeneratedManifestPath).Length.ToString(),
             ["MediaType"] = builtImage.Manifest.MediaType!,
-            ["Digest"] = builtImage.Manifest.GetDigest(),
+            ["Digest"] = builtImage.Manifest.GetDigest().ToString(),
         });
 
         if (baseImageLabel is not null && baseImageDigest is not null)
@@ -186,7 +186,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
     {
         Size = generatedApplicationLayer.GetMetadata("Size") is string sizeStr && long.TryParse(sizeStr, out long size) ? size : throw new ArgumentException($"Invalid size for layer '{generatedApplicationLayer.ItemSpec}'."),
         MediaType = generatedApplicationLayer.GetMetadata("MediaType"),
-        Digest = generatedApplicationLayer.GetMetadata("Digest")
+        Digest = generatedApplicationLayer.GetMetadata("Digest") is string digestStr ? Digest.Parse(digestStr) : throw new ArgumentException($"Invalid digest for layer '{generatedApplicationLayer.ItemSpec}'.")
     };
 
     private void SetPorts(ImageBuilder image, ITaskItem[] exposedPorts)

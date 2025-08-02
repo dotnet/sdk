@@ -139,34 +139,24 @@ internal sealed class Registry
     /// </summary>
     private bool SupportsParallelUploads => !IsAmazonECRRegistry && _settings.ParallelUploadEnabled;
 
-    /// <summary>
-    /// Fetches the data for a given manifest tag or digest from the local content store if present.
-    /// If not present, fetches it from the remote and caches it in the local content store.
-    /// </summary>
-    /// <param name="repositoryName"></param>
-    /// <param name="referenceOrDigest"></param>
-    /// <param name="cTok"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    public async Task<IManifest> GetManifestCore(string repositoryName, string referenceOrDigest, CancellationToken cTok, bool skipCache = true)
+    private async Task<IManifest> FetchManifestContent<T>(string repositoryName, Func<T, string> getLocalReferencePath, Func<T, Task<HttpResponseMessage>> fetchManifest, Func<HttpResponseMessage, Digest> getDigest, T referenceOrDigest, bool skipCache, CancellationToken cTok)
     {
         cTok.ThrowIfCancellationRequested();
         // check if we have the reference in the ContentStore's reference area already.
         // if so, read it from there.
-        var referencePath = _store.PathForManifestByReferenceOrDigest(RegistryName, repositoryName, referenceOrDigest);
+        var referencePath = getLocalReferencePath(referenceOrDigest);
         if (!skipCache && File.Exists(referencePath))
         {
             var lines = await File.ReadAllLinesAsync(referencePath, cTok);
-            (var digest, var mediaType, var size) = (lines[0], lines[1], lines[2]);
+            (var digest, var mediaType, var size) = (Digest.Parse(lines[0]), lines[1], lines[2]);
             using var contentStream = File.OpenRead(_store.PathForDescriptor(new(mediaType, digest, long.Parse(size))));
             return await ParseManifest(mediaType, contentStream, digest);
         }
         // if not, make a remote call and add it to the ContentStore's reference area.
         else
         {
-            using var response = await _registryAPI.Manifest.GetAsync(repositoryName, referenceOrDigest, cTok).ConfigureAwait(false);
-            response.Headers.TryGetValues("Docker-Content-Digest", out var knownDigests);
-            var digest = knownDigests?.FirstOrDefault()!;
+            using var response = await fetchManifest(referenceOrDigest).ConfigureAwait(false);
+            var digest = getDigest(response);
             var mediaType = response.Content.Headers.ContentType?.MediaType!;
             long size = response.Content.Headers.ContentLength ?? 0;
             var descriptor = new Descriptor(mediaType, digest, size);
@@ -190,16 +180,16 @@ internal sealed class Registry
                 // we're creating a multi-level directory structure, so ensure the parent directories exist before writing
                 Directory.CreateDirectory(parentDir);
                 await File.WriteAllLinesAsync(referencePath, [
-                    digest,
-                mediaType,
-                size.ToString()
-                ], DigestUtils.UTF8, cTok);
+                    digest.ToString(),
+                    mediaType,
+                    size.ToString()
+                ], DigestAlgorithmExtensions.UTF8NoBom, cTok);
                 // now that the data is all set for next time, return the manifest
                 return await ParseManifest(mediaType, responseStream, digest);
             }
         }
 
-        async Task<IManifest> ParseManifest(string? mediaType, Stream content, string? digest)
+        async Task<IManifest> ParseManifest(string? mediaType, Stream content, Digest? digest)
         {
             IManifest? manifest = mediaType switch
             {
@@ -219,6 +209,48 @@ internal sealed class Registry
                 return manifest!;
             }
         }
+    }
+
+    /// <summary>
+    /// Fetches the data for a given manifest tag or digest from the local content store if present.
+    /// If not present, fetches it from the remote and caches it in the local content store.
+    /// </summary>
+    /// <param name="repositoryName"></param>
+    /// <param name="reference"></param>
+    /// <param name="cTok"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public Task<IManifest> GetManifestCore(string repositoryName, string reference, CancellationToken cTok, bool skipCache = true)
+    {
+        return FetchManifestContent(
+            repositoryName,
+            r => _store.PathForManifestByTag(RegistryName, repositoryName, r),
+            r => _registryAPI.Manifest.GetAsync(repositoryName, r, cTok),
+            response => Digest.Parse(response.Headers.GetValues("Docker-Content-Digest").FirstOrDefault()!),
+            reference,
+            skipCache,
+            cTok);
+    }
+
+    /// <summary>
+    /// Fetches the data for a given manifest tag or digest from the local content store if present.
+    /// If not present, fetches it from the remote and caches it in the local content store.
+    /// </summary>
+    /// <param name="repositoryName"></param>
+    /// <param name="digest"></param>
+    /// <param name="cTok"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public Task<IManifest> GetManifestCore(string repositoryName, Digest digest, CancellationToken cTok, bool skipCache = true)
+    {
+        return FetchManifestContent(
+            repositoryName,
+            r => _store.PathForManifestByDigest(RegistryName, repositoryName, r),
+            r => _registryAPI.Manifest.GetAsync(repositoryName, r, cTok),
+            response => digest,
+            digest,
+            skipCache,
+            cTok);
     }
 
     public async Task<ImageBuilder> GetImageManifestAsync(string repositoryName, string reference, string runtimeIdentifier, IManifestPicker manifestPicker, CancellationToken cancellationToken)
@@ -367,12 +399,12 @@ internal sealed class Registry
     private async Task<ImageBuilder> ReadSingleImageFromManifest(
         string repositoryName,
         string reference,
-        string manifestDigest,
+        Digest manifestDigest,
         string runtimeIdentifier,
         IEnumerable<string> rids,
         CancellationToken cancellationToken)
     {
-        var manifest = await GetManifestCore(repositoryName, manifestDigest, cancellationToken);
+        var manifest = await GetManifestCore(repositoryName, manifestDigest.ToString(), cancellationToken);
         if (manifest is null) throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, rids);
         if (manifest is not ManifestV2 singleArchManifest) throw new ArgumentException("Only supports single-arch manifests in this pathway");
         return await ReadSingleImageAsync(
@@ -440,11 +472,9 @@ internal sealed class Registry
     internal async Task PushLayerAsync(Layer layer, string repository, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        string digest = layer.Descriptor.Digest;
-
         using (Stream contents = layer.OpenBackingFile())
         {
-            await UploadBlobAsync(repository, digest, contents, cancellationToken).ConfigureAwait(false);
+            await UploadBlobAsync(repository, layer.Descriptor.Digest, contents, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -519,7 +549,7 @@ internal sealed class Registry
     /// <param name="contents"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task UploadBlobAsync(string repository, string digest, Stream contents, CancellationToken cancellationToken)
+    public async Task UploadBlobAsync(string repository, Digest digest, Stream contents, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -572,8 +602,7 @@ internal sealed class Registry
         Func<Descriptor, Task> uploadLayerFunc = async (descriptor) =>
         {
             cancellationToken.ThrowIfCancellationRequested();
-            string digest = descriptor.Digest;
-
+            Digest digest = descriptor.Digest;
             _logger.LogInformation(Strings.Registry_LayerUploadStarted, digest, destinationRegistry.RegistryName);
             if (await _registryAPI.Blob.ExistsAsync(destination.Repository, digest, cancellationToken).ConfigureAwait(false))
             {
@@ -614,7 +643,7 @@ internal sealed class Registry
         }
 
         cancellationToken.ThrowIfCancellationRequested();
-        using (MemoryStream stringStream = new(DigestUtils.UTF8.GetBytes(builtImage.Config.ToJsonString())))
+        using (MemoryStream stringStream = new(DigestAlgorithmExtensions.UTF8NoBom.GetBytes(builtImage.Config.ToJsonString())))
         {
             var configDigest = builtImage.Manifest.Config.Digest;
             _logger.LogInformation(Strings.Registry_ConfigUploadStarted, configDigest);
@@ -638,7 +667,7 @@ internal sealed class Registry
         else
         {
             _logger.LogInformation(Strings.Registry_ManifestUploadStarted, RegistryName, builtImage.ManifestDigest);
-            await _registryAPI.Manifest.PutAsync(destination.Repository, builtImage.ManifestDigest, builtImage.Manifest, cancellationToken).ConfigureAwait(false);
+            await _registryAPI.Manifest.PutAsync(destination.Repository, builtImage.ManifestDigest.ToString(), builtImage.Manifest, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_ManifestUploaded, RegistryName);
         }
     }
