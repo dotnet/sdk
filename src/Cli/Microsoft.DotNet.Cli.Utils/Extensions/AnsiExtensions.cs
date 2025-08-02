@@ -8,6 +8,13 @@ public static class AnsiExtensions
     private static readonly Lazy<bool> _xtermEnabled = new(
         () =>
         {
+            // In CI/test environments, avoid ANSI URL sequences to ensure reliable output
+            if (Environment.GetEnvironmentVariable("CI") == "true" ||
+                Environment.GetEnvironmentVariable("BUILD_BUILDID") != null)
+            {
+                return false;
+            }
+
             var environment = Environment.GetEnvironmentVariable("TERM");
             if (!string.IsNullOrWhiteSpace(environment))
             {
