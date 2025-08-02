@@ -365,7 +365,7 @@ public class ImageBuilderTests
 
         var result = baseConfig.BuildConfig();
 
-        
+
 
         var historyNode = result?["history"];
         Assert.NotNull(historyNode);
@@ -685,13 +685,13 @@ public class ImageBuilderTests
         {
             SchemaVersion = 2,
             MediaType = SchemaTypes.DockerManifestV2,
-            Config = new ManifestConfig()
+            Config = new Descriptor()
             {
-                mediaType = "",
-                size = 0,
-                digest = "sha256:"
+                MediaType = "",
+                Size = 0,
+                Digest = "sha256:"
             },
-            Layers = new List<ManifestLayer>(),
+            Layers = [],
             KnownDigest = StaticKnownDigestValue
         };
         return new ImageBuilder(manifest, manifest.MediaType, new ImageConfig(baseImageConfig), _loggerFactory.CreateLogger(testName));

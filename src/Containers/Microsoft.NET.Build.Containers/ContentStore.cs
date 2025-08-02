@@ -10,7 +10,7 @@ namespace Microsoft.NET.Build.Containers;
 /// Structured access to the content store for manifests and blobs at a given root path.
 /// </summary>
 /// <param name="root"></param>
-internal class ContentStore(DirectoryInfo root)
+public class ContentStore(DirectoryInfo root)
 {
     public string ArtifactRoot
     {

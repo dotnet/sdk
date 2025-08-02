@@ -135,26 +135,6 @@ Microsoft.NET.Build.Containers.Descriptor.UncompressedDigest.init -> void
 Microsoft.NET.Build.Containers.Descriptor.Urls.get -> string![]?
 Microsoft.NET.Build.Containers.Descriptor.Urls.init -> void
 Microsoft.NET.Build.Containers.KnownLocalRegistryTypes
-Microsoft.NET.Build.Containers.ManifestConfig
-Microsoft.NET.Build.Containers.ManifestConfig.digest.get -> string!
-Microsoft.NET.Build.Containers.ManifestConfig.digest.set -> void
-Microsoft.NET.Build.Containers.ManifestConfig.ManifestConfig() -> void
-Microsoft.NET.Build.Containers.ManifestConfig.ManifestConfig(string! mediaType, long size, string! digest) -> void
-Microsoft.NET.Build.Containers.ManifestConfig.mediaType.get -> string!
-Microsoft.NET.Build.Containers.ManifestConfig.mediaType.set -> void
-Microsoft.NET.Build.Containers.ManifestConfig.size.get -> long
-Microsoft.NET.Build.Containers.ManifestConfig.size.set -> void
-Microsoft.NET.Build.Containers.ManifestLayer
-Microsoft.NET.Build.Containers.ManifestLayer.digest.get -> string!
-Microsoft.NET.Build.Containers.ManifestLayer.digest.set -> void
-Microsoft.NET.Build.Containers.ManifestLayer.ManifestLayer() -> void
-Microsoft.NET.Build.Containers.ManifestLayer.ManifestLayer(string! mediaType, long size, string! digest, string![]? urls) -> void
-Microsoft.NET.Build.Containers.ManifestLayer.mediaType.get -> string!
-Microsoft.NET.Build.Containers.ManifestLayer.mediaType.set -> void
-Microsoft.NET.Build.Containers.ManifestLayer.size.get -> long
-Microsoft.NET.Build.Containers.ManifestLayer.size.set -> void
-Microsoft.NET.Build.Containers.ManifestLayer.urls.get -> string![]?
-Microsoft.NET.Build.Containers.ManifestLayer.urls.set -> void
 Microsoft.NET.Build.Containers.ManifestListV2
 Microsoft.NET.Build.Containers.ManifestListV2.ManifestListV2() -> void
 Microsoft.NET.Build.Containers.ManifestListV2.ManifestListV2(int schemaVersion, string! mediaType, Microsoft.NET.Build.Containers.PlatformSpecificManifest[]! manifests) -> void
@@ -173,12 +153,12 @@ Microsoft.NET.Build.Containers.ImageIndexV1.mediaType.set -> void
 Microsoft.NET.Build.Containers.ImageIndexV1.schemaVersion.get -> int
 Microsoft.NET.Build.Containers.ImageIndexV1.schemaVersion.set -> void
 Microsoft.NET.Build.Containers.ManifestV2
-Microsoft.NET.Build.Containers.ManifestV2.Config.get -> Microsoft.NET.Build.Containers.ManifestConfig
+Microsoft.NET.Build.Containers.ManifestV2.Config.get -> Microsoft.NET.Build.Containers.Descriptor
 Microsoft.NET.Build.Containers.ManifestV2.Config.init -> void
 Microsoft.NET.Build.Containers.ManifestV2.GetDigest() -> string!
 Microsoft.NET.Build.Containers.ManifestV2.KnownDigest.get -> string?
 Microsoft.NET.Build.Containers.ManifestV2.KnownDigest.set -> void
-Microsoft.NET.Build.Containers.ManifestV2.Layers.get -> System.Collections.Generic.List<Microsoft.NET.Build.Containers.ManifestLayer>!
+Microsoft.NET.Build.Containers.ManifestV2.Layers.get -> System.Collections.Generic.List<Microsoft.NET.Build.Containers.Descriptor>!
 Microsoft.NET.Build.Containers.ManifestV2.Layers.init -> void
 Microsoft.NET.Build.Containers.ManifestV2.ManifestV2() -> void
 Microsoft.NET.Build.Containers.ManifestV2.MediaType.get -> string?
@@ -343,37 +323,23 @@ static Microsoft.NET.Build.Containers.PlatformInformation.operator !=(Microsoft.
 static Microsoft.NET.Build.Containers.PlatformSpecificManifest.operator !=(Microsoft.NET.Build.Containers.PlatformSpecificManifest left, Microsoft.NET.Build.Containers.PlatformSpecificManifest right) -> bool
 static Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.operator !=(Microsoft.NET.Build.Containers.PlatformSpecificOciManifest left, Microsoft.NET.Build.Containers.PlatformSpecificOciManifest right) -> bool
 static Microsoft.NET.Build.Containers.PlatformInformation.operator ==(Microsoft.NET.Build.Containers.PlatformInformation left, Microsoft.NET.Build.Containers.PlatformInformation right) -> bool
-~override Microsoft.NET.Build.Containers.ManifestConfig.ToString() -> string
 static Microsoft.NET.Build.Containers.PlatformSpecificManifest.operator ==(Microsoft.NET.Build.Containers.PlatformSpecificManifest left, Microsoft.NET.Build.Containers.PlatformSpecificManifest right) -> bool
 static Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.operator ==(Microsoft.NET.Build.Containers.PlatformSpecificOciManifest left, Microsoft.NET.Build.Containers.PlatformSpecificOciManifest right) -> bool
 override Microsoft.NET.Build.Containers.PlatformInformation.GetHashCode() -> int
-static Microsoft.NET.Build.Containers.ManifestConfig.operator !=(Microsoft.NET.Build.Containers.ManifestConfig left, Microsoft.NET.Build.Containers.ManifestConfig right) -> bool
 override Microsoft.NET.Build.Containers.PlatformSpecificManifest.GetHashCode() -> int
 override Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.GetHashCode() -> int
-static Microsoft.NET.Build.Containers.ManifestConfig.operator ==(Microsoft.NET.Build.Containers.ManifestConfig left, Microsoft.NET.Build.Containers.ManifestConfig right) -> bool
 ~override Microsoft.NET.Build.Containers.PlatformInformation.Equals(object obj) -> bool
 ~override Microsoft.NET.Build.Containers.Descriptor.ToString() -> string
-~override Microsoft.NET.Build.Containers.ManifestLayer.ToString() -> string
-override Microsoft.NET.Build.Containers.ManifestConfig.GetHashCode() -> int
 ~override Microsoft.NET.Build.Containers.PlatformSpecificManifest.Equals(object obj) -> bool
 ~override Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.Equals(object obj) -> bool
 Microsoft.NET.Build.Containers.PlatformInformation.Equals(Microsoft.NET.Build.Containers.PlatformInformation other) -> bool
-~override Microsoft.NET.Build.Containers.ManifestConfig.Equals(object obj) -> bool
-static Microsoft.NET.Build.Containers.ManifestLayer.operator !=(Microsoft.NET.Build.Containers.ManifestLayer left, Microsoft.NET.Build.Containers.ManifestLayer right) -> bool
 Microsoft.NET.Build.Containers.PlatformSpecificManifest.Equals(Microsoft.NET.Build.Containers.PlatformSpecificManifest other) -> bool
 Microsoft.NET.Build.Containers.PlatformSpecificOciManifest.Equals(Microsoft.NET.Build.Containers.PlatformSpecificOciManifest other) -> bool
 static Microsoft.NET.Build.Containers.Descriptor.operator !=(Microsoft.NET.Build.Containers.Descriptor left, Microsoft.NET.Build.Containers.Descriptor right) -> bool
-Microsoft.NET.Build.Containers.ManifestConfig.Equals(Microsoft.NET.Build.Containers.ManifestConfig other) -> bool
-static Microsoft.NET.Build.Containers.ManifestLayer.operator ==(Microsoft.NET.Build.Containers.ManifestLayer left, Microsoft.NET.Build.Containers.ManifestLayer right) -> bool
 Microsoft.NET.Build.Containers.PlatformSpecificManifest.Deconstruct(out string! mediaType, out long size, out string! digest, out Microsoft.NET.Build.Containers.PlatformInformation platform) -> void
-Microsoft.NET.Build.Containers.ManifestConfig.Deconstruct(out string! mediaType, out long size, out string! digest) -> void
 static Microsoft.NET.Build.Containers.Descriptor.operator ==(Microsoft.NET.Build.Containers.Descriptor left, Microsoft.NET.Build.Containers.Descriptor right) -> bool
-override Microsoft.NET.Build.Containers.ManifestLayer.GetHashCode() -> int
-~override Microsoft.NET.Build.Containers.ManifestLayer.Equals(object obj) -> bool
 override Microsoft.NET.Build.Containers.Descriptor.GetHashCode() -> int
-Microsoft.NET.Build.Containers.ManifestLayer.Equals(Microsoft.NET.Build.Containers.ManifestLayer other) -> bool
 ~override Microsoft.NET.Build.Containers.Descriptor.Equals(object obj) -> bool
-Microsoft.NET.Build.Containers.ManifestLayer.Deconstruct(out string! mediaType, out long size, out string! digest, out string![]? urls) -> void
 Microsoft.NET.Build.Containers.Descriptor.Equals(Microsoft.NET.Build.Containers.Descriptor other) -> bool
 ~override Microsoft.NET.Build.Containers.ManifestListV2.ToString() -> string
 static Microsoft.NET.Build.Containers.ManifestListV2.operator !=(Microsoft.NET.Build.Containers.ManifestListV2 left, Microsoft.NET.Build.Containers.ManifestListV2 right) -> bool

@@ -60,6 +60,43 @@ internal class Layer
         return new(backingFile, descriptor);
     }
 
+    public static async Task<Layer> FromBackingFile(FileInfo backingFile, string mediaType, string digestType)
+    {
+        // need to compute the digest from the backing file
+        Func<Stream, ValueTask<byte[]>> hasher = digestType switch
+        {
+            "sha256" => s => SHA256.HashDataAsync(s),
+            "sha512" => s => SHA512.HashDataAsync(s),
+            _ => throw new ArgumentException(digestType)
+        };
+        using (FileStream fs = backingFile.OpenRead())
+        {
+            byte[] digest = await hasher(fs);
+            string digestString = Convert.ToHexStringLower(digest);
+            return new(backingFile, new Descriptor(mediaType, digestString, fs.Length));
+        }
+    }
+
+    public static async Task<Descriptor> DescriptorFromStream(Stream stream, string mediaType, string digestType)
+    {
+        // need to compute the digest from the stream
+        Func<Stream, ValueTask<byte[]>> hasher = digestType switch
+        {
+            "sha256" => s => SHA256.HashDataAsync(s),
+            "sha512" => s => SHA512.HashDataAsync(s),
+            _ => throw new ArgumentException(digestType)
+        };
+        byte[] digest = await hasher(stream);
+        string digestString = Convert.ToHexStringLower(digest);
+        return new Descriptor(mediaType, digestString, stream.Length);
+    }
+
+    public static async Task<Layer> FromStream(Stream stream, string mediaType, string digestType)
+    {
+        Descriptor descriptor = await DescriptorFromStream(stream, mediaType, digestType);
+        return new Layer(null!, descriptor);
+    }
+
     public static async Task<Layer> FromFiles((string absPath, string relPath)[] inputFiles, string containerPath, bool isWindowsLayer, string manifestMediaType, ContentStore store, FileInfo layerWritePath, CancellationToken ct, int? userId = null)
     {
         long fileSize;
@@ -115,24 +152,27 @@ internal class Layer
                     }
 
                     // Write an entry for the container working directory.
-                    var workingDirectoryEntry = new PaxTarEntry(TarEntryType.Directory, containerPath, entryAttributes)
+                    if (!string.IsNullOrEmpty(containerPath))
                     {
-                        Mode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                        var workingDirectoryEntry = new PaxTarEntry(TarEntryType.Directory, containerPath, entryAttributes)
+                        {
+                            Mode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
                                    UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
                                    UnixFileMode.OtherRead | UnixFileMode.OtherExecute,
-                    };
-                    if (resolvedUserId is int uid)
-                    {
-                        workingDirectoryEntry.Uid = uid;
+                        };
+                        if (resolvedUserId is int uid)
+                        {
+                            workingDirectoryEntry.Uid = uid;
+                        }
+                        await writer.WriteEntryAsync(workingDirectoryEntry, ct);
                     }
-                    await writer.WriteEntryAsync(workingDirectoryEntry, ct);
 
                     // Write entries for the application directory contents.
                     foreach ((string absolutePath, string containerRelativePath) in inputFiles)
                     {
                         var file = new FileInfo(absolutePath);
                         var adjustedRelativePath = OperatingSystem.IsWindows() ? containerRelativePath.Replace('\\', '/') : containerRelativePath;
-                        var finalRelativePath = $"{containerPath}/{adjustedRelativePath}";
+                        var finalRelativePath = $"{containerPath}/{adjustedRelativePath.TrimStart(PathSeparators)}";
                         if (!createdDirectories.Contains(Path.GetDirectoryName(finalRelativePath)!))
                         {
                             await DiscoverAndAddIntermediateDirectories(writer, finalRelativePath, entryAttributes, createdDirectories, resolvedUserId, ct);
@@ -210,13 +250,13 @@ internal class Layer
 
             static async Task DiscoverAndAddIntermediateDirectories(TarWriter writer, string finalRelativePath, Dictionary<string, string> entryAttributes, HashSet<string> createdDirectories, int? userId, CancellationToken ct)
             {
-                string[] pathParts = finalRelativePath.Split('/');
+                string[] pathParts = Path.GetDirectoryName(finalRelativePath)!.Split('/');
                 string currentPath = string.Empty;
 
                 for (int i = 0; i < pathParts.Length - 1; i++)
                 {
                     currentPath = currentPath == "" ? pathParts[i] : $"{currentPath}/{pathParts[i]}";
-                    if (!createdDirectories.Contains(currentPath))
+                    if (!createdDirectories.Contains(currentPath) && !string.IsNullOrEmpty(currentPath))
                     {
                         var dirEntry = new PaxTarEntry(TarEntryType.Directory, currentPath, entryAttributes)
                         {

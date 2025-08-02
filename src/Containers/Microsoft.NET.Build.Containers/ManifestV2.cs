@@ -48,7 +48,7 @@ public class ManifestV2 : IManifest
     /// This REQUIRED property references a configuration object for a container, by digest.
     /// </summary>
     [JsonPropertyName("config")]
-    public required ManifestConfig Config { get; init; }
+    public required Descriptor Config { get; init; }
 
     /// <summary>
     /// Each item in the array MUST be a descriptor. The array MUST have the base layer at index 0.
@@ -57,27 +57,10 @@ public class ManifestV2 : IManifest
     /// The ownership, mode, and other attributes of the initial empty directory are unspecified.
     /// </summary>
     [JsonPropertyName("layers")]
-    public required List<ManifestLayer> Layers { get; init; }
+    public required List<Descriptor> Layers { get; init; }
 
     /// <summary>
     /// Gets the digest for this manifest.
     /// </summary>
     public string GetDigest() => KnownDigest ??= DigestUtils.GetDigest(this);
 }
-
-public record struct ManifestConfig(
-    [property:JsonConverter(typeof(MediaTypeConverter))]
-    [field:JsonConverter(typeof(MediaTypeConverter))]
-    string mediaType,
-    long size,
-    string digest);
-
-public record struct ManifestLayer(
-    [property:JsonConverter(typeof(MediaTypeConverter))]
-    [field:JsonConverter(typeof(MediaTypeConverter))]
-    string mediaType,
-    long size,
-    string digest,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    [field: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    string[]? urls);
