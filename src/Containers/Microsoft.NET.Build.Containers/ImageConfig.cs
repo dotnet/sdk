@@ -73,7 +73,7 @@ internal sealed class ImageConfig
     /// <summary>
     /// Builds in additional configuration and returns updated image configuration in JSON format as string.
     /// </summary>
-    internal string BuildConfig()
+    internal JsonObject BuildConfig()
     {
         var newConfig = new JsonObject();
 
@@ -151,7 +151,7 @@ internal sealed class ImageConfig
             ["history"] = new JsonArray(_history.Select(CreateHistory).ToArray<JsonNode>())
         };
 
-        return configContainer.ToJsonString();
+        return configContainer;
 
         static JsonArray ToJsonArray(IEnumerable<string> items) => new(items.Where(s => !string.IsNullOrEmpty(s)).Select(s => JsonValue.Create(s)).ToArray<JsonNode?>());
     }
@@ -217,7 +217,8 @@ internal sealed class ImageConfig
         _rootFsLayers.Add(l.Descriptor.UncompressedDigest!);
     }
 
-    internal void SetUser(string user, bool isUserInteraction = false) {
+    internal void SetUser(string user, bool isUserInteraction = false)
+    {
         // we don't let automatic/inferred user settings overwrite an explicit user request
         if (_userHasBeenExplicitlySet && !isUserInteraction)
         {

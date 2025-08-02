@@ -34,7 +34,7 @@ partial class CreateImageIndex
     public string BaseImageDigest { get; set; }
 
     /// <summary>
-    /// Manifests to include in the image index.
+    /// Manifests to include in the image index. Should have an ManifestPath and a ConfigurationPath metadata pointing to those relevant files.
     /// </summary>
     [Required]
     public ITaskItem[] GeneratedContainers { get; set; }
@@ -67,6 +67,12 @@ partial class CreateImageIndex
     public string[] ImageTags { get; set; }
 
     /// <summary>
+    /// Where to write the generated image index to
+    /// </summary>
+    [Required]
+    public string GeneratedManifestPath { get; set; }
+
+    /// <summary>
     /// The generated archive output path.
     /// </summary>
     [Output]
@@ -92,7 +98,8 @@ partial class CreateImageIndex
         ImageTags = Array.Empty<string>();
         GeneratedArchiveOutputPath = string.Empty;
         GeneratedImageIndex = string.Empty;
+        GeneratedManifestPath = string.Empty;
 
         TaskResources = Resource.Manager;
     }
-} 
+}

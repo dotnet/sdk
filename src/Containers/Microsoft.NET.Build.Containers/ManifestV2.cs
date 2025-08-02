@@ -7,12 +7,22 @@ using System.Text.Json.Serialization;
 namespace Microsoft.NET.Build.Containers;
 
 /// <summary>
+/// Marker interface so we can return polymorphic manifests of all kinds
+/// </summary>
+[JsonDerivedType(typeof(ManifestV2))]
+public interface IManifest
+{
+    [JsonIgnore]
+    public string? MediaType { get; }
+};
+
+/// <summary>
 /// The struct represents image manifest specification.
 /// </summary>
 /// <remarks>
 /// https://github.com/opencontainers/image-spec/blob/main/manifest.md
 /// </remarks>
-public class ManifestV2
+public class ManifestV2 : IManifest
 {
     [JsonIgnore]
     public string? KnownDigest { get; set; }
@@ -30,6 +40,8 @@ public class ManifestV2
     /// When used, this field MUST contain the media type application/vnd.oci.image.manifest.v1+json. This field usage differs from the descriptor use of mediaType.
     /// </summary>
     [JsonPropertyName("mediaType")]
+    [property:JsonConverter(typeof(MediaTypeConverter))]
+    [field:JsonConverter(typeof(MediaTypeConverter))]
     public string? MediaType { get; init; }
 
     /// <summary>
@@ -50,9 +62,22 @@ public class ManifestV2
     /// <summary>
     /// Gets the digest for this manifest.
     /// </summary>
-    public string GetDigest() => KnownDigest ??= DigestUtils.GetDigest(JsonSerializer.SerializeToNode(this)?.ToJsonString() ?? string.Empty);
+    public string GetDigest() => KnownDigest ??= DigestUtils.GetDigest(this);
 }
 
-public record struct ManifestConfig(string mediaType, long size, string digest);
+public record struct ManifestConfig(
+    [property:JsonConverter(typeof(MediaTypeConverter))]
+    [field:JsonConverter(typeof(MediaTypeConverter))]
+    string mediaType,
+    long size,
+    string digest);
 
-public record struct ManifestLayer(string mediaType, long size, string digest, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)][field: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string[]? urls);
+public record struct ManifestLayer(
+    [property:JsonConverter(typeof(MediaTypeConverter))]
+    [field:JsonConverter(typeof(MediaTypeConverter))]
+    string mediaType,
+    long size,
+    string digest,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [field: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string[]? urls);

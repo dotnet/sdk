@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
+
 namespace Microsoft.NET.Build.Containers;
 
 /// <summary>
@@ -11,32 +14,22 @@ internal readonly struct BuiltImage
     /// <summary>
     /// Gets image configuration in JSON format.
     /// </summary>
-    internal required string Config { get; init; }
-
-    /// <summary>
-    /// Gets image digest.
-    /// </summary>
-    internal string? ImageDigest { get; init; }
-
-    /// <summary>
-    /// Gets image SHA.
-    /// </summary>
-    internal string? ImageSha { get; init; }
+    internal required JsonObject Config { get; init; }
 
     /// <summary>
     /// Gets image manifest.
     /// </summary>
-    internal required string Manifest { get; init; } 
+    internal required ManifestV2 Manifest { get; init; }
 
     /// <summary>
     /// Gets manifest digest.
     /// </summary>
-    internal required string ManifestDigest { get; init; }
+    internal string ManifestDigest => Manifest.GetDigest();
 
     /// <summary>
     /// Gets manifest mediaType.
     /// </summary>
-    internal required string ManifestMediaType { get; init; }
+    internal string ManifestMediaType => Manifest.MediaType!;
 
     /// <summary>
     /// Gets image layers.
