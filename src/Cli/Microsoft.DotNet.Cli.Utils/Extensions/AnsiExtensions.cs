@@ -8,14 +8,6 @@ public static class AnsiExtensions
     private static readonly Lazy<bool> _xtermEnabled = new(
         () =>
         {
-            // In test environments, avoid ANSI sequences to ensure reliable output
-            if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true" ||
-                Environment.GetEnvironmentVariable("CI") == "true" ||
-                Environment.GetEnvironmentVariable("BUILD_BUILDID") != null)
-            {
-                return false;
-            }
-
             var environment = Environment.GetEnvironmentVariable("TERM");
             if (!string.IsNullOrWhiteSpace(environment))
             {
@@ -77,7 +69,8 @@ public static class AnsiExtensions
     /// <returns>A string containing the URL wrapped with ANSI escape codes.</returns>
     public static string Url(this string url, string displayText)
     {
-        // For now, disable ANSI URL sequences as they cause issues in test environments
-        return url;
+        return _xtermEnabled.Value
+            ? "\x1B]8;;" + url + "\x1b\\" + displayText + "\x1b]8;;\x1b\\"
+            : url;
     }
 }
