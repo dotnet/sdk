@@ -385,18 +385,7 @@ namespace Microsoft.TemplateEngine.Cli
                 reporter.WriteLine(
                     string.Join(
                         Environment.NewLine,
-                        entry.AdvisoryUris.Select(advisory =>
-                        {
-                            // Only apply URL formatting if it's actually a URL
-                            if (Uri.IsWellFormedUriString(advisory, UriKind.Absolute))
-                            {
-                                return $"{string.Empty.PadLeft(8)}{advisory.Url(advisory)}";
-                            }
-                            else
-                            {
-                                return $"{string.Empty.PadLeft(8)}{advisory}";
-                            }
-                        })));
+                        entry.AdvisoryUris.Select(advisory => $"{string.Empty.PadLeft(8)}{(advisory.Url(advisory))}")));
                 reporter.Write(Environment.NewLine);
             }
         }
