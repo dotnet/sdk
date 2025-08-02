@@ -168,23 +168,21 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                              "My other arg with spaces",
                                              "Arg ending with backslash and containing spaces\\",
                                              "ArgWithoutSpacesEndingWith\\");
-            if (!TestContext.IsLocalized())
-            {
-                result.StdOut.Should().Contain("""
-                    args[0]=--hello
-                    args[1]=world
-                    args[2]=
-                    args[3]=world2
-                    args[4]=--list-tests
-                    args[5]=Another arg with spaces
-                    args[6]=My other arg with spaces
-                    args[7]=Arg ending with backslash and containing spaces\
-                    args[8]=ArgWithoutSpacesEndingWith\
-                    args[9]=--server
-                    args[10]=dotnettestcli
-                    args[11]=--dotnet-test-pipe
-                    """);
-            }
+
+            result.StdOut.Should().Contain("""
+                args[0]=--hello
+                args[1]=world
+                args[2]=
+                args[3]=world2
+                args[4]=--list-tests
+                args[5]=Another arg with spaces
+                args[6]=My other arg with spaces
+                args[7]=Arg ending with backslash and containing spaces\
+                args[8]=ArgWithoutSpacesEndingWith\
+                args[9]=--server
+                args[10]=dotnettestcli
+                args[11]=--dotnet-test-pipe
+                """);
         }
     }
 }
