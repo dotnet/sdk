@@ -78,8 +78,8 @@ public class PushContainerToRemoteRegistry : Microsoft.Build.Utilities.Task, ICa
             logger.LogTrace($"Pushing config to {Registry}.");
             var configText = await File.ReadAllTextAsync(Configuration.ItemSpec, _cts.Token);
             var configBytes = Encoding.UTF8.GetBytes(configText);
-            var configDigest = DigestUtils.GetDigest(configText);
-            var msbuildConfigDigest = Configuration.GetMetadata("Digest")!;
+            var configDigest = Digest.FromContentString(DigestAlgorithm.sha256, configText);
+            var msbuildConfigDigest = Digest.Parse(Configuration.GetMetadata("Digest")!);
             if (msbuildConfigDigest != configDigest)
             {
                 logger.LogError($"Configuration digest {msbuildConfigDigest} does not match the computed digest {configDigest} from the configuration file itself.");
@@ -104,13 +104,10 @@ public class PushContainerToRemoteRegistry : Microsoft.Build.Utilities.Task, ICa
             ["Size"] = Manifest.GetMetadata("Size")!
         }))
         {
-            if (manifestStructure.GetDigest() != Manifest.GetMetadata("Digest"))
+            var msbuildManifestDigest = Digest.Parse(Manifest.GetMetadata("Digest")!);
+            if (manifestStructure.GetDigest() != msbuildManifestDigest)
             {
-                logger.LogError($"Manifest digest {manifestStructure.GetDigest()} does not match the computed digest {Manifest.GetMetadata("Digest")} from the manifest file itself.");
-            }
-            if (manifestStructure.GetDigest() != DigestUtils.GetDigest(manifestStructure))
-            {
-                logger.LogError($"Manifest digest {manifestStructure.GetDigest()} does not match the computed digest {DigestUtils.GetDigest(manifestStructure)} from the manifest structure itself.");
+                logger.LogError($"Manifest structure digest {manifestStructure.GetDigest()} does not match the computed digest {msbuildManifestDigest} from the MSBuild/the manifest file itself.");
             }
             // * upload the manifest as a digest
             _cts.Token.ThrowIfCancellationRequested();
@@ -141,7 +138,7 @@ public class PushContainerToRemoteRegistry : Microsoft.Build.Utilities.Task, ICa
     private Descriptor GetDescriptor(ITaskItem item)
     {
         var mediaType = item.GetMetadata("MediaType");
-        var digest = item.GetMetadata("Digest");
+        var digest = Digest.Parse(item.GetMetadata("Digest")!);
         var size = long.Parse(item.GetMetadata("Size")!);
         return new Descriptor
         {

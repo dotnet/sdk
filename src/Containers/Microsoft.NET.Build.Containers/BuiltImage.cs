@@ -24,7 +24,7 @@ internal readonly struct BuiltImage
     /// <summary>
     /// Gets manifest digest.
     /// </summary>
-    internal string ManifestDigest => Manifest.GetDigest();
+    internal Digest ManifestDigest => Manifest.GetDigest();
 
     /// <summary>
     /// Gets manifest mediaType.

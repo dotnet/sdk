@@ -25,7 +25,7 @@ internal sealed class ImageConfig
     /// <summary>
     /// Models the file system of the image. Typically has a key 'type' with value 'layers' and a key 'diff_ids' with a list of layer digests.
     /// </summary>
-    private readonly List<string> _rootFsLayers;
+    private readonly List<Digest> _rootFsLayers;
     private readonly string _architecture;
     private readonly string _os;
     private readonly List<HistoryEntry> _history;
@@ -144,7 +144,7 @@ internal sealed class ImageConfig
             ["rootfs"] = new JsonObject()
             {
                 ["type"] = "layers",
-                ["diff_ids"] = ToJsonArray(_rootFsLayers)
+                ["diff_ids"] = ToJsonArray(_rootFsLayers.Select(d => d.ToString()))
             },
             ["architecture"] = _architecture,
             ["os"] = _os,
@@ -214,7 +214,7 @@ internal sealed class ImageConfig
 
     internal void AddLayer(Layer l)
     {
-        _rootFsLayers.Add(l.Descriptor.UncompressedDigest!);
+        _rootFsLayers.Add((Digest)l.Descriptor.UncompressedDigest!);
     }
 
     internal void SetUser(string user, bool isUserInteraction = false)
@@ -319,13 +319,13 @@ internal sealed class ImageConfig
         return container;
     }
 
-    private List<string> GetRootFileSystemLayers()
+    private List<Digest> GetRootFileSystemLayers()
     {
         if (_config["rootfs"] is { } rootfs)
         {
             if (rootfs["type"]?.GetValue<string>() == "layers" && rootfs["diff_ids"] is JsonArray layers)
             {
-                return layers.Select(l => l!.GetValue<string>()).ToList();
+                return layers.Select(l => Digest.Parse(l!.GetValue<string>())).ToList();
             }
             else
             {

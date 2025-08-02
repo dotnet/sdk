@@ -61,7 +61,7 @@ public class MakeContainerTarball : Microsoft.Build.Utilities.Task, ICancelableT
     private Descriptor GetDescriptor(ITaskItem item)
     {
         var mediaType = item.GetMetadata("MediaType");
-        var digest = item.GetMetadata("Digest");
+        var digest = Digest.Parse(item.GetMetadata("Digest")!);
         var size = long.Parse(item.GetMetadata("Size")!);
         return new Descriptor
         {

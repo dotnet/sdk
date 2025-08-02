@@ -1,12 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.NET.Build.Containers;
 
 /// <summary>
-/// An OCI Content Descriptor describing a component.
+/// An OCI Content Descriptor describing a component. At minimum requires a MediaType, Digest, and Size.
 /// </summary>
 /// <remarks>
 /// <see href="https://github.com/opencontainers/image-spec/blob/7b36cea86235157d78528944cb94c3323ee0905c/descriptor.md"/>.
@@ -21,8 +22,8 @@ public readonly record struct Descriptor
     /// </remarks>
     // TODO: validate against RFC 6838 naming conventions?
     [JsonPropertyName("mediaType")]
-    [property:JsonConverter(typeof(MediaTypeConverter))]
-    [field:JsonConverter(typeof(MediaTypeConverter))]
+    [property: JsonConverter(typeof(MediaTypeConverter))]
+    [field: JsonConverter(typeof(MediaTypeConverter))]
     public string MediaType { get; init; }
 
     /// <summary>
@@ -32,7 +33,7 @@ public readonly record struct Descriptor
     /// <see href="https://github.com/opencontainers/image-spec/blob/7b36cea86235157d78528944cb94c3323ee0905c/descriptor.md#digests"/>
     /// </remarks>
     [JsonPropertyName("digest")]
-    public string Digest { get; init; }
+    public Digest Digest { get; init; }
 
     /// <summary>
     /// Digest of the uncompressed content, specifying algorithm and value.
@@ -41,7 +42,7 @@ public readonly record struct Descriptor
     /// <see href="https://github.com/opencontainers/image-spec/blob/7b36cea86235157d78528944cb94c3323ee0905c/descriptor.md#digests"/>
     /// </remarks>
     [JsonIgnore]
-    public string? UncompressedDigest { get; init; }
+    public Digest? UncompressedDigest { get; init; }
 
     /// <summary>
     /// Size, in bytes, of the raw content.
@@ -83,10 +84,21 @@ public readonly record struct Descriptor
     [JsonPropertyName("artifactType")]
     public string? ArtifactType { get; init; } = null;
 
-    public Descriptor(string mediaType, string digest, long size)
+    public Descriptor(string mediaType, Digest digest, long size)
     {
         MediaType = mediaType;
         Digest = digest;
         Size = size;
+    }
+
+    public static Descriptor FromContent<T>(string mediaType, DigestAlgorithm algorithm, T content)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(mediaType);
+        ArgumentNullException.ThrowIfNull(content);
+        var serializedContent = JsonSerializer.Serialize(content);
+        (long contentLength, string contentHash) = algorithm.HashInput(serializedContent);
+        var digest = new Digest(algorithm, contentHash);
+
+        return new Descriptor(mediaType, digest, contentLength);
     }
 }

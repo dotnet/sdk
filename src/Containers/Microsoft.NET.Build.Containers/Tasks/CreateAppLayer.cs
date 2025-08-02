@@ -74,7 +74,7 @@ public sealed partial class CreateAppLayer : Microsoft.Build.Utilities.Task, ICa
         {
             ["Size"] = newLayer.Descriptor.Size.ToString(),
             ["MediaType"] = newLayer.Descriptor.MediaType,
-            ["Digest"] = newLayer.Descriptor.Digest,
+            ["Digest"] = newLayer.Descriptor.Digest.ToString(),
         });
         return true;
     }

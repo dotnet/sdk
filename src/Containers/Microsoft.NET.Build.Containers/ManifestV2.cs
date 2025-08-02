@@ -24,8 +24,11 @@ public interface IManifest
 /// </remarks>
 public class ManifestV2 : IManifest
 {
+    /// <summary>
+    /// If this is set, we have a canonical digest for this manifest that came from some trusted source - most likely an upstream container registry.
+    /// </summary>
     [JsonIgnore]
-    public string? KnownDigest { get; set; }
+    public Digest? KnownDigest { get; set; }
 
     /// <summary>
     /// This REQUIRED property specifies the image manifest schema version.
@@ -62,5 +65,5 @@ public class ManifestV2 : IManifest
     /// <summary>
     /// Gets the digest for this manifest.
     /// </summary>
-    public string GetDigest() => KnownDigest ??= DigestUtils.GetDigest(this);
+    public Digest GetDigest() => KnownDigest ??= Digest.FromContent(DigestAlgorithm.sha256, this);
 }

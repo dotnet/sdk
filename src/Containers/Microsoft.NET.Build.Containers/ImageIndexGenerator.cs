@@ -90,7 +90,7 @@ internal static class ImageIndexGenerator
         return imageIndex;
     }
 
-    internal static ImageIndexV1 GenerateImageIndexWithAnnotations(string manifestMediaType, string manifestDigest, long manifestSize, string repository, string[] tags)
+    internal static ImageIndexV1 GenerateImageIndexWithAnnotations(string manifestMediaType, Digest manifestDigest, long manifestSize, string repository, string[] tags)
     {
         string containerdImageNamePrefix = repository.Contains('/') ? "docker.io/" : "docker.io/library/";
 

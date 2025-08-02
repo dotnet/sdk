@@ -134,13 +134,13 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
         var layerItems = new List<ITaskItem>(manifests.Count * manifests[0].manifest.Layers.Count); //estimate
         foreach (var (manifest, platform) in manifests)
         {
-            var manifestDescriptor = new Descriptor(manifest.MediaType!, manifest.KnownDigest!, 0);
+            var manifestDescriptor = new Descriptor(manifest.MediaType!, manifest.KnownDigest ?? throw new ArgumentException("manifest was expected to have a known digest"), 0);
             var manifestLocalPath = store.PathForDescriptor(manifestDescriptor);
 
             var itemRid = RidMapping.CreateRidForPlatform(platform);
             var manifestItem = new Microsoft.Build.Utilities.TaskItem(manifestLocalPath);
             manifestItem.SetMetadata("MediaType", manifest.MediaType ?? string.Empty);
-            manifestItem.SetMetadata("ConfigDigest", manifest.Config.Digest);
+            manifestItem.SetMetadata("ConfigDigest", manifest.Config.Digest.ToString());
             manifestItem.SetMetadata("RuntimeIdentifier", itemRid);
             manifestItem.SetMetadata("Registry", Registry);
             manifestItem.SetMetadata("Repository", Repository);
@@ -151,7 +151,7 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
             var configItem = new Microsoft.Build.Utilities.TaskItem(configLocalPath);
             configItem.SetMetadata("MediaType", manifest.Config.MediaType ?? string.Empty);
             configItem.SetMetadata("Size", manifest.Config.Size.ToString());
-            configItem.SetMetadata("Digest", manifest.Config.Digest);
+            configItem.SetMetadata("Digest", manifest.Config.Digest.ToString());
             configItem.SetMetadata("RuntimeIdentifier", itemRid);
             configItem.SetMetadata("Registry", Registry);
             configItem.SetMetadata("Repository", Repository);
@@ -164,8 +164,8 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
                 var layerItem = new Microsoft.Build.Utilities.TaskItem(layerLocalPath);
                 layerItem.SetMetadata("MediaType", layer.MediaType ?? string.Empty);
                 layerItem.SetMetadata("Size", layer.Size.ToString());
-                layerItem.SetMetadata("Digest", layer.Digest);
-                layerItem.SetMetadata("ConfigDigest", manifest.Config.Digest);
+                layerItem.SetMetadata("Digest", layer.Digest.ToString());
+                layerItem.SetMetadata("ConfigDigest", manifest.Config.Digest.ToString());
                 layerItem.SetMetadata("RuntimeIdentifier", itemRid);
                 layerItem.SetMetadata("Registry", Registry);
                 layerItem.SetMetadata("Repository", Repository);
