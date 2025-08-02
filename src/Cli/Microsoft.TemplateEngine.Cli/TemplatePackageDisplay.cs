@@ -385,7 +385,7 @@ namespace Microsoft.TemplateEngine.Cli
                 reporter.WriteLine(
                     string.Join(
                         Environment.NewLine,
-                        entry.AdvisoryUris.Select(advisory => $"{string.Empty.PadLeft(8)}{(advisory.Url(advisory))}")));
+                        entry.AdvisoryUris.Select(advisory => $"{string.Empty.PadLeft(8)}{advisory}")));
                 reporter.Write(Environment.NewLine);
             }
         }
