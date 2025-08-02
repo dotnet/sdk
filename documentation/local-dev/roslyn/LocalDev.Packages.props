@@ -1,0 +1,24 @@
+<Project>
+  <!-- If \LocalDev.Packages.props exists, it will be loaded and merged with Directory.Packages.props, allowing for local adhoc build customizations. -->
+  <PropertyGroup>
+    <!-- Use the local version of Roslyn -->
+    <RoslynVersion>4.14.0-dev</RoslynVersion>
+    <RoslynAnalyzers>3.12.0-dev</RoslynAnalyzers>
+
+    <MicrosoftNetCompilersToolsetVersion>$(RoslynVersion)</MicrosoftNetCompilersToolsetVersion>
+    <MicrosoftNetCompilersToolsetFrameworkPackageVersion>$(RoslynVersion)</MicrosoftNetCompilersToolsetFrameworkPackageVersion>
+    <MicrosoftCodeAnalysisPackageVersion>$(RoslynVersion)</MicrosoftCodeAnalysisPackageVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>$(RoslynVersion)</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>$(RoslynVersion)</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
+    <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>$(RoslynVersion)</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>$(RoslynVersion)</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>$(RoslynVersion)</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>$(RoslynVersion)</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>$(RoslynAnalyzers)</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
+  </PropertyGroup>
+
+  <!-- RECOMMENDED: Add a target which prints a message saying that this file has been imported. -->
+  <Target Name="DisplayMessageIfLocalDevPackagesDefined" BeforeTargets="BeforeCompile">
+    <Message Text="$(MSBuildProjectName) $(TargetFramework): Imported local dev packages from $(MSBuildThisFileFullPath)." Importance="high" />
+  </Target>
+</Project>
