@@ -41,20 +41,18 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                 IReadOnlyList<ContentItem>? compileTimeAsset = options.Package.FindBestCompileAssetForFramework(framework);
                 if (compileTimeAsset == null)
                 {
-                    log.LogError(new Suppression(DiagnosticIds.ApplicableCompileTimeAsset) { Target = framework.ToString() },
-                        DiagnosticIds.ApplicableCompileTimeAsset,
-                        string.Format(Resources.NoCompatibleCompileTimeAsset,
-                            framework));
+                    log.LogError(new Suppression(DiagnosticIds.ApplicableCompileTimeAsset,
+                        string.Format(Resources.NoCompatibleCompileTimeAsset, framework),
+                        target: framework.ToString()));
                     break;
                 }
 
                 IReadOnlyList<ContentItem>? runtimeAsset = options.Package.FindBestRuntimeAssetForFramework(framework);
                 if (runtimeAsset == null)
                 {
-                    log.LogError(new Suppression(DiagnosticIds.CompatibleRuntimeRidLessAsset) { Target = framework.ToString() },
-                        DiagnosticIds.CompatibleRuntimeRidLessAsset,
-                        string.Format(Resources.NoCompatibleRuntimeAsset,
-                            framework));
+                    log.LogError(new Suppression(DiagnosticIds.CompatibleRuntimeRidLessAsset,
+                        string.Format(Resources.NoCompatibleRuntimeAsset, framework),
+                        framework.ToString()));
                 }
                 // Invoke ApiCompat to compare the compile time asset with the runtime asset if they are not the same assembly.
                 else if (options.EnqueueApiCompatWorkItems)
@@ -71,11 +69,11 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                     IReadOnlyList<ContentItem>? runtimeRidSpecificAsset = options.Package.FindBestRuntimeAssetForFrameworkAndRuntime(framework, rid);
                     if (runtimeRidSpecificAsset == null)
                     {
-                        log.LogError(new Suppression(DiagnosticIds.CompatibleRuntimeRidSpecificAsset) { Target = framework.ToString() + "-" + rid },
-                            DiagnosticIds.CompatibleRuntimeRidSpecificAsset,
+                        log.LogError(new Suppression(DiagnosticIds.CompatibleRuntimeRidSpecificAsset,
                             string.Format(Resources.NoCompatibleRidSpecificRuntimeAsset,
                                 framework,
-                                rid));
+                                rid),
+                            framework.ToString() + "-" + rid));
                     }
                     // Invoke ApiCompat to compare the compile time asset with the runtime specific asset if they are not the same and
                     // if the comparison hasn't already happened (when the runtime asset is the same as the runtime specific asset).
