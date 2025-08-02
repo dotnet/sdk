@@ -123,7 +123,7 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
     /// <returns></returns>
     async Task<PlatformInformation> DownloadConfigForManifest(Registry registry, ManifestV2 manifest)
     {
-        var configJson = await registry.GetJsonBlobCore(Repository, manifest.Config.digest, manifest.Config.mediaType, _cts.Token);
+        var configJson = await registry.GetJsonBlobCore(Repository, manifest.Config, _cts.Token);
         return configJson.Deserialize<PlatformInformation>();
     }
 
@@ -140,18 +140,18 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
             var itemRid = RidMapping.CreateRidForPlatform(platform);
             var manifestItem = new Microsoft.Build.Utilities.TaskItem(manifestLocalPath);
             manifestItem.SetMetadata("MediaType", manifest.MediaType ?? string.Empty);
-            manifestItem.SetMetadata("ConfigDigest", manifest.Config.digest);
+            manifestItem.SetMetadata("ConfigDigest", manifest.Config.Digest);
             manifestItem.SetMetadata("RuntimeIdentifier", itemRid);
             manifestItem.SetMetadata("Registry", Registry);
             manifestItem.SetMetadata("Repository", Repository);
             manifestItems.Add(manifestItem);
 
-            var configDescriptor = new Descriptor(manifest.Config.mediaType, manifest.Config.digest, manifest.Config.size);
+            var configDescriptor = new Descriptor(manifest.Config.MediaType, manifest.Config.Digest, manifest.Config.Size);
             var configLocalPath = store.PathForDescriptor(configDescriptor);
             var configItem = new Microsoft.Build.Utilities.TaskItem(configLocalPath);
-            configItem.SetMetadata("MediaType", manifest.Config.mediaType ?? string.Empty);
-            configItem.SetMetadata("Size", manifest.Config.size.ToString());
-            configItem.SetMetadata("Digest", manifest.Config.digest);
+            configItem.SetMetadata("MediaType", manifest.Config.MediaType ?? string.Empty);
+            configItem.SetMetadata("Size", manifest.Config.Size.ToString());
+            configItem.SetMetadata("Digest", manifest.Config.Digest);
             configItem.SetMetadata("RuntimeIdentifier", itemRid);
             configItem.SetMetadata("Registry", Registry);
             configItem.SetMetadata("Repository", Repository);
@@ -159,13 +159,13 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
 
             foreach (var layer in manifest.Layers)
             {
-                var layerDescriptor = new Descriptor(layer.mediaType!, layer.digest, layer.size);
+                var layerDescriptor = new Descriptor(layer.MediaType!, layer.Digest, layer.Size);
                 var layerLocalPath = store.PathForDescriptor(layerDescriptor);
                 var layerItem = new Microsoft.Build.Utilities.TaskItem(layerLocalPath);
-                layerItem.SetMetadata("MediaType", layer.mediaType ?? string.Empty);
-                layerItem.SetMetadata("Size", layer.size.ToString());
-                layerItem.SetMetadata("Digest", layer.digest);
-                layerItem.SetMetadata("ConfigDigest", manifest.Config.digest);
+                layerItem.SetMetadata("MediaType", layer.MediaType ?? string.Empty);
+                layerItem.SetMetadata("Size", layer.Size.ToString());
+                layerItem.SetMetadata("Digest", layer.Digest);
+                layerItem.SetMetadata("ConfigDigest", manifest.Config.Digest);
                 layerItem.SetMetadata("RuntimeIdentifier", itemRid);
                 layerItem.SetMetadata("Registry", Registry);
                 layerItem.SetMetadata("Repository", Repository);

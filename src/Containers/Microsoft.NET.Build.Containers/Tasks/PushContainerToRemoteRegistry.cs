@@ -84,15 +84,15 @@ public class PushContainerToRemoteRegistry : Microsoft.Build.Utilities.Task, ICa
             {
                 logger.LogError($"Configuration digest {msbuildConfigDigest} does not match the computed digest {configDigest} from the configuration file itself.");
             }
-            if (configDigest == manifestStructure.Config.digest)
+            if (configDigest == manifestStructure.Config.Digest)
             {
-                logger.LogError($"Manifest config digest {manifestStructure.Config.digest} does not match the computed digest {configDigest} from the configuration file itself.");
+                logger.LogError($"Manifest config digest {manifestStructure.Config.Digest} does not match the computed digest {configDigest} from the configuration file itself.");
             }
 
             using (MemoryStream configStream = new(configBytes))
             {
-                logger.LogInformation(Strings.Registry_ConfigUploadStarted, manifestStructure.Config.digest);
-                await destinationRegistry.UploadBlobAsync(Repository, manifestStructure.Config.digest, configStream, _cts.Token);
+                logger.LogInformation(Strings.Registry_ConfigUploadStarted, manifestStructure.Config.Digest);
+                await destinationRegistry.UploadBlobAsync(Repository, manifestStructure.Config.Digest, configStream, _cts.Token);
                 logger.LogInformation(Strings.Registry_ConfigUploaded);
             }
         }

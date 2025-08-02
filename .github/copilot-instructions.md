@@ -25,7 +25,7 @@ Testing:
     - `dotnet exec artifacts/bin/redist/Debug/dotnet.Tests.dll -method "*ItShowsTheAppropriateMessageToTheUser*"`
 - To test CLI command changes:
   - Build the redist SDK: `./build.sh` from repo root
-  - Create a dogfood environment: `source eng/dogfood.sh` 
+  - Create a dogfood environment: `source eng/dogfood.sh`
   - Test commands in the dogfood shell (e.g., `dnx --help`, `dotnet tool install --help`)
   - The dogfood script sets up PATH and environment to use the newly built SDK
 
@@ -43,3 +43,10 @@ External Dependencies:
 - Changes that require modifications to the dotnet/templating repository (Microsoft.TemplateEngine packages) should be made directly in that repository, not worked around in this repo.
 - The dotnet/templating repository owns the TemplateEngine.Edge, TemplateEngine.Abstractions, and related packages.
 - If a change requires updates to template engine behavior or formatting (e.g., DisplayName properties), file an issue in dotnet/templating and make the changes there rather than adding workarounds in this SDK repository.
+
+Building the repository:
+If you need to build the repository completely, especially for testing, use the build.cmd or build.sh scripts in the root directory. These scripts handle the build process and ensure all dependencies are correctly set up - specifically they ensure that the testing SDK layout in artifacts/redist/debug/dotnet is correctly set up.
+
+Updating this file:
+If a task requires additional instructions or guidance from the user, analyze whether those instructions should be added to this file for future reference.
+If you determine that additional instructions are necessary, add them in a clear and concise manner, following the existing style and format of this file.

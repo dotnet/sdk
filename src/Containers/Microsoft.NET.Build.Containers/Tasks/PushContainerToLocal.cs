@@ -43,7 +43,7 @@ public class PushContainerToLocal : Microsoft.Build.Utilities.Task, ICancelableT
         ILoggerFactory msbuildLoggerFactory = new LoggerFactory([loggerProvider]);
         ILogger logger = msbuildLoggerFactory.CreateLogger<CreateImageIndex>();
         (long manifestSize, string manifestDigest, ManifestV2 manifestStructure) = await ReadManifest();
-        var configDigest = manifestStructure.Config.digest;
+        var configDigest = manifestStructure.Config.Digest;
         var config = await JsonSerializer.DeserializeAsync<JsonObject>(File.OpenRead(Configuration.ItemSpec), cancellationToken: _cts.Token);
         var containerCli = new DockerCli(LocalRegistry, msbuildLoggerFactory);
 

@@ -341,7 +341,7 @@ internal sealed class DockerCli
         await WriteImageLayers(writer, pushData.image, pushData.sourceReference, d => $"{d.Substring("sha256:".Length)}/layer.tar", cancellationToken, layerTarballPaths)
             .ConfigureAwait(false);
 
-        string configTarballPath = $"{pushData.image.Manifest.Config.digest.Split(':')[1]!}.json";
+        string configTarballPath = $"{pushData.image.Manifest.Config.Digest.Split(':')[1]!}.json";
         await WriteImageConfig(writer, pushData.image, configTarballPath, cancellationToken)
             .ConfigureAwait(false);
 
@@ -387,7 +387,7 @@ internal sealed class DockerCli
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        foreach (var d in image.LayerDescriptors)
+        foreach (var d in image.Layers!)
         {
             if (sourceReference.Registry is { } registry)
             {
@@ -651,7 +651,7 @@ internal sealed class DockerCli
         await WriteImageLayers(writer, image, sourceReference, d => $"{_blobsPath}/{d.Substring("sha256:".Length)}", cancellationToken)
             .ConfigureAwait(false);
 
-        await WriteImageConfig(writer, image, $"{_blobsPath}/{image.Manifest.Config.digest.Split(':')[1]!}", cancellationToken)
+        await WriteImageConfig(writer, image, $"{_blobsPath}/{image.Manifest.Config.Digest.Split(':')[1]!}", cancellationToken)
             .ConfigureAwait(false);
 
         await WriteManifestForOciImage(writer, image, cancellationToken)

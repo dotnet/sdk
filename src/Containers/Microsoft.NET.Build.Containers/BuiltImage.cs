@@ -34,7 +34,7 @@ internal readonly struct BuiltImage
     /// <summary>
     /// Gets image layers.
     /// </summary>
-    internal List<ManifestLayer>? Layers { get; init; }
+    internal List<Descriptor>? Layers { get; init; }
 
     /// <summary>
     /// Gets image OS.
@@ -45,19 +45,4 @@ internal readonly struct BuiltImage
     /// Gets image architecture.
     /// </summary>
     internal string? Architecture { get; init; }
-
-    /// <summary>
-    /// Gets layers descriptors.
-    /// </summary>
-    internal IEnumerable<Descriptor> LayerDescriptors
-    {
-        get
-        {
-            List<ManifestLayer> layersNode = Layers ?? throw new NotImplementedException("Tried to get layer information but there is no layer node?");
-            foreach (ManifestLayer layer in layersNode)
-            {
-                yield return new(layer.mediaType, layer.digest, layer.size);
-            }
-        }
-    }
 }

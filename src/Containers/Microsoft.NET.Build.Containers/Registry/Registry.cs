@@ -266,11 +266,10 @@ internal sealed class Registry
         };
     }
 
-    public async Task<JsonNode> GetJsonBlobCore(string repositoryName, string digest, string mediaType, CancellationToken cancellationToken)
+    public async Task<JsonNode> GetJsonBlobCore(string repositoryName, Descriptor descriptor, CancellationToken cancellationToken)
     {
         // check if digest is available locally and serialize it, otherwise download from registry and store locally
         cancellationToken.ThrowIfCancellationRequested();
-        var descriptor = new Descriptor(mediaType, digest, 0);
         var storagePath = _store.PathForDescriptor(descriptor);
         if (File.Exists(storagePath))
         {
@@ -280,7 +279,7 @@ internal sealed class Registry
         else
         {
 
-            using var jsonStream = await _registryAPI.Blob.GetStreamAsync(repositoryName, digest, cancellationToken);
+            using var jsonStream = await _registryAPI.Blob.GetStreamAsync(repositoryName, descriptor.Digest, cancellationToken);
             var storageWriteStream = File.OpenWrite(storagePath);
             await jsonStream.CopyToAsync(storageWriteStream, cancellationToken);
             // have to manually dispose the stream here so we ensure the write, because we're going to do a
@@ -295,12 +294,7 @@ internal sealed class Registry
     private async Task<ImageBuilder> ReadSingleImageAsync(string repositoryName, ManifestV2 manifest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        ManifestConfig config = manifest.Config;
-        string configSha = config.digest;
-
-        JsonNode configDoc = await GetJsonBlobCore(repositoryName, configSha, manifest.Config.mediaType, cancellationToken);
-
-        cancellationToken.ThrowIfCancellationRequested();
+        JsonNode configDoc = await GetJsonBlobCore(repositoryName, manifest.Config, cancellationToken);
         // ManifestV2.MediaType can be null, so we also provide manifest mediaType from http response
         return new ImageBuilder(manifest, manifest.MediaType ?? SchemaTypes.DockerManifestV2, new ImageConfig(configDoc), _logger);
     }
@@ -609,11 +603,11 @@ internal sealed class Registry
 
         if (SupportsParallelUploads)
         {
-            await Task.WhenAll(builtImage.LayerDescriptors.Select(descriptor => uploadLayerFunc(descriptor))).ConfigureAwait(false);
+            await Task.WhenAll(builtImage.Layers!.Select(descriptor => uploadLayerFunc(descriptor))).ConfigureAwait(false);
         }
         else
         {
-            foreach (var descriptor in builtImage.LayerDescriptors)
+            foreach (var descriptor in builtImage.Layers!)
             {
                 await uploadLayerFunc(descriptor).ConfigureAwait(false);
             }
@@ -622,7 +616,7 @@ internal sealed class Registry
         cancellationToken.ThrowIfCancellationRequested();
         using (MemoryStream stringStream = new(DigestUtils.UTF8.GetBytes(builtImage.Config.ToJsonString())))
         {
-            var configDigest = builtImage.Manifest.Config.digest;
+            var configDigest = builtImage.Manifest.Config.Digest;
             _logger.LogInformation(Strings.Registry_ConfigUploadStarted, configDigest);
             await UploadBlobAsync(destination.Repository, configDigest, stringStream, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_ConfigUploaded);

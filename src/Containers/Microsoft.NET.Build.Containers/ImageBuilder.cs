@@ -51,7 +51,7 @@ internal sealed class ImageBuilder
     public bool IsWindows => _baseImageConfig.IsWindows;
 
     // For tests
-    internal string ManifestConfigDigest => _manifest.Config.digest;
+    internal string ManifestConfigDigest => _manifest.Config.Digest;
 
     /// <summary>
     /// Builds the image configuration <see cref="BuiltImage"/> ready for further processing.
@@ -67,12 +67,12 @@ internal sealed class ImageBuilder
         (long size, string imageSha) = DigestUtils.GetSha(configAsString);
         string imageDigest = DigestUtils.GetDigestFromSha(imageSha);
 
-        ManifestConfig newManifestConfig =
+        Descriptor newManifestConfig =
             new()
             {
-                digest = imageDigest,
-                size = size,
-                mediaType = ManifestMediaType switch
+                Digest = imageDigest,
+                Size = size,
+                MediaType = ManifestMediaType switch
                 {
                     SchemaTypes.OciManifestV1 => SchemaTypes.OciImageConfigV1,
                     SchemaTypes.DockerManifestV2 => SchemaTypes.DockerContainerV1,
@@ -101,7 +101,7 @@ internal sealed class ImageBuilder
     /// </summary>
     internal void AddLayer(Layer l)
     {
-        _manifest.Layers.Add(new(l.Descriptor.MediaType, l.Descriptor.Size, l.Descriptor.Digest, l.Descriptor.Urls));
+        _manifest.Layers.Add(l.Descriptor);
         _baseImageConfig.AddLayer(l);
     }
 

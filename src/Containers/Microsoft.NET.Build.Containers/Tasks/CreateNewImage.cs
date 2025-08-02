@@ -160,9 +160,9 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         GeneratedAppContainerConfig = new Microsoft.Build.Utilities.TaskItem(GeneratedConfigurationPath, new Dictionary<string, string>(2)
         {
-            ["Size"] = builtImage.Manifest.Config.size.ToString(),
-            ["MediaType"] = builtImage.Manifest.Config.mediaType,
-            ["Digest"] = builtImage.Manifest.Config.digest,
+            ["Size"] = builtImage.Manifest.Config.Size.ToString(),
+            ["MediaType"] = builtImage.Manifest.Config.MediaType,
+            ["Digest"] = builtImage.Manifest.Config.Digest,
         });
 
         GeneratedAppContainerManifest = new Microsoft.Build.Utilities.TaskItem(GeneratedManifestPath, new Dictionary<string, string>(2)

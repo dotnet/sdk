@@ -21,6 +21,8 @@ public readonly record struct Descriptor
     /// </remarks>
     // TODO: validate against RFC 6838 naming conventions?
     [JsonPropertyName("mediaType")]
+    [property:JsonConverter(typeof(MediaTypeConverter))]
+    [field:JsonConverter(typeof(MediaTypeConverter))]
     public string MediaType { get; init; }
 
     /// <summary>
@@ -51,6 +53,7 @@ public readonly record struct Descriptor
     /// Optional list of URLs where the content may be downloaded.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonPropertyName("urls")]
     public string[]? Urls { get; init; } = null;
 
     /// <summary>
@@ -60,6 +63,7 @@ public readonly record struct Descriptor
     /// <see href="https://github.com/opencontainers/image-spec/blob/7b36cea86235157d78528944cb94c3323ee0905c/annotations.md"/>
     /// </remarks>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonPropertyName("annotations")]
     public Dictionary<string, string?>? Annotations { get; init; } = null;
 
     /// <summary>
@@ -69,7 +73,15 @@ public readonly record struct Descriptor
     /// <see href="https://github.com/opencontainers/image-spec/blob/7b36cea86235157d78528944cb94c3323ee0905c/descriptor.md#embedded-content"/>
     /// </remarks>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonPropertyName("data")]
     public string? Data { get; init; } = null;
+
+    /// <summary>
+    /// The IANA media type of this artifact
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonPropertyName("artifactType")]
+    public string? ArtifactType { get; init; } = null;
 
     public Descriptor(string mediaType, string digest, long size)
     {
