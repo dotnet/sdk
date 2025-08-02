@@ -507,7 +507,7 @@ namespace Microsoft.TemplateEngine.Cli
                 var packageOwners = packageMetadata.Owners.Split(",");
                 foreach (var owner in packageOwners)
                 {
-                    reporter.WriteLine($"https://nuget.org/profiles/{owner.Trim()}".Url(owner.Trim()).Indent(2));
+                    reporter.WriteLine(AnsiExtensions.Url($"https://nuget.org/profiles/{owner.Trim()}", owner).Indent(2));
                 }
             }
 
@@ -519,7 +519,7 @@ namespace Microsoft.TemplateEngine.Cli
                 var licenseExpressionUrl = "https://licenses.nuget.org/" + packageMetadata.LicenseExpression;
                 reporter.WriteLine(
                     $"{LocalizableStrings.DetailsCommand_Property_LicenseExpression}: ".Indent(1) +
-                    $"{licenseExpressionUrl.Url(packageMetadata.LicenseExpression)}");
+                    $"{AnsiExtensions.Url(licenseExpressionUrl, packageMetadata.LicenseExpression)}");
             }
 
             var licenseUrl = packageMetadata.LicenseUrl?.ToString();
@@ -527,7 +527,7 @@ namespace Microsoft.TemplateEngine.Cli
             {
                 reporter.WriteLine(
                     $"{LocalizableStrings.DetailsCommand_Property_LicenseUrl}: ".Indent(2) +
-                    $"{licenseUrl.Url(licenseUrl)}");
+                    $"{AnsiExtensions.Url(licenseUrl, licenseUrl)}");
             }
 
             var projectUrl = packageMetadata.ProjectUrl?.ToString();
