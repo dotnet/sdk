@@ -48,12 +48,7 @@ public class LayerCreation(ITestOutputHelper testOutput, TransientTestFolderFixt
         testOutput.WriteLine($"Conformance layer digest: {Data.Layer.ConformanceLayerSha256DigestString}");
         testOutput.WriteLine($"Conformance layer content length: {Data.Layer.ConformanceLayerContentLength}");
         testOutput.WriteLine($"Conformance layer descriptor: {Data.Layer.ConformanceLayerDescriptor}");
-        var dataStream = new MemoryStream(Data.Layer.ConformanceLayerBytes);
-        var testFile = TestFolder.File("test.tar.gz");
-        var contentStream = testFile.OpenWrite();
-        dataStream.CopyTo(contentStream);
-        contentStream.Close();
-        var layer = await Layer.FromBackingFile(testFile, SchemaTypes.OciLayerGzipV1, DigestAlgorithm.sha256);
+        var layer = await Data.Layer.CreateConformanceLayer(TestFolder);
         layer.Descriptor.Should().Be(Data.Layer.ConformanceLayerDescriptor);
     }
 }

@@ -71,9 +71,9 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
 
         var multiArchImage = CreateMultiArchImage(images, destinationImageReference.Kind);
         using var fileStream = File.OpenWrite(GeneratedManifestPath);
-        await JsonSerializer.SerializeAsync(fileStream, multiArchImage.ImageIndex);
+        await Json.SerializeAsync(fileStream, multiArchImage.ImageIndex, _cancellationTokenSource.Token);
 
-        GeneratedImageIndex = JsonSerializer.Serialize(multiArchImage.ImageIndex);
+        GeneratedImageIndex = Json.Serialize(multiArchImage.ImageIndex);
         GeneratedArchiveOutputPath = ArchiveOutputPath;
 
         logger.LogInformation(Strings.BuildingImageIndex, destinationImageReference, string.Join(", ", images.Select(i => i.ManifestDigest)));
@@ -109,7 +109,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
                 return null;
             }
 
-            ManifestV2 manifestV2 = (await JsonSerializer.DeserializeAsync<ManifestV2>(manifestFile.OpenRead()))!;
+            ManifestV2 manifestV2 = (await Json.DeserializeAsync<ManifestV2>(manifestFile.OpenRead(), cancellationToken: ctok))!;
             return new BuiltImage()
             {
                 Config = config,

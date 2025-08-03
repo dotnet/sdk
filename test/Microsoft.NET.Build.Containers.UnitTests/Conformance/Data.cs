@@ -30,6 +30,16 @@ public static class Data
             size: ConformanceLayerContentLength
             );
 
+        public static async Task<Containers.Layer> CreateConformanceLayer(DirectoryInfo tempFolder)
+        {
+            var dataStream = new MemoryStream(Data.Layer.ConformanceLayerBytes);
+            var testFile = tempFolder.File("test.tar.gz");
+            var contentStream = testFile.OpenWrite();
+            dataStream.CopyTo(contentStream);
+            contentStream.Close();
+            return await Containers.Layer.FromBackingFile(testFile, SchemaTypes.OciLayerGzipV1, DigestAlgorithm.sha256);
+        }
+
     }
 
     public static class Config

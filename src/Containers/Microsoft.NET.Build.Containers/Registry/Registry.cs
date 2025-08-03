@@ -193,9 +193,9 @@ internal sealed class Registry
         {
             IManifest? manifest = mediaType switch
             {
-                SchemaTypes.DockerManifestV2 or SchemaTypes.OciManifestV1 => await JsonSerializer.DeserializeAsync<ManifestV2>(content, cancellationToken: cTok),
-                SchemaTypes.DockerManifestListV2 => await JsonSerializer.DeserializeAsync<ManifestListV2>(content, cancellationToken: cTok),
-                SchemaTypes.OciImageIndexV1 => await JsonSerializer.DeserializeAsync<ImageIndexV1>(content, cancellationToken: cTok),
+                SchemaTypes.DockerManifestV2 or SchemaTypes.OciManifestV1 => await Json.DeserializeAsync<ManifestV2>(content, cancellationToken: cTok),
+                SchemaTypes.DockerManifestListV2 => await Json.DeserializeAsync<ManifestListV2>(content, cancellationToken: cTok),
+                SchemaTypes.OciImageIndexV1 => await Json.DeserializeAsync<ImageIndexV1>(content, cancellationToken: cTok),
                 null => throw new ArgumentException($"No media type found for manifest {RegistryName}/{repositoryName}@{referenceOrDigest}"),
                 _ => throw new ArgumentException($"Unknown manifest media type {mediaType}")
             };

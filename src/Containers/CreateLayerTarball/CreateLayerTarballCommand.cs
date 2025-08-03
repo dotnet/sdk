@@ -122,7 +122,7 @@ internal class CreateLayerTarballCommand : RootCommand
             };
             var layer = await Layer.FromFiles(inputFiles, workingDir, isWindowsLayer, layerMediaType, new(new(contentStoreRoot)), new(generatedLayerPath), cancellationToken, userId: containerUserId);
             // Log the layer details as json output of a descriptor
-            await parseResult.InvocationConfiguration.Output.WriteAsync(JsonSerializer.Serialize(layer.Descriptor, new JsonSerializerOptions { WriteIndented = false }));
+            await parseResult.InvocationConfiguration.Output.WriteAsync(Json.Serialize(layer.Descriptor));
         });
     }
 }

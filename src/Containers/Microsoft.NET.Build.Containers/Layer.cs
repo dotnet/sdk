@@ -5,14 +5,12 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Formats.Tar;
 using System.IO.Compression;
-using System.IO.Enumeration;
 using System.Security.Cryptography;
-using System.Threading.Tasks;
 using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
 
-internal class Layer
+public class Layer
 {
     // NOTE: The SID string below was created using the following snippet. As the code is Windows only we keep the constant,
     // so that we can author Windows layers successfully on non-Windows hosts.
@@ -81,6 +79,17 @@ internal class Layer
         return new Layer(null!, descriptor);
     }
 
+    /// <summary>
+    /// Creates a layer from the specified input files, anchoring the files at the specified container path.
+    /// </summary>
+    /// <param name="inputFiles">Files to include in the layer, described by their absolute paths on the local file system and the relative paths inside the container</param>
+    /// <param name="containerPath">The working directory to use as the root for the relative-file-paths inside the container</param>
+    /// <param name="isWindowsLayer">If this should be a windows-style container or not. Windows containers have different directory structures in the generated tarball, and have different attribute requirements for the generated tarball entries</param>
+    /// <param name="manifestMediaType">The media type of the parent manifest - this determines what kind of Layer media type should be used.</param>
+    /// <param name="store">The content store to store the temporary and final layer files, where they will be stored by digest.</param>
+    /// <param name="layerWritePath">In addition to the content store, this specifies the path where the layer file should be written. This is mostly used to enable MSBuild incrementality.</param>
+    /// <param name="ct"></param>
+    /// <param name="userId">If provided, the user id to set on the layer.</param>
     public static async Task<Layer> FromFiles((string absPath, string relPath)[] inputFiles, string containerPath, bool isWindowsLayer, string manifestMediaType, ContentStore store, FileInfo layerWritePath, CancellationToken ct, int? userId = null)
     {
         long fileSize;

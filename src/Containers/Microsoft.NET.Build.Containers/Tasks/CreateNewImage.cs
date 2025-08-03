@@ -75,7 +75,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         ImageBuilder? imageBuilder;
         if (sourceRegistry is { } registry)
         {
-            imageBuilder = await ContainerBuilder.LoadFromManifestAndConfig(BaseImageManifestPath.ItemSpec, format, BaseImageConfigurationPath.ItemSpec, logger);
+            imageBuilder = await ContainerBuilder.LoadFromManifestAndConfig(BaseImageManifestPath.ItemSpec, format, BaseImageConfigurationPath.ItemSpec, logger, cancellationToken);
         }
         else
         {
@@ -143,11 +143,11 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         // at this point we're done with modifications and are just pushing the data other places
 
-        var serializedManifest = JsonSerializer.Serialize(builtImage.Manifest);
-        var manifestWriteTask = File.WriteAllTextAsync(GeneratedManifestPath, serializedManifest, DigestAlgorithmExtensions.UTF8NoBom);
+        var serializedManifest = Json.Serialize(builtImage.Manifest);
+        var manifestWriteTask = File.WriteAllTextAsync(GeneratedManifestPath, serializedManifest, DigestAlgorithmExtensions.UTF8NoBom, cancellationToken: cancellationToken);
 
-        var serializedConfig = JsonSerializer.Serialize(builtImage.Config);
-        var configWriteTask = File.WriteAllTextAsync(GeneratedConfigurationPath, serializedConfig, DigestAlgorithmExtensions.UTF8NoBom);
+        var serializedConfig = Json.Serialize(builtImage.Config);
+        var configWriteTask = File.WriteAllTextAsync(GeneratedConfigurationPath, serializedConfig, DigestAlgorithmExtensions.UTF8NoBom, cancellationToken: cancellationToken);
 
         await Task.WhenAll(manifestWriteTask, configWriteTask).ConfigureAwait(false);
 
