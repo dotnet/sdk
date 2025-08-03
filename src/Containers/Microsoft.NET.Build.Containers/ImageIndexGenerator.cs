@@ -70,7 +70,7 @@ internal static class ImageIndexGenerator
             manifests[i] = new PlatformSpecificManifest
             {
                 mediaType = manifestMediaType,
-                size = JsonSerializer.SerializeToNode(images[i].Manifest)!.ToJsonString().Length,
+                size = Json.GetContentLength(images[i].Manifest),
                 digest = images[i].ManifestDigest,
                 platform = new PlatformInformation
                 {

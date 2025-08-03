@@ -152,7 +152,7 @@ public class PushContainerToRemoteRegistry : Microsoft.Build.Utilities.Task, ICa
     {
         var size = long.Parse(Manifest.GetMetadata("Size")!);
         var digest = Manifest.GetMetadata("Digest")!;
-        var manifestStructure = await JsonSerializer.DeserializeAsync<ManifestV2>(File.OpenRead(Manifest.ItemSpec), cancellationToken: _cts.Token);
+        var manifestStructure = await Json.DeserializeAsync<ManifestV2>(File.OpenRead(Manifest.ItemSpec), cancellationToken: _cts.Token);
         return (size, digest, manifestStructure!);
     }
 }

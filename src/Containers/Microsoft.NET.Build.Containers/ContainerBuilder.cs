@@ -72,7 +72,7 @@ internal static class ContainerBuilder
         {
             try
             {
-                imageBuilder = await LoadFromManifestAndConfig(baseImageManifestPath.FullName, imageFormat, baseImageConfigPath.FullName, logger);
+                imageBuilder = await LoadFromManifestAndConfig(baseImageManifestPath.FullName, imageFormat, baseImageConfigPath.FullName, logger, cancellationToken);
             }
             catch (RepositoryNotFoundException)
             {
@@ -174,11 +174,10 @@ internal static class ContainerBuilder
         cancellationToken.ThrowIfCancellationRequested();
 
         // at this point we're done with modifications and are just pushing the data other places
-
-        var serializedManifest = JsonSerializer.Serialize(builtImage.Manifest);
+        var serializedManifest = Json.Serialize(builtImage.Manifest);
         var manifestWriteTask = File.WriteAllTextAsync(generatedManifestPath.FullName, serializedManifest, DigestAlgorithmExtensions.UTF8NoBom);
 
-        var serializedConfig = JsonSerializer.Serialize(builtImage.Config);
+        var serializedConfig = Json.Serialize(builtImage.Config);
         var configWriteTask = File.WriteAllTextAsync(generatedConfigPath.FullName, serializedConfig, DigestAlgorithmExtensions.UTF8NoBom);
 
         await Task.WhenAll(manifestWriteTask, configWriteTask).ConfigureAwait(false);
@@ -285,9 +284,9 @@ internal static class ContainerBuilder
     }
 
 
-    public static async Task<ImageBuilder> LoadFromManifestAndConfig(string manifestPath, KnownImageFormats? desiredImageFormat, string configPath, ILogger logger)
+    public static async Task<ImageBuilder> LoadFromManifestAndConfig(string manifestPath, KnownImageFormats? desiredImageFormat, string configPath, ILogger logger, CancellationToken cancellationToken)
     {
-        var baseImageManifest = await JsonSerializer.DeserializeAsync<ManifestV2>(File.OpenRead(manifestPath));
+        var baseImageManifest = await Json.DeserializeAsync<ManifestV2>(File.OpenRead(manifestPath), cancellationToken: cancellationToken);
         var baseImageConfig = await JsonNode.ParseAsync(File.OpenRead(configPath));
         if (baseImageConfig is null || baseImageManifest is null) throw new ArgumentException($"Expected to load manifest from {manifestPath} and config from {configPath}");
         // forcibly change the media type if required from that of the base image

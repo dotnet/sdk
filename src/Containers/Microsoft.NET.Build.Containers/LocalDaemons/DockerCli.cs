@@ -562,7 +562,7 @@ internal sealed class DockerCli
         cancellationToken.ThrowIfCancellationRequested();
 
         string manifestPath = $"{_blobsPath}/{image.ManifestDigest.Value}";
-        using (MemoryStream manifestStream = new MemoryStream(DigestAlgorithmExtensions.UTF8NoBom.GetBytes(JsonSerializer.Serialize(image.Manifest))))
+        using (MemoryStream manifestStream = new MemoryStream(Json.GetBytes(image.Manifest)))
         {
             PaxTarEntry manifestEntry = new(TarEntryType.RegularFile, manifestPath)
             {
@@ -580,7 +580,7 @@ internal sealed class DockerCli
         cancellationToken.ThrowIfCancellationRequested();
 
         string manifestPath = $"{_blobsPath}/{manifest.GetDigest().Value}";
-        using (MemoryStream manifestStream = new MemoryStream(DigestAlgorithmExtensions.UTF8NoBom.GetBytes(JsonSerializer.Serialize(manifest))))
+        using (MemoryStream manifestStream = new MemoryStream(Json.GetBytes(manifest)))
         {
             PaxTarEntry manifestEntry = new(TarEntryType.RegularFile, manifestPath)
             {
@@ -601,11 +601,11 @@ internal sealed class DockerCli
         var index = ImageIndexGenerator.GenerateImageIndexWithAnnotations(
             SchemaTypes.OciManifestV1,
             image.ManifestDigest,
-            (DigestAlgorithmExtensions.UTF8NoBom.GetBytes(JsonSerializer.Serialize(image.Manifest))).Length,
+            Json.GetContentLength(image.Manifest),
             destinationReference.Repository,
             destinationReference.Tags);
 
-        using (MemoryStream indexStream = new(DigestAlgorithmExtensions.UTF8NoBom.GetBytes(JsonSerializer.Serialize(index))))
+        using (MemoryStream indexStream = new(Json.GetBytes(index)))
         {
             PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")
             {
@@ -628,11 +628,11 @@ internal sealed class DockerCli
         var index = ImageIndexGenerator.GenerateImageIndexWithAnnotations(
             SchemaTypes.OciManifestV1,
             manifest.GetDigest(),
-            DigestAlgorithmExtensions.UTF8NoBom.GetBytes(JsonSerializer.Serialize(manifest)).Length,
+            Json.GetContentLength(manifest),
             repository,
             tags);
 
-        using (MemoryStream indexStream = new(DigestAlgorithmExtensions.UTF8NoBom.GetBytes(JsonSerializer.Serialize(index))))
+        using (MemoryStream indexStream = new(Json.GetBytes(index)))
         {
             PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")
             {
@@ -711,7 +711,7 @@ internal sealed class DockerCli
 
         var manifestListDigest = Digest.FromContent(DigestAlgorithm.sha256, multiArchImage.ImageIndex);
         var manifestListPath = $"{_blobsPath}/{manifestListDigest.Value}";
-        var manifestBytes = DigestAlgorithmExtensions.UTF8NoBom.GetBytes(JsonSerializer.Serialize(multiArchImage.ImageIndex));
+        var manifestBytes = Json.GetBytes(multiArchImage.ImageIndex);
         using (MemoryStream indexStream = new(manifestBytes))
         {
             PaxTarEntry indexEntry = new(TarEntryType.RegularFile, manifestListPath)
@@ -731,7 +731,7 @@ internal sealed class DockerCli
             destinationReference.Repository,
             destinationReference.Tags);
 
-        using (MemoryStream indexStream = new(DigestAlgorithmExtensions.UTF8NoBom.GetBytes(JsonSerializer.Serialize(index))))
+        using (MemoryStream indexStream = new(Json.GetBytes(index)))
         {
             PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")
             {

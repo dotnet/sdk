@@ -93,7 +93,7 @@ public readonly record struct Digest
     public static Digest FromContent<T>(DigestAlgorithm algorithm, T content)
     {
         ArgumentNullException.ThrowIfNull(content);
-        var jsonString = JsonSerializer.Serialize(content);
+        var jsonString = Json.Serialize(content);
         return FromContentString(algorithm, jsonString);
     }
 

@@ -95,7 +95,7 @@ public readonly record struct Descriptor
     {
         ArgumentException.ThrowIfNullOrEmpty(mediaType);
         ArgumentNullException.ThrowIfNull(content);
-        var serializedContent = JsonSerializer.Serialize(content);
+        var serializedContent = Json.Serialize(content);
         (long contentLength, string contentHash) = algorithm.HashInput(serializedContent);
         var digest = new Digest(algorithm, contentHash);
 
