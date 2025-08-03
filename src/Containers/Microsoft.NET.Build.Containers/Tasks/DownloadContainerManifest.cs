@@ -89,7 +89,7 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
         {
             throw new InvalidOperationException("Unknown manifest type");
         }
-        async Task<(ManifestV2, PlatformInformation)> GetPlatformDataForManifest(PlatformSpecificManifest p)
+        async Task<(ManifestV2, Image)> GetPlatformDataForManifest(PlatformSpecificManifest p)
         {
             var manifest = await registry.GetManifestCore(Repository, p.digest, _cts.Token);
             if (manifest is not ManifestV2 manifestV2)
@@ -101,7 +101,7 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
             return (manifestV2, platformData);
         }
 
-        async Task<(ManifestV2, PlatformInformation)> GetOciPlatformDataForManifest(PlatformSpecificOciManifest p)
+        async Task<(ManifestV2, Image)> GetOciPlatformDataForManifest(PlatformSpecificOciManifest p)
         {
             var manifest = await registry.GetManifestCore(Repository, p.digest, _cts.Token);
             if (manifest is not ManifestV2 manifestV2)
@@ -121,13 +121,13 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
     /// <param name="registry"></param>
     /// <param name="manifest"></param>
     /// <returns></returns>
-    async Task<PlatformInformation> DownloadConfigForManifest(Registry registry, ManifestV2 manifest)
+    async Task<Image> DownloadConfigForManifest(Registry registry, ManifestV2 manifest)
     {
         var configJson = await registry.GetJsonBlobCore(Repository, manifest.Config, _cts.Token);
-        return configJson.Deserialize<PlatformInformation>();
+        return configJson.Deserialize<Image>()!;
     }
 
-    void SetOutputs(IReadOnlyList<(ManifestV2 manifest, PlatformInformation platformInfo)> manifests, ContentStore store)
+    void SetOutputs(IReadOnlyList<(ManifestV2 manifest, Image platformInfo)> manifests, ContentStore store)
     {
         var manifestItems = new List<ITaskItem>(manifests.Count);
         var configItems = new List<ITaskItem>(manifests.Count);

@@ -83,7 +83,40 @@ public static class RidMapping
         return ridDict;
     }
 
-    public static string? CreateRidForPlatform(PlatformInformation platform)
+    public static string? CreateRidForPlatform(Image platform)
+    {
+        // we only support linux and windows containers explicitly, so anything else we should skip past.
+        var osPart = platform.OS switch
+        {
+            "linux" => "linux",
+            "windows" => "win",
+            _ => null
+        };
+        // TODO: this part needs a lot of work, the RID graph isn't super precise here and version numbers (especially on windows) are _whack_
+        // TODO: we _may_ need OS-specific version parsing. Need to do more research on what the field looks like across more manifest lists.
+        var versionPart = platform.OsVersion?.Split('.') switch
+        {
+            [var major, ..] => major,
+            _ => null
+        };
+        var platformPart = platform.Architecture switch
+        {
+            "amd64" => "x64",
+            "x386" => "x86",
+            "arm" => $"arm{(platform.Variant != "v7" ? platform.Variant : "")}",
+            "arm64" => "arm64",
+            "ppc64le" => "ppc64le",
+            "s390x" => "s390x",
+            "riscv64" => "riscv64",
+            "loongarch64" => "loongarch64",
+            _ => null
+        };
+
+        if (osPart is null || platformPart is null) return null;
+        return $"{osPart}{versionPart ?? ""}-{platformPart}";
+    }
+
+        public static string? CreateRidForPlatform(PlatformInformation platform)
     {
         // we only support linux and windows containers explicitly, so anything else we should skip past.
         var osPart = platform.os switch
