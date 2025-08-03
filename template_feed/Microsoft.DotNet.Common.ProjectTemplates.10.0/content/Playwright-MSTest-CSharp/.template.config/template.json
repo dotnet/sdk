@@ -4,7 +4,7 @@
   "classifications": ["Test", "MSTest", "Playwright", "Desktop", "Web"],
   "name": "MSTest Playwright Test Project",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project that contains Playwright tests using MSTest test framework, that can run on .NET on Windows, Linux and MacOS.",
+  "description": "Use Playwright and MSTest to run automated browser tests cross-platform.",
   "groupIdentity": "Microsoft.Test.Playwright.MSTest",
   "precedence": "12000",
   "identity": "Microsoft.Test.Playwright.MSTest.CSharp.10.0",
