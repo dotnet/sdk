@@ -8,100 +8,109 @@ namespace Microsoft.NET.Build.Containers.UnitTests;
 
 public class ImageIndexGeneratorTests
 {
-    [Fact]
-    public void ImagesCannotBeEmpty()
-    {
-        BuiltImage[] images = Array.Empty<BuiltImage>();
-        var ex = Assert.Throws<ArgumentException>(() => ImageIndexGenerator.GenerateImageIndex(images));
-        Assert.Equal(Strings.ImagesEmpty, ex.Message);
-    }
+  [Fact]
+  public void ImagesCannotBeEmpty()
+  {
+    BuiltImage[] images = Array.Empty<BuiltImage>();
+    var ex = Assert.Throws<ArgumentException>(() => ImageIndexGenerator.GenerateImageIndex(images));
+    Assert.Equal(Strings.ImagesEmpty, ex.Message);
+  }
 
-    [Fact]
-    public void ImagesCannotBeEmpty_SpecifiedMediaType()
-    {
-        BuiltImage[] images = Array.Empty<BuiltImage>();
-        var ex = Assert.Throws<ArgumentException>(() => ImageIndexGenerator.GenerateDockerManifestList(images, "manifestMediaType", "imageIndexMediaType"));
-        Assert.Equal(Strings.ImagesEmpty, ex.Message);
-    }
+  [Fact]
+  public void ImagesCannotBeEmpty_SpecifiedMediaType()
+  {
+    BuiltImage[] images = Array.Empty<BuiltImage>();
+    var ex = Assert.Throws<ArgumentException>(() => ImageIndexGenerator.GenerateDockerManifestList(images, "manifestMediaType", "imageIndexMediaType"));
+    Assert.Equal(Strings.ImagesEmpty, ex.Message);
+  }
 
-    static BuiltImage EmptyWithMediaType(string mediaType) =>
-        new()
+  static BuiltImage EmptyWithMediaType(string mediaType) =>
+      new()
+      {
+        Image = new()
         {
-            Config = new(),
-            Manifest = new()
-            {
-                MediaType = mediaType,
-                Layers = [],
-                SchemaVersion = 2,
-                Config = new(),
-            },
-        };
+          Architecture = "amd64",
+          OS = "linux",
+          RootFS = RootFS.Empty with { }
+        },
+        Manifest = new()
+        {
+          MediaType = mediaType,
+          Layers = [],
+          SchemaVersion = 2,
+          Config = new(),
+        },
+      };
 
-    [Fact]
-    public void UnsupportedMediaTypeThrows()
-    {
-        BuiltImage[] images =
-        [
+  [Fact]
+  public void UnsupportedMediaTypeThrows()
+  {
+    BuiltImage[] images =
+    [
+        EmptyWithMediaType("unsupported"),
+        ];
+
+    var ex = Assert.Throws<NotSupportedException>(() => ImageIndexGenerator.GenerateImageIndex(images));
+    Assert.Equal(string.Format(Strings.UnsupportedMediaType, "unsupported"), ex.Message);
+  }
+
+  [Theory]
+  [InlineData(SchemaTypes.DockerManifestV2)]
+  [InlineData(SchemaTypes.OciManifestV1)]
+  public void ImagesWithMixedMediaTypes(string supportedMediaType)
+  {
+    BuiltImage[] images =
+    [
+        EmptyWithMediaType(supportedMediaType),
             EmptyWithMediaType("unsupported"),
         ];
 
-        var ex = Assert.Throws<NotSupportedException>(() => ImageIndexGenerator.GenerateImageIndex(images));
-        Assert.Equal(string.Format(Strings.UnsupportedMediaType, "unsupported"), ex.Message);
-    }
+    var ex = Assert.Throws<ArgumentException>(() => ImageIndexGenerator.GenerateImageIndex(images));
+    Assert.Equal(Strings.MixedMediaTypes, ex.Message);
+  }
 
-    [Theory]
-    [InlineData(SchemaTypes.DockerManifestV2)]
-    [InlineData(SchemaTypes.OciManifestV1)]
-    public void ImagesWithMixedMediaTypes(string supportedMediaType)
-    {
-        BuiltImage[] images =
-        [
-            EmptyWithMediaType(supportedMediaType),
-            EmptyWithMediaType("unsupported"),
-        ];
-
-        var ex = Assert.Throws<ArgumentException>(() => ImageIndexGenerator.GenerateImageIndex(images));
-        Assert.Equal(Strings.MixedMediaTypes, ex.Message);
-    }
-
-    [Fact]
-    public void GenerateDockerManifestList()
-    {
-        BuiltImage[] images =
-        [
-            new BuiltImage
+  [Fact]
+  public void GenerateDockerManifestList()
+  {
+    BuiltImage[] images =
+    [
+        new BuiltImage
             {
-                Config = new(){
-
-                },
+                Image = new()
+                  {
+                    Architecture = "arch1",
+                    OS = "os1",
+                    RootFS = RootFS.Empty with { }
+                  },
                 Manifest =  new(){
                     KnownDigest =  new Digest(DigestAlgorithm.sha256,"digest1"),
                     MediaType = SchemaTypes.DockerManifestV2,
                     SchemaVersion = 2,
                     Config = new(),
                     Layers = [],
-                },
-                Architecture = "arch1",
-                OS = "os1"
+                }
             },
             new BuiltImage
             {
-                Config = new(),
+                Image = new()
+                {
+                    Architecture = "arch2",
+                    OS = "os2",
+                    RootFS = RootFS.Empty with { }
+                },
                 Manifest = new(){
                     KnownDigest =  new Digest(DigestAlgorithm.sha256,"digest2"),
                     MediaType = SchemaTypes.DockerManifestV2,
                     SchemaVersion = 2,
                     Config = new(),
                     Layers = [],
-                },
-                Architecture = "arch2",
-                OS = "os2"
+                }
             }
-        ];
+    ];
 
-        var imageIndex = ImageIndexGenerator.GenerateImageIndex(images);
-        var imageIndexJson = JsonSerializer.Serialize(imageIndex, new JsonSerializerOptions() { WriteIndented = true });
-        var expectedJson = """
+    var imageIndex = ImageIndexGenerator.GenerateImageIndex(images);
+    var imageIndexJson = JsonSerializer.Serialize(imageIndex, new JsonSerializerOptions() { WriteIndented = true });
+    var expectedJson = """
         {
           "schemaVersion": 2,
           "mediaType": "application/vnd.docker.distribution.manifest.list.v2+json",
@@ -127,19 +136,22 @@ public class ImageIndexGeneratorTests
           ]
         }
         """;
-        imageIndexJson.Should().BeVisuallyEquivalentTo(expectedJson);
-        imageIndex.MediaType.Should().Be(SchemaTypes.DockerManifestListV2);
-    }
+    imageIndexJson.Should().BeVisuallyEquivalentTo(expectedJson);
+    imageIndex.MediaType.Should().Be(SchemaTypes.DockerManifestListV2);
+  }
 
-    [Fact]
-    public void GenerateOciImageIndex()
-    {
-        BuiltImage[] images =
-        [
-            new BuiltImage
+  [Fact]
+  public void GenerateOciImageIndex()
+  {
+    BuiltImage[] images =
+    [
+        new BuiltImage
             {
-                Config = new(){
-
+                Image = new()
+                {
+                    Architecture = "arch1",
+                    OS = "os1",
+                    RootFS = RootFS.Empty with { }
                 },
                 Manifest =  new(){
                     KnownDigest = new Digest(DigestAlgorithm.sha256,"digest1"),
@@ -148,27 +160,28 @@ public class ImageIndexGeneratorTests
                     Config = new(),
                     Layers = [],
                 },
-                Architecture = "arch1",
-                OS = "os1"
             },
             new BuiltImage
             {
-                Config = new(),
+                Image = new()
+                {
+                    Architecture = "arch2",
+                    OS = "os2",
+                    RootFS = RootFS.Empty with { }
+                },
                 Manifest = new(){
                     KnownDigest = new Digest(DigestAlgorithm.sha256,"digest2"),
                     MediaType = SchemaTypes.OciManifestV1,
                     SchemaVersion = 2,
                     Config = new(),
                     Layers = [],
-                },
-                Architecture = "arch2",
-                OS = "os2"
+                }
             }
-        ];
+    ];
 
-        var imageIndex = ImageIndexGenerator.GenerateImageIndex(images);
-        var imageIndexJson = JsonSerializer.Serialize(imageIndex, new JsonSerializerOptions() { WriteIndented = true });
-        var expectedJson = """
+    var imageIndex = ImageIndexGenerator.GenerateImageIndex(images);
+    var imageIndexJson = JsonSerializer.Serialize(imageIndex, new JsonSerializerOptions() { WriteIndented = true });
+    var expectedJson = """
         {
           "schemaVersion": 2,
           "mediaType": "application/vnd.oci.image.index.v1+json",
@@ -194,16 +207,16 @@ public class ImageIndexGeneratorTests
           ]
         }
         """;
-        imageIndexJson.Should().BeVisuallyEquivalentTo(expectedJson);
-        imageIndex.MediaType.Should().Be(SchemaTypes.OciImageIndexV1);
-    }
+    imageIndexJson.Should().BeVisuallyEquivalentTo(expectedJson);
+    imageIndex.MediaType.Should().Be(SchemaTypes.OciImageIndexV1);
+  }
 
-    [Fact]
-    public void GenerateImageIndexWithAnnotations()
-    {
-        var imageIndex = ImageIndexGenerator.GenerateImageIndexWithAnnotations("mediaType", new Digest(DigestAlgorithm.sha256,"digest"), 3, "repository", ["1.0", "2.0"]);
-        var imageIndexJson = JsonSerializer.Serialize(imageIndex, new JsonSerializerOptions() { WriteIndented = true });
-        var expectedJson = """
+  [Fact]
+  public void GenerateImageIndexWithAnnotations()
+  {
+    var imageIndex = ImageIndexGenerator.GenerateImageIndexWithAnnotations("mediaType", new Digest(DigestAlgorithm.sha256, "digest"), 3, "repository", ["1.0", "2.0"]);
+    var imageIndexJson = JsonSerializer.Serialize(imageIndex, new JsonSerializerOptions() { WriteIndented = true });
+    var expectedJson = """
         {
           "schemaVersion": 2,
           "mediaType": "application/vnd.oci.image.index.v1+json",
@@ -229,6 +242,6 @@ public class ImageIndexGeneratorTests
           ]
         }
         """;
-        imageIndexJson.Should().BeVisuallyEquivalentTo(expectedJson);
-    }
+    imageIndexJson.Should().BeVisuallyEquivalentTo(expectedJson);
+  }
 }

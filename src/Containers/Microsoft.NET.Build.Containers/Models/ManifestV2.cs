@@ -22,7 +22,7 @@ public interface IManifest
 /// <remarks>
 /// https://github.com/opencontainers/image-spec/blob/main/manifest.md
 /// </remarks>
-public class ManifestV2 : IManifest
+public record ManifestV2 : IManifest
 {
 
     #region Spec properties
@@ -41,7 +41,7 @@ public class ManifestV2 : IManifest
     [JsonPropertyName("mediaType")]
     [property:JsonConverter(typeof(MediaTypeConverter))]
     [field:JsonConverter(typeof(MediaTypeConverter))]
-    public string? MediaType { get; init; }
+    public string? MediaType { get; set; }
 
     /// <summary>
     /// This OPTIONAL property contains the type of an artifact when the manifest is used for an artifact.
@@ -57,7 +57,7 @@ public class ManifestV2 : IManifest
     /// This REQUIRED property references a configuration object for a container, by digest.
     /// </summary>
     [JsonPropertyName("config")]
-    public required Descriptor Config { get; init; }
+    public required Descriptor Config { get; set; }
 
     /// <summary>
     /// Each item in the array MUST be a descriptor. The array MUST have the base layer at index 0.

@@ -98,7 +98,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         imageBuilder.AddLayer(appLayer);
         imageBuilder.SetWorkingDirectory(WorkingDirectory);
 
-        (string[] entrypoint, string[] cmd) = DetermineEntrypointAndCmd(baseImageEntrypoint: imageBuilder.BaseImageConfig.GetEntrypoint());
+        (string[] entrypoint, string[] cmd) = DetermineEntrypointAndCmd(baseImageEntrypoint: imageBuilder.BaseImageConfig.Entrypoint);
         imageBuilder.SetEntrypointAndCmd(entrypoint, cmd);
 
         string? baseImageLabel = null;
@@ -146,7 +146,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         var serializedManifest = Json.Serialize(builtImage.Manifest);
         var manifestWriteTask = File.WriteAllTextAsync(GeneratedManifestPath, serializedManifest, DigestAlgorithmExtensions.UTF8NoBom, cancellationToken: cancellationToken);
 
-        var serializedConfig = Json.Serialize(builtImage.Config);
+        var serializedConfig = Json.Serialize(builtImage.Image);
         var configWriteTask = File.WriteAllTextAsync(GeneratedConfigurationPath, serializedConfig, DigestAlgorithmExtensions.UTF8NoBom, cancellationToken: cancellationToken);
 
         await Task.WhenAll(manifestWriteTask, configWriteTask).ConfigureAwait(false);

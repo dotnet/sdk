@@ -10,7 +10,7 @@ namespace Microsoft.NET.Build.Containers;
 /// Image defines execution, provenance, and other metadata about a container image.
 /// This is most often seen as the thing referenced by the `Config` descriptor in a manifest.
 /// </summary>
-public class Image
+public record Image
 {
     /// <summary>
     /// RFC 3339, section 5.6 date-time string representing the time at which the image was built.
@@ -18,7 +18,7 @@ public class Image
     [JsonPropertyName("created")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Created { get; set; }
-
+    
     [JsonPropertyName("author")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Author { get; set; }
@@ -28,7 +28,7 @@ public class Image
 
     [JsonPropertyName("os")]
     public required string OS { get; set; }
-
+    
     [JsonPropertyName("os.version")]
     public string? OsVersion { get; set; }
 
@@ -53,7 +53,7 @@ public class Image
     public History[]? History { get; set; }
 }
 
-public class RootFS
+public record RootFS
 {
     [JsonPropertyName("type")]
 
@@ -61,10 +61,16 @@ public class RootFS
 
     [JsonConverter(typeof(DigestArrayConverter))]
     [JsonPropertyName("diff_ids")]
-    public required Digest[] DiffIDs { get; set; }
+    public required List<Digest> DiffIDs { get; set; }
+
+    public static RootFS Empty => new()
+    {
+        Type = "layers",
+        DiffIDs = [],
+    };
 }
 
-public class History
+public record History
 {
     /// <summary>
     /// RFC 3339, section 5.6 date-time string representing the time at which the image was built.
@@ -93,9 +99,20 @@ public class History
     public bool? EmptyLayer { get; set; }
 }
 
-internal class DigestArrayConverter : JsonConverter<Digest[]>
+internal static class ImageExtensions
 {
-    public override Digest[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    extension(Image image)
+    {
+        /// <summary>
+        /// Gets a value indicating whether the base image is has a Windows operating system.
+        /// </summary>
+        public bool IsWindows => "windows".Equals(image.OS, StringComparison.OrdinalIgnoreCase);
+    }
+}
+
+internal class DigestArrayConverter : JsonConverter<List<Digest>>
+{
+    public override List<Digest> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         // Custom deserialization logic
         if (reader.TokenType == JsonTokenType.StartArray)
@@ -105,7 +122,7 @@ internal class DigestArrayConverter : JsonConverter<Digest[]>
             {
                 if (reader.TokenType == JsonTokenType.EndArray)
                 {
-                    return digests.ToArray();
+                    return digests;
                 }
                 digests.Add(Digest.Parse(reader.GetString()!));
             }
@@ -113,7 +130,7 @@ internal class DigestArrayConverter : JsonConverter<Digest[]>
         return [];
     }
 
-    public override void Write(Utf8JsonWriter writer, Digest[] value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, List<Digest> value, JsonSerializerOptions options)
     {
         writer.WriteStartArray();
         foreach (var digest in value)

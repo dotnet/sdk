@@ -152,14 +152,14 @@ Microsoft.NET.Build.Containers.ImageIndexV1.schemaVersion.get -> int
 Microsoft.NET.Build.Containers.ImageIndexV1.schemaVersion.set -> void
 Microsoft.NET.Build.Containers.ManifestV2
 Microsoft.NET.Build.Containers.ManifestV2.Config.get -> Microsoft.NET.Build.Containers.Descriptor
-Microsoft.NET.Build.Containers.ManifestV2.Config.init -> void
+Microsoft.NET.Build.Containers.ManifestV2.Config.set -> void
 Microsoft.NET.Build.Containers.ManifestV2.KnownDigest.get -> Microsoft.NET.Build.Containers.Digest?
 Microsoft.NET.Build.Containers.ManifestV2.KnownDigest.set -> void
 Microsoft.NET.Build.Containers.ManifestV2.Layers.get -> System.Collections.Generic.List<Microsoft.NET.Build.Containers.Descriptor>!
 Microsoft.NET.Build.Containers.ManifestV2.Layers.init -> void
 Microsoft.NET.Build.Containers.ManifestV2.ManifestV2() -> void
 Microsoft.NET.Build.Containers.ManifestV2.MediaType.get -> string?
-Microsoft.NET.Build.Containers.ManifestV2.MediaType.init -> void
+Microsoft.NET.Build.Containers.ManifestV2.MediaType.set -> void
 Microsoft.NET.Build.Containers.ManifestV2.SchemaVersion.get -> int
 Microsoft.NET.Build.Containers.ManifestV2.SchemaVersion.init -> void
 Microsoft.NET.Build.Containers.PlatformInformation

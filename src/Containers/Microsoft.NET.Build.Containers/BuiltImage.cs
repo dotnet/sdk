@@ -14,7 +14,7 @@ internal readonly struct BuiltImage
     /// <summary>
     /// Gets image configuration in JSON format.
     /// </summary>
-    internal required JsonObject Config { get; init; }
+    internal required Image Image { get; init; }
 
     /// <summary>
     /// Gets image manifest.
@@ -34,15 +34,15 @@ internal readonly struct BuiltImage
     /// <summary>
     /// Gets image layers.
     /// </summary>
-    internal List<Descriptor>? Layers { get; init; }
+    internal List<Descriptor>? Layers => Manifest.Layers;
 
     /// <summary>
     /// Gets image OS.
     /// </summary>
-    internal string? OS { get; init; }
+    internal string? OS => Image.OS;
 
     /// <summary>
     /// Gets image architecture.
     /// </summary>
-    internal string? Architecture { get; init; }
+    internal string? Architecture => Image.Architecture;
 }

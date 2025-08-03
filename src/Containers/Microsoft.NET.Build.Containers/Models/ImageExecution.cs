@@ -10,7 +10,7 @@ namespace Microsoft.NET.Build.Containers;
 /// ImageConfig defines the execution parameters which should be used as a base when running a container using an image.
 /// This is most often seen as the 'Config' property of a application/vnd.oci.image.config.v1+json or application/vnd.docker.container.image.v1+json config object.
 /// </summary>
-public class ImageExecution
+public record ImageExecution
 {
     [JsonPropertyName("User")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

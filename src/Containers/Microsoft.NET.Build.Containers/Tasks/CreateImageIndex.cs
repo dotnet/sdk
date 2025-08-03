@@ -103,7 +103,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
                 return null;
             }
 
-            if (await GetArchitectureAndOsFromConfig(configFile, ctok) is not (var config, var architecture, var os))
+            if (await GetArchitectureAndOsFromConfig(configFile, ctok) is not Image image)
             {
                 Log.LogError(Strings.InvalidImageConfig);
                 return null;
@@ -112,37 +112,34 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
             ManifestV2 manifestV2 = (await Json.DeserializeAsync<ManifestV2>(manifestFile.OpenRead(), cancellationToken: ctok))!;
             return new BuiltImage()
             {
-                Config = config,
-                Manifest = manifestV2,
-                Layers = manifestV2.Layers,
-                OS = os,
-                Architecture = architecture
+                Image = image,
+                Manifest = manifestV2
             };
         }
     }
 
-    private async Task<(JsonObject, string, string)?> GetArchitectureAndOsFromConfig(FileInfo config, CancellationToken cTok)
+    private async Task<Image?> GetArchitectureAndOsFromConfig(FileInfo config, CancellationToken cTok)
     {
         using var fileStream = config.OpenRead();
-        var configJson = await JsonNode.ParseAsync(fileStream, cancellationToken: cTok) as JsonObject;
-        if (configJson is null)
+        var image = await Json.DeserializeAsync<Image>(fileStream, cancellationToken: cTok);
+        if (image is null)
         {
             Log.LogError(Strings.InvalidImageConfig);
             return null;
         }
-        var architecture = configJson["architecture"]?.ToString();
+        var architecture = image.Architecture;
         if (architecture is null)
         {
             Log.LogError(Strings.ImageConfigMissingArchitecture);
             return null;
         }
-        var os = configJson["os"]?.ToString();
+        var os = image.OS;
         if (os is null)
         {
             Log.LogError(Strings.ImageConfigMissingOs);
             return null;
         }
-        return (configJson, architecture, os);
+        return image;
     }
 
     private static MultiArchImage CreateMultiArchImage(BuiltImage[] images, DestinationImageReferenceKind destinationImageKind)
