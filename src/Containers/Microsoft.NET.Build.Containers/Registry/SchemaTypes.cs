@@ -16,4 +16,9 @@ internal class SchemaTypes
 
     internal const string DockerLayerGzip = "application/vnd.docker.image.rootfs.diff.tar.gzip";
     internal const string OciLayerGzipV1 = "application/vnd.oci.image.layer.v1.tar+gzip";
+
+    /// <summary>
+    /// MediaTypeEmptyJSON specifies the media type for an unused blob containing the value "{}".
+    /// </summary>
+    internal const string OciEmptyJson = "application/vnd.oci.empty.v1+json"; //
 }

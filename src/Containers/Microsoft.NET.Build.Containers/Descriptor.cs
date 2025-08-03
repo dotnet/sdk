@@ -101,4 +101,13 @@ public readonly record struct Descriptor
 
         return new Descriptor(mediaType, digest, contentLength);
     }
+
+    public static Descriptor Empty = new Descriptor(
+        mediaType: "application/vnd.oci.empty.v1+json",
+        digest: new(DigestAlgorithm.sha256, "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"),
+        size: 2
+    )
+    {
+        Data = Convert.ToBase64String([((byte)'{'), ((byte)'}')]), // base64 of '{}'
+    };
 }
