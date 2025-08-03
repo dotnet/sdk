@@ -41,7 +41,7 @@ internal class DefaultManifestOperations : IManifestOperations
         public async Task<HttpResponseMessage> GetAsync(string repositoryName, Digest digest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, new Uri(_baseUri, $"/v2/{repositoryName}/manifests/{digest}")).AcceptManifestFormats();
+        using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, new Uri(_baseUri, $"/v2/{repositoryName}/manifests/{digest.ToUriString()}")).AcceptManifestFormats();
         HttpResponseMessage response = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
         return response.StatusCode switch
         {
@@ -66,7 +66,7 @@ internal class DefaultManifestOperations : IManifestOperations
         public async Task PutAsync<T>(string repositoryName, Digest digest, T manifest, CancellationToken cancellationToken) where T : IManifest
     {
         JsonContent manifestUploadContent = JsonContent.Create(manifest, mediaType: new MediaTypeHeaderValue(manifest.MediaType!));
-        HttpResponseMessage putResponse = await _client.PutAsync(new Uri(_baseUri, $"/v2/{repositoryName}/manifests/{digest}"), manifestUploadContent, cancellationToken).ConfigureAwait(false);
+        HttpResponseMessage putResponse = await _client.PutAsync(new Uri(_baseUri, $"/v2/{repositoryName}/manifests/{digest.ToUriString()}"), manifestUploadContent, cancellationToken).ConfigureAwait(false);
 
         if (!putResponse.IsSuccessStatusCode)
         {

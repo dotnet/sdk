@@ -31,6 +31,13 @@ public readonly record struct Digest
     /// </summary>
     public override string ToString() => $"{Algorithm.ToString().ToLowerInvariant()}:{Value}";
 
+    /// <summary>
+    /// Returns the digest as a URI-encoded string in the format "algorithm%3Avalue".
+    /// This is useful for constructing URLs where the digest needs to be part of the path.
+    /// </summary>
+    /// <returns></returns>
+    public string ToUriString() => $"{Algorithm.ToString().ToLowerInvariant()}%3A{Value}";
+
     public static Digest Parse(string value)
     {
         if (string.IsNullOrEmpty(value))
@@ -186,7 +193,7 @@ internal static partial class DigestAlgorithmExtensions
             default:
                 throw new NotSupportedException($"Unsupported digest algorithm: {algorithm}.");
         };
-        return (bytes.LongLength, Convert.ToHexString(hash));
+        return (bytes.LongLength, Convert.ToHexStringLower(hash));
     }
 
     public static async Task<(long contentLength, string contentHash)> HashInputAsync(this DigestAlgorithm algorithm, Stream stream, CancellationToken cancellationToken = default)
@@ -206,7 +213,7 @@ internal static partial class DigestAlgorithmExtensions
 
         byte[] hash = await hasher(stream).ConfigureAwait(false);
 
-        return (stream.Length, Convert.ToHexString(hash).ToLowerInvariant());
+        return (stream.Length, Convert.ToHexStringLower(hash));
     }
 
     [System.Text.RegularExpressions.GeneratedRegex(@"^[0-9a-f]+$")]
