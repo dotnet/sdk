@@ -63,13 +63,13 @@ public sealed partial class CreateAppLayer : Microsoft.Build.Utilities.Task, ICa
                 _ => throw new ArgumentException(string.Format(Strings.UnrecognizedMediaType, ParentImageFormat)),
             };
         }
-        string layerMediaType = format switch
+        string manifestMediaType = format switch
         {
-            KnownImageFormats.Docker => SchemaTypes.DockerLayerGzip,
-            KnownImageFormats.OCI => SchemaTypes.OciLayerGzipV1,
+            KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
+            KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
             _ => throw new ArgumentException(string.Format(Strings.UnrecognizedMediaType, ParentImageFormat)),
         };
-        Layer newLayer = await Layer.FromFiles(filesWithRelativePaths, ContainerRootDirectory, isWindowsLayer, layerMediaType, new(new(ContentStoreRoot)), new(GeneratedLayerPath), cancellationToken, userId: userId);
+        Layer newLayer = await Layer.FromFiles(filesWithRelativePaths, ContainerRootDirectory, isWindowsLayer, manifestMediaType, new(new(ContentStoreRoot)), new(GeneratedLayerPath), cancellationToken, userId: userId);
         GeneratedAppContainerLayer = new Microsoft.Build.Utilities.TaskItem(GeneratedLayerPath, new Dictionary<string, string>(3)
         {
             ["Size"] = newLayer.Descriptor.Size.ToString(),

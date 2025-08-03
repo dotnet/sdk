@@ -31,7 +31,7 @@ internal class DefaultBlobOperations : IBlobOperations
     public async Task<bool> ExistsAsync(string repositoryName, Digest digest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using HttpResponseMessage response = await _client.SendAsync(new HttpRequestMessage(HttpMethod.Head, new Uri(_baseUri, $"/v2/{repositoryName}/blobs/{digest}")), cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await _client.SendAsync(new HttpRequestMessage(HttpMethod.Head, new Uri(_baseUri, $"/v2/{repositoryName}/blobs/{digest.ToUriString()}")), cancellationToken).ConfigureAwait(false);
         return response.StatusCode switch
         {
             HttpStatusCode.OK => true,
@@ -63,7 +63,7 @@ internal class DefaultBlobOperations : IBlobOperations
     private async Task<HttpResponseMessage> GetAsync(string repositoryName, Digest digest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, new Uri(_baseUri, $"/v2/{repositoryName}/blobs/{digest}")).AcceptManifestFormats();
+        using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, new Uri(_baseUri, $"/v2/{repositoryName}/blobs/{digest.ToUriString()}")).AcceptManifestFormats();
         HttpResponseMessage response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         return response.StatusCode switch
         {

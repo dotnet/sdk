@@ -67,7 +67,7 @@ internal class DefaultBlobUploadOperations : IBlobUploadOperations
     public async Task<bool> TryMountAsync(string destinationRepository, string sourceRepository, Digest digest, CancellationToken cancellationToken)
     {
         // Blob wasn't there; can we tell the server to get it from the base image?
-        HttpResponseMessage pushResponse = await _client.PostAsync(new Uri(_baseUri, $"/v2/{destinationRepository}/blobs/uploads/?mount={digest}&from={sourceRepository}"), content: null, cancellationToken).ConfigureAwait(false);
+        HttpResponseMessage pushResponse = await _client.PostAsync(new Uri(_baseUri, $"/v2/{destinationRepository}/blobs/uploads/?mount={digest.ToUriString()}&from={sourceRepository}"), content: null, cancellationToken).ConfigureAwait(false);
         return pushResponse.StatusCode == HttpStatusCode.Created;
     }
 

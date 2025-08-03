@@ -92,12 +92,17 @@ public class ContentStore(DirectoryInfo root)
     /// <summary>
     /// Returns the path in the <see cref="ReferenceRoot"/> for the manifest reference for this registry/repository/tag.
     /// </summary>
-    public string PathForManifestByTag(string registry, string repository, string tag) => Path.Combine(ReferenceRoot, registry, repository, tag);
+    public string PathForManifestByTag(string registry, string repository, string tag) => Path.Combine(ReferenceRoot, SafeFileName(registry), repository, tag);
 
     /// <summary>
     /// Returns the path in the <see cref="ReferenceRoot"/> for the manifest reference for this digest.
     /// </summary>
-    public string PathForManifestByDigest(string registry, string repository, Digest digest) => Path.Combine(ReferenceRoot, registry, repository, digest.ToString());
+    public string PathForManifestByDigest(string registry, string repository, Digest digest) => Path.Combine(ReferenceRoot, SafeFileName(registry), repository, digest.ToString());
+
+    private static string SafeFileName(string s) =>
+        Path.GetInvalidPathChars()
+        .Aggregate(s, (current, c) => current.Replace(c.ToString(), "_"))
+        .Replace(':', '_'); // ':' is not a valid path character, but we use it in digests
 
     /// <summary>
     /// Returns the path to the content store for a given content hash (<c>algo</c>:<c>digest</c>) pair.
