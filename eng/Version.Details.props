@@ -142,8 +142,8 @@ This file should be imported by eng/Versions.props
     <NuGetProtocolPackageVersion>7.0.0-preview.1.100</NuGetProtocolPackageVersion>
     <NuGetVersioningPackageVersion>7.0.0-preview.1.100</NuGetVersioningPackageVersion>
     <!-- microsoft/testfx dependencies -->
-    <MicrosoftTestingPlatformPackageVersion>1.9.0-preview.25401.10</MicrosoftTestingPlatformPackageVersion>
-    <MSTestPackageVersion>3.11.0-preview.25401.10</MSTestPackageVersion>
+    <MicrosoftTestingPlatformPackageVersion>1.9.0-preview.25401.13</MicrosoftTestingPlatformPackageVersion>
+    <MSTestPackageVersion>3.11.0-preview.25401.13</MSTestPackageVersion>
   </PropertyGroup>
   <!--Property group for alternate package version names-->
   <PropertyGroup>
