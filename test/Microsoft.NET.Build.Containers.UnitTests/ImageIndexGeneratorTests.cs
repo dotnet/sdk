@@ -108,7 +108,7 @@ public class ImageIndexGeneratorTests
           "manifests": [
             {
               "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-              "size": 154,
+              "size": 159,
               "digest": "sha256:digest1",
               "platform": {
                 "architecture": "arch1",
@@ -117,7 +117,7 @@ public class ImageIndexGeneratorTests
             },
             {
               "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-              "size": 154,
+              "size": 159,
               "digest": "sha256:digest2",
               "platform": {
                 "architecture": "arch2",
@@ -175,7 +175,7 @@ public class ImageIndexGeneratorTests
           "manifests": [
             {
               "mediaType": "application/vnd.oci.image.manifest.v1+json",
-              "size": 144,
+              "size": 149,
               "digest": "sha256:digest1",
               "platform": {
                 "architecture": "arch1",
@@ -184,7 +184,7 @@ public class ImageIndexGeneratorTests
             },
             {
               "mediaType": "application/vnd.oci.image.manifest.v1+json",
-              "size": 144,
+              "size": 149,
               "digest": "sha256:digest2",
               "platform": {
                 "architecture": "arch2",
