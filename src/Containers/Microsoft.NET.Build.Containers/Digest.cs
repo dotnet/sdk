@@ -16,11 +16,15 @@ public readonly record struct Digest
     public DigestAlgorithm Algorithm { get; }
     public string Value { get; }
 
+    /// <summary>
+    /// Creates a new <see cref="Digest"/> instance with the specified algorithm and value.
+    /// </summary>
+    /// <param name="algorithm"></param>
+    /// <param name="encodedValue">an encoded string value that we accept as true. this constructor should only be used directly for testing - all other pathways validate the value.</param>
     internal Digest(DigestAlgorithm algorithm, string encodedValue)
     {
         Algorithm = algorithm;
         Value = encodedValue;
-        algorithm.Validate(encodedValue);
     }
     /// <summary>
     /// Returns the digest as a string in the format "algorithm:value".
@@ -44,7 +48,7 @@ public readonly record struct Digest
         {
             throw new FormatException($"Unknown digest algorithm: '{parts[0]}'.");
         }
-
+        algorithm.Validate(parts[1]);
         return new Digest(algorithm, parts[1]);
     }
 
@@ -57,6 +61,7 @@ public readonly record struct Digest
     public static Digest FromUnmarkedString(string encodedValue)
     {
         ArgumentException.ThrowIfNullOrEmpty(encodedValue);
+        CanonicalAlgorithm.Canonical.Validate(encodedValue);
         return new Digest(CanonicalAlgorithm.Canonical, encodedValue);
     }
 
@@ -70,6 +75,7 @@ public readonly record struct Digest
             throw new ArgumentNullException(nameof(value), "Input value cannot be null.");
         }
         var (_contentLength, hashedValue) = algorithm.HashInput(value);
+        // no need to validate because we just hashed the input
         return new Digest(algorithm, hashedValue);
     }
 
@@ -86,21 +92,7 @@ public readonly record struct Digest
 
     public static async Task<Digest> FromStream(DigestAlgorithm algorithm, Stream stream, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(stream);
-        if (!stream.CanRead)
-        {
-            throw new ArgumentException("Stream must be readable.", nameof(stream));
-        }
-
-       Func<Stream, CancellationToken, ValueTask<byte[]>> hasher = algorithm switch
-        {
-            DigestAlgorithm.sha256 => (s, ct) => SHA256.HashDataAsync(s, ct),
-            DigestAlgorithm.sha512 => (s, ct) => SHA512.HashDataAsync(s, ct),
-            _ => throw new ArgumentException(nameof(algorithm))
-        };
-
-        byte[] hash = await hasher(stream, cancellationToken).ConfigureAwait(false);
-        string encodedValue = Convert.ToHexString(hash).ToLowerInvariant();
+        var (_contentLength, encodedValue) = await algorithm.HashInputAsync(stream, cancellationToken).ConfigureAwait(false);
         return new Digest(algorithm, encodedValue);
     }
 }
@@ -176,7 +168,10 @@ internal static partial class DigestAlgorithmExtensions
 
     public static (long contentLength, string contentHash) HashInput(this DigestAlgorithm algorithm, string input)
     {
-        ArgumentException.ThrowIfNullOrEmpty(input);
+        if (input is null)
+        {
+            throw new ArgumentNullException(nameof(input), "Input cannot be null.");
+        }
         Span<byte> hash = stackalloc byte[SHA256.HashSizeInBytes];
         var bytes = UTF8NoBom.GetBytes(input);
 
@@ -192,6 +187,26 @@ internal static partial class DigestAlgorithmExtensions
                 throw new NotSupportedException($"Unsupported digest algorithm: {algorithm}.");
         };
         return (bytes.LongLength, Convert.ToHexString(hash));
+    }
+
+    public static async Task<(long contentLength, string contentHash)> HashInputAsync(this DigestAlgorithm algorithm, Stream stream, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        if (!stream.CanRead)
+        {
+            throw new ArgumentException("Stream must be readable.", nameof(stream));
+        }
+
+        Func<Stream, ValueTask<byte[]>> hasher = algorithm switch
+        {
+            DigestAlgorithm.sha256 => s => SHA256.HashDataAsync(s),
+            DigestAlgorithm.sha512 => s => SHA512.HashDataAsync(s),
+            _ => throw new NotSupportedException($"Unsupported digest algorithm: {algorithm}.")
+        };
+
+        byte[] hash = await hasher(stream).ConfigureAwait(false);
+
+        return (stream.Length, Convert.ToHexString(hash).ToLowerInvariant());
     }
 
     [System.Text.RegularExpressions.GeneratedRegex(@"^[0-9a-f]+$")]
