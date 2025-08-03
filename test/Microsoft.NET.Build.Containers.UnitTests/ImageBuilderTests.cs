@@ -416,9 +416,9 @@ public class ImageBuilderTests
 
         var builtImage = builder.Build();
 
-        JsonNode? result = builtImage.Config;
+        Image? result = builtImage.Image;
         Assert.NotNull(result);
-        var assignedUid = result["config"]?["User"]?.GetValue<string>();
+        var assignedUid = result.Config?.User;
         Assert.Equal(assignedUid, expectedUid);
     }
 
@@ -458,9 +458,9 @@ public class ImageBuilderTests
         builder.AddEnvironmentVariable(ImageBuilder.EnvironmentVariables.APP_UID, "12345");
         var builtImage = builder.Build();
 
-        JsonNode? result = builtImage.Config;
+        Image? result = builtImage.Image;
         Assert.NotNull(result);
-        var assignedUser = result["config"]?["User"]?.GetValue<string>();
+        var assignedUser = result.Config?.User;
         Assert.Equal(assignedUser, expectedUid);
     }
 
@@ -502,10 +502,10 @@ public class ImageBuilderTests
 
         var builtImage = builder.Build();
 
-        JsonNode? result = builtImage.Config;
+        Image? result = builtImage.Image;
         Assert.NotNull(result);
-        var portsObject = result["config"]?["ExposedPorts"]?.AsObject();
-        var assignedPorts = portsObject?.AsEnumerable().Select(portString => int.Parse(portString.Key.Split('/')[0])).ToArray();
+        var portsObject = result.Config?.ExposedPorts;
+        var assignedPorts = portsObject?.Select(port => port.Number).ToArray();
         Assert.Equal(assignedPorts, expectedPorts);
     }
 
@@ -548,10 +548,10 @@ public class ImageBuilderTests
 
         var builtImage = builder.Build();
 
-        JsonNode? result = builtImage.Config;
+        Image? result = builtImage.Image;
         Assert.NotNull(result);
-        var portsObject = result["config"]?["ExposedPorts"]?.AsObject();
-        var assignedPorts = portsObject?.AsEnumerable().Select(portString => int.Parse(portString.Key.Split('/')[0])).ToArray();
+        var portsObject = result.Config?.ExposedPorts;
+        var assignedPorts = portsObject?.Select(port => port.Number).ToArray();
         Assert.Equal(assignedPorts, expectedPorts);
     }
 
@@ -591,8 +591,8 @@ public class ImageBuilderTests
         """);
 
         baseConfigBuilder.SetUser(userId);
-        var config = baseConfigBuilder.Build().Config;
-        config!["config"]?["User"]?.GetValue<string>().Should().Be(expected: userId, because: "The precedence of SetUser should override inferred user ids");
+        var image = baseConfigBuilder.Build().Image;
+        image.Config?.User.Should().Be(expected: userId, because: "The precedence of SetUser should override inferred user ids");
     }
 
     [Fact]
@@ -631,10 +631,10 @@ public class ImageBuilderTests
         builder.AddEnvironmentVariable(ImageBuilder.EnvironmentVariables.ASPNETCORE_URLS, "https://*:12345");
         builder.AddEnvironmentVariable(ImageBuilder.EnvironmentVariables.ASPNETCORE_HTTPS_PORTS, "456");
         var builtImage = builder.Build();
-        JsonNode? result = builtImage.Config;
+        Image? result = builtImage.Image;
         Assert.NotNull(result);
-        var portsObject = result["config"]?["ExposedPorts"]?.AsObject();
-        var assignedPorts = portsObject?.AsEnumerable().Select(portString => int.Parse(portString.Key.Split('/')[0])).ToArray();
+        var portsObject = result.Config?.ExposedPorts;
+        var assignedPorts = portsObject?.Select(p => p.Number).ToArray();
         Assert.Equal(expected, assignedPorts);
     }
 
@@ -672,11 +672,11 @@ public class ImageBuilderTests
 
         builder.AddBaseImageDigestLabel();
         var builtImage = builder.Build();
-        JsonNode? result = builtImage.Config;
+        Image? result = builtImage.Image;
         Assert.NotNull(result);
-        var labels = result["config"]?["Labels"]?.AsObject();
-        var digest = labels?.AsEnumerable().First(label => label.Key == "org.opencontainers.image.base.digest").Value!;
-        digest.GetValue<string>().Should().Be(StaticKnownDigestValue.ToString());
+        var labels = result.Config?.Labels;
+        var digest = labels?.First(label => label.Key == "org.opencontainers.image.base.digest").Value!;
+        digest.Should().Be(StaticKnownDigestValue.ToString());
     }
 
     private ImageBuilder FromBaseImageConfig(string baseImageConfig, [CallerMemberName] string testName = "")
@@ -694,6 +694,6 @@ public class ImageBuilderTests
             Layers = [],
             KnownDigest = StaticKnownDigestValue
         };
-        return new ImageBuilder(manifest, manifest.MediaType, new ImageConfig(baseImageConfig), _loggerFactory.CreateLogger(testName));
+        return new ImageBuilder(manifest, manifest.MediaType, Json.Deserialize<Image>(baseImageConfig)!, _loggerFactory.CreateLogger(testName));
     }
 }

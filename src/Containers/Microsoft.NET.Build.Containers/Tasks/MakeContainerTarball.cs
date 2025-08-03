@@ -47,7 +47,7 @@ public class MakeContainerTarball : Microsoft.Build.Utilities.Task, ICancelableT
         ILogger logger = msbuildLoggerFactory.CreateLogger<CreateImageIndex>();
         (long manifestSize, string manifestDigest, ManifestV2 manifestStructure) = await ReadManifest();
         var configDigest = manifestStructure.Config.Digest;
-        var config = await Json.DeserializeAsync<JsonObject>(File.OpenRead(Configuration.ItemSpec), cancellationToken: _cts.Token);
+        var config = await Json.DeserializeAsync<Image>(File.OpenRead(Configuration.ItemSpec), cancellationToken: _cts.Token);
         var layers = Layers.Select(l => Layer.FromBackingFile(new(l.ItemSpec), GetDescriptor(l))).ToArray();
         var filePath = DetermineFilePath();
         await using var fileStream = File.Create(filePath);

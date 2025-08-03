@@ -138,8 +138,8 @@ internal sealed class DockerCli
         => await LoadAsync((image, sourceReference, destinationReference), WriteDockerImageToStreamAsync, cancellationToken);
 
     public async Task LoadAsync(
-        (string repository, string[] tags, Digest configDigest, JsonObject config, Layer[] layers) imageData,
-        Func<(string repository, string[] tags, Digest configDigest, JsonObject config, Layer[] layers), Stream, CancellationToken, Task> writeStreamFunc,
+        (string repository, string[] tags, Digest configDigest, Image config, Layer[] layers) imageData,
+        Func<(string repository, string[] tags, Digest configDigest, Image config, Layer[] layers), Stream, CancellationToken, Task> writeStreamFunc,
         CancellationToken cancellationToken)
         => await LoadAsync(imageData, writeStreamFunc, cancellationToken, checkContainerdStore: false);
 
@@ -310,7 +310,7 @@ internal sealed class DockerCli
         }
     }
 
-    public static async Task WriteImageToStreamAsync(string repository, string[] tags, JsonObject config, Layer[] layers, ManifestV2 manifest, Stream imageStream, CancellationToken cancellationToken)
+    public static async Task WriteImageToStreamAsync(string repository, string[] tags, Image config, Layer[] layers, ManifestV2 manifest, Stream imageStream, CancellationToken cancellationToken)
     {
         if (manifest.MediaType == SchemaTypes.DockerManifestV2)
         {
@@ -354,7 +354,7 @@ internal sealed class DockerCli
         (string repository,
         string[] tags,
         Digest configDigest,
-        JsonObject imageConfig,
+        Image imageConfig,
         Layer[] layers) pushData,
         Stream imageStream,
         CancellationToken cancellationToken
@@ -433,7 +433,7 @@ internal sealed class DockerCli
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using (MemoryStream configStream = new(DigestAlgorithmExtensions.UTF8NoBom.GetBytes(image.Config.ToJsonString())))
+        using (MemoryStream configStream = new(Json.GetBytes(image.Image)))
         {
             PaxTarEntry configEntry = new(TarEntryType.RegularFile, configPath)
             {
@@ -445,12 +445,12 @@ internal sealed class DockerCli
 
     private static async Task WriteImageConfig(
         TarWriter writer,
-        JsonObject config,
+        Image config,
         string configPath,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using (MemoryStream configStream = new(DigestAlgorithmExtensions.UTF8NoBom.GetBytes(config.ToJsonString())))
+        using (MemoryStream configStream = new(Json.GetBytes(config)))
         {
             PaxTarEntry configEntry = new(TarEntryType.RegularFile, configPath)
             {
@@ -518,7 +518,7 @@ internal sealed class DockerCli
         (string repository,
         string[] tags,
         Digest configDigest,
-        JsonObject imageConfig,
+        Image imageConfig,
         Layer[] layers,
         ManifestV2 manifest) pushData,
         Stream imageStream,
@@ -661,7 +661,7 @@ internal sealed class DockerCli
     private static async Task WriteOciImageToBlobs(
         TarWriter writer,
         Digest configDigest,
-        JsonObject imageConfig,
+        Image imageConfig,
         Layer[] layers,
         ManifestV2 manifest,
         CancellationToken cancellationToken)

@@ -298,7 +298,7 @@ internal sealed class Registry
         };
     }
 
-    public async Task<JsonNode> GetJsonBlobCore(string repositoryName, Descriptor descriptor, CancellationToken cancellationToken)
+    public async Task<T> GetJsonBlobCore<T>(string repositoryName, Descriptor descriptor, CancellationToken cancellationToken)
     {
         // check if digest is available locally and serialize it, otherwise download from registry and store locally
         cancellationToken.ThrowIfCancellationRequested();
@@ -306,7 +306,7 @@ internal sealed class Registry
         if (File.Exists(storagePath))
         {
             using var fs = File.OpenRead(storagePath);
-            return (await JsonNode.ParseAsync(fs, cancellationToken: cancellationToken))!;
+            return (await Json.DeserializeAsync<T>(fs, cancellationToken: cancellationToken))!;
         }
         else
         {
@@ -319,16 +319,16 @@ internal sealed class Registry
             await storageWriteStream.DisposeAsync();
             // note: cannot just use the jsonStream here, as it may not be seekable
             using var storageReadStream = File.OpenRead(storagePath);
-            return (await JsonNode.ParseAsync(storageReadStream, cancellationToken: cancellationToken))!;
+            return (await Json.DeserializeAsync<T>(storageReadStream, cancellationToken: cancellationToken))!;
         }
     }
 
     private async Task<ImageBuilder> ReadSingleImageAsync(string repositoryName, ManifestV2 manifest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        JsonNode configDoc = await GetJsonBlobCore(repositoryName, manifest.Config, cancellationToken);
+        Image image = await GetJsonBlobCore<Image>(repositoryName, manifest.Config, cancellationToken);
         // ManifestV2.MediaType can be null, so we also provide manifest mediaType from http response
-        return new ImageBuilder(manifest, manifest.MediaType ?? SchemaTypes.DockerManifestV2, new ImageConfig(configDoc), _logger);
+        return new ImageBuilder(manifest, manifest.MediaType ?? SchemaTypes.DockerManifestV2, image, _logger);
     }
 
 
@@ -643,7 +643,7 @@ internal sealed class Registry
         }
 
         cancellationToken.ThrowIfCancellationRequested();
-        using (MemoryStream stringStream = new(DigestAlgorithmExtensions.UTF8NoBom.GetBytes(builtImage.Config.ToJsonString())))
+        using (MemoryStream stringStream = new(Json.GetBytes(builtImage.Image)))
         {
             var configDigest = builtImage.Manifest.Config.Digest;
             _logger.LogInformation(Strings.Registry_ConfigUploadStarted, configDigest);

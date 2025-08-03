@@ -120,7 +120,7 @@ internal static class ContainerBuilder
 
         bool hasErrors = false;
         (string[] imageEntrypoint, string[] imageCmd) = ImageBuilder.DetermineEntrypointAndCmd(entrypoint, entrypointArgs, defaultArgs, appCommand, appCommandArgs, appCommandInstruction,
-            baseImageEntrypoint: imageBuilder.BaseImageConfig.GetEntrypoint(),
+            baseImageEntrypoint: imageBuilder.BaseImageConfig.Entrypoint,
             logWarning: s =>
             {
                 logger.LogWarning(Resource.GetString(nameof(s)));
@@ -177,7 +177,7 @@ internal static class ContainerBuilder
         var serializedManifest = Json.Serialize(builtImage.Manifest);
         var manifestWriteTask = File.WriteAllTextAsync(generatedManifestPath.FullName, serializedManifest, DigestAlgorithmExtensions.UTF8NoBom);
 
-        var serializedConfig = Json.Serialize(builtImage.Config);
+        var serializedConfig = Json.Serialize(builtImage.Image);
         var configWriteTask = File.WriteAllTextAsync(generatedConfigPath.FullName, serializedConfig, DigestAlgorithmExtensions.UTF8NoBom);
 
         await Task.WhenAll(manifestWriteTask, configWriteTask).ConfigureAwait(false);
@@ -283,11 +283,10 @@ internal static class ContainerBuilder
         return 0;
     }
 
-
     public static async Task<ImageBuilder> LoadFromManifestAndConfig(string manifestPath, KnownImageFormats? desiredImageFormat, string configPath, ILogger logger, CancellationToken cancellationToken)
     {
         var baseImageManifest = await Json.DeserializeAsync<ManifestV2>(File.OpenRead(manifestPath), cancellationToken: cancellationToken);
-        var baseImageConfig = await JsonNode.ParseAsync(File.OpenRead(configPath));
+        var baseImageConfig = await Json.DeserializeAsync<Image>(File.OpenRead(configPath), cancellationToken: cancellationToken);
         if (baseImageConfig is null || baseImageManifest is null) throw new ArgumentException($"Expected to load manifest from {manifestPath} and config from {configPath}");
         // forcibly change the media type if required from that of the base image
         var mediaType = baseImageManifest.MediaType;
@@ -300,6 +299,6 @@ internal static class ContainerBuilder
                 _ => mediaType // should be impossible unless we add to the enum
             };
         }
-        return new ImageBuilder(baseImageManifest, mediaType!, new ImageConfig(baseImageConfig), logger);
+        return new ImageBuilder(baseImageManifest, mediaType!, baseImageConfig, logger);
     }
 }

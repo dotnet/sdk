@@ -21,7 +21,7 @@ internal sealed class ImageBuilder
 
     // the mutable internal manifest that we're building by modifying the base and applying customizations
     private readonly ManifestV2 _manifest;
-    private readonly ImageConfig _baseImageConfig;
+    private readonly Image _baseImage;
     private readonly ILogger _logger;
 
     /// <summary>
@@ -30,26 +30,55 @@ internal sealed class ImageBuilder
     /// </summary>
     internal static Regex aspnetPortRegex = new(@"(?<scheme>\w+)://(?<domain>([*+]|).+):(?<port>\d+)");
 
-    public ImageConfig BaseImageConfig => _baseImageConfig;
+    private bool _userHasBeenExplicitlySet;
+
+    public ImageExecution BaseImageConfig => _baseImage.Config!;
 
     /// <summary>
     /// MediaType of the output manifest. By default, this will be the same as the base image manifest.
     /// </summary>
-    public string ManifestMediaType { get; set; }
+    public string ManifestMediaType {
+        get
+        {
+            return _manifest.MediaType!;
+        }
 
-    internal ImageBuilder(ManifestV2 manifest, string manifestMediaType, ImageConfig baseImageConfig, ILogger logger)
+        set
+        {
+            _manifest.MediaType = value;
+        }
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ImageBuilder"/> class.
+    /// This is used to build a new image based on the base image.
+    /// It does a clone of the base manifest and base image so that the original base image is not modified.
+    /// </summary>
+    /// <param name="manifest">The parent manifest that this image is based on.</param>
+    /// <param name="manifestMediaType">The kind of manifest the to-be-created image should create.</param>
+    /// <param name="baseImage">The base image to build upon. This is cloned so as to not modify the original base image.</param>
+    /// <param name="logger">The logger to use for logging.</param>
+    internal ImageBuilder(ManifestV2 manifest, string manifestMediaType, Image baseImage, ILogger logger)
     {
         _baseImageManifest = manifest;
-        _manifest = new ManifestV2() { SchemaVersion = manifest.SchemaVersion, Config = manifest.Config, Layers = new(manifest.Layers), MediaType = manifest.MediaType };
-        ManifestMediaType = manifestMediaType;
-        _baseImageConfig = baseImageConfig;
+        _manifest = new ManifestV2()
+        {
+            SchemaVersion = manifest.SchemaVersion,
+            Config = manifest.Config,
+            Layers = [.. manifest.Layers],
+            MediaType = manifestMediaType,
+            Annotations = manifest.Annotations,
+            Labels = manifest.Labels
+        };
+        _baseImage = baseImage with { };
+        _baseImage.Config ??= new ImageExecution();
         _logger = logger;
     }
 
     /// <summary>
     /// Gets a value indicating whether the base image is has a Windows operating system.
     /// </summary>
-    public bool IsWindows => _baseImageConfig.IsWindows;
+    public bool IsWindows => _baseImage.IsWindows;
 
     // For tests
     internal Digest ManifestConfigDigest => _manifest.Config.Digest;
@@ -63,27 +92,20 @@ internal sealed class ImageBuilder
         AssignUserFromEnvironment();
         AssignPortsFromEnvironment();
 
-        JsonObject config = _baseImageConfig.BuildConfig();
         var mediaType = ManifestMediaType switch
         {
             SchemaTypes.OciManifestV1 => SchemaTypes.OciImageConfigV1,
             SchemaTypes.DockerManifestV2 => SchemaTypes.DockerContainerV1,
             _ => SchemaTypes.OciImageConfigV1 // opinion - defaulting to modern here, but really this should never happen
         };
-        Descriptor newManifestConfig = Descriptor.FromContent(mediaType, DigestAlgorithm.sha256, config);
-        ManifestV2 newManifest = new ManifestV2()
-        {
-            Config = newManifestConfig,
-            SchemaVersion = _manifest.SchemaVersion,
-            MediaType = ManifestMediaType,
-            Layers = _manifest.Layers
-        };
+
+        Descriptor manifestConfigDescriptor = Descriptor.FromContent(mediaType, DigestAlgorithm.sha256, _baseImage);
+        _manifest.Config = manifestConfigDescriptor;
 
         return new BuiltImage()
         {
-            Config = config,
-            Manifest = newManifest,
-            Layers = _manifest.Layers
+            Image = _baseImage,
+            Manifest = _manifest with { }
         };
     }
 
@@ -93,7 +115,11 @@ internal sealed class ImageBuilder
     internal void AddLayer(Layer l)
     {
         _manifest.Layers.Add(l.Descriptor);
-        _baseImageConfig.AddLayer(l);
+        // the rootfs diffids are the _uncompressed_ digests, so we need to use the uncompressed digest here.
+        // a more 'full' treatment would be to see if the mediatype of the layer is 'uncompressed' or not, and 
+        // if 'uncompressed' already just use its digest - and if not 'convert' it to an uncompressed digest
+        // by uncompressing the layer and calculating the digest.
+        _baseImage.RootFS.DiffIDs.Add((Digest)l.Descriptor.UncompressedDigest!);
     }
 
     internal (string name, string value) AddBaseImageDigestLabel()
@@ -106,32 +132,50 @@ internal sealed class ImageBuilder
     /// <summary>
     /// Adds a label to a base image.
     /// </summary>
-    internal void AddLabel(string name, string value) => _baseImageConfig.AddLabel(name, value);
+    internal void AddLabel(string name, string value) =>
+        (_baseImage.Config!.Labels ?? []).Add(name, value);
 
     /// <summary>
     /// Adds environment variables to a base image.
     /// </summary>
-    internal void AddEnvironmentVariable(string envVarName, string value) => _baseImageConfig.AddEnvironmentVariable(envVarName, value);
+    internal void AddEnvironmentVariable(string envVarName, string value) =>
+        (_baseImage.Config!.Env ??= []).Add(new KeyValuePair<string, string>(envVarName, value));
 
     /// <summary>
     /// Exposes additional port.
     /// </summary>
-    internal void ExposePort(int number, PortType type) => _baseImageConfig.ExposePort(number, type);
+    internal void ExposePort(int number, PortType type) =>
+        (_baseImage.Config!.ExposedPorts ??= []).Add(new Port(number, type));
 
     /// <summary>
     /// Sets working directory for the image.
     /// </summary>
-    internal void SetWorkingDirectory(string workingDirectory) => _baseImageConfig.SetWorkingDirectory(workingDirectory);
+    internal void SetWorkingDirectory(string workingDirectory) =>
+        _baseImage.Config!.WorkingDir = workingDirectory;
 
     /// <summary>
     /// Sets the ENTRYPOINT and CMD for the image.
     /// </summary>
-    internal void SetEntrypointAndCmd(string[] entrypoint, string[] cmd) => _baseImageConfig.SetEntrypointAndCmd(entrypoint, cmd);
+    internal void SetEntrypointAndCmd(string[] entrypoint, string[] cmd)
+    {
+        _baseImage.Config!.Entrypoint = entrypoint;
+        _baseImage.Config!.Cmd = cmd;
+    }
 
     /// <summary>
     /// Sets the USER for the image.
     /// </summary>
-    internal void SetUser(string user, bool isExplicitUserInteraction = true) => _baseImageConfig.SetUser(user, isExplicitUserInteraction);
+    internal void SetUser(string user, bool isExplicitUserInteraction = true)
+    {
+        // we don't let automatic/inferred user settings overwrite an explicit user request
+        if (_userHasBeenExplicitlySet && !isExplicitUserInteraction)
+        {
+            return;
+        }
+
+        _baseImage.Config!.User = user;
+        _userHasBeenExplicitlySet = isExplicitUserInteraction;
+    }
 
     internal static (string[] entrypoint, string[] cmd) DetermineEntrypointAndCmd(
         string[] entrypoint,
@@ -245,10 +289,10 @@ internal sealed class ImageBuilder
     internal void AssignUserFromEnvironment()
     {
         // it's a common convention to apply custom users with the APP_UID convention - we check and apply that here
-        if (_baseImageConfig.EnvironmentVariables.TryGetValue(EnvironmentVariables.APP_UID, out string? appUid))
+        if (_baseImage.Config?.Env?.FirstOrDefault(k => k.Key == EnvironmentVariables.APP_UID) is { } appUid)
         {
             _logger.LogTrace("Setting user from APP_UID environment variable");
-            SetUser(appUid, isExplicitUserInteraction: false);
+            SetUser(appUid.Value, isExplicitUserInteraction: false);
         }
     }
 
@@ -263,9 +307,9 @@ internal sealed class ImageBuilder
         // ASPNETCORE_URLS is the most specific and is the only one used if present, followed by ASPNETCORE_HTTPS_PORT and ASPNETCORE_HTTP_PORT together
 
         // https://learn.microsoft.com//aspnet/core/fundamentals/host/web-host?view=aspnetcore-8.0#server-urls - the format of ASPNETCORE_URLS has been stable for many years now
-        if (_baseImageConfig.EnvironmentVariables.TryGetValue(EnvironmentVariables.ASPNETCORE_URLS, out string? urls))
+        if (_baseImage.Config?.Env?.FirstOrDefault(k => k.Key == EnvironmentVariables.ASPNETCORE_URLS) is { } urls)
         {
-            foreach (var url in Split(urls))
+            foreach (var url in Split(urls.Value))
             {
                 _logger.LogTrace("Setting ports from ASPNETCORE_URLS environment variable");
                 var match = aspnetPortRegex.Match(url);
@@ -280,10 +324,10 @@ internal sealed class ImageBuilder
 
         // port-specific
         // https://learn.microsoft.com/aspnet/core/fundamentals/servers/kestrel/endpoints?view=aspnetcore-8.0#specify-ports-only - new for .NET 8 - allows just changing port(s) easily
-        if (_baseImageConfig.EnvironmentVariables.TryGetValue(EnvironmentVariables.ASPNETCORE_HTTP_PORTS, out string? httpPorts))
+        if (_baseImage.Config?.Env?.FirstOrDefault(k => k.Key == EnvironmentVariables.ASPNETCORE_HTTP_PORTS) is { } httpPorts)
         {
             _logger.LogTrace("Setting ports from ASPNETCORE_HTTP_PORTS environment variable");
-            foreach (var port in Split(httpPorts))
+            foreach (var port in Split(httpPorts.Value))
             {
                 if (int.TryParse(port, out int parsedPort))
                 {
@@ -297,10 +341,10 @@ internal sealed class ImageBuilder
             }
         }
 
-        if (_baseImageConfig.EnvironmentVariables.TryGetValue(EnvironmentVariables.ASPNETCORE_HTTPS_PORTS, out string? httpsPorts))
+        if (_baseImage.Config?.Env?.FirstOrDefault(k => k.Key == EnvironmentVariables.ASPNETCORE_HTTPS_PORTS) is { } httpsPorts)
         {
             _logger.LogTrace("Setting ports from ASPNETCORE_HTTPS_PORTS environment variable");
-            foreach (var port in Split(httpsPorts))
+            foreach (var port in Split(httpsPorts.Value))
             {
                 if (int.TryParse(port, out int parsedPort))
                 {

@@ -264,7 +264,7 @@ public class EndToEndTests : IDisposable
         // Convert the image to an OCI image
         var ociImage = new BuiltImage
         {
-            Config = builtImage.Config,
+            Image = builtImage.Image,
             Manifest = new()
             {
                 Config = builtImage.Manifest.Config,
@@ -272,8 +272,7 @@ public class EndToEndTests : IDisposable
                 SchemaVersion = builtImage.Manifest.SchemaVersion,
                 MediaType = SchemaTypes.OciManifestV1,
                 KnownDigest = builtImage.Manifest.KnownDigest,
-            },
-            Layers = builtImage.Layers
+            }
         };
 
         return ociImage;

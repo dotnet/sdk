@@ -70,13 +70,13 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
             Log.LogMessage($"Found multi-arch manifest for {Repository}, fetching child manifests"); ;
             if (multiArchManifest is ManifestListV2 manifestList)
             {
-                var manifests = await Task.WhenAll(manifestList.manifests.Select(GetPlatformDataForManifest));
+                var manifests = await Task.WhenAll(manifestList.manifests.Select(GetConfigForDockerManifest));
                 SetOutputs(manifests, store);
                 return true;
             }
             else if (multiArchManifest is ImageIndexV1 imageIndex)
             {
-                var manifests = await Task.WhenAll(imageIndex.manifests.Select(GetOciPlatformDataForManifest));
+                var manifests = await Task.WhenAll(imageIndex.manifests.Select(GetConfigForOciManifest));
                 SetOutputs(manifests, store);
                 return true;
             }
@@ -89,7 +89,7 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
         {
             throw new InvalidOperationException("Unknown manifest type");
         }
-        async Task<(ManifestV2, Image)> GetPlatformDataForManifest(PlatformSpecificManifest p)
+        async Task<(ManifestV2, Image)> GetConfigForDockerManifest(PlatformSpecificManifest p)
         {
             var manifest = await registry.GetManifestCore(Repository, p.digest, _cts.Token);
             if (manifest is not ManifestV2 manifestV2)
@@ -101,7 +101,7 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
             return (manifestV2, platformData);
         }
 
-        async Task<(ManifestV2, Image)> GetOciPlatformDataForManifest(PlatformSpecificOciManifest p)
+        async Task<(ManifestV2, Image)> GetConfigForOciManifest(PlatformSpecificOciManifest p)
         {
             var manifest = await registry.GetManifestCore(Repository, p.digest, _cts.Token);
             if (manifest is not ManifestV2 manifestV2)
@@ -118,27 +118,21 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
     /// Downloads the configuration for a manifest, which contains platform information.
     /// This ensures that the per-RID configs are present for future build steps
     /// </summary>
-    /// <param name="registry"></param>
-    /// <param name="manifest"></param>
     /// <returns></returns>
-    async Task<Image> DownloadConfigForManifest(Registry registry, ManifestV2 manifest)
-    {
-        var configJson = await registry.GetJsonBlobCore(Repository, manifest.Config, _cts.Token);
-        return configJson.Deserialize<Image>()!;
-    }
+    Task<Image> DownloadConfigForManifest(Registry registry, ManifestV2 manifest) => registry.GetJsonBlobCore<Image>(Repository, manifest.Config, _cts.Token);
 
-    void SetOutputs(IReadOnlyList<(ManifestV2 manifest, Image platformInfo)> manifests, ContentStore store)
+    void SetOutputs((ManifestV2 manifest, Image image)[] manifests, ContentStore store)
     {
-        var manifestItems = new List<ITaskItem>(manifests.Count);
-        var configItems = new List<ITaskItem>(manifests.Count);
-        var layerItems = new List<ITaskItem>(manifests.Count * manifests[0].manifest.Layers.Count); //estimate
-        foreach (var (manifest, platform) in manifests)
+        var manifestItems = new List<ITaskItem>(manifests.Length);
+        var configItems = new List<ITaskItem>(manifests.Length);
+        var layerItems = new List<ITaskItem>(manifests.Length * manifests[0].manifest.Layers.Count); //estimate
+        foreach (var (manifest, image) in manifests)
         {
             var size = Json.GetContentLength(manifest);
             var manifestDescriptor = new Descriptor(manifest.MediaType!, manifest.KnownDigest ?? throw new ArgumentException("manifest was expected to have a known digest"), size);
             var manifestLocalPath = store.PathForDescriptor(manifestDescriptor);
 
-            var itemRid = RidMapping.CreateRidForPlatform(platform);
+            var itemRid = RidMapping.CreateRidForPlatform(image);
             var manifestItem = new Microsoft.Build.Utilities.TaskItem(manifestLocalPath);
 
             // set descriptor metadata

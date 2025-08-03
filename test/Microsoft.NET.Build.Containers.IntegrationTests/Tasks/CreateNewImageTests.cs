@@ -301,7 +301,7 @@ public class CreateNewImageTests
             ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
 
-        Assert.Equal(RootlessUser, imageBuilder.BaseImageConfig.GetUser());
+        Assert.Equal(RootlessUser, imageBuilder.BaseImageConfig.User);
     }
 
 
