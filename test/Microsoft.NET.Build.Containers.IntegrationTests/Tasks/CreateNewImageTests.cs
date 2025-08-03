@@ -77,10 +77,7 @@ public class CreateNewImageTests
         })).ToArray();
     }
 
-    private static ImageConfig GetImageConfigFromTask(CreateNewImage task)
-    {
-        return new(task.GeneratedContainerConfiguration);
-    }
+    private static Image GetImageConfigFromTask(CreateNewImage task) => Json.Deserialize<Image>(task.GeneratedContainerConfiguration)!;
 
     [DockerAvailableFact()]
     public void ParseContainerProperties_EndToEnd()
@@ -214,9 +211,9 @@ public class CreateNewImageTests
 
         var config = GetImageConfigFromTask(cni);
         // because we're building off of .net 8 images for this test, we can validate the user id and aspnet https urls
-        Assert.Equal("1654", config.GetUser());
+        Assert.Equal("1654", config.Config?.User);
 
-        var ports = config.Ports;
+        var ports = config.Config?.ExposedPorts!;
         Assert.Single(ports);
         Assert.Equal(new(8080, PortType.tcp), ports.First());
 
