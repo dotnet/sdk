@@ -24,12 +24,8 @@ public interface IManifest
 /// </remarks>
 public class ManifestV2 : IManifest
 {
-    /// <summary>
-    /// If this is set, we have a canonical digest for this manifest that came from some trusted source - most likely an upstream container registry.
-    /// </summary>
-    [JsonIgnore]
-    public Digest? KnownDigest { get; set; }
 
+    #region Spec properties
     /// <summary>
     /// This REQUIRED property specifies the image manifest schema version.
     /// For this version of the specification, this MUST be 2 to ensure backward compatibility with older versions of Docker.
@@ -48,6 +44,16 @@ public class ManifestV2 : IManifest
     public string? MediaType { get; init; }
 
     /// <summary>
+    /// This OPTIONAL property contains the type of an artifact when the manifest is used for an artifact.
+    /// This MUST be set when mediaType is set to the empty value. If defined, the value MUST comply with RFC 6838,
+    /// including the naming requirements in its section 4.2, and MAY be registered with IANA.
+    /// Implementations storing or copying image manifests MUST NOT error on encountering an artifactType that is unknown to the implementation.
+    /// </summary>
+    [JsonPropertyName("artifactType")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ArtifactType { get; set; }
+
+    /// <summary>
     /// This REQUIRED property references a configuration object for a container, by digest.
     /// </summary>
     [JsonPropertyName("config")]
@@ -58,9 +64,33 @@ public class ManifestV2 : IManifest
     /// Subsequent layers MUST then follow in stack order (i.e. from layers[0] to layers[len(layers)-1]).
     /// The final filesystem layout MUST match the result of applying the layers to an empty directory.
     /// The ownership, mode, and other attributes of the initial empty directory are unspecified.
+    /// These layers are often going to be _compressed_ layers, and the size + digest of the compressed layer is what is stored in the descriptor.
     /// </summary>
     [JsonPropertyName("layers")]
     public required List<Descriptor> Layers { get; init; }
+
+    /// <summary>
+    /// This OPTIONAL property specifies a descriptor of another manifest.
+    /// This value defines a weak association to a separate Merkle Directed Acyclic Graph (DAG) structure,
+    /// and is used by the referrers API to include this manifest in the list of responses for the subject digest.
+    /// </summary>
+    [JsonPropertyName("subject")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Descriptor? Subject { get; set; }
+
+    /// <summary>
+    /// This OPTIONAL property contains arbitrary metadata for the image manifest. This OPTIONAL property MUST use the annotation rules.
+    /// </summary>
+    [JsonPropertyName("annotations")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Dictionary<string, string>? Annotations { get; set; }
+#endregion
+
+    /// <summary>
+    /// If this is set, we have a canonical digest for this manifest that came from some trusted source - most likely an upstream container registry.
+    /// </summary>
+    [JsonIgnore]
+    public Digest? KnownDigest { get; set; }
 
     /// <summary>
     /// Gets the digest for this manifest.

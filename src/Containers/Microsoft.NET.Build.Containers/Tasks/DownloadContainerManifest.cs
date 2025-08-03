@@ -134,41 +134,52 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
         var layerItems = new List<ITaskItem>(manifests.Count * manifests[0].manifest.Layers.Count); //estimate
         foreach (var (manifest, platform) in manifests)
         {
-            var manifestDescriptor = new Descriptor(manifest.MediaType!, manifest.KnownDigest ?? throw new ArgumentException("manifest was expected to have a known digest"), 0);
+            var size = Json.GetContentLength(manifest);
+            var manifestDescriptor = new Descriptor(manifest.MediaType!, manifest.KnownDigest ?? throw new ArgumentException("manifest was expected to have a known digest"), size);
             var manifestLocalPath = store.PathForDescriptor(manifestDescriptor);
 
             var itemRid = RidMapping.CreateRidForPlatform(platform);
             var manifestItem = new Microsoft.Build.Utilities.TaskItem(manifestLocalPath);
-            manifestItem.SetMetadata("MediaType", manifest.MediaType ?? string.Empty);
+
+            // set descriptor metadata
+            SetDescriptorMetadata(manifestItem, manifestDescriptor);
+
+            // set additional metadata
             manifestItem.SetMetadata("ConfigDigest", manifest.Config.Digest.ToString());
             manifestItem.SetMetadata("RuntimeIdentifier", itemRid);
             manifestItem.SetMetadata("Registry", Registry);
             manifestItem.SetMetadata("Repository", Repository);
             manifestItems.Add(manifestItem);
 
-            var configDescriptor = new Descriptor(manifest.Config.MediaType, manifest.Config.Digest, manifest.Config.Size);
-            var configLocalPath = store.PathForDescriptor(configDescriptor);
+            var configLocalPath = store.PathForDescriptor(manifest.Config);
             var configItem = new Microsoft.Build.Utilities.TaskItem(configLocalPath);
-            configItem.SetMetadata("MediaType", manifest.Config.MediaType ?? string.Empty);
-            configItem.SetMetadata("Size", manifest.Config.Size.ToString());
-            configItem.SetMetadata("Digest", manifest.Config.Digest.ToString());
+
+            // set descriptor metadata
+            SetDescriptorMetadata(configItem, manifest.Config);
+
+            // set additional metadata
             configItem.SetMetadata("RuntimeIdentifier", itemRid);
             configItem.SetMetadata("Registry", Registry);
             configItem.SetMetadata("Repository", Repository);
+
+            // set parent descriptor metadata
+            SetDescriptorMetadata(configItem, manifestDescriptor, prefix: "Manifest");
             configItems.Add(configItem);
 
-            foreach (var layer in manifest.Layers)
+            foreach (var layerDescriptor in manifest.Layers)
             {
-                var layerDescriptor = new Descriptor(layer.MediaType!, layer.Digest, layer.Size);
                 var layerLocalPath = store.PathForDescriptor(layerDescriptor);
                 var layerItem = new Microsoft.Build.Utilities.TaskItem(layerLocalPath);
-                layerItem.SetMetadata("MediaType", layer.MediaType ?? string.Empty);
-                layerItem.SetMetadata("Size", layer.Size.ToString());
-                layerItem.SetMetadata("Digest", layer.Digest.ToString());
-                layerItem.SetMetadata("ConfigDigest", manifest.Config.Digest.ToString());
+                // set descriptor metadata
+                SetDescriptorMetadata(layerItem, layerDescriptor);
+
+                // set additional metadata
                 layerItem.SetMetadata("RuntimeIdentifier", itemRid);
                 layerItem.SetMetadata("Registry", Registry);
                 layerItem.SetMetadata("Repository", Repository);
+
+                // set parent descriptor metadata
+                SetDescriptorMetadata(layerItem, manifestDescriptor, prefix: "Manifest");
                 layerItems.Add(layerItem);
             }
         }
@@ -176,5 +187,22 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
         Manifests = manifestItems.ToArray();
         Configs = configItems.ToArray();
         Layers = layerItems.ToArray();
+    }
+
+    public void SetDescriptorMetadata(ITaskItem item, Descriptor descriptor, string? prefix = null)
+    {
+        if (prefix is not null)
+        {
+            item.SetMetadata($"{prefix}MediaType", descriptor.MediaType);
+            item.SetMetadata($"{prefix}Digest", descriptor.Digest.ToString());
+            item.SetMetadata($"{prefix}Size", descriptor.Size.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        }
+        else
+        {
+            item.SetMetadata("MediaType", descriptor.MediaType);
+            item.SetMetadata("Digest", descriptor.Digest.ToString());
+            item.SetMetadata("Size", descriptor.Size.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        }
+
     }
 }
