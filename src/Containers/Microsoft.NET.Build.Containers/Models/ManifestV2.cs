@@ -84,6 +84,13 @@ public class ManifestV2 : IManifest
     [JsonPropertyName("annotations")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Dictionary<string, string>? Annotations { get; set; }
+
+    /// <summary>
+    /// older form of annotations, used by docker media types
+    /// </summary>
+    [JsonPropertyName("labels")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Dictionary<string, string>? Labels { get; set; }
 #endregion
 
     /// <summary>
