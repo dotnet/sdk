@@ -39,7 +39,6 @@ public static class Data
             contentStream.Close();
             return await Containers.Layer.FromBackingFile(testFile, SchemaTypes.OciLayerGzipV1, DigestAlgorithm.sha256);
         }
-
     }
 
     public static class Config

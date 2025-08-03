@@ -3,37 +3,8 @@
 
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
-public class TransientTestFolderFixture : IDisposable
+public class LayerCreation(ConformanceLayerFixture conformanceLayerFixture) : IClassFixture<ConformanceLayerFixture>
 {
-    public readonly DirectoryInfo TestFolder;
-
-    public TransientTestFolderFixture()
-    {
-        TestFolder = new DirectoryInfo(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
-        TestFolder.Create();
-    }
-
-    public void Dispose()
-    {
-        try
-        {
-            if (TestFolder.Exists)
-            {
-                TestFolder.Delete(recursive: true);
-            }
-        }
-        catch
-        {
-            // Handle exceptions
-        }
-    }
-}
-
-public class LayerCreation(ITestOutputHelper testOutput, TransientTestFolderFixture testFolderFixture) : IClassFixture<TransientTestFolderFixture>
-{
-    public DirectoryInfo TestFolder => testFolderFixture.TestFolder;
-    public ContentStore ContentStore => new(TestFolder);
-
     [Fact]
     public async Task ComputesSameDescriptorForCanonicalLayerTarball()
     {
@@ -43,12 +14,8 @@ public class LayerCreation(ITestOutputHelper testOutput, TransientTestFolderFixt
     }
 
     [Fact]
-    public async Task ComputesSameLayerForCanonicalLayerTarball()
+    public void ComputesSameLayerForCanonicalLayerTarball()
     {
-        testOutput.WriteLine($"Conformance layer digest: {Data.Layer.ConformanceLayerSha256DigestString}");
-        testOutput.WriteLine($"Conformance layer content length: {Data.Layer.ConformanceLayerContentLength}");
-        testOutput.WriteLine($"Conformance layer descriptor: {Data.Layer.ConformanceLayerDescriptor}");
-        var layer = await Data.Layer.CreateConformanceLayer(TestFolder);
-        layer.Descriptor.Should().Be(Data.Layer.ConformanceLayerDescriptor);
+        conformanceLayerFixture.Layer.Descriptor.Should().Be(Data.Layer.ConformanceLayerDescriptor);
     }
 }
