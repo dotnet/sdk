@@ -7,39 +7,29 @@ using System.Runtime.CompilerServices;
 using FakeItEasy;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Microsoft.NET.Build.Containers.IntegrationTests;
 using Microsoft.NET.Build.Containers.UnitTests;
+using Microsoft.NET.Build.Containers.IntegrationTests;
+using System.Threading.Tasks;
+using System.Globalization;
+using Task = System.Threading.Tasks.Task;
 
 namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
 
-[Collection("Docker tests")]
-public class CreateNewImageTests
+public class CreateNewImageTests(ITestOutputHelper testOutput, HelixTransientTestFolderFixture testFolder) : IClassFixture<HelixTransientTestFolderFixture>
 {
-    private ITestOutputHelper _testOutput;
-
-    public CreateNewImageTests(ITestOutputHelper testOutput)
-    {
-        _testOutput = testOutput;
-    }
-
-    [DockerAvailableFact()]
+    [Fact]
     public void CreateNewImage_Baseline()
     {
         DirectoryInfo newProjectDir = new(GetTestDirectoryName());
-        if (newProjectDir.Exists)
-        {
-            newProjectDir.Delete(recursive: true);
-        }
-
         newProjectDir.Create();
 
-        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
+        new DotnetNewCommand(testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
             .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
 
-        new DotnetCommand(_testOutput, "publish", "-c", "Release", "-r", "linux-arm64", "--no-self-contained")
+        new DotnetCommand(testOutput, "publish", "-c", "Release", "-r", "linux-arm64", "--no-self-contained")
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
@@ -55,51 +45,27 @@ public class CreateNewImageTests
 
         task.OutputRegistry = "localhost:5010";
         task.LocalRegistry = DockerAvailableFactAttribute.LocalRegistry;
-        var baseDir = Path.Combine(newProjectDir.FullName, "bin", "Release");
-        // task.PublishFiles = MakeItemsForPublishDir(baseDir);
         task.Repository = "dotnet/create-new-image-baseline";
         task.ImageTags = new[] { "latest" };
         task.WorkingDirectory = "app/";
         task.Entrypoint = new TaskItem[] { new("dotnet"), new("build") };
 
         Assert.True(task.Execute(), FormatBuildMessages(errors));
-        newProjectDir.Delete(true);
     }
-
-    private static ITaskItem[] MakeItemsForPublishDir(string publishDir)
-    {
-        var files = Directory.GetFiles(publishDir, "*", new EnumerationOptions()
-        {
-            RecurseSubdirectories=true
-        });
-
-        return files.Select(f => new TaskItem(f, new Dictionary<string, string>
-        {
-            ["RelativePath"] = Path.GetRelativePath(publishDir, f)
-        })).ToArray();
-    }
-
-    private static Image GetImageConfigFromTask(CreateNewImage task) => Json.Deserialize<Image>(task.GeneratedContainerConfiguration)!;
 
     [Fact]
-    public void ParseContainerProperties_EndToEnd()
+    public async Task ParseContainerProperties_EndToEnd()
     {
         DirectoryInfo newProjectDir = new(GetTestDirectoryName());
-
-        if (newProjectDir.Exists)
-        {
-            newProjectDir.Delete(recursive: true);
-        }
-
         newProjectDir.Create();
 
-        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
+        new DotnetNewCommand(testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
             .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
 
-        new DotnetCommand(_testOutput, "build", "--configuration", "release")
+        new DotnetCommand(testOutput, "build", "--configuration", "release")
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
@@ -131,33 +97,22 @@ public class CreateNewImageTests
             Registry = pcp.ParsedContainerRegistry,
             Repository = pcp.ParsedContainerImage,
             Tag = pcp.ParsedContainerTag,
-            ContentStore = newProjectDir.FullName,
+            ContentStore = testFolder.TestFolder.FullName,
         };
         downloadContainerManifest.Execute().Should().BeTrue();
 
         cni.BaseRegistry = pcp.ParsedContainerRegistry;
         cni.BaseImageName = pcp.ParsedContainerImage;
         cni.BaseImageTag = pcp.ParsedContainerTag;
-        
+
         cni.BaseImageManifestPath = downloadContainerManifest.Manifests.Single(m => m.GetMetadata("RuntimeIdentifier") == "linux-x64");
         cni.BaseImageConfigurationPath = downloadContainerManifest.Configs.Single(m => m.GetMetadata("RuntimeIdentifier") == "linux-x64");
-        var projectSource = Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework);
-        var fakeTarballPath = Path.Combine(newProjectDir.FullName, "fake.tar");
-        TarFile.CreateFromDirectory(projectSource, fakeTarballPath, includeBaseDirectory: false);
-        var readStream = File.OpenRead(fakeTarballPath);
-        var destStream = File.OpenWrite(fakeTarballPath + ".gz");
-        var zipStream = new GZipStream(destStream, CompressionMode.Compress);
-        readStream.CopyTo(zipStream);
-        readStream.Dispose();
-        zipStream.Dispose();
-        cni.GeneratedApplicationLayer = new TaskItem(fakeTarballPath + ".gz");
-        cni.GeneratedApplicationLayer.SetMetadata("MediaType", SchemaTypes.DockerLayerGzip);
-        cni.GeneratedApplicationLayer.SetMetadata("Digest", "sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef");
-        cni.GeneratedApplicationLayer.SetMetadata("Size", "123456");
 
+        ITaskItem manualLayerTarball = await CreateLayerTarballForDirectory(newProjectDir);
+        cni.GeneratedApplicationLayer = manualLayerTarball;
         cni.GeneratedManifestPath = Path.Combine(newProjectDir.FullName, "dummy-manifest.json");
         cni.GeneratedConfigurationPath = Path.Combine(newProjectDir.FullName, "dummy-configuration.json");
-        cni.ContentStoreRoot = newProjectDir.FullName;
+        cni.ContentStoreRoot = testFolder.TestFolder.FullName;
 
         cni.Repository = pcp.NewContainerRepository;
         cni.OutputRegistry = "localhost:5010";
@@ -168,7 +123,6 @@ public class CreateNewImageTests
         cni.GenerateDigestLabel = false;
 
         Assert.True(cni.Execute(), FormatBuildMessages(errors));
-        newProjectDir.Delete(true);
     }
 
     /// <summary>
@@ -178,15 +132,9 @@ public class CreateNewImageTests
     public void Tasks_EndToEnd_With_EnvironmentVariable_Validation()
     {
         DirectoryInfo newProjectDir = new(GetTestDirectoryName());
-
-        if (newProjectDir.Exists)
-        {
-            newProjectDir.Delete(recursive: true);
-        }
-
         newProjectDir.Create();
 
-        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
+        new DotnetNewCommand(testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
             .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
@@ -196,7 +144,7 @@ public class CreateNewImageTests
 
         File.WriteAllText(Path.Combine(newProjectDir.FullName, "Program.cs"), $"Console.Write(Environment.GetEnvironmentVariable(\"GoodEnvVar\"));");
 
-        new DotnetCommand(_testOutput, "build", "--configuration", "release", "/p:runtimeidentifier=linux-x64")
+        new DotnetCommand(testOutput, "build", "--configuration", "release", "/p:runtimeidentifier=linux-x64")
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
@@ -251,19 +199,19 @@ public class CreateNewImageTests
         Assert.Single(ports);
         Assert.Equal(new(8080, PortType.tcp), ports.First());
 
-        ContainerCli.RunCommand(_testOutput, "--rm", $"{pcp.NewContainerRepository}:latest")
+        ContainerCli.RunCommand(testOutput, "--rm", $"{pcp.NewContainerRepository}:latest")
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("Foo");
     }
 
-    [DockerAvailableFact()]
+    [Fact]
     public async System.Threading.Tasks.Task CreateNewImage_RootlessBaseImage()
     {
         const string RootlessBase = "dotnet/rootlessbase";
         const string AppImage = "dotnet/testimagerootless";
         const string RootlessUser = "1654";
-        var loggerFactory = new TestLoggerFactory(_testOutput);
+        var loggerFactory = new TestLoggerFactory(testOutput);
         var logger = loggerFactory.CreateLogger(nameof(CreateNewImage_RootlessBaseImage));
 
         // Build a rootless base runtime image.
@@ -274,7 +222,7 @@ public class CreateNewImageTests
             DockerRegistryManager.Net8ImageTag,
             "linux-x64",
             ToolsetUtils.RidGraphManifestPicker,
-            cancellationToken: default).ConfigureAwait(false);
+            cancellationToken: default);
 
         Assert.NotNull(imageBuilder);
 
@@ -284,25 +232,19 @@ public class CreateNewImageTests
         var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net8ImageTag, null);
         var destinationReference = new DestinationImageReference(registry, RootlessBase, new[] { "latest" });
 
-        await registry.PushAsync(builtImage, sourceReference, destinationReference, cancellationToken: default).ConfigureAwait(false);
+        await registry.PushAsync(builtImage, sourceReference, destinationReference, cancellationToken: default);
 
         // Build an application image on top of the rootless base runtime image.
         DirectoryInfo newProjectDir = new(Path.Combine(TestSettings.TestArtifactsDirectory, nameof(CreateNewImage_RootlessBaseImage)));
-
-        if (newProjectDir.Exists)
-        {
-            newProjectDir.Delete(recursive: true);
-        }
-
         newProjectDir.Create();
 
-        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
+        new DotnetNewCommand(testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
             .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
 
-        new DotnetCommand(_testOutput, "publish", "-c", "Release", "-r", "linux-x64", "--no-self-contained")
+        new DotnetCommand(testOutput, "publish", "-c", "Release", "-r", "linux-x64", "--no-self-contained")
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
@@ -315,14 +257,12 @@ public class CreateNewImageTests
         task.BaseImageTag = "latest";
 
         task.OutputRegistry = "localhost:5010";
-        // task.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "linux-x64", "publish"));
         task.Repository = AppImage;
         task.ImageTags = new[] { "latest" };
         task.WorkingDirectory = "app/";
         task.Entrypoint = new TaskItem[] { new("dotnet"), new("build") };
 
         Assert.True(task.Execute());
-        newProjectDir.Delete(true);
 
         // Verify the application image uses the non-root user from the base image.
         imageBuilder = await registry.GetImageManifestAsync(
@@ -330,7 +270,7 @@ public class CreateNewImageTests
             "latest",
             "linux-x64",
             ToolsetUtils.RidGraphManifestPicker,
-            cancellationToken: default).ConfigureAwait(false);
+            cancellationToken: default);
 
         Assert.Equal(RootlessUser, imageBuilder.BaseImageConfig.User);
     }
@@ -340,21 +280,15 @@ public class CreateNewImageTests
     public void CanOverrideContainerImageFormat()
     {
         DirectoryInfo newProjectDir = new(GetTestDirectoryName());
-
-        if (newProjectDir.Exists)
-        {
-            newProjectDir.Delete(recursive: true);
-        }
-
         newProjectDir.Create();
 
-        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
+        new DotnetNewCommand(testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
             .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
 
-        new DotnetCommand(_testOutput, "build", "--configuration", "release")
+        new DotnetCommand(testOutput, "build", "--configuration", "release")
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
@@ -385,7 +319,6 @@ public class CreateNewImageTests
         cni.BaseImageTag = pcp.ParsedContainerTag;
         cni.Repository = pcp.NewContainerRepository;
         cni.OutputRegistry = "localhost:5010";
-        // cni.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework));
         cni.WorkingDirectory = "app/";
         cni.Entrypoint = new TaskItem[] { new(newProjectDir.Name) };
         cni.ImageTags = pcp.NewContainerTags;
@@ -395,7 +328,6 @@ public class CreateNewImageTests
         Assert.True(cni.Execute(), FormatBuildMessages(errors));
 
         cni.GeneratedContainerMediaType.Should().Be(SchemaTypes.OciManifestV1);
-        newProjectDir.Delete(true);
     }
 
 
@@ -410,7 +342,35 @@ public class CreateNewImageTests
         return (buildEngine, errors);
     }
 
-    private static string GetTestDirectoryName([CallerMemberName] string testName = "DefaultTest") => Path.Combine(TestSettings.TestArtifactsDirectory, testName + "_" + DateTime.Now.ToString("yyyyMMddHHmmss"));
+    private string GetTestDirectoryName([CallerMemberName] string testName = "DefaultTest") => Path.Combine(testFolder.TestFolder.FullName, testName + "_" + DateTime.Now.ToString("yyyyMMddHHmmss"));
 
     private static string FormatBuildMessages(List<string?> messages) => string.Join("\r\n", messages);
+
+    private static Image GetImageConfigFromTask(CreateNewImage task) => Json.Deserialize<Image>(task.GeneratedContainerConfiguration)!;
+
+    private async Task<ITaskItem> CreateLayerTarballForDirectory(DirectoryInfo directoryToCompress)
+    {
+        var fakeTarballPath = Path.Combine(testFolder.TestFolder.FullName, $"fake{DateTime.Now:yyyyMMddHHmmss}.tar");
+        var compressedPath = fakeTarballPath + ".gz";
+        TarFile.CreateFromDirectory(directoryToCompress.FullName, fakeTarballPath, includeBaseDirectory: false);
+        using (var readStream = File.OpenRead(fakeTarballPath))
+        using (var destStream = File.OpenWrite(compressedPath))
+        using (var zipStream = new GZipStream(destStream, CompressionMode.Compress, leaveOpen: true))
+        {
+            readStream.CopyTo(zipStream);
+        }
+        var layerItem = new TaskItem(compressedPath);
+        using (var layerStream = File.OpenRead(compressedPath))
+        {
+            ApplyDescriptorMetadata(layerItem, await Layer.DescriptorFromStream(layerStream, SchemaTypes.DockerLayerGzip, DigestAlgorithm.sha256));
+        }
+        return layerItem;
+    }
+    
+    private static void ApplyDescriptorMetadata(ITaskItem item, Descriptor descriptor)
+    {
+        item.SetMetadata("MediaType", descriptor.MediaType);
+        item.SetMetadata("Digest", descriptor.Digest.ToString());
+        item.SetMetadata("Size", descriptor.Size.ToString(CultureInfo.InvariantCulture));
+    }
 }

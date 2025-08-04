@@ -62,7 +62,7 @@ public static class ManifestScenarios
         ]);
 }
 
-public class DownloadContainerManifestTests(ITestOutputHelper testOutput, TransientTestFolderFixture testFolderFixture, LoggingBuildEngineFixture loggingBuildEngineFixture) : IClassFixture<LoggingBuildEngineFixture>, IClassFixture<TransientTestFolderFixture>
+public class DownloadContainerManifestTests(ITestOutputHelper testOutput, HelixTransientTestFolderFixture testFolderFixture, LoggingBuildEngineFixture loggingBuildEngineFixture) : IClassFixture<LoggingBuildEngineFixture>, IClassFixture<HelixTransientTestFolderFixture>
 {
     [Fact]
     public async Task CanResolveSingleArchManifest()

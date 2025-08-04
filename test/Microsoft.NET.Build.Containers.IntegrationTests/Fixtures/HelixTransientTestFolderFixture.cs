@@ -3,13 +3,13 @@
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
-public class TransientTestFolderFixture : IDisposable
+public class HelixTransientTestFolderFixture : IDisposable
 {
     public readonly DirectoryInfo TestFolder;
 
-    public TransientTestFolderFixture()
+    public HelixTransientTestFolderFixture()
     {
-        TestFolder = new DirectoryInfo(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
+        TestFolder = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, Path.GetRandomFileName()));
         TestFolder.Create();
     }
 
