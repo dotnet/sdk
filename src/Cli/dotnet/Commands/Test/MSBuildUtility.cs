@@ -7,6 +7,7 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
@@ -20,7 +21,7 @@ internal static class MSBuildUtility
     {
         SolutionModel solutionModel = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath, includeSolutionFilterFiles: true, includeSolutionXmlFiles: true);
 
-        (bool isBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> collectedProperties) = BuildOrRestoreSolution(solutionFilePath, buildOptions);
+        (bool isBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> collectedProperties) = BuildProjectOrSolution(solutionFilePath, buildOptions, useSeparateRestoreCall: false);
 
         if (!isBuiltOrRestored)
         {
@@ -40,7 +41,7 @@ internal static class MSBuildUtility
     public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, bool IsBuiltOrRestored) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
     {
         (bool isBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> collectedProperties) =
-            BuildOrRestoreProject(projectFilePath, buildOptions);
+            BuildProjectOrSolution(projectFilePath, buildOptions, useSeparateRestoreCall: true);
 
         if (!isBuiltOrRestored)
         {
@@ -80,20 +81,10 @@ internal static class MSBuildUtility
     }
 
     private static (bool IsBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> CollectedProperties)
-    BuildOrRestoreSolution(string filePath, BuildOptions buildOptions)
+        BuildProjectOrSolution(string filePath, BuildOptions buildOptions, bool useSeparateRestoreCall)
     {
-        return ExecuteBuildWithSharedSetup(filePath, buildOptions, useSeparateRestoreCall: false);
-    }
+        var global = CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.OtherMSBuildArgs]);
 
-    private static (bool IsBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> CollectedProperties)
-        BuildOrRestoreProject(string filePath, BuildOptions buildOptions)
-    {
-        return ExecuteBuildWithSharedSetup(filePath, buildOptions, useSeparateRestoreCall: true);
-    }
-
-    private static (bool IsBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> CollectedProperties)
-        ExecuteBuildWithSharedSetup(string filePath, BuildOptions buildOptions, bool useSeparateRestoreCall)
-    {
         var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
             [.. buildOptions.OtherMSBuildArgs, filePath],
             CommonOptions.PropertiesOption,
@@ -113,14 +104,7 @@ internal static class MSBuildUtility
 
         try
         {
-            if (useSeparateRestoreCall)
-            {
-                return ExecuteSeparateBuildCalls(filePath, buildOptions, buildParameters, parsedMSBuildArgs, collection.GlobalProperties, propertyLogger);
-            }
-            else
-            {
-                return ExecuteSingleBuildCall(filePath, buildOptions, buildParameters, parsedMSBuildArgs, collection.GlobalProperties, propertyLogger);
-            }
+            return ExecuteSeparateBuildCalls(filePath, buildOptions, buildParameters, parsedMSBuildArgs, collection.GlobalProperties, propertyLogger);
         }
         finally
         {
@@ -132,31 +116,13 @@ internal static class MSBuildUtility
     }
 
     private static (bool IsBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> CollectedProperties)
-        ExecuteSingleBuildCall(string filePath, BuildOptions buildOptions, BuildParameters buildParameters, MSBuildArgs parsedMSBuildArgs,
-            IDictionary<string, string?> globalProperties, PropertyCollectingLogger propertyLogger)
-    {
-        var targets = GetBuildTargets(buildOptions, parsedMSBuildArgs);
-        var buildRequest = new BuildRequestData(filePath, globalProperties, null, [.. targets], null);
-
-        var buildResult = BuildManager.DefaultBuildManager.Build(buildParameters, buildRequest);
-
-        if (buildResult.OverallResult != BuildResultCode.Success)
-        {
-            LogBuildFailure(buildResult, "Build failed");
-            return (false, propertyLogger.CollectedProperties);
-        }
-
-        return (true, propertyLogger.CollectedProperties);
-    }
-
-    private static (bool IsBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> CollectedProperties)
         ExecuteSeparateBuildCalls(string filePath, BuildOptions buildOptions, BuildParameters buildParameters, MSBuildArgs parsedMSBuildArgs,
             IDictionary<string, string?> globalProperties, PropertyCollectingLogger propertyLogger)
     {
         // First call: Restore (if not skipped)
         if (!buildOptions.HasNoRestore && !buildOptions.HasNoBuild)
         {
-            var restoreRequest = new BuildRequestData(filePath, globalProperties, null, ["Restore"], null);
+            var restoreRequest = new BuildRequestData(filePath, new Dictionary<string, string?>(), null, ["Restore"], null);
             var restoreResult = BuildManager.DefaultBuildManager.Build(buildParameters, restoreRequest);
 
             if (restoreResult.OverallResult != BuildResultCode.Success)
