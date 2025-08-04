@@ -124,7 +124,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
     {
         (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects, bool isBuiltOrRestored) = isSolution ?
             MSBuildUtility.GetProjectsFromSolution(solutionOrProjectFilePath, _buildOptions) :
-            MSBuildUtility.GetProjectsFromProject1(solutionOrProjectFilePath, _buildOptions);
+            MSBuildUtility.GetProjectsFromProject(solutionOrProjectFilePath, _buildOptions);
 
         LogProjectProperties(projects);
 
