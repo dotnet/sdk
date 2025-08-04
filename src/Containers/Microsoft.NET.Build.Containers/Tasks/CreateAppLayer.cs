@@ -72,7 +72,7 @@ public sealed partial class CreateAppLayer : Microsoft.Build.Utilities.Task, ICa
         Layer newLayer = await Layer.FromFiles(filesWithRelativePaths, ContainerRootDirectory, isWindowsLayer, manifestMediaType, new(new(ContentStoreRoot)), new(GeneratedLayerPath), cancellationToken, userId: userId);
         GeneratedAppContainerLayer = new Microsoft.Build.Utilities.TaskItem(GeneratedLayerPath, new Dictionary<string, string>(3)
         {
-            ["Size"] = newLayer.Descriptor.Size.ToString(),
+            ["Size"] = newLayer.Descriptor.Size.ToString(System.Globalization.CultureInfo.InvariantCulture),
             ["MediaType"] = newLayer.Descriptor.MediaType,
             ["Digest"] = newLayer.Descriptor.Digest.ToString(),
         });
