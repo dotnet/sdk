@@ -103,7 +103,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
 
         var args = _buildOptions.UnmatchedTokens;
         builder.Append(args.Count != 0
-            ? args.Aggregate((a, b) => $"{a} {b}")
+            ? " " + args.Aggregate((a, b) => $"{a} {b}")
             : string.Empty);
 
         builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(_pipeNameDescription.Name)}");
