@@ -8,7 +8,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
 
-public class DownloadLayersTests(ITestOutputHelper testOutput, TransientTestFolderFixture testFolderFixture, LoggingBuildEngineFixture loggingBuildEngineFixture) : IClassFixture<LoggingBuildEngineFixture>, IClassFixture<TransientTestFolderFixture>
+public class DownloadLayersTests(ITestOutputHelper testOutput, HelixTransientTestFolderFixture testFolderFixture, LoggingBuildEngineFixture loggingBuildEngineFixture) : IClassFixture<LoggingBuildEngineFixture>, IClassFixture<HelixTransientTestFolderFixture>
 {
     [Fact]
     public async Task CanDownloadLayers()
