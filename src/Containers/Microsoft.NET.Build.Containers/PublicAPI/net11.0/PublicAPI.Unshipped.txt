@@ -128,8 +128,6 @@ Microsoft.NET.Build.Containers.Descriptor.MediaType.get -> string!
 Microsoft.NET.Build.Containers.Descriptor.MediaType.init -> void
 Microsoft.NET.Build.Containers.Descriptor.Size.get -> long
 Microsoft.NET.Build.Containers.Descriptor.Size.init -> void
-Microsoft.NET.Build.Containers.Descriptor.UncompressedDigest.get -> Microsoft.NET.Build.Containers.Digest?
-Microsoft.NET.Build.Containers.Descriptor.UncompressedDigest.init -> void
 Microsoft.NET.Build.Containers.Descriptor.Urls.get -> string![]?
 Microsoft.NET.Build.Containers.Descriptor.Urls.init -> void
 Microsoft.NET.Build.Containers.KnownLocalRegistryTypes

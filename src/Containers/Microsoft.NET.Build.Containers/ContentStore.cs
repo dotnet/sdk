@@ -109,7 +109,7 @@ public class ContentStore(DirectoryInfo root)
     /// </summary>
     /// <param name="contentHash"></param>
     /// <returns></returns>
-    public string GetPathForHash(string contentHash) => Path.Combine(ContentRoot, contentHash);
+    public string GetPathForHash(string contentHash) => Path.Combine(ContentRoot, contentHash.Replace(':', '_'));
 
     public string GetTempFile() => Path.Join(TempPath, Path.GetRandomFileName());
 }

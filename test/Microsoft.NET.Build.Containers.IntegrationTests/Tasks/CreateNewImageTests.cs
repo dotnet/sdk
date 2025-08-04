@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Formats.Tar;
+using System.IO.Compression;
 using System.Runtime.CompilerServices;
 using FakeItEasy;
 using Microsoft.Build.Framework;
@@ -79,7 +81,7 @@ public class CreateNewImageTests
 
     private static Image GetImageConfigFromTask(CreateNewImage task) => Json.Deserialize<Image>(task.GeneratedContainerConfiguration)!;
 
-    [DockerAvailableFact()]
+    [Fact]
     public void ParseContainerProperties_EndToEnd()
     {
         DirectoryInfo newProjectDir = new(GetTestDirectoryName());
@@ -123,15 +125,47 @@ public class CreateNewImageTests
         (buildEngine, errors) = SetupBuildEngine();
         cni.BuildEngine = buildEngine;
 
+        DownloadContainerManifest downloadContainerManifest = new()
+        {
+            BuildEngine = buildEngine,
+            Registry = pcp.ParsedContainerRegistry,
+            Repository = pcp.ParsedContainerImage,
+            Tag = pcp.ParsedContainerTag,
+            ContentStore = newProjectDir.FullName,
+        };
+        downloadContainerManifest.Execute().Should().BeTrue();
+
         cni.BaseRegistry = pcp.ParsedContainerRegistry;
         cni.BaseImageName = pcp.ParsedContainerImage;
         cni.BaseImageTag = pcp.ParsedContainerTag;
+        
+        cni.BaseImageManifestPath = downloadContainerManifest.Manifests.Single(m => m.GetMetadata("RuntimeIdentifier") == "linux-x64");
+        cni.BaseImageConfigurationPath = downloadContainerManifest.Configs.Single(m => m.GetMetadata("RuntimeIdentifier") == "linux-x64");
+        var projectSource = Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework);
+        var fakeTarballPath = Path.Combine(newProjectDir.FullName, "fake.tar");
+        TarFile.CreateFromDirectory(projectSource, fakeTarballPath, includeBaseDirectory: false);
+        var readStream = File.OpenRead(fakeTarballPath);
+        var destStream = File.OpenWrite(fakeTarballPath + ".gz");
+        var zipStream = new GZipStream(destStream, CompressionMode.Compress);
+        readStream.CopyTo(zipStream);
+        readStream.Dispose();
+        zipStream.Dispose();
+        cni.GeneratedApplicationLayer = new TaskItem(fakeTarballPath + ".gz");
+        cni.GeneratedApplicationLayer.SetMetadata("MediaType", SchemaTypes.DockerLayerGzip);
+        cni.GeneratedApplicationLayer.SetMetadata("Digest", "sha256:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef");
+        cni.GeneratedApplicationLayer.SetMetadata("Size", "123456");
+
+        cni.GeneratedManifestPath = Path.Combine(newProjectDir.FullName, "dummy-manifest.json");
+        cni.GeneratedConfigurationPath = Path.Combine(newProjectDir.FullName, "dummy-configuration.json");
+        cni.ContentStoreRoot = newProjectDir.FullName;
+
         cni.Repository = pcp.NewContainerRepository;
         cni.OutputRegistry = "localhost:5010";
-        // cni.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework));
         cni.WorkingDirectory = "app/";
         cni.Entrypoint = new TaskItem[] { new(newProjectDir.Name) };
         cni.ImageTags = pcp.NewContainerTags;
+        cni.GenerateLabels = false;
+        cni.GenerateDigestLabel = false;
 
         Assert.True(cni.Execute(), FormatBuildMessages(errors));
         newProjectDir.Delete(true);

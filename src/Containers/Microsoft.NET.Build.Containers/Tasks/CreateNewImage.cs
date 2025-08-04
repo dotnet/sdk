@@ -95,7 +95,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         var descriptor = GetDescriptor(GeneratedApplicationLayer);
         var appLayer = Layer.FromBackingFile(new(GeneratedApplicationLayer.ItemSpec), descriptor);
-        imageBuilder.AddLayer(appLayer);
+        await imageBuilder.AddLayer(appLayer, store);
         imageBuilder.SetWorkingDirectory(WorkingDirectory);
 
         (string[] entrypoint, string[] cmd) = DetermineEntrypointAndCmd(baseImageEntrypoint: imageBuilder.BaseImageConfig.Entrypoint);

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 using System.Text.Json.Nodes;
 using System.Runtime.Intrinsics.Arm;
+using System.Threading.Tasks;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -112,14 +113,22 @@ internal sealed class ImageBuilder
     /// <summary>
     /// Adds a <see cref="Layer"/> to a base image.
     /// </summary>
-    internal void AddLayer(Layer l)
+    internal async Task AddLayer(Layer l, ContentStore store)
     {
         _manifest.Layers.Add(l.Descriptor);
         // the rootfs diffids are the _uncompressed_ digests, so we need to use the uncompressed digest here.
         // a more 'full' treatment would be to see if the mediatype of the layer is 'uncompressed' or not, and 
         // if 'uncompressed' already just use its digest - and if not 'convert' it to an uncompressed digest
         // by uncompressing the layer and calculating the digest.
-        _baseImage.RootFS.DiffIDs.Add((Digest)l.Descriptor.UncompressedDigest!);
+        if (l.IsCompressed)
+        {
+            var decompressedLayer = await l.Decompress(store);
+            _baseImage.RootFS.DiffIDs.Add(decompressedLayer.Descriptor.Digest);
+        }
+        else
+        {
+            _baseImage.RootFS.DiffIDs.Add(l.Descriptor.Digest);
+        }
     }
 
     internal (string name, string value) AddBaseImageDigestLabel()

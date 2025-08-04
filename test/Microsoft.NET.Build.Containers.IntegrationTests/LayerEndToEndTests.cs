@@ -129,22 +129,13 @@ public sealed class LayerEndToEndTests : IDisposable
         Assert.Equal(l.Descriptor.Size, l.BackingFile.Length);
 
         byte[] hashBytes;
-        byte[] uncompressedHashBytes;
 
         using (FileStream fs = l.BackingFile.OpenRead())
         {
             hashBytes = SHA256.HashData(fs);
-
-            fs.Position = 0;
-
-            using (GZipStream decompressionStream = new(fs, CompressionMode.Decompress))
-            {
-                uncompressedHashBytes = SHA256.HashData(decompressionStream);
-            }
         }
 
         Assert.Equal(Convert.ToHexStringLower(hashBytes), l.Descriptor.Digest.Value);
-        Assert.Equal(Convert.ToHexStringLower(uncompressedHashBytes), l.Descriptor.UncompressedDigest?.Value);
     }
 
     TransientTestFolder? testSpecificArtifactRoot;

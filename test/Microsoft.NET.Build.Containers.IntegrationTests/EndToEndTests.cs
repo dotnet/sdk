@@ -91,7 +91,7 @@ public class EndToEndTests : IDisposable
 
         Layer l = await Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), "/app", false, imageBuilder.ManifestMediaType, _store, layerFilePath, CancellationToken.None);
 
-        imageBuilder.AddLayer(l);
+        await imageBuilder.AddLayer(l, _store);
 
         imageBuilder.SetEntrypointAndCmd(new[] { "/app/MinimalTestApp" }, Array.Empty<string>());
 
@@ -139,7 +139,7 @@ public class EndToEndTests : IDisposable
 
         Layer l = await Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), "/app", false, imageBuilder.ManifestMediaType, _store, layerFilePath, CancellationToken.None);
 
-        imageBuilder.AddLayer(l);
+        await imageBuilder.AddLayer(l, _store);
 
         imageBuilder.SetEntrypointAndCmd(new[] { "/app/MinimalTestApp" }, Array.Empty<string>());
 
@@ -181,7 +181,7 @@ public class EndToEndTests : IDisposable
 
         Layer l = await Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), "/app", false, imageBuilder.ManifestMediaType, _store, layerFilePath, CancellationToken.None);
 
-        imageBuilder.AddLayer(l);
+        await imageBuilder.AddLayer(l, _store);
 
         imageBuilder.SetEntrypointAndCmd(new[] { "/app/MinimalTestApp" }, Array.Empty<string>());
 
@@ -1425,7 +1425,7 @@ public class EndToEndTests : IDisposable
 
         Layer l = await Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), isWin ? "C:\\app" : "/app", isWin, imageBuilder.ManifestMediaType, _store, layerFilePath, CancellationToken.None);
 
-        imageBuilder.AddLayer(l);
+        await imageBuilder.AddLayer(l, _store);
         imageBuilder.SetWorkingDirectory(workingDir);
 
         string[] entryPoint = DecideEntrypoint(rid, "MinimalTestApp", workingDir);
@@ -1478,7 +1478,7 @@ public class EndToEndTests : IDisposable
 
         Layer l = await Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), "C:\\app", true, imageBuilder.ManifestMediaType, _store, layerFilePath, CancellationToken.None);
 
-        imageBuilder.AddLayer(l);
+        await imageBuilder.AddLayer(l, _store);
         imageBuilder.SetWorkingDirectory("C:\\app");
 
         string[] entryPoint = DecideEntrypoint(rid, "MinimalTestApp", "C:\\app");

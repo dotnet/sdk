@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Formats.Tar;
 using System.IO.Compression;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
@@ -36,6 +37,8 @@ public class Layer
 
     public FileInfo BackingFile { get; }
 
+    public bool IsCompressed => SchemaTypes.IsCompressed(Descriptor.MediaType);
+
     internal Layer()
     {
         Descriptor = new Descriptor();
@@ -45,6 +48,38 @@ public class Layer
     {
         BackingFile = backingFile;
         Descriptor = descriptor;
+    }
+
+    /// <summary>
+    /// If the current layer is compressed, this method decompresses it and returns a new Layer instance with the decompressed content.
+    /// /// If the layer is not compressed, it returns the current instance.
+    /// </summary>
+    /// <param name="store">The store to check for already-decompressed layers</param>
+    public async Task<Layer> Decompress(ContentStore store)
+    {
+        if (!IsCompressed)
+        {
+            return this;
+        }
+
+        // If the layer is compressed, we need to decompress it and return a new Layer instance.
+        // We will use the content store to check if we already have a decompressed version of this layer.
+        var uncompressedMediaType = SchemaTypes.GetUncompressedMediaType(Descriptor.MediaType);
+        var tempfile = store.GetTempFile();
+        // If the decompressed layer does not exist, we need to decompress it.
+        using (var compressedStream = OpenBackingFile())
+        using (var decompressedStream = new GZipStream(compressedStream, CompressionMode.Decompress))
+        using (var destinationDecompressStream = File.OpenWrite(tempfile))
+        {
+            await decompressedStream.CopyToAsync(destinationDecompressStream);    
+        }
+        var descriptorReadStream = File.OpenRead(tempfile);
+        var decompressedDescriptor = await DescriptorFromStream(descriptorReadStream, uncompressedMediaType, DigestAlgorithm.sha256);
+        descriptorReadStream.Dispose();
+        var permanentStore = store.PathForDescriptor(decompressedDescriptor);
+        File.Move(tempfile, permanentStore);
+
+        return FromBackingFile(new FileInfo(permanentStore), decompressedDescriptor);
     }
 
     public static Layer FromDescriptor(Descriptor descriptor, ContentStore store)
@@ -269,7 +304,6 @@ public class Layer
         }
 
         string contentHash = Convert.ToHexStringLower(hash.Memory.Span);
-        string uncompressedContentHash = Convert.ToHexStringLower(uncompressedHash.Memory.Span);
 
         string layerMediaType = manifestMediaType switch
         {
@@ -283,8 +317,7 @@ public class Layer
         {
             MediaType = layerMediaType,
             Size = fileSize,
-            Digest = new(DigestAlgorithm.sha256, contentHash),
-            UncompressedDigest = new(DigestAlgorithm.sha256, uncompressedContentHash),
+            Digest = new(DigestAlgorithm.sha256, contentHash)
         };
 
         string storedContent = store.PathForDescriptor(descriptor);

@@ -115,7 +115,7 @@ internal static class ContainerBuilder
 
         var userId = imageBuilder.IsWindows ? null : TryParseUserId(containerUser);
         Layer newLayer = await Layer.FromFiles(inputFiles, workingDir, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, store, generatedLayerPath, cancellationToken, userId: userId);
-        imageBuilder.AddLayer(newLayer);
+        await imageBuilder.AddLayer(newLayer, store);
         imageBuilder.SetWorkingDirectory(workingDir);
 
         bool hasErrors = false;
