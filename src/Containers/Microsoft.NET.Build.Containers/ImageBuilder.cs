@@ -132,20 +132,39 @@ internal sealed class ImageBuilder
     /// <summary>
     /// Adds a label to a base image.
     /// </summary>
-    internal void AddLabel(string name, string value) =>
-        (_baseImage.Config!.Labels ?? []).Add(name, value);
+    internal void AddLabel(string name, string value)
+    {
+        var labels = _baseImage.Config!.Labels ??= [];
+        labels.Add(name, value);
+    }
 
     /// <summary>
     /// Adds environment variables to a base image.
     /// </summary>
-    internal void AddEnvironmentVariable(string envVarName, string value) =>
-        (_baseImage.Config!.Env ??= []).Add(new KeyValuePair<string, string>(envVarName, value));
+    internal void AddEnvironmentVariable(string envVarName, string value)
+    {
+        var envs = _baseImage.Config!.Env ??= [];
+        // if the key exists, we overwrite it
+        var existing = envs.FirstOrDefault(k => k.Key == envVarName);
+        if (existing is { })
+        {
+            envs.Remove(existing);
+        }
+
+        envs.Add(new KeyValuePair<string, string>(envVarName, value));
+    }
 
     /// <summary>
     /// Exposes additional port.
     /// </summary>
-    internal void ExposePort(int number, PortType type) =>
-        (_baseImage.Config!.ExposedPorts ??= []).Add(new Port(number, type));
+    internal void ExposePort(int number, PortType type)
+    {
+        var ports = _baseImage.Config!.ExposedPorts ??= [];
+        if (!ports.Any(p => p.Number == number && p.Type == type))
+        {
+            ports.Add(new Port(number, type));
+        }
+    }
 
     /// <summary>
     /// Sets working directory for the image.
@@ -307,9 +326,10 @@ internal sealed class ImageBuilder
         // ASPNETCORE_URLS is the most specific and is the only one used if present, followed by ASPNETCORE_HTTPS_PORT and ASPNETCORE_HTTP_PORT together
 
         // https://learn.microsoft.com//aspnet/core/fundamentals/host/web-host?view=aspnetcore-8.0#server-urls - the format of ASPNETCORE_URLS has been stable for many years now
-        if (_baseImage.Config?.Env?.FirstOrDefault(k => k.Key == EnvironmentVariables.ASPNETCORE_URLS) is { } urls)
+        if (_baseImage.Config?.Env?.FirstOrDefault(k => k.Key == EnvironmentVariables.ASPNETCORE_URLS) is { } urls
+            && urls is not { Key: null, Value: null })
         {
-            foreach (var url in Split(urls.Value))
+            foreach (var url in Split(urls.Value!))
             {
                 _logger.LogTrace("Setting ports from ASPNETCORE_URLS environment variable");
                 var match = aspnetPortRegex.Match(url);
@@ -324,10 +344,11 @@ internal sealed class ImageBuilder
 
         // port-specific
         // https://learn.microsoft.com/aspnet/core/fundamentals/servers/kestrel/endpoints?view=aspnetcore-8.0#specify-ports-only - new for .NET 8 - allows just changing port(s) easily
-        if (_baseImage.Config?.Env?.FirstOrDefault(k => k.Key == EnvironmentVariables.ASPNETCORE_HTTP_PORTS) is { } httpPorts)
+        if (_baseImage.Config?.Env?.FirstOrDefault(k => k.Key == EnvironmentVariables.ASPNETCORE_HTTP_PORTS) is { } httpPorts
+            && httpPorts is not { Key: null, Value: null })
         {
             _logger.LogTrace("Setting ports from ASPNETCORE_HTTP_PORTS environment variable");
-            foreach (var port in Split(httpPorts.Value))
+            foreach (var port in Split(httpPorts.Value!))
             {
                 if (int.TryParse(port, out int parsedPort))
                 {
@@ -341,10 +362,11 @@ internal sealed class ImageBuilder
             }
         }
 
-        if (_baseImage.Config?.Env?.FirstOrDefault(k => k.Key == EnvironmentVariables.ASPNETCORE_HTTPS_PORTS) is { } httpsPorts)
+        if (_baseImage.Config?.Env?.FirstOrDefault(k => k.Key == EnvironmentVariables.ASPNETCORE_HTTPS_PORTS) is { } httpsPorts
+            && httpsPorts is not { Key: null, Value: null })
         {
             _logger.LogTrace("Setting ports from ASPNETCORE_HTTPS_PORTS environment variable");
-            foreach (var port in Split(httpsPorts.Value))
+            foreach (var port in Split(httpsPorts.Value!))
             {
                 if (int.TryParse(port, out int parsedPort))
                 {
