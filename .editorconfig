@@ -475,6 +475,10 @@ indent_brace_style = Allman
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,nativeproj,locproj}]
 indent_size = 2
 
+# WiX files
+[*.{wixproj,wxs,wxi,wxl,thm}]
+indent_size = 2
+
 [*.{csproj,vbproj,proj,nativeproj,locproj}]
 charset = utf-8-bom
 

@@ -24,6 +24,7 @@
     <Compile Include="$(RepoRoot)src\Common\CompileOptions.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\MSBuildPropertyNames.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\MSBuildUtilities.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\NuGetUtils.NuGet.cs" LinkBase="Common" />
@@ -66,6 +67,7 @@
     <!-- Lift dependency of NETStandard.Library.NETFramework to version produced in SBRP. -->
     <PackageReference Include="NETStandard.Library" VersionOverride="$(NETStandardLibraryVersion)" ExcludeAssets="All" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Ini" />
+    <PackageReference Include="Microsoft.CodeAnalysis.BuildClient" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
   </ItemGroup>
 

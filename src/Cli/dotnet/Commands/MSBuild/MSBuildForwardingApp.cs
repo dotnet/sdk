@@ -59,7 +59,7 @@ public class MSBuildForwardingApp : CommandBase
 
     public IEnumerable<string> MSBuildArguments { get { return _forwardingAppWithoutLogging.GetAllArguments(); } }
 
-    public void EnvironmentVariable(string name, string value)
+    public void EnvironmentVariable(string name, string? value)
     {
         _forwardingAppWithoutLogging.EnvironmentVariable(name, value);
     }

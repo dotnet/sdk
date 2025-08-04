@@ -8,6 +8,7 @@ using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -105,7 +106,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             ? args.Aggregate((a, b) => $"{a} {b}")
             : string.Empty);
 
-        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name}");
+        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(_pipeNameDescription.Name)}");
 
         return builder.ToString();
     }
