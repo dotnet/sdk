@@ -124,7 +124,7 @@ public class ContainerPortMapConverter : JsonConverter<List<Port>>
         if (reader.TokenType == JsonTokenType.StartObject)
         {
             var dictConverter = options.GetConverter(typeof(Dictionary<string, object>)) as JsonConverter<Dictionary<string, object>>;
-            var dict = dictConverter?.Read(ref reader, typeToConvert, options);
+            var dict = dictConverter?.Read(ref reader, typeof(Dictionary<string, object>), options);
             if (dict != null)
             {
                 var ports = new List<Port>();
