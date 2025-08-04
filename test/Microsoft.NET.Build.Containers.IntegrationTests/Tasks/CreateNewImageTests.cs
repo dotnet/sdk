@@ -12,6 +12,7 @@ using Microsoft.NET.Build.Containers.IntegrationTests;
 using System.Threading.Tasks;
 using System.Globalization;
 using Task = System.Threading.Tasks.Task;
+using FakeItEasy.Sdk;
 
 namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
 
@@ -34,21 +35,20 @@ public class CreateNewImageTests(ITestOutputHelper testOutput, HelixTransientTes
             .Execute()
             .Should().Pass();
 
-        CreateNewImage task = new();
+        (CreateNewImage task, var errors) = CreateTask<CreateNewImage>(task =>
+        {
+            task.BaseRegistry = "mcr.microsoft.com";
+            task.BaseImageName = "dotnet/runtime";
+            task.BaseImageTag = "7.0";
 
-        (IBuildEngine buildEngine, List<string?> errors) = SetupBuildEngine();
-        task.BuildEngine = buildEngine;
+            task.OutputRegistry = "localhost:5010";
+            task.LocalRegistry = DockerAvailableFactAttribute.LocalRegistry;
+            task.Repository = "dotnet/create-new-image-baseline";
+            task.ImageTags = new[] { "latest" };
+            task.WorkingDirectory = "app/";
+            task.Entrypoint = new TaskItem[] { new("dotnet"), new("build") };
+        });
 
-        task.BaseRegistry = "mcr.microsoft.com";
-        task.BaseImageName = "dotnet/runtime";
-        task.BaseImageTag = "7.0";
-
-        task.OutputRegistry = "localhost:5010";
-        task.LocalRegistry = DockerAvailableFactAttribute.LocalRegistry;
-        task.Repository = "dotnet/create-new-image-baseline";
-        task.ImageTags = new[] { "latest" };
-        task.WorkingDirectory = "app/";
-        task.Entrypoint = new TaskItem[] { new("dotnet"), new("build") };
 
         Assert.True(task.Execute(), FormatBuildMessages(errors));
     }
@@ -70,14 +70,13 @@ public class CreateNewImageTests(ITestOutputHelper testOutput, HelixTransientTes
             .Execute()
             .Should().Pass();
 
-        ParseContainerProperties pcp = new();
-        (IBuildEngine buildEngine, List<string?> errors) = SetupBuildEngine();
-        pcp.BuildEngine = buildEngine;
-
-        pcp.FullyQualifiedBaseImageName = "mcr.microsoft.com/dotnet/runtime:7.0";
-        pcp.ContainerRegistry = "localhost:5010";
-        pcp.ContainerRepository = "dotnet/testimage";
-        pcp.ContainerImageTags = new[] { "5.0", "latest" };
+        (ParseContainerProperties pcp, var errors) = CreateTask<ParseContainerProperties>(pcp =>
+        {
+            pcp.FullyQualifiedBaseImageName = "mcr.microsoft.com/dotnet/runtime:7.0";
+            pcp.ContainerRegistry = "localhost:5010";
+            pcp.ContainerRepository = "dotnet/testimage";
+            pcp.ContainerImageTags = new[] { "5.0", "latest" };
+        });
 
         Assert.True(pcp.Execute(), FormatBuildMessages(errors));
         Assert.Equal("mcr.microsoft.com", pcp.ParsedContainerRegistry);
@@ -87,41 +86,38 @@ public class CreateNewImageTests(ITestOutputHelper testOutput, HelixTransientTes
         Assert.Equal("dotnet/testimage", pcp.NewContainerRepository);
         pcp.NewContainerTags.Should().BeEquivalentTo(new[] { "5.0", "latest" });
 
-        CreateNewImage cni = new();
-        (buildEngine, errors) = SetupBuildEngine();
-        cni.BuildEngine = buildEngine;
-
-        DownloadContainerManifest downloadContainerManifest = new()
+        (DownloadContainerManifest downloadContainerManifest, errors) = CreateTask<DownloadContainerManifest>(downloadContainerManifest =>
         {
-            BuildEngine = buildEngine,
-            Registry = pcp.ParsedContainerRegistry,
-            Repository = pcp.ParsedContainerImage,
-            Tag = pcp.ParsedContainerTag,
-            ContentStore = testFolder.TestFolder.FullName,
-        };
+            downloadContainerManifest.Registry = pcp.ParsedContainerRegistry;
+            downloadContainerManifest.Repository = pcp.ParsedContainerImage;
+            downloadContainerManifest.Tag = pcp.ParsedContainerTag;
+            downloadContainerManifest.ContentStore = testFolder.TestFolder.FullName;
+        });
         downloadContainerManifest.Execute().Should().BeTrue();
 
-        cni.BaseRegistry = pcp.ParsedContainerRegistry;
-        cni.BaseImageName = pcp.ParsedContainerImage;
-        cni.BaseImageTag = pcp.ParsedContainerTag;
+        (CreateNewImage cni, errors) = await CreateTask<CreateNewImage>(async cni =>
+        {
+            cni.BaseRegistry = pcp.ParsedContainerRegistry;
+            cni.BaseImageName = pcp.ParsedContainerImage;
+            cni.BaseImageTag = pcp.ParsedContainerTag;
 
-        cni.BaseImageManifestPath = downloadContainerManifest.Manifests.Single(m => m.GetMetadata("RuntimeIdentifier") == "linux-x64");
-        cni.BaseImageConfigurationPath = downloadContainerManifest.Configs.Single(m => m.GetMetadata("RuntimeIdentifier") == "linux-x64");
+            cni.BaseImageManifestPath = downloadContainerManifest.Manifests.Single(m => m.GetMetadata("RuntimeIdentifier") == "linux-x64");
+            cni.BaseImageConfigurationPath = downloadContainerManifest.Configs.Single(m => m.GetMetadata("RuntimeIdentifier") == "linux-x64");
 
-        ITaskItem manualLayerTarball = await CreateLayerTarballForDirectory(newProjectDir);
-        cni.GeneratedApplicationLayer = manualLayerTarball;
-        cni.GeneratedManifestPath = Path.Combine(newProjectDir.FullName, "dummy-manifest.json");
-        cni.GeneratedConfigurationPath = Path.Combine(newProjectDir.FullName, "dummy-configuration.json");
-        cni.ContentStoreRoot = testFolder.TestFolder.FullName;
+            ITaskItem manualLayerTarball = await CreateLayerTarballForDirectory(newProjectDir);
+            cni.GeneratedApplicationLayer = manualLayerTarball;
+            cni.GeneratedManifestPath = Path.Combine(newProjectDir.FullName, "dummy-manifest.json");
+            cni.GeneratedConfigurationPath = Path.Combine(newProjectDir.FullName, "dummy-configuration.json");
+            cni.ContentStoreRoot = testFolder.TestFolder.FullName;
 
-        cni.Repository = pcp.NewContainerRepository;
-        cni.OutputRegistry = "localhost:5010";
-        cni.WorkingDirectory = "app/";
-        cni.Entrypoint = new TaskItem[] { new(newProjectDir.Name) };
-        cni.ImageTags = pcp.NewContainerTags;
-        cni.GenerateLabels = false;
-        cni.GenerateDigestLabel = false;
-
+            cni.Repository = pcp.NewContainerRepository;
+            cni.OutputRegistry = "localhost:5010";
+            cni.WorkingDirectory = "app/";
+            cni.Entrypoint = new TaskItem[] { new(newProjectDir.Name) };
+            cni.ImageTags = pcp.NewContainerTags;
+            cni.GenerateLabels = false;
+            cni.GenerateDigestLabel = false;
+        });
         Assert.True(cni.Execute(), FormatBuildMessages(errors));
     }
 
@@ -149,19 +145,19 @@ public class CreateNewImageTests(ITestOutputHelper testOutput, HelixTransientTes
             .Execute()
             .Should().Pass();
 
-        ParseContainerProperties pcp = new();
-        (IBuildEngine buildEngine, List<string?> errors) = SetupBuildEngine();
-        pcp.BuildEngine = buildEngine;
+        (ParseContainerProperties pcp, List<string?> errors) = CreateTask<ParseContainerProperties>(pcp =>
+        {
+            pcp.FullyQualifiedBaseImageName = $"mcr.microsoft.com/{DockerRegistryManager.RuntimeBaseImage}:{DockerRegistryManager.Net9ImageTag}";
+            pcp.ContainerRegistry = "";
+            pcp.ContainerRepository = "dotnet/envvarvalidation";
+            pcp.ContainerImageTag = "latest";
 
-        pcp.FullyQualifiedBaseImageName = $"mcr.microsoft.com/{DockerRegistryManager.RuntimeBaseImage}:{DockerRegistryManager.Net9ImageTag}";
-        pcp.ContainerRegistry = "";
-        pcp.ContainerRepository = "dotnet/envvarvalidation";
-        pcp.ContainerImageTag = "latest";
-
-        Dictionary<string, string> dict = new();
-        dict.Add("Value", "Foo");
-
-        pcp.ContainerEnvironmentVariables = new[] { new TaskItem("B@dEnv.Var", dict), new TaskItem("GoodEnvVar", dict) };
+            Dictionary<string, string> dict = new()
+            {
+                { "Value", "Foo" }
+            };
+            pcp.ContainerEnvironmentVariables = [new TaskItem("B@dEnv.Var", dict), new TaskItem("GoodEnvVar", dict)];
+        });
 
         Assert.True(pcp.Execute(), FormatBuildMessages(errors));
         Assert.Equal("mcr.microsoft.com", pcp.ParsedContainerRegistry);
@@ -173,21 +169,28 @@ public class CreateNewImageTests(ITestOutputHelper testOutput, HelixTransientTes
         Assert.Equal("dotnet/envvarvalidation", pcp.NewContainerRepository);
         Assert.Equal("latest", pcp.NewContainerTags[0]);
 
-        CreateNewImage cni = new();
-        (buildEngine, errors) = SetupBuildEngine();
-        cni.BuildEngine = buildEngine;
-
-        cni.BaseRegistry = pcp.ParsedContainerRegistry;
-        cni.BaseImageName = pcp.ParsedContainerImage;
-        cni.BaseImageTag = pcp.ParsedContainerTag;
-        cni.Repository = pcp.NewContainerRepository;
-        cni.OutputRegistry = pcp.NewContainerRegistry;
-        // cni.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "release", EndToEndTests._oldFramework, "linux-x64"));
-        cni.WorkingDirectory = "/app";
-        cni.Entrypoint = new TaskItem[] { new($"/app/{newProjectDir.Name}") };
-        cni.ImageTags = pcp.NewContainerTags;
-        cni.ContainerEnvironmentVariables = pcp.NewContainerEnvironmentVariables;
-        cni.LocalRegistry = DockerAvailableFactAttribute.LocalRegistry;
+        (CreateNewImage cni, errors) = CreateTask<CreateNewImage>(cni =>
+        {
+            cni.BaseRegistry = pcp.ParsedContainerRegistry;
+            cni.BaseImageName = pcp.ParsedContainerImage;
+            cni.BaseImageTag = pcp.ParsedContainerTag;
+            cni.Repository = pcp.NewContainerRepository;
+            cni.OutputRegistry = pcp.ParsedContainerRegistry;
+            cni.ImageTags = pcp.NewContainerTags;
+            cni.WorkingDirectory = "app/";
+            cni.Entrypoint = new TaskItem[] { new(newProjectDir.Name) };
+            cni.ContainerEnvironmentVariables = pcp.NewContainerEnvironmentVariables;
+            cni.BaseRegistry = pcp.ParsedContainerRegistry;
+            cni.BaseImageName = pcp.ParsedContainerImage;
+            cni.BaseImageTag = pcp.ParsedContainerTag;
+            cni.Repository = pcp.NewContainerRepository;
+            cni.OutputRegistry = pcp.NewContainerRegistry;
+            cni.WorkingDirectory = "/app";
+            cni.Entrypoint = new TaskItem[] { new($"/app/{newProjectDir.Name}") };
+            cni.ImageTags = pcp.NewContainerTags;
+            cni.ContainerEnvironmentVariables = pcp.NewContainerEnvironmentVariables;
+            cni.LocalRegistry = DockerAvailableFactAttribute.LocalRegistry;
+        });
 
         Assert.True(cni.Execute(), FormatBuildMessages(errors));
 
@@ -206,7 +209,7 @@ public class CreateNewImageTests(ITestOutputHelper testOutput, HelixTransientTes
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task CreateNewImage_RootlessBaseImage()
+    public async Task CreateNewImage_RootlessBaseImage()
     {
         const string RootlessBase = "dotnet/rootlessbase";
         const string AppImage = "dotnet/testimagerootless";
@@ -225,8 +228,6 @@ public class CreateNewImageTests(ITestOutputHelper testOutput, HelixTransientTes
             cancellationToken: default);
 
         Assert.NotNull(imageBuilder);
-
-
         BuiltImage builtImage = imageBuilder.Build();
 
         var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net8ImageTag, null);
@@ -249,18 +250,18 @@ public class CreateNewImageTests(ITestOutputHelper testOutput, HelixTransientTes
             .Execute()
             .Should().Pass();
 
-        CreateNewImage task = new();
-        var (buildEngine, errors) = SetupBuildEngine();
-        task.BuildEngine = buildEngine;
-        task.BaseRegistry = "localhost:5010";
-        task.BaseImageName = RootlessBase;
-        task.BaseImageTag = "latest";
+        (CreateNewImage task, var errors) = CreateTask<CreateNewImage>(task =>
+        {
+            task.BaseRegistry = "localhost:5010";
+            task.BaseImageName = RootlessBase;
+            task.BaseImageTag = "latest";
 
-        task.OutputRegistry = "localhost:5010";
-        task.Repository = AppImage;
-        task.ImageTags = new[] { "latest" };
-        task.WorkingDirectory = "app/";
-        task.Entrypoint = new TaskItem[] { new("dotnet"), new("build") };
+            task.OutputRegistry = "localhost:5010";
+            task.Repository = AppImage;
+            task.ImageTags = new[] { "latest" };
+            task.WorkingDirectory = "app/";
+            task.Entrypoint = new TaskItem[] { new("dotnet"), new("build") };
+        });
 
         Assert.True(task.Execute());
 
@@ -293,15 +294,13 @@ public class CreateNewImageTests(ITestOutputHelper testOutput, HelixTransientTes
             .Execute()
             .Should().Pass();
 
-        ParseContainerProperties pcp = new();
-        (IBuildEngine buildEngine, List<string?> errors) = SetupBuildEngine();
-        pcp.BuildEngine = buildEngine;
-
-        pcp.FullyQualifiedBaseImageName = "mcr.microsoft.com/dotnet/runtime:9.0";
-        pcp.ContainerRegistry = "localhost:5010";
-        pcp.ContainerRepository = "dotnet/testimage";
-        pcp.ContainerImageTags = new[] { "5.0", "latest" };
-
+        (ParseContainerProperties pcp, var errors) = CreateTask<ParseContainerProperties>(pcp =>
+        {
+            pcp.FullyQualifiedBaseImageName = "mcr.microsoft.com/dotnet/runtime:9.0";
+            pcp.ContainerRegistry = "localhost:5010";
+            pcp.ContainerRepository = "dotnet/testimage";
+            pcp.ContainerImageTags = new[] { "5.0", "latest" };
+        });
         Assert.True(pcp.Execute(), FormatBuildMessages(errors));
         Assert.Equal("mcr.microsoft.com", pcp.ParsedContainerRegistry);
         Assert.Equal("dotnet/runtime", pcp.ParsedContainerImage);
@@ -310,26 +309,23 @@ public class CreateNewImageTests(ITestOutputHelper testOutput, HelixTransientTes
         Assert.Equal("dotnet/testimage", pcp.NewContainerRepository);
         pcp.NewContainerTags.Should().BeEquivalentTo(new[] { "5.0", "latest" });
 
-        CreateNewImage cni = new();
-        (buildEngine, errors) = SetupBuildEngine();
-        cni.BuildEngine = buildEngine;
+        (CreateNewImage cni, errors) = CreateTask<CreateNewImage>(cni =>
+        {
+            cni.BaseRegistry = pcp.ParsedContainerRegistry;
+            cni.BaseImageName = pcp.ParsedContainerImage;
+            cni.BaseImageTag = pcp.ParsedContainerTag;
+            cni.Repository = pcp.NewContainerRepository;
+            cni.OutputRegistry = "localhost:5010";
+            cni.WorkingDirectory = "app/";
+            cni.Entrypoint = new TaskItem[] { new(newProjectDir.Name) };
+            cni.ImageTags = pcp.NewContainerTags;
 
-        cni.BaseRegistry = pcp.ParsedContainerRegistry;
-        cni.BaseImageName = pcp.ParsedContainerImage;
-        cni.BaseImageTag = pcp.ParsedContainerTag;
-        cni.Repository = pcp.NewContainerRepository;
-        cni.OutputRegistry = "localhost:5010";
-        cni.WorkingDirectory = "app/";
-        cni.Entrypoint = new TaskItem[] { new(newProjectDir.Name) };
-        cni.ImageTags = pcp.NewContainerTags;
-
-        cni.ImageFormat = KnownImageFormats.OCI.ToString();
+            cni.ImageFormat = KnownImageFormats.OCI.ToString();
+        });
 
         Assert.True(cni.Execute(), FormatBuildMessages(errors));
-
         cni.GeneratedContainerMediaType.Should().Be(SchemaTypes.OciManifestV1);
     }
-
 
     private static (IBuildEngine buildEngine, List<string?> errors) SetupBuildEngine()
     {
@@ -366,11 +362,29 @@ public class CreateNewImageTests(ITestOutputHelper testOutput, HelixTransientTes
         }
         return layerItem;
     }
-    
+
     private static void ApplyDescriptorMetadata(ITaskItem item, Descriptor descriptor)
     {
         item.SetMetadata("MediaType", descriptor.MediaType);
         item.SetMetadata("Digest", descriptor.Digest.ToString());
         item.SetMetadata("Size", descriptor.Size.ToString(CultureInfo.InvariantCulture));
+    }
+
+    private (T task, List<string?> errors) CreateTask<T>(Action<T> configure) where T : Microsoft.Build.Utilities.Task, new()
+    {
+        T task = new();
+        (IBuildEngine buildEngine, List<string?> errors) = SetupBuildEngine();
+        task.BuildEngine = buildEngine;
+        configure(task);
+        return (task, errors);
+    }
+
+    private async Task<(T task, List<string?> errors)> CreateTask<T>(Func<T, Task> configure) where T : Microsoft.Build.Utilities.Task, new()
+    {
+        T task = new();
+        (IBuildEngine buildEngine, List<string?> errors) = SetupBuildEngine();
+        task.BuildEngine = buildEngine;
+        await configure(task);
+        return (task, errors);
     }
 }
