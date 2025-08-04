@@ -171,7 +171,7 @@ internal static class MSBuildUtility
         //return ([], true);
         // Build or restore the project and collect properties
         (bool isBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> collectedProperties) =
-            BuildOrRestoreProjectOrSolution1(projectFilePath, buildOptions);
+            BuildOrRestoreProjectOrSolutionSeparately(projectFilePath, buildOptions);
 
         if (!isBuiltOrRestored)
         {
@@ -235,8 +235,7 @@ internal static class MSBuildUtility
     private static (bool IsBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> CollectedProperties)
      BuildOrRestoreProjectOrSolution1(string filePath, BuildOptions buildOptions)
     {
-        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(new List<string>(buildOptions.OtherMSBuildArgs) { filePath }, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, TestCommandParser.MTPTargetOption, TestCommandParser.VerbosityOption);
-
+        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. buildOptions.OtherMSBuildArgs, filePath], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, TestCommandParser.MTPTargetOption, TestCommandParser.VerbosityOption);
 
         var globalProperties = CreateGlobalProperties(buildOptions, parsedMSBuildArgs);
         using var collection = new ProjectCollection(globalProperties)
@@ -282,6 +281,96 @@ internal static class MSBuildUtility
             propertyLogger?.Shutdown();
             collection.UnregisterAllLoggers();
         }
+    }
+
+    private static (bool IsBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> CollectedProperties)
+ BuildOrRestoreProjectOrSolutionSeparately(string filePath, BuildOptions buildOptions)
+    {
+        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. buildOptions.OtherMSBuildArgs, filePath], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, TestCommandParser.MTPTargetOption, TestCommandParser.VerbosityOption);
+
+        var globalProperties = CreateGlobalProperties(buildOptions, parsedMSBuildArgs);
+        using var collection = new ProjectCollection(globalProperties)
+        {
+            PropertiesFromCommandLine = [.. parsedMSBuildArgs.OtherMSBuildArgs]
+        };
+
+        var propertyLogger = new PropertyCollectingLogger();
+        var loggers = CreateLoggers(buildOptions, propertyLogger, out FacadeLogger? binaryLogger, out ConsoleLogger? consoleLogger);
+
+        var buildParameters = new BuildParameters(collection) { Loggers = loggers };
+
+        try
+        {
+            // First call: Restore (if not skipped)
+            if (!buildOptions.HasNoRestore)
+            {
+                var restoreRequest = new BuildRequestData(
+                    filePath,
+                    collection.GlobalProperties,
+                    null,
+                    ["Restore"],
+                    null
+                );
+
+                var restoreResult = BuildManager.DefaultBuildManager.Build(buildParameters, restoreRequest);
+
+                if (restoreResult.OverallResult != BuildResultCode.Success)
+                {
+                    Console.Error.WriteLine("Restore failed.");
+                    if (restoreResult.Exception != null)
+                    {
+                        Console.Error.WriteLine(restoreResult.Exception.ToString());
+                    }
+                    return (false, propertyLogger.CollectedProperties);
+                }
+            }
+
+            // Second call: Other targets (excluding Restore)
+            var otherTargets = GetBuildTargetsExcludingRestore(parsedMSBuildArgs);
+            if (otherTargets.Count > 0)
+            {
+                var buildRequest = new BuildRequestData(
+                    filePath,
+                    collection.GlobalProperties,
+                    null,
+                    [.. otherTargets],
+                    null
+                );
+
+                var buildResult = BuildManager.DefaultBuildManager.Build(buildParameters, buildRequest);
+
+                if (buildResult.OverallResult != BuildResultCode.Success)
+                {
+                    Console.Error.WriteLine("Build failed.");
+                    if (buildResult.Exception != null)
+                    {
+                        Console.Error.WriteLine(buildResult.Exception.ToString());
+                    }
+                    return (false, propertyLogger.CollectedProperties);
+                }
+            }
+
+            return (true, propertyLogger.CollectedProperties);
+        }
+        finally
+        {
+            binaryLogger?.ReallyShutdown();
+            consoleLogger?.Shutdown();
+            propertyLogger?.Shutdown();
+            collection.UnregisterAllLoggers();
+        }
+    }
+
+    private static List<string> GetBuildTargetsExcludingRestore(MSBuildArgs parsedMSBuildArgs)
+    {
+        var targets = new List<string>();
+
+        if (parsedMSBuildArgs.RequestedTargets?.Length > 0)
+        {
+            targets.AddRange(parsedMSBuildArgs.RequestedTargets);
+        }
+
+        return targets;
     }
 
     private static Dictionary<string, string> CreateGlobalProperties(BuildOptions buildOptions, MSBuildArgs parsedMSBuildArgs)
@@ -347,7 +436,6 @@ internal static class MSBuildUtility
             targets.AddRange(parsedMSBuildArgs.RequestedTargets);
         }
 
-        //targets.Add("ComputeRunArguments");
         return targets;
     }
 
