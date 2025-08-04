@@ -57,7 +57,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="'$(RestoreEnablePackagePruning)' == 'true'
           AND (('$(TargetFrameworkIdentifier)' == '.NETCoreApp'
           AND '$(TargetFrameworkVersion)' != ''
-          AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0')))
+          AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '3.0')))
           OR ('$(TargetFrameworkIdentifier)' != '.NETCoreApp'))">
     <PropertyGroup>
       <PrunePackageDataRoot Condition="'$(PrunePackageDataRoot)' == ''">$(NetCoreRoot)\sdk\$(NETCoreSdkVersion)\PrunePackageData\</PrunePackageDataRoot>
