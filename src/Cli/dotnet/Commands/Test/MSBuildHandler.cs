@@ -148,9 +148,9 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
                 logMessageBuilder.AppendLine($"{ProjectProperties.IsTestProject}: {module.IsTestProject}");
                 logMessageBuilder.AppendLine($"{ProjectProperties.IsTestingPlatformApplication}: {module.IsTestingPlatformApplication}");
                 logMessageBuilder.AppendLine($"{ProjectProperties.TargetFramework}: {module.TargetFramework}");
-                logMessageBuilder.AppendLine($"{ProjectProperties.RunCommand}: {module.RunProperties.RunCommand}");
-                logMessageBuilder.AppendLine($"{ProjectProperties.RunArguments}: {module.RunProperties.RunArguments}");
-                logMessageBuilder.AppendLine($"{ProjectProperties.RunWorkingDirectory}: {module.RunProperties.RunWorkingDirectory}");
+                logMessageBuilder.AppendLine($"{ProjectProperties.RunCommand}: {module.RunProperties.Command}");
+                logMessageBuilder.AppendLine($"{ProjectProperties.RunArguments}: {module.RunProperties.Arguments}");
+                logMessageBuilder.AppendLine($"{ProjectProperties.RunWorkingDirectory}: {module.RunProperties.WorkingDirectory}");
                 logMessageBuilder.AppendLine();
             }
         }

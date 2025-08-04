@@ -6,19 +6,44 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
-internal record RunProperties(string RunCommand, string? RunArguments, string? RunWorkingDirectory)
+internal sealed record RunProperties(
+    string Command,
+    string? Arguments,
+    string? WorkingDirectory,
+    string RuntimeIdentifier,
+    string DefaultAppHostRuntimeIdentifier,
+    string TargetFrameworkVersion)
 {
-    internal static RunProperties FromProjectAndApplicationArguments(ProjectInstance project, string[] applicationArgs)
+    internal RunProperties(string command, string? arguments, string? workingDirectory)
+        : this(command, arguments, workingDirectory, string.Empty, string.Empty, string.Empty)
     {
-        string runProgram = project.GetPropertyValue("RunCommand");
-        string runArguments = project.GetPropertyValue("RunArguments");
-        string runWorkingDirectory = project.GetPropertyValue("RunWorkingDirectory");
+    }
 
-        if (applicationArgs.Length != 0)
+    internal static RunProperties FromProject(ProjectInstance project)
+    {
+        var result = new RunProperties(
+            Command: project.GetPropertyValue("RunCommand"),
+            Arguments: project.GetPropertyValue("RunArguments"),
+            WorkingDirectory: project.GetPropertyValue("RunWorkingDirectory"),
+            RuntimeIdentifier: project.GetPropertyValue("RuntimeIdentifier"),
+            DefaultAppHostRuntimeIdentifier: project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"),
+            TargetFrameworkVersion: project.GetPropertyValue("TargetFrameworkVersion"));
+
+        if (string.IsNullOrEmpty(result.Command))
         {
-            runArguments += " " + ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(applicationArgs);
+            RunCommand.ThrowUnableToRunError(project);
         }
 
-        return new(runProgram, runArguments, runWorkingDirectory);
+        return result;
+    }
+
+    internal RunProperties WithApplicationArguments(string[] applicationArgs)
+    {
+        if (applicationArgs.Length != 0)
+        {
+            return this with { Arguments = Arguments + " " + ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(applicationArgs) };
+        }
+
+        return this;
     }
 }

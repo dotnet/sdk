@@ -129,10 +129,6 @@ internal sealed partial class CSharpCompilerCommand
 
     private void PrepareAuxiliaryFiles(out string rspPath)
     {
-        Reporter.Verbose.WriteLine(CanReuseAuxiliaryFiles
-            ? "CSC auxiliary files can be reused."
-            : "CSC auxiliary files can NOT be reused.");
-
         string fileDirectory = Path.GetDirectoryName(EntryPointFileFullPath) ?? string.Empty;
         string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(EntryPointFileFullPath);
 
