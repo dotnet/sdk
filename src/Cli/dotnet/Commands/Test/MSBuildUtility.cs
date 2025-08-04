@@ -16,8 +16,6 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class MSBuildUtility
 {
-    private const string dotnetTestVerb = "dotnet-test";
-
     public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, bool IsBuiltOrRestored) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
     {
         SolutionModel solutionModel = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath, includeSolutionFilterFiles: true, includeSolutionXmlFiles: true);
@@ -232,7 +230,7 @@ internal static class MSBuildUtility
     {
         var loggers = new List<ILogger> { propertyLogger };
 
-        binaryLogger = LoggerUtility.DetermineBinlogger([.. buildOptions.BinLogArgs], "");
+        binaryLogger = LoggerUtility.DetermineBinlogger([.. buildOptions.BinLogArgs], CliConstants.DotnetTestVerb);
         if (binaryLogger is not null)
         {
             loggers.Add(binaryLogger);

@@ -24,7 +24,8 @@ internal static class CliConstants
     public const string SolutionXExtensionPattern = "*.slnx";
     public const string SolutionFilterExtensionPattern = "*.slnf";
 
-    public const string BinLogFileName = "msbuild.binlog";
+    public const string BinLogFileName = "msbuild";
+    public const string DotnetTestVerb = "dotnet-test";
 
     public const string DLLExtension = ".dll";
 

@@ -374,7 +374,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute("-bl", TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            Assert.True(File.Exists(string.Format("{0}{1}{2}", testInstance.TestRoot, Path.DirectorySeparatorChar, CliConstants.BinLogFileName)));
+            Assert.True(File.Exists(string.Format("{0}{1}{2}-{3}.binlog", testInstance.TestRoot, Path.DirectorySeparatorChar, CliConstants.BinLogFileName, CliConstants.DotnetTestVerb)));
 
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
