@@ -47,6 +47,18 @@ internal static class CommonOptions
         .ForwardAsMSBuildProperty()
         .AllowSingleArgPerToken();
 
+    public static Option<string?> BinaryLoggerOption =
+        // these are all of the forms that the binary logger switch can be understood by in MSBuild
+        new ForwardedOption<string?>("--binaryLogger", "-binaryLogger", "/binaryLogger", "-bl", "--bl", "/bl")
+        {
+            Description = "Log all build output to a binary log file. Optionally specify a file path and optional parameters.",
+            HelpName = "PATH",
+            Arity = ArgumentArity.ZeroOrOne,
+            Hidden = true
+        }
+        .SetForwardingFunction(ForwardBinaryLoggerOption)
+        .AllowSingleArgPerToken();
+
     private static ReadOnlyDictionary<string, string>? ParseMSBuildTokensIntoDictionary(ArgumentResult result)
     {
         if (result.Tokens.Count == 0)
@@ -120,6 +132,20 @@ internal static class CommonOptions
             .Where(t => !string.IsNullOrEmpty(t));
         var allTargets = defaultTargetName is null ? userTargets : [defaultTargetName, .. userTargets];
         return allTargets.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+    }
+
+    private static IEnumerable<string> ForwardBinaryLoggerOption(string? value)
+    {
+        if (value is null)
+        {
+            // If no value is provided, forward the flag without parameter
+            return ["-binaryLogger"];
+        }
+        else
+        {
+            // If a value is provided, forward it with the parameter
+            return [$"-binaryLogger:{value}"];
+        }
     }
 
     public static Option<VerbosityOptions> VerbosityOption(VerbosityOptions defaultVerbosity) =>

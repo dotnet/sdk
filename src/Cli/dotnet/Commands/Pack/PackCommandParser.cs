@@ -86,6 +86,7 @@ internal static class PackCommandParser
         command.Options.Add(CommonOptions.VersionSuffixOption);
         command.Options.Add(ConfigurationOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.Options.Add(CommonOptions.BinaryLoggerOption);
         command.Options.Add(TargetOption);
 
         // Don't include runtime option because we want to include it specifically and allow the short version ("-r") to be used

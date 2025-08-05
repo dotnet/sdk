@@ -294,6 +294,7 @@ internal static class TestCommandParser
         command.Options.Add(CommonOptions.ArchitectureOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.Options.Add(CommonOptions.BinaryLoggerOption);
         command.Options.Add(VsTestTargetOption);
         command.SetAction(TestCommand.Run);
 

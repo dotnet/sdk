@@ -91,6 +91,7 @@ internal static class BuildCommandParser
         command.Options.Add(CommonOptions.ArchitectureOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.Options.Add(CommonOptions.BinaryLoggerOption);
         command.Options.Add(TargetOption);
 
         command.SetAction(BuildCommand.Run);

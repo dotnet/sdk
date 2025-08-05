@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Data;
@@ -16,8 +15,6 @@ namespace Microsoft.DotNet.Watch;
 internal sealed class CommandLineOptions
 {
     public const string DefaultCommand = "run";
-
-    private static readonly ImmutableArray<string> s_binaryLogOptionNames = ["-bl", "/bl", "-binaryLogger", "--binaryLogger", "/binaryLogger"];
 
     public bool List { get; init; }
     public required GlobalOptions GlobalOptions { get; init; }
@@ -157,17 +154,14 @@ internal sealed class CommandLineOptions
             }
         }
 
-        var commandArguments = GetCommandArguments(parseResult, watchOptions, explicitCommand, out var binLogToken, out var binLogPath);
+        var commandArguments = GetCommandArguments(parseResult, watchOptions, explicitCommand);
 
         // We assume that forwarded options, if any, are intended for dotnet build.
         var buildArguments = buildOptions.Select(option => ((IForwardedOption)option).GetForwardingFunction()(parseResult)).SelectMany(args => args).ToList();
 
-        if (binLogToken != null)
-        {
-            buildArguments.Add(binLogToken);
-        }
-
         var targetFrameworkOption = (Option<string>?)buildOptions.SingleOrDefault(option => option.Name == "--framework");
+        var binaryLoggerOption = (Option<string?>?)buildOptions.SingleOrDefault(option => option.Name == "--binaryLogger");
+        var binaryLoggerPath = binaryLoggerOption != null ? parseResult.GetValue(binaryLoggerOption) : null;
 
         return new()
         {
@@ -178,7 +172,7 @@ internal sealed class CommandLineOptions
                 NoHotReload = parseResult.GetValue(noHotReloadOption),
                 NonInteractive = parseResult.GetValue(NonInteractiveOption),
                 Verbose = parseResult.GetValue(verboseOption),
-                BinaryLogPath = ParseBinaryLogFilePath(binLogPath),
+                BinaryLogPath = ParseBinaryLogFilePath(binaryLoggerPath),
             },
 
             CommandArguments = commandArguments,
@@ -215,13 +209,9 @@ internal sealed class CommandLineOptions
     private static IReadOnlyList<string> GetCommandArguments(
         ParseResult parseResult,
         IReadOnlyList<Option> watchOptions,
-        Command? explicitCommand,
-        out string? binLogToken,
-        out string? binLogPath)
+        Command? explicitCommand)
     {
         var arguments = new List<string>();
-        binLogToken = null;
-        binLogPath = null;
 
         foreach (var child in parseResult.CommandResult.Children)
         {
@@ -275,25 +265,6 @@ internal sealed class CommandLineOptions
                 {
                     seenCommand = true;
                     continue;
-                }
-
-                // Workaround: commands do not have forwarding option for -bl
-                // https://github.com/dotnet/sdk/issues/49989
-                foreach (var name in s_binaryLogOptionNames)
-                {
-                    if (token.StartsWith(name, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (token.Length == name.Length)
-                        {
-                            binLogToken = token;
-                            binLogPath = "";
-                        }
-                        else if (token.Length > name.Length + 1 && token[name.Length] == ':')
-                        {
-                            binLogToken = token;
-                            binLogPath = token[(name.Length + 1)..];
-                        }
-                    }
                 }
             }
 

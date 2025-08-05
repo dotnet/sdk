@@ -69,6 +69,7 @@ internal static class RestoreCommandParser
 
         command.Arguments.Add(SlnOrProjectOrFileArgument);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.Options.Add(CommonOptions.BinaryLoggerOption);
 
         command.Options.AddRange(FullRestoreOptions());
 
