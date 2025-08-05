@@ -61,8 +61,8 @@ internal static class CommonOptions
         
         option.AllowSingleArgPerToken();
         
-        // Set the forwarding function directly using the private method
-        option.SetForwardingFunction((string? value, ParseResult parseResult) => 
+        // Set the forwarding function directly to bypass the null value check
+        Func<ParseResult, IEnumerable<string>> forwardingFunc = (ParseResult parseResult) =>
         {
             // Find the option result for the binary logger
             var optionResult = parseResult.GetResult(option);
@@ -86,7 +86,11 @@ internal static class CommonOptions
             }
             
             return [];
-        });
+        };
+        
+        // Use reflection to set the private ForwardingFunction field
+        var forwardingFunctionField = typeof(ForwardedOption<string?>).GetField("ForwardingFunction", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        forwardingFunctionField?.SetValue(option, forwardingFunc);
         
         return option;
     }
