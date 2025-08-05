@@ -63,7 +63,7 @@ extends:
       alpine322:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.22-amd64
       azureLinux30:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net8.0-build-amd64
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-build-amd64
       centosStream9:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
       debian12Amd64:
@@ -71,7 +71,7 @@ extends:
       fedora41:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-41
       azureLinux30CrossArm:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net8.0-cross-arm-alpine
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm-alpine
       ubuntu2204DebPkg:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-debpkg
     sdl:
