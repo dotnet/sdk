@@ -5,13 +5,12 @@ set -euo pipefail
 # Install instructions: https://scancode-toolkit.readthedocs.io/en/latest/getting-started/install.html#installation-as-a-library-via-pip
 
 # See latest release at https://github.com/nexB/scancode-toolkit/releases
-SCANCODE_VERSION="32.3.3"
+SCANCODE_VERSION="32.4.0"
 
 pyEnvPath="/tmp/scancode-env"
 python3 -m venv $pyEnvPath
 source $pyEnvPath/bin/activate
 pip install scancode-toolkit==$SCANCODE_VERSION
-pip install click==8.1.8
 deactivate
 
 # Setup a script which executes scancode in the virtual environment
