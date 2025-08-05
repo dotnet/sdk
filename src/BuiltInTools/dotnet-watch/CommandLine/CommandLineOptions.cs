@@ -160,8 +160,8 @@ internal sealed class CommandLineOptions
         var buildArguments = buildOptions.Select(option => ((IForwardedOption)option).GetForwardingFunction()(parseResult)).SelectMany(args => args).ToList();
 
         var targetFrameworkOption = (Option<string>?)buildOptions.SingleOrDefault(option => option.Name == "--framework");
-        var binaryLoggerOption = (Option<string?>?)buildOptions.SingleOrDefault(option => option.Name == "--binaryLogger");
-        var binaryLoggerPath = binaryLoggerOption != null ? parseResult.GetValue(binaryLoggerOption) : null;
+        var binaryLoggerOption = (Option<BinaryLoggerOptions?>?)buildOptions.SingleOrDefault(option => option.Name == "--binaryLogger");
+        var binaryLoggerOptions = binaryLoggerOption != null ? parseResult.GetValue(binaryLoggerOption) : null;
 
         return new()
         {
@@ -172,7 +172,7 @@ internal sealed class CommandLineOptions
                 NoHotReload = parseResult.GetValue(noHotReloadOption),
                 NonInteractive = parseResult.GetValue(NonInteractiveOption),
                 Verbose = parseResult.GetValue(verboseOption),
-                BinaryLogPath = ParseBinaryLogFilePath(binaryLoggerPath),
+                BinaryLogPath = GetBinaryLogFilePath(binaryLoggerOptions),
             },
 
             CommandArguments = commandArguments,
@@ -187,24 +187,25 @@ internal sealed class CommandLineOptions
     }
 
     /// <summary>
-    /// Parses the value of msbuild option `-binaryLogger[:[LogFile=]output.binlog[;ProjectImports={None,Embed,ZipFile}]]`.
-    /// Emulates https://github.com/dotnet/msbuild/blob/7f69ea906c29f2478cc05423484ad185de66e124/src/Build/Logging/BinaryLogger/BinaryLogger.cs#L481.
-    /// See https://github.com/dotnet/msbuild/issues/12256
+    /// Gets the binary log file path from the binary logger options.
     /// </summary>
-    internal static string? ParseBinaryLogFilePath(string? value)
-        => value switch
+    internal static string? GetBinaryLogFilePath(BinaryLoggerOptions? options)
+    {
+        if (options == null)
         {
-            null => null,
-            _ => (from parameter in value.Split(';', StringSplitOptions.RemoveEmptyEntries)
-                  where !string.Equals(parameter, "ProjectImports=None", StringComparison.OrdinalIgnoreCase) &&
-                        !string.Equals(parameter, "ProjectImports=Embed", StringComparison.OrdinalIgnoreCase) &&
-                        !string.Equals(parameter, "ProjectImports=ZipFile", StringComparison.OrdinalIgnoreCase) &&
-                        !string.Equals(parameter, "OmitInitialInfo", StringComparison.OrdinalIgnoreCase)
-                  let path = (parameter.StartsWith("LogFile=", StringComparison.OrdinalIgnoreCase) ? parameter["LogFile=".Length..] : parameter).Trim('"')
-                  let pathWithExtension = path.EndsWith(".binlog", StringComparison.OrdinalIgnoreCase) ? path : $"{path}.binlog"
-                  select pathWithExtension)
-                 .LastOrDefault("msbuild.binlog")
-        };
+            return null;
+        }
+
+        var parsedParams = options.ParseParameters();
+        if (!string.IsNullOrEmpty(parsedParams.LogFile))
+        {
+            return parsedParams.LogFile.EndsWith(".binlog", StringComparison.OrdinalIgnoreCase) 
+                ? parsedParams.LogFile 
+                : $"{parsedParams.LogFile}.binlog";
+        }
+
+        return "msbuild.binlog";
+    }
 
     private static IReadOnlyList<string> GetCommandArguments(
         ParseResult parseResult,

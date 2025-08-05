@@ -47,52 +47,67 @@ internal static class CommonOptions
         .ForwardAsMSBuildProperty()
         .AllowSingleArgPerToken();
 
-    public static Option<string?> BinaryLoggerOption = CreateBinaryLoggerOption();
-
-    private static ForwardedOption<string?> CreateBinaryLoggerOption()
-    {
-        var option = new ForwardedOption<string?>("--binaryLogger", "-binaryLogger", "/binaryLogger", "-bl", "--bl", "/bl")
+    public static Option<BinaryLoggerOptions?> BinaryLoggerOption =
+        new ForwardedOption<BinaryLoggerOptions?>("--binaryLogger", "-binaryLogger", "/binaryLogger", "-bl", "--bl", "/bl")
         {
             Description = "Log all build output to a binary log file. Optionally specify a file path and optional parameters.",
             HelpName = "PATH",
             Arity = ArgumentArity.ZeroOrOne,
-            Hidden = true
-        };
-        
-        option.AllowSingleArgPerToken();
-        
-        // Set the forwarding function directly to bypass the null value check
-        Func<ParseResult, IEnumerable<string>> forwardingFunc = (ParseResult parseResult) =>
+            Hidden = true,
+            CustomParser = ParseBinaryLoggerOptions
+        }
+        .SetForwardingFunction(ForwardBinaryLoggerOptions)
+        .AllowSingleArgPerToken();
+
+    private static BinaryLoggerOptions? ParseBinaryLoggerOptions(ArgumentResult result)
+    {
+        if (result.Tokens.Count == 0)
         {
-            // Find the option result for the binary logger
-            var optionResult = parseResult.GetResult(option);
-            if (optionResult != null)
-            {
-                // Get the exact token that was used (e.g., "-bl", "/bl", "--binaryLogger", etc.)
-                var originalToken = optionResult.IdentifierToken?.Value ?? option.Name;
-                
-                // Check if there are any argument tokens (the value after :)
-                if (optionResult.Tokens.Count > 0)
-                {
-                    // If there is a value, forward it with the parameter
-                    var argumentValue = optionResult.Tokens[0].Value;
-                    return [$"{originalToken}:{argumentValue}"];
-                }
-                else
-                {
-                    // If no value is provided, forward just the flag
-                    return [originalToken];
-                }
-            }
-            
+            // Flag form (e.g., -bl without parameters)
+            return new BinaryLoggerOptions(null, null);
+        }
+
+        if (result.Tokens.Count == 1)
+        {
+            // Parameter form (e.g., -bl:file.binlog or -bl file.binlog)
+            var argumentValue = result.Tokens[0].Value;
+            return new BinaryLoggerOptions(null, argumentValue);
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<string> ForwardBinaryLoggerOptions(BinaryLoggerOptions? options, ParseResult parseResult)
+    {
+        if (options == null)
+        {
             return [];
-        };
-        
-        // Use reflection to set the private ForwardingFunction field
-        var forwardingFunctionField = typeof(ForwardedOption<string?>).GetField("ForwardingFunction", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        forwardingFunctionField?.SetValue(option, forwardingFunc);
-        
-        return option;
+        }
+
+        // Get the option result to access the original token that was used
+        var optionResult = parseResult.GetResult(BinaryLoggerOption);
+        if (optionResult == null)
+        {
+            return [];
+        }
+
+        // Find the original token that was used to invoke this option
+        string originalToken = "--binaryLogger"; // default fallback
+        if (optionResult.IdentifierToken != null)
+        {
+            originalToken = optionResult.IdentifierToken.Value;
+        }
+
+        if (options.Arguments == null)
+        {
+            // Flag form: forward just the original token
+            return [originalToken];
+        }
+        else
+        {
+            // Parameter form: forward with colon syntax
+            return [$"{originalToken}:{options.Arguments}"];
+        }
     }
 
     private static ReadOnlyDictionary<string, string>? ParseMSBuildTokensIntoDictionary(ArgumentResult result)
@@ -526,3 +541,57 @@ public class DynamicOption<T>(string name, params string[] aliases) : Option<T>(
 public class DynamicArgument<T>(string name) : Argument<T>(name), IDynamicArgument
 {
 }
+
+/// <summary>
+/// Represents the parsed binary logger options for MSBuild.
+/// </summary>
+/// <param name="OriginalToken">The original command-line token used (determined from ParseResult), or null if not available</param>
+/// <param name="Arguments">The arguments part of the binary logger option, or null if none specified</param>
+public record BinaryLoggerOptions(string? OriginalToken, string? Arguments)
+{
+    /// <summary>
+    /// Parses the arguments into structured binary logger parameters.
+    /// Format: filename[;keyword=value]*
+    /// </summary>
+    public BinaryLoggerParameters ParseParameters()
+    {
+        if (string.IsNullOrEmpty(Arguments))
+        {
+            return new BinaryLoggerParameters();
+        }
+
+        var parts = Arguments.Split(';');
+        string? logFile = parts.Length > 0 ? parts[0] : null;
+        
+        // If the first part is empty or just contains keywords, no filename was specified
+        if (logFile?.Contains('=') == true)
+        {
+            logFile = null;
+        }
+
+        var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        
+        // Parse keyword=value pairs starting from the appropriate index
+        int startIndex = logFile != null ? 1 : 0;
+        for (int i = startIndex; i < parts.Length; i++)
+        {
+            var part = parts[i];
+            var equalIndex = part.IndexOf('=');
+            if (equalIndex > 0)
+            {
+                string key = part.Substring(0, equalIndex);
+                string value = part.Substring(equalIndex + 1);
+                parameters[key] = value;
+            }
+        }
+
+        return new BinaryLoggerParameters(logFile, parameters);
+    }
+}
+
+/// <summary>
+/// Represents the structured parameters for binary logging.
+/// </summary>
+/// <param name="LogFile">The log file path, or null if not specified</param>
+/// <param name="Parameters">Additional keyword-value parameters</param>
+public record BinaryLoggerParameters(string? LogFile = null, IReadOnlyDictionary<string, string>? Parameters = null);
