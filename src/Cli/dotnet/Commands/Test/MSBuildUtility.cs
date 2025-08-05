@@ -123,43 +123,34 @@ internal static class MSBuildUtility
         ExecuteSeparateBuildCalls(string filePath, BuildOptions buildOptions, BuildParameters buildParameters, MSBuildArgs parsedMSBuildArgs,
             IDictionary<string, string?> globalProperties, PropertyCollectingLogger propertyLogger)
     {
-        BuildManager.DefaultBuildManager.BeginBuild(buildParameters);
-
-        try
+        // First call: Restore (if not skipped)
+        if (!buildOptions.HasNoRestore && !buildOptions.HasNoBuild)
         {
-            // First call: Restore (if not skipped)
-            if (!buildOptions.HasNoRestore && !buildOptions.HasNoBuild)
+            var restoreRequest = new BuildRequestData(filePath, globalProperties, null, ["Restore"], null);
+            var restoreResult = BuildManager.DefaultBuildManager.Build(buildParameters, restoreRequest);
+
+            if (restoreResult.OverallResult != BuildResultCode.Success)
             {
-                var restoreRequest = new BuildRequestData(filePath, globalProperties, null, ["Restore"], null);
-                var restoreResult = BuildManager.DefaultBuildManager.BuildRequest(restoreRequest);
-
-                if (restoreResult.OverallResult != BuildResultCode.Success)
-                {
-                    LogBuildFailure(restoreResult, "Restore failed");
-                    return (false, propertyLogger.CollectedProperties);
-                }
+                LogBuildFailure(restoreResult, "Restore failed");
+                return (false, propertyLogger.CollectedProperties);
             }
-
-            // Second call: Other targets
-            var otherTargets = GetBuildTargetsExcludingRestore(parsedMSBuildArgs);
-            if (otherTargets.Count > 0)
-            {
-                var buildRequest = new BuildRequestData(filePath, globalProperties, null, [.. otherTargets], null);
-                var buildResult = BuildManager.DefaultBuildManager.BuildRequest(buildRequest);
-
-                if (buildResult.OverallResult != BuildResultCode.Success)
-                {
-                    LogBuildFailure(buildResult, "Build failed");
-                    return (false, propertyLogger.CollectedProperties);
-                }
-            }
-
-            return (true, propertyLogger.CollectedProperties);
         }
-        finally
+
+        // Second call: Other targets
+        var otherTargets = GetBuildTargetsExcludingRestore(parsedMSBuildArgs);
+        if (otherTargets.Count > 0)
         {
-            BuildManager.DefaultBuildManager.EndBuild();
+            var buildRequest = new BuildRequestData(filePath, globalProperties, null, [.. otherTargets], null);
+            var buildResult = BuildManager.DefaultBuildManager.Build(buildParameters, buildRequest);
+
+            if (buildResult.OverallResult != BuildResultCode.Success)
+            {
+                LogBuildFailure(buildResult, "Build failed");
+                return (false, propertyLogger.CollectedProperties);
+            }
         }
+
+        return (true, propertyLogger.CollectedProperties);
     }
 
     private static (bool IsBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> CollectedProperties)
