@@ -498,14 +498,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 break;
         }
 
-        if (_isRetry && asm.TryCount > 1 && outcome == TestOutcome.Passed)
-        {
-            // This is a retry of a test, and the test succeeded, so these tests are potentially flaky.
-            // Tests that come from dynamic data sources and previously succeeded will also run on the second attempt,
-            // and most likely will succeed as well, so we will get them here, even though they are probably not flaky.
-            asm.FlakyTests.Add(testNodeUid);
-
-        }
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
         if (outcome != TestOutcome.Passed || GetShowPassedTests())
         {
@@ -810,7 +802,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
         int? exitCode, string? outputData, string? errorData)
     {
         TestProgressState assemblyRun = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
-        assemblyRun.ExitCode = exitCode;
         assemblyRun.Success = exitCode == 0 && assemblyRun.FailedTests == 0;
         assemblyRun.Stopwatch.Stop();
 

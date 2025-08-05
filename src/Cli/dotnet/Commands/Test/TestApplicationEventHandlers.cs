@@ -66,11 +66,6 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
 
     public void OnTestResultsReceived(object sender, TestResultEventArgs args)
     {
-        // TODO: If we got some results for ExecutionId1 and InstanceId1
-        // Then we started getting ExecutionId1 and InstanceId2,
-        // Then we started getting ExecutionId1 and InstanceId1 again.
-        // Should we discard the last result from ExecutionId1 and InstanceId1 completely?
-        // Or is it considered a violation of the protocol and should never happen? (in that case maybe we should throw?)
         var testApp = (TestApplication)sender;
         var appInfo = _executions[testApp];
 
