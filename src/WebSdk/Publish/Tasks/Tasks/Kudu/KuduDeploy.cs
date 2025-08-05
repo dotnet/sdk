@@ -11,43 +11,42 @@
 
 using Microsoft.NET.Sdk.Publish.Tasks.Properties;
 using Framework = Microsoft.Build.Framework;
-using Utilities = Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
 {
-    public sealed class KuduDeploy : Utilities.Task
+    public sealed class KuduDeploy : Task
     {
         public static readonly int TimeoutMilliseconds = 180000;
         [Framework.Required]
-        public string PublishIntermediateOutputPath
+        public string? PublishIntermediateOutputPath
         {
             get;
             set;
         }
 
         [Framework.Required]
-        public string PublishUrl
+        public string? PublishUrl
         {
             get;
             set;
         }
 
         [Framework.Required]
-        public string UserName
+        public string? UserName
         {
             get;
             set;
         }
 
         [Framework.Required]
-        public string Password
+        public string? Password
         {
             get;
             set;
         }
 
         [Framework.Required]
-        public string PublishSiteName
+        public string? PublishSiteName
         {
             get;
             set;
@@ -113,10 +112,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
             }
 
             // Deploy the files.
-            System.Threading.Tasks.Task deployTask = fileDeploy.DeployAsync(PublishIntermediateOutputPath);
+            System.Threading.Tasks.Task? deployTask = fileDeploy.DeployAsync(PublishIntermediateOutputPath);
             try
             {
-                success = deployTask.Wait(TimeoutMilliseconds);
+                success = deployTask?.Wait(TimeoutMilliseconds) ?? false;
                 if (!success)
                 {
                     Log.LogError(string.Format(Resources.KUDUDEPLOY_AzurePublishErrorReason, Resources.KUDUDEPLOY_OperationTimeout));
@@ -131,15 +130,13 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
             return success;
         }
 
-
-        #region Zip File Publish
         internal bool DeployZipFile(KuduConnectionInfo connectionInfo)
         {
             bool success;
             KuduZipDeploy zipDeploy = new(connectionInfo, Log);
 
-            string zipFileFullPath = CreateZipFile(PublishIntermediateOutputPath);
-            System.Threading.Tasks.Task<bool> zipTask = zipDeploy.DeployAsync(zipFileFullPath);
+            string? zipFileFullPath = CreateZipFile(PublishIntermediateOutputPath);
+            Task<bool> zipTask = zipDeploy.DeployAsync(zipFileFullPath);
             try
             {
                 success = zipTask.Wait(TimeoutMilliseconds);
@@ -160,8 +157,13 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
             return success && zipTask.Result;
         }
 
-        internal string CreateZipFile(string sourcePath)
+        internal string? CreateZipFile(string? sourcePath)
         {
+            if (sourcePath is null)
+            {
+                return null;
+            }
+
             // Zip the files from PublishOutput path.
             string zipFileFullPath = Path.Combine(Path.GetTempPath(), string.Format("Publish{0}.zip", new Random().Next(int.MaxValue)));
             Log.LogMessage(Framework.MessageImportance.High, string.Format(Resources.KUDUDEPLOY_CopyingToTempLocation, zipFileFullPath));
@@ -182,25 +184,24 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
             return zipFileFullPath;
         }
 
-        internal System.Threading.Tasks.Task DeleteTempZipFile(string tempFilePath)
+        internal System.Threading.Tasks.Task DeleteTempZipFile(string? tempFilePath)
         {
             return System.Threading.Tasks.Task.Factory.StartNew(
-               () =>
-               {
-                   if (File.Exists(tempFilePath))
-                   {
-                       try
-                       {
-                           File.Delete(tempFilePath);
-                       }
-                       catch
-                       {
-                           // We don't need to do any thing if we are unable to delete the temp file.
-                       }
-                   }
-               });
+                () =>
+                {
+                    if (File.Exists(tempFilePath))
+                    {
+                        try
+                        {
+                            File.Delete(tempFilePath);
+                        }
+                        catch
+                        {
+                            // We don't need to do any thing if we are unable to delete the temp file.
+                        }
+                    }
+                }
+            );
         }
-
-        #endregion
     }
 }
