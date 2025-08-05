@@ -7,6 +7,11 @@
         <target state="translated">광고 매니페스트만 업데이트합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotCombineOptions">
+        <source>Cannot use the {0} and {1} options together.</source>
+        <target state="translated">{0} 및 {1} 옵션을 함께 사용할 수 없습니다.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Update all installed workloads.</source>
         <target state="translated">설치된 모든 워크로드를 업데이트합니다.</target>
@@ -24,7 +29,7 @@
       </trans-unit>
       <trans-unit id="NoWorkloadUpdateFound">
         <source>No workload update found.</source>
-        <target state="new">No workload update found.</target>
+        <target state="translated">워크로드 업데이트를 찾을 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -70,6 +75,11 @@
       <trans-unit id="WorkloadUpdateFailed">
         <source>Workload update failed: {0}</source>
         <target state="translated">워크로드 업데이트 실패: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionRequestedNotFound">
+        <source>Workload version {0} not found.</source>
+        <target state="translated">워크로드 버전 {0}을(를) 찾을 수 없습니다.</target>
         <note />
       </trans-unit>
     </body>
