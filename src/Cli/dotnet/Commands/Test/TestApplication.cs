@@ -94,17 +94,20 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         // In the case of UseAppHost=false, RunArguments is set to `exec $(TargetPath)`:
         // https://github.com/dotnet/sdk/blob/333388c31d811701e3b6be74b5434359151424dc/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Sdk.targets#L1411
         // So, we keep that first always.
+        // RunArguments is intentionally not escaped. It can contain multiple arguments and spaces there shouldn't cause the whole
+        // value to be wrapped in double quotes. This matches dotnet run behavior.
+        // In short, it's expected to already be escaped properly.
         StringBuilder builder = new(Module.RunProperties.RunArguments);
 
         if (testOptions.IsHelp)
         {
-            builder.Append($" {TestingPlatformOptions.HelpOption.Name} ");
+            builder.Append($" {TestingPlatformOptions.HelpOption.Name}");
         }
 
-        var args = _buildOptions.UnmatchedTokens;
-        builder.Append(args.Count != 0
-            ? " " + args.Aggregate((a, b) => $"{a} {b}")
-            : string.Empty);
+        foreach (var arg in _buildOptions.UnmatchedTokens)
+        {
+            builder.Append($" {ArgumentEscaper.EscapeSingleArg(arg)}");
+        }
 
         builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(_pipeNameDescription.Name)}");
 
