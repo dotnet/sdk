@@ -28,12 +28,7 @@ internal static class MSBuildUtility
             return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), isBuiltOrRestored);
         }
 
-        string rootDirectory = solutionFilePath.HasExtension(".slnf") ?
-                Path.GetDirectoryName(solutionModel.Description)! :
-                SolutionAndProjectUtility.GetRootDirectory(solutionFilePath);
-
-        var projectPaths = solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath));
-        var projects = GetProjectsProperties(collectedProperties, projectPaths, buildOptions.NoLaunchProfile, buildOptions);
+        var projects = GetProjectsProperties(collectedProperties, buildOptions.NoLaunchProfile, buildOptions.DegreeOfParallelism);
 
         return (projects, isBuiltOrRestored);
     }
@@ -240,19 +235,18 @@ internal static class MSBuildUtility
     }
 
     private static ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectsProperties(
-    IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> collectedProperties,
-    IEnumerable<string> projects,
-    bool noLaunchProfile,
-    BuildOptions buildOptions)
+        IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> collectedProperties,
+        bool noLaunchProfile,
+        int degreeOfParallelism)
     {
         var allProjects = new ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules>();
 
         Parallel.ForEach(
-            projects,
-            new ParallelOptions { MaxDegreeOfParallelism = buildOptions.DegreeOfParallelism },
-            (project) =>
+            collectedProperties.Keys,
+            new ParallelOptions { MaxDegreeOfParallelism = degreeOfParallelism },
+            (projectPath) =>
             {
-                var modules = SolutionAndProjectUtility.GetProjectProperties1(project, noLaunchProfile, collectedProperties);
+                var modules = SolutionAndProjectUtility.GetProjectProperties1(projectPath, noLaunchProfile, collectedProperties);
                 foreach (var module in modules)
                 {
                     allProjects.Add(module);
