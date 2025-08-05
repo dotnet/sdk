@@ -39,6 +39,10 @@ parameters:
     # No fedora Helix container is available, so use the ubuntu one instead.
     helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-22.04-helix-amd64
     osProperties: $(linuxOsPortableProperties)
+    env:
+      COMPlus_EnableAlternateStackCheck: 0
+      DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER: 0
+      DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: 1
     # Skipping all container-based testing for now.
     # See: https://github.com/dotnet/sdk/issues/40935
     runTests: false
