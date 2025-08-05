@@ -141,7 +141,7 @@ public class TestProgressStateTests
     }
 
     /// <summary>
-    /// Tests that reporting a with new instance id clears old reports.
+    /// Tests that reporting with a new instance id clears old reports.
     /// </summary>
     [Fact]
     public void ReportTest_WithNewInstanceId_ClearsOldReports()
