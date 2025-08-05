@@ -117,7 +117,7 @@ internal static class MSBuildUtility
         // First call: Restore (if not skipped)
         if (!buildOptions.HasNoRestore && !buildOptions.HasNoBuild)
         {
-            var restoreRequest = new BuildRequestData(filePath, new Dictionary<string, string?>(), null, ["Restore"], null);
+            var restoreRequest = new BuildRequestData(filePath, globalProperties, null, ["Restore"], null);
             var restoreResult = BuildManager.DefaultBuildManager.Build(buildParameters, restoreRequest);
 
             if (restoreResult.OverallResult != BuildResultCode.Success)
