@@ -47,17 +47,49 @@ internal static class CommonOptions
         .ForwardAsMSBuildProperty()
         .AllowSingleArgPerToken();
 
-    public static Option<string?> BinaryLoggerOption =
-        // these are all of the forms that the binary logger switch can be understood by in MSBuild
-        new ForwardedOption<string?>("--binaryLogger", "-binaryLogger", "/binaryLogger", "-bl", "--bl", "/bl")
+    public static Option<string?> BinaryLoggerOption = CreateBinaryLoggerOption();
+
+    private static ForwardedOption<string?> CreateBinaryLoggerOption()
+    {
+        var option = new ForwardedOption<string?>("--binaryLogger", "-binaryLogger", "/binaryLogger", "-bl", "--bl", "/bl")
         {
             Description = "Log all build output to a binary log file. Optionally specify a file path and optional parameters.",
             HelpName = "PATH",
             Arity = ArgumentArity.ZeroOrOne,
             Hidden = true
-        }
-        .SetForwardingFunction(ForwardBinaryLoggerOption)
-        .AllowSingleArgPerToken();
+        };
+        
+        option.AllowSingleArgPerToken();
+        
+        // Set the forwarding function directly using the private method
+        option.SetForwardingFunction((string? value, ParseResult parseResult) => 
+        {
+            // Find the option result for the binary logger
+            var optionResult = parseResult.GetResult(option);
+            if (optionResult != null)
+            {
+                // Get the exact token that was used (e.g., "-bl", "/bl", "--binaryLogger", etc.)
+                var originalToken = optionResult.IdentifierToken?.Value ?? option.Name;
+                
+                // Check if there are any argument tokens (the value after :)
+                if (optionResult.Tokens.Count > 0)
+                {
+                    // If there is a value, forward it with the parameter
+                    var argumentValue = optionResult.Tokens[0].Value;
+                    return [$"{originalToken}:{argumentValue}"];
+                }
+                else
+                {
+                    // If no value is provided, forward just the flag
+                    return [originalToken];
+                }
+            }
+            
+            return [];
+        });
+        
+        return option;
+    }
 
     private static ReadOnlyDictionary<string, string>? ParseMSBuildTokensIntoDictionary(ArgumentResult result)
     {
@@ -132,20 +164,6 @@ internal static class CommonOptions
             .Where(t => !string.IsNullOrEmpty(t));
         var allTargets = defaultTargetName is null ? userTargets : [defaultTargetName, .. userTargets];
         return allTargets.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-    }
-
-    private static IEnumerable<string> ForwardBinaryLoggerOption(string? value)
-    {
-        if (value is null)
-        {
-            // If no value is provided, forward the flag without parameter
-            return ["-binaryLogger"];
-        }
-        else
-        {
-            // If a value is provided, forward it with the parameter
-            return [$"-binaryLogger:{value}"];
-        }
     }
 
     public static Option<VerbosityOptions> VerbosityOption(VerbosityOptions defaultVerbosity) =>
