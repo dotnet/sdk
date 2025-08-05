@@ -157,7 +157,7 @@ public class TestProgressStateTests
         state.ReportPassingTest("testUid", "id2");
         state.ReportPassingTest("testUid", "id2");
         state.ReportPassingTest("testUid", "id2");
-        state.ReportSkippedTest("testUid", "id1");
+        state.ReportSkippedTest("testUid", "id2");
 
         state.PassedTests.Should().Be(3);
         state.FailedTests.Should().Be(1);
