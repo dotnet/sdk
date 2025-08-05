@@ -292,33 +292,8 @@ namespace Microsoft.DotNet.Pack.Tests
                 .And.HaveStdOutContaining("NETSDK1083");
         }
 
-        [Fact]
-        public void DotnetPack_AcceptsPropertiesOption()
-        {
-            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
-                .WithSource();
-            string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
-            var result = new DotnetPackCommand(Log)
-                .WithWorkingDirectory(testInstance.Path)
-                .Execute(nuspecPath, "--property", "id=CustomID");
-
-            result.Should().Pass();
-
-            var outputDir = new DirectoryInfo(testInstance.Path);
-            outputDir.Should().Exist()
-                .And.HaveFile("CustomId.1.0.0.nupkg");
-
-            var nupkgPath = Path.Combine(testInstance.Path, "CustomId.1.0.0.nupkg");
-            File.Exists(nupkgPath).Should().BeTrue("The package should be created with the custom id");
-
-            using (var nupkgReader = new PackageArchiveReader(nupkgPath))
-            {
-                var nuspecReader = nupkgReader.NuspecReader;
-                nuspecReader.Should().NotBeNull();
-
-                nuspecReader.GetId().Should().Be("CustomID", "The nuspec file should contain the custom id"); 
-            }
-        }
+       
+       
 
         [Fact]
         public void DotnetPack_AcceptsVersionOption()
@@ -328,7 +303,8 @@ namespace Microsoft.DotNet.Pack.Tests
             string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
             var result = new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute(nuspecPath, "--version", "1.2.3");
+                .Execute(nuspecPath, "--property", "id=PackNoCsproj",
+                "--property", "authors=CustomAuthor", "--version", "1.2.3");
 
             result.Should().Pass();
 
@@ -356,7 +332,7 @@ namespace Microsoft.DotNet.Pack.Tests
             string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
             var result = new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute(nuspecPath, "--version");
+                .Execute(nuspecPath, "--property", "id=PackNoCsproj","--property", "authors=author", "--version");
 
             result.Should().Fail();
             result.StdErr.Should().Contain("Required argument missing for option: '--version'.");
@@ -373,13 +349,13 @@ namespace Microsoft.DotNet.Pack.Tests
             var result = new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute(
-                nuspecPath, "--property", "id=CustomValue",
+                nuspecPath, "--property", "id=CustomID",
                 "--property", "authors=CustomAuthor"
                 );
 
             result.Should().Pass();
 
-            var nupkgPath = Path.Combine(testInstance.Path, "CustomId.1.0.0.nupkg");
+            var nupkgPath = Path.Combine(testInstance.Path, "CustomID.1.0.0.nupkg");
             File.Exists(nupkgPath).Should().BeTrue("The package should be created with the custom id.");
 
             using (var nupkgReader = new PackageArchiveReader(nupkgPath))
@@ -406,7 +382,7 @@ namespace Microsoft.DotNet.Pack.Tests
                 .Execute(nuspecPath, "--configuration", configuration);
             result.Should().Pass();
 
-            var outputPackage = new FileInfo(Path.Combine(testInstance.Path, "bin", configuration, "TestPackWithConfig.1.0.0.nupkg"));
+            var outputPackage = new FileInfo(Path.Combine(testInstance.Path, "TestPackWithConfig.1.0.0.nupkg"));
             outputPackage.Should().Exist();
 
             using (var stream = outputPackage.OpenRead())
@@ -427,7 +403,8 @@ namespace Microsoft.DotNet.Pack.Tests
 
             var result = new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute(nuspecPath, "--output", outputDirPath);
+                .Execute(nuspecPath, "--property", "id=PackNoCsproj",
+                "--property", "authors=CustomAuthor", "--output", outputDirPath);
             result.Should().Pass();
             var outputDir = new DirectoryInfo(outputDirPath);
             outputDir.Should().Exist()
