@@ -11,7 +11,6 @@ using Xunit;
 
 namespace dotnet.Tests.CommandTests.Test;
 
-
 public class TestProgressStateTests
 {
     /// <summary>
