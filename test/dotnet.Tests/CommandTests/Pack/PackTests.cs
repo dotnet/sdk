@@ -403,7 +403,7 @@ namespace Microsoft.DotNet.Pack.Tests
 
             var result = new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute(nuspecPath, "--configuration", configuration, "--output", Path.Combine("bin", configuration));
+                .Execute(nuspecPath, "--configuration", configuration);
             result.Should().Pass();
 
             var outputPackage = new FileInfo(Path.Combine(testInstance.Path, "bin", configuration, "TestPackWithConfig.1.0.0.nupkg"));
