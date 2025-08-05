@@ -1,3 +1,4 @@
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
   <Package  UpgradeCode="$(UpgradeCode)" Version="$(ProductVersion)" Manufacturer="$(Manufacturer)" InstallerVersion="$(InstallerVersion)" Compressed="yes"
             Scope="perMachine" Language="$(ProductLanguage)" Name="$(ProductName)">
