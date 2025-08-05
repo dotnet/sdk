@@ -76,7 +76,7 @@ internal static class MSBuildUtility
     }
 
     private static (bool IsBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> CollectedProperties)
-        BuildProjectOrSolution(string filePath, BuildOptions buildOptions, bool useSeparateRestoreCall)
+     BuildProjectOrSolution(string filePath, BuildOptions buildOptions, bool useSeparateRestoreCall)
     {
         var global = CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.OtherMSBuildArgs]);
 
@@ -99,7 +99,16 @@ internal static class MSBuildUtility
 
         try
         {
-            return ExecuteSeparateBuildCalls(filePath, buildOptions, buildParameters, parsedMSBuildArgs, collection.GlobalProperties, propertyLogger);
+            if (useSeparateRestoreCall)
+            {
+                // For projects: Use separate restore and build calls
+                return ExecuteSeparateBuildCalls(filePath, buildOptions, buildParameters, parsedMSBuildArgs, collection.GlobalProperties, propertyLogger);
+            }
+            else
+            {
+                // For solutions: Use single combined call
+                return ExecuteCombinedBuildCall(filePath, buildOptions, buildParameters, parsedMSBuildArgs, collection.GlobalProperties, propertyLogger);
+            }
         }
         finally
         {
@@ -132,6 +141,27 @@ internal static class MSBuildUtility
         if (otherTargets.Count > 0)
         {
             var buildRequest = new BuildRequestData(filePath, globalProperties, null, [.. otherTargets], null);
+            var buildResult = BuildManager.DefaultBuildManager.Build(buildParameters, buildRequest);
+
+            if (buildResult.OverallResult != BuildResultCode.Success)
+            {
+                LogBuildFailure(buildResult, "Build failed");
+                return (false, propertyLogger.CollectedProperties);
+            }
+        }
+
+        return (true, propertyLogger.CollectedProperties);
+    }
+
+    private static (bool IsBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> CollectedProperties)
+        ExecuteCombinedBuildCall(string filePath, BuildOptions buildOptions, BuildParameters buildParameters, MSBuildArgs parsedMSBuildArgs,
+            IDictionary<string, string?> globalProperties, PropertyCollectingLogger propertyLogger)
+    {
+        var allTargets = GetBuildTargets(buildOptions, parsedMSBuildArgs);
+
+        if (allTargets.Count > 0)
+        {
+            var buildRequest = new BuildRequestData(filePath, globalProperties, null, [.. allTargets], null);
             var buildResult = BuildManager.DefaultBuildManager.Build(buildParameters, buildRequest);
 
             if (buildResult.OverallResult != BuildResultCode.Success)
