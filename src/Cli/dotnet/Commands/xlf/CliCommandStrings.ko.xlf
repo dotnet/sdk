@@ -2796,8 +2796,8 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <note>{Locked="--sdk-version"}</note>
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
-        <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
-        <target state="translated">워크로드 버전을 사용하여 설치하고 업데이트하도록 워크로드를 구성했지만, 워크로드 버전을 찾을 수 없습니다. "dotnet workload restore"를 실행하여 워크로드 버전을 설치하세요.</target>
+        <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
+        <target state="needs-review-translation">워크로드 버전을 사용하여 설치하고 업데이트하도록 워크로드를 구성했지만, 워크로드 버전을 찾을 수 없습니다. "dotnet workload restore"를 실행하여 워크로드 버전을 설치하세요.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">
@@ -3823,10 +3823,15 @@ To display a value, specify the corresponding command-line option without provid
         <target state="translated">워크로드 매니페스트 ID</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadManifestInstallationConfiguration">
-        <source>Configured to use {0} when installing new manifests.</source>
-        <target state="translated">새 매니페스트를 설치할 때 {0}을(를) 사용하도록 구성됩니다.</target>
+      <trans-unit id="WorkloadManifestInstallationConfigurationLooseManifests">
+        <source>Configured to use loose manifests when installing new manifests.</source>
+        <target state="new">Configured to use loose manifests when installing new manifests.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfigurationWorkloadSets">
+        <source>Configured to use workload sets when installing new manifests.</source>
+        <target state="new">Configured to use workload sets when installing new manifests.</target>
+        <note>{Locked="workload sets"}</note>
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">
         <source>Manifest Path</source>

@@ -1852,7 +1852,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
     <comment>{Locked="--sdk-version"}</comment>
   </data>
   <data name="ShouldInstallAWorkloadSet" xml:space="preserve">
-    <value>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</value>
+    <value>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</value>
     <comment>{Locked="dotnet workload restore"}</comment>
   </data>
   <data name="ShutDownFailed" xml:space="preserve">
@@ -2468,8 +2468,12 @@ To display a value, specify the corresponding command-line option without provid
   <data name="WorkloadManifestIdColumn" xml:space="preserve">
     <value>Workload manifest ID</value>
   </data>
-  <data name="WorkloadManifestInstallationConfiguration" xml:space="preserve">
-    <value>Configured to use {0} when installing new manifests.</value>
+  <data name="WorkloadManifestInstallationConfigurationWorkloadSets" xml:space="preserve">
+    <value>Configured to use workload sets when installing new manifests.</value>
+    <comment>{Locked="workload sets"}</comment>
+  </data>
+  <data name="WorkloadManifestInstallationConfigurationLooseManifests" xml:space="preserve">
+    <value>Configured to use loose manifests when installing new manifests.</value>
   </data>
   <data name="WorkloadManifestPathColumn" xml:space="preserve">
     <value>Manifest Path</value>
