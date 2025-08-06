@@ -74,6 +74,22 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CustomCollectWatchItems>$(CustomCollectWatchItems);_RazorSdkCustomCollectWatchItems</CustomCollectWatchItems>
   </PropertyGroup>
 
+  <!--
+    Properties for embedded ValidatableTypeAttribute support (.NET 10.0+)
+  -->
+  <PropertyGroup>
+    <!-- Detect if project contains .razor files -->
+    <_HasRazorFiles Condition="'$(_HasRazorFiles)' == ''">false</_HasRazorFiles>
+    
+    <!-- Control embedded attribute generation (defaults to true when .razor files present) -->
+    <GenerateEmbeddedValidatableTypeAttribute Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == '' AND '$(_HasRazorFiles)' == 'true'">true</GenerateEmbeddedValidatableTypeAttribute>
+    <GenerateEmbeddedValidatableTypeAttribute Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == ''">false</GenerateEmbeddedValidatableTypeAttribute>
+    
+    <!-- Control global using generation (separate property for flexibility) -->
+    <IncludeEmbeddedValidationGlobalUsing Condition="'$(IncludeEmbeddedValidationGlobalUsing)' == '' AND '$(GenerateEmbeddedValidatableTypeAttribute)' == 'true'">true</IncludeEmbeddedValidationGlobalUsing>
+    <IncludeEmbeddedValidationGlobalUsing Condition="'$(IncludeEmbeddedValidationGlobalUsing)' == ''">false</IncludeEmbeddedValidationGlobalUsing>
+  </PropertyGroup>
+
   <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true'">
     <Content Include="**\*.cshtml" ExcludeFromSingleFile="true" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
     <Content Include="**\*.razor" ExcludeFromSingleFile="true" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
