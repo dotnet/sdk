@@ -75,19 +75,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <!--
-    Properties for embedded ValidatableTypeAttribute support (.NET 10.0+)
+    Initial properties for embedded ValidatableTypeAttribute support (.NET 10.0+)
+    Note: The actual property resolution happens in targets after .razor files are detected
   -->
   <PropertyGroup>
-    <!-- Detect if project contains .razor files -->
+    <!-- Initialize _HasRazorFiles as false - this will be set to true by DetectRazorFiles target if .razor files are found -->
     <_HasRazorFiles Condition="'$(_HasRazorFiles)' == ''">false</_HasRazorFiles>
-    
-    <!-- Control embedded attribute generation (defaults to true when .razor files present) -->
-    <GenerateEmbeddedValidatableTypeAttribute Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == '' AND '$(_HasRazorFiles)' == 'true'">true</GenerateEmbeddedValidatableTypeAttribute>
-    <GenerateEmbeddedValidatableTypeAttribute Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == ''">false</GenerateEmbeddedValidatableTypeAttribute>
-    
-    <!-- Control global using generation (separate property for flexibility) -->
-    <IncludeEmbeddedValidationGlobalUsing Condition="'$(IncludeEmbeddedValidationGlobalUsing)' == '' AND '$(GenerateEmbeddedValidatableTypeAttribute)' == 'true'">true</IncludeEmbeddedValidationGlobalUsing>
-    <IncludeEmbeddedValidationGlobalUsing Condition="'$(IncludeEmbeddedValidationGlobalUsing)' == ''">false</IncludeEmbeddedValidationGlobalUsing>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true'">

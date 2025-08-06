@@ -568,16 +568,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <!--
-    Target to detect presence of .razor files and set related properties for embedded ValidatableTypeAttribute support
-    This target runs early to ensure properties are available for subsequent targets
-  -->
-  <Target Name="DetectRazorFiles" BeforeTargets="ResolveRazorGenerateInputs;ResolveRazorComponentInputs">
-    <PropertyGroup Condition="'$(_TargetingNET100OrLater)' == 'true'">
-      <_HasRazorFiles Condition="'@(RazorComponent)' != '' OR '@(RazorGenerate->WithMetadataValue('Extension', '.razor'))' != '' OR '@(Content->WithMetadataValue('Extension', '.razor'))' != ''">true</_HasRazorFiles>
-    </PropertyGroup>
-  </Target>
-
   <Target Name="ResolveRazorComponentInputs">
     <!--
     Gathers input source files for Razor component generation. This is a separate target so that we can avoid
@@ -594,6 +584,43 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <Content Condition="'%(Content.Extension)'=='.razor'" CopyToPublishDirectory="Never" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    Target to detect presence of .razor files and set related properties for embedded ValidatableTypeAttribute support
+    This target runs after component items are resolved to ensure accurate detection
+  -->
+  <Target Name="DetectRazorFiles" AfterTargets="ResolveRazorComponentInputs;ResolveRazorGenerateInputs" BeforeTargets="PrepareForBuild">
+    <PropertyGroup Condition="'$(_TargetingNET100OrLater)' == 'true'">
+      <_HasRazorFiles Condition="'@(RazorComponent)' != '' OR '@(RazorGenerate->WithMetadataValue('Extension', '.razor'))' != '' OR '@(Content->WithMetadataValue('Extension', '.razor'))' != ''">true</_HasRazorFiles>
+      
+      <!-- Set embedded attribute generation property based on .razor file detection -->
+      <GenerateEmbeddedValidatableTypeAttribute Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == '' AND '$(_HasRazorFiles)' == 'true'">true</GenerateEmbeddedValidatableTypeAttribute>
+      <GenerateEmbeddedValidatableTypeAttribute Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == ''">false</GenerateEmbeddedValidatableTypeAttribute>
+      
+      <!-- Set global using property based on attribute generation -->
+      <IncludeEmbeddedValidationGlobalUsing Condition="'$(IncludeEmbeddedValidationGlobalUsing)' == '' AND '$(GenerateEmbeddedValidatableTypeAttribute)' == 'true'">true</IncludeEmbeddedValidationGlobalUsing>
+      <IncludeEmbeddedValidationGlobalUsing Condition="'$(IncludeEmbeddedValidationGlobalUsing)' == ''">false</IncludeEmbeddedValidationGlobalUsing>
+    </PropertyGroup>
+    
+    <!--
+      Conditional inclusion of embedded ValidatableTypeAttribute source files for .NET 10.0+
+    -->
+    <ItemGroup Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'">
+      <Compile Include="$(MSBuildThisFileDirectory)..\SourceGenerators\EmbeddedSources\EmbeddedAttribute.cs">
+        <Link>EmbeddedAttribute.cs</Link>
+      </Compile>
+      <Compile Include="$(MSBuildThisFileDirectory)..\SourceGenerators\EmbeddedSources\ValidatableTypeAttribute.cs">
+        <Link>ValidatableTypeAttribute.cs</Link>
+      </Compile>
+    </ItemGroup>
+
+    <!--
+      Conditional global using for embedded validation namespace
+    -->
+    <ItemGroup Condition="'$(IncludeEmbeddedValidationGlobalUsing)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'">
+      <Using Include="Microsoft.Extensions.Validation.Embedded" />
     </ItemGroup>
   </Target>
 
@@ -827,25 +854,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <UpToDateReloadFileTypes Condition="'$(Language)'=='C#' AND '$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND '$(UpToDateReloadFileTypes)' == ''">$(RazorUpToDateReloadFileTypes)</UpToDateReloadFileTypes>
   </PropertyGroup>
-
-  <!--
-    Conditional inclusion of embedded ValidatableTypeAttribute source files for .NET 10.0+
-  -->
-  <ItemGroup Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'">
-    <Compile Include="$(MSBuildThisFileDirectory)..\SourceGenerators\EmbeddedSources\EmbeddedAttribute.cs">
-      <Link>EmbeddedAttribute.cs</Link>
-    </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)..\SourceGenerators\EmbeddedSources\ValidatableTypeAttribute.cs">
-      <Link>ValidatableTypeAttribute.cs</Link>
-    </Compile>
-  </ItemGroup>
-
-  <!--
-    Conditional global using for embedded validation namespace
-  -->
-  <ItemGroup Condition="'$(IncludeEmbeddedValidationGlobalUsing)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'">
-    <Using Include="Microsoft.Extensions.Validation.Embedded" />
-  </ItemGroup>
 
   <!--
     This is a hook to import a set of targets after the Razor targets. By default this is unused.
