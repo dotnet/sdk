@@ -22,30 +22,12 @@ internal record RunProperties(string RunCommand, string? RunArguments, string? R
         return new(runProgram, runArguments, runWorkingDirectory);
     }
 
-    internal static RunProperties FromPropertyValues(
-    string runCommand,
-    string? runArguments,
-    string? runWorkingDirectory,
-    string? targetPath,
-    string[] applicationArgs,
-    bool fallbackToTargetPath)
+    internal static RunProperties FromPropertiesAndApplicationArguments(IReadOnlyDictionary<string, string> properties)
     {
-        string runProgram = runCommand;
-        if (fallbackToTargetPath &&
-            (string.IsNullOrEmpty(runProgram) || !File.Exists(runProgram)))
-        {
-            // Fallback to TargetPath if RunCommand is missing or invalid.
-            runProgram = targetPath ?? string.Empty;
-            return new(runProgram, null, null);
-        }
+        string runProgram = properties.GetValueOrDefault("RunCommand") ?? string.Empty;
+        string runArguments = properties.GetValueOrDefault("RunArguments") ?? string.Empty;
+        string runWorkingDirectory = properties.GetValueOrDefault("RunWorkingDirectory") ?? string.Empty;
 
-        string? finalRunArguments = runArguments;
-        if (applicationArgs.Length != 0)
-        {
-            finalRunArguments = (finalRunArguments ?? string.Empty) +
-                " " + ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(applicationArgs);
-        }
-
-        return new(runProgram, finalRunArguments, runWorkingDirectory);
+        return new(runProgram, runArguments, runWorkingDirectory);
     }
 }

@@ -31,7 +31,8 @@ internal class PropertyCollectingLogger : ILogger
         ProjectProperties.RunWorkingDirectory,
         ProjectProperties.AppDesignerFolder,
         ProjectProperties.TestTfmsInParallel,
-        ProjectProperties.BuildInParallel
+        ProjectProperties.BuildInParallel,
+        ProjectProperties.OutputType
     };
 
     public IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> CollectedProperties
@@ -42,7 +43,6 @@ internal class PropertyCollectingLogger : ILogger
 
             foreach (var kvp in _buildContexts)
             {
-                //Console.WriteLine(kvp.Key.ContextId + " " + kvp.Key.ProjectPath);
                 string projectPath = kvp.Key.ProjectPath;
 
                 if (!string.IsNullOrEmpty(projectPath))
@@ -56,10 +56,6 @@ internal class PropertyCollectingLogger : ILogger
 
                     list.Add(kvp.Value);
 
-                    //foreach (var prop in kvp.Value)
-                    //{
-                    //    Console.WriteLine($"  {prop.Key}: {prop.Value}");
-                    //}
                 }
             }
 
@@ -73,19 +69,6 @@ internal class PropertyCollectingLogger : ILogger
 
     public void Initialize(IEventSource eventSource)
     {
-        //eventSource.ProjectStarted += (sender, e) =>
-        //{
-        //    Console.WriteLine($"🔍 ProjectStarted: ContextId={e.BuildEventContext?.ProjectContextId}, Project={Path.GetFileName(e.ProjectFile)}");
-        //};
-
-        //eventSource.ProjectFinished += (sender, e) =>
-        //{
-        //    if (e.BuildEventContext?.ProjectContextId != BuildEventContext.InvalidProjectContextId)
-        //    {
-        //        Console.WriteLine($"🏁 ProjectFinished: ContextId={e.BuildEventContext?.ProjectContextId}, Project={Path.GetFileName(e.ProjectFile)}");
-        //    }
-        //};
-
         // Listen for custom property messages
         eventSource.MessageRaised += (sender, e) =>
         {
@@ -130,9 +113,8 @@ internal class PropertyCollectingLogger : ILogger
                 }
             }
 
-            if (properties.TryGetValue("MSBuildProjectFullPath", out string? projectPath) && !string.IsNullOrEmpty(projectPath))
+            if (properties.TryGetValue(ProjectProperties.ProjectFullPath, out string? projectPath) && !string.IsNullOrEmpty(projectPath))
             {
-                //Console.WriteLine($"Parsed properties for ContextId {context.ProjectContextId}: {properties.Count} properties");
                 AddProjectProperties(context.ProjectContextId, projectPath, properties);
             }
         }
@@ -141,114 +123,17 @@ internal class PropertyCollectingLogger : ILogger
             Console.WriteLine($"Failed to parse property message: {ex.Message}");
         }
     }
-    private static bool IsTestRelatedTarget(string targetName)
-    {
-        // Common test-related targets that would have computed final properties
-        return targetName switch
-        {
-            "Build" => true,
-            "CoreBuild" => true,
-            "ComputeRunArguments" => true,
-            "GetTargetPath" => true,
-            "GetCopyToOutputDirectoryItems" => true,
-            "ResolveAssemblyReferences" => true,
-            _ => targetName.Contains("Test", StringComparison.OrdinalIgnoreCase) ||
-                 targetName.Contains("Run", StringComparison.OrdinalIgnoreCase)
-        };
-    }
-
-    private bool TryGetPropertiesFromTarget(TargetFinishedEventArgs e, out Dictionary<string, string>? props)
-    {
-        props = null;
-
-        // TargetFinishedEventArgs doesn't directly expose properties
-        // We need to use a different approach - checking if the project file is a test project
-        // and capturing properties we can access
-
-        if (string.IsNullOrEmpty(e.ProjectFile))
-            return false;
-
-        // For now, create a basic property set and rely on PropertyReassignment to fill in details
-        // This is a limitation of the TargetFinished event - it doesn't expose properties directly
-        props = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            [ProjectProperties.ProjectFullPath] = e.ProjectFile,
-            // We'll need to determine test project status differently
-            // or rely on PropertyReassignment events to populate these
-        };
-
-        // Check if this looks like a test project based on file name/path
-        string fileName = Path.GetFileNameWithoutExtension(e.ProjectFile);
-        if (fileName.Contains("Test", StringComparison.OrdinalIgnoreCase) ||
-            fileName.Contains("Tests", StringComparison.OrdinalIgnoreCase) ||
-            e.ProjectFile.Contains("test", StringComparison.OrdinalIgnoreCase))
-        {
-            Console.WriteLine($"🧪 Detected potential test project: {fileName}");
-            return true;
-        }
-
-        return false;
-    }
-
-    private static bool TryCollectProperties(
-      string? projectFile,
-      IEnumerable? properties,
-      out Dictionary<string, string>? props)
-    {
-        props = null;
-        if (string.IsNullOrEmpty(projectFile) || properties == null)
-            return false;
-
-        // print the value of istestproject and istestingplatformapplication
-
-        bool.TryParse(properties.GetPropertyValue(ProjectProperties.IsTestProject), out bool isTestProject);
-        bool.TryParse(properties.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
-        // Add debug output here
-
-        string targetFramework = properties.GetPropertyValue(ProjectProperties.TargetFramework);
-
-        if (!isTestProject && !isTestingPlatformApplication)
-            return false;
-
-        if (string.IsNullOrWhiteSpace(targetFramework))
-            return false;
-
-        props = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            [ProjectProperties.IsTestProject] = isTestProject.ToString(),
-            [ProjectProperties.IsTestingPlatformApplication] = isTestingPlatformApplication.ToString(),
-            [ProjectProperties.TargetFramework] = targetFramework
-        };
-
-        foreach (var propName in AdditionalPropNames)
-        {
-            props[propName] = properties.GetPropertyValue(propName);
-        }
-
-        return true;
-    }
 
     private void AddProjectProperties(int contextId, string projectFilePath, Dictionary<string, string> props)
     {
         // Simply skip invalid context IDs
         if (contextId == BuildEventContext.InvalidProjectContextId || contextId < 0)
         {
-            // Optionally log for debugging, but don't save
             // Console.WriteLine($"Skipping invalid ContextId {contextId} for {projectFilePath}");
             return;
         }
 
         var key = (contextId, projectFilePath);
-
-        //if (_buildContexts.ContainsKey(key))
-        //{
-        //    Console.WriteLine($"WARNING: Replacing existing data for ContextId {contextId}, Project {projectFilePath}");
-        //}
-        //else
-        //{
-        //    Console.WriteLine($"Adding new entry: ContextId {contextId}, Project {projectFilePath}");
-        //}
-
         _buildContexts[key] = props;
     }
 
@@ -269,7 +154,6 @@ internal class PropertyCollectingLogger : ILogger
                 [propertyName] = newValue
             };
             _buildContexts[key] = updatedProps;
-            //Console.WriteLine($"Updated property {propertyName} = {newValue} for ContextId {contextId}, Project {projectFilePath}");
         }
         else
         {
@@ -281,7 +165,6 @@ internal class PropertyCollectingLogger : ILogger
             };
 
             _buildContexts[key] = minimalProps;
-            //Console.WriteLine($"Created minimal entry for ContextId {contextId}, Project {projectFilePath}");
         }
     }
 

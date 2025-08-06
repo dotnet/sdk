@@ -43,7 +43,7 @@ internal static class MSBuildUtility
             return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), isBuiltOrRestored);
         }
 
-        var projects = SolutionAndProjectUtility.GetProjectProperties1(
+        var projects = SolutionAndProjectUtility.GetProjectProperties(
             projectFilePath,
             buildOptions.NoLaunchProfile,
             collectedProperties);
@@ -276,7 +276,7 @@ internal static class MSBuildUtility
             new ParallelOptions { MaxDegreeOfParallelism = degreeOfParallelism },
             (projectPath) =>
             {
-                var modules = SolutionAndProjectUtility.GetProjectProperties1(projectPath, noLaunchProfile, collectedProperties);
+                var modules = SolutionAndProjectUtility.GetProjectProperties(projectPath, noLaunchProfile, collectedProperties);
                 foreach (var module in modules)
                 {
                     allProjects.Add(module);

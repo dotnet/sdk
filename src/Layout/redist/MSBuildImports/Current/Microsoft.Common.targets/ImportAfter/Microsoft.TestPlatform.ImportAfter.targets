@@ -29,7 +29,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          Condition="'$(IsTestProject)' == 'true' OR '$(IsTestingPlatformApplication)' == 'true'">
 
     <PropertyGroup>
-      <_TestPropsMessage>DOTNET_TEST_PROPS: MSBuildProjectFullPath=$(MSBuildProjectFullPath)|TargetFramework=$(TargetFramework)|TargetFrameworks=$(TargetFrameworks)|IsTestProject=$(IsTestProject)|IsTestingPlatformApplication=$(IsTestingPlatformApplication)|TargetPath=$(TargetPath)|RunCommand=$(RunCommand)|RunArguments=$(RunArguments)|RunWorkingDirectory=$(RunWorkingDirectory)|AppDesignerFolder=$(AppDesignerFolder)|TestTfmsInParallel=$(TestTfmsInParallel)|BuildInParallel=$(BuildInParallel)</_TestPropsMessage>
+      <_TestPropsMessage>DOTNET_TEST_PROPS: MSBuildProjectFullPath=$(MSBuildProjectFullPath)|TargetFramework=$(TargetFramework)|TargetFrameworks=$(TargetFrameworks)|IsTestProject=$(IsTestProject)|IsTestingPlatformApplication=$(IsTestingPlatformApplication)|TargetPath=$(TargetPath)|RunCommand=$(RunCommand)|RunArguments=$(RunArguments)|RunWorkingDirectory=$(RunWorkingDirectory)|AppDesignerFolder=$(AppDesignerFolder)|TestTfmsInParallel=$(TestTfmsInParallel)|BuildInParallel=$(BuildInParallel)|OutputType=$(OutputType)</_TestPropsMessage>
     </PropertyGroup>
 
     <Message Text="$(_TestPropsMessage)" Importance="high" />
