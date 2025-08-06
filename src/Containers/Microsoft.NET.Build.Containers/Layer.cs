@@ -12,7 +12,9 @@ namespace Microsoft.NET.Build.Containers;
 
 internal class Layer
 {
-    // NOTE: The SID string below was created using the following snippet. As the code is Windows only we keep the constant
+    // NOTE: The SID string below was created using the following snippet. As the code is Windows only we keep the constant,
+    // so that we can author Windows layers successfully on non-Windows hosts.
+    //
     // private static string CreateUserOwnerAndGroupSID()
     // {
     //     var descriptor = new RawSecurityDescriptor(
@@ -50,7 +52,7 @@ internal class Layer
         return new(ContentStore.PathForDescriptor(descriptor), descriptor);
     }
 
-    public static Layer FromDirectory(string directory, string containerPath, bool isWindowsLayer, string manifestMediaType)
+    public static Layer FromDirectory(string directory, string containerPath, bool isWindowsLayer, string manifestMediaType, int? userId = null)
     {
         long fileSize;
         Span<byte> hash = stackalloc byte[SHA256.HashSizeInBytes];
@@ -101,7 +103,7 @@ internal class Layer
                     }
 
                     // Write an entry for the application directory.
-                    WriteTarEntryForFile(writer, new DirectoryInfo(directory), containerPath, entryAttributes);
+                    WriteTarEntryForFile(writer, new DirectoryInfo(directory), containerPath, entryAttributes, isWindowsLayer ? null : userId);
 
                     // Write entries for the application directory contents.
                     var fileList = new FileSystemEnumerable<(FileSystemInfo file, string containerPath)>(
@@ -124,7 +126,7 @@ internal class Layer
                                 });
                     foreach (var item in fileList)
                     {
-                        WriteTarEntryForFile(writer, item.file, item.containerPath, entryAttributes);
+                        WriteTarEntryForFile(writer, item.file, item.containerPath, entryAttributes, isWindowsLayer ? null : userId);
                     }
 
                     // Windows layers need a Hives folder, we do not need to create any Registry Hive deltas inside
@@ -148,27 +150,36 @@ internal class Layer
             Debug.Assert(bW == hash.Length);
 
             // Writes a tar entry corresponding to the file system item.
-            static void WriteTarEntryForFile(TarWriter writer, FileSystemInfo file, string containerPath, IEnumerable<KeyValuePair<string, string>> entryAttributes)
+            static void WriteTarEntryForFile(TarWriter writer, FileSystemInfo file, string containerPath, IEnumerable<KeyValuePair<string, string>> entryAttributes, int? userId)
             {
                 UnixFileMode mode = DetermineFileMode(file);
+                PaxTarEntry entry;
 
                 if (file is FileInfo)
                 {
-                    using var fileStream = File.OpenRead(file.FullName);
-                    PaxTarEntry entry = new(TarEntryType.RegularFile, containerPath, entryAttributes)
+                    var fileStream = File.OpenRead(file.FullName);
+                    entry = new(TarEntryType.RegularFile, containerPath, entryAttributes)
                     {
-                        Mode = mode,
-                        DataStream = fileStream
+                        DataStream = fileStream,
                     };
-                    writer.WriteEntry(entry);
                 }
                 else
                 {
-                    PaxTarEntry entry = new(TarEntryType.Directory, containerPath, entryAttributes)
-                    {
-                        Mode = mode
-                    };
-                    writer.WriteEntry(entry);
+                    entry = new(TarEntryType.Directory, containerPath, entryAttributes);
+                }
+
+                entry.Mode = mode;
+                if (userId is int uid)
+                {
+                    entry.Uid = uid;
+                }
+
+                writer.WriteEntry(entry);
+
+                if (entry.DataStream is not null)
+                {
+                    // no longer relying on the `using` of the FileStream, so need to do it manually
+                    entry.DataStream.Dispose();
                 }
 
                 static UnixFileMode DetermineFileMode(FileSystemInfo file)

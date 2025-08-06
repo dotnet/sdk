@@ -28,9 +28,9 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             {
                 for (int lineNumber = 0; !manifestReader.EndOfStream; lineNumber++)
                 {
-                    var line = manifestReader.ReadLine().Trim();
+                    var line = manifestReader.ReadLine()?.Trim();
 
-                    if (line.Length == 0 || line[0] == '#')
+                    if (line is null || line.Length == 0 || line[0] == '#')
                     {
                         continue;
                     }
@@ -52,7 +52,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     var assemblyVersionString = lineParts[2].Trim();
                     var fileVersionString = lineParts[3].Trim();
 
-                    Version assemblyVersion = null, fileVersion = null;
+                    Version? assemblyVersion = null, fileVersion = null;
 
                     if (assemblyVersionString.Length != 0 && !Version.TryParse(assemblyVersionString, out assemblyVersion))
                     {

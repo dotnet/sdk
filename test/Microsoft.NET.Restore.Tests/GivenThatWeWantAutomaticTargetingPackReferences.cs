@@ -1,10 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Build.Utilities;
+#nullable disable
+
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
+using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Restore.Tests
 {
@@ -44,7 +46,7 @@ namespace Microsoft.NET.Restore.Tests
             LockFile lockFile = LockFileUtilities.GetLockFile(projectAssetsJsonPath, NullLogger.Instance);
             var netFrameworkLibrary = lockFile.GetTarget(NuGetFramework.Parse(".NETFramework,Version=v" + version), null).Libraries.FirstOrDefault((file) => file.Name.Contains(targetFramework));
 
-            if (TestProject.ReferenceAssembliesAreInstalled(targetFrameworkVersion))
+            if (ToolLocationHelper.GetPathToDotNetFrameworkReferenceAssemblies(targetFrameworkVersion) != null)
             {
                 netFrameworkLibrary.Should().BeNull();
             }
@@ -102,7 +104,7 @@ namespace Microsoft.NET.Restore.Tests
                 NullLogger.Instance);
 
             var net471FrameworkLibrary = lockFile.GetTarget(NuGetFramework.Parse(".NETFramework,Version=v4.7.1"), null).Libraries.FirstOrDefault((file) => file.Name.Contains("net471"));
-            if (TestProject.ReferenceAssembliesAreInstalled(TargetDotNetFrameworkVersion.Version471) && !includeExplicitReference)
+            if (ToolLocationHelper.GetPathToDotNetFrameworkReferenceAssemblies(TargetDotNetFrameworkVersion.Version471) != null && !includeExplicitReference)
             {
                 net471FrameworkLibrary.Should().BeNull();
             }
@@ -114,7 +116,7 @@ namespace Microsoft.NET.Restore.Tests
 
             var net472FrameworkLibrary = lockFile.GetTarget(NuGetFramework.Parse(".NETFramework,Version=v4.7.2"), null).Libraries.FirstOrDefault((file) => file.Name.Contains("net472"));
 
-            if (TestProject.ReferenceAssembliesAreInstalled(TargetDotNetFrameworkVersion.Version472) && !includeExplicitReference)
+            if (ToolLocationHelper.GetPathToDotNetFrameworkReferenceAssemblies(TargetDotNetFrameworkVersion.Version472) != null && !includeExplicitReference)
             {
                 net472FrameworkLibrary.Should().BeNull();
             }
@@ -187,7 +189,7 @@ namespace Microsoft.NET.Restore.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
-            if (TestProject.ReferenceAssembliesAreInstalled(TargetDotNetFrameworkVersion.Version472))
+            if (ToolLocationHelper.GetPathToDotNetFrameworkReferenceAssemblies(TargetDotNetFrameworkVersion.Version472) != null)
             {
                 buildCommand.Execute()
                     .Should()

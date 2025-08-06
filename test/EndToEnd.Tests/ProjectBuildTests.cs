@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable disable
+
 using EndToEnd.Tests.Utilities;
 
 namespace EndToEnd.Tests
@@ -192,6 +194,7 @@ namespace EndToEnd.Tests
 [\w \.\(\)]+blazor\s+\[C#\][\w\ \/]+
 [\w \.\(\)]+classlib\s+\[C#\],F#,VB[\w\ \/]+
 [\w \.\(\)]+console\s+\[C#\],F#,VB[\w\ \/]+
+[\w \.\(\)]+mstest\s+\[C#\],F#,VB[\w\ \/]+
 ";
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -403,9 +406,8 @@ namespace EndToEnd.Tests
         {
             string dotnetFolder = Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath);
             string[] runtimeFolders = Directory.GetDirectories(Path.Combine(dotnetFolder, "shared", "Microsoft.NETCore.App"));
-
             int latestMajorVersion = runtimeFolders.Select(folder => int.Parse(Path.GetFileName(folder).Split('.').First())).Max();
-            if (latestMajorVersion == 9)
+            if (latestMajorVersion == 10)
             {
                 return $"net{latestMajorVersion}.0";
             }
@@ -440,7 +442,8 @@ namespace EndToEnd.Tests
                     .. selfContained ? ["-r", RuntimeInformation.RuntimeIdentifier] : Array.Empty<string>(),
                     .. !string.IsNullOrWhiteSpace(framework) ? ["--framework", framework] : Array.Empty<string>(),
                     // Remove this (or formalize it) after https://github.com/dotnet/installer/issues/12479 is resolved.
-                    .. language == "F#" ? ["/p:_NETCoreSdkIsPreview=true"] : Array.Empty<string>()
+                    .. language == "F#" ? ["/p:_NETCoreSdkIsPreview=true"] : Array.Empty<string>(),
+                    $"/bl:{templateName}-{(selfContained ? "selfcontained" : "fdd")}-{language}-{framework}-{{}}.binlog"
                 ];
 
                 string dotnetRoot = Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath);
