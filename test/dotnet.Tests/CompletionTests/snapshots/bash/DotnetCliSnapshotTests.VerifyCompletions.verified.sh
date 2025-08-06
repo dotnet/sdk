@@ -970,7 +970,7 @@ _testhost_pack() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--output --artifacts-path --no-build --include-symbols --include-source --serviceable --nologo --interactive --no-restore --verbosity --version-suffix --configuration --disable-build-servers --use-current-runtime --runtime --help" 
+    opts="--output --artifacts-path --no-build --include-symbols --include-source --serviceable --nologo --interactive --no-restore --verbosity --version-suffix --version --configuration --disable-build-servers --use-current-runtime --runtime --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )

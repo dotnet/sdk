@@ -220,27 +220,6 @@ internal static class CommonOptions
             HelpName = CliStrings.VersionSuffixArgumentName
         }.ForwardAsSingle(o => $"--property:VersionSuffix={o}");
 
-
-    public static Option<NuGetVersion> VersionOption =
-        new ForwardedOption<NuGetVersion>("--version")
-        {
-            Description = CliCommandStrings.PackCmdVersionDescription,
-            HelpName = CliCommandStrings.PackCmdVersion,
-            Arity = ArgumentArity.ExactlyOne,
-            CustomParser = r =>
-            {
-             if (r.Tokens.Count == 0)
-                 return null;
-             var value = r.Tokens[0].Value;
-             if (NuGetVersion.TryParse(value, out var version))
-                 return version;
-             r.AddError(string.Format(CliStrings.InvalidVersion, value));
-             return null;
-
-            }
-        }.ForwardAsSingle(o => $"--property:Version={o}");
-
-
     public static Lazy<string> NormalizedCurrentDirectory = new(() => PathUtility.EnsureTrailingSlash(Directory.GetCurrentDirectory()));
 
     public static Argument<string> DefaultToCurrentDirectory(this Argument<string> arg)

@@ -292,9 +292,6 @@ namespace Microsoft.DotNet.Pack.Tests
                 .And.HaveStdOutContaining("NETSDK1083");
         }
 
-       
-       
-
         [Fact]
         public void DotnetPack_AcceptsVersionOption()
         {

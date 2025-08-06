@@ -94,7 +94,7 @@ public class PackCommand(
         if (globalProperties != null)
             packArgs.Properties.AddRange(globalProperties);
 
-        var version = parseResult.GetValue(CommonOptions.VersionOption);
+        var version = parseResult.GetValue(PackCommandParser.VersionOption);
         if (version != null)
             packArgs.Version = version.ToNormalizedString();
 
