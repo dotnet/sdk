@@ -48,39 +48,116 @@ internal static class CommonOptions
         .ForwardAsMSBuildProperty()
         .AllowSingleArgPerToken();
 
-    public static Option<BinaryLoggerOptions?> BinaryLoggerOption =
-        new ForwardedOption<BinaryLoggerOptions?>("--binaryLogger", "-binaryLogger", "/binaryLogger", "-bl", "--bl", "/bl")
+    public static Option<BinaryLoggerParameters?> BinaryLoggerOption =
+        new ForwardedOption<BinaryLoggerParameters?>("--binaryLogger", "-binaryLogger", "/binaryLogger", "-bl", "--bl", "/bl")
         {
             Description = "Log all build output to a binary log file. Optionally specify a file path and optional parameters.",
             HelpName = "PATH",
             Arity = ArgumentArity.ZeroOrOne,
             Hidden = true,
-            CustomParser = ParseBinaryLoggerOptions
+            CustomParser = ParseBinaryLoggerParameters
         }
-        .SetForwardingFunction(ForwardBinaryLoggerOptions)
+        .SetForwardingFunction(ForwardBinaryLoggerParameters)
         .AllowSingleArgPerToken();
 
-    private static BinaryLoggerOptions? ParseBinaryLoggerOptions(ArgumentResult result)
+    private static BinaryLoggerParameters? ParseBinaryLoggerParameters(ArgumentResult result)
     {
         if (result.Tokens.Count == 0)
         {
             // Flag form (e.g., -bl without parameters)
-            return new BinaryLoggerOptions(null, null);
+            return new BinaryLoggerParameters();
         }
 
         if (result.Tokens.Count == 1)
         {
             // Parameter form (e.g., -bl:file.binlog or -bl file.binlog)
             var argumentValue = result.Tokens[0].Value;
-            return new BinaryLoggerOptions(null, argumentValue);
+            return ParseBinaryLoggerArgumentString(argumentValue);
         }
 
         return null;
     }
 
-    private static IEnumerable<string> ForwardBinaryLoggerOptions(BinaryLoggerOptions? options, ParseResult parseResult)
+    private static BinaryLoggerParameters ParseBinaryLoggerArgumentString(string arguments)
     {
-        if (options == null)
+        if (string.IsNullOrEmpty(arguments))
+        {
+            return new BinaryLoggerParameters();
+        }
+
+        var parts = arguments.Split(';');
+        string? logFile = null;
+        ProjectImportsMode? projectImports = null;
+        LoggerVerbosity? verbosity = null;
+        var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        
+        // Parse each part
+        for (int i = 0; i < parts.Length; i++)
+        {
+            var part = parts[i].Trim();
+            if (string.IsNullOrEmpty(part))
+                continue;
+
+            var equalIndex = part.IndexOf('=');
+            
+            if (equalIndex > 0)
+            {
+                // keyword=value format
+                string key = part.Substring(0, equalIndex).Trim();
+                string value = part.Substring(equalIndex + 1).Trim();
+
+                switch (key.ToLowerInvariant())
+                {
+                    case "logfile":
+                        logFile = value;
+                        break;
+                    case "projectimports":
+                        if (Enum.TryParse<ProjectImportsMode>(value, ignoreCase: true, out var importMode))
+                        {
+                            projectImports = importMode;
+                        }
+                        else
+                        {
+                            parameters[key] = value;
+                        }
+                        break;
+                    case "verbosity":
+                        if (Enum.TryParse<LoggerVerbosity>(value, ignoreCase: true, out var verb))
+                        {
+                            verbosity = verb;
+                        }
+                        else
+                        {
+                            parameters[key] = value;
+                        }
+                        break;
+                    default:
+                        parameters[key] = value;
+                        break;
+                }
+            }
+            else if (i == 0)
+            {
+                // First part without '=' is treated as the log file
+                logFile = part;
+            }
+            else
+            {
+                // Treat as a parameter with empty value
+                parameters[part] = "";
+            }
+        }
+
+        return new BinaryLoggerParameters(
+            logFile, 
+            projectImports, 
+            verbosity, 
+            parameters.Count > 0 ? parameters : null);
+    }
+
+    private static IEnumerable<string> ForwardBinaryLoggerParameters(BinaryLoggerParameters? parameters, ParseResult parseResult)
+    {
+        if (parameters == null)
         {
             return [];
         }
@@ -99,16 +176,20 @@ internal static class CommonOptions
             originalToken = optionResult.IdentifierToken.Value;
         }
 
-        if (options.Arguments == null)
+        // Check if it's flag form (no arguments) or parameter form
+        if (optionResult.Tokens.Count == 0)
         {
             // Flag form: forward just the original token
             return [originalToken];
         }
-        else
+        else if (optionResult.Tokens.Count == 1)
         {
-            // Parameter form: forward with colon syntax
-            return [$"{originalToken}:{options.Arguments}"];
+            // Parameter form: forward with colon syntax using the original argument
+            var originalArguments = optionResult.Tokens[0].Value;
+            return [$"{originalToken}:{originalArguments}"];
         }
+
+        return [];
     }
 
     private static ReadOnlyDictionary<string, string>? ParseMSBuildTokensIntoDictionary(ArgumentResult result)
@@ -541,99 +622,6 @@ public class DynamicOption<T>(string name, params string[] aliases) : Option<T>(
 
 public class DynamicArgument<T>(string name) : Argument<T>(name), IDynamicArgument
 {
-}
-
-/// <summary>
-/// Represents the parsed binary logger options for MSBuild.
-/// </summary>
-/// <param name="OriginalToken">The original command-line token used (determined from ParseResult), or null if not available</param>
-/// <param name="Arguments">The arguments part of the binary logger option, or null if none specified</param>
-public record BinaryLoggerOptions(string? OriginalToken, string? Arguments)
-{
-    /// <summary>
-    /// Parses the arguments into structured binary logger parameters.
-    /// Supports the full MSBuild format: [LogFile=]filename[;keyword=value]*
-    /// Examples:
-    /// - "output.binlog" -> LogFile = "output.binlog"
-    /// - "output.binlog;ProjectImports=None" -> LogFile = "output.binlog", ProjectImports = None
-    /// - "LogFile=output.binlog;ProjectImports=ZipFile" -> LogFile = "output.binlog", ProjectImports = ZipFile
-    /// </summary>
-    public BinaryLoggerParameters ParseParameters()
-    {
-        if (string.IsNullOrEmpty(Arguments))
-        {
-            return new BinaryLoggerParameters();
-        }
-
-        var parts = Arguments.Split(';');
-        string? logFile = null;
-        ProjectImportsMode? projectImports = null;
-        LoggerVerbosity? verbosity = null;
-        var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        
-        // Parse each part
-        for (int i = 0; i < parts.Length; i++)
-        {
-            var part = parts[i].Trim();
-            if (string.IsNullOrEmpty(part))
-                continue;
-
-            var equalIndex = part.IndexOf('=');
-            
-            if (equalIndex > 0)
-            {
-                // keyword=value format
-                string key = part.Substring(0, equalIndex).Trim();
-                string value = part.Substring(equalIndex + 1).Trim();
-
-                switch (key.ToLowerInvariant())
-                {
-                    case "logfile":
-                        logFile = value;
-                        break;
-                    case "projectimports":
-                        if (Enum.TryParse<ProjectImportsMode>(value, ignoreCase: true, out var importMode))
-                        {
-                            projectImports = importMode;
-                        }
-                        else
-                        {
-                            parameters[key] = value;
-                        }
-                        break;
-                    case "verbosity":
-                        if (Enum.TryParse<LoggerVerbosity>(value, ignoreCase: true, out var verb))
-                        {
-                            verbosity = verb;
-                        }
-                        else
-                        {
-                            parameters[key] = value;
-                        }
-                        break;
-                    default:
-                        parameters[key] = value;
-                        break;
-                }
-            }
-            else if (i == 0)
-            {
-                // First part without '=' is treated as the log file
-                logFile = part;
-            }
-            else
-            {
-                // Treat as a parameter with empty value
-                parameters[part] = "";
-            }
-        }
-
-        return new BinaryLoggerParameters(
-            logFile, 
-            projectImports, 
-            verbosity, 
-            parameters.Count > 0 ? parameters : null);
-    }
 }
 
 /// <summary>

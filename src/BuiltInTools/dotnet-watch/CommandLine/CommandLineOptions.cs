@@ -160,7 +160,7 @@ internal sealed class CommandLineOptions
         var buildArguments = buildOptions.Select(option => ((IForwardedOption)option).GetForwardingFunction()(parseResult)).SelectMany(args => args).ToList();
 
         var targetFrameworkOption = (Option<string>?)buildOptions.SingleOrDefault(option => option.Name == "--framework");
-        var binaryLoggerOption = (Option<BinaryLoggerOptions?>?)buildOptions.SingleOrDefault(option => option.Name == "--binaryLogger");
+        var binaryLoggerOption = (Option<BinaryLoggerParameters?>?)buildOptions.SingleOrDefault(option => option.Name == "--binaryLogger");
         var binaryLoggerOptions = binaryLoggerOption != null ? parseResult.GetValue(binaryLoggerOption) : null;
 
         return new()
@@ -189,19 +189,18 @@ internal sealed class CommandLineOptions
     /// <summary>
     /// Gets the binary log file path from the binary logger options.
     /// </summary>
-    internal static string? GetBinaryLogFilePath(BinaryLoggerOptions? options)
+    internal static string? GetBinaryLogFilePath(BinaryLoggerParameters? parameters)
     {
-        if (options == null)
+        if (parameters == null)
         {
             return null;
         }
 
-        var parsedParams = options.ParseParameters();
-        if (!string.IsNullOrEmpty(parsedParams.LogFile))
+        if (!string.IsNullOrEmpty(parameters.LogFile))
         {
-            return parsedParams.LogFile.EndsWith(".binlog", StringComparison.OrdinalIgnoreCase) 
-                ? parsedParams.LogFile 
-                : $"{parsedParams.LogFile}.binlog";
+            return parameters.LogFile.EndsWith(".binlog", StringComparison.OrdinalIgnoreCase) 
+                ? parameters.LogFile 
+                : $"{parameters.LogFile}.binlog";
         }
 
         return "msbuild.binlog";

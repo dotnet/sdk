@@ -47,9 +47,9 @@ public class RunCommand
     public ReadOnlyDictionary<string, string>? RestoreProperties { get; }
 
     /// <summary>
-    /// Binary logger options, if specified on the command line.
+    /// Binary logger parameters, if specified on the command line.
     /// </summary>
-    public BinaryLoggerOptions? BinaryLoggerOptions { get; }
+    public BinaryLoggerParameters? BinaryLoggerParameters { get; }
 
     /// <summary>
     /// unparsed/arbitrary CLI tokens to be passed to the running application
@@ -95,7 +95,7 @@ public class RunCommand
         bool readCodeFromStdin,
         IReadOnlyDictionary<string, string> environmentVariables,
         ReadOnlyDictionary<string, string>? msbuildRestoreProperties,
-        BinaryLoggerOptions? binaryLoggerOptions)
+        BinaryLoggerParameters? binaryLoggerParameters)
     {
         Debug.Assert(projectFileFullPath is null ^ entryPointFileFullPath is null);
         Debug.Assert(!readCodeFromStdin || entryPointFileFullPath is not null);
@@ -114,7 +114,7 @@ public class RunCommand
         MSBuildArgs = SetupSilentBuildArgs(msbuildArgs);
         EnvironmentVariables = environmentVariables;
         RestoreProperties = msbuildRestoreProperties;
-        BinaryLoggerOptions = binaryLoggerOptions;
+        BinaryLoggerParameters = binaryLoggerParameters;
     }
 
     public int Execute()
@@ -363,7 +363,7 @@ public class RunCommand
             return CreateCommandForCscBuiltProgram(EntryPointFileFullPath);
         }
 
-        FacadeLogger? logger = LoggerUtility.CreateBinaryLogger(BinaryLoggerOptions, "dotnet-run");
+        FacadeLogger? logger = LoggerUtility.CreateBinaryLogger(BinaryLoggerParameters, "dotnet-run");
         var project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
         ValidatePreconditions(project);
         InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs);
@@ -683,7 +683,7 @@ public class RunCommand
             readCodeFromStdin: readCodeFromStdin,
             environmentVariables: parseResult.GetValue(CommonOptions.EnvOption) ?? ImmutableDictionary<string, string>.Empty,
             msbuildRestoreProperties: parseResult.GetValue(CommonOptions.RestorePropertiesOption),
-            binaryLoggerOptions: parseResult.GetValue(CommonOptions.BinaryLoggerOption)
+            binaryLoggerParameters: parseResult.GetValue(CommonOptions.BinaryLoggerOption)
         );
 
         return command;

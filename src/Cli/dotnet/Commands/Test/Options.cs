@@ -19,4 +19,4 @@ internal record BuildOptions(
     int DegreeOfParallelism, 
     List<string> UnmatchedTokens,
     IEnumerable<string> MSBuildArgs,
-    BinaryLoggerOptions? BinaryLoggerOptions);
+    BinaryLoggerParameters? BinaryLoggerParameters);

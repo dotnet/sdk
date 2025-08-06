@@ -8,20 +8,19 @@ namespace Microsoft.DotNet.Cli;
 
 internal static class LoggerUtility
 {
-    public static FacadeLogger? CreateBinaryLogger(BinaryLoggerOptions? options, string verb)
+    public static FacadeLogger? CreateBinaryLogger(BinaryLoggerParameters? parameters, string verb)
     {
-        if (options == null)
+        if (parameters == null)
         {
             return null;
         }
 
         List<BinaryLogger> binaryLoggers = [];
-        var parsedParams = options.ParseParameters();
 
         string filename;
-        if (!string.IsNullOrEmpty(parsedParams.LogFile))
+        if (!string.IsNullOrEmpty(parameters.LogFile))
         {
-            filename = parsedParams.LogFile;
+            filename = parameters.LogFile;
             if (filename.EndsWith(".binlog"))
             {
                 filename = filename.Substring(0, filename.Length - ".binlog".Length);
@@ -38,28 +37,28 @@ internal static class LoggerUtility
         var parametersList = new List<string> { filename };
         
         // Add ProjectImports parameter if specified
-        if (parsedParams.ProjectImports.HasValue)
+        if (parameters.ProjectImports.HasValue)
         {
-            parametersList.Add($"ProjectImports={parsedParams.ProjectImports.Value}");
+            parametersList.Add($"ProjectImports={parameters.ProjectImports.Value}");
         }
         
         // Add Verbosity parameter if specified
-        if (parsedParams.Verbosity.HasValue)
+        if (parameters.Verbosity.HasValue)
         {
-            parametersList.Add($"Verbosity={parsedParams.Verbosity.Value}");
+            parametersList.Add($"Verbosity={parameters.Verbosity.Value}");
         }
         
         // Add any additional parameters
-        if (parsedParams.Parameters != null)
+        if (parameters.Parameters != null)
         {
-            foreach (var kvp in parsedParams.Parameters)
+            foreach (var kvp in parameters.Parameters)
             {
                 parametersList.Add($"{kvp.Key}={kvp.Value}");
             }
         }
 
-        string parameters = string.Join(";", parametersList);
-        binaryLoggers.Add(new BinaryLogger { Parameters = parameters });
+        string parameterString = string.Join(";", parametersList);
+        binaryLoggers.Add(new BinaryLogger { Parameters = parameterString });
 
         // Create the facade logger
         return CreateFacadeLogger(binaryLoggers);

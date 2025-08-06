@@ -32,7 +32,7 @@ internal static class MSBuildUtility
                 Path.GetDirectoryName(solutionModel.Description)! :
                 SolutionAndProjectUtility.GetRootDirectory(solutionFilePath);
 
-        FacadeLogger? logger = LoggerUtility.CreateBinaryLogger(buildOptions.BinaryLoggerOptions, dotnetTestVerb);
+        FacadeLogger? logger = LoggerUtility.CreateBinaryLogger(buildOptions.BinaryLoggerParameters, dotnetTestVerb);
         var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.MSBuildArgs]), loggers: logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
 
         ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = GetProjectsProperties(collection, solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions);
@@ -50,7 +50,7 @@ internal static class MSBuildUtility
             return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), isBuiltOrRestored);
         }
 
-        FacadeLogger? logger = LoggerUtility.CreateBinaryLogger(buildOptions.BinaryLoggerOptions, dotnetTestVerb);
+        FacadeLogger? logger = LoggerUtility.CreateBinaryLogger(buildOptions.BinaryLoggerParameters, dotnetTestVerb);
         var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.MSBuildArgs]), logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
 
         IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, buildOptions.NoLaunchProfile);
@@ -71,8 +71,8 @@ internal static class MSBuildUtility
             parseResult.GetValue(TestingPlatformOptions.SolutionOption),
             parseResult.GetValue(TestingPlatformOptions.DirectoryOption));
 
-        // Get the binary logger options from the parse result
-        var binaryLoggerOptions = parseResult.GetValue(CommonOptions.BinaryLoggerOption);
+        // Get the binary logger parameters from the parse result
+        var binaryLoggerParameters = parseResult.GetValue(CommonOptions.BinaryLoggerOption);
 
         return new BuildOptions(
             pathOptions,
@@ -84,7 +84,7 @@ internal static class MSBuildUtility
             degreeOfParallelism,
             otherArgs,
             msbuildArgs,
-            binaryLoggerOptions);
+            binaryLoggerParameters);
     }
 
     private static bool BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
