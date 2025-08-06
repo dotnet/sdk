@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         public AwaitableProcess Process { get; private set; }
 
-        public List<string> DotnetWatchArgs { get; } = ["--verbose", "/bl:DotnetRun.binlog"];
+        public List<string> DotnetWatchArgs { get; } = ["--verbose", "-bl"];
 
         public Dictionary<string, string> EnvironmentVariables { get; } = [];
 
@@ -122,9 +122,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public Task AssertExiting()
             => AssertOutputLineStartsWith(ExitingMessage);
 
-        public void Start(TestAsset asset, IEnumerable<string> arguments, string relativeProjectDirectory = null, string workingDirectory = null, TestFlags testFlags = TestFlags.None)
+        public void Start(TestAsset asset, IEnumerable<string> arguments, string relativeProjectDirectory = null, string workingDirectory = null, TestFlags testFlags = TestFlags.RunningAsTest)
         {
-            testFlags |= TestFlags.RunningAsTest;
+            if (testFlags != TestFlags.None)
+            {
+                testFlags |= TestFlags.RunningAsTest;
+            }
 
             var projectDirectory = (relativeProjectDirectory != null) ? Path.Combine(asset.Path, relativeProjectDirectory) : asset.Path;
 
