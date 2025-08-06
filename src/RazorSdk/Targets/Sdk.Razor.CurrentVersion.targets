@@ -591,7 +591,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Target to detect presence of .razor files and set related properties for embedded ValidatableTypeAttribute support
     This target runs after component items are resolved to ensure accurate detection
   -->
-  <Target Name="_AddEmbeddedValidationAttribute" BeforeTargets="BeforeBuild;BeforeCompile">
+  <Target Name="_AddEmbeddedValidationAttribute" BeforeTargets="GenerateGlobalUsings" DependsOnTargets="PrepareForRazorCompile">
     <PropertyGroup Condition="'$(_TargetingNET100OrLater)' == 'true'">
       <_HasRazorFiles Condition="'@(RazorComponent)' != '' OR '@(RazorGenerate->WithMetadataValue('Extension', '.razor'))' != '' OR '@(Content->WithMetadataValue('Extension', '.razor'))' != ''">true</_HasRazorFiles>
       
@@ -624,7 +624,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'"
       File="$(_EmbeddedAttributeFile)"
       Lines="@(_EmbeddedAttributeLines)"
-      Overwrite="true" />
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
 
     <!-- Generate ValidatableTypeAttribute source file -->
     <ItemGroup Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'">
@@ -643,7 +644,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'"
       File="$(_ValidatableTypeAttributeFile)"
       Lines="@(_ValidatableTypeAttributeLines)"
-      Overwrite="true" />
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
     
     <!--
       Conditional inclusion of embedded ValidatableTypeAttribute source files for .NET 10.0+
