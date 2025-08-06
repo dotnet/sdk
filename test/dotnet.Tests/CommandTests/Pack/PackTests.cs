@@ -374,6 +374,10 @@ namespace Microsoft.DotNet.Pack.Tests
                 .WithSource();
             string nuspecPath = Path.Combine(testInstance.Path, "TestingPackWithConfig.nuspec");
 
+            var configDir = Path.Combine(testInstance.Path, "bin", configuration);
+            Directory.CreateDirectory(configDir);
+            File.WriteAllText(Path.Combine(configDir, "libraryclass.cs"), "// dummy source file for test");
+
             var result = new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute(nuspecPath, "--configuration", configuration);
@@ -385,7 +389,7 @@ namespace Microsoft.DotNet.Pack.Tests
             using (var stream = outputPackage.OpenRead())
             using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
             {
-                var expectedPdbPath = "lib/net40/TestNuspecWithConfigFiles.pdb";
+                var expectedPdbPath = "lib/net40/libraryclass.cs";
                 archive.Entries.Should().Contain(e => e.FullName == expectedPdbPath);
             }
         }

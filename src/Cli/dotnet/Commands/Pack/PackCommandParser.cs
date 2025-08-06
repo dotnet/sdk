@@ -109,10 +109,10 @@ internal static class PackCommandParser
         command.Options.Add(NoRestoreOption);
         command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.VersionSuffixOption);
+        command.Options.Add(VersionOption);
         command.Options.Add(ConfigurationOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(TargetOption);
-        command.Options.Add(VersionOption);
 
         // Don't include runtime option because we want to include it specifically and allow the short version ("-r") to be used
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);
