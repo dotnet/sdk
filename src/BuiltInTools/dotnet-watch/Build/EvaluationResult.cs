@@ -38,11 +38,12 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
         string rootProjectPath,
         IEnumerable<string> buildArguments,
         IReporter reporter,
+        GlobalOptions options,
         EnvironmentOptions environmentOptions,
         bool restore,
         CancellationToken cancellationToken)
     {
-        var buildReporter = new BuildReporter(reporter, environmentOptions);
+        var buildReporter = new BuildReporter(reporter, options, environmentOptions);
 
         // See https://github.com/dotnet/project-system/blob/main/docs/well-known-project-properties.md
 
