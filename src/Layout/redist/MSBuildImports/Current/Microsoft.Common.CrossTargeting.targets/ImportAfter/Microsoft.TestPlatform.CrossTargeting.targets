@@ -127,8 +127,33 @@ Copyright (c) .NET Foundation. All rights reserved.
   =================================================================================
   -->
   <Target Name="_MTPBuild" DependsOnTargets="_ComputeTargetFrameworkItems">
+    <!-- Collect outer build properties before any build operations -->
+    <CallTarget Targets="CollectOuterBuildProperties" />
     <CallTarget Targets="Build" Condition="'$(ShouldRunBuild)' == 'true'"  />
     <CallTarget Targets="DispatchToInnerBuildsWithMTPTarget" Condition="'$(ShouldRunBuild)' == 'false'" />
+  </Target>
+
+  <!--
+  ==================================================================================
+                            CollectOuterBuildProperties
+
+   Collects outer build context properties that are not available in inner builds.
+   This includes properties like TestTfmsInParallel, BuildInParallel, and TargetFrameworks
+   that control how multi-TFM projects are built and tested.
+
+  =================================================================================
+  -->
+  <Target Name="CollectOuterBuildProperties"
+          Condition="'$(TargetFrameworks)' != '' AND ('$(IsTestProject)' == 'true' OR '$(IsTestingPlatformApplication)' == 'true')">
+
+    <PropertyGroup>
+      <!-- Create the outer build properties message with empty TargetFramework to indicate outer context -->
+      <_OuterTestPropsMessage>DOTNET_TEST_PROPS: MSBuildProjectFullPath=$(MSBuildProjectFullPath)|TargetFramework=|TargetFrameworks=$(TargetFrameworks)|IsTestProject=$(IsTestProject)|IsTestingPlatformApplication=$(IsTestingPlatformApplication)|TargetPath=|RunCommand=|RunArguments=|RunWorkingDirectory=|AppDesignerFolder=$(AppDesignerFolder)|TestTfmsInParallel=$(TestTfmsInParallel)|BuildInParallel=$(BuildInParallel)</_OuterTestPropsMessage>
+    </PropertyGroup>
+
+    <!-- Log the outer build properties message -->
+    <Message Text="$(_OuterTestPropsMessage)" Importance="high" />
+
   </Target>
 
 </Project>

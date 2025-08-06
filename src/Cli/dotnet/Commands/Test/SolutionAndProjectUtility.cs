@@ -147,76 +147,77 @@ internal static class SolutionAndProjectUtility
         return string.IsNullOrEmpty(fileDirectory) ? Directory.GetCurrentDirectory() : fileDirectory;
     }
 
-    public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties(string projectFilePath, ProjectCollection projectCollection, bool noLaunchProfile)
-    {
-        var projects = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
-        ProjectInstance projectInstance = EvaluateProject(projectCollection, projectFilePath, null);
+    //public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties(string projectFilePath, ProjectCollection projectCollection, bool noLaunchProfile)
+    //{
+    //    var projects = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
+    //    ProjectInstance projectInstance = EvaluateProject(projectCollection, projectFilePath, null);
 
-        var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
-        var targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
+    //    var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
+    //    var targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
 
-        Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' with TargetFramework '{targetFramework}', TargetFrameworks '{targetFrameworks}', IsTestProject '{projectInstance.GetPropertyValue(ProjectProperties.IsTestProject)}', and '{ProjectProperties.IsTestingPlatformApplication}' is '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
+    //    Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' with TargetFramework '{targetFramework}', TargetFrameworks '{targetFrameworks}', IsTestProject '{projectInstance.GetPropertyValue(ProjectProperties.IsTestProject)}', and '{ProjectProperties.IsTestingPlatformApplication}' is '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
 
-        if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
-        {
-            if (GetModuleFromProject(projectInstance, projectCollection.Loggers, noLaunchProfile) is { } module)
-            {
-                projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
-            }
-        }
-        else
-        {
-            if (!bool.TryParse(projectInstance.GetPropertyValue(ProjectProperties.TestTfmsInParallel), out bool testTfmsInParallel) &&
-                !bool.TryParse(projectInstance.GetPropertyValue(ProjectProperties.BuildInParallel), out testTfmsInParallel))
-            {
-                // TestTfmsInParallel takes precedence over BuildInParallel.
-                // If, for some reason, we cannot parse either property as bool, we default to true.
-                testTfmsInParallel = true;
-            }
+    //    if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
+    //    {
+    //        if (GetModuleFromProject(projectInstance, projectCollection.Loggers, noLaunchProfile) is { } module)
+    //        {
+    //            projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
+    //        }
+    //    }
+    //    else
+    //    {
+    //        if (!bool.TryParse(projectInstance.GetPropertyValue(ProjectProperties.TestTfmsInParallel), out bool testTfmsInParallel) &&
+    //            !bool.TryParse(projectInstance.GetPropertyValue(ProjectProperties.BuildInParallel), out testTfmsInParallel))
+    //        {
+    //            // TestTfmsInParallel takes precedence over BuildInParallel.
+    //            // If, for some reason, we cannot parse either property as bool, we default to true.
+    //            testTfmsInParallel = true;
+    //        }
 
-            var frameworks = targetFrameworks
-                .Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries)
-                .Select(f => f.Trim())
-                .Where(f => !string.IsNullOrEmpty(f))
-                .Distinct();
+    //        var frameworks = targetFrameworks
+    //            .Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries)
+    //            .Select(f => f.Trim())
+    //            .Where(f => !string.IsNullOrEmpty(f))
+    //            .Distinct();
 
-            if (testTfmsInParallel)
-            {
-                foreach (var framework in frameworks)
-                {
-                    projectInstance = EvaluateProject(projectCollection, projectFilePath, framework);
-                    Logger.LogTrace(() => $"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
+    //        if (testTfmsInParallel)
+    //        {
+    //            foreach (var framework in frameworks)
+    //            {
+    //                projectInstance = EvaluateProject(projectCollection, projectFilePath, framework);
+    //                Logger.LogTrace(() => $"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                    if (GetModuleFromProject(projectInstance, projectCollection.Loggers, noLaunchProfile) is { } module)
-                    {
-                        projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
-                    }
-                }
-            }
-            else
-            {
-                List<TestModule>? innerModules = null;
-                foreach (var framework in frameworks)
-                {
-                    projectInstance = EvaluateProject(projectCollection, projectFilePath, framework);
-                    Logger.LogTrace(() => $"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
+    //                if (GetModuleFromProject(projectInstance, projectCollection.Loggers, noLaunchProfile) is { } module)
+    //                {
+    //                    projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
+    //                }
+    //            }
+    //        }
+    //        else
+    //        {
+    //            List<TestModule>? innerModules = null;
+    //            foreach (var framework in frameworks)
+    //            {
+    //                projectInstance = EvaluateProject(projectCollection, projectFilePath, framework);
+    //                Logger.LogTrace(() => $"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                    if (GetModuleFromProject(projectInstance, projectCollection.Loggers, noLaunchProfile) is { } module)
-                    {
-                        innerModules ??= new List<TestModule>();
-                        innerModules.Add(module);
-                    }
-                }
+    //                if (GetModuleFromProject(projectInstance, projectCollection.Loggers, noLaunchProfile) is { } module)
+    //                {
+    //                    innerModules ??= new List<TestModule>();
+    //                    innerModules.Add(module);
+    //                }
+    //            }
 
-                if (innerModules is not null)
-                {
-                    projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(innerModules));
-                }
-            }
-        }
+    //            if (innerModules is not null)
+    //            {
+    //                projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(innerModules));
+    //            }
+    //        }
+    //    }
 
-        return projects;
-    }
+    //    return projects;
+    //}
+
     public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties1(
     string projectFilePath,
     bool noLaunchProfile,
@@ -227,62 +228,154 @@ internal static class SolutionAndProjectUtility
         if (!collectedProperties.TryGetValue(projectFilePath, out var propertySets) || propertySets == null || propertySets.Count == 0)
             return projects;
 
-        // Find the "outer" context (meta-project) which has an empty TargetFramework
+        // Find the "outer" context (meta-project) which has empty TargetFramework but non-empty TargetFrameworks
         var outerProps = propertySets.FirstOrDefault(props =>
-            string.IsNullOrWhiteSpace(props.GetValueOrDefault(ProjectProperties.TargetFramework)));
+            string.IsNullOrWhiteSpace(props.GetValueOrDefault(ProjectProperties.TargetFramework)) &&
+            !string.IsNullOrWhiteSpace(props.GetValueOrDefault(ProjectProperties.TargetFrameworks)));
 
-        // Determine if we should run TFMs in parallel
-        bool testTfmsInParallel = true;
+        // Check if this is a multi-TFM project
         if (outerProps != null)
         {
-            if (!bool.TryParse(outerProps.GetValueOrDefault(ProjectProperties.TestTfmsInParallel), out testTfmsInParallel) &&
+            // Multi-TFM project - use outer build properties for parallelization settings
+            var targetFrameworks = outerProps.GetValueOrDefault(ProjectProperties.TargetFrameworks) ?? string.Empty;
+
+            Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' with TargetFramework '', TargetFrameworks '{targetFrameworks}', IsTestProject '{outerProps.GetValueOrDefault(ProjectProperties.IsTestProject)}', and '{ProjectProperties.IsTestingPlatformApplication}' is '{outerProps.GetValueOrDefault(ProjectProperties.IsTestingPlatformApplication)}'.");
+
+            // Determine if we should run TFMs in parallel using outer build properties
+            if (!bool.TryParse(outerProps.GetValueOrDefault(ProjectProperties.TestTfmsInParallel), out bool testTfmsInParallel) &&
                 !bool.TryParse(outerProps.GetValueOrDefault(ProjectProperties.BuildInParallel), out testTfmsInParallel))
             {
                 testTfmsInParallel = true;
             }
-        }
 
-        // Filter out the "outer" context (meta-project) which has empty TargetFramework
-        var tfmPropertySets = propertySets
-            .Where(props => !string.IsNullOrWhiteSpace(props.GetValueOrDefault(ProjectProperties.TargetFramework)))
-            .ToList();
+            // Get only the inner build contexts (those with specific TargetFramework values)
+            var tfmPropertySets = propertySets
+                .Where(props => !string.IsNullOrWhiteSpace(props.GetValueOrDefault(ProjectProperties.TargetFramework)))
+                .ToList();
 
-        // Defensive: If no TFM property sets, return empty
-        if (tfmPropertySets.Count == 0)
-            return projects;
+            // Defensive: If no TFM property sets, return empty
+            if (tfmPropertySets.Count == 0)
+                return projects;
 
-        if (testTfmsInParallel)
-        {
-            // Each TFM gets its own group (parallelizable)
-            foreach (var properties in tfmPropertySets)
+            if (testTfmsInParallel)
             {
-                if (!TryCreateTestModule(properties, out var module, noLaunchProfile))
-                    continue;
+                // Each TFM gets its own group (parallelizable)
+                foreach (var properties in tfmPropertySets)
+                {
+                    if (!TryCreateTestModule(properties, out var module, noLaunchProfile))
+                        continue;
 
-                projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
+                    projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
+                }
+            }
+            else
+            {
+                // All TFMs are grouped together and run sequentially
+                List<TestModule>? innerModules = null;
+                foreach (var properties in tfmPropertySets)
+                {
+                    if (!TryCreateTestModule(properties, out var module, noLaunchProfile))
+                        continue;
+
+                    innerModules ??= new List<TestModule>();
+                    innerModules.Add(module);
+                }
+
+                if (innerModules is not null)
+                {
+                    projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(innerModules));
+                }
             }
         }
         else
         {
-            // All TFMs are grouped together and run sequentially
-            List<TestModule>? innerModules = null;
-            foreach (var properties in tfmPropertySets)
-            {
-                if (!TryCreateTestModule(properties, out var module, noLaunchProfile))
-                    continue;
+            // Single-TFM project - look for the single property set with a TargetFramework
+            var singleTfmProps = propertySets.FirstOrDefault(props =>
+                !string.IsNullOrWhiteSpace(props.GetValueOrDefault(ProjectProperties.TargetFramework)));
 
-                innerModules ??= new List<TestModule>();
-                innerModules.Add(module);
-            }
-
-            if (innerModules is not null)
+            if (singleTfmProps != null)
             {
-                projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(innerModules));
+                var targetFramework = singleTfmProps.GetValueOrDefault(ProjectProperties.TargetFramework) ?? string.Empty;
+
+                Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' with TargetFramework '{targetFramework}', TargetFrameworks '', IsTestProject '{singleTfmProps.GetValueOrDefault(ProjectProperties.IsTestProject)}', and '{ProjectProperties.IsTestingPlatformApplication}' is '{singleTfmProps.GetValueOrDefault(ProjectProperties.IsTestingPlatformApplication)}'.");
+
+                if (TryCreateTestModule(singleTfmProps, out var module, noLaunchProfile))
+                {
+                    projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
+                }
             }
         }
 
         return projects;
     }
+
+    //public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties1(
+    //string projectFilePath,
+    //bool noLaunchProfile,
+    //IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> collectedProperties)
+    //{
+    //    Debugger.Launch();
+    //    var projects = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
+
+    //    if (!collectedProperties.TryGetValue(projectFilePath, out var propertySets) || propertySets == null || propertySets.Count == 0)
+    //        return projects;
+
+    //    // Find the "outer" context (meta-project) which has an empty TargetFramework
+    //    var outerProps = propertySets.FirstOrDefault(props =>
+    //        string.IsNullOrWhiteSpace(props.GetValueOrDefault(ProjectProperties.TargetFramework)));
+
+    //    if (outerProps is null)
+    //        return projects;
+
+    //    // Determine if we should run TFMs in parallel
+
+    //    if (!bool.TryParse(outerProps.GetValueOrDefault(ProjectProperties.TestTfmsInParallel), out bool testTfmsInParallel) &&
+    //        !bool.TryParse(outerProps.GetValueOrDefault(ProjectProperties.BuildInParallel), out testTfmsInParallel))
+    //    {
+    //        testTfmsInParallel = true;
+    //    }
+
+    //    // Filter out the "outer" context (meta-project) which has empty TargetFramework
+    //    var tfmPropertySets = propertySets
+    //        .Where(props => !string.IsNullOrWhiteSpace(props.GetValueOrDefault(ProjectProperties.TargetFramework)))
+    //        .ToList();
+
+    //    // Defensive: If no TFM property sets, return empty
+    //    if (tfmPropertySets.Count == 0)
+    //        return projects;
+
+    //    if (testTfmsInParallel)
+    //    {
+    //        // Each TFM gets its own group (parallelizable)
+    //        foreach (var properties in tfmPropertySets)
+    //        {
+    //            if (!TryCreateTestModule(properties, out var module, noLaunchProfile))
+    //                continue;
+
+    //            projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
+    //        }
+    //    }
+    //    else
+    //    {
+    //        // All TFMs are grouped together and run sequentially
+    //        List<TestModule>? innerModules = null;
+    //        foreach (var properties in tfmPropertySets)
+    //        {
+    //            if (!TryCreateTestModule(properties, out var module, noLaunchProfile))
+    //                continue;
+
+    //            innerModules ??= new List<TestModule>();
+    //            innerModules.Add(module);
+    //        }
+
+    //        if (innerModules is not null)
+    //        {
+    //            projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(innerModules));
+    //        }
+    //    }
+
+    //    return projects;
+    //}
 
     private static bool TryCreateTestModule(
         IReadOnlyDictionary<string, string> properties,
