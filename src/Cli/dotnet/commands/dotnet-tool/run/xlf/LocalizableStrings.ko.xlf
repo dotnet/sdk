@@ -8,8 +8,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
-        <source>Run local tool.</source>
-        <target state="translated">로컬 도구를 실행합니다.</target>
+        <source>Run a local tool. Note that this command cannot be used to run a global tool. </source>
+        <target state="translated">로컬 도구를 실행합니다. 이 명령은 전역 도구를 실행하는 데 사용할 수 없습니다. </target>
         <note />
       </trans-unit>
       <trans-unit id="CommandNameArgumentDescription">

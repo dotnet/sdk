@@ -58,9 +58,9 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
       </trans-unit>
       <trans-unit id="NoManifestGuide">
         <source>If you intended to install a global tool, add `--global` to the command.
-If you would like to create a manifest, use `dotnet new tool-manifest`, usually in the repo root directory.</source>
+If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</source>
         <target state="translated">Se você pretende instalar uma ferramenta global, adicione `--global` ao comando.
-Se quiser criar um manifesto, use `dotnet new tool-manifest`, normalmente no diretório raiz do repositório.</target>
+Se você quiser criar um manifesto, use o sinalizador `--create-manifest-if-needed` com o comando `dotnet tool install` ou use `dotnet new tool-manifest`, geralmente no diretório raiz do repositório.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdArgumentDescription">

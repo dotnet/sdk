@@ -58,9 +58,9 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoManifestGuide">
         <source>If you intended to install a global tool, add `--global` to the command.
-If you would like to create a manifest, use `dotnet new tool-manifest`, usually in the repo root directory.</source>
-        <target state="translated">Genel bir aracı yüklemeyi amaçlıyorsanız komuta '--global' ifadesini ekleyin.
-Bir bildirim oluşturmak istiyorsanız 'dotnet new tool-manifest' ifadesini kullanın. Bu ifade genelde depo kök dizinine eklenir.</target>
+If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</source>
+        <target state="translated">Bir genel araç yüklemek istiyorsanız komuta `--global` ifadesini ekleyin.
+Bir bildirim oluşturmak istiyorsanız, `dotnet tool install` komutuyla birlikte `--create-manifest-if-needed` bayrağını kullanın veya 'dotnet new tool-manifest' ifadesini kullanın. Bu ifade genelde depo kök dizinine eklenir.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdArgumentDescription">
