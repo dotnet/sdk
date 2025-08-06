@@ -74,14 +74,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CustomCollectWatchItems>$(CustomCollectWatchItems);_RazorSdkCustomCollectWatchItems</CustomCollectWatchItems>
   </PropertyGroup>
 
-  <!--
-    Initial properties for embedded ValidatableTypeAttribute support (.NET 10.0+)
-    Note: The actual property resolution happens in targets after .razor files are detected
-  -->
-  <PropertyGroup>
-    <!-- Initialize _HasRazorFiles as false - this will be set to true by DetectRazorFiles target if .razor files are found -->
-    <_HasRazorFiles Condition="'$(_HasRazorFiles)' == ''">false</_HasRazorFiles>
-  </PropertyGroup>
+
 
   <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true'">
     <Content Include="**\*.cshtml" ExcludeFromSingleFile="true" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />

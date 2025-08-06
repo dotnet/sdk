@@ -591,7 +591,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Target to detect presence of .razor files and set related properties for embedded ValidatableTypeAttribute support
     This target runs after component items are resolved to ensure accurate detection
   -->
-  <Target Name="DetectRazorFiles" AfterTargets="ResolveRazorComponentInputs;ResolveRazorGenerateInputs" BeforeTargets="PrepareForBuild">
+  <Target Name="_AddEmbeddedValidationAttribute" AfterTargets="ResolveRazorComponentInputs;ResolveRazorGenerateInputs" BeforeTargets="PrepareForBuild">
     <PropertyGroup Condition="'$(_TargetingNET100OrLater)' == 'true'">
       <_HasRazorFiles Condition="'@(RazorComponent)' != '' OR '@(RazorGenerate->WithMetadataValue('Extension', '.razor'))' != '' OR '@(Content->WithMetadataValue('Extension', '.razor'))' != ''">true</_HasRazorFiles>
       
@@ -608,10 +608,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       Conditional inclusion of embedded ValidatableTypeAttribute source files for .NET 10.0+
     -->
     <ItemGroup Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'">
-      <Compile Include="$(MSBuildThisFileDirectory)..\SourceGenerators\EmbeddedSources\EmbeddedAttribute.cs">
+      <Compile Include="$(MSBuildThisFileDirectory)..\EmbeddedContent\EmbeddedAttribute.cs">
         <Link>EmbeddedAttribute.cs</Link>
       </Compile>
-      <Compile Include="$(MSBuildThisFileDirectory)..\SourceGenerators\EmbeddedSources\ValidatableTypeAttribute.cs">
+      <Compile Include="$(MSBuildThisFileDirectory)..\EmbeddedContent\ValidatableTypeAttribute.cs">
         <Link>ValidatableTypeAttribute.cs</Link>
       </Compile>
     </ItemGroup>
