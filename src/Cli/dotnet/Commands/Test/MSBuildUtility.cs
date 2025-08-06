@@ -66,10 +66,17 @@ internal static class MSBuildUtility
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
             .Concat(binLogArgs);
 
+        string? resultsDirectory = parseResult.GetValue(TestingPlatformOptions.ResultsDirectoryOption);
+        if (resultsDirectory is not null)
+        {
+            resultsDirectory = Path.Combine(Directory.GetCurrentDirectory(), resultsDirectory);
+        }
+
         PathOptions pathOptions = new(
             parseResult.GetValue(TestingPlatformOptions.ProjectOption),
             parseResult.GetValue(TestingPlatformOptions.SolutionOption),
-            parseResult.GetValue(TestingPlatformOptions.DirectoryOption));
+            parseResult.GetValue(TestingPlatformOptions.DirectoryOption),
+            resultsDirectory);
 
         return new BuildOptions(
             pathOptions,

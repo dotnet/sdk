@@ -104,6 +104,11 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             builder.Append($" {TestingPlatformOptions.HelpOption.Name}");
         }
 
+        if (_buildOptions.PathOptions.ResultsDirectoryPath is { } resultsDirectoryPath)
+        {
+            builder.Append($" {TestingPlatformOptions.ResultsDirectoryOption.Name} {ArgumentEscaper.EscapeSingleArg(resultsDirectoryPath)}");
+        }
+
         foreach (var arg in _buildOptions.UnmatchedTokens)
         {
             builder.Append($" {ArgumentEscaper.EscapeSingleArg(arg)}");
