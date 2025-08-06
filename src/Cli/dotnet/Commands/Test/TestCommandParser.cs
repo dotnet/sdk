@@ -250,6 +250,7 @@ internal static class TestCommandParser
         command.Options.Add(TestingPlatformOptions.OutputOption);
         command.Options.Add(TestingPlatformOptions.NoLaunchProfileOption);
         command.Options.Add(TestingPlatformOptions.NoLaunchProfileArgumentsOption);
+        command.Options.Add(CommonOptions.BinaryLoggerOption);
         command.Options.Add(MTPTargetOption);
 
         return command;

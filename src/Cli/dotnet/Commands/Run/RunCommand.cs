@@ -363,7 +363,7 @@ public class RunCommand
             return CreateCommandForCscBuiltProgram(EntryPointFileFullPath);
         }
 
-        FacadeLogger? logger = CreateBinaryLogger(BinaryLoggerOptions, "dotnet-run");
+        FacadeLogger? logger = LoggerUtility.CreateBinaryLogger(BinaryLoggerOptions, "dotnet-run");
         var project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
         ValidatePreconditions(project);
         InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs);
@@ -470,38 +470,6 @@ public class RunCommand
                 throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, ComputeRunArgumentsTarget);
             }
         }
-    }
-
-    private static FacadeLogger? CreateBinaryLogger(BinaryLoggerOptions? options, string verb)
-    {
-        if (options == null)
-        {
-            return null;
-        }
-
-        List<BinaryLogger> binaryLoggers = [];
-        var parsedParams = options.ParseParameters();
-
-        string filename;
-        if (!string.IsNullOrEmpty(parsedParams.LogFile))
-        {
-            filename = parsedParams.LogFile;
-            if (filename.EndsWith(".binlog"))
-            {
-                filename = filename.Substring(0, filename.Length - ".binlog".Length);
-                filename = $"{filename}-{verb}.binlog";
-            }
-        }
-        else
-        {
-            // Default filename when no specific file is provided
-            filename = $"msbuild-{verb}.binlog";
-        }
-
-        binaryLoggers.Add(new BinaryLogger { Parameters = filename });
-
-        // Create the facade logger
-        return LoggerUtility.CreateFacadeLogger(binaryLoggers);
     }
 
     static readonly string ComputeRunArgumentsTarget = "ComputeRunArguments";

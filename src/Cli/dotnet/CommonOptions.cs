@@ -7,6 +7,7 @@ using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
 using System.CommandLine.StaticCompletions;
+using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -551,7 +552,11 @@ public record BinaryLoggerOptions(string? OriginalToken, string? Arguments)
 {
     /// <summary>
     /// Parses the arguments into structured binary logger parameters.
-    /// Format: filename[;keyword=value]*
+    /// Supports the full MSBuild format: [LogFile=]filename[;keyword=value]*
+    /// Examples:
+    /// - "output.binlog" -> LogFile = "output.binlog"
+    /// - "output.binlog;ProjectImports=None" -> LogFile = "output.binlog", ProjectImports = None
+    /// - "LogFile=output.binlog;ProjectImports=ZipFile" -> LogFile = "output.binlog", ProjectImports = ZipFile
     /// </summary>
     public BinaryLoggerParameters ParseParameters()
     {
@@ -561,31 +566,73 @@ public record BinaryLoggerOptions(string? OriginalToken, string? Arguments)
         }
 
         var parts = Arguments.Split(';');
-        string? logFile = parts.Length > 0 ? parts[0] : null;
-        
-        // If the first part is empty or just contains keywords, no filename was specified
-        if (logFile?.Contains('=') == true)
-        {
-            logFile = null;
-        }
-
+        string? logFile = null;
+        ProjectImportsMode? projectImports = null;
+        LoggerVerbosity? verbosity = null;
         var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         
-        // Parse keyword=value pairs starting from the appropriate index
-        int startIndex = logFile != null ? 1 : 0;
-        for (int i = startIndex; i < parts.Length; i++)
+        // Parse each part
+        for (int i = 0; i < parts.Length; i++)
         {
-            var part = parts[i];
+            var part = parts[i].Trim();
+            if (string.IsNullOrEmpty(part))
+                continue;
+
             var equalIndex = part.IndexOf('=');
+            
             if (equalIndex > 0)
             {
-                string key = part.Substring(0, equalIndex);
-                string value = part.Substring(equalIndex + 1);
-                parameters[key] = value;
+                // keyword=value format
+                string key = part.Substring(0, equalIndex).Trim();
+                string value = part.Substring(equalIndex + 1).Trim();
+
+                switch (key.ToLowerInvariant())
+                {
+                    case "logfile":
+                        logFile = value;
+                        break;
+                    case "projectimports":
+                        if (Enum.TryParse<ProjectImportsMode>(value, ignoreCase: true, out var importMode))
+                        {
+                            projectImports = importMode;
+                        }
+                        else
+                        {
+                            parameters[key] = value;
+                        }
+                        break;
+                    case "verbosity":
+                        if (Enum.TryParse<LoggerVerbosity>(value, ignoreCase: true, out var verb))
+                        {
+                            verbosity = verb;
+                        }
+                        else
+                        {
+                            parameters[key] = value;
+                        }
+                        break;
+                    default:
+                        parameters[key] = value;
+                        break;
+                }
+            }
+            else if (i == 0)
+            {
+                // First part without '=' is treated as the log file
+                logFile = part;
+            }
+            else
+            {
+                // Treat as a parameter with empty value
+                parameters[part] = "";
             }
         }
 
-        return new BinaryLoggerParameters(logFile, parameters);
+        return new BinaryLoggerParameters(
+            logFile, 
+            projectImports, 
+            verbosity, 
+            parameters.Count > 0 ? parameters : null);
     }
 }
 
@@ -593,5 +640,30 @@ public record BinaryLoggerOptions(string? OriginalToken, string? Arguments)
 /// Represents the structured parameters for binary logging.
 /// </summary>
 /// <param name="LogFile">The log file path, or null if not specified</param>
+/// <param name="ProjectImports">How to handle project imports</param>
+/// <param name="Verbosity">The logger verbosity level</param>
 /// <param name="Parameters">Additional keyword-value parameters</param>
-public record BinaryLoggerParameters(string? LogFile = null, IReadOnlyDictionary<string, string>? Parameters = null);
+public record BinaryLoggerParameters(
+    string? LogFile = null, 
+    ProjectImportsMode? ProjectImports = null,
+    LoggerVerbosity? Verbosity = null,
+    IReadOnlyDictionary<string, string>? Parameters = null);
+
+/// <summary>
+/// Represents how the binary logger should handle project imports.
+/// </summary>
+public enum ProjectImportsMode
+{
+    /// <summary>
+    /// Don't collect the project imports.
+    /// </summary>
+    None,
+    /// <summary>
+    /// Embed project imports in the log file (default).
+    /// </summary>
+    Embed,
+    /// <summary>
+    /// Save project files to {output}.projectimports.zip.
+    /// </summary>
+    ZipFile
+}

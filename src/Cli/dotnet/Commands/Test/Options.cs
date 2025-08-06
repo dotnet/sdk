@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli;
+
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal record TestOptions(bool HasFilterMode, bool IsHelp);
@@ -14,5 +16,7 @@ internal record BuildOptions(
     Utils.VerbosityOptions? Verbosity,
     bool NoLaunchProfile,
     bool NoLaunchProfileArguments,
-    int DegreeOfParallelism, List<string> UnmatchedTokens,
-    IEnumerable<string> MSBuildArgs);
+    int DegreeOfParallelism, 
+    List<string> UnmatchedTokens,
+    IEnumerable<string> MSBuildArgs,
+    BinaryLoggerOptions? BinaryLoggerOptions);
