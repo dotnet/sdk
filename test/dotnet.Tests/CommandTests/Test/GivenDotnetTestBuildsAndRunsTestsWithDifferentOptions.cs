@@ -492,17 +492,16 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             if (!TestContext.IsLocalized())
             {
                 result.StdOut
-                 .Should().Contain("Test run summary: Zero tests ran")
-                 .And.Contain("total: 0")
-                 .And.Contain("succeeded: 0")
-                 .And.Contain("failed: 0")
-                 .And.Contain("skipped: 0")
-                 .And.Contain("NETSDK1005");
+                 .Should().Contain("Test run summary: Failed")
+                 .And.Contain("total: 8")
+                 .And.Contain("succeeded: 2")
+                 .And.Contain("failed: 4")
+                 .And.Contain("skipped: 2");
             }
 
             // This should fail because OtherTestProject is not built with the previous .NET version
             // Therefore, the build error will prevent the tests from running
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
 
