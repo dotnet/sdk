@@ -76,7 +76,15 @@ namespace Microsoft.NET.Publish.Tests
                "fluentassertions/4.12.0/lib/netstandard1.3/FluentAssertions.Core.dll",
                "fluentassertions/4.12.0/lib/netstandard1.3/FluentAssertions.dll",
                "fluentassertions.json/4.12.0/lib/netstandard1.3/FluentAssertions.Json.dll"
-               };
+            };
+
+            Console.WriteLine("Files on disk:");
+            foreach (var file in storeDirectory.GetFiles("*", SearchOption.AllDirectories))
+            {
+                // Convert to relative path with forward slashes to match expected format
+                string relativePath = file.FullName.Substring(storeDirectory.FullName.Length + 1).Replace('\\', '/');
+                Console.WriteLine(relativePath);
+            }
 
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
@@ -119,7 +127,15 @@ namespace Microsoft.NET.Publish.Tests
                "fluentassertions/4.12.0/lib/netstandard1.3/FluentAssertions.Core.dll",
                "fluentassertions/4.12.0/lib/netstandard1.3/FluentAssertions.dll",
                "fluentassertions.json/4.12.0/lib/netstandard1.3/FluentAssertions.Json.dll"
-               };
+            };
+
+            Console.WriteLine("Files on disk:");
+            foreach (var file in storeDirectory.GetFiles("*", SearchOption.AllDirectories))
+            {
+                // Convert to relative path with forward slashes to match expected format
+                string relativePath = file.FullName.Substring(storeDirectory.FullName.Length + 1).Replace('\\', '/');
+                Console.WriteLine(relativePath);
+            }
 
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
@@ -156,7 +172,15 @@ namespace Microsoft.NET.Publish.Tests
                "fluentassertions/4.12.0/lib/netstandard1.3/FluentAssertions.Core.dll",
                "fluentassertions/4.12.0/lib/netstandard1.3/FluentAssertions.dll",
                "fluentassertions.json/4.12.0/lib/netstandard1.3/FluentAssertions.Json.dll",
-               };
+            };
+
+            Console.WriteLine("Files on disk:");
+            foreach (var file in storeDirectory.GetFiles("*", SearchOption.AllDirectories))
+            {
+                // Convert to relative path with forward slashes to match expected format
+                string relativePath = file.FullName.Substring(storeDirectory.FullName.Length + 1).Replace('\\', '/');
+                Console.WriteLine(relativePath);
+            }
 
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
 
