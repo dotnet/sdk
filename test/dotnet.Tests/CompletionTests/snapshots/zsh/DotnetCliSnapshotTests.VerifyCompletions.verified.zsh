@@ -548,6 +548,7 @@ _testhost() {
                         '/v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '/verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '--version-suffix=[Set the value of the \$(VersionSuffix) property to use when building the project.]:VERSION_SUFFIX: ' \
+                        '--version = [Set the version of the package to create]:VERSION: ' \
                         '--configuration=[The configuration to use for building the package. The default is '\''Release'\''.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '-c=[The configuration to use for building the package. The default is '\''Release'\''.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '--disable-build-servers[Force the command to ignore any persistent build servers.]' \

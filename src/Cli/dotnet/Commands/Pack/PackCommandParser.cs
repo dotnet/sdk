@@ -67,6 +67,25 @@ internal static class PackCommandParser
     public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Pack", [("_IsPacking", "true")]);
     public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = BuildCommandParser.VerbosityOption;
 
+    public static Option<NuGetVersion> VersionOption =
+        new ForwardedOption<NuGetVersion>("--version")
+        {
+            Description = CliCommandStrings.PackCmdVersionDescription,
+            HelpName = CliCommandStrings.PackCmdVersion,
+            Arity = ArgumentArity.ExactlyOne,
+            CustomParser = r =>
+            {
+                if (r.Tokens.Count == 0)
+                    return null;
+                var value = r.Tokens[0].Value;
+                if (NuGetVersion.TryParse(value, out var version))
+                    return version;
+                r.AddError(string.Format(CliStrings.InvalidVersion, value));
+                return null;
+
+            }
+        }.ForwardAsSingle(o => $"--property:PackageVersion={o}");
+
     private static readonly Command Command = ConstructCommand();
 
     public static Command GetCommand()
@@ -93,7 +112,7 @@ internal static class PackCommandParser
         command.Options.Add(ConfigurationOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(TargetOption);
-        command.Options.Add(CommonOptions.VersionOption);
+        command.Options.Add(VersionOption);
 
         // Don't include runtime option because we want to include it specifically and allow the short version ("-r") to be used
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);
