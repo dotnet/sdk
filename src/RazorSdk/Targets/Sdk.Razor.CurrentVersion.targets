@@ -614,8 +614,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_EmbeddedAttributeLines Include="// &lt;auto-generated/&gt;" />
       <_EmbeddedAttributeLines Include="namespace Microsoft.CodeAnalysis" />
       <_EmbeddedAttributeLines Include="{" />
-      <_EmbeddedAttributeLines Include="    [global::System.AttributeUsage(global::System.AttributeTargets.All, AllowMultiple = true, Inherited = false)]" />
-      <_EmbeddedAttributeLines Include="    internal sealed class EmbeddedAttribute : global::System.Attribute" />
+      <_EmbeddedAttributeLines Include="    internal sealed partial class EmbeddedAttribute : global::System.Attribute" />
       <_EmbeddedAttributeLines Include="    {" />
       <_EmbeddedAttributeLines Include="    }" />
       <_EmbeddedAttributeLines Include="}" />
