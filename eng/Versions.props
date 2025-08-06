@@ -143,7 +143,7 @@
     <NuGetBuildTasksPackPackageVersion>6.12.4</NuGetBuildTasksPackPackageVersion>
     <NuGetCommandLineXPlatPackageVersion>6.12.4</NuGetCommandLineXPlatPackageVersion>
     <NuGetProjectModelPackageVersion>6.12.4</NuGetProjectModelPackageVersion>
-    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.12.4</MicrosoftBuildNuGetSdkResolverPackageVersion>
+    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.12.4-rc.9</MicrosoftBuildNuGetSdkResolverPackageVersion>
     <NuGetCommonPackageVersion>6.12.4</NuGetCommonPackageVersion>
     <NuGetConfigurationPackageVersion>6.12.4</NuGetConfigurationPackageVersion>
     <NuGetFrameworksPackageVersion>6.12.4</NuGetFrameworksPackageVersion>

@@ -143,7 +143,7 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
       <Sha>215a587e52efa710de84138b0a3374b860b924d8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="6.12.4">
+    <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="6.12.4-rc.9">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>42bfb4554167e1d2fc2b950728d9bd8164f806c1</Sha>
     </Dependency>
