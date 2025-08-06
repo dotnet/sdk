@@ -293,6 +293,7 @@ internal static class TestCommandParser
         command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.ArchitectureOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
+        command.Options.Add(CommonOptions.PropertiesOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(VsTestTargetOption);
         command.SetAction(TestCommand.Run);
