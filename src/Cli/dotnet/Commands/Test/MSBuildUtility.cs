@@ -53,7 +53,7 @@ internal static class MSBuildUtility
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
         var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.MSBuildArgs]), logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
 
-        IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, buildOptions.NoLaunchProfile);
+        IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, buildOptions);
         logger?.ReallyShutdown();
 
         return (projects, isBuiltOrRestored);
@@ -66,10 +66,17 @@ internal static class MSBuildUtility
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
             .Concat(binLogArgs);
 
+        string? resultsDirectory = parseResult.GetValue(TestingPlatformOptions.ResultsDirectoryOption);
+        if (resultsDirectory is not null)
+        {
+            resultsDirectory = Path.Combine(Directory.GetCurrentDirectory(), resultsDirectory);
+        }
+
         PathOptions pathOptions = new(
             parseResult.GetValue(TestingPlatformOptions.ProjectOption),
             parseResult.GetValue(TestingPlatformOptions.SolutionOption),
-            parseResult.GetValue(TestingPlatformOptions.DirectoryOption));
+            parseResult.GetValue(TestingPlatformOptions.DirectoryOption),
+            resultsDirectory);
 
         return new BuildOptions(
             pathOptions,
@@ -112,7 +119,7 @@ internal static class MSBuildUtility
             new ParallelOptions { MaxDegreeOfParallelism = buildOptions.DegreeOfParallelism },
             (project) =>
             {
-                IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, projectCollection, buildOptions.NoLaunchProfile);
+                IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, projectCollection, buildOptions);
                 foreach (var projectMetadata in projectsMetadata)
                 {
                     allProjects.Add(projectMetadata);
