@@ -194,12 +194,6 @@ namespace Microsoft.DotNet.Cli
                         nologo: nologo,
                         skipWorkloadIntegrityCheck: skipWorkloadIntegrityCheck);
 
-                    string[] getStarOperators = ["getProperty", "getItem", "getTargetResult"];
-                    char[] switchIndicators = ['-', '/'];
-                    var getStarOptionPassed = parseResult.CommandResult.Tokens.Any(t =>
-                        getStarOperators.Any(o =>
-                        switchIndicators.Any(i => t.Value.StartsWith(i + o, StringComparison.OrdinalIgnoreCase))));
-
                     ConfigureDotNetForFirstTimeUse(
                         firstTimeUseNoticeSentinel,
                         aspNetCertificateSentinel,
@@ -207,8 +201,7 @@ namespace Microsoft.DotNet.Cli
                         isDotnetBeingInvokedFromNativeInstaller,
                         dotnetFirstRunConfiguration,
                         environmentProvider,
-                        performanceData,
-                        skipFirstTimeUseCheck: getStarOptionPassed);
+                        performanceData);
                     PerformanceLogEventSource.Log.FirstTimeConfigurationStop();
                 }
 
@@ -325,10 +318,9 @@ namespace Microsoft.DotNet.Cli
            bool isDotnetBeingInvokedFromNativeInstaller,
            DotnetFirstRunConfiguration dotnetFirstRunConfiguration,
            IEnvironmentProvider environmentProvider,
-           Dictionary<string, double> performanceMeasurements,
-           bool skipFirstTimeUseCheck)
+           Dictionary<string, double> performanceMeasurements)
         {
-            var isFirstTimeUse = !firstTimeUseNoticeSentinel.Exists() && !skipFirstTimeUseCheck;
+            var isFirstTimeUse = !firstTimeUseNoticeSentinel.Exists();
             var environmentPath = EnvironmentPathFactory.CreateEnvironmentPath(isDotnetBeingInvokedFromNativeInstaller, environmentProvider);
             var commandFactory = new DotNetCommandFactory(alwaysRunOutOfProc: true);
             var aspnetCertificateGenerator = new AspNetCoreCertificateGenerator();
@@ -341,8 +333,7 @@ namespace Microsoft.DotNet.Cli
                 dotnetFirstRunConfiguration,
                 reporter,
                 environmentPath,
-                performanceMeasurements,
-                skipFirstTimeUseCheck: skipFirstTimeUseCheck);
+                performanceMeasurements);
 
             dotnetConfigurer.Configure();
 

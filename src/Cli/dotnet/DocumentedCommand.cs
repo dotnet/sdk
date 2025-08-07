@@ -2,13 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli
 {
-    public class DocumentedCommand : CliCommand, ICommandDocument
+    public class DocumentedCommand : CliCommand
     {
-        public string DocsLink { get; }
+        public string DocsLink { get; set; }
 
         public DocumentedCommand(string name, string docsLink, string description = null) : base(name, description)
         {

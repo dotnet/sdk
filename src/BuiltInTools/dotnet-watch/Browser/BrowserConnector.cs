@@ -6,30 +6,25 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Microsoft.Build.Graph;
+using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watch
+namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal sealed partial class BrowserConnector(DotNetWatchContext context) : IAsyncDisposable, IStaticAssetChangeApplierProvider
+    internal sealed partial class BrowserConnector(DotNetWatchContext context) : IAsyncDisposable
     {
-        private readonly record struct ProjectKey(string projectPath, string targetFramework);
-
         // This needs to be in sync with the version BrowserRefreshMiddleware is compiled against.
         private static readonly Version s_minimumSupportedVersion = Versions.Version6_0;
 
-        private static readonly Regex s_nowListeningRegex = GetNowListeningOnRegex();
-        private static readonly Regex s_aspireDashboardUrlRegex = GetAspireDashboardUrlRegex();
+        private static readonly Regex s_nowListeningRegex = s_nowListeningOnRegex();
 
         [GeneratedRegex(@"Now listening on: (?<url>.*)\s*$", RegexOptions.Compiled)]
-        private static partial Regex GetNowListeningOnRegex();
+        private static partial Regex s_nowListeningOnRegex();
 
-        [GeneratedRegex(@"Login to the dashboard at (?<url>.*)\s*$", RegexOptions.Compiled)]
-        private static partial Regex GetAspireDashboardUrlRegex();
-
-        private readonly Lock _serversGuard = new();
-        private readonly Dictionary<ProjectKey, BrowserRefreshServer?> _servers = [];
+        private readonly object _serversGuard = new();
+        private readonly Dictionary<ProjectGraphNode, BrowserRefreshServer?> _servers = [];
 
         // interlocked
-        private ImmutableHashSet<ProjectKey> _browserLaunchAttempted = [];
+        private ImmutableHashSet<ProjectGraphNode> _browserLaunchAttempted = [];
 
         public async ValueTask DisposeAsync()
         {
@@ -50,15 +45,7 @@ namespace Microsoft.DotNet.Watch
             }));
         }
 
-        private static ProjectKey GetProjectKey(ProjectGraphNode projectNode)
-            => new(projectNode.ProjectInstance.FullPath, projectNode.GetTargetFramework());
-
-        /// <summary>
-        /// A single browser refresh server is created for each project that supports browser launching.
-        /// When the project is rebuilt we reuse the same refresh server and browser instance.
-        /// Reload message is sent to the browser in that case.
-        /// </summary>
-        public async ValueTask<BrowserRefreshServer?> GetOrCreateBrowserRefreshServerAsync(
+        public async ValueTask<BrowserRefreshServer?> LaunchOrRefreshBrowserAsync(
             ProjectGraphNode projectNode,
             ProcessSpec processSpec,
             EnvironmentVariablesBuilder environmentBuilder,
@@ -68,20 +55,17 @@ namespace Microsoft.DotNet.Watch
             BrowserRefreshServer? server;
             bool hasExistingServer;
 
-            var key = GetProjectKey(projectNode);
-
             lock (_serversGuard)
             {
-                hasExistingServer = _servers.TryGetValue(key, out server);
+                hasExistingServer = _servers.TryGetValue(projectNode, out server);
                 if (!hasExistingServer)
                 {
                     server = IsServerSupported(projectNode) ? new BrowserRefreshServer(context.EnvironmentOptions, context.Reporter) : null;
-                    _servers.Add(key, server);
+                    _servers.Add(projectNode, server);
                 }
             }
 
-            // Attach trigger to the process that detects when the web server reports to the output that it's listening.
-            // Launches browser on the URL found in the process output for root projects.
+            // Attach trigger to the process that launches browser on URL found in the process output:
             processSpec.OnOutput += GetBrowserLaunchTrigger(projectNode, projectOptions, server, cancellationToken);
 
             if (server == null)
@@ -94,39 +78,29 @@ namespace Microsoft.DotNet.Watch
             {
                 // Start the server we just created:
                 await server.StartAsync(cancellationToken);
+                server.SetEnvironmentVariables(environmentBuilder);
             }
-
-            server.SetEnvironmentVariables(environmentBuilder);
+            else
+            {
+                // Notify the browser of a project rebuild (delta applier notifies of updates):
+                await server.SendWaitMessageAsync(cancellationToken);
+            }
 
             return server;
         }
 
-        bool IStaticAssetChangeApplierProvider.TryGetApplier(ProjectGraphNode projectNode, [NotNullWhen(true)] out IStaticAssetChangeApplier? applier)
-        {
-            if (TryGetRefreshServer(projectNode, out var server))
-            {
-                applier = server;
-                return true;
-            }
-
-            applier = null;
-            return false;
-        }
-
         public bool TryGetRefreshServer(ProjectGraphNode projectNode, [NotNullWhen(true)] out BrowserRefreshServer? server)
         {
-            var key = GetProjectKey(projectNode);
-
             lock (_serversGuard)
             {
-                return _servers.TryGetValue(key, out server) && server != null;
+                return _servers.TryGetValue(projectNode, out server);
             }
         }
 
         /// <summary>
         /// Get process output handler that will be subscribed to the process output event every time the process is launched.
         /// </summary>
-        public Action<OutputLine>? GetBrowserLaunchTrigger(ProjectGraphNode projectNode, ProjectOptions projectOptions, BrowserRefreshServer? server, CancellationToken cancellationToken)
+        public DataReceivedEventHandler? GetBrowserLaunchTrigger(ProjectGraphNode projectNode, ProjectOptions projectOptions, BrowserRefreshServer? server, CancellationToken cancellationToken)
         {
             if (!CanLaunchBrowser(context, projectNode, projectOptions, out var launchProfile))
             {
@@ -140,23 +114,19 @@ namespace Microsoft.DotNet.Watch
 
             bool matchFound = false;
 
-            // Workaround for Aspire dashboard launching: scan for "Login to the dashboard at " prefix in the output and use the URL.
-            // TODO: Share launch profile processing logic as implemented in VS with dotnet-run and implement browser launching there.
-            var isAspireHost = projectNode.GetCapabilities().Contains(AspireServiceFactory.AppHostProjectCapability);
-
             return handler;
 
-            void handler(OutputLine line)
+            void handler(object sender, DataReceivedEventArgs eventArgs)
             {
                 // We've redirected the output, but want to ensure that it continues to appear in the user's console.
-                (line.IsError ? Console.Error : Console.Out).WriteLine(line.Content);
+                Console.WriteLine(eventArgs.Data);
 
                 if (matchFound)
                 {
                     return;
                 }
 
-                var match = (isAspireHost ? s_aspireDashboardUrlRegex : s_nowListeningRegex).Match(line.Content);
+                var match = s_nowListeningRegex.Match(eventArgs.Data ?? "");
                 if (!match.Success)
                 {
                     return;
@@ -164,32 +134,26 @@ namespace Microsoft.DotNet.Watch
 
                 matchFound = true;
 
-                if (projectOptions.IsRootProject &&
-                    ImmutableInterlocked.Update(ref _browserLaunchAttempted, static (set, key) => set.Add(key), GetProjectKey(projectNode)))
+                var projectAddedToAttemptedSet = ImmutableInterlocked.Update(ref _browserLaunchAttempted, static (set, projectNode) => set.Add(projectNode), projectNode);
+                if (projectAddedToAttemptedSet)
                 {
-                    // first build iteration of a root project:
-                    var launchUrl = GetLaunchUrl(launchProfile.LaunchUrl, match.Groups["url"].Value);
-                    LaunchBrowser(launchUrl, server);
+                    // first iteration:
+                    LaunchBrowser(launchProfile, match.Groups["url"].Value, server);
                 }
                 else if (server != null)
                 {
                     // Subsequent iterations (project has been rebuilt and relaunched).
                     // Use refresh server to reload the browser, if available.
                     context.Reporter.Verbose("Reloading browser.");
-                    _ = server.SendReloadMessageAsync(cancellationToken);
+                    _ = server.ReloadAsync(cancellationToken);
                 }
             }
         }
 
-        public static string GetLaunchUrl(string? profileLaunchUrl, string outputLaunchUrl)
-            => string.IsNullOrWhiteSpace(profileLaunchUrl) ? outputLaunchUrl :
-                Uri.TryCreate(profileLaunchUrl, UriKind.Absolute, out _) ? profileLaunchUrl :
-                Uri.TryCreate(outputLaunchUrl, UriKind.Absolute, out var launchUri) ? new Uri(launchUri, profileLaunchUrl).ToString() :
-                outputLaunchUrl;
-
-        private void LaunchBrowser(string launchUrl, BrowserRefreshServer? server)
+        private void LaunchBrowser(LaunchSettingsProfile launchProfile, string launchUrl, BrowserRefreshServer? server)
         {
-            var fileName = launchUrl;
+            var launchPath = launchProfile.LaunchUrl;
+            var fileName = Uri.TryCreate(launchPath, UriKind.Absolute, out _) ? launchPath : launchUrl + "/" + launchPath;
 
             var args = string.Empty;
             if (EnvironmentVariables.BrowserPath is { } browserPath)
@@ -254,9 +218,9 @@ namespace Microsoft.DotNet.Watch
                 return false;
             }
 
-            if (!CommandLineOptions.IsCodeExecutionCommand(projectOptions.Command))
+            if (projectOptions.Command != "run")
             {
-                reporter.Verbose($"Command '{projectOptions.Command}' does not support browser refresh.");
+                reporter.Verbose("Browser refresh is only supported for run commands.");
                 return false;
             }
 

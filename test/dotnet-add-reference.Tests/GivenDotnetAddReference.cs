@@ -14,34 +14,32 @@ namespace Microsoft.DotNet.Cli.Add.Reference.Tests
   Add a project-to-project reference to the project.
 
 Usage:
-  dotnet reference add <PROJECT_PATH>... [options]
+  dotnet add [<PROJECT>] reference <PROJECT_PATH>... [options]
 
 Arguments:
-  <PROJECT_PATH>  The paths to the projects to add as references.
+  <PROJECT>         The project file to operate on. If a file is not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+  <PROJECT_PATH>    The paths to the projects to add as references.
 
 Options:
-  -f, --framework <FRAMEWORK>  Add the reference only when targeting a specific framework.
-  --interactive                Allows the command to stop and wait for user input or action (for example to complete
-                               authentication).
-  --project                    The project file to operate on. If a file is not specified, the command will search the
-                               current directory for one.
-  -?, -h, --help               Show command line help.";
+  -f, --framework <FRAMEWORK>    Add the reference only when targeting a specific framework.
+  --interactive                  Allows the command to stop and wait for user input or action (for example to complete authentication).
+  -?, -h, --help                 Show command line help.";
 
         private Func<string, string> AddCommandHelpText = (defaultVal) => $@"Description:
-  .NET Remove Command
+  .NET Add Command
 
 Usage:
-  dotnet reference [command] [options]
+  dotnet add <PROJECT> [command] [options]
+
+Arguments:
+  <PROJECT>    The project file to operate on. If a file is not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
 
 Options:
-  --project <project>  The project file to operate on. If a file is not specified, the command will search the current
-                       directory for one.
-  -?, -h, --help       Show command line help.
+  -?, -h, --help    Show command line help.
 
 Commands:
-  add <PROJECT_PATH>     Add a project-to-project reference to the project.
-  list                   List all project-to-project references of the project.
-  remove <PROJECT_PATH>  Remove a project-to-project reference from the project.";
+  package <PACKAGE_NAME>      Add a NuGet package reference to the project.
+  reference <PROJECT_PATH>    Add a project-to-project reference to the project.";
 
         const string FrameworkNet451 = "net451";
         const string ConditionFrameworkNet451 = "== 'net451'";
@@ -105,18 +103,26 @@ Commands:
         [InlineData("-h")]
         public void WhenHelpOptionIsPassedItPrintsUsage(string helpArg)
         {
-            var cmd = new DotnetCommand(Log, "reference", "add").Execute(helpArg);
+            var cmd = new DotnetCommand(Log, "add", "reference").Execute(helpArg);
             cmd.Should().Pass();
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(Directory.GetCurrentDirectory(), "FRAMEWORK"));
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("unknownCommandName")]
+        public void WhenNoCommandIsPassedItPrintsError(string commandName)
+        {
+            var cmd = new DotnetCommand(Log)
+                .Execute($"add", commandName);
+            cmd.Should().Fail();
+            cmd.StdErr.Should().Be(CommonLocalizableStrings.RequiredCommandNotPassed);
+            cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(AddCommandHelpText(Directory.GetCurrentDirectory()));
         }
 
         [Fact]
         public void WhenTooManyArgumentsArePassedItPrintsError()
         {
-            if (!File.Exists("proj.csproj"))
-            {
-                File.Create("proj.csproj");
-            }
             var cmd = new DotnetCommand(Log, "add", "one", "two", "three", "reference")
                     .Execute("proj.csproj");
             cmd.ExitCode.Should().NotBe(0);
@@ -161,7 +167,7 @@ Commands:
 
             var cmd = new DotnetCommand(Log, "add", projName, "reference")
                     .WithWorkingDirectory(setup.TestRoot)
-                    .Execute($"{setup.ValidRefCsprojPath}");
+                    .Execute($"\"{setup.ValidRefCsprojPath}\"");
             cmd.ExitCode.Should().NotBe(0);
             cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.ProjectIsInvalid, projName));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
@@ -188,7 +194,7 @@ Commands:
 
             var cmd = new DotnetCommand(Log, "add", "reference")
                     .WithWorkingDirectory(setup.TestRoot)
-                    .Execute(setup.ValidRefCsprojPath);
+                    .Execute($"\"{setup.ValidRefCsprojPath}\"");
             cmd.ExitCode.Should().NotBe(0);
             cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.CouldNotFindAnyProjectInDirectory, setup.TestRoot + Path.DirectorySeparatorChar));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");

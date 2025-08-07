@@ -27,8 +27,7 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
 
         internal static IReadOnlyList<string> FindSolutionFilesAtOrAbovePath(IPhysicalFileSystem fileSystem, string outputBasePath)
         {
-            return FileFindHelpers.FindFilesAtOrAbovePath(fileSystem, outputBasePath, "*.sln")
-                ?? FileFindHelpers.FindFilesAtOrAbovePath(fileSystem, outputBasePath, "*.slnx");
+            return FileFindHelpers.FindFilesAtOrAbovePath(fileSystem, outputBasePath, "*.sln");
         }
 
         // The project files to add are a subset of the primary outputs, specifically the primary outputs indicated by the primaryOutputIndexes post action argument (semicolon separated)

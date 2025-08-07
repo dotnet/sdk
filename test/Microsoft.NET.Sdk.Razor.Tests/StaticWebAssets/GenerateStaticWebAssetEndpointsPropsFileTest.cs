@@ -196,8 +196,6 @@ public class GenerateStaticWebAssetEndpointsPropsFileTest
             // Add these to avoid accessing the disk to compute them
             Integrity = "integrity",
             Fingerprint = "fingerprint",
-            FileLength = 10,
-            LastWriteTime = DateTime.UtcNow,
         };
 
         result.ApplyDefaults();

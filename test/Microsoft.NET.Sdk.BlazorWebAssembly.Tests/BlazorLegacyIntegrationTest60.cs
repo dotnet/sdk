@@ -54,7 +54,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var publish = CreatePublishCommand(ProjectDirectory, "Server");
-            ExecuteCommand(publish, "/p:BuildWithNetFrameworkHostedCompiler=true")
+            ExecuteCommand(publish)
                 .Should()
                 .Pass()
                 .And.NotHaveStdOutContaining("warning IL");

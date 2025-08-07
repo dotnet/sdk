@@ -65,9 +65,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\AnotherClassLib\\wwwroot\\css\\_content\\AnotherClassLib\\css\\site.css.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\_content\\AnotherClassLib\\css\\site.css.gz"
     },
     {
       "Identity": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\_content\\AnotherClassLib\\js\\project-direct-dep.js.gz",
@@ -88,9 +86,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\AnotherClassLib\\wwwroot\\js\\_content\\AnotherClassLib\\js\\project-direct-dep.js.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\_content\\AnotherClassLib\\js\\project-direct-dep.js.gz"
     },
     {
       "Identity": "${ProjectPath}\\AnotherClassLib\\wwwroot\\css\\site.css",
@@ -111,9 +107,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\css\\site.css",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\AnotherClassLib\\wwwroot\\css\\site.css"
     },
     {
       "Identity": "${ProjectPath}\\AnotherClassLib\\wwwroot\\js\\project-direct-dep.js",
@@ -134,9 +128,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\js\\project-direct-dep.js",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\AnotherClassLib\\wwwroot\\js\\project-direct-dep.js"
     },
     {
       "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
@@ -157,9 +149,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference#[.{fingerprint=__fingerprint__}]?.styles.css.gz"
     },
     {
       "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorPackageLibraryDirectDependency\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
@@ -180,9 +170,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\_content\\RazorPackageLibraryDirectDependency\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\_content\\RazorPackageLibraryDirectDependency\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz"
     },
     {
       "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorPackageLibraryDirectDependency\\css\\site.css.gz",
@@ -203,9 +191,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\css\\_content\\RazorPackageLibraryDirectDependency\\css\\site.css.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\css\\_content\\RazorPackageLibraryDirectDependency\\css\\site.css.gz"
     },
     {
       "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorPackageLibraryDirectDependency\\js\\pkg-direct-dep.js.gz",
@@ -226,9 +212,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\js\\_content\\RazorPackageLibraryDirectDependency\\js\\pkg-direct-dep.js.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\js\\_content\\RazorPackageLibraryDirectDependency\\js\\pkg-direct-dep.js.gz"
     },
     {
       "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorPackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.gz",
@@ -249,9 +233,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\js\\_content\\RazorPackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\js\\_content\\RazorPackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.gz"
     },
     {
       "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\AppWithPackageAndP2PReference.styles.css",
@@ -272,9 +254,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\AppWithPackageAndP2PReference.styles.css",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\AppWithPackageAndP2PReference.styles.css"
     },
     {
       "Identity": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
@@ -295,9 +275,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz"
     },
     {
       "Identity": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\js\\project-transitive-dep.js.gz",
@@ -318,9 +296,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\_content\\ClassLibrary\\js\\project-transitive-dep.js.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\js\\project-transitive-dep.js.gz"
     },
     {
       "Identity": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\js\\project-transitive-dep.v4.js.gz",
@@ -341,9 +317,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\_content\\ClassLibrary\\js\\project-transitive-dep.v4.js.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\js\\project-transitive-dep.v4.js.gz"
     },
     {
       "Identity": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ClassLibrary.bundle.scp.css",
@@ -364,9 +338,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ClassLibrary.bundle.scp.css",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ClassLibrary.bundle.scp.css"
     },
     {
       "Identity": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.js",
@@ -387,9 +359,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\js\\project-transitive-dep.js",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.js"
     },
     {
       "Identity": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.v4.js",
@@ -410,9 +380,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\js\\project-transitive-dep.v4.js",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.v4.js"
     },
     {
       "Identity": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
@@ -433,9 +401,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css"
     },
     {
       "Identity": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\css\\site.css",
@@ -456,9 +422,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\css\\site.css",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\css\\site.css"
     },
     {
       "Identity": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\js\\pkg-direct-dep.js",
@@ -479,9 +443,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\js\\pkg-direct-dep.js",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\js\\pkg-direct-dep.js"
     },
     {
       "Identity": "${RestorePath}\\razorpackagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\js\\pkg-transitive-dep.js",
@@ -502,9 +464,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\js\\pkg-transitive-dep.js",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${RestorePath}\\razorpackagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\js\\pkg-transitive-dep.js"
     }
   ],
   "Endpoints": [

@@ -29,10 +29,7 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand ConstructCommand()
         {
-            var command = new DocumentedCommand("list", DocsLink, LocalizableStrings.NetListCommand)
-            {
-                Hidden = true
-            };
+            var command = new DocumentedCommand("list", DocsLink, LocalizableStrings.NetListCommand);
 
             command.Arguments.Add(SlnOrProjectArgument);
             command.Subcommands.Add(ListPackageReferencesCommandParser.GetCommand());

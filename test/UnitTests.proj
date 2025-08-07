@@ -8,15 +8,11 @@
 
     <EnableAzurePipelinesReporter Condition="'$(BUILD_BUILDNUMBER)' != ''">true</EnableAzurePipelinesReporter>
 
-    <XUnitWorkItemTimeout>02:00:00</XUnitWorkItemTimeout>
+    <XUnitWorkItemTimeout>00:45:00</XUnitWorkItemTimeout>
   </PropertyGroup>
 
   <ItemGroup>
-    <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true'" Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;TestAssets\**\*.Tests.csproj;**\*.AnalyzerRedirecting.Tests.csproj" />
-    <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true' And $(_AGENTOSNAME) == 'Windows_NT_FullFramework'" Include="**\*.AnalyzerRedirecting.Tests.csproj">
-      <TargetFramework>net472</TargetFramework>
-      <RuntimeTargetFramework>net472</RuntimeTargetFramework>
-    </SDKCustomXUnitProject>
+    <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true'" Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;TestAssets\**\*.Tests.csproj" />
     <!--containers tests end with UnitTests and IntegrationTests, therefore included manually -->
     <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true'" Include="containerize.UnitTests\containerize.UnitTests.csproj" />
     <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true' And $(_AGENTOSNAME) != 'Windows_NT_FullFramework'" Include="Microsoft.NET.Build.Containers.IntegrationTests\Microsoft.NET.Build.Containers.IntegrationTests.csproj" />
@@ -126,7 +122,7 @@
       <HelixPreCommands Condition="$(IsPosixShell)">. $HELIX_CORRELATION_PAYLOAD/t/RunTestsOnHelix.sh;$(HelixPreCommands)</HelixPreCommands>
       <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "dotnet nuget locals all -l | ForEach-Object { $_.Split(' ')[1]} | Where-Object{$_ -like '*cache'} | Get-ChildItem -Recurse -File -Filter '*.dat' | Measure";$(HelixPostCommands)</HelixPostCommands>
       <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "Get-ChildItem -Recurse -File -Filter '*hangdump.dmp' | Copy-Item -Destination $env:HELIX_WORKITEM_UPLOAD_ROOT";$(HelixPostCommands)</HelixPostCommands>
-      <HelixPostCommands Condition="$(IsPosixShell)">find "$HELIX_WORKITEM_UPLOAD_ROOT/../../.." -name '*hangdump.dmp' -exec cp {} "$HELIX_WORKITEM_UPLOAD_ROOT" \%3B;$(HelixPostCommands)</HelixPostCommands>
+      <HelixPostCommands Condition="$(IsPosixShell)">find . -name '*hangdump.dmp' -exec cp {} "$HELIX_WORKITEM_UPLOAD_ROOT" \%3B;$(HelixPostCommands)</HelixPostCommands>
       <TestDotnetRoot>$(RepoRoot)artifacts\bin\redist\$(Configuration)\dotnet</TestDotnetRoot>
       <TestDotnetVersion>$(Version)</TestDotnetVersion>
       <MSBuildSdkResolverDir>$(RepoRoot)artifacts\bin\Microsoft.DotNet.MSBuildSdkResolver</MSBuildSdkResolverDir>

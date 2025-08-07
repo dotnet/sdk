@@ -40,45 +40,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         [Fact]
-        public void Build_Can_DisableAssetCaching()
-        {
-            var expectedManifest = LoadBuildManifest();
-            var testAsset = "RazorComponentApp";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
-
-            var build = CreateBuildCommand(ProjectDirectory);
-            ExecuteCommand(build, "/p:StaticWebAssetsCacheDefineStaticWebAssetsEnabled=false").Should().Pass();
-
-            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
-            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
-
-            // GenerateStaticWebAssetsManifest should generate the manifest file.
-            var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
-            new FileInfo(path).Should().Exist();
-            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
-            AssertManifest(manifest, expectedManifest);
-
-            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
-            var finalPath = Path.Combine(outputPath, "ComponentApp.staticwebassets.runtime.json");
-            new FileInfo(finalPath).Should().Exist();
-
-            // The caches shouldn't exist.
-            // Manifest
-            new FileInfo(Path.Combine(intermediateOutputPath, "rpswa.dswa.cache.json")).Should().NotExist();
-            // Compressed assets
-            new FileInfo(Path.Combine(intermediateOutputPath, "rbcswa.dswa.cache.json")).Should().NotExist();
-            // Initializers
-            new FileInfo(Path.Combine(intermediateOutputPath, "rjimswa.dswa.cache.json")).Should().NotExist();
-            // JS Modules
-            new FileInfo(Path.Combine(intermediateOutputPath, "rjsmcshtml.dswa.cache.json")).Should().NotExist();
-            new FileInfo(Path.Combine(intermediateOutputPath, "rjsmrazor.dswa.cache.json")).Should().NotExist();
-
-            var manifest1 = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json")));
-            AssertManifest(manifest1, expectedManifest);
-            AssertBuildAssets(manifest1, outputPath, intermediateOutputPath);
-        }
-
-        [Fact]
         public void Build_DoesNotUpdateManifest_WhenHasNotChanged()
         {
             var testAsset = "RazorComponentApp";
@@ -731,7 +692,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             // Second build
             var secondBuild = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            ExecuteCommand(secondBuild,"/p:BuildProjectReferences=false").Should().Pass();
+            secondBuild.Execute("/p:BuildProjectReferences=false").Should().Pass();
 
             // GenerateStaticWebAssetsManifest should generate the manifest file.
             new FileInfo(path).Should().Exist();

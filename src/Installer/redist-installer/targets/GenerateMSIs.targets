@@ -33,10 +33,6 @@
       <SdkMSBuildExtensionsNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.$(FullNugetVersion).nupkg</SdkMSBuildExtensionsNupkgFile>
       <SdkMSBuildExtensionsSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.swr</SdkMSBuildExtensionsSwrFile>
 
-      <SdkRuntimeAnalyzersNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers.nuspec</SdkRuntimeAnalyzersNuspecFile>
-      <SdkRuntimeAnalyzersNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers.$(FullNugetVersion).nupkg</SdkRuntimeAnalyzersNupkgFile>
-      <SdkRuntimeAnalyzersSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers.swr</SdkRuntimeAnalyzersSwrFile>
-
       <VSTemplateLocatorLayoutPath>$(ArtifactsDir)bin/VSTemplateLocator/$(Configuration)</VSTemplateLocatorLayoutPath>
       <VSTemplateLocatorNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.nuspec</VSTemplateLocatorNuspecFile>
       <VSTemplateLocatorNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.$(FullNugetVersion).nupkg</VSTemplateLocatorNupkgFile>
@@ -447,27 +443,6 @@
                       '$(SdkMSBuildExtensionsNupkgFile)'" />
   </Target>
 
-  <Target Name="GenerateRuntimeAnalyzersNupkg"
-          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
-          Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64' And '$(DotNetBuild)' != 'true' "
-          Inputs="$(RuntimeAnalyzersLayoutDirectory)/**/*;
-                    $(SdkRuntimeAnalyzersNuspecFile);
-                    $(GenerateNupkgPowershellScript)"
-          Outputs="$(SdkRuntimeAnalyzersNupkgFile);$(SdkRuntimeAnalyzersSwrFile)">
-    <GenerateRuntimeAnalyzersSWR RuntimeAnalyzersLayoutDirectory="$(RuntimeAnalyzersLayoutDirectory)"
-                                 OutputFile="$(SdkRuntimeAnalyzersSwrFile)" />
-
-    <!-- Include the swr file in the nuget package for VS authoring -->
-    <Copy SourceFiles="$(SdkRuntimeAnalyzersSwrFile)" DestinationFolder="$(RuntimeAnalyzersLayoutDirectory)" />
-
-    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) -Symbols ^
-                    '$(ArtifactsDir)' ^
-                    '$(RuntimeAnalyzersLayoutDirectory.TrimEnd('\'))' ^
-                    '$(FullNugetVersion)' ^
-                    '$(SdkRuntimeAnalyzersNuspecFile)' ^
-                    '$(SdkRuntimeAnalyzersNupkgFile)'" />
-  </Target>
-
   <!--
     This project references assets from multiple architectures, so it can't be built until we have a join point job that can pull assets from multiple legs.
     https://github.com/dotnet/source-build/issues/4336
@@ -499,7 +474,6 @@
                             GenerateTemplatesNupkgs;
                             GenerateSdkPlaceholderNupkg;
                             GenerateSdkMSBuildExtensionsNupkg;
-                            GenerateRuntimeAnalyzersNupkg;
                             GenerateVSTemplateLocatorNupkg"
         Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' != 'arm' " />
 

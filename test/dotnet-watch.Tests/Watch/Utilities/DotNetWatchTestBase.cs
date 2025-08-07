@@ -1,7 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Watch.UnitTests;
+using Microsoft.DotNet.Watcher.Internal;
+
+namespace Microsoft.DotNet.Watcher.Tests;
 
 /// <summary>
 /// Base class for all tests that create dotnet watch process.
@@ -23,32 +25,16 @@ public abstract class DotNetWatchTestBase : IDisposable
 
     public DebugTestOutputLogger Logger => (DebugTestOutputLogger)App.Logger;
 
-    public void Log(string message)
-        => Logger.WriteLine($"[TEST] {message}");
-
     public void UpdateSourceFile(string path, string text)
     {
-        WriteAllText(path, text);
-        Log($"File '{path}' updated.");
+        File.WriteAllText(path, text, Encoding.UTF8);
+        Logger.WriteLine($"File '{path}' updated ({HotReloadFileSetWatcher.FormatTimestamp(File.GetLastWriteTimeUtc(path))}).");
     }
 
     public void UpdateSourceFile(string path, Func<string, string> contentTransform)
-        => UpdateSourceFile(path, contentTransform(File.ReadAllText(path, Encoding.UTF8)));
-
-    /// <summary>
-    /// Replacement for <see cref="File.WriteAllText"/>, which fails to write to hidden file
-    /// </summary>
-    public static void WriteAllText(string path, string text)
     {
-        using var stream = File.Open(path, FileMode.OpenOrCreate);
-
-        using (var writer = new StreamWriter(stream, Encoding.UTF8, leaveOpen: true))
-        {
-            writer.Write(text);
-        }
-
-        // truncate the rest of the file content:
-        stream.SetLength(stream.Position);
+        File.WriteAllText(path, contentTransform(File.ReadAllText(path, Encoding.UTF8)), Encoding.UTF8);
+        Logger.WriteLine($"File '{path}' updated.");
     }
 
     public void UpdateSourceFile(string path)

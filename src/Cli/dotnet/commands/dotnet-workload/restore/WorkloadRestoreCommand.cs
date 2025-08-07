@@ -8,7 +8,6 @@ using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Update;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -51,12 +50,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
 
             recorder.Run(() =>
             {
-                // First discover projects. This may return an error if no projects are found, and we shouldn't delay until after Update if that's the case.
-                var allProjects = DiscoverAllProjects(Directory.GetCurrentDirectory(), _slnOrProjectArgument).Distinct();
-
-                // Then update manifests and install a workload set as necessary
+                // First update manifests and install a workload set as necessary
                 new WorkloadUpdateCommand(_result, recorder: recorder, isRestoring: true).Execute();
 
+                var allProjects = DiscoverAllProjects(Directory.GetCurrentDirectory(), _slnOrProjectArgument).Distinct();
                 List<WorkloadId> allWorkloadId = RunTargetToGetWorkloadIds(allProjects);
                 Reporter.WriteLine(string.Format(LocalizableStrings.InstallingWorkloads, string.Join(" ", allWorkloadId)));
 
@@ -123,24 +120,27 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
             var projectFiles = new List<string>();
             if (slnOrProjectArgument == null || !slnOrProjectArgument.Any())
             {
-                slnFiles = SlnFileFactory.ListSolutionFilesInDirectory(currentDirectory, false).ToList();
+                slnFiles = Directory.GetFiles(currentDirectory, "*.sln").ToList();
                 projectFiles.AddRange(Directory.GetFiles(currentDirectory, "*.*proj"));
             }
             else
             {
                 slnFiles = slnOrProjectArgument
-                    .Where(s => Path.GetExtension(s).Equals(".sln", StringComparison.OrdinalIgnoreCase) || Path.GetExtension(s).Equals(".slnx", StringComparison.OrdinalIgnoreCase))
+                    .Where(s => Path.GetExtension(s).Equals(".sln", StringComparison.OrdinalIgnoreCase))
                     .Select(Path.GetFullPath).ToList();
                 projectFiles = slnOrProjectArgument
                     .Where(s => Path.GetExtension(s).EndsWith("proj", StringComparison.OrdinalIgnoreCase))
                     .Select(Path.GetFullPath).ToList();
             }
 
-            foreach (string solutionFilePath in slnFiles)
+            foreach (string file in slnFiles)
             {
-                var solutionFile = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath);
-                projectFiles.AddRange(solutionFile.SolutionProjects.Select(
-                    p => Path.GetFullPath(p.FilePath, Path.GetDirectoryName(solutionFilePath))));
+                var solutionFile = SolutionFile.Parse(file);
+                var projects = solutionFile.ProjectsInOrder.Where(p => p.ProjectType != SolutionProjectType.SolutionFolder);
+                foreach (var p in projects)
+                {
+                    projectFiles.Add(p.AbsolutePath);
+                }
             }
 
             if (projectFiles.Count == 0)

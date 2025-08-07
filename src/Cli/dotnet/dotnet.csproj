@@ -14,9 +14,6 @@
     <UseAppHost>false</UseAppHost>
     <IsPackable>true</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Nullable>annotations</Nullable>
-    <!-- Strong naming deprecated on .NET Core -->
-    <NoWarn>$(NoWarn);CS8002</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="commands\dotnet-new\**" />
@@ -26,7 +23,6 @@
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\MSBuildPropertyNames.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common" />
-    <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
     <Compile Remove="commands\dotnet-workload\list\VisualStudioWorkloads.cs" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
     <Compile Remove="$(RepoRoot)\src\Cli\dotnet\Installer\Windows\Security\*.cs" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
     <EmbeddedResource Include="commands\dotnet-new\*.zip" />
@@ -34,8 +30,8 @@
     <EmbeddedResource Update="*.resx" Namespace="Microsoft.DotNet.Tools" />
     <EmbeddedResource Update="BuildServer\*.resx" Namespace="Microsoft.DotNet.BuildServer" />
     <EmbeddedResource Update="CommandFactory\*.resx" Namespace="Microsoft.DotNet.CommandFactory" />
-    <EmbeddedResource Update="**\dotnet-package\add\*.resx" Namespace="Microsoft.DotNet.Tools.Package.Add" />
-    <EmbeddedResource Update="**\dotnet-reference-add\*.resx" Namespace="Microsoft.DotNet.Tools.Reference.Add" />
+    <EmbeddedResource Update="**\dotnet-add-package\*.resx" Namespace="Microsoft.DotNet.Tools.Add.PackageReference" />
+    <EmbeddedResource Update="**\dotnet-add-reference\*.resx" Namespace="Microsoft.DotNet.Tools.Add.ProjectToProjectReference" />
     <EmbeddedResource Update="**\dotnet-add\*.resx" Namespace="Microsoft.DotNet.Tools.Add" />
     <EmbeddedResource Update="**\dotnet-build\*.resx" Namespace="Microsoft.DotNet.Tools.Build" />
     <EmbeddedResource Update="**\dotnet-buildserver\*.resx" Namespace="Microsoft.DotNet.Tools.BuildServer" />
@@ -44,15 +40,15 @@
     <EmbeddedResource Update="**\dotnet-sdk\*.resx" Namespace="Microsoft.DotNet.Tools.Sdk" />
     <EmbeddedResource Update="**\dotnet-sdk\check\*.resx" Namespace="Microsoft.DotNet.Tools.Sdk.Check" />
     <EmbeddedResource Update="**\dotnet-help\*.resx" Namespace="Microsoft.DotNet.Tools.Help" />
-    <EmbeddedResource Update="**\dotnet-package\list\*.resx" Namespace="Microsoft.DotNet.Tools.Package.List" />
-    <EmbeddedResource Update="**\dotnet-reference-list\*.resx" Namespace="Microsoft.DotNet.Tools.Reference.List" />
+    <EmbeddedResource Update="**\dotnet-list-package\*.resx" Namespace="Microsoft.DotNet.Tools.List.PackageReferences" />
+    <EmbeddedResource Update="**\dotnet-list-reference\*.resx" Namespace="Microsoft.DotNet.Tools.List.ProjectToProjectReferences" />
     <EmbeddedResource Update="**\dotnet-list\*.resx" Namespace="Microsoft.DotNet.Tools.List" />
     <EmbeddedResource Update="**\dotnet-new\*.resx" Namespace="Microsoft.DotNet.Tools.New" />
     <EmbeddedResource Update="**\dotnet-pack\*.resx" Namespace="Microsoft.DotNet.Tools.Pack" />
     <EmbeddedResource Update="**\dotnet-package\search\*.resx" Namespace="Microsoft.DotNet.Tools.Package.Search" />
     <EmbeddedResource Update="**\dotnet-publish\*.resx" Namespace="Microsoft.DotNet.Tools.Publish" />
-    <EmbeddedResource Update="**\dotnet-package\remove\*.resx" Namespace="Microsoft.DotNet.Tools.Package.Remove" />
-    <EmbeddedResource Update="**\dotnet-reference-remove\*.resx" Namespace="Microsoft.DotNet.Tools.Reference.Remove" />
+    <EmbeddedResource Update="**\dotnet-remove-package\*.resx" Namespace="Microsoft.DotNet.Tools.Remove.PackageReference" />
+    <EmbeddedResource Update="**\dotnet-remove-reference\*.resx" Namespace="Microsoft.DotNet.Tools.Remove.ProjectToProjectReference" />
     <EmbeddedResource Update="**\dotnet-remove\*.resx" Namespace="Microsoft.DotNet.Tools.Remove" />
     <EmbeddedResource Update="**\dotnet-restore\*.resx" Namespace="Microsoft.DotNet.Tools.Restore" />
     <EmbeddedResource Update="**\dotnet-run\*.resx" Namespace="Microsoft.DotNet.Tools.Run" />
@@ -91,6 +87,7 @@
     <ProjectReference Include="../Microsoft.DotNet.Configurer/Microsoft.DotNet.Configurer.csproj" />
     <ProjectReference Include="../Microsoft.DotNet.InternalAbstractions/Microsoft.DotNet.InternalAbstractions.csproj" />
     <ProjectReference Include="../Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj" />
+    <ProjectReference Include="../Microsoft.DotNet.Cli.Sln.Internal/Microsoft.DotNet.Cli.Sln.Internal.csproj" />
     <!-- override the Microsoft.TemplateEngine.Cli's dependency with the latest Microsoft.DotNet.TemplateLocator -->
     <ProjectReference Include="../../Microsoft.DotNet.TemplateLocator\Microsoft.DotNet.TemplateLocator.csproj" />
     <ProjectReference Include="../../Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" />
@@ -98,10 +95,7 @@
     <ProjectReference Include="..\Microsoft.TemplateEngine.Cli\Microsoft.TemplateEngine.Cli.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
-    <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
     <PackageReference Include="Newtonsoft.Json" />
-    <PackageReference Include="NuGet.CommandLine.XPlat" />
     <PackageReference Include="Microsoft.ApplicationInsights" />
     <PackageReference Include="Microsoft.Build" />
     <PackageReference Include="Microsoft.NET.HostModel" />
@@ -127,8 +121,6 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="SDDLTests" />
-    <InternalsVisibleTo Include="dotnet-watch" />
-    <InternalsVisibleTo Include="dotnet-watch.Tests" />
   </ItemGroup>
 
   <Target Name="LinkVSEmbeddableAssemblies" DependsOnTargets="ResolveReferences" AfterTargets="ResolveReferences">

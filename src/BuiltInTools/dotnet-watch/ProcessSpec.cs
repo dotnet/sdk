@@ -2,7 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-namespace Microsoft.DotNet.Watch
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.DotNet.Watcher.Internal;
+
+namespace Microsoft.DotNet.Watcher
 {
     internal sealed class ProcessSpec
     {
@@ -11,9 +15,12 @@ namespace Microsoft.DotNet.Watch
         public Dictionary<string, string> EnvironmentVariables { get; } = new();
         public IReadOnlyList<string>? Arguments { get; set; }
         public string? EscapedArguments { get; set; }
-        public Action<OutputLine>? OnOutput { get; set; }
-        public ProcessExitAction? OnExit { get; set; }
+        public OutputCapture? OutputCapture { get; set; }
+        public DataReceivedEventHandler? OnOutput { get; set; }
         public CancellationToken CancelOutputCapture { get; set; }
+
+        [MemberNotNullWhen(true, nameof(OutputCapture))]
+        public bool IsOutputCaptured => OutputCapture != null;
 
         public string? ShortDisplayName()
             => Path.GetFileNameWithoutExtension(Executable);

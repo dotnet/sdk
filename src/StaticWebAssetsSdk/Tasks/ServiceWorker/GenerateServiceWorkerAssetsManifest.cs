@@ -86,13 +86,13 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             return version;
         }
 
-    private void PersistManifest(ServiceWorkerManifest manifest)
-    {
-        var data = JsonSerializer.Serialize(manifest, ManifestSerializationOptions);
-        var content = $"self.assetsManifest = {data};{Environment.NewLine}";
-        var contentHash = ComputeFileHash(content);
-        var fileExists = File.Exists(OutputPath);
-        var existingManifestHash = fileExists ? ComputeFileHash(File.ReadAllText(OutputPath)) : "";
+        private void PersistManifest(ServiceWorkerManifest manifest)
+        {
+            var data = JsonSerializer.Serialize(manifest, ManifestSerializationOptions);
+            var content = $"self.assetsManifest = {data};{Environment.NewLine}";
+            var contentHash = ComputeFileHash(content);
+            var fileExists = File.Exists(OutputPath);
+            var existingManifestHash = fileExists ? ComputeFileHash(File.ReadAllText(OutputPath)) : "";
 
             if (!fileExists)
             {

@@ -5,8 +5,9 @@
 using System.Collections.Immutable;
 
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
+using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watch
+namespace Microsoft.DotNet.Watcher.Tools
 {
     internal abstract class SingleProcessDeltaApplier(IReporter reporter) : DeltaApplier(reporter)
     {

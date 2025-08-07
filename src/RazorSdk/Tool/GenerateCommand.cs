@@ -191,24 +191,21 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 b.Features.Add(new StaticTagHelperFeature() { TagHelpers = tagHelpers, });
                 b.Features.Add(new DefaultTypeNameFeature());
 
-                b.ConfigureCodeGenerationOptions(b =>
+                if (GenerateDeclaration.HasValue())
                 {
-                    if (GenerateDeclaration.HasValue())
-                    {
-                        b.SuppressPrimaryMethodBody = true;
-                        b.SuppressChecksum = true;
-                    }
+                    b.Features.Add(new SetSuppressPrimaryMethodBodyOptionFeature());
+                    b.Features.Add(new SuppressChecksumOptionsFeature());
+                }
 
-                    if (SupportLocalizedComponentNames.HasValue())
-                    {
-                        b.SupportLocalizedComponentNames = true;
-                    }
+                if (SupportLocalizedComponentNames.HasValue())
+                {
+                    b.Features.Add(new SetSupportLocalizedComponentNamesFeature());
+                }
 
-                    if (RootNamespace.HasValue())
-                    {
-                        b.RootNamespace = RootNamespace.Value();
-                    }
-                });
+                if (RootNamespace.HasValue())
+                {
+                    b.SetRootNamespace(RootNamespace.Value());
+                }
 
                 if (CSharpLanguageVersion.HasValue())
                 {
@@ -258,7 +255,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 {
                     // Only output the file if we generated it without errors.
                     var outputFilePath = result.InputItem.OutputPath;
-                    var generatedCode = result.CSharpDocument.Text.ToString();
+                    var generatedCode = result.CSharpDocument.GeneratedCode;
                     if (isGeneratingDeclaration)
                     {
                         // When emiting declarations, only write if it the contents are different.
@@ -270,7 +267,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                         }
                     }
 
-                    File.WriteAllText(outputFilePath, generatedCode);
+                    File.WriteAllText(outputFilePath, result.CSharpDocument.GeneratedCode);
                 }
             }
 
@@ -362,10 +359,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool
         {
             public OutputItem(
                 SourceItem inputItem,
-                RazorCSharpDocument csharpDocument)
+                RazorCSharpDocument cSharpDocument)
             {
                 InputItem = inputItem;
-                CSharpDocument = csharpDocument;
+                CSharpDocument = cSharpDocument;
             }
 
             public SourceItem InputItem { get; }
@@ -400,11 +397,43 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             public string CssScope { get; }
         }
 
-        private class StaticTagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
+        private class StaticTagHelperFeature : ITagHelperFeature
         {
+            public RazorEngine Engine { get; set; }
+
             public IReadOnlyList<TagHelperDescriptor> TagHelpers { get; set; }
 
             public IReadOnlyList<TagHelperDescriptor> GetDescriptors() => TagHelpers;
+        }
+
+        private class SetSuppressPrimaryMethodBodyOptionFeature : RazorEngineFeatureBase, IConfigureRazorCodeGenerationOptionsFeature
+        {
+            public int Order { get; set; }
+
+            public void Configure(RazorCodeGenerationOptionsBuilder options)
+            {
+                if (options == null)
+                {
+                    throw new ArgumentNullException(nameof(options));
+                }
+
+                options.SuppressPrimaryMethodBody = true;
+            }
+        }
+
+        private class SetSupportLocalizedComponentNamesFeature : RazorEngineFeatureBase, IConfigureRazorCodeGenerationOptionsFeature
+        {
+            public int Order { get; set; }
+
+            public void Configure(RazorCodeGenerationOptionsBuilder options)
+            {
+                if (options == null)
+                {
+                    throw new ArgumentNullException(nameof(options));
+                }
+
+                options.SupportLocalizedComponentNames = true;
+            }
         }
     }
 }

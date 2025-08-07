@@ -198,7 +198,7 @@ namespace Microsoft.DotNet.ToolManifest
         /*
         The --create-manifest-if-needed will use the following priority to choose the folder where the tool manifest goes:
             1. Walk up the directory tree searching for one that has a.git subfolder
-            2. Walk up the directory tree searching for one that has a .sln(x)/git file in it
+            2. Walk up the directory tree searching for one that has a .sln/git file in it
             3. Use the current working directory
         */
         private DirectoryPath GetDirectoryToCreateToolManifest()
@@ -214,7 +214,7 @@ namespace Microsoft.DotNet.ToolManifest
                 if (currentSearchDirectory.Value.Value != null)
                 {
                     if (_fileSystem.Directory.EnumerateFiles(currentSearchDirectory.Value.Value)
-                        .Any(filename => Path.GetExtension(filename).Equals(".sln", StringComparison.OrdinalIgnoreCase) || Path.GetExtension(filename).Equals(".slnx", StringComparison.OrdinalIgnoreCase))
+                        .Any(filename => Path.GetExtension(filename).Equals(".sln", StringComparison.OrdinalIgnoreCase))
                         || _fileSystem.File.Exists(currentSearchDirectory.Value.WithFile(".git").Value))
 
                     {

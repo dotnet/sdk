@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Watch;
+namespace Microsoft.DotNet.Watcher;
 
 /// <summary>
 /// Process launcher that triggers process launches at runtime of the watched application,
@@ -9,10 +9,5 @@ namespace Microsoft.DotNet.Watch;
 /// </summary>
 internal interface IRuntimeProcessLauncher : IAsyncDisposable
 {
-    IEnumerable<(string name, string value)> GetEnvironmentVariables();
-
-    /// <summary>
-    /// Initiates shutdown. Terminates all created processes.
-    /// </summary>
-    ValueTask TerminateLaunchedProcessesAsync(CancellationToken cancellationToken);
+    ValueTask<IEnumerable<(string name, string value)>> GetEnvironmentVariablesAsync(CancellationToken cancelationToken);
 }

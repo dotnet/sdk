@@ -10,6 +10,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal class DetailsCommand : BaseCommand<DetailsCommandArgs>
     {
+        private static NugetApiManager _nugetApiManager = new();
+
         internal DetailsCommand(
             Func<ParseResult, ITemplateEngineHost> hostBuilder)
             : base(hostBuilder, "details", SymbolStrings.Command_Details_Description)
@@ -50,7 +52,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 args.VersionCriteria,
                 args.Interactive,
                 args.AdditionalSources,
-                new NugetApiManager(),
+                _nugetApiManager,
                 cancellationToken).ConfigureAwait(false);
 
             await CheckTemplatesWithSubCommandName(args, templatePackageManager, cancellationToken).ConfigureAwait(false);

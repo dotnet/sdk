@@ -5,7 +5,7 @@
 
 using System.Diagnostics;
 
-namespace Microsoft.DotNet.Watch.UnitTests;
+namespace Microsoft.DotNet.Watcher.Tests;
 
 public class DebugTestOutputLogger(ITestOutputHelper logger) : ITestOutputHelper
 {

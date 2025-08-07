@@ -5,10 +5,11 @@
 
 using System.Reflection;
 
-namespace Microsoft.DotNet.Watch.UnitTests
+namespace Microsoft.Extensions.Tools.Internal
 {
     internal class TestConsole : IConsole
     {
+        public event ConsoleCancelEventHandler? CancelKeyPress;
         public event Action<ConsoleKeyInfo>? KeyPressed;
 
         private readonly TestOutputWriter _testWriter;
@@ -34,6 +35,18 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             Assert.NotNull(KeyPressed);
             KeyPressed.Invoke(key);
+        }
+
+        public void PressCancelKey()
+        {
+            Assert.NotNull(CancelKeyPress);
+
+            var ctor = typeof(ConsoleCancelEventArgs)
+                .GetTypeInfo()
+                .DeclaredConstructors
+                .Single(c => c.GetParameters().First().ParameterType == typeof(ConsoleSpecialKey));
+
+            CancelKeyPress.Invoke(this, (ConsoleCancelEventArgs)ctor.Invoke([ConsoleSpecialKey.ControlC]));
         }
 
         public void ResetColor()

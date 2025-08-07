@@ -65,9 +65,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\LinkToWebRoot\\css\\app.css",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\LinkToWebRoot\\css\\app.css"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazor.webassembly.js",
@@ -88,9 +86,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.aspnetcore.components.webassembly\\${PackageVersion}\\build\\${Tfm}\\blazor.webassembly.js",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazor.webassembly.js"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js",
@@ -111,9 +107,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\dotnet.js",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.native.js",
@@ -134,9 +128,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\dotnet.native.js",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.native.js"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.native.wasm",
@@ -157,9 +149,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\dotnet.native.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.native.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.runtime.js",
@@ -180,9 +170,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\dotnet.runtime.js",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.runtime.js"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_CJK.dat",
@@ -203,9 +191,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\icudt_CJK.dat",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_CJK.dat"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_EFIGS.dat",
@@ -226,9 +212,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\icudt_EFIGS.dat",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_EFIGS.dat"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_no_CJK.dat",
@@ -249,9 +233,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\icudt_no_CJK.dat",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_no_CJK.dat"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\blazor.publish.boot.json",
@@ -272,9 +254,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\blazor.publish.boot.json",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\blazor.publish.boot.json"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\Fake-License.txt.gz",
@@ -295,9 +275,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\Fake-License.txt.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazor.webassembly.js.gz",
@@ -318,9 +296,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\blazor.webassembly.js.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazor.webassembly.js.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.js.gz",
@@ -341,9 +317,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.js.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.js.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.native.js.gz",
@@ -364,9 +338,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.native.js.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.native.js.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.native.wasm.gz",
@@ -387,9 +359,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.native.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.native.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.runtime.js.gz",
@@ -410,9 +380,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.runtime.js.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.runtime.js.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
@@ -433,9 +401,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\css\\app.css.gz",
@@ -456,9 +422,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\LinkToWebRoot\\css\\css\\app.css.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\css\\app.css.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\index.html.gz",
@@ -479,9 +443,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\index.html.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\Fake-License.txt.br",
@@ -502,9 +464,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\Fake-License.txt.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Authorization.wasm.br",
@@ -525,9 +485,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Authorization.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Authorization.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Authorization.wasm.gz",
@@ -548,9 +506,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Authorization.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Authorization.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.Forms.wasm.br",
@@ -571,9 +527,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.Forms.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.Forms.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.Forms.wasm.gz",
@@ -594,9 +548,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.Forms.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.Forms.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.Web.wasm.br",
@@ -617,9 +569,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.Web.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.Web.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.Web.wasm.gz",
@@ -640,9 +590,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.Web.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.Web.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.WebAssembly.wasm.br",
@@ -663,9 +611,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.WebAssembly.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.WebAssembly.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.WebAssembly.wasm.gz",
@@ -686,9 +632,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.WebAssembly.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.WebAssembly.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.wasm.br",
@@ -709,9 +653,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.wasm.gz",
@@ -732,9 +674,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Components.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Metadata.wasm.br",
@@ -755,9 +695,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Metadata.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Metadata.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Metadata.wasm.gz",
@@ -778,9 +716,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.AspNetCore.Metadata.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Metadata.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Abstractions.wasm.br",
@@ -801,9 +737,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.Abstractions.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Abstractions.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Abstractions.wasm.gz",
@@ -824,9 +758,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.Abstractions.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Abstractions.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Binder.wasm.br",
@@ -847,9 +779,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.Binder.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Binder.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Binder.wasm.gz",
@@ -870,9 +800,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.Binder.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Binder.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.FileExtensions.wasm.br",
@@ -893,9 +821,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.FileExtensions.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.FileExtensions.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.FileExtensions.wasm.gz",
@@ -916,9 +842,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.FileExtensions.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.FileExtensions.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Json.wasm.br",
@@ -939,9 +863,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.Json.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Json.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Json.wasm.gz",
@@ -962,9 +884,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.Json.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Json.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.wasm.br",
@@ -985,9 +905,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.wasm.gz",
@@ -1008,9 +926,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Configuration.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm.br",
@@ -1031,9 +947,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm.gz",
@@ -1054,9 +968,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.wasm.br",
@@ -1077,9 +989,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.wasm.gz",
@@ -1100,9 +1010,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileProviders.Abstractions.wasm.br",
@@ -1123,9 +1031,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.FileProviders.Abstractions.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileProviders.Abstractions.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileProviders.Abstractions.wasm.gz",
@@ -1146,9 +1052,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.FileProviders.Abstractions.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileProviders.Abstractions.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileProviders.Physical.wasm.br",
@@ -1169,9 +1073,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.FileProviders.Physical.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileProviders.Physical.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileProviders.Physical.wasm.gz",
@@ -1192,9 +1094,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.FileProviders.Physical.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileProviders.Physical.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileSystemGlobbing.wasm.br",
@@ -1215,9 +1115,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.FileSystemGlobbing.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileSystemGlobbing.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileSystemGlobbing.wasm.gz",
@@ -1238,9 +1136,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.FileSystemGlobbing.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileSystemGlobbing.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.Abstractions.wasm.br",
@@ -1261,9 +1157,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Logging.Abstractions.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.Abstractions.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.Abstractions.wasm.gz",
@@ -1284,9 +1178,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Logging.Abstractions.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.Abstractions.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.wasm.br",
@@ -1307,9 +1199,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Logging.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.wasm.gz",
@@ -1330,9 +1220,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Logging.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Options.wasm.br",
@@ -1353,9 +1241,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Options.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Options.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Options.wasm.gz",
@@ -1376,9 +1262,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Options.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Options.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Primitives.wasm.br",
@@ -1399,9 +1283,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Primitives.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Primitives.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Primitives.wasm.gz",
@@ -1422,9 +1304,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.Extensions.Primitives.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Primitives.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.WebAssembly.wasm.br",
@@ -1445,9 +1325,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.JSInterop.WebAssembly.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.WebAssembly.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.WebAssembly.wasm.gz",
@@ -1468,9 +1346,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.JSInterop.WebAssembly.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.WebAssembly.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.wasm.br",
@@ -1491,9 +1367,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.JSInterop.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.wasm.gz",
@@ -1514,9 +1388,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\Microsoft.JSInterop.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\RazorClassLibrary.wasm.br",
@@ -1537,9 +1409,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\RazorClassLibrary.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\RazorClassLibrary.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\RazorClassLibrary.wasm.gz",
@@ -1560,9 +1430,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\RazorClassLibrary.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\RazorClassLibrary.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.Concurrent.wasm.br",
@@ -1583,9 +1451,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.Concurrent.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.Concurrent.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.Concurrent.wasm.gz",
@@ -1606,9 +1472,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.Concurrent.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.Concurrent.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.NonGeneric.wasm.br",
@@ -1629,9 +1493,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.NonGeneric.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.NonGeneric.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.NonGeneric.wasm.gz",
@@ -1652,9 +1514,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.NonGeneric.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.NonGeneric.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.Specialized.wasm.br",
@@ -1675,9 +1535,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.Specialized.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.Specialized.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.Specialized.wasm.gz",
@@ -1698,9 +1556,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.Specialized.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.Specialized.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.wasm.br",
@@ -1721,9 +1577,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.wasm.gz",
@@ -1744,9 +1598,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Collections.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.Annotations.wasm.br",
@@ -1767,9 +1619,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.Annotations.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.Annotations.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.Annotations.wasm.gz",
@@ -1790,9 +1640,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.Annotations.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.Annotations.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.Primitives.wasm.br",
@@ -1813,9 +1661,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.Primitives.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.Primitives.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.Primitives.wasm.gz",
@@ -1836,9 +1682,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.Primitives.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.Primitives.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.TypeConverter.wasm.br",
@@ -1859,9 +1703,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.TypeConverter.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.TypeConverter.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.TypeConverter.wasm.gz",
@@ -1882,9 +1724,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.TypeConverter.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.TypeConverter.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.wasm.br",
@@ -1905,9 +1745,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.wasm.gz",
@@ -1928,9 +1766,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ComponentModel.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Console.wasm.br",
@@ -1951,9 +1787,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Console.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Console.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Console.wasm.gz",
@@ -1974,9 +1808,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Console.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Console.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Diagnostics.DiagnosticSource.wasm.br",
@@ -1997,9 +1829,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Diagnostics.DiagnosticSource.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Diagnostics.DiagnosticSource.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Diagnostics.DiagnosticSource.wasm.gz",
@@ -2020,9 +1850,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Diagnostics.DiagnosticSource.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Diagnostics.DiagnosticSource.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Diagnostics.Tracing.wasm.br",
@@ -2043,9 +1871,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Diagnostics.Tracing.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Diagnostics.Tracing.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Diagnostics.Tracing.wasm.gz",
@@ -2066,9 +1892,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Diagnostics.Tracing.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Diagnostics.Tracing.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.IO.FileSystem.Watcher.wasm.br",
@@ -2089,9 +1913,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.IO.FileSystem.Watcher.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.IO.FileSystem.Watcher.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.IO.FileSystem.Watcher.wasm.gz",
@@ -2112,9 +1934,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.IO.FileSystem.Watcher.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.IO.FileSystem.Watcher.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.IO.Pipelines.wasm.br",
@@ -2135,9 +1955,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.IO.Pipelines.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.IO.Pipelines.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.IO.Pipelines.wasm.gz",
@@ -2158,9 +1976,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.IO.Pipelines.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.IO.Pipelines.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Linq.Expressions.wasm.br",
@@ -2181,9 +1997,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Linq.Expressions.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Linq.Expressions.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Linq.Expressions.wasm.gz",
@@ -2204,9 +2018,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Linq.Expressions.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Linq.Expressions.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Linq.wasm.br",
@@ -2227,9 +2039,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Linq.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Linq.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Linq.wasm.gz",
@@ -2250,9 +2060,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Linq.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Linq.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Memory.wasm.br",
@@ -2273,9 +2081,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Memory.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Memory.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Memory.wasm.gz",
@@ -2296,9 +2102,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Memory.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Memory.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Net.Http.wasm.br",
@@ -2319,9 +2123,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Net.Http.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Net.Http.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Net.Http.wasm.gz",
@@ -2342,9 +2144,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Net.Http.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Net.Http.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ObjectModel.wasm.br",
@@ -2365,9 +2165,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ObjectModel.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ObjectModel.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ObjectModel.wasm.gz",
@@ -2388,9 +2186,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.ObjectModel.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ObjectModel.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.CoreLib.wasm.br",
@@ -2411,9 +2207,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Private.CoreLib.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.CoreLib.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.CoreLib.wasm.gz",
@@ -2434,9 +2228,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Private.CoreLib.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.CoreLib.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.Uri.wasm.br",
@@ -2457,9 +2249,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Private.Uri.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.Uri.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.Uri.wasm.gz",
@@ -2480,9 +2270,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Private.Uri.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.Uri.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Emit.ILGeneration.wasm.br",
@@ -2503,9 +2291,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Reflection.Emit.ILGeneration.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Emit.ILGeneration.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Emit.ILGeneration.wasm.gz",
@@ -2526,9 +2312,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Reflection.Emit.ILGeneration.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Emit.ILGeneration.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Emit.Lightweight.wasm.br",
@@ -2549,9 +2333,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Reflection.Emit.Lightweight.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Emit.Lightweight.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Emit.Lightweight.wasm.gz",
@@ -2572,9 +2354,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Reflection.Emit.Lightweight.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Emit.Lightweight.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Primitives.wasm.br",
@@ -2595,9 +2375,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Reflection.Primitives.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Primitives.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Primitives.wasm.gz",
@@ -2618,9 +2396,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Reflection.Primitives.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Primitives.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Resources.ResourceManager.wasm.br",
@@ -2641,9 +2417,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Resources.ResourceManager.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Resources.ResourceManager.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Resources.ResourceManager.wasm.gz",
@@ -2664,9 +2438,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Resources.ResourceManager.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Resources.ResourceManager.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.CompilerServices.Unsafe.wasm.br",
@@ -2687,9 +2459,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.CompilerServices.Unsafe.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.CompilerServices.Unsafe.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.CompilerServices.Unsafe.wasm.gz",
@@ -2710,9 +2480,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.CompilerServices.Unsafe.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.CompilerServices.Unsafe.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.Extensions.wasm.br",
@@ -2733,9 +2501,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.Extensions.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.Extensions.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.Extensions.wasm.gz",
@@ -2756,9 +2522,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.Extensions.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.Extensions.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.InteropServices.JavaScript.wasm.br",
@@ -2779,9 +2543,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.InteropServices.JavaScript.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.InteropServices.JavaScript.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.InteropServices.JavaScript.wasm.gz",
@@ -2802,9 +2564,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.InteropServices.JavaScript.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.InteropServices.JavaScript.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.InteropServices.RuntimeInformation.wasm.br",
@@ -2825,9 +2585,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.InteropServices.RuntimeInformation.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.InteropServices.RuntimeInformation.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.InteropServices.RuntimeInformation.wasm.gz",
@@ -2848,9 +2606,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.InteropServices.RuntimeInformation.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.InteropServices.RuntimeInformation.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.Loader.wasm.br",
@@ -2871,9 +2627,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.Loader.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.Loader.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.Loader.wasm.gz",
@@ -2894,9 +2648,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.Loader.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.Loader.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.wasm.br",
@@ -2917,9 +2669,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.wasm.gz",
@@ -2940,9 +2690,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Runtime.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Security.Claims.wasm.br",
@@ -2963,9 +2711,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Security.Claims.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Security.Claims.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Security.Claims.wasm.gz",
@@ -2986,9 +2732,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Security.Claims.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Security.Claims.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Security.Cryptography.wasm.br",
@@ -3009,9 +2753,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Security.Cryptography.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Security.Cryptography.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Security.Cryptography.wasm.gz",
@@ -3032,9 +2774,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Security.Cryptography.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Security.Cryptography.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Encodings.Web.wasm.br",
@@ -3055,9 +2795,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Text.Encodings.Web.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Encodings.Web.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Encodings.Web.wasm.gz",
@@ -3078,9 +2816,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Text.Encodings.Web.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Encodings.Web.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Json.wasm.br",
@@ -3101,9 +2837,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Text.Json.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Json.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Json.wasm.gz",
@@ -3124,9 +2858,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Text.Json.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Json.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.RegularExpressions.wasm.br",
@@ -3147,9 +2879,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Text.RegularExpressions.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.RegularExpressions.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.RegularExpressions.wasm.gz",
@@ -3170,9 +2900,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Text.RegularExpressions.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.RegularExpressions.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.Tasks.wasm.br",
@@ -3193,9 +2921,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Threading.Tasks.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.Tasks.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.Tasks.wasm.gz",
@@ -3216,9 +2942,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Threading.Tasks.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.Tasks.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.ThreadPool.wasm.br",
@@ -3239,9 +2963,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Threading.ThreadPool.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.ThreadPool.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.ThreadPool.wasm.gz",
@@ -3262,9 +2984,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Threading.ThreadPool.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.ThreadPool.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.wasm.br",
@@ -3285,9 +3005,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Threading.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.wasm.gz",
@@ -3308,9 +3026,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.Threading.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.wasm.br",
@@ -3331,9 +3047,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.wasm.gz",
@@ -3354,9 +3068,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\System.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.boot.json.br",
@@ -3377,9 +3089,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\_framework\\blazor.boot.json.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.boot.json.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.boot.json.gz",
@@ -3400,9 +3110,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\_framework\\blazor.boot.json.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.boot.json.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.webassembly.js.br",
@@ -3423,9 +3131,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\blazor.webassembly.js.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.webassembly.js.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazorwasm.wasm.br",
@@ -3446,9 +3152,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\blazorwasm.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazorwasm.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazorwasm.wasm.gz",
@@ -3469,9 +3173,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\blazorwasm.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazorwasm.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.js.br",
@@ -3492,9 +3194,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\dotnet.js.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.js.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.native.js.br",
@@ -3515,9 +3215,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\dotnet.native.js.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.native.js.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.native.wasm.br",
@@ -3538,9 +3236,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\dotnet.native.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.native.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.runtime.js.br",
@@ -3561,9 +3257,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\dotnet.runtime.js.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.runtime.js.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_CJK.dat.br",
@@ -3584,9 +3278,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\icudt_CJK.dat.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_CJK.dat.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_CJK.dat.gz",
@@ -3607,9 +3299,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\icudt_CJK.dat.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_CJK.dat.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_EFIGS.dat.br",
@@ -3630,9 +3320,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\icudt_EFIGS.dat.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_EFIGS.dat.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_EFIGS.dat.gz",
@@ -3653,9 +3341,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\icudt_EFIGS.dat.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_EFIGS.dat.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_no_CJK.dat.br",
@@ -3676,9 +3362,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\icudt_no_CJK.dat.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_no_CJK.dat.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_no_CJK.dat.gz",
@@ -3699,9 +3383,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\icudt_no_CJK.dat.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_no_CJK.dat.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\netstandard.wasm.br",
@@ -3722,9 +3404,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\netstandard.wasm.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\netstandard.wasm.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\netstandard.wasm.gz",
@@ -3745,9 +3425,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\_framework\\netstandard.wasm.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\netstandard.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.br",
@@ -3768,9 +3446,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\blazorwasm#[.{fingerprint=__fingerprint__}]?.styles.css.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\css\\app.css.br",
@@ -3791,9 +3467,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\LinkToWebRoot\\css\\css\\app.css.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\css\\app.css.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\custom-service-worker-assets.js.br",
@@ -3814,9 +3488,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\custom-service-worker-assets.js.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\custom-service-worker-assets.js.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\custom-service-worker-assets.js.gz",
@@ -3837,9 +3509,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\custom-service-worker-assets.js.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\custom-service-worker-assets.js.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\index.html.br",
@@ -3860,9 +3530,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\index.html.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\serviceworkers\\my-service-worker.js.br",
@@ -3883,9 +3551,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\serviceworkers\\my-service-worker.js.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\serviceworkers\\my-service-worker.js.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\serviceworkers\\my-service-worker.js.gz",
@@ -3906,9 +3572,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\serviceworkers\\my-service-worker.js.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\serviceworkers\\my-service-worker.js.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm.styles.css",
@@ -3929,9 +3593,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm.styles.css",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm.styles.css"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\custom-service-worker-assets.js.publish",
@@ -3952,9 +3614,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\custom-service-worker-assets.js.publish",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\custom-service-worker-assets.js.publish"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\my-prod-service-worker.js.publish",
@@ -3975,9 +3635,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\serviceworkers\\my-prod-service-worker.js",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\my-prod-service-worker.js.publish"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Authorization.wasm",
@@ -3998,9 +3656,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Authorization.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Authorization.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.Forms.wasm",
@@ -4021,9 +3677,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.Forms.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.Forms.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.Web.wasm",
@@ -4044,9 +3698,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.Web.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.Web.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.WebAssembly.wasm",
@@ -4067,9 +3719,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.WebAssembly.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.WebAssembly.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.wasm",
@@ -4090,9 +3740,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Components.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Metadata.wasm",
@@ -4113,9 +3761,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Metadata.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.AspNetCore.Metadata.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Abstractions.wasm",
@@ -4136,9 +3782,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Abstractions.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Abstractions.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Binder.wasm",
@@ -4159,9 +3803,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Binder.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Binder.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.FileExtensions.wasm",
@@ -4182,9 +3824,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.FileExtensions.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.FileExtensions.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Json.wasm",
@@ -4205,9 +3845,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Json.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.Json.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.wasm",
@@ -4228,9 +3866,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Configuration.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm",
@@ -4251,9 +3887,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.DependencyInjection.wasm",
@@ -4274,9 +3908,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.DependencyInjection.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.DependencyInjection.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileProviders.Abstractions.wasm",
@@ -4297,9 +3929,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileProviders.Abstractions.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileProviders.Abstractions.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileProviders.Physical.wasm",
@@ -4320,9 +3950,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileProviders.Physical.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileProviders.Physical.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileSystemGlobbing.wasm",
@@ -4343,9 +3971,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileSystemGlobbing.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.FileSystemGlobbing.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Logging.Abstractions.wasm",
@@ -4366,9 +3992,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Logging.Abstractions.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Logging.Abstractions.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Logging.wasm",
@@ -4389,9 +4013,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Logging.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Logging.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Options.wasm",
@@ -4412,9 +4034,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Options.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Options.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Primitives.wasm",
@@ -4435,9 +4055,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Primitives.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.Extensions.Primitives.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.JSInterop.WebAssembly.wasm",
@@ -4458,9 +4076,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.JSInterop.WebAssembly.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.JSInterop.WebAssembly.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.JSInterop.wasm",
@@ -4481,9 +4097,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.JSInterop.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\Microsoft.JSInterop.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\RazorClassLibrary.wasm",
@@ -4504,9 +4118,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\RazorClassLibrary.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\RazorClassLibrary.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.Concurrent.wasm",
@@ -4527,9 +4139,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.Concurrent.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.Concurrent.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.NonGeneric.wasm",
@@ -4550,9 +4160,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.NonGeneric.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.NonGeneric.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.Specialized.wasm",
@@ -4573,9 +4181,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.Specialized.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.Specialized.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.wasm",
@@ -4596,9 +4202,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Collections.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.Annotations.wasm",
@@ -4619,9 +4223,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.Annotations.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.Annotations.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.Primitives.wasm",
@@ -4642,9 +4244,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.Primitives.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.Primitives.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.TypeConverter.wasm",
@@ -4665,9 +4265,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.TypeConverter.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.TypeConverter.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.wasm",
@@ -4688,9 +4286,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ComponentModel.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Console.wasm",
@@ -4711,9 +4307,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Console.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Console.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Diagnostics.DiagnosticSource.wasm",
@@ -4734,9 +4328,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Diagnostics.DiagnosticSource.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Diagnostics.DiagnosticSource.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Diagnostics.Tracing.wasm",
@@ -4757,9 +4349,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Diagnostics.Tracing.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Diagnostics.Tracing.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.IO.FileSystem.Watcher.wasm",
@@ -4780,9 +4370,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.IO.FileSystem.Watcher.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.IO.FileSystem.Watcher.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.IO.Pipelines.wasm",
@@ -4803,9 +4391,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.IO.Pipelines.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.IO.Pipelines.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Linq.Expressions.wasm",
@@ -4826,9 +4412,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Linq.Expressions.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Linq.Expressions.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Linq.wasm",
@@ -4849,9 +4433,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Linq.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Linq.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Memory.wasm",
@@ -4872,9 +4454,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Memory.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Memory.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Net.Http.wasm",
@@ -4895,9 +4475,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Net.Http.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Net.Http.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ObjectModel.wasm",
@@ -4918,9 +4496,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ObjectModel.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.ObjectModel.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Private.CoreLib.wasm",
@@ -4941,9 +4517,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Private.CoreLib.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Private.CoreLib.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Private.Uri.wasm",
@@ -4964,9 +4538,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Private.Uri.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Private.Uri.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Emit.ILGeneration.wasm",
@@ -4987,9 +4559,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Emit.ILGeneration.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Emit.ILGeneration.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Emit.Lightweight.wasm",
@@ -5010,9 +4580,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Emit.Lightweight.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Emit.Lightweight.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Primitives.wasm",
@@ -5033,9 +4601,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Primitives.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Reflection.Primitives.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Resources.ResourceManager.wasm",
@@ -5056,9 +4622,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Resources.ResourceManager.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Resources.ResourceManager.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.CompilerServices.Unsafe.wasm",
@@ -5079,9 +4643,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.CompilerServices.Unsafe.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.CompilerServices.Unsafe.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.Extensions.wasm",
@@ -5102,9 +4664,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.Extensions.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.Extensions.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.InteropServices.JavaScript.wasm",
@@ -5125,9 +4685,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.InteropServices.JavaScript.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.InteropServices.JavaScript.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.InteropServices.RuntimeInformation.wasm",
@@ -5148,9 +4706,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.InteropServices.RuntimeInformation.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.InteropServices.RuntimeInformation.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.Loader.wasm",
@@ -5171,9 +4727,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.Loader.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.Loader.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.wasm",
@@ -5194,9 +4748,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Runtime.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Security.Claims.wasm",
@@ -5217,9 +4769,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Security.Claims.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Security.Claims.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Security.Cryptography.wasm",
@@ -5240,9 +4790,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Security.Cryptography.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Security.Cryptography.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Text.Encodings.Web.wasm",
@@ -5263,9 +4811,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Text.Encodings.Web.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Text.Encodings.Web.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Text.Json.wasm",
@@ -5286,9 +4832,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Text.Json.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Text.Json.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Text.RegularExpressions.wasm",
@@ -5309,9 +4853,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Text.RegularExpressions.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Text.RegularExpressions.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.Tasks.wasm",
@@ -5332,9 +4874,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.Tasks.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.Tasks.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.ThreadPool.wasm",
@@ -5355,9 +4895,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.ThreadPool.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.ThreadPool.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.wasm",
@@ -5378,9 +4916,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.Threading.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.wasm",
@@ -5401,9 +4937,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\System.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\blazorwasm.wasm",
@@ -5424,9 +4958,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\blazorwasm.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\blazorwasm.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\netstandard.wasm",
@@ -5447,9 +4979,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\netstandard.wasm",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\webcil\\publish\\netstandard.wasm"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt",
@@ -5470,9 +5000,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html",
@@ -5493,9 +5021,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html"
     },
     {
       "Identity": "${ProjectPath}\\razorclasslibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorClassLibrary\\styles.css.gz",
@@ -5516,9 +5042,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\_content\\RazorClassLibrary\\styles.css.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorClassLibrary\\styles.css.gz"
     },
     {
       "Identity": "${ProjectPath}\\razorclasslibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorClassLibrary\\wwwroot\\exampleJsInterop.js.gz",
@@ -5539,9 +5063,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\wwwroot\\_content\\RazorClassLibrary\\wwwroot\\exampleJsInterop.js.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorClassLibrary\\wwwroot\\exampleJsInterop.js.gz"
     },
     {
       "Identity": "${ProjectPath}\\razorclasslibrary\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorClassLibrary\\styles.css.br",
@@ -5562,9 +5084,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\_content\\RazorClassLibrary\\styles.css.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorClassLibrary\\styles.css.br"
     },
     {
       "Identity": "${ProjectPath}\\razorclasslibrary\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorClassLibrary\\wwwroot\\exampleJsInterop.js.br",
@@ -5585,9 +5105,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\wwwroot\\_content\\RazorClassLibrary\\wwwroot\\exampleJsInterop.js.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorClassLibrary\\wwwroot\\exampleJsInterop.js.br"
     },
     {
       "Identity": "${ProjectPath}\\razorclasslibrary\\wwwroot\\styles.css",
@@ -5608,9 +5126,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\styles.css",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\styles.css"
     },
     {
       "Identity": "${ProjectPath}\\razorclasslibrary\\wwwroot\\wwwroot\\exampleJsInterop.js",
@@ -5631,9 +5147,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\wwwroot\\exampleJsInterop.js",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\wwwroot\\exampleJsInterop.js"
     }
   ],
   "Endpoints": [

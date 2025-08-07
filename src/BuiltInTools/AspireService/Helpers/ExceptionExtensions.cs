@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Aspire.Tools.Service;
+namespace Microsoft.WebTools.AspireServer.Helpers;
 
 internal static class ExceptionExtensions
 {

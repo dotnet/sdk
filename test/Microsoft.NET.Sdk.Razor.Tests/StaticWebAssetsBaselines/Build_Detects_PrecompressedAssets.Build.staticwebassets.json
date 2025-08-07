@@ -47,9 +47,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\_content\\AppWithP2PReference\\AppWithP2PReference#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\_content\\AppWithP2PReference\\AppWithP2PReference#[.{fingerprint=__fingerprint__}]?.styles.css.gz"
     },
     {
       "Identity": "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\AppWithP2PReference.styles.css",
@@ -70,9 +68,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\AppWithP2PReference.styles.css",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\AppWithP2PReference.styles.css"
     },
     {
       "Identity": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
@@ -93,9 +89,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz"
     },
     {
       "Identity": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\js\\project-transitive-dep.v4.js.gz",
@@ -116,9 +110,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\_content\\ClassLibrary\\js\\project-transitive-dep.v4.js.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\js\\project-transitive-dep.v4.js.gz"
     },
     {
       "Identity": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ClassLibrary.bundle.scp.css",
@@ -139,9 +131,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ClassLibrary.bundle.scp.css",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ClassLibrary.bundle.scp.css"
     },
     {
       "Identity": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\_content\\ClassLibrary\\js\\project-transitive-dep.js.br",
@@ -162,9 +152,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\_content\\ClassLibrary\\js\\project-transitive-dep.js.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\_content\\ClassLibrary\\js\\project-transitive-dep.js.br"
     },
     {
       "Identity": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\_content\\ClassLibrary\\js\\project-transitive-dep.js.gz",
@@ -185,9 +173,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\_content\\ClassLibrary\\js\\project-transitive-dep.js.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\_content\\ClassLibrary\\js\\project-transitive-dep.js.gz"
     },
     {
       "Identity": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.js",
@@ -208,9 +194,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\js\\project-transitive-dep.js",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.js"
     },
     {
       "Identity": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.v4.js",
@@ -231,9 +215,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\js\\project-transitive-dep.v4.js",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.v4.js"
     }
   ],
   "Endpoints": [

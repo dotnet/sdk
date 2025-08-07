@@ -7,7 +7,7 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Aspire.Tools.Service;
+namespace Microsoft.WebTools.AspireServer;
 
 /// <summary>
 /// Manages the set of active socket connections. Since it registers to be notified when a socket has gone bad,

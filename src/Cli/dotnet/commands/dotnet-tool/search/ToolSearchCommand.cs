@@ -5,8 +5,6 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NugetSearch;
-using Microsoft.DotNet.Tools.Common;
-using NuGet.Configuration;
 
 namespace Microsoft.DotNet.Tools.Tool.Search
 {
@@ -28,12 +26,6 @@ namespace Microsoft.DotNet.Tools.Tool.Search
         public override int Execute()
         {
             var isDetailed = _parseResult.GetValue(ToolSearchCommandParser.DetailOption);
-            if (!PathUtility.CheckForNuGetInNuGetConfig())
-            {
-                Reporter.Output.WriteLine(LocalizableStrings.NeedNuGetInConfig);
-                return 0;
-            }
-
             NugetSearchApiParameter nugetSearchApiParameter = new(_parseResult);
             IReadOnlyCollection<SearchResultPackage> searchResultPackages =
                 NugetSearchApiResultDeserializer.Deserialize(

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.Diagnostics;
 using Microsoft.DotNet.Tools;
 using LocalizableStrings = Microsoft.DotNet.Tools.Add.LocalizableStrings;
 
@@ -26,10 +25,7 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand ConstructCommand()
         {
-            var command = new DocumentedCommand("add", DocsLink, LocalizableStrings.NetAddCommand)
-            {
-                Hidden = true
-            };
+            var command = new DocumentedCommand("add", DocsLink, LocalizableStrings.NetAddCommand);
 
             command.Arguments.Add(ProjectArgument);
             command.Subcommands.Add(AddPackageParser.GetCommand());

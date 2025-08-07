@@ -40,7 +40,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset, callerName);
 
             var build = new BuildCommand(projectDirectory);
-            build.Execute("/p:BuildWithNetFrameworkHostedCompiler=true").Should().Pass();
+            build.Execute().Should().Pass();
 
             string outputPath = build.GetOutputDirectory(DefaultTfm).ToString();
 

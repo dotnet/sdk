@@ -21,10 +21,9 @@ namespace Microsoft.DotNet.CommandFactory
         public LocalToolsCommandResolver(
             ToolManifestFinder toolManifest = null,
             ILocalToolsResolverCache localToolsResolverCache = null,
-            IFileSystem fileSystem = null,
-            string currentWorkingDirectory = null)
+            IFileSystem fileSystem = null)
         {
-            _toolManifest = toolManifest ?? new ToolManifestFinder(new DirectoryPath(currentWorkingDirectory ?? Directory.GetCurrentDirectory()));
+            _toolManifest = toolManifest ?? new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
             _fileSystem = fileSystem ?? new FileSystemWrapper();
         }

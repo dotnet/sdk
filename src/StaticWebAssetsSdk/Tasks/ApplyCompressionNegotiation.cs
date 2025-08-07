@@ -19,6 +19,8 @@ public class ApplyCompressionNegotiation : Task
     [Output]
     public ITaskItem[] UpdatedEndpoints { get; set; }
 
+    public Func<string, long> TestResolveFileLength;
+
     public override bool Execute()
     {
         var assetsById = CandidateAssets.Select(StaticWebAsset.FromTaskItem).ToDictionary(a => a.Identity);
@@ -54,6 +56,10 @@ public class ApplyCompressionNegotiation : Task
             }
 
             Log.LogMessage("Processing compressed asset: {0}", compressedAsset.Identity);
+
+            var length = TestResolveFileLength != null
+                ? TestResolveFileLength(compressedAsset.Identity)
+                : new FileInfo(compressedAsset.Identity).Length;
             StaticWebAssetEndpointResponseHeader[] compressionHeaders = [
                 new()
                 {
@@ -67,10 +73,9 @@ public class ApplyCompressionNegotiation : Task
                 }
             ];
 
-            var quality = ResolveQuality(compressedAsset);
             foreach (var compressedEndpoint in compressedEndpoints)
             {
-                if (compressedEndpoint.Selectors.Any(s => string.Equals(s.Name, "Content-Encoding", StringComparison.Ordinal)))
+                if (compressedEndpoint.Selectors.Any(s => string.Equals(s.Name,"Content-Encoding", StringComparison.Ordinal)))
                 {
                     Log.LogMessage(MessageImportance.Low, $"  Skipping endpoint '{compressedEndpoint.Route}' since it already has a Content-Encoding selector");
                     continue;
@@ -98,7 +103,7 @@ public class ApplyCompressionNegotiation : Task
                     {
                         Name = "Content-Encoding",
                         Value = compressedAsset.AssetTraitValue,
-                        Quality = quality
+                        Quality = Math.Round(1.0 / (length + 1), 12).ToString("F12", CultureInfo.InvariantCulture)
                     };
                     Log.LogMessage(MessageImportance.Low, "  Created Content-Encoding selector for compressed asset '{0}' with size '{1}' is '{2}'", encodingSelector.Value, encodingSelector.Quality, relatedEndpointCandidate.Route);
                     var endpointCopy = new StaticWebAssetEndpoint
@@ -196,9 +201,6 @@ public class ApplyCompressionNegotiation : Task
 
         return true;
     }
-
-    private static string ResolveQuality(StaticWebAsset compressedAsset) =>
-        Math.Round(1.0 / (compressedAsset.FileLength + 1), 12).ToString("F12", CultureInfo.InvariantCulture);
 
     private static bool IsCompatible(StaticWebAssetEndpoint compressedEndpoint, StaticWebAssetEndpoint relatedEndpointCandidate)
     {

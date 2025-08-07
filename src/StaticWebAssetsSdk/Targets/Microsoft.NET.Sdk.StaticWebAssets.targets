@@ -433,12 +433,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAssetFingerprintingEnabled Condition="'$(StaticWebAssetFingerprintingEnabled)' == ''">true</StaticWebAssetFingerprintingEnabled>
       <StaticWebAssetMergeTarget Condition="'$(TargetFrameworks)' != '' and '$(TargetPlatformIdentifier)' == 'browser'">Browser</StaticWebAssetMergeTarget>
       <StaticWebAssetMergeTarget Condition="'$(TargetFrameworks)' != '' and '$(TargetPlatformIdentifier)' == ''">Server</StaticWebAssetMergeTarget>
-      <StaticWebAssetsCacheDefineStaticWebAssetsEnabled Condition="'$(StaticWebAssetsCacheDefineStaticWebAssetsEnabled)' == ''">true</StaticWebAssetsCacheDefineStaticWebAssetsEnabled>
 
       <!-- Manifest paths -->
       <_StaticWebAssetsManifestBase Condition="'$(_StaticWebAssetsManifestBase)' == ''">$(IntermediateOutputPath)</_StaticWebAssetsManifestBase>
       <StaticWebAssetBuildManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.build.json</StaticWebAssetBuildManifestPath>
-      <StaticWebAssetsBuildManifestCacheFilePath>$(StaticWebAssetBuildManifestPath).cache</StaticWebAssetsBuildManifestCacheFilePath>
       <StaticWebAssetPackManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.pack.json</StaticWebAssetPackManifestPath>
       <StaticWebAssetDevelopmentManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.development.json</StaticWebAssetDevelopmentManifestPath>
       <StaticWebAssetEndpointsBuildManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.build.endpoints.json</StaticWebAssetEndpointsBuildManifestPath>
@@ -622,8 +620,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       DiscoveryPatterns="@(StaticWebAssetDiscoveryPattern)"
       Assets="@(StaticWebAsset)"
       Endpoints="@(StaticWebAssetEndpoint)"
-      ManifestPath="$(StaticWebAssetBuildManifestPath)"
-      ManifestCacheFilePath="$(StaticWebAssetsBuildManifestCacheFilePath)">
+      ManifestPath="$(StaticWebAssetBuildManifestPath)">
     </GenerateStaticWebAssetsManifest>
 
     <GenerateStaticWebAssetEndpointsManifest
@@ -631,28 +628,18 @@ Copyright (c) .NET Foundation. All rights reserved.
       ManifestType="Build"
       Assets="@(StaticWebAsset)"
       Endpoints="@(StaticWebAssetEndpoint)"
-      ManifestPath="$(StaticWebAssetEndpointsBuildManifestPath)"
-      CacheFilePath="$(StaticWebAssetBuildManifestPath)">
+      ManifestPath="$(StaticWebAssetEndpointsBuildManifestPath)">
     </GenerateStaticWebAssetEndpointsManifest>
 
     <GenerateStaticWebAssetsDevelopmentManifest
       DiscoveryPatterns="@(StaticWebAssetDiscoveryPattern)"
       Assets="@(StaticWebAsset)"
       Source="$(PackageId)"
-      ManifestPath="$(StaticWebAssetDevelopmentManifestPath)"
-      CacheFilePath="$(StaticWebAssetBuildManifestPath)">
+      ManifestPath="$(StaticWebAssetDevelopmentManifestPath)">
     </GenerateStaticWebAssetsDevelopmentManifest>
 
     <ItemGroup>
-      <_CachedBuildStaticWebAssets Condition="'@(_CachedBuildStaticWebAssets)' == ''" Include="@(StaticWebAsset)" />
-      <_CachedBuildStaticWebAssetEndpoints Condition="'@(_CachedBuildStaticWebAssetEndpoints)' == ''" Include="@(StaticWebAssetEndpoint)" />
-      <_CachedBuildStaticWebAssetReferencedProjectsConfiguration Condition="'@(_CachedBuildStaticWebAssetReferencedProjectsConfiguration)' == ''" Include="@(StaticWebAssetProjectConfiguration)" />
-      <_CachedBuildStaticWebAssetDiscoveryPatterns Condition="'@(_CachedBuildStaticWebAssetDiscoveryPatterns)' == ''" Include="@(StaticWebAssetDiscoveryPattern)" />
-    </ItemGroup>
-
-    <ItemGroup>
       <FileWrites Include="$(StaticWebAssetBuildManifestPath)" />
-      <FileWrites Include="$(StaticWebAssetsBuildManifestCacheFilePath)" />
       <FileWrites Include="$(StaticWebAssetDevelopmentManifestPath)" />
       <FileWrites Include="$(StaticWebAssetEndpointsBuildManifestPath)" />
     </ItemGroup>
@@ -672,12 +659,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     BeforeTargets="AssignTargetPaths"
     DependsOnTargets="ResolveStaticWebAssetsConfiguration;UpdateExistingPackageStaticWebAssets">
 
-    <PropertyGroup>
-      <_ResolveProjectStaticWebAssetsCachePath Condition="'$(StaticWebAssetsCacheDefineStaticWebAssetsEnabled)' == 'true'">$(_StaticWebAssetsManifestBase)rpswa.dswa.cache.json</_ResolveProjectStaticWebAssetsCachePath>
-    </PropertyGroup>
-
     <DefineStaticWebAssets
-      CandidateAssets="@(Content->Distinct())"
+      CandidateAssets="@(Content)"
       FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
       FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
       RelativePathPattern="wwwroot/**"
@@ -685,14 +668,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       SourceId="$(PackageId)"
       ContentRoot="$(MSBuildProjectDirectory)\wwwroot\"
       BasePath="$(StaticWebAssetBasePath)"
-      AssetMergeSource="$(StaticWebAssetMergeTarget)"
-      CacheManifestPath="$(_ResolveProjectStaticWebAssetsCachePath)">
+      AssetMergeSource="$(StaticWebAssetMergeTarget)">
         <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
-        <Output TaskParameter="Assets" ItemName="_CurrentProjectStaticWebAsset" />
     </DefineStaticWebAssets>
 
     <DefineStaticWebAssetEndpoints
-      CandidateAssets="@(_CurrentProjectStaticWebAsset)"
+      CandidateAssets="@(StaticWebAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
     >
       <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
@@ -708,8 +690,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       </StaticWebAssetDiscoveryPattern>
 
       <Content Remove="@(StaticWebAsset)" />
-
-      <FileWrites Include="$(_ResolveProjectStaticWebAssetsCachePath)" />
     </ItemGroup>
 
   </Target>
@@ -721,22 +701,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     </UpdatePackageStaticWebAssets>
 
     <ItemGroup>
-      <_AssetsWithoutEndpoints Include="@(_UpdatedPackageAssets)" Exclude="@(StaticWebAssetEndpoint->'%(AssetFile)')" />
-    </ItemGroup>
-
-    <DefineStaticWebAssetEndpoints
-      CandidateAssets="@(_AssetsWithoutEndpoints)"
-      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
-    >
-      <Output TaskParameter="Endpoints" ItemName="_UpdatedPackageAssetsEndpoint" />
-    </DefineStaticWebAssetEndpoints>
-
-    <ItemGroup>
       <StaticWebAsset Remove="@(_OriginalPackageAssets)"/>
       <StaticWebAsset Include="@(_UpdatedPackageAssets)" />
-      <StaticWebAssetEndpoint Include="@(_UpdatedPackageAssetsEndpoint)" />
     </ItemGroup>
-
   </Target>
 
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.Publish.targets" />

@@ -5,7 +5,7 @@ using System.Collections;
 using System.Net;
 using System.Net.Sockets;
 
-namespace Aspire.Tools.Service.UnitTests;
+namespace Microsoft.WebTools.AspireServer.UnitTests;
 
 public static class Helpers
 {

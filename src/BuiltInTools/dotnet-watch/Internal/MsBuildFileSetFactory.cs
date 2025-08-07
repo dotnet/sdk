@@ -1,11 +1,13 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
 
 using System.Diagnostics;
 using System.Text.Json;
-using Microsoft.Build.Graph;
+using Microsoft.DotNet.Watcher.Internal;
+using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watch
+namespace Microsoft.DotNet.Watcher.Tools
 {
     /// <summary>
     /// Used to collect a set of files to watch.
@@ -18,54 +20,78 @@ namespace Microsoft.DotNet.Watch
     /// </summary>
     internal class MSBuildFileSetFactory(
         string rootProjectFile,
-        IEnumerable<string> buildArguments,
+        string? targetFramework,
+        IReadOnlyList<(string, string)>? buildProperties,
         EnvironmentOptions environmentOptions,
-        IReporter reporter)
+        IReporter reporter,
+        OutputSink? outputSink,
+        bool trace)
     {
         private const string TargetName = "GenerateWatchList";
         private const string WatchTargetsFileName = "DotNetWatch.targets";
 
+        private readonly OutputSink _outputSink = outputSink ?? new OutputSink();
+        private readonly IReadOnlyList<string> _buildFlags = InitializeArgs(FindTargetsFile(), targetFramework, buildProperties, trace);
+
         public string RootProjectFile => rootProjectFile;
 
         // Virtual for testing.
-        public virtual async ValueTask<EvaluationResult?> TryCreateAsync(bool? requireProjectGraph, CancellationToken cancellationToken)
+        public virtual async ValueTask<EvaluationResult?> TryCreateAsync(CancellationToken cancellationToken)
         {
             var watchList = Path.GetTempFileName();
             try
             {
                 var projectDir = Path.GetDirectoryName(rootProjectFile);
-                var arguments = GetMSBuildArguments(watchList);
-                var capturedOutput = new List<OutputLine>();
+
+                var capture = _outputSink.StartCapture();
+                var arguments = new List<string>
+                {
+                    "msbuild",
+                    "/nologo",
+                    rootProjectFile,
+                    $"/p:_DotNetWatchListFile={watchList}",
+                };
+
+#if !DEBUG
+                if (environmentOptions.TestFlags.HasFlag(TestFlags.RunningAsTest))
+#endif
+                {
+                    arguments.Add("/bl");
+                }
+
+                if (environmentOptions.SuppressHandlingStaticContentFiles)
+                {
+                    arguments.Add("/p:DotNetWatchContentFiles=false");
+                }
+
+                arguments.AddRange(_buildFlags);
 
                 var processSpec = new ProcessSpec
                 {
                     Executable = environmentOptions.MuxerPath,
                     WorkingDirectory = projectDir,
                     Arguments = arguments,
-                    OnOutput = line =>
-                    {
-                        lock (capturedOutput)
-                        {
-                            capturedOutput.Add(line);
-                        }
-                    }
+                    OutputCapture = capture
                 };
 
                 reporter.Verbose($"Running MSBuild target '{TargetName}' on '{rootProjectFile}'");
 
-                var exitCode = await ProcessRunner.RunAsync(processSpec, reporter, isUserApplication: false, launchResult: null, cancellationToken);
+                var exitCode = await ProcessRunner.RunAsync(processSpec, reporter, isUserApplication: false, processExitedSource: null, cancellationToken);
 
-                var success = exitCode == 0 && File.Exists(watchList);
-
-                if (!success)
+                if (exitCode != 0 || !File.Exists(watchList))
                 {
-                    reporter.Error($"Error(s) finding watch items project file '{Path.GetFileName(rootProjectFile)}'.");
+                    reporter.Error($"Error(s) finding watch items project file '{Path.GetFileName(rootProjectFile)}'");
+
                     reporter.Output($"MSBuild output from target '{TargetName}':");
-                }
+                    reporter.Output(string.Empty);
 
-                BuildUtilities.ReportBuildOutput(reporter, capturedOutput, success, projectDisplay: null);
-                if (!success)
-                {
+                    foreach (var line in capture.Lines)
+                    {
+                        reporter.Output($"   {line}");
+                    }
+
+                    reporter.Output(string.Empty);
+
                     return null;
                 }
 
@@ -116,18 +142,7 @@ namespace Microsoft.DotNet.Watch
                 Debug.Assert(fileItems.Values.All(f => Path.IsPathRooted(f.FilePath)), "All files should be rooted paths");
 #endif
 
-                // Load the project graph after the project has been restored:
-                ProjectGraph? projectGraph = null;
-                if (requireProjectGraph != null)
-                {
-                    projectGraph = TryLoadProjectGraph(requireProjectGraph.Value);
-                    if (projectGraph == null && requireProjectGraph == true)
-                    {
-                        return null;
-                    }
-                }
-
-                return new EvaluationResult(fileItems, projectGraph);
+                return new EvaluationResult(fileItems);
             }
             finally
             {
@@ -135,44 +150,36 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        private IReadOnlyList<string> GetMSBuildArguments(string watchListFilePath)
+        private static IReadOnlyList<string> InitializeArgs(string watchTargetsFile, string? targetFramework, IReadOnlyList<(string name, string value)>? buildProperties, bool trace)
         {
-            var watchTargetsFile = FindTargetsFile();
-
-            var arguments = new List<string>
+            var args = new List<string>
             {
-                "msbuild",
-                "/restore",
                 "/nologo",
-                "/v:m",
-                rootProjectFile,
-                "/t:" + TargetName
+                "/v:n",
+                "/t:" + TargetName,
+                "/p:DotNetWatchBuild=true", // extensibility point for users
+                "/p:DesignTimeBuild=true", // don't do expensive things
+                "/p:CustomAfterMicrosoftCommonTargets=" + watchTargetsFile,
+                "/p:CustomAfterMicrosoftCommonCrossTargetingTargets=" + watchTargetsFile,
             };
 
-#if !DEBUG
-            if (environmentOptions.TestFlags.HasFlag(TestFlags.RunningAsTest))
-#endif
+            if (targetFramework != null)
             {
-                arguments.Add($"/bl:{Path.Combine(environmentOptions.TestOutput, "DotnetWatch.GenerateWatchList.binlog")}");
+                args.Add("/p:TargetFramework=" + targetFramework);
             }
 
-            arguments.AddRange(buildArguments);
-
-            // Set dotnet-watch reserved properties after the user specified propeties,
-            // so that the former take precedence.
-
-            if (environmentOptions.SuppressHandlingStaticContentFiles)
+            if (buildProperties != null)
             {
-                arguments.Add("/p:DotNetWatchContentFiles=false");
+                args.AddRange(buildProperties.Select(p => $"/p:{p.name}={p.value}"));
             }
 
-            arguments.Add("/p:_DotNetWatchListFile=" + watchListFilePath);
-            arguments.Add("/p:DotNetWatchBuild=true"); // extensibility point for users
-            arguments.Add("/p:DesignTimeBuild=true"); // don't do expensive things
-            arguments.Add("/p:CustomAfterMicrosoftCommonTargets=" + watchTargetsFile);
-            arguments.Add("/p:CustomAfterMicrosoftCommonCrossTargetingTargets=" + watchTargetsFile);
+            if (trace)
+            {
+                // enables capturing markers to know which projects have been visited
+                args.Add("/p:_DotNetWatchTraceOutput=true");
+            }
 
-            return arguments;
+            return args;
         }
 
         private static string FindTargetsFile()
@@ -190,52 +197,6 @@ namespace Microsoft.DotNet.Watch
 
             var targetPath = searchPaths.Select(p => Path.Combine(p, WatchTargetsFileName)).FirstOrDefault(File.Exists);
             return targetPath ?? throw new FileNotFoundException("Fatal error: could not find DotNetWatch.targets");
-        }
-
-        // internal for testing
-        internal ProjectGraph? TryLoadProjectGraph(bool projectGraphRequired)
-        {
-            var globalOptions = new Dictionary<string, string>();
-
-            foreach (var (name, value) in CommandLineOptions.ParseBuildProperties(buildArguments))
-            {
-                globalOptions[name] = value;
-            }
-
-            try
-            {
-                return new ProjectGraph(rootProjectFile, globalOptions);
-            }
-            catch (Exception e)
-            {
-                reporter.Verbose("Failed to load project graph.");
-
-                if (e is AggregateException { InnerExceptions: var innerExceptions })
-                {
-                    foreach (var inner in innerExceptions)
-                    {
-                        Report(inner);
-                    }
-                }
-                else
-                {
-                    Report(e);
-                }
-
-                void Report(Exception e)
-                {
-                    if (projectGraphRequired)
-                    {
-                        reporter.Error(e.Message);
-                    }
-                    else
-                    {
-                        reporter.Warn(e.Message);
-                    }
-                }
-            }
-
-            return null;
         }
     }
 }

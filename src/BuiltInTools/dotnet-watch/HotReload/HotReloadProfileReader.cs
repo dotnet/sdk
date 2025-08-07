@@ -4,8 +4,9 @@
 
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
+using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watch
+namespace Microsoft.DotNet.Watcher.Tools
 {
     internal static class HotReloadProfileReader
     {

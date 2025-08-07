@@ -25,6 +25,11 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             }
         }
 
+        public override RazorProjectItem GetItem(string path)
+        {
+            return GetItem(path, fileKind: null);
+        }
+
         public override RazorProjectItem GetItem(string path, string fileKind)
         {
             RazorProjectItem razorProjectItem = null;

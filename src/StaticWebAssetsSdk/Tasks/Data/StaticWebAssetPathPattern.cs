@@ -5,25 +5,15 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0057:Use range operator", Justification = "Can't use range syntax in full framework")]
 #if WASM_TASKS
-internal sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
+internal class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
 #else
-public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
+public class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPattern>
 #endif
 {
-    private const string PatternStart = "#[";
-    private const char PatternEnd = ']';
-    private const char PatternOptional = '?';
-    private const char PatternPreferred = '!';
-    private const char PatternValueSeparator = '=';
-    private const char PatternParameterStart = '{';
-    private const char PatternParameterEnd = '}';
-
-    public StaticWebAssetPathPattern(string path) : this(path.AsMemory()) { }
-
-    public StaticWebAssetPathPattern(ReadOnlyMemory<char> rawPathMemory) => RawPattern = rawPathMemory;
+    public StaticWebAssetPathPattern(string path) => RawPattern = path;
 
     public StaticWebAssetPathPattern(List<StaticWebAssetPathSegment> segments)
     {
@@ -31,7 +21,7 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
         Segments = segments;
     }
 
-    public ReadOnlyMemory<char> RawPattern { get; private set; }
+    public string RawPattern { get; private set; }
 
     public IList<StaticWebAssetPathSegment> Segments { get; set; } = [];
 
@@ -63,18 +53,17 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
     // and other features. This is why we want to bake into the format itself the information that specifies under which paths the file will
     // be available at runtime so that tasks/tools can operate independently and produce correct results.
     // The current token we support is the 'fingerprint' token, which computes a web friendly version of the hash of the file suitable
-    // to be embedded in other contexts.
+    // to be embedded in other contexts.     
     // We might include other tokens in the future, like `[{basepath}]` to give a file the ability to have its path be relative to the consuming
     // project base path, etc.
-    public static StaticWebAssetPathPattern Parse(ReadOnlyMemory<char> rawPathMemory, string assetIdentity = null)
+    public static StaticWebAssetPathPattern Parse(string rawPath, string assetIdentity = null)
     {
-        var pattern = new StaticWebAssetPathPattern(rawPathMemory);
-        var current = rawPathMemory;
-        var nextToken = MemoryExtensions.IndexOf(current.Span, PatternStart.AsSpan(), StringComparison.OrdinalIgnoreCase);
+        var pattern = new StaticWebAssetPathPattern(rawPath);
+        var nextToken = rawPath.IndexOf("#[", StringComparison.OrdinalIgnoreCase);
         if (nextToken == -1)
         {
             var literalSegment = new StaticWebAssetPathSegment();
-            literalSegment.Parts.Add(new StaticWebAssetSegmentPart { Name = current, IsLiteral = true });
+            literalSegment.Parts.Add(new StaticWebAssetSegmentPart { Name = rawPath, IsLiteral = true });
             pattern.Segments.Add(literalSegment);
             return pattern;
         }
@@ -82,123 +71,55 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
         if (nextToken > 0)
         {
             var literalSegment = new StaticWebAssetPathSegment();
-            literalSegment.Parts.Add(new StaticWebAssetSegmentPart { Name = current.Slice(0, nextToken), IsLiteral = true });
+            literalSegment.Parts.Add(new StaticWebAssetSegmentPart { Name = rawPath.Substring(0, nextToken), IsLiteral = true });
             pattern.Segments.Add(literalSegment);
         }
-
         while (nextToken != -1)
         {
-            current = current.Slice(nextToken);
-            var tokenEnd = MemoryExtensions.IndexOf(current.Span, PatternEnd);
+            var tokenEnd = rawPath.IndexOf(']', nextToken);
             if (tokenEnd == -1)
             {
                 if (assetIdentity != null)
                 {
                     // We don't have a closing token, this is likely an error, so throw
-                    throw new InvalidOperationException($"Invalid relative path '{rawPathMemory}' for asset '{assetIdentity}'. Missing ']' token.");
+                    throw new InvalidOperationException($"Invalid relative path '{rawPath}' for asset '{assetIdentity}'. Missing ']' token.");
                 }
                 else
                 {
-                    throw new InvalidOperationException($"Invalid token expression '{rawPathMemory}'. Missing ']' token.");
+                    throw new InvalidOperationException($"Invalid token expression '{rawPath}'. Missing ']' token.");
                 }
             }
 
-            var tokenExpression = current.Slice(2, tokenEnd - 2);
+            var tokenExpression = rawPath.Substring(nextToken + 2, tokenEnd - nextToken - 2);
 
             var token = new StaticWebAssetPathSegment();
             AddTokenSegmentParts(tokenExpression, token);
             pattern.Segments.Add(token);
 
             // Check if the segment is optional (ends with ? or !)
-            if (tokenEnd < current.Length - 1 &&
-                (current.Span[tokenEnd + 1] == PatternOptional || current.Span[tokenEnd + 1] == PatternPreferred))
+            if (tokenEnd < rawPath.Length - 1 && (rawPath[tokenEnd + 1] == '?' || rawPath[tokenEnd + 1] == '!'))
             {
                 token.IsOptional = true;
-                if (current.Span[tokenEnd + 1] == PatternPreferred)
+                if (rawPath[tokenEnd + 1] == '!')
                 {
                     token.IsPreferred = true;
                 }
                 tokenEnd++;
             }
 
-            current = current.Slice(tokenEnd + 1);
-            nextToken = MemoryExtensions.IndexOf(current.Span, PatternStart.AsSpan(), StringComparison.OrdinalIgnoreCase);
+            nextToken = rawPath.IndexOf("#[", tokenEnd, comparisonType: StringComparison.OrdinalIgnoreCase);
 
-            if (nextToken == -1 && current.Length > 0)
+            // Add a literal segment if there is more content after the token and before the next one
+            if ((nextToken != -1 && nextToken > tokenEnd + 1) || (nextToken == -1 && tokenEnd < rawPath.Length - 1))
             {
+                var literalEnd = nextToken == -1 ? rawPath.Length : nextToken;
                 var literalSegment = new StaticWebAssetPathSegment();
-                literalSegment.Parts.Add(new StaticWebAssetSegmentPart { Name = current, IsLiteral = true });
-                pattern.Segments.Add(literalSegment);
-            }
-            else if (nextToken > 0)
-            {
-                var literalSegment = new StaticWebAssetPathSegment();
-                literalSegment.Parts.Add(new StaticWebAssetSegmentPart { Name = current.Slice(0, nextToken), IsLiteral = true });
+                literalSegment.Parts.Add(new StaticWebAssetSegmentPart { Name = rawPath.Substring(tokenEnd + 1, literalEnd - tokenEnd - 1), IsLiteral = true });
                 pattern.Segments.Add(literalSegment);
             }
         }
 
         return pattern;
-    }
-
-    // Iterate over the token expression and add the parts to the token segment
-    // Some examples are '.{fingerprint}', '{fingerprint}.', '{fingerprint}{fingerprint}', {fingerprint}.{fingerprint}
-    // The '.' represents sample literal content.
-    // The value within the {} represents token variables.
-    private static void AddTokenSegmentParts(ReadOnlyMemory<char> tokenExpression, StaticWebAssetPathSegment token)
-    {
-        var current = tokenExpression;
-        var nextToken = MemoryExtensions.IndexOf(current.Span, PatternParameterStart);
-        if (nextToken is not (-1) and > 0)
-        {
-            var literalPart = new StaticWebAssetSegmentPart { Name = current.Slice(0, nextToken), IsLiteral = true };
-            token.Parts.Add(literalPart);
-        }
-
-        while (nextToken != -1)
-        {
-            current = current.Slice(nextToken);
-            var tokenEnd = MemoryExtensions.IndexOf(current.Span, PatternParameterEnd);
-            if (tokenEnd == -1)
-            {
-                throw new InvalidOperationException($"Invalid token expression '{tokenExpression}'. Missing '}}' token.");
-            }
-
-            var embeddedValue = MemoryExtensions.IndexOf(current.Span, PatternValueSeparator);
-            if (embeddedValue != -1)
-            {
-                var tokenPart = new StaticWebAssetSegmentPart
-                {
-                    Name = current.Slice(1, embeddedValue - 1),
-                    IsLiteral = false,
-                    Value = current.Slice(embeddedValue + 1, tokenEnd - embeddedValue - 1)
-                };
-                token.Parts.Add(tokenPart);
-            }
-            else
-            {
-                var tokenPart = new StaticWebAssetSegmentPart { Name = current.Slice(1, tokenEnd - 1), IsLiteral = false };
-                token.Parts.Add(tokenPart);
-            }
-
-            current = current.Slice(tokenEnd + 1);
-            nextToken = MemoryExtensions.IndexOf(current.Span, PatternParameterStart);
-            if (nextToken == -1 && current.Length > 0)
-            {
-                var literalPart = new StaticWebAssetSegmentPart { Name = current, IsLiteral = true };
-                token.Parts.Add(literalPart);
-            }
-            else if (nextToken > 0)
-            {
-                var literalPart = new StaticWebAssetSegmentPart { Name = current.Slice(0, nextToken), IsLiteral = true };
-                token.Parts.Add(literalPart);
-            }
-        }
-    }
-
-    public static StaticWebAssetPathPattern Parse(string rawPath, string assetIdentity = null)
-    {
-        return Parse(rawPath.AsMemory(), assetIdentity);
     }
 
     // Replaces the tokens in the pattern with values provided in the expression, by the asset, or global resolvers.
@@ -238,15 +159,14 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
                 var missingValue = "";
                 foreach (var tokenName in tokenNames)
                 {
-                    var tokenNameString = tokenName.ToString();
-                    if (!tokens.TryGetValue(staticWebAsset, tokenNameString, out var tokenValue) || string.IsNullOrEmpty(tokenValue))
+                    if (!tokens.TryGetValue(staticWebAsset, tokenName, out var tokenValue) || string.IsNullOrEmpty(tokenValue))
                     {
                         foundAllValues = false;
-                        missingValue = tokenNameString;
+                        missingValue = tokenName;
                         break;
                     }
 
-                    dictionary[tokenNameString] = tokenValue;
+                    dictionary[tokenName] = tokenValue;
                 }
 
                 if (!foundAllValues && !segment.IsOptional)
@@ -268,15 +188,15 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
                         {
                             result.Append(part.Name);
                         }
-                        else if (!part.Value.IsEmpty)
+                        else if (!string.IsNullOrEmpty(part.Value))
                         {
                             // Token was embedded, so add it to the dictionary.
-                            dictionary[part.Name.ToString()] = part.Value.ToString();
+                            dictionary[part.Name] = part.Value;
                             result.Append(part.Value);
                         }
                         else
                         {
-                            result.Append(dictionary[part.Name.ToString()]);
+                            result.Append(dictionary[part.Name]);
                         }
                     }
                 }
@@ -294,13 +214,14 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
     public IEnumerable<StaticWebAssetPathPattern> ExpandPatternExpression()
     {
         // We are going to analyze each segment and produce the following:
-        // - For literals, we just concatenate
+        // - For literals, we just concatenate 
         // - For parameter expressions without '?' we return the parameter expression.
         // - For parameter expressions with '?' we return
         // For example:
         // - asset.css produces a single pattern (asset.css).
         // - other#[.{fingerprint}].js produces a single pattern asset#[.{fingerprint}].js
         // - last#[.{fingerprint}]?.txt produces two patterns last#[.{fingerprint}]?.txt and last.txt
+
         var hasOptionalSegments = false;
         foreach (var segment in Segments)
         {
@@ -415,14 +336,14 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
                         continue;
                     }
 
-                    if (!resolver.TryGetValue(staticWebAsset, tokenName.ToString(), out var tokenValue) || string.IsNullOrEmpty(tokenValue))
+                    if (!resolver.TryGetValue(staticWebAsset, tokenName, out var tokenValue) || string.IsNullOrEmpty(tokenValue))
                     {
                         continue;
                     }
 
-                    if (part.Name.Span.SequenceEqual(tokenName.Span))
+                    if (string.Equals(part.Name, tokenName))
                     {
-                        part.Value = tokenValue.AsMemory();
+                        part.Value = tokenValue;
                     }
                 }
             }
@@ -430,7 +351,54 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
         RawPattern = GetRawPattern(Segments);
     }
 
-    private static ReadOnlyMemory<char> GetRawPattern(IList<StaticWebAssetPathSegment> segments)
+    // Iterate over the token expression and add the parts to the token segment
+    // Some examples are '.{fingerprint}', '{fingerprint}.', '{fingerprint}{fingerprint}', {fingerprint}.{fingerprint}
+    // The '.' represents sample literal content.
+    // The value within the {} represents token variables.
+    private static void AddTokenSegmentParts(string tokenExpression, StaticWebAssetPathSegment token)
+    {
+        var nextToken = tokenExpression.IndexOf('{');
+        if (nextToken is not (-1) and > 0)
+        {
+            var literalPart = new StaticWebAssetSegmentPart { Name = tokenExpression.Substring(0, nextToken), IsLiteral = true };
+            token.Parts.Add(literalPart);
+        }
+        while (nextToken != -1)
+        {
+            var tokenEnd = tokenExpression.IndexOf('}', nextToken);
+            if (tokenEnd == -1)
+            {
+                throw new InvalidOperationException($"Invalid token expression '{tokenExpression}'. Missing '}}' token.");
+            }
+
+            var embeddedValue = tokenExpression.IndexOf('=', nextToken);
+            if (embeddedValue != -1)
+            {
+                var tokenPart = new StaticWebAssetSegmentPart
+                {
+                    Name = tokenExpression.Substring(nextToken + 1, embeddedValue - nextToken - 1),
+                    IsLiteral = false,
+                    Value = tokenExpression.Substring(embeddedValue + 1, tokenEnd - embeddedValue - 1)
+                };
+                token.Parts.Add(tokenPart);
+            }
+            else
+            {
+                var tokenPart = new StaticWebAssetSegmentPart { Name = tokenExpression.Substring(nextToken + 1, tokenEnd - nextToken - 1), IsLiteral = false };
+                token.Parts.Add(tokenPart);
+            }
+
+            nextToken = tokenExpression.IndexOf('{', tokenEnd);
+            if ((nextToken != -1 && nextToken > tokenEnd + 1) || (nextToken == -1 && tokenEnd < tokenExpression.Length - 1))
+            {
+                var literalEnd = nextToken == -1 ? tokenExpression.Length : nextToken;
+                var literalPart = new StaticWebAssetSegmentPart { Name = tokenExpression.Substring(tokenEnd + 1, literalEnd - tokenEnd - 1), IsLiteral = true };
+                token.Parts.Add(literalPart);
+            }
+        }
+    }
+
+    private static string GetRawPattern(IList<StaticWebAssetPathSegment> segments)
     {
         var stringBuilder = new StringBuilder();
         for (var i = 0; i < segments.Count; i++)
@@ -439,45 +407,42 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
             var isLiteral = IsLiteralSegment(segment);
             if (!isLiteral)
             {
-                stringBuilder.Append(PatternStart);
+                stringBuilder.Append("#[");
             }
             for (var j = 0; j < segment.Parts.Count; j++)
             {
                 var part = segment.Parts[j];
-                stringBuilder.Append(part.IsLiteral ? part.Name : $$"""{{{(!part.Value.IsEmpty ? $"""{part.Name}{PatternValueSeparator}{part.Value}""" : part.Name)}}}""");
+                stringBuilder.Append(part.IsLiteral ? part.Name : $$"""{{{(!string.IsNullOrEmpty(part.Value) ? $"""{part.Name}={part.Value}""" : part.Name)}}}""");
             }
             if (!isLiteral)
             {
-                stringBuilder.Append(PatternEnd);
+                stringBuilder.Append(']');
                 if (segment.IsOptional)
                 {
                     if (segment.IsPreferred)
                     {
-                        stringBuilder.Append(PatternPreferred);
+                        stringBuilder.Append('!');
                     }
                     else
                     {
-                        stringBuilder.Append(PatternOptional);
+                        stringBuilder.Append('?');
                     }
                 }
             }
         }
 
-        return stringBuilder.ToString().AsMemory();
+        return stringBuilder.ToString();
     }
 
     public override bool Equals(object obj) => Equals(obj as StaticWebAssetPathPattern);
 
-    public bool Equals(StaticWebAssetPathPattern other) =>
-        other is not null &&
-        MemoryExtensions.Equals(RawPattern.Span, other.RawPattern.Span, StringComparison.Ordinal) &&
-        Segments.SequenceEqual(other.Segments);
+    public bool Equals(StaticWebAssetPathPattern other) => other is not null && RawPattern == other.RawPattern && Segments.SequenceEqual(other.Segments);
 
 #if NET47_OR_GREATER
     public override int GetHashCode()
     {
         var hashCode = 1219904980;
-        hashCode = (hashCode * -1521134295) + EqualityComparer<ReadOnlyMemory<char>>.Default.GetHashCode(RawPattern);
+        hashCode = (hashCode * -1521134295) + EqualityComparer<string>.Default.GetHashCode(RawPattern);
         hashCode = (hashCode * -1521134295) + EqualityComparer<IList<StaticWebAssetPathSegment>>.Default.GetHashCode(Segments);
         return hashCode;
     }
@@ -495,12 +460,13 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
 #endif
 
     public static bool operator ==(StaticWebAssetPathPattern left, StaticWebAssetPathPattern right) => EqualityComparer<StaticWebAssetPathPattern>.Default.Equals(left, right);
-
     public static bool operator !=(StaticWebAssetPathPattern left, StaticWebAssetPathPattern right) => !(left == right);
 
     private string GetDebuggerDisplay() => string.Concat(Segments.Select(s => s.GetDebuggerDisplay()));
 
     private static bool IsLiteralSegment(StaticWebAssetPathSegment segment) => segment.Parts.Count == 1 && segment.Parts[0].IsLiteral;
-
-    internal static string PathWithoutTokens(string path) => Parse(path).ComputePatternLabel();
+    internal static string PathWithoutTokens(string path)
+    {
+        return Parse(path).ComputePatternLabel();
+    }
 }

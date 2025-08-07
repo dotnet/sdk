@@ -25,10 +25,7 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand ConstructCommand()
         {
-            var command = new DocumentedCommand("remove", DocsLink, LocalizableStrings.NetRemoveCommand)
-            {
-                Hidden = true
-            };
+            var command = new DocumentedCommand("remove", DocsLink, LocalizableStrings.NetRemoveCommand);
 
             command.Arguments.Add(ProjectArgument);
             command.Subcommands.Add(RemovePackageParser.GetCommand());

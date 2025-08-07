@@ -3,7 +3,7 @@
 
 using Microsoft.Build.Graph;
 
-namespace Microsoft.DotNet.Watch;
+namespace Microsoft.DotNet.Watcher;
 
 /// <summary>
 /// Creates <see cref="IRuntimeProcessLauncher"/> for a given root project.
@@ -12,5 +12,5 @@ namespace Microsoft.DotNet.Watch;
 /// </summary>
 internal interface IRuntimeProcessLauncherFactory
 {
-    public IRuntimeProcessLauncher? TryCreate(ProjectGraphNode projectNode, ProjectLauncher projectLauncher, ProjectOptions hostProjectOptions);
+    public IRuntimeProcessLauncher? TryCreate(ProjectGraphNode projectNode, ProjectLauncher projectLauncher, IReadOnlyList<(string name, string value)> buildProperties);
 }

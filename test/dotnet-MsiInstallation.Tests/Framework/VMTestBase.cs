@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 }
                 else
                 {
-                    var sdkTestingDir = VM.GetRemoteDirectory(@"c:\SdkTesting", mustExist: true);
+                    var sdkTestingDir = VM.GetRemoteDirectory(@"c:\SdkTesting");
 
                     string installerPrefix = "dotnet-sdk-";
                     string installerSuffix = "-win-x64.exe";
@@ -51,8 +51,6 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
         {
             VM.Dispose();
         }
-
-        protected virtual bool NeedsIncludePreviews => false;
 
         Lazy<string> _sdkInstallerVersion;
         private bool _sdkInstalled = false;
@@ -132,7 +130,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 .WithIsReadOnly(true)
                 .Execute();
 
-            result.Should().PassWithoutWarning();
+            result.Should().Pass();
 
             string existingVersionToOverwrite = result.StdOut;
 
@@ -187,17 +185,13 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             var command = VM.CreateRunCommand("dotnet", "--version");
             command.IsReadOnly = true;
             var result = command.Execute();
-            result.Should().PassWithoutWarning();
+            result.Should().Pass();
             return result.StdOut;
         }
 
         protected CommandResult InstallWorkload(string workloadName, bool skipManifestUpdate)
         {
-            string [] args = { "dotnet", "workload", "install", workloadName};
-            if (NeedsIncludePreviews)
-            {
-                args = [.. args, "--include-previews"];
-            }
+            string [] args = { "dotnet", "workload", "install", workloadName, "--include-previews"};
             if (skipManifestUpdate)
             {
                 args = [.. args, "--skip-manifest-update"];
@@ -207,7 +201,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                     .WithDescription($"Install {workloadName} workload")
                     .Execute();
 
-            result.Should().PassWithoutWarning();
+            result.Should().Pass();
 
             return result;
         }
@@ -219,7 +213,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 .WithIsReadOnly(true)
                 .Execute();
 
-            result.Should().PassWithoutWarning();
+            result.Should().Pass();
 
             return ParseRollbackOutput(result.StdOut);
         }
@@ -239,7 +233,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 .WithIsReadOnly(true)
                 .Execute();
 
-            result.Should().PassWithoutWarning();
+            result.Should().Pass();
 
             return result.StdOut;
         }
@@ -250,7 +244,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 .WithDescription($"Add {source} to NuGet.config")
                 .Execute()
                 .Should()
-                .PassWithoutWarning();
+                .Pass();
         }
     }
 }

@@ -8,7 +8,7 @@ using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal partial class NewCommand : BaseCommand<NewCommandArgs>, ICustomHelp, ICommandDocument
+    internal partial class NewCommand : BaseCommand<NewCommandArgs>, ICustomHelp
     {
         internal NewCommand(
             string commandName,
@@ -43,8 +43,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Options.Add(SharedOptions.NoUpdateCheckOption);
             Options.Add(SharedOptions.ProjectPathOption);
         }
-
-        public string DocsLink { get; } = "https://aka.ms/dotnet-new";
 
         internal static CliOption<string?> DebugCustomSettingsLocationOption { get; } = new("--debug:custom-hive")
         {

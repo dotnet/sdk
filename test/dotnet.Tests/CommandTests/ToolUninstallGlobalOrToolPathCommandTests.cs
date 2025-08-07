@@ -240,7 +240,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             return new ToolInstallGlobalOrToolPathCommand(
                 result,
                 new PackageId(PackageId),
-                (location, forwardArguments, currentWorkingDirectory) => (store, store, packageDownloaderMock, toolPackageDownloaderMock),
+                (location, forwardArguments) => (store, store, packageDownloaderMock, toolPackageDownloaderMock),
                 (_, _) => new ShellShimRepository(
                     new DirectoryPath(_shimsDirectory),
                     string.Empty,

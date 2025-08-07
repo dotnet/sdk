@@ -54,32 +54,16 @@ namespace Microsoft.NET.Build.Tests
             var testAsset = _testAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource()
-                .WithProjectChanges((projectPath, project) =>
-                    {
-                        ConfigureProject(projectPath, project, targetFramework, new string[] { "_EnablePackageReferencesInVCProjects", "IncludeWindowsSDKRefFrameworkReferences" });
-
-                        var ns = project.Root.Name.Namespace;
-                        //  Use project-specific global packages folder so we can check what was downloaded
-                        project.Root.Element(ns + "PropertyGroup")
-                            .Add(new XElement(ns + "RestorePackagesPath", @"$(MSBuildProjectDirectory)\packages"));
-
-                    });
+                .WithProjectChanges((projectPath, project) => ConfigureProject(projectPath, project, targetFramework, new string[] { "_EnablePackageReferencesInVCProjects", "IncludeWindowsSDKRefFrameworkReferences" }));
 
             new BuildCommand(testAsset, "NETCoreCppCliTest")
-                .WithWorkingDirectory(testAsset.TestRoot)
-                .Execute("-p:Platform=x64", "/bl")
+                .Execute("-p:Platform=x64")
                 .Should()
                 .Pass();
 
             var cppnProjProperties = GetPropertyValues(testAsset.TestRoot, "NETCoreCppCliTest", targetFramework: targetFramework);
             Assert.True(cppnProjProperties["_EnablePackageReferencesInVCProjects"] == "true");
             Assert.True(cppnProjProperties["IncludeWindowsSDKRefFrameworkReferences"] == "");
-
-            var packagesFolder = Path.Combine(testAsset.TestRoot, "NETCoreCppCliTest", "packages");
-            if (Directory.Exists(packagesFolder))
-            {
-                new DirectoryInfo(packagesFolder).Should().NotHaveSubDirectories("microsoft.windows.sdk.net.ref");
-            }
         }
 
         [FullMSBuildOnlyFact]

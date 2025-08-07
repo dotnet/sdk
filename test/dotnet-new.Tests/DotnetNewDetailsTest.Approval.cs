@@ -31,27 +31,14 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [Fact]
         public Task CanDisplayDetails_RemotePackage_NuGetFeedNoVersion()
         {
-            var folder = CreateTemporaryFolder();
-
-            var createCommandResult = () => new DotnetNewCommand(_log, "details", _nuGetPackageId)
-                .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
-                .WithWorkingDirectory(folder)
+            CommandResult commandResult = new DotnetNewCommand(_log, "details", _nuGetPackageId)
+            .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
+                .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();
 
-            createCommandResult().Should().Fail();
-
-            File.WriteAllText(Path.Combine(folder, "NuGet.Config"), @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-  <packageSources>
-    <clear />
-    <add key=""NuGet.org"" value=""https://api.nuget.org/v3/index.json"" />
-  </packageSources>
-</configuration>
-");
-
-            var commandResult = createCommandResult();
-
-            commandResult.Should().Pass();
+            commandResult
+                .Should()
+                .Pass();
 
             return Verify(commandResult.StdOut);
         }

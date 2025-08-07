@@ -3,71 +3,96 @@
 
 using System.Diagnostics;
 
-namespace Microsoft.DotNet.Watch
+namespace Microsoft.DotNet.Watcher
 {
     internal sealed class EnvironmentVariablesBuilder
     {
         private static readonly char s_startupHooksSeparator = Path.PathSeparator;
         private const char AssembliesSeparator = ';';
 
-        public List<string> DotNetStartupHooks { get; } = [];
-        public List<string> AspNetCoreHostingStartupAssemblies { get; } = [];
+        public List<string> DotNetStartupHookDirective { get; } = [];
+        public List<string> AspNetCoreHostingStartupAssembliesVariable { get; } = [];
 
         /// <summary>
         /// Environment variables set on the dotnet run process.
         /// </summary>
         private readonly Dictionary<string, string> _variables = [];
 
+        /// <summary>
+        /// Environment variables passed as directives on command line (dotnet [env:name=value] run).
+        /// Currently, the effect is the same as setting <see cref="_variables"/> due to
+        /// https://github.com/dotnet/sdk/issues/40484
+        /// </summary>
+        private readonly Dictionary<string, string> _directives = [];
+
         public static EnvironmentVariablesBuilder FromCurrentEnvironment()
         {
             var builder = new EnvironmentVariablesBuilder();
 
-            if (Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotNetStartupHooks) is { } dotnetStartupHooks)
+            if (Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotnetStartupHooks) is { } dotnetStartupHooks)
             {
-                builder.DotNetStartupHooks.AddRange(dotnetStartupHooks.Split(s_startupHooksSeparator));
+                builder.DotNetStartupHookDirective.AddRange(dotnetStartupHooks.Split(s_startupHooksSeparator));
             }
 
             if (Environment.GetEnvironmentVariable(EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies) is { } assemblies)
             {
-                builder.AspNetCoreHostingStartupAssemblies.AddRange(assemblies.Split(AssembliesSeparator));
+                builder.AspNetCoreHostingStartupAssembliesVariable.AddRange(assemblies.Split(AssembliesSeparator));
             }
 
             return builder;
         }
 
+        public void SetDirective(string name, string value)
+        {
+            // should use DotNetStartupHookDirective
+            Debug.Assert(!name.Equals(EnvironmentVariables.Names.DotnetStartupHooks, StringComparison.OrdinalIgnoreCase));
+
+            _directives[name] = value;
+        }
+
         public void SetVariable(string name, string value)
         {
-            // should use AspNetCoreHostingStartupAssembliesVariable/DotNetStartupHookDirective
+            // should use AspNetCoreHostingStartupAssembliesVariable
             Debug.Assert(!name.Equals(EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies, StringComparison.OrdinalIgnoreCase));
-            Debug.Assert(!name.Equals(EnvironmentVariables.Names.DotNetStartupHooks, StringComparison.OrdinalIgnoreCase));
 
             _variables[name] = value;
         }
 
-        public void SetProcessEnvironmentVariables(ProcessSpec processSpec)
+        public void ConfigureProcess(ProcessSpec processSpec)
         {
-            foreach (var (name, value) in GetEnvironment())
-            {
-                processSpec.EnvironmentVariables.Add(name, value);
-            }
+            processSpec.Arguments = [.. GetCommandLineDirectives(), .. processSpec.Arguments ?? []];
+            AddToEnvironment(processSpec.EnvironmentVariables);
         }
 
-        public IEnumerable<(string name, string value)> GetEnvironment()
+        // for testing
+        internal void AddToEnvironment(Dictionary<string, string> variables)
         {
             foreach (var (name, value) in _variables)
             {
-                yield return (name, value);
+                variables.Add(name, value);
             }
 
-            if (DotNetStartupHooks is not [])
+            if (AspNetCoreHostingStartupAssembliesVariable is not [])
             {
-                yield return (EnvironmentVariables.Names.DotNetStartupHooks, string.Join(s_startupHooksSeparator, DotNetStartupHooks));
+                variables.Add(EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies, string.Join(AssembliesSeparator, AspNetCoreHostingStartupAssembliesVariable));
+            }
+        }
+
+        // for testing
+        internal IEnumerable<string> GetCommandLineDirectives()
+        {
+            foreach (var (name, value) in _directives)
+            {
+                yield return MakeDirective(name, value);
             }
 
-            if (AspNetCoreHostingStartupAssemblies is not [])
+            if (DotNetStartupHookDirective is not [])
             {
-                yield return (EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies, string.Join(AssembliesSeparator, AspNetCoreHostingStartupAssemblies));
+                yield return MakeDirective(EnvironmentVariables.Names.DotnetStartupHooks, string.Join(s_startupHooksSeparator, DotNetStartupHookDirective));
             }
+
+            static string MakeDirective(string name, string value)
+                => $"[env:{name}={value}]";
         }
     }
 }

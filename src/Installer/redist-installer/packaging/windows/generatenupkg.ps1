@@ -8,8 +8,7 @@ param(
     [Parameter(Mandatory=$true)][string]$NuspecFile,
     [Parameter(Mandatory=$true)][string]$NupkgFile,
     [Parameter(Mandatory=$false)][string]$Architecture,
-    [Parameter(Mandatory=$false)][string]$MmVersion,
-    [Parameter(Mandatory=$false)][switch]$Symbols
+    [Parameter(Mandatory=$false)][string]$MmVersion
 )
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bOR [Net.SecurityProtocolType]::Tls12
@@ -41,7 +40,5 @@ if (Test-Path $NupkgFile) {
     Remove-Item -Force $NupkgFile
 }
 
-$symbolsArg = if ($Symbols) { "-Symbols" } else { "" }
-
-& $NuGetExe pack $NuspecFile -Version $NugetVersion -OutputDirectory $OutputDirectory -NoDefaultExcludes -NoPackageAnalysis -Properties PAYLOAD_FILES=$ContentPath`;ARCH=$Architecture`;MAJOR_MINOR=$MmVersion $symbolsArg
+& $NuGetExe pack $NuspecFile -Version $NugetVersion -OutputDirectory $OutputDirectory -NoDefaultExcludes -NoPackageAnalysis -Properties PAYLOAD_FILES=$ContentPath`;ARCH=$Architecture`;MAJOR_MINOR=$MmVersion
 Exit $LastExitCode

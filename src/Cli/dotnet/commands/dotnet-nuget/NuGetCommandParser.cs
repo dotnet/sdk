@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Cli
             command.Subcommands.Add(GetVerifyCommand());
             command.Subcommands.Add(GetTrustCommand());
             command.Subcommands.Add(GetSignCommand());
-            NuGet.CommandLine.XPlat.Commands.Why.WhyCommand.GetWhyCommand(command);
+            command.Subcommands.Add(GetWhyCommand());
 
             command.SetAction(NuGetCommand.Run);
 
@@ -94,7 +94,6 @@ namespace Microsoft.DotNet.Cli
             pushCommand.Options.Add(new CliOption<bool>("--no-service-endpoint"));
             pushCommand.Options.Add(new CliOption<bool>("--interactive"));
             pushCommand.Options.Add(new CliOption<bool>("--skip-duplicate"));
-            pushCommand.Options.Add(new CliOption<string>("--configfile"));
 
             pushCommand.SetAction(NuGetCommand.Run);
 
@@ -218,6 +217,20 @@ namespace Microsoft.DotNet.Cli
             signCommand.SetAction(NuGetCommand.Run);
 
             return signCommand;
+        }
+
+        private static CliCommand GetWhyCommand()
+        {
+            DocumentedCommand whyCommand = new("why", "https://learn.microsoft.com/dotnet/core/tools/dotnet-nuget-why");
+            whyCommand.Arguments.Add(new CliArgument<string>("PROJECT|SOLUTION") { Arity = ArgumentArity.ExactlyOne });
+            whyCommand.Arguments.Add(new CliArgument<string>("PACKAGE") { Arity = ArgumentArity.ExactlyOne });
+
+            whyCommand.Options.Add(new ForwardedOption<IEnumerable<string>>("--framework", "-f") { Arity = ArgumentArity.ZeroOrMore }
+                .ForwardAsManyArgumentsEachPrefixedByOption("--framework")
+                .AllowSingleArgPerToken());
+
+            whyCommand.SetAction(NuGetCommand.Run);
+            return whyCommand;
         }
     }
 }

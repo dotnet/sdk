@@ -33,21 +33,20 @@ namespace Microsoft.DotNet.CommandFactory
             NuGetFramework framework = null,
             string configuration = Constants.DefaultConfiguration,
             string outputPath = null,
-            string applicationName = null,
-            string currentWorkingDirectory = null)
+            string applicationName = null)
         {
             var commandResolverArgs = new CommandResolverArguments
             {
                 CommandName = commandName,
                 CommandArguments = args,
                 Framework = framework,
-                ProjectDirectory = currentWorkingDirectory ?? Directory.GetCurrentDirectory(),
+                ProjectDirectory = Directory.GetCurrentDirectory(),
                 Configuration = configuration,
                 OutputPath = outputPath,
                 ApplicationName = applicationName
             };
 
-            var defaultCommandResolver = commandResolverPolicy.CreateCommandResolver(currentWorkingDirectory);
+            var defaultCommandResolver = commandResolverPolicy.CreateCommandResolver();
 
             return defaultCommandResolver.Resolve(commandResolverArgs);
         }

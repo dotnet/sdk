@@ -252,6 +252,8 @@ public class FilterStaticWebAssetEndpointsTest
             ]
         };
         defineStaticWebAssetEndpoints.BuildEngine = Mock.Of<IBuildEngine>();
+        defineStaticWebAssetEndpoints.TestLengthResolver = name => 10;
+        defineStaticWebAssetEndpoints.TestLastWriteResolver = name => DateTime.UtcNow;
 
         defineStaticWebAssetEndpoints.Execute();
         return StaticWebAssetEndpoint.FromItemGroup(defineStaticWebAssetEndpoints.Endpoints);
@@ -303,8 +305,6 @@ public class FilterStaticWebAssetEndpointsTest
             // Add these to avoid accessing the disk to compute them
             Integrity = "integrity",
             Fingerprint = "fingerprint",
-            FileLength = 10,
-            LastWriteTime = DateTime.UtcNow,
         };
 
         result.ApplyDefaults();

@@ -78,30 +78,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         }
 
         [Fact]
-        public void FindsSlnxByFolder()
-        {
-            const string Path = "for_workspace_finder/single_slnx/";
-
-            var (isSolution, workspacePath) = MSBuildWorkspaceFinder.FindWorkspace(ProjectsPath, Path);
-
-            var solutionFileName = System.IO.Path.GetFileName(workspacePath);
-            Assert.Equal("single_slnx.slnx", solutionFileName);
-            Assert.True(isSolution);
-        }
-
-        [Fact]
-        public void FindsSlnxByFilePath()
-        {
-            const string Path = "for_workspace_finder/multiple_solutions/solution_c.slnx";
-
-            var (isSolution, workspacePath) = MSBuildWorkspaceFinder.FindWorkspace(ProjectsPath, Path);
-
-            var solutionFileName = System.IO.Path.GetFileName(workspacePath);
-            Assert.Equal("solution_c.slnx", solutionFileName);
-            Assert.True(isSolution);
-        }
-
-        [Fact]
         public void FindsProjectByFolder()
         {
             const string Path = "for_workspace_finder/single_project/";

@@ -73,7 +73,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="GetAssemblyAttributes"
-          DependsOnTargets="GetAssemblyVersion;InitializeSourceControlInformation;AddSourceRevisionToInformationalVersion">
+          DependsOnTargets="GetAssemblyVersion;AddSourceRevisionToInformationalVersion">
     <ItemGroup>
       <AssemblyAttribute Include="System.Reflection.AssemblyCompanyAttribute" Condition="'$(Company)' != '' and '$(GenerateAssemblyCompanyAttribute)' == 'true'">
         <_Parameter1>$(Company)</_Parameter1>

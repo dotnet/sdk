@@ -38,7 +38,4 @@
     <Using Include="Xunit.Abstractions" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="$(MSBuildThisFileDirectory)xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
 </Project>

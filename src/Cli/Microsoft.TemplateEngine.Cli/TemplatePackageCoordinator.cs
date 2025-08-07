@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Common;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.Installer;
@@ -208,9 +207,9 @@ namespace Microsoft.TemplateEngine.Cli
 
             foreach (string installArg in args.TemplatePackages)
             {
-                string[] split = installArg.Split(["::"], StringSplitOptions.RemoveEmptyEntries).SelectMany(arg => arg.Split('@', StringSplitOptions.RemoveEmptyEntries)).ToArray();
-                string identifier = split[0];
-                string? version = split.Length > 1 ? split[1] : null;
+                string[] splitByColons = installArg.Split(new[] { "::" }, StringSplitOptions.RemoveEmptyEntries);
+                string identifier = splitByColons[0];
+                string? version = splitByColons.Length > 1 ? splitByColons[1] : null;
                 foreach (string expandedIdentifier in InstallRequestPathResolution.ExpandMaskedPath(identifier, _engineEnvironmentSettings))
                 {
                     installRequests.Add(new InstallRequest(expandedIdentifier, version, details: details, force: args.Force));
@@ -437,7 +436,7 @@ namespace Microsoft.TemplateEngine.Cli
             }
             else
             {
-                IEnumerable<PackageSource> packageSources = LoadNuGetSources(additionalSources, includeNuGetFeed: PathUtility.CheckForNuGetInNuGetConfig());
+                IEnumerable<PackageSource> packageSources = LoadNuGetSources(additionalSources, true);
 
                 nuGetPackageMetadata = await GetPackageMetadataFromMultipleFeedsAsync(packageSources, nugetApiManager, packageIdentity, packageVersion, cancellationToken).ConfigureAwait(false);
                 if (nuGetPackageMetadata != null && nuGetPackageMetadata.Source.Source.Equals(NugetOrgFeed))

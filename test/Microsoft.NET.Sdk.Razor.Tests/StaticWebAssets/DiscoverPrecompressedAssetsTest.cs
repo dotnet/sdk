@@ -50,9 +50,7 @@ public class DiscoverPrecompressedAssetsTest
             AssetTraitValue = string.Empty,
             AssetTraitName = string.Empty,
             OriginalItemSpec = Path.Combine("wwwroot", "js", "site.js"),
-            CopyToPublishDirectory = StaticWebAsset.AssetCopyOptions.PreserveNewest,
-            FileLength = 10,
-            LastWriteTime = DateTime.UtcNow
+            CopyToPublishDirectory = StaticWebAsset.AssetCopyOptions.PreserveNewest
         };
 
         var compressedCandidate = new StaticWebAsset
@@ -75,9 +73,7 @@ public class DiscoverPrecompressedAssetsTest
             AssetTraitValue = string.Empty,
             AssetTraitName = string.Empty,
             OriginalItemSpec = Path.Combine("wwwroot", "js", "site.js.gz"),
-            CopyToPublishDirectory = StaticWebAsset.AssetCopyOptions.PreserveNewest,
-            FileLength = 10,
-            LastWriteTime = DateTime.UtcNow
+            CopyToPublishDirectory = StaticWebAsset.AssetCopyOptions.PreserveNewest
         };
 
         var task = new DiscoverPrecompressedAssets

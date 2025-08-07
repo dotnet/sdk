@@ -15,39 +15,9 @@
     "solution"
   ],
   "sourceName": "Solution1",
-  "symbols": {
-    "Format": {
-      "type": "parameter",
-      "displayName": "Solution file format",
-      "description": "Choose the format for the solution file: sln or slnx.",
-      "defaultValue": "sln",
-      "datatype": "choice",
-      "choices": [
-        {
-          "choice": "sln",
-          "displayName": ".sln format",
-          "description": "Solution file"
-        },
-        {
-          "choice": "slnx",
-          "displayName": ".slnx format",
-          "description": "XML Solution file"
-        }
-      ]
-    }
-  },
-  "sources": [
+  "primaryOutputs": [
     {
-      "modifiers": [
-        {
-          "condition": "(Format == \"slnx\")",
-          "exclude": [ "Solution1.sln" ]
-        },
-        {
-          "condition": "(Format == \"sln\")",
-          "exclude": [ "Solution1.slnx" ]
-        }
-      ]
+      "path": "Solution1.sln"
     }
   ],
   "defaultName": "Solution1"

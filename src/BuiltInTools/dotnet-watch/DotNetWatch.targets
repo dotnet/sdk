@@ -70,9 +70,9 @@ Returns: @(Watch)
       <!-- In RazorSDK (Blazor, RCL, and Web) targeting apps also watch content files under wwwroot -->
       <Watch Include="%(Content.FullPath)"
              Condition="'$(UsingMicrosoftNETSdkRazor)'=='true' AND '$(DotNetWatchContentFiles)'!='false' AND '%(Content.Watch)' != 'false' AND $([System.String]::Copy('%(Identity)').Replace('\','/').StartsWith('wwwroot/'))"
-             StaticWebAssetPath="$(_DotNetWatchStaticWebAssetBasePath)$([System.String]::Copy('%(Identity)').Replace('\','/'))" />
+             StaticWebAssetPath="$(_DotNetWatchStaticWebAssetBasePath)$([System.String]::Copy('%(Identity)').Replace('\','/').Substring(8))" />
 
-      <_WatchProjects Include="%(ProjectReference.Identity)" Condition="'%(ProjectReference.Watch)' != 'false' and Exists('%(Identity)')" />
+      <_WatchProjects Include="%(ProjectReference.Identity)" Condition="'%(ProjectReference.Watch)' != 'false'" />
     </ItemGroup>
 
     <MSBuild Projects="@(_WatchProjects)"

@@ -1,7 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Watch.UnitTests
+using Microsoft.DotNet.Watcher.Tools;
+
+namespace Microsoft.DotNet.Watcher.Tests
 {
     public class GlobbingAppTests : DotNetWatchTestBase
     {
@@ -112,7 +114,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.DotnetWatchArgs.Clear();
             App.Start(testAsset, ["--list"]);
             var lines = await App.Process.GetAllOutputLinesAsync(CancellationToken.None);
-            var files = lines.Where(l => !l.StartsWith("dotnet watch ⌚") && l.Trim() != "");
+            var files = lines.Where(l => !l.StartsWith("watch :"));
 
             AssertEx.EqualFileList(
                 testAsset.Path,

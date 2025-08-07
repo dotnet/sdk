@@ -1,26 +1,22 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+
 using System.Diagnostics;
 using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
-using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public class StaticWebAssetEndpointProperty : IComparable<StaticWebAssetEndpointProperty>, IEquatable<StaticWebAssetEndpointProperty>
 {
-    private static readonly JsonTypeInfo<StaticWebAssetEndpointProperty[]> _jsonTypeInfo =
-        StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetEndpointPropertyArray;
-
     public string Name { get; set; }
 
     public string Value { get; set; }
 
     internal static StaticWebAssetEndpointProperty[] FromMetadataValue(string value)
     {
-        return string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize(value, _jsonTypeInfo);
+        return string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize<StaticWebAssetEndpointProperty[]>(value);
     }
 
     internal static string ToMetadataValue(StaticWebAssetEndpointProperty[] responseHeaders)

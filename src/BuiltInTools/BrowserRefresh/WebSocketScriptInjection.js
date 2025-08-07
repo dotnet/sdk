@@ -44,9 +44,8 @@ setTimeout(async function () {
       const payload = JSON.parse(message.data);
       const action = {
         'UpdateStaticFile': () => updateStaticFile(payload.path),
-        'BlazorHotReloadDeltav1': () => applyBlazorDeltas_legacy(payload.sharedSecret, payload.deltas, false),
-        'BlazorHotReloadDeltav2': () => applyBlazorDeltas_legacy(payload.sharedSecret, payload.deltas, true),
-        'BlazorHotReloadDeltav3': () => applyBlazorDeltas(payload.sharedSecret, payload.updateId, payload.deltas, payload.responseLoggingLevel),
+        'BlazorHotReloadDeltav1': () => applyBlazorDeltas(payload.sharedSecret, payload.deltas, false),
+        'BlazorHotReloadDeltav2': () => applyBlazorDeltas(payload.sharedSecret, payload.deltas, true),
         'HotReloadDiagnosticsv1': () => displayDiagnostics(payload.diagnostics),
         'BlazorRequestApplyUpdateCapabilities': () => getBlazorWasmApplyUpdateCapabilities(false),
         'BlazorRequestApplyUpdateCapabilities2': () => getBlazorWasmApplyUpdateCapabilities(true),
@@ -96,22 +95,19 @@ setTimeout(async function () {
       .forEach(e => updateCssElement(e));
   }
 
-  function getMessageAndStack(error) {
-    const message = error.message || '<unknown error>'
-    let messageAndStack = error.stack || message
-    if (!messageAndStack.includes(message)) {
-      messageAndStack = message + "\n" + messageAndStack;
-    }
-
-    return messageAndStack
-  }
-
   function getBlazorWasmApplyUpdateCapabilities(sendErrorToClient) {
     let applyUpdateCapabilities;
     try {
       applyUpdateCapabilities = window.Blazor._internal.getApplyUpdateCapabilities();
     } catch (error) {
-      applyUpdateCapabilities = sendErrorToClient ? "!" + getMessageAndStack(error) : '';
+      const message = error.message || '<unknown error>'
+      let messageAndStack = error.stack || message
+      if (!messageAndStack.includes(message))
+      {
+         messageAndStack = message + "\n" + messageAndStack;
+      }
+
+      applyUpdateCapabilities = sendErrorToClient ? "!" + messageAndStack : '';
     }
     connection.send(applyUpdateCapabilities);
   }
@@ -137,7 +133,7 @@ setTimeout(async function () {
     styleElement.parentNode.insertBefore(newElement, styleElement.nextSibling);
   }
 
-  async function applyBlazorDeltas_legacy(serverSecret, deltas, sendErrorToClient) {
+  async function applyBlazorDeltas(serverSecret, deltas, sendErrorToClient) {
     if (sharedSecret && (serverSecret != sharedSecret.encodedSharedSecret)) {
       // Validate the shared secret if it was specified. It might be unspecified in older versions of VS
       // that do not support this feature as yet.
@@ -145,20 +141,22 @@ setTimeout(async function () {
     }
 
     let applyError = undefined;
-
-    try {
-      applyDeltas_legacy(deltas)
-    } catch (error) {
-      console.warn(error);
-      applyError = error;
+    if (window.Blazor?._internal?.applyHotReload) {
+      // Only apply hot reload deltas if Blazor has been initialized.
+      // It's possible for Blazor to start after the initial page load, so we don't consider skipping this step
+      // to be a failure. These deltas will get applied later, when Blazor completes initialization.
+      deltas.forEach(d => {
+        try {
+          window.Blazor._internal.applyHotReload(d.moduleId, d.metadataDelta, d.ilDelta, d.pdbDelta, d.updatedTypes)
+        } catch (error) {
+          console.warn(error);
+          applyError = error;
+        }
+      });
     }
 
-    const body = JSON.stringify({
-      id: deltas[0].sequenceId,
-      deltas: deltas
-    });
     try {
-      await fetch('/_framework/blazor-hotreload', { method: 'post', headers: { 'content-type': 'application/json' }, body: body });
+      await fetch('/_framework/blazor-hotreload', { method: 'post', headers: { 'content-type': 'application/json' }, body: JSON.stringify(deltas) });
     } catch (error) {
       console.warn(error);
       applyError = error;
@@ -168,99 +166,6 @@ setTimeout(async function () {
       sendDeltaNotApplied(sendErrorToClient ? applyError : undefined);
     } else {
       sendDeltaApplied();
-      notifyHotReloadApplied();
-    }
-  }
-
-  function applyDeltas_legacy(deltas) {
-    let apply = window.Blazor?._internal?.applyHotReload
-
-    // Only apply hot reload deltas if Blazor has been initialized.
-    // It's possible for Blazor to start after the initial page load, so we don't consider skipping this step
-    // to be a failure. These deltas will get applied later, when Blazor completes initialization.
-    if (apply) {
-      deltas.forEach(d => {
-        if (apply.length == 5) {
-          // WASM 8.0
-          apply(d.moduleId, d.metadataDelta, d.ilDelta, d.pdbDelta, d.updatedTypes)
-        } else {
-          // WASM 9.0
-          apply(d.moduleId, d.metadataDelta, d.ilDelta, d.pdbDelta)
-        }
-      });
-    }
-  }
-  function sendDeltaApplied() {
-    connection.send(new Uint8Array([1]).buffer);
-  }
-
-  function sendDeltaNotApplied(error) {
-    if (error) {
-      let encoder = new TextEncoder()
-      connection.send(encoder.encode("\0" + error.message + "\0" + error.stack));
-    } else {
-      connection.send(new Uint8Array([0]).buffer);
-    }
-  }
-
-  async function applyBlazorDeltas(serverSecret, updateId, deltas, responseLoggingLevel) {
-    if (sharedSecret && (serverSecret != sharedSecret.encodedSharedSecret)) {
-      // Validate the shared secret if it was specified. It might be unspecified in older versions of VS
-      // that do not support this feature as yet.
-      throw 'Unable to validate the server. Rejecting apply-update payload.';
-    }
-
-    const AgentMessageSeverity_Error = 2
-
-    let applyError = undefined;
-    let log = [];
-    try {
-      let applyDeltas = window.Blazor?._internal?.applyHotReloadDeltas
-      if (applyDeltas) {
-        // Only apply hot reload deltas if Blazor has been initialized.
-        // It's possible for Blazor to start after the initial page load, so we don't consider skipping this step
-        // to be a failure. These deltas will get applied later, when Blazor completes initialization.
-      
-        let wasmDeltas = deltas.map(delta => {
-          return {
-            "moduleId": delta.moduleId,
-            "metadataDelta": delta.metadataDelta,
-            "ilDelta": delta.ilDelta,
-            "pdbDelta": delta.pdbDelta,
-            "updatedTypes": delta.updatedTypes,
-          };
-        });
-
-        log = applyDeltas(wasmDeltas, responseLoggingLevel);      
-      } else {
-        // Try invoke older WASM API:
-        applyDeltas_legacy(deltas)
-      }
-    } catch (error) {
-      console.warn(error);
-      applyError = error;
-      log.push({ "message": getMessageAndStack(error), "severity": AgentMessageSeverity_Error });
-    }
-
-    try {
-      let body = JSON.stringify({
-        "id": updateId,
-        "deltas": deltas
-      });
-
-      await fetch('/_framework/blazor-hotreload', { method: 'post', headers: { 'content-type': 'application/json' }, body: body });
-    } catch (error) {
-      console.warn(error);
-      applyError = error;
-      log.push({ "message": getMessageAndStack(error), "severity": AgentMessageSeverity_Error });
-    }
-
-    connection.send(JSON.stringify({
-      "success": !applyError,
-      "log": log
-    }));
-
-    if (!applyError) {
       notifyHotReloadApplied();
     }
   }
@@ -314,6 +219,19 @@ setTimeout(async function () {
       }
     } else {
       location.reload();
+    }
+  }
+
+  function sendDeltaApplied() {
+    connection.send(new Uint8Array([1]).buffer);
+  }
+
+  function sendDeltaNotApplied(error) {
+    if (error) {
+      let encoder = new TextEncoder()
+      connection.send(encoder.encode("\0" + error.message + "\0" + error.stack));
+    } else {
+      connection.send(new Uint8Array([0]).buffer);
     }
   }
 

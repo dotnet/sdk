@@ -3,7 +3,7 @@
 
 using Moq;
 
-namespace Aspire.Tools.Service.UnitTests;
+namespace Microsoft.WebTools.AspireServer.UnitTests;
 
 public interface IMockFactory
 {

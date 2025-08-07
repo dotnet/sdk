@@ -74,22 +74,22 @@ namespace Microsoft.DotNet.Workloads.Workload.List
             }
             else
             {
-                var versionInfo = _workloadListHelper.ManifestProvider.GetWorkloadVersion();
+                var globalJsonInformation = _workloadListHelper.ManifestProvider.GetGlobalJsonInformation();
                 Reporter.WriteLine();
-                var shouldPrintTable = versionInfo.IsInstalled;
-                var shouldShowWorkloadSetVersion = versionInfo.GlobalJsonPath is not null ||
+                var shouldPrintTable = globalJsonInformation?.WorkloadVersionInstalled != false;
+                var shouldShowWorkloadSetVersion = globalJsonInformation is not null ||
                     InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_workloadListHelper._currentSdkFeatureBand, _workloadListHelper.UserLocalPath), "default.json")).UseWorkloadSets == true;
 
                 if (shouldShowWorkloadSetVersion)
                 {
-                    if (versionInfo.GlobalJsonPath is not null)
+                    if (globalJsonInformation is not null)
                     {
                         Reporter.WriteLine(string.Format(
-                            versionInfo.IsInstalled ?
+                            globalJsonInformation.WorkloadVersionInstalled ?
                                 LocalizableStrings.WorkloadSetFromGlobalJsonInstalled :
-                                InformationStrings.WorkloadSetFromGlobalJsonNotInstalled,
-                            versionInfo.Version,
-                            versionInfo.GlobalJsonPath));
+                                LocalizableStrings.WorkloadSetFromGlobalJsonNotInstalled,
+                            globalJsonInformation.GlobalJsonVersion,
+                            globalJsonInformation.GlobalJsonPath));
                     }
                     else
                     {
@@ -105,12 +105,15 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                     InstalledWorkloadsCollection installedWorkloads = _workloadListHelper.AddInstalledVsWorkloads(installedList);
                     PrintableTable<KeyValuePair<string, string>> table = new();
                     table.AddColumn(InformationStrings.WorkloadIdColumn, workload => workload.Key);
-                    table.AddColumn(InformationStrings.WorkloadManifestVersionColumn, workload =>
+                    if (!shouldShowWorkloadSetVersion)
                     {
-                        var m = _workloadListHelper.WorkloadResolver.GetManifestFromWorkload(new WorkloadId(workload.Key));
-                        var manifestInfo = manifestInfoDict[m.Id];
-                        return m.Version + "/" + manifestInfo.ManifestFeatureBand;
-                    });
+                        table.AddColumn(InformationStrings.WorkloadManifestVersionColumn, workload =>
+                        {
+                            var m = _workloadListHelper.WorkloadResolver.GetManifestFromWorkload(new WorkloadId(workload.Key));
+                            var manifestInfo = manifestInfoDict[m.Id];
+                            return m.Version + "/" + manifestInfo.ManifestFeatureBand;
+                        });
+                    }
 
                     table.AddColumn(InformationStrings.WorkloadSourceColumn, workload => workload.Value);
 

@@ -4,7 +4,7 @@
 using System.Diagnostics;
 using Moq;
 
-namespace Aspire.Tools.Service.UnitTests;
+namespace Microsoft.WebTools.AspireServer.UnitTests;
 
 public class Mocks
 {

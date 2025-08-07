@@ -4,7 +4,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.DotNet.Watch.UnitTests
+namespace Microsoft.AspNetCore.Testing
 {
     internal static class TaskExtensions
     {

@@ -4,7 +4,7 @@
 
 using System.Diagnostics.Tracing;
 
-namespace Microsoft.DotNet.Watch
+namespace Microsoft.DotNet.Watcher.Tools
 {
     [EventSource(Name = "HotReload")]
     internal sealed class HotReloadEventSource : EventSource

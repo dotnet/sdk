@@ -11,8 +11,6 @@
           DependsOnTargets="GetCurrentRuntimeInformation;
                             GenerateRpmsInner" />
 
-  <!-- Removed TestSdkRpm. SDK RPMS should be tested in a separate container to avoid polluting or relying on the
-       build environment. https://github.com/dotnet/sdk/issues/41910 -->
   <Target Name="GenerateRpmsInner"
           DependsOnTargets="TestFPMTool;BuildRpms"
           Condition=" '$(IsRPMBasedDistro)' == 'True' "
@@ -301,5 +299,7 @@
              Text="FPM tool Not found, RPM packages will not be built."
              Importance="High" />
   </Target>
+
+  <!-- Removed the TestSdkRpm task as it would fail when the installed package exactly matched the upgrade package -->
 
 </Project>

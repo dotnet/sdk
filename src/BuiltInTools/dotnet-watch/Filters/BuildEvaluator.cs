@@ -3,8 +3,9 @@
 
 
 using System.Diagnostics;
+using Microsoft.DotNet.Watcher.Internal;
 
-namespace Microsoft.DotNet.Watch
+namespace Microsoft.DotNet.Watcher.Tools
 {
     internal class BuildEvaluator(DotNetWatchContext context, MSBuildFileSetFactory rootProjectFileSetFactory)
     {
@@ -29,7 +30,7 @@ namespace Microsoft.DotNet.Watch
         {
             if (!context.EnvironmentOptions.SuppressMSBuildIncrementalism &&
                 iteration > 0 &&
-                CommandLineOptions.IsCodeExecutionCommand(context.RootProjectOptions.Command))
+                context.RootProjectOptions.Command is "run" or "test")
             {
                 if (RequiresRevaluation)
                 {
@@ -77,17 +78,14 @@ namespace Microsoft.DotNet.Watch
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var result = await rootProjectFileSetFactory.TryCreateAsync(requireProjectGraph: true, cancellationToken);
+                var result = await rootProjectFileSetFactory.TryCreateAsync(cancellationToken);
                 if (result != null)
                 {
                     return result;
                 }
 
-                await FileWatcher.WaitForFileChangeAsync(
-                    rootProjectFileSetFactory.RootProjectFile,
-                    context.Reporter,
-                    startedWatching: () => context.Reporter.Report(MessageDescriptor.FixBuildError),
-                    cancellationToken);
+                context.Reporter.Warn("Fix the error to continue or press Ctrl+C to exit.");
+                await FileWatcher.WaitForFileChangeAsync(rootProjectFileSetFactory.RootProjectFile, context.Reporter, cancellationToken);
             }
         }
 

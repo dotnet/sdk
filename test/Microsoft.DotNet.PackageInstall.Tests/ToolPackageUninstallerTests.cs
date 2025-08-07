@@ -33,8 +33,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
-                isGlobalTool: true,
-                verifySignatures: false);
+                isGlobalTool: true);
 
             package.PackagedShims.Should().ContainSingle(f => f.Value.Contains("demo.exe") || f.Value.Contains("demo"));
 

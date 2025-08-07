@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 
-namespace Aspire.Tools.Service;
+namespace Microsoft.WebTools.AspireServer.Helpers;
 
 internal class SocketUtilities
 {

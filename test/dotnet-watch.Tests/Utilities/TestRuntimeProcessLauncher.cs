@@ -5,13 +5,13 @@
 
 using Microsoft.Build.Graph;
 
-namespace Microsoft.DotNet.Watch.UnitTests;
+namespace Microsoft.DotNet.Watcher.Tests;
 
 internal class TestRuntimeProcessLauncher(ProjectLauncher projectLauncher) : IRuntimeProcessLauncher
 {
     public class Factory(Action<TestRuntimeProcessLauncher>? initialize = null) : IRuntimeProcessLauncherFactory
     {
-        public IRuntimeProcessLauncher TryCreate(ProjectGraphNode projectNode, ProjectLauncher projectLauncher, ProjectOptions hostProjectOptions)
+        public IRuntimeProcessLauncher TryCreate(ProjectGraphNode projectNode, ProjectLauncher projectLauncher, IReadOnlyList<(string name, string value)> buildProperties)
         {
             var service = new TestRuntimeProcessLauncher(projectLauncher);
             initialize?.Invoke(service);
@@ -20,19 +20,12 @@ internal class TestRuntimeProcessLauncher(ProjectLauncher projectLauncher) : IRu
     }
 
     public Func<IEnumerable<(string name, string value)>>? GetEnvironmentVariablesImpl;
-    public Action? TerminateLaunchedProcessesImpl;
 
     public ProjectLauncher ProjectLauncher { get; } = projectLauncher;
 
     public ValueTask DisposeAsync()
         => ValueTask.CompletedTask;
 
-    public IEnumerable<(string name, string value)> GetEnvironmentVariables()
-        => GetEnvironmentVariablesImpl?.Invoke() ?? [];
-
-    public ValueTask TerminateLaunchedProcessesAsync(CancellationToken cancellationToken)
-    {
-        TerminateLaunchedProcessesImpl?.Invoke();
-        return ValueTask.CompletedTask;
-    }
+    public ValueTask<IEnumerable<(string name, string value)>> GetEnvironmentVariablesAsync(CancellationToken cancelToken)
+        => ValueTask.FromResult(GetEnvironmentVariablesImpl?.Invoke() ?? []);
 }

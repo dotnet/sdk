@@ -3,7 +3,7 @@
 
 using System.Globalization;
 
-namespace Microsoft.DotNet.Watch.UnitTests
+namespace Microsoft.DotNet.Watcher.Tests
 {
     public class DotNetWatcherTests : DotNetWatchTestBase
     {
@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var value = await App.AssertOutputLineStartsWith(messagePrefix);
             Assert.Equal(1, int.Parse(value, CultureInfo.InvariantCulture));
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+            await App.AssertWaitingForChanges();
 
             UpdateSourceFile(source);
             await App.AssertStarted();

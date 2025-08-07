@@ -47,7 +47,5 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public Dictionary<WorkloadId, BaseWorkloadDefinition> Workloads { get; }
         public Dictionary<WorkloadPackId, WorkloadPack> Packs { get; }
-
-        public static WorkloadManifest CreateForTests(string id) => new(id, new FXVersion(7, 3, 5), null, string.Empty, [], [], []);
-}
+    }
 }

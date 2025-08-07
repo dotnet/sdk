@@ -2,8 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watch;
+namespace Microsoft.DotNet.Watcher;
 
 internal class ReporterTraceListener(IReporter reporter, string emoji) : TraceListener
 {

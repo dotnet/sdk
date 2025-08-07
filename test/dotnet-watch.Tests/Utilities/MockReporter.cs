@@ -3,15 +3,18 @@
 
 #nullable enable
 
-namespace Microsoft.DotNet.Watch.UnitTests;
+using Microsoft.Extensions.Tools.Internal;
+
+namespace Microsoft.DotNet.Watcher.Tools;
 
 internal class MockReporter : IReporter
 {
     public readonly List<string> Messages = [];
 
-    public void ReportProcessOutput(OutputLine line)
-    {
-    }
+    public bool ReportProcessOutput => false;
+
+    public void ProcessOutput(string projectPath, string data)
+        => throw new InvalidOperationException();
 
     public void Report(MessageDescriptor descriptor, string prefix, object?[] args)
     {

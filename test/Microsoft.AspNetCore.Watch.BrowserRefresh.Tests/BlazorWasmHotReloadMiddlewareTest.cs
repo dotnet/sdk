@@ -3,260 +3,339 @@
 
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 {
     public class BlazorWasmHotReloadMiddlewareTest
     {
-        private readonly ILogger<BlazorWasmHotReloadMiddleware> _logger;
-        private BlazorWasmHotReloadMiddleware _middleware;
-
-        public BlazorWasmHotReloadMiddlewareTest()
-        {
-            var loggerFactory = LoggerFactory.Create(_ => { });
-            _logger = loggerFactory.CreateLogger<BlazorWasmHotReloadMiddleware>();
-            _middleware = new BlazorWasmHotReloadMiddleware(context => throw new TimeZoneNotFoundException(), _logger);
-        }
-
         [Fact]
         public async Task DeltasAreSavedOnPost()
         {
+            // Arrange
             var context = new DefaultHttpContext();
             context.Request.Method = "post";
-            var update = new BlazorWasmHotReloadMiddleware.Update
+            var deltas = new[]
             {
-                Id = 0,
-                Deltas =
-                [
-                    new()
-                    {
-                        ModuleId = Guid.NewGuid().ToString(),
-                        ILDelta = "ILDelta1",
-                        PdbDelta = "PDBDelta1",
-                        MetadataDelta = "MetadataDelta1",
-                        UpdatedTypes = [42],
-                    },
-                    new()
-                    {
-                        ModuleId = Guid.NewGuid().ToString(),
-                        ILDelta = "ILDelta2",
-                        PdbDelta = "PDBDelta2",
-                        MetadataDelta = "MetadataDelta2",
-                        UpdatedTypes = [42],
-                    }
-                ]
+                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                {
+                    SequenceId = 0,
+                    ModuleId = Guid.NewGuid().ToString(),
+                    ILDelta = "ILDelta1",
+                    MetadataDelta = "MetadataDelta1",
+                    UpdatedTypes = [42],
+                },
+                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                {
+                    SequenceId = 1,
+                    ModuleId = Guid.NewGuid().ToString(),
+                    ILDelta = "ILDelta2",
+                    MetadataDelta = "MetadataDelta2",
+                    UpdatedTypes = [42],
+                }
             };
+            context.Request.Body = GetJson(deltas);
 
-            context.Request.Body = GetJson(update);
+            var middleware = new BlazorWasmHotReloadMiddleware(context => throw new TimeZoneNotFoundException());
 
-            await _middleware.InvokeAsync(context);
+            // Act
+            await middleware.InvokeAsync(context);
 
-            AssertUpdates([update], _middleware.Updates);
+            // Assert
+            AssertDeltas(deltas, middleware.Deltas);
+            Assert.NotEqual(0, context.Response.Headers["ETag"].Count);
         }
 
         [Fact]
         public async Task DuplicateDeltasOnPostAreIgnored()
         {
-            var updates = new BlazorWasmHotReloadMiddleware.Update[]
+            // Arrange
+            var deltas = new[]
             {
-                new()
+                new BlazorWasmHotReloadMiddleware.UpdateDelta
                 {
-                    Id = 0,
-                    Deltas =
-                    [
-                        new()
-                        {
-                            ModuleId = Guid.NewGuid().ToString(),
-                            ILDelta = "ILDelta1",
-                            PdbDelta = "PDBDelta1",
-                            MetadataDelta = "MetadataDelta1",
-                            UpdatedTypes = [42],
-                        }
-                    ]
+                    SequenceId = 0,
+                    ModuleId = Guid.NewGuid().ToString(),
+                    ILDelta = "ILDelta1",
+                    MetadataDelta = "MetadataDelta1",
+                    UpdatedTypes = [42],
                 },
-                new()
+                new BlazorWasmHotReloadMiddleware.UpdateDelta
                 {
-                    Id = 1,
-                    Deltas =
-                    [
-                        new()
-                        {
-                            ModuleId = Guid.NewGuid().ToString(),
-                            ILDelta = "ILDelta2",
-                            PdbDelta = "PDBDelta2",
-                            MetadataDelta = "MetadataDelta2",
-                            UpdatedTypes = [42],
-                        }
-                    ]
+                    SequenceId = 1,
+                    ModuleId = Guid.NewGuid().ToString(),
+                    ILDelta = "ILDelta2",
+                    MetadataDelta = "MetadataDelta2",
+                    UpdatedTypes = [42],
                 }
             };
-
             var context = new DefaultHttpContext();
             context.Request.Method = "post";
-            context.Request.Body = GetJson(updates[0]);
+            context.Request.Body = GetJson(deltas);
 
-            await _middleware.InvokeAsync(context);
+            var middleware = new BlazorWasmHotReloadMiddleware(context => throw new TimeZoneNotFoundException());
 
+            // Act 1
+            await middleware.InvokeAsync(context);
+
+            // Act 2
             context = new DefaultHttpContext();
             context.Request.Method = "post";
-            context.Request.Body = GetJson(updates[1]);
-            await _middleware.InvokeAsync(context);
+            context.Request.Body = GetJson(deltas);
+            await middleware.InvokeAsync(context);
 
-            AssertUpdates(updates, _middleware.Updates);
+            // Assert
+            AssertDeltas(deltas, middleware.Deltas);
+            Assert.NotEqual(0, context.Response.Headers["ETag"].Count);
         }
 
         [Fact]
         public async Task MultipleDeltaPayloadsCanBeAccepted()
         {
-            var update = new BlazorWasmHotReloadMiddleware.Update()
+            // Arrange
+            var deltas = new List<BlazorWasmHotReloadMiddleware.UpdateDelta>
             {
-                Id = 0,
-                Deltas =
-                [
-                    new()
-                    {
-                        ModuleId = Guid.NewGuid().ToString(),
-                        ILDelta = "ILDelta1",
-                        PdbDelta = "PDBDelta1",
-                        MetadataDelta = "MetadataDelta1",
-                        UpdatedTypes = [42],
-                    },
-                    new()
-                    {
-                        ModuleId = Guid.NewGuid().ToString(),
-                        ILDelta = "ILDelta2",
-                        PdbDelta = "PDBDelta2",
-                        MetadataDelta = "MetadataDelta2",
-                        UpdatedTypes = [42],
-                    }
-                ]
+                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                {
+                    SequenceId = 0,
+                    ModuleId = Guid.NewGuid().ToString(),
+                    ILDelta = "ILDelta1",
+                    MetadataDelta = "MetadataDelta1",
+                    UpdatedTypes = [42],
+                },
+                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                {
+                    SequenceId = 1,
+                    ModuleId = Guid.NewGuid().ToString(),
+                    ILDelta = "ILDelta2",
+                    MetadataDelta = "MetadataDelta2",
+                    UpdatedTypes = [42],
+                }
             };
-
             var context = new DefaultHttpContext();
             context.Request.Method = "post";
-            context.Request.Body = GetJson(update);
-            await _middleware.InvokeAsync(context);
+            context.Request.Body = GetJson(deltas);
 
-            var newUpdate = new BlazorWasmHotReloadMiddleware.Update()
+            var middleware = new BlazorWasmHotReloadMiddleware(context => throw new TimeZoneNotFoundException());
+
+            // Act 1
+            await middleware.InvokeAsync(context);
+
+            // Act 2
+            var newDeltas = new[]
             {
-                Id = 1,
-                Deltas =
-                [
-                    new()
-                    {
-                        ModuleId = Guid.NewGuid().ToString(),
-                        ILDelta = "ILDelta3",
-                        PdbDelta = "PDBDelta3",
-                        MetadataDelta = "MetadataDelta3",
-                        UpdatedTypes = [42],
-                    },
-                    new()
-                    {
-                        ModuleId = Guid.NewGuid().ToString(),
-                        ILDelta = "ILDelta4",
-                        PdbDelta = "PDBDelta4",
-                        MetadataDelta = "MetadataDelta4",
-                        UpdatedTypes = [42],
-                    },
-                    new()
-                    {
-                        ModuleId = Guid.NewGuid().ToString(),
-                        ILDelta = "ILDelta5",
-                        PdbDelta = "PDBDelta5",
-                        MetadataDelta = "MetadataDelta5",
-                        UpdatedTypes = [42],
-                    },
-                ]
+                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                {
+                    SequenceId = 3,
+                    ModuleId = Guid.NewGuid().ToString(),
+                    ILDelta = "ILDelta3",
+                    MetadataDelta = "MetadataDelta3",
+                    UpdatedTypes = [42],
+                },
+                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                {
+                    SequenceId = 4,
+                    ModuleId = Guid.NewGuid().ToString(),
+                    ILDelta = "ILDelta4",
+                    MetadataDelta = "MetadataDelta4",
+                    UpdatedTypes = [42],
+                },
+                    new BlazorWasmHotReloadMiddleware.UpdateDelta
+                {
+                    SequenceId = 5,
+                    ModuleId = Guid.NewGuid().ToString(),
+                    ILDelta = "ILDelta5",
+                    MetadataDelta = "MetadataDelta5",
+                    UpdatedTypes = [42],
+                },
             };
 
             context = new DefaultHttpContext();
             context.Request.Method = "post";
-            context.Request.Body = GetJson(newUpdate);
-            await _middleware.InvokeAsync(context);
+            context.Request.Body = GetJson(newDeltas);
+            await middleware.InvokeAsync(context);
 
-            AssertUpdates([update, newUpdate], _middleware.Updates);
+            // Assert
+            deltas.AddRange(newDeltas);
+            AssertDeltas(deltas, middleware.Deltas);
+            Assert.NotEqual(0, context.Response.Headers["ETag"].Count);
         }
 
         [Fact]
         public async Task Get_Returns204_IfNoDeltasPresent()
         {
+            // Arrange
             var context = new DefaultHttpContext();
             context.Request.Method = "get";
-            
-            await _middleware.InvokeAsync(context);
+            var middleware = new BlazorWasmHotReloadMiddleware(context => throw new TimeZoneNotFoundException());
 
+            // Act
+            await middleware.InvokeAsync(context);
+
+            // Assert
             Assert.Equal(204, context.Response.StatusCode);
         }
 
         [Fact]
         public async Task GetReturnsDeltas()
         {
+            // Arrange
             var context = new DefaultHttpContext();
             context.Request.Method = "get";
             var stream = new MemoryStream();
             context.Response.Body = stream;
-            var updates = new List<BlazorWasmHotReloadMiddleware.Update>
+            var middleware = new BlazorWasmHotReloadMiddleware(context => throw new TimeZoneNotFoundException());
+            var deltas = new List<BlazorWasmHotReloadMiddleware.UpdateDelta>
             {
-                new()
+                new BlazorWasmHotReloadMiddleware.UpdateDelta
                 {
-                    Id = 0,
-                    Deltas =
-                    [
-                        new()
-                        {
-                            ModuleId = Guid.NewGuid().ToString(),
-                            ILDelta = "ILDelta1",
-                            PdbDelta = "PdbDelta1",
-                            MetadataDelta = "MetadataDelta1",
-                            UpdatedTypes = [42],
-                        },
-                        new()
-                        {
-                            ModuleId = Guid.NewGuid().ToString(),
-                            ILDelta = "ILDelta2",
-                            PdbDelta = "PdbDelta2",
-                            MetadataDelta = "MetadataDelta2",
-                            UpdatedTypes = [42],
-                        }
-                    ]
+                    SequenceId = 0,
+                    ModuleId = Guid.NewGuid().ToString(),
+                    ILDelta = "ILDelta1",
+                    MetadataDelta = "MetadataDelta1",
+                    UpdatedTypes = [42],
+                },
+                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                {
+                    SequenceId = 1,
+                    ModuleId = Guid.NewGuid().ToString(),
+                    ILDelta = "ILDelta2",
+                    MetadataDelta = "MetadataDelta2",
+                    UpdatedTypes = [42],
                 }
             };
-            _middleware.Updates.AddRange(updates);
+            middleware.Deltas.AddRange(deltas);
 
-            await _middleware.InvokeAsync(context);
+            // Act
+            await middleware.InvokeAsync(context);
 
+            // Assert
             Assert.Equal(200, context.Response.StatusCode);
             Assert.Equal(
-                JsonSerializer.SerializeToUtf8Bytes(updates, new JsonSerializerOptions(JsonSerializerDefaults.Web)),
+                JsonSerializer.SerializeToUtf8Bytes(deltas, new JsonSerializerOptions(JsonSerializerDefaults.Web)),
                 stream.ToArray());
+            Assert.NotEqual(0, context.Response.Headers[HeaderNames.ETag].Count);
         }
 
-        private static void AssertUpdates(IReadOnlyList<BlazorWasmHotReloadMiddleware.Update> expected, IReadOnlyList<BlazorWasmHotReloadMiddleware.Update> actual)
+        [Fact]
+        public async Task GetReturnsNotModified_IfNoneMatchApplies()
+        {
+            // Arrange
+            var context = new DefaultHttpContext();
+            context.Request.Method = "get";
+            var middleware = new BlazorWasmHotReloadMiddleware(context => throw new TimeZoneNotFoundException());
+            var deltas = new List<BlazorWasmHotReloadMiddleware.UpdateDelta>
+            {
+                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                {
+                    SequenceId = 0,
+                    ModuleId = Guid.NewGuid().ToString(),
+                    ILDelta = "ILDelta1",
+                    MetadataDelta = "MetadataDelta1",
+                    UpdatedTypes = [42],
+                },
+                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                {
+                    SequenceId = 1,
+                    ModuleId = Guid.NewGuid().ToString(),
+                    ILDelta = "ILDelta2",
+                    MetadataDelta = "MetadataDelta2",
+                    UpdatedTypes = [42],
+                }
+            };
+            middleware.Deltas.AddRange(deltas);
+
+            // Act 1
+            await middleware.InvokeAsync(context);
+            var etag = context.Response.Headers[HeaderNames.ETag];
+
+            // Act 2
+            context = new DefaultHttpContext();
+            context.Request.Method = "get";
+            context.Request.Headers[HeaderNames.IfNoneMatch] = etag;
+
+            await middleware.InvokeAsync(context);
+
+            // Assert 2
+            Assert.Equal(StatusCodes.Status304NotModified, context.Response.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetReturnsUpdatedResults_IfNoneMatchFails()
+        {
+            // Arrange
+            var context = new DefaultHttpContext();
+            context.Request.Method = "get";
+            var middleware = new BlazorWasmHotReloadMiddleware(context => throw new TimeZoneNotFoundException());
+            var deltas = new List<BlazorWasmHotReloadMiddleware.UpdateDelta>
+            {
+                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                {
+                    SequenceId = 0,
+                    ModuleId = Guid.NewGuid().ToString(),
+                    ILDelta = "ILDelta1",
+                    MetadataDelta = "MetadataDelta1",
+                    UpdatedTypes = [42],
+                },
+                new BlazorWasmHotReloadMiddleware.UpdateDelta
+                {
+                    SequenceId = 1,
+                    ModuleId = Guid.NewGuid().ToString(),
+                    ILDelta = "ILDelta2",
+                    MetadataDelta = "MetadataDelta2",
+                    UpdatedTypes = [42],
+                }
+            };
+            middleware.Deltas.AddRange(deltas);
+
+            // Act 1
+            await middleware.InvokeAsync(context);
+            var etag = context.Response.Headers[HeaderNames.ETag];
+
+            // Act 2
+            var update = new BlazorWasmHotReloadMiddleware.UpdateDelta
+            {
+                SequenceId = 3,
+                ModuleId = Guid.NewGuid().ToString(),
+                ILDelta = "ILDelta3",
+                MetadataDelta = "MetadataDelta3",
+                UpdatedTypes = [42],
+            };
+            deltas.Add(update);
+            middleware.Deltas.Add(update);
+            context = new DefaultHttpContext();
+            context.Request.Method = "get";
+            context.Request.Headers[HeaderNames.IfNoneMatch] = etag;
+            var stream = new MemoryStream();
+            context.Response.Body = stream;
+
+            await middleware.InvokeAsync(context);
+
+            // Assert 2
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.Equal(
+                JsonSerializer.SerializeToUtf8Bytes(deltas, new JsonSerializerOptions(JsonSerializerDefaults.Web)),
+                stream.ToArray());
+            Assert.NotEqual(etag, context.Response.Headers[HeaderNames.ETag]);
+        }
+
+        private static void AssertDeltas(IReadOnlyList<BlazorWasmHotReloadMiddleware.UpdateDelta> expected, IReadOnlyList<BlazorWasmHotReloadMiddleware.UpdateDelta> actual)
         {
             Assert.Equal(expected.Count, actual.Count);
 
-            for (var u = 0; u < expected.Count; u++)
+            for (var i = 0; i < expected.Count; i++)
             {
-                var expectedUpdate = expected[u];
-                var actualUpdate = actual[u];
-                Assert.Equal(expectedUpdate.Id, actualUpdate.Id);
-                Assert.Equal(expectedUpdate.Deltas.Length, expectedUpdate.Deltas.Length);
-
-                for (var i = 0; i < expectedUpdate.Deltas.Length; i++)
-                {
-                    Assert.Equal(expectedUpdate.Deltas[i].ILDelta, actualUpdate.Deltas[i].ILDelta);
-                    Assert.Equal(expectedUpdate.Deltas[i].PdbDelta, actualUpdate.Deltas[i].PdbDelta);
-                    Assert.Equal(expectedUpdate.Deltas[i].MetadataDelta, actualUpdate.Deltas[i].MetadataDelta);
-                    Assert.Equal(expectedUpdate.Deltas[i].ModuleId, actualUpdate.Deltas[i].ModuleId);
-                    Assert.Equal(expectedUpdate.Deltas[i].UpdatedTypes, actualUpdate.Deltas[i].UpdatedTypes);
-                }
+                Assert.Equal(expected[i].ILDelta, actual[i].ILDelta);
+                Assert.Equal(expected[i].MetadataDelta, actual[i].MetadataDelta);
+                Assert.Equal(expected[i].ModuleId, actual[i].ModuleId);
+                Assert.Equal(expected[i].SequenceId, actual[i].SequenceId);
+                Assert.Equal(expected[i].UpdatedTypes, actual[i].UpdatedTypes);
             }
         }
 
-        private static Stream GetJson(object obj)
+        private Stream GetJson(IReadOnlyList<BlazorWasmHotReloadMiddleware.UpdateDelta> deltas)
         {
-            var bytes = JsonSerializer.SerializeToUtf8Bytes(obj, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            var bytes = JsonSerializer.SerializeToUtf8Bytes(deltas, new JsonSerializerOptions(JsonSerializerDefaults.Web));
             return new MemoryStream(bytes);
         }
     }

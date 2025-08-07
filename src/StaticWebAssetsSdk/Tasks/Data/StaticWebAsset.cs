@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Globalization;
 using System.Security.Cryptography;
 using System.Security.Principal;
 using Microsoft.Build.Framework;
@@ -16,35 +15,31 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 #else
     public class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<StaticWebAsset>
 #endif
-{
-    public const string DateTimeAssetFormat = "ddd, dd MMM yyyy HH:mm:ss 'GMT'";
-
-    public StaticWebAsset()
     {
-    }
+        public StaticWebAsset()
+        {
+        }
 
-    public StaticWebAsset(StaticWebAsset asset)
-    {
-        Identity = asset.Identity;
-        SourceType = asset.SourceType;
-        SourceId = asset.SourceId;
-        ContentRoot = asset.ContentRoot;
-        BasePath = asset.BasePath;
-        RelativePath = asset.RelativePath;
-        AssetKind = asset.AssetKind;
-        AssetMode = asset.AssetMode;
-        AssetRole = asset.AssetRole;
-        AssetMergeBehavior = asset.AssetMergeBehavior;
-        AssetMergeSource = asset.AssetMergeSource;
-        RelatedAsset = asset.RelatedAsset;
-        AssetTraitName = asset.AssetTraitName;
-        AssetTraitValue = asset.AssetTraitValue;
-        CopyToOutputDirectory = asset.CopyToOutputDirectory;
-        CopyToPublishDirectory = asset.CopyToPublishDirectory;
-        OriginalItemSpec = asset.OriginalItemSpec;
-        FileLength = asset.FileLength;
-        LastWriteTime = asset.LastWriteTime;
-    }
+        public StaticWebAsset(StaticWebAsset asset)
+        {
+            Identity = asset.Identity;
+            SourceType = asset.SourceType;
+            SourceId = asset.SourceId;
+            ContentRoot = asset.ContentRoot;
+            BasePath = asset.BasePath;
+            RelativePath = asset.RelativePath;
+            AssetKind = asset.AssetKind;
+            AssetMode = asset.AssetMode;
+            AssetRole = asset.AssetRole;
+            AssetMergeBehavior = asset.AssetMergeBehavior;
+            AssetMergeSource = asset.AssetMergeSource;
+            RelatedAsset = asset.RelatedAsset;
+            AssetTraitName = asset.AssetTraitName;
+            AssetTraitValue = asset.AssetTraitValue;
+            CopyToOutputDirectory = asset.CopyToOutputDirectory;
+            CopyToPublishDirectory = asset.CopyToPublishDirectory;
+            OriginalItemSpec = asset.OriginalItemSpec;
+        }
 
         public string Identity { get; set; }
 
@@ -82,11 +77,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         public string CopyToPublishDirectory { get; set; }
 
-    public string OriginalItemSpec { get; set; }
-
-    public long FileLength { get; set; } = -1;
-
-    public DateTimeOffset LastWriteTime { get; set; } = DateTimeOffset.MinValue;
+        public string OriginalItemSpec { get; set; }
 
         public static StaticWebAsset FromTaskItem(ITaskItem item)
         {
@@ -182,11 +173,11 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         private bool HasKind(string assetKind) =>
             AssetKinds.IsKind(AssetKind, assetKind);
 
-    public static StaticWebAsset FromV1TaskItem(ITaskItem item)
-    {
-        var result = FromTaskItemCore(item);
-        result.ApplyDefaults();
-        result.OriginalItemSpec = string.IsNullOrEmpty(result.OriginalItemSpec) ? item.GetMetadata("FullPath") : result.OriginalItemSpec;
+        public static StaticWebAsset FromV1TaskItem(ITaskItem item)
+        {
+            var result = FromTaskItemCore(item);
+            result.ApplyDefaults();
+            result.OriginalItemSpec = item.GetMetadata("FullPath");
 
             result.Normalize();
             result.Validate();
@@ -194,67 +185,58 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             return result;
         }
 
-    private static StaticWebAsset FromTaskItemCore(ITaskItem item) =>
-        new()
-        {
-            // Register the identity as the full path since assets might have come
-            // from packages and other sources and the identity (which is typically
-            // just the relative path from the project) is not enough to locate them.
-            Identity = item.GetMetadata("FullPath"),
-            SourceType = item.GetMetadata(nameof(SourceType)),
-            SourceId = item.GetMetadata(nameof(SourceId)),
-            ContentRoot = item.GetMetadata(nameof(ContentRoot)),
-            BasePath = item.GetMetadata(nameof(BasePath)),
-            RelativePath = item.GetMetadata(nameof(RelativePath)),
-            AssetKind = item.GetMetadata(nameof(AssetKind)),
-            AssetMode = item.GetMetadata(nameof(AssetMode)),
-            AssetRole = item.GetMetadata(nameof(AssetRole)),
-            AssetMergeSource = item.GetMetadata(nameof(AssetMergeSource)),
-            AssetMergeBehavior = item.GetMetadata(nameof(AssetMergeBehavior)),
-            RelatedAsset = item.GetMetadata(nameof(RelatedAsset)),
-            AssetTraitName = item.GetMetadata(nameof(AssetTraitName)),
-            AssetTraitValue = item.GetMetadata(nameof(AssetTraitValue)),
-            Fingerprint = item.GetMetadata(nameof(Fingerprint)),
-            Integrity = item.GetMetadata(nameof(Integrity)),
-            CopyToOutputDirectory = item.GetMetadata(nameof(CopyToOutputDirectory)),
-            CopyToPublishDirectory = item.GetMetadata(nameof(CopyToPublishDirectory)),
-            OriginalItemSpec = item.GetMetadata(nameof(OriginalItemSpec)),
-            FileLength = item.GetMetadata("FileLength") is string fileLengthString &&
-                long.TryParse(fileLengthString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var fileLength) ? fileLength : -1,
-            LastWriteTime = item.GetMetadata("LastWriteTime") is string lastWriteTimeString &&
-                DateTimeOffset.TryParseExact(lastWriteTimeString, DateTimeAssetFormat, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var lastWriteTime) ?
-                    lastWriteTime :
-                    DateTimeOffset.MinValue
-        };
+        private static StaticWebAsset FromTaskItemCore(ITaskItem item) =>
+            new()
+            {
+                // Register the identity as the full path since assets might have come
+                // from packages and other sources and the identity (which is typically
+                // just the relative path from the project) is not enough to locate them.
+                Identity = item.GetMetadata("FullPath"),
+                SourceType = item.GetMetadata(nameof(SourceType)),
+                SourceId = item.GetMetadata(nameof(SourceId)),
+                ContentRoot = item.GetMetadata(nameof(ContentRoot)),
+                BasePath = item.GetMetadata(nameof(BasePath)),
+                RelativePath = item.GetMetadata(nameof(RelativePath)),
+                AssetKind = item.GetMetadata(nameof(AssetKind)),
+                AssetMode = item.GetMetadata(nameof(AssetMode)),
+                AssetRole = item.GetMetadata(nameof(AssetRole)),
+                AssetMergeSource = item.GetMetadata(nameof(AssetMergeSource)),
+                AssetMergeBehavior = item.GetMetadata(nameof(AssetMergeBehavior)),
+                RelatedAsset = item.GetMetadata(nameof(RelatedAsset)),
+                AssetTraitName = item.GetMetadata(nameof(AssetTraitName)),
+                AssetTraitValue = item.GetMetadata(nameof(AssetTraitValue)),
+                Fingerprint = item.GetMetadata(nameof(Fingerprint)),
+                Integrity = item.GetMetadata(nameof(Integrity)),
+                CopyToOutputDirectory = item.GetMetadata(nameof(CopyToOutputDirectory)),
+                CopyToPublishDirectory = item.GetMetadata(nameof(CopyToPublishDirectory)),
+                OriginalItemSpec = item.GetMetadata(nameof(OriginalItemSpec)),
+            };
 
-    public void ApplyDefaults()
-    {
-        CopyToOutputDirectory = string.IsNullOrEmpty(CopyToOutputDirectory) ? AssetCopyOptions.Never : CopyToOutputDirectory;
-        CopyToPublishDirectory = string.IsNullOrEmpty(CopyToPublishDirectory) ? AssetCopyOptions.PreserveNewest : CopyToPublishDirectory;
-        AssetKind = !string.IsNullOrEmpty(AssetKind) ? AssetKind : !ShouldCopyToPublishDirectory() ? AssetKinds.Build : AssetKinds.All;
-        AssetMode = string.IsNullOrEmpty(AssetMode) ? AssetModes.All : AssetMode;
-        AssetRole = string.IsNullOrEmpty(AssetRole) ? AssetRoles.Primary : AssetRole;
-        if (string.IsNullOrEmpty(Fingerprint) || string.IsNullOrEmpty(Integrity) || FileLength == -1 || LastWriteTime == DateTimeOffset.MinValue)
+        public void ApplyDefaults()
         {
-            var file = ResolveFile(Identity, OriginalItemSpec);
-            (Fingerprint, Integrity) = string.IsNullOrEmpty(Fingerprint) || string.IsNullOrEmpty(Integrity) ?
-                ComputeFingerprintAndIntegrityIfNeeded(file) : (Fingerprint, Integrity);
-            FileLength = FileLength == -1 ? file.Length : FileLength;
-            LastWriteTime = LastWriteTime == DateTimeOffset.MinValue ? file.LastWriteTimeUtc : LastWriteTime;
+            CopyToOutputDirectory = string.IsNullOrEmpty(CopyToOutputDirectory) ? AssetCopyOptions.Never : CopyToOutputDirectory;
+            CopyToPublishDirectory = string.IsNullOrEmpty(CopyToPublishDirectory) ? AssetCopyOptions.PreserveNewest : CopyToPublishDirectory;
+            (Fingerprint, Integrity) = ComputeFingerprintAndIntegrity();
+            AssetKind = !string.IsNullOrEmpty(AssetKind) ? AssetKind : !ShouldCopyToPublishDirectory() ? AssetKinds.Build : AssetKinds.All;
+            AssetMode = string.IsNullOrEmpty(AssetMode) ? AssetModes.All : AssetMode;
+            AssetRole = string.IsNullOrEmpty(AssetRole) ? AssetRoles.Primary : AssetRole;
         }
-    }
 
-    private (string Fingerprint, string Integrity) ComputeFingerprintAndIntegrityIfNeeded(FileInfo file) =>
-        (Fingerprint, Integrity) switch
-        {
-            ("", "") => ComputeFingerprintAndIntegrity(file),
-            (not null, not null) => (Fingerprint, Integrity),
-            _ => ComputeFingerprintAndIntegrity(file)
-        };
+        private (string Fingerprint, string Integrity) ComputeFingerprintAndIntegrity() =>
+            (Fingerprint, Integrity) switch
+            {
+                ("", "") => ComputeFingerprintAndIntegrity(Identity, OriginalItemSpec),
+                (not null, not null) => (Fingerprint, Integrity),
+                _ => ComputeFingerprintAndIntegrity(Identity, OriginalItemSpec)
+            };
 
-        internal static (string fingerprint, string integrity) ComputeFingerprintAndIntegrity(FileInfo fileInfo)
+        internal static (string fingerprint, string integrity) ComputeFingerprintAndIntegrity(string identity, string originalItemSpec)
         {
-            using var file = fileInfo.OpenRead();
+            using var file = File.Exists(identity) ?
+                File.OpenRead(identity) :
+                (File.Exists(originalItemSpec) ?
+                    File.OpenRead(originalItemSpec) :
+                    throw new InvalidOperationException($"No file exists for the asset at either location '{identity}' or '{originalItemSpec}'."));
 
 #if NET6_0_OR_GREATER
             var hash = SHA256.HashData(file);
@@ -267,14 +249,11 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         internal static string ComputeIntegrity(string identity, string originalItemSpec)
         {
-            var fileInfo = ResolveFile(identity, originalItemSpec);
-            return ComputeIntegrity(fileInfo);
-        }
-
-        internal static string ComputeIntegrity(FileInfo fileInfo)
-        {
-            using var file = fileInfo.OpenRead();
-
+            using var file = File.Exists(identity) ?
+    File.OpenRead(identity) :
+    (File.Exists(originalItemSpec) ?
+        File.OpenRead(originalItemSpec) :
+        throw new InvalidOperationException($"No file exists for the asset at either location '{identity}' or '{originalItemSpec}'."));
 #if NET6_0_OR_GREATER
             var hash = SHA256.HashData(file);
 #else
@@ -299,44 +278,42 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 .TrimStart(separator);
         }
 
-    public ITaskItem ToTaskItem()
-    {
-        var result = new TaskItem(Identity);
-        result.SetMetadata(nameof(SourceType), SourceType);
-        result.SetMetadata(nameof(SourceId), SourceId);
-        result.SetMetadata(nameof(ContentRoot), ContentRoot);
-        result.SetMetadata(nameof(BasePath), BasePath);
-        result.SetMetadata(nameof(RelativePath), RelativePath);
-        result.SetMetadata(nameof(AssetKind), AssetKind);
-        result.SetMetadata(nameof(AssetMode), AssetMode);
-        result.SetMetadata(nameof(AssetRole), AssetRole);
-        result.SetMetadata(nameof(AssetMergeSource), AssetMergeSource);
-        result.SetMetadata(nameof(AssetMergeBehavior), AssetMergeBehavior);
-        result.SetMetadata(nameof(RelatedAsset), RelatedAsset);
-        result.SetMetadata(nameof(AssetTraitName), AssetTraitName);
-        result.SetMetadata(nameof(AssetTraitValue), AssetTraitValue);
-        result.SetMetadata(nameof(Fingerprint), Fingerprint);
-        result.SetMetadata(nameof(Integrity), Integrity);
-        result.SetMetadata(nameof(CopyToOutputDirectory), CopyToOutputDirectory);
-        result.SetMetadata(nameof(CopyToPublishDirectory), CopyToPublishDirectory);
-        result.SetMetadata(nameof(OriginalItemSpec), OriginalItemSpec);
-        result.SetMetadata(nameof(FileLength), FileLength.ToString(CultureInfo.InvariantCulture));
-        result.SetMetadata(nameof(LastWriteTime), LastWriteTime.ToString(DateTimeAssetFormat, CultureInfo.InvariantCulture));
-        return result;
-    }
-
-    public void Validate()
-    {
-        switch (SourceType)
+        public ITaskItem ToTaskItem()
         {
-            case SourceTypes.Discovered:
-            case SourceTypes.Computed:
-            case SourceTypes.Project:
-            case SourceTypes.Package:
-                break;
-            default:
-                throw new InvalidOperationException($"Unknown source type '{SourceType}' for '{Identity}'.");
+            var result = new TaskItem(Identity);
+            result.SetMetadata(nameof(SourceType), SourceType);
+            result.SetMetadata(nameof(SourceId), SourceId);
+            result.SetMetadata(nameof(ContentRoot), ContentRoot);
+            result.SetMetadata(nameof(BasePath), BasePath);
+            result.SetMetadata(nameof(RelativePath), RelativePath);
+            result.SetMetadata(nameof(AssetKind), AssetKind);
+            result.SetMetadata(nameof(AssetMode), AssetMode);
+            result.SetMetadata(nameof(AssetRole), AssetRole);
+            result.SetMetadata(nameof(AssetMergeSource), AssetMergeSource);
+            result.SetMetadata(nameof(AssetMergeBehavior), AssetMergeBehavior);
+            result.SetMetadata(nameof(RelatedAsset), RelatedAsset);
+            result.SetMetadata(nameof(AssetTraitName), AssetTraitName);
+            result.SetMetadata(nameof(AssetTraitValue), AssetTraitValue);
+            result.SetMetadata(nameof(Fingerprint), Fingerprint);
+            result.SetMetadata(nameof(Integrity), Integrity);
+            result.SetMetadata(nameof(CopyToOutputDirectory), CopyToOutputDirectory);
+            result.SetMetadata(nameof(CopyToPublishDirectory), CopyToPublishDirectory);
+            result.SetMetadata(nameof(OriginalItemSpec), OriginalItemSpec);
+            return result;
         }
+
+        public void Validate()
+        {
+            switch (SourceType)
+            {
+                case SourceTypes.Discovered:
+                case SourceTypes.Computed:
+                case SourceTypes.Project:
+                case SourceTypes.Package:
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unknown source type '{SourceType}' for '{Identity}'.");
+            };
 
             if (string.IsNullOrEmpty(SourceId))
             {
@@ -363,35 +340,35 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 throw new InvalidOperationException($"The '{nameof(OriginalItemSpec)}' for the asset must be defined for '{Identity}'.");
             }
 
-        switch (AssetKind)
-        {
-            case AssetKinds.All:
-            case AssetKinds.Build:
-            case AssetKinds.Publish:
-                break;
-            default:
-                throw new InvalidOperationException($"Unknown Asset kind '{AssetKind}' for '{Identity}'.");
-        }
+            switch (AssetKind)
+            {
+                case AssetKinds.All:
+                case AssetKinds.Build:
+                case AssetKinds.Publish:
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unknown Asset kind '{AssetKind}' for '{Identity}'.");
+            };
 
-        switch (AssetMode)
-        {
-            case AssetModes.All:
-            case AssetModes.CurrentProject:
-            case AssetModes.Reference:
-                break;
-            default:
-                throw new InvalidOperationException($"Unknown Asset mode '{AssetMode}' for '{Identity}'.");
-        }
+            switch (AssetMode)
+            {
+                case AssetModes.All:
+                case AssetModes.CurrentProject:
+                case AssetModes.Reference:
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unknown Asset mode '{AssetMode}' for '{Identity}'.");
+            };
 
-        switch (AssetRole)
-        {
-            case AssetRoles.Primary:
-            case AssetRoles.Related:
-            case AssetRoles.Alternative:
-                break;
-            default:
-                throw new InvalidOperationException($"Unknown Asset role '{AssetRole}' for '{Identity}'.");
-        }
+            switch (AssetRole)
+            {
+                case AssetRoles.Primary:
+                case AssetRoles.Related:
+                case AssetRoles.Alternative:
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unknown Asset role '{AssetRole}' for '{Identity}'.");
+            };
 
             if (!IsPrimaryAsset() && string.IsNullOrEmpty(RelatedAsset))
             {
@@ -408,67 +385,53 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 throw new InvalidOperationException($"Fingerprint for '{Identity}' is not defined.");
             }
 
-        if (string.IsNullOrEmpty(Integrity))
-        {
-            throw new InvalidOperationException($"Integrity for '{Identity}' is not defined.");
+            if (string.IsNullOrEmpty(Integrity))
+            {
+                throw new InvalidOperationException($"Integrity for '{Identity}' is not defined.");
+            }
         }
 
-        if (FileLength < 0)
+        internal static StaticWebAsset FromProperties(
+            string identity,
+            string sourceId,
+            string sourceType,
+            string basePath,
+            string relativePath,
+            string contentRoot,
+            string assetKind,
+            string assetMode,
+            string assetRole,
+            string assetMergeSource,
+            string relatedAsset,
+            string assetTraitName,
+            string assetTraitValue,
+            string fingerprint,
+            string integrity,
+            string copyToOutputDirectory,
+            string copyToPublishDirectory,
+            string originalItemSpec)
         {
-            throw new InvalidOperationException($"File length for '{Identity}' is not defined.");
-        }
-
-        if (LastWriteTime == DateTimeOffset.MinValue)
-        {
-            throw new InvalidOperationException($"Last write time for '{Identity}' is not defined.");
-        }
-    }
-
-    internal static StaticWebAsset FromProperties(
-        string identity,
-        string sourceId,
-        string sourceType,
-        string basePath,
-        string relativePath,
-        string contentRoot,
-        string assetKind,
-        string assetMode,
-        string assetRole,
-        string assetMergeSource,
-        string relatedAsset,
-        string assetTraitName,
-        string assetTraitValue,
-        string fingerprint,
-        string integrity,
-        string copyToOutputDirectory,
-        string copyToPublishDirectory,
-        string originalItemSpec,
-        long fileLength,
-        DateTimeOffset lastWriteTime)
-    {
-        var result = new StaticWebAsset
-        {
-            Identity = identity,
-            SourceId = sourceId,
-            SourceType = sourceType,
-            ContentRoot = contentRoot,
-            BasePath = basePath,
-            RelativePath = relativePath,
-            AssetKind = assetKind,
-            AssetMode = assetMode,
-            AssetRole = assetRole,
-            AssetMergeSource = assetMergeSource,
-            RelatedAsset = relatedAsset,
-            AssetTraitName = assetTraitName,
-            AssetTraitValue = assetTraitValue,
-            Fingerprint = fingerprint,
-            Integrity = integrity,
-            CopyToOutputDirectory = copyToOutputDirectory,
-            CopyToPublishDirectory = copyToPublishDirectory,
-            OriginalItemSpec = originalItemSpec,
-            FileLength = fileLength,
-            LastWriteTime = lastWriteTime
-        };
+            var result = new StaticWebAsset
+            {
+                Identity = identity,
+                SourceId = sourceId,
+                SourceType = sourceType,
+                ContentRoot = contentRoot,
+                BasePath = basePath,
+                RelativePath = relativePath,
+                AssetKind = assetKind,
+                AssetMode = assetMode,
+                AssetRole = assetRole,
+                AssetMergeSource = assetMergeSource,
+                RelatedAsset = relatedAsset,
+                AssetTraitName = assetTraitName,
+                AssetTraitValue = assetTraitValue,
+                Fingerprint = fingerprint,
+                Integrity = integrity,
+                CopyToOutputDirectory = copyToOutputDirectory,
+                CopyToPublishDirectory = copyToPublishDirectory,
+                OriginalItemSpec = originalItemSpec
+            };
 
             result.ApplyDefaults();
 
@@ -487,13 +450,6 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             BasePath = Normalize(BasePath);
             RelativePath = Normalize(RelativePath, allowEmpyPath: true);
             RelatedAsset = !string.IsNullOrEmpty(RelatedAsset) ? Path.GetFullPath(RelatedAsset) : RelatedAsset;
-
-            if (FileLength < 0 || LastWriteTime == DateTimeOffset.MinValue)
-            {
-                var file = ResolveFile(Identity, OriginalItemSpec);
-                FileLength = file.Length;
-                LastWriteTime = file.LastWriteTimeUtc;
-            }
         }
 
         // Normalizes the given path to a content root path in the way we expect it:
@@ -587,9 +543,30 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 return linkPath;
             }
 
-        metadataProperty = null;
-        return asset.ItemSpec;
-    }
+            metadataProperty = null;
+            return asset.ItemSpec;
+        }
+
+        // Compares all fields in this order
+        // Identity
+        // SourceType
+        // SourceId
+        // ContentRoot
+        // BasePath
+        // RelativePath
+        // AssetKind
+        // AssetMode
+        // AssetRole
+        // AssetMergeSource
+        // AssetMergeBehavior
+        // RelatedAsset
+        // AssetTraitName
+        // AssetTraitValue
+        // Fingerprint
+        // Integrity
+        // CopyToOutputDirectory
+        // CopyToPublishDirectory
+        // OriginalItemSpec
 
         public int CompareTo(StaticWebAsset other)
         {
@@ -599,23 +576,11 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 return result;
             }
 
-        result = string.Compare(SourceType, other.SourceType, StringComparison.Ordinal);
-        if (result != 0)
-        {
-            return result;
-        }
-
-        result = FileLength.CompareTo(other.FileLength);
-        if (result != 0)
-        {
-            return result;
-        }
-
-        result = LastWriteTime.CompareTo(other.LastWriteTime);
-        if (result != 0)
-        {
-            return result;
-        }
+            result = string.Compare(SourceType, other.SourceType, StringComparison.Ordinal);
+            if (result != 0)
+            {
+                return result;
+            }
 
             result = string.Compare(SourceId, other.SourceId, StringComparison.Ordinal);
             if (result != 0)
@@ -719,28 +684,26 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         public override bool Equals(object obj) => obj != null && Equals(obj as StaticWebAsset);
 
-    public bool Equals(StaticWebAsset other) =>
-        Identity == other.Identity &&
-        SourceType == other.SourceType &&
-        FileLength == other.FileLength &&
-        LastWriteTime == other.LastWriteTime &&
-        SourceId == other.SourceId &&
-        ContentRoot == other.ContentRoot &&
-        BasePath == other.BasePath &&
-        RelativePath == other.RelativePath &&
-        AssetKind == other.AssetKind &&
-        AssetMode == other.AssetMode &&
-        AssetRole == other.AssetRole &&
-        AssetMergeSource == other.AssetMergeSource &&
-        AssetMergeBehavior == other.AssetMergeBehavior &&
-        RelatedAsset == other.RelatedAsset &&
-        AssetTraitName == other.AssetTraitName &&
-        AssetTraitValue == other.AssetTraitValue &&
-        Fingerprint == other.Fingerprint &&
-        Integrity == other.Integrity &&
-        CopyToOutputDirectory == other.CopyToOutputDirectory &&
-        CopyToPublishDirectory == other.CopyToPublishDirectory &&
-        OriginalItemSpec == other.OriginalItemSpec;
+        public bool Equals(StaticWebAsset other) =>
+            Identity == other.Identity &&
+            SourceType == other.SourceType &&
+            SourceId == other.SourceId &&
+            ContentRoot == other.ContentRoot &&
+            BasePath == other.BasePath &&
+            RelativePath == other.RelativePath &&
+            AssetKind == other.AssetKind &&
+            AssetMode == other.AssetMode &&
+            AssetRole == other.AssetRole &&
+            AssetMergeSource == other.AssetMergeSource &&
+            AssetMergeBehavior == other.AssetMergeBehavior &&
+            RelatedAsset == other.RelatedAsset &&
+            AssetTraitName == other.AssetTraitName &&
+            AssetTraitValue == other.AssetTraitValue &&
+            Fingerprint == other.Fingerprint &&
+            Integrity == other.Integrity &&
+            CopyToOutputDirectory == other.CopyToOutputDirectory &&
+            CopyToPublishDirectory == other.CopyToPublishDirectory &&
+            OriginalItemSpec == other.OriginalItemSpec;
 
         public static class AssetModes
         {
@@ -864,79 +827,73 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             return pattern.ComputePatternLabel();
         }
 
-    public override string ToString() =>
-        $"Identity: {Identity}, " +
-        $"SourceType: {SourceType}, " +
-        $"SourceId: {SourceId}, " +
-        $"ContentRoot: {ContentRoot}, " +
-        $"BasePath: {BasePath}, " +
-        $"RelativePath: {RelativePath}, " +
-        $"AssetKind: {AssetKind}, " +
-        $"AssetMode: {AssetMode}, " +
-        $"AssetRole: {AssetRole}, " +
-        $"AssetRole: {AssetMergeSource}, " +
-        $"AssetRole: {AssetMergeBehavior}, " +
-        $"RelatedAsset: {RelatedAsset}, " +
-        $"AssetTraitName: {AssetTraitName}, " +
-        $"AssetTraitValue: {AssetTraitValue}, " +
-        $"Fingerprint: {Fingerprint}, " +
-        $"Integrity: {Integrity}, " +
-        $"FileLength: {FileLength}, " +
-        $"LastWriteTime: {LastWriteTime}, " +
-        $"CopyToOutputDirectory: {CopyToOutputDirectory}, " +
-        $"CopyToPublishDirectory: {CopyToPublishDirectory}, " +
-        $"OriginalItemSpec: {OriginalItemSpec}";
+        public override string ToString() =>
+            $"Identity: {Identity}, " +
+            $"SourceType: {SourceType}, " +
+            $"SourceId: {SourceId}, " +
+            $"ContentRoot: {ContentRoot}, " +
+            $"BasePath: {BasePath}, " +
+            $"RelativePath: {RelativePath}, " +
+            $"AssetKind: {AssetKind}, " +
+            $"AssetMode: {AssetMode}, " +
+            $"AssetRole: {AssetRole}, " +
+            $"AssetRole: {AssetMergeSource}, " +
+            $"AssetRole: {AssetMergeBehavior}, " +
+            $"RelatedAsset: {RelatedAsset}, " +
+            $"AssetTraitName: {AssetTraitName}, " +
+            $"AssetTraitValue: {AssetTraitValue}, " +
+            $"Fingerprint: {Fingerprint}, " +
+            $"Integrity: {Integrity}, " +
+            $"CopyToOutputDirectory: {CopyToOutputDirectory}, " +
+            $"CopyToPublishDirectory: {CopyToPublishDirectory}, " +
+            $"OriginalItemSpec: {OriginalItemSpec}";
 
         public override int GetHashCode()
         {
 #if NET6_0_OR_GREATER
-        var hash = new HashCode();
-        hash.Add(Identity);
-        hash.Add(SourceType);
-        hash.Add(FileLength);
-        hash.Add(LastWriteTime);
-        hash.Add(SourceId);
-        hash.Add(ContentRoot);
-        hash.Add(BasePath);
-        hash.Add(RelativePath);
-        hash.Add(AssetKind);
-        hash.Add(AssetMode);
-        hash.Add(AssetRole);
-        hash.Add(AssetMergeSource);
-        hash.Add(AssetMergeBehavior);
-        hash.Add(RelatedAsset);
-        hash.Add(AssetTraitName);
-        hash.Add(AssetTraitValue);
-        hash.Add(Fingerprint);
-        hash.Add(Integrity);
-        hash.Add(CopyToOutputDirectory);
-        hash.Add(CopyToPublishDirectory);
-        hash.Add(OriginalItemSpec);
-        return hash.ToHashCode();
+            var hash = new HashCode();
+            hash.Add(Identity);
+            hash.Add(SourceType);
+            hash.Add(SourceId);
+            hash.Add(ContentRoot);
+            hash.Add(BasePath);
+            hash.Add(RelativePath);
+            hash.Add(AssetKind);
+            hash.Add(AssetMode);
+            hash.Add(AssetRole);
+            hash.Add(AssetMergeSource);
+            hash.Add(AssetMergeBehavior);
+            hash.Add(RelatedAsset);
+            hash.Add(AssetTraitName);
+            hash.Add(AssetTraitValue);
+            hash.Add(Fingerprint);
+            hash.Add(Integrity);
+            hash.Add(CopyToOutputDirectory);
+            hash.Add(CopyToPublishDirectory);
+            hash.Add(OriginalItemSpec);
+            return hash.ToHashCode();
 #else
-        var hashCode = 1447485498;
-        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Identity);
-        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(SourceType);
-        hashCode = hashCode * -1521134295 + FileLength.GetHashCode();
-        hashCode = hashCode * -1521134295 + LastWriteTime.GetHashCode();
-        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(SourceId);
-        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ContentRoot);
-        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(BasePath);
-        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(RelativePath);
-        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetKind);
-        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetMode);
-        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetRole);
-        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetMergeSource);
-        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetMergeBehavior);
-        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(RelatedAsset);
-        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetTraitName);
-        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetTraitValue);
-        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Fingerprint);
-        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Integrity);
-        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(CopyToOutputDirectory);
-        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(CopyToPublishDirectory);
-        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(OriginalItemSpec);
-        return hashCode;
+            int hashCode = 1447485498;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Identity);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(SourceType);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(SourceId);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ContentRoot);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(BasePath);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(RelativePath);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetKind);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetMode);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetRole);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetMergeSource);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetMergeBehavior);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(RelatedAsset);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetTraitName);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetTraitValue);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Fingerprint);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Integrity);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(CopyToOutputDirectory);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(CopyToPublishDirectory);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(OriginalItemSpec);
+            return hashCode;
 #endif
         }
 
@@ -956,25 +913,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             var pattern = StaticWebAssetPathPattern.Parse(relativePath, Identity);
             var resolver = StaticWebAssetTokenResolver.Instance;
             pattern.EmbedTokens(this, resolver);
-            return pattern.RawPattern.ToString();
-        }
-
-        internal FileInfo ResolveFile() => ResolveFile(Identity, OriginalItemSpec);
-
-        internal static FileInfo ResolveFile(string identity, string originalItemSpec)
-        {
-            var fileInfo = new FileInfo(identity);
-            if (fileInfo.Exists)
-            {
-                return fileInfo;
-            }
-            fileInfo = new FileInfo(originalItemSpec);
-            if (fileInfo.Exists)
-            {
-                return fileInfo;
-            }
-
-            throw new InvalidOperationException($"No file exists for the asset at either location '{identity}' or '{originalItemSpec}'.");
+            return pattern.RawPattern;
         }
 
         [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]

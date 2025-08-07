@@ -1,18 +1,18 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Watch
+namespace Microsoft.DotNet.Watcher.Internal
 {
     internal static class FileWatcherFactory
     {
-        public static IDirectoryWatcher CreateWatcher(string watchedDirectory)
+        public static IFileSystemWatcher CreateWatcher(string watchedDirectory)
             => CreateWatcher(watchedDirectory, EnvironmentVariables.IsPollingEnabled);
 
-        public static IDirectoryWatcher CreateWatcher(string watchedDirectory, bool usePollingWatcher)
+        public static IFileSystemWatcher CreateWatcher(string watchedDirectory, bool usePollingWatcher)
         {
             return usePollingWatcher ?
-                new PollingDirectoryWatcher(watchedDirectory) :
-                new EventBasedDirectoryWatcher(watchedDirectory);
+                new PollingFileWatcher(watchedDirectory) :
+                new DotnetFileWatcher(watchedDirectory);
         }
     }
 }

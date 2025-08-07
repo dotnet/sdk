@@ -65,9 +65,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorClassLibrary\\styles.css.gz",
@@ -88,9 +86,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\_content\\RazorClassLibrary\\styles.css.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\_content\\RazorClassLibrary\\styles.css.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorClassLibrary\\wwwroot\\exampleJsInterop.js.gz",
@@ -111,9 +107,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\wwwroot\\_content\\RazorClassLibrary\\wwwroot\\exampleJsInterop.js.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\wwwroot\\_content\\RazorClassLibrary\\wwwroot\\exampleJsInterop.js.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\blazorwasm.styles.css.gz",
@@ -134,9 +128,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm.styles.css.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm.styles.css.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\index.html.gz",
@@ -157,9 +149,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\Fake-License.txt.br",
@@ -180,9 +170,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorClassLibrary\\styles.css.br",
@@ -203,9 +191,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\_content\\RazorClassLibrary\\styles.css.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\_content\\RazorClassLibrary\\styles.css.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\RazorClassLibrary\\wwwroot\\exampleJsInterop.js.br",
@@ -226,9 +212,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\wwwroot\\_content\\RazorClassLibrary\\wwwroot\\exampleJsInterop.js.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\wwwroot\\_content\\RazorClassLibrary\\wwwroot\\exampleJsInterop.js.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\blazorwasm.styles.css.br",
@@ -249,9 +233,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm.styles.css.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm.styles.css.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\index.html.br",
@@ -272,9 +254,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html.br"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm.styles.css",
@@ -295,9 +275,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm.styles.css",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm.styles.css"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt",
@@ -318,9 +296,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html",
@@ -341,9 +317,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html"
     },
     {
       "Identity": "${ProjectPath}\\razorclasslibrary\\wwwroot\\styles.css",
@@ -364,9 +338,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\styles.css",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\styles.css"
     },
     {
       "Identity": "${ProjectPath}\\razorclasslibrary\\wwwroot\\wwwroot\\exampleJsInterop.js",
@@ -387,9 +359,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\wwwroot\\exampleJsInterop.js",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\wwwroot\\exampleJsInterop.js"
     }
   ],
   "Endpoints": [

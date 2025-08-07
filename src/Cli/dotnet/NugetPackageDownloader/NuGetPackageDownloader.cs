@@ -38,13 +38,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private readonly Dictionary<PackageSource, SourceRepository> _sourceRepositories;
         private readonly bool _shouldUsePackageSourceMapping;
 
-        /// <summary>
-        /// If true, the package downloader will verify the signatures of the packages it downloads.
-        /// Temporarily disabled for macOS and Linux. 
-        /// </summary>
         private readonly bool _verifySignatures;
         private readonly VerbosityOptions _verbosityOptions;
-        private readonly string _currentWorkingDirectory;
 
         public NuGetPackageDownloader(
             DirectoryPath packageInstallDir,
@@ -56,10 +51,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             Func<IEnumerable<Task>> timer = null,
             bool verifySignatures = false,
             bool shouldUsePackageSourceMapping = false,
-            VerbosityOptions verbosityOptions = VerbosityOptions.normal,
-            string currentWorkingDirectory = null)
+            VerbosityOptions verbosityOptions = VerbosityOptions.normal)
         {
-            _currentWorkingDirectory = currentWorkingDirectory;
             _packageInstallDir = packageInstallDir;
             _reporter = reporter ?? Reporter.Output;
             _verboseLogger = verboseLogger ?? new NuGetConsoleLogger();
@@ -69,9 +62,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             _restoreActionConfig = restoreActionConfig ?? new RestoreActionConfig();
             _retryTimer = timer;
             _sourceRepositories = new();
-            // If windows or env variable is set, verify signatures
-            _verifySignatures = verifySignatures && (OperatingSystem.IsWindows() ? true 
-                : bool.TryParse(Environment.GetEnvironmentVariable(NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification), out var shouldVerifySignature) ? shouldVerifySignature : OperatingSystem.IsLinux());
+            _verifySignatures = verifySignatures;
 
             _cacheSettings = new SourceCacheContext
             {
@@ -136,31 +127,22 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                         packageVersion.ToNormalizedString()));
             }
 
-            // Delete file if verification fails
-            try
-            {
-                await VerifySigning(nupkgPath, repository);
-            }
-            catch (NuGetPackageInstallerException)
-            {
-                File.Delete(nupkgPath);
-                throw;
-            }
+            VerifySigning(nupkgPath);
 
             return nupkgPath;
         }
 
-        private bool VerbosityGreaterThanMinimal() =>
-            _verbosityOptions != VerbosityOptions.quiet && _verbosityOptions != VerbosityOptions.q &&
-            _verbosityOptions != VerbosityOptions.minimal && _verbosityOptions != VerbosityOptions.m;
+        private bool verbosityGreaterThanMinimal()
+        {
+            return _verbosityOptions != VerbosityOptions.quiet && _verbosityOptions != VerbosityOptions.q
+                && _verbosityOptions != VerbosityOptions.minimal && _verbosityOptions != VerbosityOptions.m;
+        }
 
-        private bool DiagnosticVerbosity() => _verbosityOptions == VerbosityOptions.diag || _verbosityOptions == VerbosityOptions.diagnostic;
-
-        private async Task VerifySigning(string nupkgPath, SourceRepository repository)
+        private void VerifySigning(string nupkgPath)
         {
             if (!_verifySignatures && !_validationMessagesDisplayed)
             {
-                if (VerbosityGreaterThanMinimal())
+                if (verbosityGreaterThanMinimal())
                 {
                     _reporter.WriteLine(LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
                 }
@@ -172,28 +154,15 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 return;
             }
 
-            if (repository is not null &&
-                await repository.GetResourceAsync<RepositorySignatureResource>().ConfigureAwait(false) is RepositorySignatureResource resource &&
-                resource.AllRepositorySigned)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                string commandOutput;
-                // The difference between _firstPartyNuGetPackageSigningVerifier.Verify and FirstPartyNuGetPackageSigningVerifier.NuGetVerify is that while NuGetVerify
-                // just ensures that the package is signed properly, Verify additionally requires that the package be from Microsoft. NuGetVerify does not require that
-                // the package be from Microsoft.
-                if ((!_shouldUsePackageSourceMapping && !_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath), out commandOutput)) ||
-                    (_shouldUsePackageSourceMapping && !FirstPartyNuGetPackageSigningVerifier.NuGetVerify(new FilePath(nupkgPath), out commandOutput, _currentWorkingDirectory)))
+                if (!_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath),
+                    out string commandOutput))
                 {
-                    throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToValidatePackageSigning, commandOutput));
+                    throw new NuGetPackageInstallerException(LocalizableStrings.FailedToValidatePackageSigning +
+                                                             Environment.NewLine +
+                                                             commandOutput);
                 }
-
-                if (DiagnosticVerbosity())
-                {
-                    _reporter.WriteLine(LocalizableStrings.VerifyingNuGetPackageSignature, Path.GetFileNameWithoutExtension(nupkgPath));
-                }
-            }
-            else if (DiagnosticVerbosity())
-            {
-                _reporter.WriteLine(LocalizableStrings.NuGetPackageShouldNotBeSigned, Path.GetFileNameWithoutExtension(nupkgPath));
             }
         }
 
@@ -365,7 +334,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private List<PackageSource> LoadDefaultSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
         {
             List<PackageSource> defaultSources = new();
-            string currentDirectory = _currentWorkingDirectory ?? Directory.GetCurrentDirectory();
+            string currentDirectory = Directory.GetCurrentDirectory();
             ISettings settings;
             if (packageSourceLocation?.NugetConfig != null)
             {
@@ -564,8 +533,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             IEnumerable<(PackageSource source, IPackageSearchMetadata package)> accumulativeSearchResults =
                 foundPackagesBySource
-                    .SelectMany(result => result.foundPackages.Select(package => (result.source, package)))
-                    .Distinct();
+                    .SelectMany(result => result.foundPackages.Select(package => (result.source, package)));
 
             if (!accumulativeSearchResults.Any())
             {
@@ -583,8 +551,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
                 if (stableVersions.Any())
                 {
-                    var results = stableVersions.OrderByDescending(r => r.package.Identity.Version);
-                    return numberOfResults > 0 /* 0 indicates 'all' */ ? results.Take(numberOfResults) : results;
+                    return stableVersions.OrderByDescending(r => r.package.Identity.Version).Take(numberOfResults);
                 }
             }
 

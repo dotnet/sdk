@@ -138,7 +138,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
 
                 //  Check to see if workload set is from a different feature band
-                var workloadSetFeatureBand = WorkloadSetVersion.GetFeatureBand(workloadSetVersion);
+                WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out SdkFeatureBand workloadSetFeatureBand);
                 if (!workloadSetFeatureBand.Equals(_sdkVersionBand))
                 {
                     var featureBandWorkloadSets = GetAvailableWorkloadSets(workloadSetFeatureBand);
@@ -251,18 +251,21 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 // _exceptionToThrow is set to null here if and only if the workload set is not installed.
                 // If this came from --info or workload --version, the error won't be thrown, but we should still
                 // suggest running `dotnet workload restore` to the user.
-                return new WorkloadVersionInfo(_globalJsonWorkloadSetVersion, IsInstalled: _exceptionToThrow == null, WorkloadSetsEnabledWithoutWorkloadSet: false, _globalJsonPathFromConstructor);
+                return new WorkloadVersionInfo(_globalJsonWorkloadSetVersion, _exceptionToThrow?.Message);
             }
 
             ThrowExceptionIfManifestsNotAvailable();
 
             if (_workloadSet?.Version is not null)
             {
-                return new WorkloadVersionInfo(_workloadSet.Version, IsInstalled: true, WorkloadSetsEnabledWithoutWorkloadSet: false);
+                return new WorkloadVersionInfo(_workloadSet.Version);
             }
 
             var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkOrUserLocalPath), "default.json");
             var installState = InstallStateContents.FromPath(installStateFilePath)!;
+            string? shouldRestoreMessage = installState.UseWorkloadSets == true ?
+                Strings.ShouldInstallAWorkloadSet :
+                null;
 
             using (SHA256 sha256Hash = SHA256.Create())
             {
@@ -278,7 +281,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     sb.Append(bytes[b].ToString("x2"));
                 }
 
-                return new WorkloadVersionInfo($"{_sdkVersionBand.ToStringWithoutPrerelease()}-manifests.{sb}", IsInstalled: true, WorkloadSetsEnabledWithoutWorkloadSet: installState.UseWorkloadSets == true);
+                return new WorkloadVersionInfo($"{_sdkVersionBand.ToStringWithoutPrerelease()}-manifests.{sb}", null, UpdateModeMessage: shouldRestoreMessage);
             }
         }
 
@@ -596,6 +599,26 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 directory = Path.GetDirectoryName(directory);
             }
             return null;
+        }
+
+        public GlobalJsonInformation? GetGlobalJsonInformation()
+        {
+            return _globalJsonWorkloadSetVersion is null || _globalJsonPathFromConstructor is null ?
+                null :
+                new GlobalJsonInformation(_globalJsonPathFromConstructor, _globalJsonWorkloadSetVersion, _exceptionToThrow is null);
+        }
+
+        public record GlobalJsonInformation
+        {
+            public string GlobalJsonPath { get; }
+            public string GlobalJsonVersion { get; }
+            public bool WorkloadVersionInstalled { get; }
+            public GlobalJsonInformation(string path, string version, bool installed)
+            {
+                GlobalJsonPath = path;
+                GlobalJsonVersion = version;
+                WorkloadVersionInstalled = installed;
+            }
         }
     }
 }

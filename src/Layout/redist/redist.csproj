@@ -27,7 +27,6 @@
   <Import Project="targets\GenerateArchive.targets" />
   <Import Project="targets\OverlaySdkOnLKG.targets" Condition="'$(DotNetBuild)' != 'true'" />
   <Import Project="targets\MSBuildExtensions.targets" />
-  <Import Project="targets\RuntimeAnalyzers.targets" />
 
   <ItemGroup>
     <PackageReference Include="NuGet.Build.Tasks" />

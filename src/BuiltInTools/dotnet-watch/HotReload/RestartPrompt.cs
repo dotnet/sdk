@@ -2,8 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Tasks;
+using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watch
+namespace Microsoft.DotNet.Watcher
 {
     internal sealed class RestartPrompt(IReporter reporter, ConsoleInputReader requester, bool? noPrompt)
     {

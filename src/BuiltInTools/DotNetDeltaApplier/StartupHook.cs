@@ -1,19 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
+using System;
 using System.IO.Pipes;
-using Microsoft.DotNet.HotReload;
+using Microsoft.DotNet.Watcher;
+using Microsoft.Extensions.HotReload;
 
-/// <summary>
-/// The runtime startup hook looks for top-level type named "StartupHook".
-/// </summary>
 internal sealed class StartupHook
 {
-    private const int ConnectionTimeoutMS = 5000;
-
-    private static readonly bool s_logToStandardOutput = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.HotReloadDeltaClientLogMessages) == "1";
-    private static readonly string s_namedPipeName = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName);
+    private static readonly bool s_logToStandardOutput = Environment.GetEnvironmentVariable(EnvironmentVariables.Names.HotReloadDeltaClientLogMessages) == "1";
+    private static readonly string s_namedPipeName = Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotnetWatchHotReloadNamedPipeName);
+    private static readonly string s_targetProcessPath = Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotnetWatchHotReloadTargetProcessPath);
 
     /// <summary>
     /// Invoked by the runtime when the containing assembly is listed in DOTNET_STARTUP_HOOKS.
@@ -22,150 +19,50 @@ internal sealed class StartupHook
     {
         var processPath = Environment.GetCommandLineArgs().FirstOrDefault();
 
-        Log($"Loaded into process: {processPath}");
-
-        HotReloadAgent.ClearHotReloadEnvironmentVariables(typeof(StartupHook));
-
-        Log($"Connecting to hot-reload server");
-
-        // Connect to the pipe synchronously.
-        //
-        // If a debugger is attached and there is a breakpoint in the startup code connecting asynchronously would
-        // set up a race between this code connecting to the server, and the breakpoint being hit. If the breakpoint
-        // hits first, applying changes will throw an error that the client is not connected.
-        //
-        // Updates made before the process is launched need to be applied before loading the affected modules. 
-
-        var pipeClient = new NamedPipeClientStream(".", s_namedPipeName, PipeDirection.InOut, PipeOptions.CurrentUserOnly | PipeOptions.Asynchronous);
-        try
+        // Workaround for https://github.com/dotnet/sdk/issues/40484
+        // When launching the application process dotnet-watch sets Hot Reload environment variables via CLI environment directives (dotnet [env:X=Y] run).
+        // Currently, the CLI parser sets the env variables to the dotnet.exe process itself, rather then to the target process.
+        // This may cause the dotnet.exe process to connect to the named pipe and break it for the target process.
+        if (!IsMatchingProcess(processPath, s_targetProcessPath))
         {
-            pipeClient.Connect(ConnectionTimeoutMS);
-            Log("Connected.");
-        }
-        catch (TimeoutException)
-        {
-            Log($"Failed to connect in {ConnectionTimeoutMS}ms.");
+            Log($"Ignoring process '{processPath}', expecting '{s_targetProcessPath}'");
             return;
         }
 
-        var agent = new HotReloadAgent();
-        try
+        Log($"Loaded into process: {processPath}");
+
+        ClearHotReloadEnvironmentVariables();
+
+        _ = Task.Run(async () =>
         {
-            // block until initialization completes:
-            InitializeAsync(pipeClient, agent, CancellationToken.None).GetAwaiter().GetResult();
+            Log($"Connecting to hot-reload server");
 
-            // fire and forget:
-            _ = ReceiveAndApplyUpdatesAsync(pipeClient, agent, initialUpdates: false, CancellationToken.None);
-        }
-        catch (Exception ex)
-        {
-            Log(ex.Message);
-            pipeClient.Dispose();
-        }
-    }
+            const int TimeOutMS = 5000;
 
-    private static async ValueTask InitializeAsync(NamedPipeClientStream pipeClient, HotReloadAgent agent, CancellationToken cancellationToken)
-    {
-        agent.Reporter.Report("Writing capabilities: " + agent.Capabilities, AgentMessageSeverity.Verbose);
-
-        var initPayload = new ClientInitializationResponse(agent.Capabilities);
-        await initPayload.WriteAsync(pipeClient, cancellationToken);
-
-        // Apply updates made before this process was launched to avoid executing unupdated versions of the affected modules.
-        await ReceiveAndApplyUpdatesAsync(pipeClient, agent, initialUpdates: true, cancellationToken);
-    }
-
-    private static async Task ReceiveAndApplyUpdatesAsync(NamedPipeClientStream pipeClient, HotReloadAgent agent, bool initialUpdates, CancellationToken cancellationToken)
-    {
-        try
-        {
-            while (pipeClient.IsConnected)
+            using var pipeClient = new NamedPipeClientStream(".", s_namedPipeName, PipeDirection.InOut, PipeOptions.CurrentUserOnly | PipeOptions.Asynchronous);
+            try
             {
-                var payloadType = (RequestType)await pipeClient.ReadByteAsync(cancellationToken);
-                switch (payloadType)
-                {
-                    case RequestType.ManagedCodeUpdate:
-                        // Shouldn't get initial managed code updates when the debugger is attached.
-                        // The debugger itself applies these updates when launching process with the debugger attached.
-                        Debug.Assert(!Debugger.IsAttached);
-                        await ReadAndApplyManagedCodeUpdateAsync(pipeClient, agent, cancellationToken);
-                        break;
-
-                    case RequestType.StaticAssetUpdate:
-                        await ReadAndApplyStaticAssetUpdateAsync(pipeClient, agent, cancellationToken);
-                        break;
-
-                    case RequestType.InitialUpdatesCompleted when initialUpdates:
-                        return;
-
-                    default:
-                        // can't continue, the pipe content is in an unknown state
-                        Log($"Unexpected payload type: {payloadType}. Terminating agent.");
-                        return;
-                }
+                await pipeClient.ConnectAsync(TimeOutMS);
+                Log("Connected.");
             }
-        }
-        catch (Exception ex)
-        {
-            Log(ex.Message);
-        }
-        finally
-        {
-            if (!pipeClient.IsConnected)
+            catch (TimeoutException)
             {
-                await pipeClient.DisposeAsync();
+                Log($"Failed to connect in {TimeOutMS}ms.");
+                return;
             }
 
-            if (!initialUpdates)
+            using var agent = new HotReloadAgent(pipeClient, Log);
+            try
             {
-                agent.Dispose();
+                await agent.ReceiveDeltasAsync();
             }
-        }
-    }
+            catch (Exception ex)
+            {
+                Log(ex.Message);
+            }
 
-    private static async ValueTask ReadAndApplyManagedCodeUpdateAsync(
-        NamedPipeClientStream pipeClient,
-        HotReloadAgent agent,
-        CancellationToken cancellationToken)
-    {
-        var request = await ManagedCodeUpdateRequest.ReadAsync(pipeClient, cancellationToken);
-
-        bool success;
-        try
-        {
-            agent.ApplyDeltas(request.Deltas);
-            success = true;
-        }
-        catch (Exception e)
-        {
-            agent.Reporter.Report($"The runtime failed to applying the change: {e.Message}", AgentMessageSeverity.Error);
-            agent.Reporter.Report("Further changes won't be applied to this process.", AgentMessageSeverity.Warning);
-            success = false;
-        }
-
-        var logEntries = agent.GetAndClearLogEntries(request.ResponseLoggingLevel);
-
-        var response = new UpdateResponse(logEntries, success);
-        await response.WriteAsync(pipeClient, cancellationToken);
-    }
-
-    private static async ValueTask ReadAndApplyStaticAssetUpdateAsync(
-        NamedPipeClientStream pipeClient,
-        HotReloadAgent agent,
-        CancellationToken cancellationToken)
-    {
-        var request = await StaticAssetUpdateRequest.ReadAsync(pipeClient, cancellationToken);
-
-        agent.ApplyStaticAssetUpdate(new StaticAssetUpdate(request.AssemblyName, request.RelativePath, request.Contents, request.IsApplicationProject));
-
-        var logEntries = agent.GetAndClearLogEntries(request.ResponseLoggingLevel);
-
-        // Updating static asset only invokes ContentUpdate metadata update handlers.
-        // Failures of these handlers are reported to the log and ignored.
-        // Therefore, this request always succeeds.
-        var response = new UpdateResponse(logEntries, success: true);
-
-        await response.WriteAsync(pipeClient, cancellationToken);
+            Log("Stopped received delta updates. Server is no longer connected.");
+        });
     }
 
     public static bool IsMatchingProcess(string processPath, string targetProcessPath)
@@ -184,6 +81,32 @@ internal sealed class StartupHook
         return (processPath.EndsWith(".exe", comparison) || processPath.EndsWith(".dll", comparison)) &&
                (targetProcessPath.EndsWith(".exe", comparison) || targetProcessPath.EndsWith(".dll", comparison)) &&
                string.Equals(processPath[..^4], targetProcessPath[..^4], comparison);
+    }
+
+    internal static void ClearHotReloadEnvironmentVariables()
+    {
+        // Clear any hot-reload specific environment variables. This prevents child processes from being
+        // affected by the current app's hot reload settings. See https://github.com/dotnet/runtime/issues/58000
+
+        Environment.SetEnvironmentVariable(EnvironmentVariables.Names.DotnetStartupHooks,
+            RemoveCurrentAssembly(Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotnetStartupHooks)));
+
+        Environment.SetEnvironmentVariable(EnvironmentVariables.Names.DotnetWatchHotReloadNamedPipeName, "");
+        Environment.SetEnvironmentVariable(EnvironmentVariables.Names.HotReloadDeltaClientLogMessages, "");
+    }
+
+    internal static string RemoveCurrentAssembly(string environment)
+    {
+        if (environment is "")
+        {
+            return environment;
+        }
+
+        var assemblyLocation = typeof(StartupHook).Assembly.Location;
+        var updatedValues = environment.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
+            .Where(e => !string.Equals(e, assemblyLocation, StringComparison.OrdinalIgnoreCase));
+
+        return string.Join(Path.PathSeparator, updatedValues);
     }
 
     private static void Log(string message)

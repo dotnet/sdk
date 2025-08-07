@@ -44,7 +44,6 @@
   <Import Project="targets\Crossgen.targets" />
   <Import Project="targets\GenerateLayout.targets" />
   <Import Project="targets\GenerateMSBuildExtensions.targets" Condition="'$(PackInstaller)' != 'false'"/>
-  <Import Project="targets\GenerateRuntimeAnalyzers.targets" Condition="'$(PackInstaller)' != 'false'"/>
   <Import Project="targets\FileExtensions.targets" />
   <Import Project="targets\GenerateArchives.targets" Condition="'$(PackInstaller)' != 'false'"/>
   <Import Project="targets\GenerateMSIs.targets" />

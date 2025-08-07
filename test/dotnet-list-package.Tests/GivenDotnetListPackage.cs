@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Package.List;
+using Microsoft.DotNet.Tools.List.PackageReferences;
 
 namespace Microsoft.DotNet.Cli.List.Package.Tests
 {
@@ -117,7 +117,6 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .And.NotHaveStdErr();
 
             new ListPackageCommand(Log)
-                .WithProject("App.sln")
                 .WithWorkingDirectory(projectDirectory)
                 .Execute()
                 .Should()

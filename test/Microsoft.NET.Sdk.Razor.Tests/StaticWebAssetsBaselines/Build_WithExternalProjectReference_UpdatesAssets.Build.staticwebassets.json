@@ -39,9 +39,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\_content\\ClassLibrary\\js\\project-transitive-dep.#[{fingerprint=v4}].js.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\_content\\ClassLibrary\\js\\project-transitive-dep.#[{fingerprint=v4}].js.gz"
     },
     {
       "Identity": "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\js\\project-transitive-dep.js.gz",
@@ -62,9 +60,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\_content\\ClassLibrary\\js\\project-transitive-dep.js.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\_content\\ClassLibrary\\js\\project-transitive-dep.js.gz"
     },
     {
       "Identity": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.js",
@@ -85,9 +81,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\js\\project-transitive-dep.js",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.js"
     },
     {
       "Identity": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.v4.js",
@@ -108,9 +102,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\js\\project-transitive-dep.v4.js",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.v4.js"
     }
   ],
   "Endpoints": [

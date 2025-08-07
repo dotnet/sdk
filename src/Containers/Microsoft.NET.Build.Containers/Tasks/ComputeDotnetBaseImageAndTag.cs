@@ -320,11 +320,11 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         };
     }
 
-    private bool UserImageIsMicrosoftBaseImage => UserBaseImage?.StartsWith("mcr.microsoft.com/") ?? false;
+    private bool UserImageIsMicrosoftBaseImage => UserBaseImage?.StartsWith("mcr.microsoft.com/dotnet") ?? false;
 
     private void LogNoInferencePerformedTelemetry()
     {
-        // we should only log the base image, tag, containerFamily if we _know_ they are MCR images
+        // we should only log the base image, tag, containerFamily if we _know_ they are .NET's MCR images
         string? userBaseImage = null;
         string? userTag = null;
         string? containerFamily = null;

@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Net.WebSockets;
 
-namespace Aspire.Tools.Service;
+namespace Microsoft.WebTools.AspireServer;
 
 /// <summary>
 /// Used by the SocketConnectionManager to track one socket connection. It needs to be disposed when done with it

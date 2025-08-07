@@ -2,13 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Microsoft.WebTools.AspireServer.Contracts;
 
-namespace Aspire.Tools.Service;
+namespace Microsoft.WebTools.AspireServer.Models;
 
 internal class EnvVar
 {
@@ -58,7 +59,7 @@ internal class RunSessionRequest
     public EnvVar[] Environment { get; set; } = Array.Empty<EnvVar>();
 
     [JsonPropertyName("args")]
-    public string[]? Arguments { get; set; }
+    public string[] Arguments { get; set; } = Array.Empty<string>();
 
     public ProjectLaunchRequest? ToProjectLaunchInformation()
     {

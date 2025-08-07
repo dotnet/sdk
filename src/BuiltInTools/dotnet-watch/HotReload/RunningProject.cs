@@ -4,35 +4,29 @@
 
 using System.Collections.Immutable;
 using Microsoft.Build.Graph;
+using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watch
+namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal delegate ValueTask<RunningProject> RestartOperation(CancellationToken cancellationToken);
-
     internal sealed class RunningProject(
         ProjectGraphNode projectNode,
         ProjectOptions options,
-        EnvironmentOptions environmentOptions,
         DeltaApplier deltaApplier,
         IReporter reporter,
         BrowserRefreshServer? browserRefreshServer,
-        Task<int> runningProcess,
-        int processId,
+        Task runningProcess,
         CancellationTokenSource processExitedSource,
         CancellationTokenSource processTerminationSource,
-        RestartOperation restartOperation,
         IReadOnlyList<IDisposable> disposables,
-        ImmutableArray<string> capabilities) : IDisposable
+        Task<ImmutableArray<string>> capabilityProvider) : IDisposable
     {
         public readonly ProjectGraphNode ProjectNode = projectNode;
         public readonly ProjectOptions Options = options;
         public readonly BrowserRefreshServer? BrowserRefreshServer = browserRefreshServer;
         public readonly DeltaApplier DeltaApplier = deltaApplier;
-        public readonly ImmutableArray<string> Capabilities = capabilities;
+        public readonly Task<ImmutableArray<string>> CapabilityProvider = capabilityProvider;
         public readonly IReporter Reporter = reporter;
-        public readonly Task<int> RunningProcess = runningProcess;
-        public readonly int ProcessId = processId;
-        public readonly RestartOperation RestartOperation = restartOperation;
+        public readonly Task RunningProcess = runningProcess;
 
         /// <summary>
         /// Cancellation source triggered when the process exits.
@@ -68,25 +62,7 @@ namespace Microsoft.DotNet.Watch
         public async ValueTask WaitForProcessRunningAsync(CancellationToken cancellationToken)
         {
             await DeltaApplier.WaitForProcessRunningAsync(cancellationToken);
-        }
-
-        public async ValueTask<int> TerminateAsync(CancellationToken shutdownCancellationToken)
-        {
-            if (shutdownCancellationToken.IsCancellationRequested)
-            {
-                // Ctrl+C sent, wait for the process to exit
-                try
-                {
-                    _ = await RunningProcess.WaitAsync(environmentOptions.ProcessCleanupTimeout, CancellationToken.None);
-                }
-                catch (TimeoutException)
-                {
-                    // nop
-                }
-            }
-
-            ProcessTerminationSource.Cancel();
-            return await RunningProcess;
+            Reporter.Report(MessageDescriptor.BuildCompleted);
         }
     }
 }

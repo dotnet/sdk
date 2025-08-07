@@ -328,8 +328,6 @@ namespace Microsoft.NET.Sdk.Razor.Test
       <Integrity>sample-integrity</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <FileLength>10</FileLength>
-      <LastWriteTime>Thu, 15 Nov 1990 00:00:00 GMT</LastWriteTime>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js'))</OriginalItemSpec>
     </StaticWebAsset>
   </ItemGroup>
@@ -362,9 +360,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
                             ["Integrity"] = "sample-integrity",
                             ["OriginalItemSpec"] = Path.Combine("wwwroot","js","sample.js"),
                             ["CopyToOutputDirectory"] = "Never",
-                            ["CopyToPublishDirectory"] = "PreserveNewest",
-                            ["FileLength"] = "10",
-                            ["LastWriteTime"] = new DateTimeOffset(new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc)).ToString(StaticWebAsset.DateTimeAssetFormat)
+                            ["CopyToPublishDirectory"] = "PreserveNewest"
                         }),
                     }
                 };
@@ -409,8 +405,6 @@ namespace Microsoft.NET.Sdk.Razor.Test
       <Integrity>styles-integrity</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <FileLength>10</FileLength>
-      <LastWriteTime>Thu, 15 Nov 1990 00:00:00 GMT</LastWriteTime>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\App.styles.css'))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include=""$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js'))"">
@@ -429,8 +423,6 @@ namespace Microsoft.NET.Sdk.Razor.Test
       <Integrity>sample-integrity</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <FileLength>10</FileLength>
-      <LastWriteTime>Thu, 15 Nov 1990 00:00:00 GMT</LastWriteTime>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js'))</OriginalItemSpec>
     </StaticWebAsset>
   </ItemGroup>
@@ -463,9 +455,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
                             ["Fingerprint"] = "sample-fingerprint",
                             ["Integrity"] = "sample-integrity",
                             ["CopyToOutputDirectory"] = "Never",
-                            ["CopyToPublishDirectory"] = "PreserveNewest",
-                            ["FileLength"] = "10",
-                            ["LastWriteTime"] = new DateTimeOffset(new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc)).ToString(StaticWebAsset.DateTimeAssetFormat)
+                            ["CopyToPublishDirectory"] = "PreserveNewest"
                         }),
                         CreateItem(Path.Combine("wwwroot","App.styles.css"), new Dictionary<string,string>
                         {
@@ -484,10 +474,8 @@ namespace Microsoft.NET.Sdk.Razor.Test
                             ["Fingerprint"] = "styles-fingerprint",
                             ["Integrity"] = "styles-integrity",
                             ["CopyToOutputDirectory"] = "Never",
-                            ["CopyToPublishDirectory"] = "PreserveNewest",
-                            ["FileLength"] = "10",
-                            ["LastWriteTime"] = new DateTimeOffset(new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc)).ToString(StaticWebAsset.DateTimeAssetFormat)
-                       }),
+                            ["CopyToPublishDirectory"] = "PreserveNewest"
+                        }),
                     }
                 };
 
