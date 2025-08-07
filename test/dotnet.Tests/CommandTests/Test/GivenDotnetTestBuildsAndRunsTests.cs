@@ -374,5 +374,26 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
+
+        [Fact]
+        public void RunMTPProjectWithUseAppHostFalseAndArchMismatch_ShouldFailWithProperError()
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectMTPWithUseAppHostFalse", Guid.NewGuid().ToString())
+                .WithSource();
+
+            // Call test with wrong architecture
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("--arch", "wrongArchitecture");
+
+            // Verify proper error is shown for architecture mismatch
+            if (!TestContext.IsLocalized())
+            {
+                // Should provide clear error about architecture mismatch when UseAppHost=false
+                result.StdOut.Should().Contain("architecture");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+        }
     }
 }
