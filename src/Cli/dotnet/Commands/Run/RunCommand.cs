@@ -354,7 +354,7 @@ public class RunCommand
         else
         {
             // Apply defaults if the user didn't expressly set the verbosity.
-            // Setting RunCommmandVerbosity to minimal ensures that we keep the previous launchsettings
+            // Setting RunCommandVerbosity to minimal ensures that we keep the previous launchsettings
             // and related diagnostics messages on by default.
             RunCommandVerbosity = VerbosityOptions.minimal;
             return msbuildArgs.CloneWithVerbosity(VerbosityOptions.quiet);
