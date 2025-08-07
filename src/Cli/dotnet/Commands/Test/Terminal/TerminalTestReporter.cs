@@ -427,26 +427,19 @@ internal sealed partial class TerminalTestReporter : IDisposable
     /// <summary>
     /// Print a build result summary to the output.
     /// </summary>
-    private static void AppendAssemblyResult(ITerminal terminal, bool succeeded, int countErrors, int countWarnings)
+    private static void AppendAssemblyResult(ITerminal terminal, TestProgressState state)
     {
-        if (!succeeded)
+        if (!state.Success)
         {
             terminal.SetColor(TerminalColor.DarkRed);
             // If the build failed, we print one of three red strings.
-            string text = (countErrors > 0, countWarnings > 0) switch
+            string text = (state.FailedTests > 0, state.TotalTests == 0) switch
             {
-                (true, true) => string.Format(CultureInfo.CurrentCulture, CliCommandStrings.FailedWithErrorsAndWarnings, countErrors, countWarnings),
-                (true, _) => string.Format(CultureInfo.CurrentCulture, CliCommandStrings.FailedWithErrors, countErrors),
-                (false, true) => string.Format(CultureInfo.CurrentCulture, CliCommandStrings.FailedWithWarnings, countWarnings),
-                _ => CliCommandStrings.FailedLowercase,
+                (true, _) => string.Format(CultureInfo.CurrentCulture, CliCommandStrings.FailedWithErrors, state.FailedTests),
+                (false, true) => CliCommandStrings.ZeroTestsRan,
+                (false, false) => CliCommandStrings.FailedLowercase,
             };
             terminal.Append(text);
-            terminal.ResetColor();
-        }
-        else if (countWarnings > 0)
-        {
-            terminal.SetColor(TerminalColor.DarkYellow);
-            terminal.Append($"succeeded with {countWarnings} warning(s)");
             terminal.ResetColor();
         }
         else
@@ -858,12 +851,10 @@ internal sealed partial class TerminalTestReporter : IDisposable
     private static void AppendAssemblySummary(TestProgressState assemblyRun, ITerminal terminal)
     {
         terminal.ResetColor();
-        int failedTests = assemblyRun.FailedTests;
-        int warnings = 0;
-
+        
         AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assemblyRun.Assembly, assemblyRun.TargetFramework, assemblyRun.Architecture);
         terminal.Append(' ');
-        AppendAssemblyResult(terminal, assemblyRun.Success, failedTests, warnings);
+        AppendAssemblyResult(terminal, assemblyRun);
         terminal.Append(' ');
         AppendLongDuration(terminal, assemblyRun.Stopwatch.Elapsed);
         terminal.AppendLine();
