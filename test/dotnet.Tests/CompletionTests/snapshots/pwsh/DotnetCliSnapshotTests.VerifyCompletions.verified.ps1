@@ -560,7 +560,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--verbosity', '/v', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
                 [CompletionResult]::new('--verbosity', '/verbosity', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
                 [CompletionResult]::new('--version-suffix', '--version-suffix', [CompletionResultType]::ParameterName, "Set the value of the `$(VersionSuffix) property to use when building the project.")
-                [CompletionResult]::new('--version', [CompletionResultType]::ParameterName, "Set the version of the package.")
+                [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, "The version of the package to create")
                 [CompletionResult]::new('--configuration', '--configuration', [CompletionResultType]::ParameterName, "The configuration to use for building the package. The default is `'Release`'.")
                 [CompletionResult]::new('--configuration', '-c', [CompletionResultType]::ParameterName, "The configuration to use for building the package. The default is `'Release`'.")
                 [CompletionResult]::new('--disable-build-servers', '--disable-build-servers', [CompletionResultType]::ParameterName, "Force the command to ignore any persistent build servers.")
