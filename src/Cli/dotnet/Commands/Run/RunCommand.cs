@@ -347,7 +347,7 @@ public class RunCommand
 
         if (msbuildArgs.Verbosity is VerbosityOptions userVerbosity)
         {
-            // if the had a desired verbosity, we use that for the run command
+            // if the user had a desired verbosity, we use that for the run command
             RunCommandVerbosity = userVerbosity;
             return msbuildArgs;
         }
