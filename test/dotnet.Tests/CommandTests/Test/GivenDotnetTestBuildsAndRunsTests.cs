@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Xml.Linq;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Test;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
@@ -378,8 +379,15 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void RunMTPProjectWithUseAppHostFalseAndArchMismatch_ShouldFailWithProperError()
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectMTPWithUseAppHostFalse", Guid.NewGuid().ToString())
-                .WithSource();
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    // Modify the project to use UseAppHost=false
+                    var ns = project.Root!.Name.Namespace;
+                    var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                    propertyGroup.Add(new XElement(ns + "UseAppHost", "false"));
+                });
 
             // Call test with wrong architecture
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
