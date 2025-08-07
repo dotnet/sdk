@@ -80,7 +80,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependency from https://github.com/dotnet/aspire -->
-    <AspirePackageVersion>9.3.2</AspirePackageVersion>
+    <AspirePackageVersion>9.4.0</AspirePackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
