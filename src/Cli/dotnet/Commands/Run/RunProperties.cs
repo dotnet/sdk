@@ -21,4 +21,13 @@ internal record RunProperties(string RunCommand, string? RunArguments, string? R
 
         return new(runProgram, runArguments, runWorkingDirectory);
     }
+
+    internal static RunProperties FromPropertiesAndApplicationArguments(IReadOnlyDictionary<string, string> properties)
+    {
+        string runProgram = properties.GetValueOrDefault("RunCommand") ?? string.Empty;
+        string runArguments = properties.GetValueOrDefault("RunArguments") ?? string.Empty;
+        string runWorkingDirectory = properties.GetValueOrDefault("RunWorkingDirectory") ?? string.Empty;
+
+        return new(runProgram, runArguments, runWorkingDirectory);
+    }
 }

@@ -24,7 +24,8 @@ internal static class CliConstants
     public const string SolutionXExtensionPattern = "*.slnx";
     public const string SolutionFilterExtensionPattern = "*.slnf";
 
-    public const string BinLogFileName = "msbuild.binlog";
+    public const string BinLogFileName = "msbuild";
+    public const string DotnetTestVerb = "dotnet-test";
 
     public const string DLLExtension = ".dll";
 
@@ -82,4 +83,5 @@ internal static class ProjectProperties
     internal const string AppDesignerFolder = "AppDesignerFolder";
     internal const string TestTfmsInParallel = "TestTfmsInParallel";
     internal const string BuildInParallel = "BuildInParallel";
+    internal const string OutputType = "OutputType";
 }

@@ -5,56 +5,48 @@ using System.Collections.Concurrent;
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
-using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
+using NuGet.Packaging;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class MSBuildUtility
 {
-    private const string dotnetTestVerb = "dotnet-test";
-
     public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, bool IsBuiltOrRestored) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
     {
         SolutionModel solutionModel = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath, includeSolutionFilterFiles: true, includeSolutionXmlFiles: true);
 
-        bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(solutionFilePath, buildOptions);
+        (bool isBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> collectedProperties) = BuildProjectOrSolution(solutionFilePath, buildOptions, useSeparateRestoreCall: false);
 
         if (!isBuiltOrRestored)
         {
             return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), isBuiltOrRestored);
         }
 
-        string rootDirectory = solutionFilePath.HasExtension(".slnf") ?
-                Path.GetDirectoryName(solutionModel.Description)! :
-                SolutionAndProjectUtility.GetRootDirectory(solutionFilePath);
-
-        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
-        var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.MSBuildArgs]), loggers: logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
-
-        ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = GetProjectsProperties(collection, solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions);
-        logger?.ReallyShutdown();
+        var projects = GetProjectsProperties(collectedProperties, buildOptions.NoLaunchProfile, buildOptions.DegreeOfParallelism);
 
         return (projects, isBuiltOrRestored);
     }
 
     public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, bool IsBuiltOrRestored) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
     {
-        bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions);
+        (bool isBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> collectedProperties) =
+            BuildProjectOrSolution(projectFilePath, buildOptions, useSeparateRestoreCall: true);
 
         if (!isBuiltOrRestored)
         {
             return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), isBuiltOrRestored);
         }
 
-        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
-        var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.MSBuildArgs]), logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
-
-        IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, buildOptions.NoLaunchProfile);
-        logger?.ReallyShutdown();
+        var projects = SolutionAndProjectUtility.GetProjectProperties(
+            projectFilePath,
+            buildOptions.NoLaunchProfile,
+            collectedProperties);
 
         return (projects, isBuiltOrRestored);
     }
@@ -63,8 +55,7 @@ internal static class MSBuildUtility
     {
         LoggerUtility.SeparateBinLogArguments(parseResult.UnmatchedTokens, out var binLogArgs, out var otherArgs);
 
-        var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
-            .Concat(binLogArgs);
+        var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand());
 
         PathOptions pathOptions = new(
             parseResult.GetValue(TestingPlatformOptions.ProjectOption),
@@ -80,42 +71,215 @@ internal static class MSBuildUtility
             parseResult.GetValue(TestingPlatformOptions.NoLaunchProfileArgumentsOption),
             degreeOfParallelism,
             otherArgs,
+            binLogArgs,
             msbuildArgs);
     }
 
-    private static bool BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
+    private static (bool IsBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> CollectedProperties)
+     BuildProjectOrSolution(string filePath, BuildOptions buildOptions, bool useSeparateRestoreCall)
     {
-        if (buildOptions.HasNoBuild)
+        var global = CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.OtherMSBuildArgs]);
+
+        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
+            [.. buildOptions.OtherMSBuildArgs, filePath],
+            CommonOptions.PropertiesOption,
+            CommonOptions.RestorePropertiesOption,
+            TestCommandParser.MTPTargetOption,
+            TestCommandParser.VerbosityOption);
+
+        var globalProperties = CreateGlobalProperties(buildOptions, parsedMSBuildArgs);
+        using var collection = new ProjectCollection(globalProperties)
         {
-            return true;
-        }
-        List<string> msbuildArgs = [.. buildOptions.MSBuildArgs, filePath];
+            PropertiesFromCommandLine = [.. parsedMSBuildArgs.OtherMSBuildArgs]
+        };
 
-        if (buildOptions.Verbosity is null)
+        var propertyLogger = new PropertyCollectingLogger();
+        var loggers = CreateLoggers(buildOptions, propertyLogger, out FacadeLogger? binaryLogger, out ConsoleLogger? consoleLogger);
+        var buildParameters = new BuildParameters(collection) { Loggers = loggers };
+
+        try
         {
-            msbuildArgs.Add($"-verbosity:quiet");
+            if (useSeparateRestoreCall)
+            {
+                // For projects: Use separate restore and build calls
+                return ExecuteSeparateBuildCalls(filePath, buildOptions, buildParameters, parsedMSBuildArgs, collection.GlobalProperties, propertyLogger);
+            }
+            else
+            {
+                // For solutions: Use single combined call
+                return ExecuteCombinedBuildCall(filePath, buildOptions, buildParameters, parsedMSBuildArgs, collection.GlobalProperties, propertyLogger);
+            }
         }
-
-        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, TestCommandParser.MTPTargetOption, TestCommandParser.VerbosityOption);
-
-        int result = new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
-
-        return result == (int)BuildResultCode.Success;
+        finally
+        {
+            binaryLogger?.ReallyShutdown();
+            consoleLogger?.Shutdown();
+            propertyLogger?.Shutdown();
+            collection.UnregisterAllLoggers();
+        }
     }
 
-    private static ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectsProperties(ProjectCollection projectCollection, IEnumerable<string> projects, BuildOptions buildOptions)
+    private static (bool IsBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> CollectedProperties)
+        ExecuteSeparateBuildCalls(string filePath, BuildOptions buildOptions, BuildParameters buildParameters, MSBuildArgs parsedMSBuildArgs,
+            IDictionary<string, string?> globalProperties, PropertyCollectingLogger propertyLogger)
+    {
+        // First call: Restore (if not skipped)
+        if (!buildOptions.HasNoRestore && !buildOptions.HasNoBuild)
+        {
+            var restoreRequest = new BuildRequestData(filePath, globalProperties, null, ["Restore"], null);
+            var restoreResult = BuildManager.DefaultBuildManager.Build(buildParameters, restoreRequest);
+
+            if (restoreResult.OverallResult != BuildResultCode.Success)
+            {
+                LogBuildFailure(restoreResult, "Restore failed");
+                return (false, propertyLogger.CollectedProperties);
+            }
+        }
+
+        // Second call: Other targets
+        var otherTargets = GetBuildTargetsExcludingRestore(parsedMSBuildArgs);
+        if (otherTargets.Count > 0)
+        {
+            var buildRequest = new BuildRequestData(filePath, globalProperties, null, [.. otherTargets], null);
+            var buildResult = BuildManager.DefaultBuildManager.Build(buildParameters, buildRequest);
+
+            if (buildResult.OverallResult != BuildResultCode.Success)
+            {
+                LogBuildFailure(buildResult, "Build failed");
+                return (false, propertyLogger.CollectedProperties);
+            }
+        }
+
+        return (true, propertyLogger.CollectedProperties);
+    }
+
+    private static (bool IsBuiltOrRestored, IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> CollectedProperties)
+        ExecuteCombinedBuildCall(string filePath, BuildOptions buildOptions, BuildParameters buildParameters, MSBuildArgs parsedMSBuildArgs,
+            IDictionary<string, string?> globalProperties, PropertyCollectingLogger propertyLogger)
+    {
+        var allTargets = GetBuildTargets(buildOptions, parsedMSBuildArgs);
+
+        if (allTargets.Count > 0)
+        {
+            var buildRequest = new BuildRequestData(filePath, globalProperties, null, [.. allTargets], null);
+            var buildResult = BuildManager.DefaultBuildManager.Build(buildParameters, buildRequest);
+
+            if (buildResult.OverallResult != BuildResultCode.Success)
+            {
+                LogBuildFailure(buildResult, "Build failed");
+                return (false, propertyLogger.CollectedProperties);
+            }
+        }
+
+        return (true, propertyLogger.CollectedProperties);
+    }
+
+    private static void LogBuildFailure(BuildResult buildResult, string message)
+    {
+        if (buildResult.Exception != null)
+        {
+            Logger.LogTrace(() => $"{message}. Exception: {buildResult.Exception}");
+        }
+        else
+        {
+            Logger.LogTrace(() => message);
+        }
+    }
+
+    private static List<string> GetBuildTargetsExcludingRestore(MSBuildArgs parsedMSBuildArgs)
+    {
+        var targets = new List<string>();
+
+        if (parsedMSBuildArgs.RequestedTargets?.Length > 0)
+        {
+            targets.AddRange(parsedMSBuildArgs.RequestedTargets);
+        }
+
+        return targets;
+    }
+
+    private static Dictionary<string, string> CreateGlobalProperties(BuildOptions buildOptions, MSBuildArgs parsedMSBuildArgs)
+    {
+        var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "ShouldRunBuild", (!buildOptions.HasNoBuild).ToString().ToLower() },
+        };
+
+        if (parsedMSBuildArgs.GlobalProperties is not null)
+        {
+            globalProperties.AddRange(parsedMSBuildArgs.GlobalProperties);
+        }
+
+        return globalProperties;
+    }
+
+    private static List<ILogger> CreateLoggers(
+        BuildOptions buildOptions,
+        PropertyCollectingLogger propertyLogger,
+        out FacadeLogger? binaryLogger,
+        out ConsoleLogger? consoleLogger)
+    {
+        var loggers = new List<ILogger> { propertyLogger };
+
+        binaryLogger = LoggerUtility.DetermineBinlogger([.. buildOptions.BinLogArgs], CliConstants.DotnetTestVerb);
+        if (binaryLogger is not null)
+        {
+            loggers.Add(binaryLogger);
+        }
+
+        LoggerVerbosity msbuildVerbosity = LoggerVerbosity.Quiet;
+        if (buildOptions.Verbosity is not null)
+        {
+            msbuildVerbosity = buildOptions.Verbosity switch
+            {
+                VerbosityOptions.quiet or VerbosityOptions.q => LoggerVerbosity.Quiet,
+                VerbosityOptions.minimal or VerbosityOptions.m => LoggerVerbosity.Minimal,
+                VerbosityOptions.normal or VerbosityOptions.n => LoggerVerbosity.Normal,
+                VerbosityOptions.detailed or VerbosityOptions.d => LoggerVerbosity.Detailed,
+                VerbosityOptions.diagnostic or VerbosityOptions.diag => LoggerVerbosity.Diagnostic,
+                _ => LoggerVerbosity.Normal
+            };
+        }
+
+        consoleLogger = new ConsoleLogger(msbuildVerbosity);
+        loggers.Add(consoleLogger);
+
+        return loggers;
+    }
+
+    private static List<string> GetBuildTargets(BuildOptions buildOptions, MSBuildArgs parsedMSBuildArgs)
+    {
+        var targets = new List<string>();
+
+        if (!buildOptions.HasNoRestore && !buildOptions.HasNoBuild)
+        {
+            targets.Add("Restore");
+        }
+
+        if (parsedMSBuildArgs.RequestedTargets?.Length > 0)
+        {
+            targets.AddRange(parsedMSBuildArgs.RequestedTargets);
+        }
+
+        return targets;
+    }
+
+    private static ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectsProperties(
+        IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> collectedProperties,
+        bool noLaunchProfile,
+        int degreeOfParallelism)
     {
         var allProjects = new ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules>();
 
         Parallel.ForEach(
-            projects,
-            new ParallelOptions { MaxDegreeOfParallelism = buildOptions.DegreeOfParallelism },
-            (project) =>
+            collectedProperties.Keys,
+            new ParallelOptions { MaxDegreeOfParallelism = degreeOfParallelism },
+            (projectPath) =>
             {
-                IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, projectCollection, buildOptions.NoLaunchProfile);
-                foreach (var projectMetadata in projectsMetadata)
+                var modules = SolutionAndProjectUtility.GetProjectProperties(projectPath, noLaunchProfile, collectedProperties);
+                foreach (var module in modules)
                 {
-                    allProjects.Add(projectMetadata);
+                    allProjects.Add(module);
                 }
             });
 

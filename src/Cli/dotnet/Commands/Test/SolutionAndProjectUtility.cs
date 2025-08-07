@@ -2,9 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using Microsoft.Build.Evaluation;
-using Microsoft.Build.Execution;
-using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 using Microsoft.DotNet.Cli.Utils;
@@ -14,9 +11,6 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class SolutionAndProjectUtility
 {
-    private static readonly string s_computeRunArgumentsTarget = "ComputeRunArguments";
-    private static readonly Lock s_buildLock = new();
-
     public static (bool SolutionOrProjectFileFound, string Message) TryGetProjectOrSolutionFilePath(string directory, out string projectOrSolutionFilePath, out bool isSolution)
     {
         projectOrSolutionFilePath = string.Empty;
@@ -126,20 +120,6 @@ internal static class SolutionAndProjectUtility
 
     private static string[] GetProjectFilePaths(string directory) => Directory.GetFiles(directory, CliConstants.ProjectExtensionPattern, SearchOption.TopDirectoryOnly);
 
-    private static ProjectInstance EvaluateProject(ProjectCollection collection, string projectFilePath, string? tfm)
-    {
-        Debug.Assert(projectFilePath is not null);
-
-        var project = collection.LoadProject(projectFilePath);
-        if (tfm is not null)
-        {
-            project.SetGlobalProperty(ProjectProperties.TargetFramework, tfm);
-            project.ReevaluateIfNecessary();
-        }
-
-        return project.CreateProjectInstance();
-    }
-
     public static string GetRootDirectory(string solutionOrProjectFilePath)
     {
         string? fileDirectory = Path.GetDirectoryName(solutionOrProjectFilePath);
@@ -147,65 +127,67 @@ internal static class SolutionAndProjectUtility
         return string.IsNullOrEmpty(fileDirectory) ? Directory.GetCurrentDirectory() : fileDirectory;
     }
 
-    public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties(string projectFilePath, ProjectCollection projectCollection, bool noLaunchProfile)
+    public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties(
+        string projectFilePath,
+        bool noLaunchProfile,
+        IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>> collectedProperties)
     {
         var projects = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
-        ProjectInstance projectInstance = EvaluateProject(projectCollection, projectFilePath, null);
 
-        var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
-        var targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
+        if (!collectedProperties.TryGetValue(projectFilePath, out var propertySets) || propertySets == null || propertySets.Count == 0)
+            return projects;
 
-        Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' with TargetFramework '{targetFramework}', TargetFrameworks '{targetFrameworks}', IsTestProject '{projectInstance.GetPropertyValue(ProjectProperties.IsTestProject)}', and '{ProjectProperties.IsTestingPlatformApplication}' is '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
+        // Find the "outer" context (meta-project) which has empty TargetFramework but non-empty TargetFrameworks
+        var outerProps = propertySets.FirstOrDefault(props =>
+            string.IsNullOrWhiteSpace(props.GetValueOrDefault(ProjectProperties.TargetFramework)) &&
+            !string.IsNullOrWhiteSpace(props.GetValueOrDefault(ProjectProperties.TargetFrameworks)));
 
-        if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
+        // Check if this is a multi-TFM project
+        if (outerProps != null)
         {
-            if (GetModuleFromProject(projectInstance, projectCollection.Loggers, noLaunchProfile) is { } module)
+            // Multi-TFM project - use outer build properties for parallelization settings
+            var targetFrameworks = outerProps.GetValueOrDefault(ProjectProperties.TargetFrameworks) ?? string.Empty;
+
+            Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' with TargetFramework '', TargetFrameworks '{targetFrameworks}', IsTestProject '{outerProps.GetValueOrDefault(ProjectProperties.IsTestProject)}', and '{ProjectProperties.IsTestingPlatformApplication}' is '{outerProps.GetValueOrDefault(ProjectProperties.IsTestingPlatformApplication)}'.");
+
+            // Determine if we should run TFMs in parallel using outer build properties
+            if (!bool.TryParse(outerProps.GetValueOrDefault(ProjectProperties.TestTfmsInParallel), out bool testTfmsInParallel) &&
+                !bool.TryParse(outerProps.GetValueOrDefault(ProjectProperties.BuildInParallel), out testTfmsInParallel))
             {
-                projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
-            }
-        }
-        else
-        {
-            if (!bool.TryParse(projectInstance.GetPropertyValue(ProjectProperties.TestTfmsInParallel), out bool testTfmsInParallel) &&
-                !bool.TryParse(projectInstance.GetPropertyValue(ProjectProperties.BuildInParallel), out testTfmsInParallel))
-            {
-                // TestTfmsInParallel takes precedence over BuildInParallel.
-                // If, for some reason, we cannot parse either property as bool, we default to true.
                 testTfmsInParallel = true;
             }
 
-            var frameworks = targetFrameworks
-                .Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries)
-                .Select(f => f.Trim())
-                .Where(f => !string.IsNullOrEmpty(f))
-                .Distinct();
+            // Get only the inner build contexts (those with specific TargetFramework values)
+            var tfmPropertySets = propertySets
+                .Where(props => !string.IsNullOrWhiteSpace(props.GetValueOrDefault(ProjectProperties.TargetFramework)))
+                .ToList();
+
+            // Defensive: If no TFM property sets, return empty
+            if (tfmPropertySets.Count == 0)
+                return projects;
 
             if (testTfmsInParallel)
             {
-                foreach (var framework in frameworks)
+                // Each TFM gets its own group (parallelizable)
+                foreach (var properties in tfmPropertySets)
                 {
-                    projectInstance = EvaluateProject(projectCollection, projectFilePath, framework);
-                    Logger.LogTrace(() => $"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
+                    if (!TryCreateTestModule(properties, out var module, noLaunchProfile))
+                        continue;
 
-                    if (GetModuleFromProject(projectInstance, projectCollection.Loggers, noLaunchProfile) is { } module)
-                    {
-                        projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
-                    }
+                    projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
                 }
             }
             else
             {
+                // All TFMs are grouped together and run sequentially
                 List<TestModule>? innerModules = null;
-                foreach (var framework in frameworks)
+                foreach (var properties in tfmPropertySets)
                 {
-                    projectInstance = EvaluateProject(projectCollection, projectFilePath, framework);
-                    Logger.LogTrace(() => $"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
+                    if (!TryCreateTestModule(properties, out var module, noLaunchProfile))
+                        continue;
 
-                    if (GetModuleFromProject(projectInstance, projectCollection.Loggers, noLaunchProfile) is { } module)
-                    {
-                        innerModules ??= new List<TestModule>();
-                        innerModules.Add(module);
-                    }
+                    innerModules ??= new List<TestModule>();
+                    innerModules.Add(module);
                 }
 
                 if (innerModules is not null)
@@ -214,22 +196,50 @@ internal static class SolutionAndProjectUtility
                 }
             }
         }
+        else
+        {
+            // Single-TFM project - look for the single property set with a TargetFramework
+            var singleTfmProps = propertySets.FirstOrDefault(props =>
+                !string.IsNullOrWhiteSpace(props.GetValueOrDefault(ProjectProperties.TargetFramework)));
+
+            if (singleTfmProps != null)
+            {
+                var targetFramework = singleTfmProps.GetValueOrDefault(ProjectProperties.TargetFramework) ?? string.Empty;
+
+                Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' with TargetFramework '{targetFramework}', TargetFrameworks '', IsTestProject '{singleTfmProps.GetValueOrDefault(ProjectProperties.IsTestProject)}', and '{ProjectProperties.IsTestingPlatformApplication}' is '{singleTfmProps.GetValueOrDefault(ProjectProperties.IsTestingPlatformApplication)}'.");
+
+                if (TryCreateTestModule(singleTfmProps, out var module, noLaunchProfile))
+                {
+                    projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
+                }
+            }
+        }
 
         return projects;
     }
 
-    private static TestModule? GetModuleFromProject(ProjectInstance project, ICollection<ILogger>? loggers, bool noLaunchProfile)
+    private static bool TryCreateTestModule(
+        IReadOnlyDictionary<string, string> properties,
+        out TestModule module,
+        bool noLaunchProfile)
     {
-        _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestProject), out bool isTestProject);
-        _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
+        module = null!;
+        bool.TryParse(properties.GetValueOrDefault(ProjectProperties.IsTestProject), out bool isTestProject);
+        bool.TryParse(properties.GetValueOrDefault(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
+
 
         if (!isTestProject && !isTestingPlatformApplication)
-        {
-            return null;
-        }
+            return false;
 
-        string targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
-        RunProperties runProperties = GetRunProperties(project, loggers);
+        string? targetFramework = properties.GetValueOrDefault(ProjectProperties.TargetFramework);
+        string? projectFullPath = properties.GetValueOrDefault(ProjectProperties.ProjectFullPath);
+        string? appDesignerFolder = properties.GetValueOrDefault(ProjectProperties.AppDesignerFolder);
+
+        // Defensive: Ensure required properties are present
+        if (string.IsNullOrEmpty(projectFullPath))
+            return false;
+
+        var runProperties = RunProperties.FromPropertiesAndApplicationArguments(properties);
 
         // dotnet run throws the same if RunCommand is null or empty.
         // In dotnet test, we are additionally checking that RunCommand is not dll.
@@ -242,32 +252,26 @@ internal static class SolutionAndProjectUtility
                     CliCommandStrings.RunCommandExceptionUnableToRun,
                     "dotnet test",
                     "OutputType",
-                    project.GetPropertyValue("OutputType")));
+                    properties.GetValueOrDefault("OutputType") ?? string.Empty));
         }
 
-        string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
+        var launchSettings = TryGetLaunchProfileSettings(
+            Path.GetDirectoryName(projectFullPath)!,
+            Path.GetFileNameWithoutExtension(projectFullPath),
+            appDesignerFolder ?? string.Empty,
+            noLaunchProfile,
+            profileName: null);
 
-        // TODO: Support --launch-profile and pass it here.
-        var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath)!, Path.GetFileNameWithoutExtension(projectFullPath), project.GetPropertyValue(ProjectProperties.AppDesignerFolder), noLaunchProfile, profileName: null);
+        module = new TestModule(
+            runProperties,
+            PathUtility.FixFilePath(projectFullPath),
+            targetFramework,
+            isTestingPlatformApplication,
+            isTestProject,
+            launchSettings,
+            properties.GetValueOrDefault(ProjectProperties.TargetPath)!);
 
-        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, isTestProject, launchSettings, project.GetPropertyValue(ProjectProperties.TargetPath));
-
-        static RunProperties GetRunProperties(ProjectInstance project, ICollection<ILogger>? loggers)
-        {
-            // Build API cannot be called in parallel, even if the projects are different.
-            // Otherwise, BuildManager in MSBuild will fail:
-            // System.InvalidOperationException: The operation cannot be completed because a build is already in progress.
-            // NOTE: BuildManager is singleton.
-            lock (s_buildLock)
-            {
-                if (!project.Build(s_computeRunArgumentsTarget, loggers: null))
-                {
-                    throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, s_computeRunArgumentsTarget);
-                }
-            }
-
-            return RunProperties.FromProjectAndApplicationArguments(project, []);
-        }
+        return true;
     }
 
     private static ProjectLaunchSettingsModel? TryGetLaunchProfileSettings(string projectDirectory, string projectNameWithoutExtension, string appDesignerFolder, bool noLaunchProfile, string? profileName)

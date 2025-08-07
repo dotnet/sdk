@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.Diagnostics;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.Extensions.Configuration;
 
@@ -250,7 +249,7 @@ internal static class TestCommandParser
         command.Options.Add(TestingPlatformOptions.OutputOption);
         command.Options.Add(TestingPlatformOptions.NoLaunchProfileOption);
         command.Options.Add(TestingPlatformOptions.NoLaunchProfileArgumentsOption);
-        command.Options.Add(MTPTargetOption);
+        //command.Options.Add(MTPTargetOption);
 
         return command;
     }
