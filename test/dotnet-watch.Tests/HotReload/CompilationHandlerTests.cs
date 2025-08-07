@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
@@ -22,14 +20,10 @@ public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTest
 
         var environmentOptions = TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory, "dotnet");
 
-        var factory = new MSBuildFileSetFactory(
-            rootProjectFile: options.ProjectPath,
-            buildArguments: [],
-            environmentOptions: environmentOptions,
-            reporter);
+        var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout);
 
-        var projectGraph = factory.TryLoadProjectGraph(projectGraphRequired: false);
-        var handler = new CompilationHandler(reporter, environmentOptions, CancellationToken.None);
+        var projectGraph = ProjectGraphUtilities.TryLoadProjectGraph(options.ProjectPath, globalOptions: [], reporter, projectGraphRequired: false, CancellationToken.None);
+        var handler = new CompilationHandler(reporter, processRunner);
 
         await handler.Workspace.UpdateProjectConeAsync(hostProject, CancellationToken.None);
 

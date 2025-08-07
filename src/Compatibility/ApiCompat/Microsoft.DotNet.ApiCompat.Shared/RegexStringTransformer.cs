@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.ApiCompat
         /// <param name="replacementString">The replacement string that contains the capture group markers (i.e. $1).</param>
 
         public RegexStringTransformer(string captureGroupPattern, string replacementString)
-            : this(new (string, string)[] { (captureGroupPattern, replacementString) })
+            : this([(captureGroupPattern, replacementString)])
         {
         }
 
