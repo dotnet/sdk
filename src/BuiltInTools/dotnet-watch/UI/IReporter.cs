@@ -65,6 +65,7 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor HotReloadSessionStarted = new("Hot reload session started.", HotReloadEmoji, MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor ProjectsRebuilt = new("Projects rebuilt ({0})", HotReloadEmoji, MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor ProjectsRestarted = new("Projects restarted ({0})", HotReloadEmoji, MessageSeverity.Verbose, s_id++);
+        public static readonly MessageDescriptor ProjectDependenciesDeployed = new("Project dependencies deployed ({0})", HotReloadEmoji, MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor FixBuildError = new("Fix the error to continue or press Ctrl+C to exit.", WatchEmoji, MessageSeverity.Warning, s_id++);
         public static readonly MessageDescriptor WaitingForChanges = new("Waiting for changes", WatchEmoji, MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor LaunchedProcess = new("Launched '{0}' with arguments '{1}': process id {2}", LaunchEmoji, MessageSeverity.Verbose, s_id++);
