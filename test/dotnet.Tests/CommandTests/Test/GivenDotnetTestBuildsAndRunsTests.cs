@@ -138,7 +138,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             {
                 result.StdOut
                     .Should().Contain("Using launch settings from")
-                    .And.Contain("TestProjectWithLaunchSettings.run.json...")
+                    .And.Contain(runJson ? "TestProjectWithLaunchSettings.run.json..." : $"Properties{Path.DirectorySeparatorChar}launchSettings.json...")
                     .And.Contain("Test run summary: Passed!")
                     .And.Contain("skipped Test1")
                     .And.Contain("total: 2")
