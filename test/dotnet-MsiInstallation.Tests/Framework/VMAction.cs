@@ -214,6 +214,9 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
         //  Applies to CopyFileToVM, CopyFolderToVM, MoveFolderOnVM, WriteFileToVM, GetRemoteDirectory, GetRemoteFile
         public string TargetPath { get; set; }
 
+        //  Applies to GetRemoteDirectory, GetRemoteFile
+        public bool MustExist { get; set; }
+
         //  Applies to CopyFileToVM, CopyFolderToVM, MoveFolderOnVM
         public string SourcePath { get; set; }
 
