@@ -45,6 +45,13 @@ public class TestCommand(
         // all parameters before --
         args = [.. args.TakeWhile(a => a != "--")];
 
+        // Check for common patterns that suggest users need to use specific flags
+        var validationResult = ValidateArgumentsForRequiredFlags(args);
+        if (validationResult != 0)
+        {
+            return validationResult;
+        }
+
         // Fix for https://github.com/Microsoft/vstest/issues/1453
         // Run dll/exe directly using the VSTestForwardingApp
         if (ContainsBuiltTestSources(args))
@@ -340,6 +347,79 @@ public class TestCommand(
             }
         }
         return globalProperties;
+    }
+
+    /// <summary>
+    /// Validates that arguments requiring specific flags are used correctly.
+    /// Provides helpful error messages when users provide file/directory arguments without proper flags.
+    /// </summary>
+    /// <returns>0 if validation passes, non-zero error code if validation fails</returns>
+    private static int ValidateArgumentsForRequiredFlags(string[] args)
+    {
+        foreach (string arg in args)
+        {
+            if (arg.StartsWith("-"))
+            {
+                // Skip options/flags
+                continue;
+            }
+
+            string? errorMessage = null;
+            string? suggestedUsage = null;
+
+            // Check for .sln files
+            if (arg.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) && File.Exists(arg))
+            {
+                errorMessage = $"Solution file '{arg}' was provided as a positional argument.";
+                suggestedUsage = $"Consider passing the solution as the default target by running: dotnet test (from the solution directory)\n" +
+                               $"Or use the new Testing Platform with: --solution {arg}\n" +
+                               "To enable Testing Platform, create a 'dotnet.config' file with:\n" +
+                               "[dotnet.test.runner]\n" +
+                               "name = Microsoft.Testing.Platform";
+            }
+            // Check for .csproj/.vbproj/.fsproj files
+            else if ((arg.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
+                     arg.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase) ||
+                     arg.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase)) && File.Exists(arg))
+            {
+                errorMessage = $"Project file '{arg}' was provided as a positional argument.";
+                suggestedUsage = $"Consider passing the project as the default target by running: dotnet test (from the project directory)\n" +
+                               $"Or use the new Testing Platform with: --project {arg}\n" +
+                               "To enable Testing Platform, create a 'dotnet.config' file with:\n" +
+                               "[dotnet.test.runner]\n" +
+                               "name = Microsoft.Testing.Platform";
+            }
+            // Check for directories (if they exist)
+            else if (Directory.Exists(arg))
+            {
+                errorMessage = $"Directory '{arg}' was provided as a positional argument.";
+                suggestedUsage = $"Use the new Testing Platform with: --directory {arg}\n" +
+                               "To enable Testing Platform, create a 'dotnet.config' file with:\n" +
+                               "[dotnet.test.runner]\n" +
+                               "name = Microsoft.Testing.Platform";
+            }
+            // Check for .dll or .exe files (but not for VSTest forwarding case)
+            else if ((arg.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || 
+                      arg.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) &&
+                     File.Exists(arg))
+            {
+                errorMessage = $"Test assembly '{arg}' was provided as a positional argument.";
+                suggestedUsage = $"Use the new Testing Platform with: --test-modules {arg}\n" +
+                               "To enable Testing Platform, create a 'dotnet.config' file with:\n" +
+                               "[dotnet.test.runner]\n" +
+                               "name = Microsoft.Testing.Platform";
+            }
+
+            if (errorMessage != null && suggestedUsage != null)
+            {
+                Reporter.Error.WriteLine(errorMessage);
+                Reporter.Error.WriteLine(suggestedUsage);
+                Reporter.Error.WriteLine("\nFor more information about the available options, run 'dotnet test --help'.");
+                return 1;
+            }
+        }
+
+        return 0;
     }
 }
 
