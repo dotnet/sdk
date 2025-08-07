@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.109">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.110">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>861f0ec3ba5ef218964c95949818e9f33eacf8f0</Sha>
+      <Sha>2fc4beb0693bb53e83c73e7ce4cf37dd74991fda</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.109-servicing.25353.8">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.110-servicing.25405.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>861f0ec3ba5ef218964c95949818e9f33eacf8f0</Sha>
+      <Sha>2fc4beb0693bb53e83c73e7ce4cf37dd74991fda</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.109-servicing.25353.8">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.110-servicing.25405.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>861f0ec3ba5ef218964c95949818e9f33eacf8f0</Sha>
+      <Sha>2fc4beb0693bb53e83c73e7ce4cf37dd74991fda</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.8">
@@ -147,68 +147,68 @@
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>42bfb4554167e1d2fc2b950728d9bd8164f806c1</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks" Version="6.12.4-rc.9">
+    <Dependency Name="NuGet.Build.Tasks" Version="6.12.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>42bfb4554167e1d2fc2b950728d9bd8164f806c1</Sha>
       <SourceBuildTarball RepoName="nuget-client" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks.Console" Version="6.12.4-rc.9">
+    <Dependency Name="NuGet.Build.Tasks.Console" Version="6.12.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>42bfb4554167e1d2fc2b950728d9bd8164f806c1</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks.Pack" Version="6.12.4-rc.9">
+    <Dependency Name="NuGet.Build.Tasks.Pack" Version="6.12.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>42bfb4554167e1d2fc2b950728d9bd8164f806c1</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Commands" Version="6.12.4-rc.9">
+    <Dependency Name="NuGet.Commands" Version="6.12.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>42bfb4554167e1d2fc2b950728d9bd8164f806c1</Sha>
     </Dependency>
-    <Dependency Name="NuGet.CommandLine.XPlat" Version="6.12.4-rc.9">
+    <Dependency Name="NuGet.CommandLine.XPlat" Version="6.12.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>42bfb4554167e1d2fc2b950728d9bd8164f806c1</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Common" Version="6.12.4-rc.9">
+    <Dependency Name="NuGet.Common" Version="6.12.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>42bfb4554167e1d2fc2b950728d9bd8164f806c1</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Configuration" Version="6.12.4-rc.9">
+    <Dependency Name="NuGet.Configuration" Version="6.12.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>42bfb4554167e1d2fc2b950728d9bd8164f806c1</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Credentials" Version="6.12.4-rc.9">
+    <Dependency Name="NuGet.Credentials" Version="6.12.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>42bfb4554167e1d2fc2b950728d9bd8164f806c1</Sha>
     </Dependency>
-    <Dependency Name="NuGet.DependencyResolver.Core" Version="6.12.4-rc.9">
+    <Dependency Name="NuGet.DependencyResolver.Core" Version="6.12.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>42bfb4554167e1d2fc2b950728d9bd8164f806c1</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Frameworks" Version="6.12.4-rc.9">
+    <Dependency Name="NuGet.Frameworks" Version="6.12.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>42bfb4554167e1d2fc2b950728d9bd8164f806c1</Sha>
     </Dependency>
-    <Dependency Name="NuGet.LibraryModel" Version="6.12.4-rc.9">
+    <Dependency Name="NuGet.LibraryModel" Version="6.12.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>42bfb4554167e1d2fc2b950728d9bd8164f806c1</Sha>
     </Dependency>
-    <Dependency Name="NuGet.ProjectModel" Version="6.12.4-rc.9">
+    <Dependency Name="NuGet.ProjectModel" Version="6.12.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>42bfb4554167e1d2fc2b950728d9bd8164f806c1</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Protocol" Version="6.12.4-rc.9">
+    <Dependency Name="NuGet.Protocol" Version="6.12.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>42bfb4554167e1d2fc2b950728d9bd8164f806c1</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Packaging" Version="6.12.4-rc.9">
+    <Dependency Name="NuGet.Packaging" Version="6.12.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>42bfb4554167e1d2fc2b950728d9bd8164f806c1</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Versioning" Version="6.12.4-rc.9">
+    <Dependency Name="NuGet.Versioning" Version="6.12.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>42bfb4554167e1d2fc2b950728d9bd8164f806c1</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Localization" Version="6.12.4-rc.9">
+    <Dependency Name="NuGet.Localization" Version="6.12.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>42bfb4554167e1d2fc2b950728d9bd8164f806c1</Sha>
     </Dependency>
