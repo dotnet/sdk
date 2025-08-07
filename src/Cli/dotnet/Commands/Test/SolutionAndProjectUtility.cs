@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
@@ -250,7 +251,17 @@ internal static class SolutionAndProjectUtility
         // TODO: Support --launch-profile and pass it here.
         var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath)!, Path.GetFileNameWithoutExtension(projectFullPath), project.GetPropertyValue(ProjectProperties.AppDesignerFolder), buildOptions, profileName: null);
 
-        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, isTestProject, launchSettings, project.GetPropertyValue(ProjectProperties.TargetPath));
+        var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootArchVariableName(
+            project.GetPropertyValue("RuntimeIdentifier"),
+            project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"));
+
+        if (rootVariableName is not null && Environment.GetEnvironmentVariable(rootVariableName) != null)
+        {
+            // If already set, we do not override it.
+            rootVariableName = null;
+        }
+
+        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, isTestProject, launchSettings, project.GetPropertyValue(ProjectProperties.TargetPath), rootVariableName);
 
         static RunProperties GetRunProperties(ProjectInstance project, ICollection<ILogger>? loggers)
         {
