@@ -6,12 +6,13 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.Cli.Help;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal partial class TestingPlatformCommand : Command, ICustomHelp
+internal partial class TestingPlatformCommand : System.CommandLine.Command, ICustomHelp
 {
     private MSBuildHandler _msBuildHandler;
     private TerminalTestReporter _output;
@@ -45,6 +46,13 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
     private int RunInternal(ParseResult parseResult)
     {
         ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult);
+
+        // Validate arguments for required flags
+        var validationResult = ValidateArgumentsForRequiredFlags(parseResult);
+        if (validationResult != 0)
+        {
+            return validationResult;
+        }
 
         PrepareEnvironment(parseResult, out TestOptions testOptions, out int degreeOfParallelism);
 
@@ -204,5 +212,67 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
     private void CleanUp()
     {
         _eventHandlers?.Dispose();
+    }
+
+    /// <summary>
+    /// Validates that arguments requiring specific flags are used correctly for Microsoft Testing Platform.
+    /// Provides helpful error messages when users provide file/directory arguments without proper flags.
+    /// </summary>
+    /// <returns>0 if validation passes, non-zero error code if validation fails</returns>
+    private static int ValidateArgumentsForRequiredFlags(ParseResult parseResult)
+    {
+        // Check unmatched tokens for file/directory arguments that should use flags
+        var unmatchedTokens = parseResult.UnmatchedTokens.ToList();
+        
+        foreach (string token in unmatchedTokens)
+        {
+            if (token.StartsWith("-"))
+            {
+                // Skip options/flags
+                continue;
+            }
+
+            string errorMessage = null;
+            string suggestedUsage = null;
+
+            // Check for .sln files
+            if (token.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) && File.Exists(token))
+            {
+                errorMessage = $"Solution file '{token}' was provided as a positional argument.";
+                suggestedUsage = $"Use the --solution flag: dotnet test --solution {token}";
+            }
+            // Check for .csproj/.vbproj/.fsproj files
+            else if ((token.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
+                     token.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase) ||
+                     token.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase)) && File.Exists(token))
+            {
+                errorMessage = $"Project file '{token}' was provided as a positional argument.";
+                suggestedUsage = $"Use the --project flag: dotnet test --project {token}";
+            }
+            // Check for directories (if they exist)
+            else if (Directory.Exists(token))
+            {
+                errorMessage = $"Directory '{token}' was provided as a positional argument.";
+                suggestedUsage = $"Use the --directory flag: dotnet test --directory {token}";
+            }
+            // Check for .dll or .exe files
+            else if ((token.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || 
+                      token.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) &&
+                     File.Exists(token))
+            {
+                errorMessage = $"Test assembly '{token}' was provided as a positional argument.";
+                suggestedUsage = $"Use the --test-modules flag: dotnet test --test-modules {token}";
+            }
+
+            if (errorMessage != null && suggestedUsage != null)
+            {
+                Reporter.Error.WriteLine(errorMessage);
+                Reporter.Error.WriteLine(suggestedUsage);
+                Reporter.Error.WriteLine("\nFor more information about the available options, run 'dotnet test --help'.");
+                return 1;
+            }
+        }
+
+        return 0;
     }
 }

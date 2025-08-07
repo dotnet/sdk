@@ -99,5 +99,77 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.StdErr.Should().NotContain("was provided as a positional argument");
             result.StdErr.Should().NotContain("Testing Platform");
         }
+
+        [Theory]
+        [InlineData("MySolution.sln", "Solution file 'MySolution.sln' was provided as a positional argument.", "--solution MySolution.sln")]
+        [InlineData("MyProject.csproj", "Project file 'MyProject.csproj' was provided as a positional argument.", "--project MyProject.csproj")]
+        [InlineData("MyProject.vbproj", "Project file 'MyProject.vbproj' was provided as a positional argument.", "--project MyProject.vbproj")]
+        [InlineData("MyProject.fsproj", "Project file 'MyProject.fsproj' was provided as a positional argument.", "--project MyProject.fsproj")]
+        public void TestCommandWithMTPShouldValidateFileArgumentsAndProvideDirectGuidance(string filename, string expectedErrorStart, string expectedSuggestion)
+        {
+            var testDir = _testAssetsManager.CreateTestDirectory();
+            
+            // Create dotnet.config to enable MTP
+            var configPath = Path.Combine(testDir.Path, "dotnet.config");
+            File.WriteAllText(configPath, "[dotnet.test.runner]\nname = Microsoft.Testing.Platform");
+            
+            // Create the test file
+            var testFilePath = Path.Combine(testDir.Path, filename);
+            File.WriteAllText(testFilePath, "dummy content");
+
+            var result = new DotnetTestCommand(Log, disableNewOutput: true)
+                .WithWorkingDirectory(testDir.Path)
+                .Execute(filename);
+
+            result.ExitCode.Should().Be(1);
+            result.StdErr.Should().Contain(expectedErrorStart);
+            result.StdErr.Should().Contain(expectedSuggestion);
+            result.StdErr.Should().NotContain("dotnet.config"); // MTP is already enabled, so no need to suggest enabling it
+        }
+
+        [Fact]
+        public void TestCommandWithMTPShouldValidateDirectoryArgumentAndProvideDirectGuidance()
+        {
+            var testDir = _testAssetsManager.CreateTestDirectory();
+            
+            // Create dotnet.config to enable MTP
+            var configPath = Path.Combine(testDir.Path, "dotnet.config");
+            File.WriteAllText(configPath, "[dotnet.test.runner]\nname = Microsoft.Testing.Platform");
+            
+            var subDir = Path.Combine(testDir.Path, "test_directory");
+            Directory.CreateDirectory(subDir);
+
+            var result = new DotnetTestCommand(Log, disableNewOutput: true)
+                .WithWorkingDirectory(testDir.Path)
+                .Execute("test_directory");
+
+            result.ExitCode.Should().Be(1);
+            result.StdErr.Should().Contain("Directory 'test_directory' was provided as a positional argument.");
+            result.StdErr.Should().Contain("--directory test_directory");
+            result.StdErr.Should().NotContain("dotnet.config"); // MTP is already enabled
+        }
+
+        [Fact]
+        public void TestCommandWithMTPShouldValidateDllArgumentAndProvideDirectGuidance()
+        {
+            var testDir = _testAssetsManager.CreateTestDirectory();
+            
+            // Create dotnet.config to enable MTP
+            var configPath = Path.Combine(testDir.Path, "dotnet.config");
+            File.WriteAllText(configPath, "[dotnet.test.runner]\nname = Microsoft.Testing.Platform");
+            
+            // Create a dummy dll file
+            var dllPath = Path.Combine(testDir.Path, "test.dll");
+            File.WriteAllText(dllPath, "dummy dll content");
+
+            var result = new DotnetTestCommand(Log, disableNewOutput: true)
+                .WithWorkingDirectory(testDir.Path)
+                .Execute("test.dll");
+
+            result.ExitCode.Should().Be(1);
+            result.StdErr.Should().Contain("Test assembly 'test.dll' was provided as a positional argument.");
+            result.StdErr.Should().Contain("--test-modules test.dll");
+            result.StdErr.Should().NotContain("dotnet.config"); // MTP is already enabled
+        }
     }
 }
