@@ -68,8 +68,10 @@ internal static class WorkloadCommandParser
         void WriteUpdateModeAndAnyError(string indent = "")
         {
             var useWorkloadSets = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(workloadInfoHelper._currentSdkFeatureBand, workloadInfoHelper.UserLocalPath), "default.json")).ShouldUseWorkloadSets();
-            var workloadSetsString = useWorkloadSets ? "workload sets" : "loose manifests";
-            reporter.WriteLine(indent + string.Format(CliCommandStrings.WorkloadManifestInstallationConfiguration, workloadSetsString));
+            var configurationMessage = useWorkloadSets
+                ? CliCommandStrings.WorkloadManifestInstallationConfigurationWorkloadSets
+                : CliCommandStrings.WorkloadManifestInstallationConfigurationLooseManifests;
+            reporter.WriteLine(indent + configurationMessage);
 
             if (!versionInfo.IsInstalled)
             {

@@ -2796,8 +2796,8 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <note>{Locked="--sdk-version"}</note>
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
-        <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
-        <target state="translated">工作負載已設定為使用工作負載版本來安裝和更新，但找不到任何工作負載版本。執行 "dotnet workload restore" 以安裝工作負載版本。</target>
+        <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
+        <target state="needs-review-translation">工作負載已設定為使用工作負載版本來安裝和更新，但找不到任何工作負載版本。執行 "dotnet workload restore" 以安裝工作負載版本。</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">
@@ -3823,10 +3823,15 @@ To display a value, specify the corresponding command-line option without provid
         <target state="translated">工作負載資訊清單識別碼</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadManifestInstallationConfiguration">
-        <source>Configured to use {0} when installing new manifests.</source>
-        <target state="translated">設為在安裝新資訊清單時使用 {0}。</target>
+      <trans-unit id="WorkloadManifestInstallationConfigurationLooseManifests">
+        <source>Configured to use loose manifests when installing new manifests.</source>
+        <target state="new">Configured to use loose manifests when installing new manifests.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfigurationWorkloadSets">
+        <source>Configured to use workload sets when installing new manifests.</source>
+        <target state="new">Configured to use workload sets when installing new manifests.</target>
+        <note>{Locked="workload sets"}</note>
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">
         <source>Manifest Path</source>
