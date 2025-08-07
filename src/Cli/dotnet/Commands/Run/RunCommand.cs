@@ -413,18 +413,16 @@ public class RunCommand
             SetRootVariableName(
                 command,
                 project.GetPropertyValue("RuntimeIdentifier"),
-                project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"),
-                project.GetPropertyValue("TargetFrameworkVersion"));
+                project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"));
 
             return command;
         }
 
-        static void SetRootVariableName(ICommand command, string runtimeIdentifier, string defaultAppHostRuntimeIdentifier, string targetFrameworkVersion)
+        static void SetRootVariableName(ICommand command, string runtimeIdentifier, string defaultAppHostRuntimeIdentifier)
         {
             var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootVariableName(
                 runtimeIdentifier,
-                defaultAppHostRuntimeIdentifier,
-                targetFrameworkVersion);
+                defaultAppHostRuntimeIdentifier);
             if (rootVariableName != null && Environment.GetEnvironmentVariable(rootVariableName) == null)
             {
                 command.EnvironmentVariable(rootVariableName, Path.GetDirectoryName(new Muxer().MuxerPath));
@@ -442,8 +440,7 @@ public class RunCommand
             SetRootVariableName(
                 command,
                 runtimeIdentifier: RuntimeInformation.RuntimeIdentifier,
-                defaultAppHostRuntimeIdentifier: RuntimeInformation.RuntimeIdentifier,
-                targetFrameworkVersion: $"v{VirtualProjectBuildingCommand.TargetFrameworkVersion}");
+                defaultAppHostRuntimeIdentifier: RuntimeInformation.RuntimeIdentifier);
 
             return command;
         }
