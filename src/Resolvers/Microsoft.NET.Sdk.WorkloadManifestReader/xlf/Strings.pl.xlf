@@ -117,6 +117,11 @@
         <target state="translated">Obciążenie przekierowania „{0}” ma klucze inne niż „redirect-to”</target>
         <note />
       </trans-unit>
+      <trans-unit id="ShouldInstallAWorkloadSet">
+        <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
+        <target state="translated">Obciążenia są skonfigurowane do instalowania i aktualizowania przy użyciu wersji obciążeń, ale ich nie znaleziono. Uruchom opcję „przywracanie obciążenia dotnet”, aby zainstalować wersję obciążenia.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnexpectedTokenAtOffset">
         <source>Unexpected token '{0}' at offset {1}</source>
         <target state="translated">Nieoczekiwany token „{0}” pod przesunięciem {1}</target>

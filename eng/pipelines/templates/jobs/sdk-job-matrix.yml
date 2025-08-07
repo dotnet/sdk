@@ -1,0 +1,113 @@
+parameters:
+  oneESCompat:
+    templateFolderName: templates
+  locBranch: ''
+  ### WINDOWS ###
+  windowsJobParameterSets:
+  - categoryName: TestBuild
+    publishRetryConfig: true
+  - categoryName: FullFramework
+    testFullMSBuild: true
+  - categoryName: TestAsTools
+    runTestsAsTool: true
+    # This job uses the build step for testing, so the extra test step is not necessary.
+    runTests: false
+  - categoryName: TemplateEngine
+    testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
+    publishXunitResults: true
+  - categoryName: AoT
+    runAoTTests: true
+  ### LINUX ###
+  linuxJobParameterSets:
+  - categoryName: TestBuild
+    osProperties: $(linuxOsPortableProperties)
+  - categoryName: TestBuild
+    buildArchitecture: arm64
+    runtimeIdentifier: linux-arm64
+    osProperties: $(linuxOsPortableProperties)
+    # Don't run the tests on arm64. Only perform the build itself.
+    runTests: false
+  - categoryName: ContainerBased
+    container: ubuntu2204DebPkg
+    helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-22.04-helix-amd64
+    osProperties: $(linuxOsPortableProperties)
+    # Skipping all container-based testing for now.
+    # See: https://github.com/dotnet/sdk/issues/40935
+    runTests: false
+  - categoryName: ContainerBased
+    container: fedora39
+    # No fedora Helix container is available, so use the ubuntu one instead.
+    helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-22.04-helix-amd64
+    osProperties: $(linuxOsPortableProperties)
+    # Skipping all container-based testing for now.
+    # See: https://github.com/dotnet/sdk/issues/40935
+    runTests: false
+  - categoryName: ContainerBased
+    container: centosStream9
+    helixTargetContainer: $(helixTargetContainerPrefix)centos-stream9-helix
+    osProperties: /p:OSName=linux
+    # Skipping all container-based testing for now.
+    # See: https://github.com/dotnet/sdk/issues/40935
+    runTests: false
+  - categoryName: ContainerBased
+    container: debian12Amd64
+    helixTargetContainer: $(helixTargetContainerPrefix)debian-11-helix-amd64
+    osProperties: /p:OSName=linux /p:BuildSdkDeb=true
+    # Skipping all container-based testing for now.
+    # See: https://github.com/dotnet/sdk/issues/40935
+    runTests: false
+  - categoryName: ContainerBased
+    container: alpine319WithNode
+    helixTargetContainer: $(helixTargetContainerPrefix)alpine-3.18-helix-amd64
+    runtimeIdentifier: linux-musl-x64
+    # Use HostOSName when running on alpine.
+    osProperties: /p:HostOSName=linux-musl
+    # SBOM generation is not supported for alpine.
+    enableSbom: false
+    # Skipping all container-based testing for now.
+    # See: https://github.com/dotnet/sdk/issues/40935
+    runTests: false
+  - categoryName: TemplateEngine
+    osProperties: $(linuxOsPortableProperties)
+    testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
+    publishXunitResults: true
+  ### MACOS ###
+  macOSJobParameterSets:
+  - categoryName: TestBuild
+  - categoryName: TemplateEngine
+    testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
+    publishXunitResults: true
+  - categoryName: AoT
+    runAoTTests: true
+
+jobs:
+### ONELOCBUILD ###
+- ${{ if and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], format('refs/heads/{0}', parameters.locBranch))) }}:
+  - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/onelocbuild.yml
+    parameters:
+      CreatePr: true
+      LclSource: lclFilesfromPackage
+      LclPackageId: LCL-JUNO-PROD-DOTNETSDK
+      MirrorBranch: ${{ parameters.locBranch }}
+      MirrorRepo: sdk
+### BUILD JOBS ###
+# Each job parameter set creates a new job and the parameter set is unwrapped into the parameters for that job.
+# The parameters sent to this template are also passed to the job, which does include the os-specific jobParameterSets array, but that array itself isn't used in the job.
+- ${{ if eq(parameters.pool.os, 'windows') }}:
+  - ${{ each jobParameters in parameters.windowsJobParameterSets }}:
+    - template: /eng/pipelines/templates/jobs/sdk-build.yml
+      parameters:
+        ${{ insert }}: ${{ parameters }}
+        ${{ insert }}: ${{ jobParameters }}
+- ${{ if eq(parameters.pool.os, 'linux') }}:
+  - ${{ each jobParameters in parameters.linuxJobParameterSets }}:
+    - template: /eng/pipelines/templates/jobs/sdk-build.yml
+      parameters:
+        ${{ insert }}: ${{ parameters }}
+        ${{ insert }}: ${{ jobParameters }}
+- ${{ if eq(parameters.pool.os, 'macOS') }}:
+  - ${{ each jobParameters in parameters.macOSJobParameterSets }}:
+    - template: /eng/pipelines/templates/jobs/sdk-build.yml
+      parameters:
+        ${{ insert }}: ${{ parameters }}
+        ${{ insert }}: ${{ jobParameters }}

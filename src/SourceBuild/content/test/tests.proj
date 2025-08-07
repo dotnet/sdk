@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.Build.Traversal">
+
+  <PropertyGroup>
+    <_RunScenarioTests>true</_RunScenarioTests>
+
+    <!-- Skip scenario tests if the host architecture is different from the target architecture since the tests
+        require the ability to execute the built SDK. But the CLI is not capable of running on a host with a
+        different architecture (i.e. "cannot execute binary file: Exec format error"). -->
+    <_RunScenarioTests Condition="'$(BuildArchitecture.ToLowerInvariant())' != '$(TargetArchitecture.ToLowerInvariant())'">false</_RunScenarioTests>
+
+    <!-- Skip scenario tests if the portable OS (determined from the host machine) is different from the target OS
+        since the tests require the ability to execute the built SDK. An example of where this would be disabled is
+        cross-build of using Mariner to build for Alpine (linux vs linux-musl). -->
+    <_RunScenarioTests Condition="'$(BuildOS)' != 'windows' and '$(DotNetBuildSourceOnly)' != 'true' and '$(__PortableTargetOS.ToLowerInvariant())' != '$(TargetOS.ToLowerInvariant())'">false</_RunScenarioTests>
+
+    <!-- The scenario tests are not supported when unofficial build versioning is used. -->
+    <_RunScenarioTests Condition="'$(UseOfficialBuildVersioning)' == 'false'">false</_RunScenarioTests>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="Microsoft.DotNet.SourceBuild.SmokeTests\Microsoft.DotNet.SourceBuild.SmokeTests.csproj"
+                      Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+    <ProjectReference Include="Microsoft.DotNet.UnifiedBuild.Tests\Microsoft.DotNet.UnifiedBuild.Tests.csproj"
+                      Condition="'$(ShortStack)' != 'true' and '$(PortableBuild)' == 'true' and '$(PgoInstrument)' != 'true'" />
+  </ItemGroup>
+
+  <!-- Make sure that the sdk archive is extracted before running the scenario-tests. Need to do this here as it's hard
+       to define the dependency directly in scenario-tests.proj. -->
+  <ItemGroup>
+    <ProjectReference Include="$(RepositoryEngineeringDir)extract-sdk-archive.proj" BuildInParallel="false" />
+    <ProjectReference Include="$(RepoProjectsDir)scenario-tests.proj" Condition="'$(_RunScenarioTests)' == 'true'" BuildInParallel="false" />
+  </ItemGroup>
+
+</Project>

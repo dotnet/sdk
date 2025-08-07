@@ -14,7 +14,7 @@
     <EmbeddedResource Include="BlazorHotReload.js" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <!-- Reference 6.0.2 targeting packs in Source Build - this was the earliest version after the API surface stabilized -->
     <FrameworkReference
       Update="Microsoft.AspNetCore.App"

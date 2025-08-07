@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(ResolverTargetFramework);net472</TargetFrameworks>
-    <TargetFrameworks Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">$(ResolverTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$([MSBuild]::IsOSPlatform(`Windows`))' == 'false'">$(ResolverTargetFramework)</TargetFrameworks>
 
     <PlatformTarget>AnyCPU</PlatformTarget>
     <RuntimeIdentifiers Condition="$([MSBuild]::IsOSPlatform(`Windows`))">win-x86;win-x64</RuntimeIdentifiers>
@@ -11,9 +11,6 @@
 
     <Nullable>Enable</Nullable>
     <IsPackable>true</IsPackable>
-
-    <UseSystemTextJson Condition="'$(TargetFramework)'!='netstandard2.0' And '$(TargetFramework)'!='net472'">True</UseSystemTextJson>
-    <DefineConstants Condition="'$(UseSystemTextJson)'=='True'">$(DefineConstants);USE_SYSTEM_TEXT_JSON</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,12 +22,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Condition="'$(UseSystemTextJson)'=='True'" />
-    <PackageReference Include="Newtonsoft.Json" Condition="'$(UseSystemTextJson)'!='True'" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <!-- Netfx version builds against the lowest version of System.Text.Json that's guaranteed to be shipped with MSBuild in VS -->
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="8.0.0" />
+    <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>
