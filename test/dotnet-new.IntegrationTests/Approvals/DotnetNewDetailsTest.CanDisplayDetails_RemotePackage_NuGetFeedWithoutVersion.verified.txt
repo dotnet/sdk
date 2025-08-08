@@ -1,6 +1,6 @@
-﻿NUnit.DotNetNew.Template
+﻿NUnit3.DotNetNew.Template
    Package version: 1.9.0
-   Details: Project and item templates containing basic NUnit Test Project.
+   Details: Project and item templates containing basic NUnit 3 Test Project.
    Source Feed: https://api.nuget.org/v3/index.json [https://api.nuget.org/v3/index.json]
    Prefix Reserved: False
    Authors:
@@ -12,8 +12,8 @@
       License Url: https://github.com/nunit/dotnet-new-nunit/blob/master/LICENSE
       Repository Url: https://github.com/nunit/dotnet-new-nunit
    Templates:
-      Template Name      Short Name  Type     Tags        Language
-      -----------------  ----------  -------  ----------  --------
-      NUnit Test Project  nunit       project  Test/NUnit  C#,F#,VB
-      NUnit Test Item     nunit-test  item     Test/NUnit  C#,F#,VB
+      Template Name         Short Name  Type     Tags        Language
+      --------------------  ----------  -------  ----------  --------
+      NUnit 3 Test Project  nunit       project  Test/NUnit  C#,F#,VB
+      NUnit 3 Test Item     nunit-test  item     Test/NUnit  C#,F#,VB
       
