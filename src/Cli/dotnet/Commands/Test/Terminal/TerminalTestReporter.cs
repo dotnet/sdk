@@ -940,6 +940,14 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? displayName,
         string? uid)
     {
+        if (!_isDiscovery)
+        {
+            // Don't count discovered tests if we are not in discovery mode.
+            // NOTE: DiscoverTest call increments PassedTests, so it must not be called when we get discovery message in run mode.
+            // Also, don't bother adding discovered tests to the DiscoveredTests list when the list is only used in discovery mode.
+            return;
+        }
+
         TestProgressState asm = _assemblies[$"{assembly}|{targetFramework}|{architecture}|{executionId}"];
 
         // TODO: add mode for discovered tests to the progress bar - jajares
