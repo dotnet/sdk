@@ -69,19 +69,19 @@ internal static class MSBuildUtility
         string? resultsDirectory = parseResult.GetValue(TestingPlatformOptions.ResultsDirectoryOption);
         if (resultsDirectory is not null)
         {
-            resultsDirectory = Path.Combine(Directory.GetCurrentDirectory(), resultsDirectory);
+            resultsDirectory = Path.GetFullPath(resultsDirectory);
         }
 
         string? configFile = parseResult.GetValue(TestingPlatformOptions.ConfigFileOption);
         if (configFile is not null)
         {
-            configFile = Path.Combine(Directory.GetCurrentDirectory(), configFile);
+            configFile = Path.GetFullPath(configFile);
         }
 
         string? diagnosticOutputDirectory = parseResult.GetValue(TestingPlatformOptions.DiagnosticOutputDirectoryOption);
         if (diagnosticOutputDirectory is not null)
         {
-            diagnosticOutputDirectory = Path.Combine(Directory.GetCurrentDirectory(), diagnosticOutputDirectory);
+            diagnosticOutputDirectory = Path.GetFullPath(diagnosticOutputDirectory);
         }
 
         PathOptions pathOptions = new(
