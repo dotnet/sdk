@@ -5,7 +5,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Test;
-using Microsoft.DotNet.Cli;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
