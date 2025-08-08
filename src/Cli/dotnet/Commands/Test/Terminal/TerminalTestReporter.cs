@@ -168,10 +168,10 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress.StartShowingProgress(workerCount);
     }
 
-    public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string? executionId)
+    public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string? executionId, string instanceId)
     {
         var assemblyRun = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
-        assemblyRun.TryCount++;
+        assemblyRun.NotifyHandshake(instanceId);
 
         // If we fail to parse out the parameter correctly this will enable retry on re-run of the assembly within the same execution.
         // Not good enough for general use, because we want to show (try 1) even on the first try, but this will at

@@ -1,15 +1,18 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using TestNodeInfoEntry = (int Passed, int Skipped, int Failed, string LastInstanceId);
+using System.Diagnostics;
+using TestNodeInfoEntry = (int Passed, int Skipped, int Failed, int LastAttemptNumber);
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 internal sealed class TestProgressState(long id, string assembly, string? targetFramework, string? architecture, IStopwatch stopwatch)
 {
     private readonly Dictionary<string, TestNodeInfoEntry> _testUidToResults = new();
-    private readonly HashSet<string> _seenInstanceIds = new();
-    private string? _lastReceivedInstanceId;
+
+    // In most cases, retries don't happen. So we start with a capacity of 1.
+    // Resizes will be rare and will be okay with such small sizes.
+    private readonly List<string> _orderedInstanceIds = new(capacity: 1);
 
     public string Assembly { get; } = assembly;
 
@@ -43,7 +46,7 @@ internal sealed class TestProgressState(long id, string assembly, string? target
 
     public bool Success { get; internal set; }
 
-    public int TryCount { get; internal set; }
+    public int TryCount { get; private set; }
 
     private void ReportGenericTestResult(
         string testNodeUid,
@@ -51,51 +54,42 @@ internal sealed class TestProgressState(long id, string assembly, string? target
         Func<TestNodeInfoEntry, TestNodeInfoEntry> incrementTestNodeInfoEntry,
         Action<TestProgressState> incrementCountAction)
     {
-        if (_lastReceivedInstanceId is not null && _lastReceivedInstanceId != instanceId &&
-            _seenInstanceIds.Contains(instanceId))
-        {
-            // This instanceId was seen before, but it's not the last one we received!
-            // This is unexpected to happen.
-            // It means that we received a 3 test results with the same execution id.
-            // First had instance id X.
-            // Then second had instance id Y.
-            // Then third had instance id X again.
-            // Let's be safe and throw an exception instead of potentially showing wrong test outcome!
-            // If this happened in practice, we need to know about it.
-            throw new InvalidOperationException("This program location is thought to be unreachable.");
-        }
-
-        _lastReceivedInstanceId = instanceId;
+        var currentAttemptNumber = GetAttemptNumberFromInstanceId(instanceId);
 
         if (_testUidToResults.TryGetValue(testNodeUid, out var value))
         {
             // We received a result for this test node uid before.
-            if (value.LastInstanceId == instanceId)
+            if (value.LastAttemptNumber == currentAttemptNumber)
             {
-                // We are getting a test result for the same instance id.
+                // We are getting a test result for the same attempt.
                 // This means that the test framework is reporting multiple results for the same test node uid.
-                // We will just increment the passed count.
+                // We will just increment the count of the result.
                 _testUidToResults[testNodeUid] = incrementTestNodeInfoEntry(value);
             }
-            else
+            else if (currentAttemptNumber > value.LastAttemptNumber)
             {
+                // This is a retry!
                 // We are getting a test result for a different instance id.
                 // This means that the test was retried.
                 // We discard the results from the previous instance id
-                RetriedFailedTests++;
+                RetriedFailedTests += value.Failed;
                 PassedTests -= value.Passed;
                 SkippedTests -= value.Skipped;
                 FailedTests -= value.Failed;
-                _testUidToResults[testNodeUid] = incrementTestNodeInfoEntry((Passed: 0, Skipped: 0, Failed: 0, LastInstanceId: instanceId));
+                _testUidToResults[testNodeUid] = incrementTestNodeInfoEntry((Passed: 0, Skipped: 0, Failed: 0, LastAttemptNumber: currentAttemptNumber));
+            }
+            else
+            {
+                // This is an unexpected case where we received a result for an instance id that is older than the last one we saw.
+                throw new UnreachableException($"Unexpected test result for attempt '{currentAttemptNumber}' while the last attempt is '{value.LastAttemptNumber}'");
             }
         }
         else
         {
             // This is the first time we see this test node.
-            _testUidToResults.Add(testNodeUid, incrementTestNodeInfoEntry((Passed: 0, Skipped: 0, Failed: 0, LastInstanceId: instanceId)));
+            _testUidToResults.Add(testNodeUid, incrementTestNodeInfoEntry((Passed: 0, Skipped: 0, Failed: 0, LastAttemptNumber: currentAttemptNumber)));
         }
 
-        _seenInstanceIds.Add(instanceId);
         incrementCountAction(this);
     }
 
@@ -130,5 +124,34 @@ internal sealed class TestProgressState(long id, string assembly, string? target
     {
         PassedTests++;
         DiscoveredTests.Add(new(displayName, uid));
+    }
+
+    internal void NotifyHandshake(string instanceId)
+    {
+        var index = _orderedInstanceIds.IndexOf(instanceId);
+        if (index < 0)
+        {
+            // New instanceId for a retry. We add it to _orderedInstanceIds.
+            _orderedInstanceIds.Add(instanceId);
+            TryCount++;
+        }
+        else if (index != _orderedInstanceIds.Count - 1)
+        {
+            // This is an unexpected case where we received a handshake for an instance id that is not the last one we saw.
+            // This means that the test framework is trying to report results for an instance id that is not the last one.
+            throw new UnreachableException($"Unexpected handshake for instance id '{instanceId}' at index '{index}' while the last index is '{_orderedInstanceIds.Count - 1}'");
+        }
+    }
+
+    private int GetAttemptNumberFromInstanceId(string instanceId)
+    {
+        var index = _orderedInstanceIds.IndexOf(instanceId);
+        if (index < 0)
+        {
+            throw new UnreachableException($"The instanceId '{instanceId}' not found.");
+        }
+
+        // Attempt numbers are 1-based, so we add 1 to the index.
+        return index + 1;
     }
 }

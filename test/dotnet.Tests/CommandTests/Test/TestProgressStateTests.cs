@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
@@ -30,7 +31,8 @@ public class TestProgressStateTests
         string testUid = "test1";
         string instanceA = "instanceA";
         string instanceB = "instanceB";
-
+        state.NotifyHandshake(instanceA);
+        state.NotifyHandshake(instanceB);
         for (int i = 1; i <= callCount; i++)
         {
             var instanceId = i <= 2 ? instanceA : instanceB;
@@ -51,7 +53,7 @@ public class TestProgressStateTests
                 break;
             case 3:
                 state.SkippedTests.Should().Be(1);
-                state.RetriedFailedTests.Should().Be(1);
+                state.RetriedFailedTests.Should().Be(0);
                 state.TotalTests.Should().Be(1);
                 break;
         }
@@ -68,14 +70,15 @@ public class TestProgressStateTests
         string testUid = "test1";
         string instanceA = "instanceA";
         string instanceB = "instanceB";
-
+        state.NotifyHandshake("instanceA");
         state.ReportSkippedTest(testUid, instanceA);
         state.ReportSkippedTest(testUid, instanceA);
+        state.NotifyHandshake("instanceB");
         state.ReportSkippedTest(testUid, instanceB);
 
         Action act = () => state.ReportSkippedTest(testUid, instanceA);
-        act.Should().Throw<InvalidOperationException>()
-           .WithMessage("This program location is thought to be unreachable.");
+        act.Should().Throw<UnreachableException>()
+           .WithMessage("Unexpected test result for attempt '1' while the last attempt is '2'");
     }
 
     /// <summary>
@@ -91,7 +94,7 @@ public class TestProgressStateTests
     {
         var stopwatchMock = new Mock<IStopwatch>();
         var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object);
-
+        state.NotifyHandshake("instance1");
         for (int i = 0; i < callCount; i++)
         {
             state.ReportFailedTest("testUid", "instance1");
@@ -111,12 +114,13 @@ public class TestProgressStateTests
     {
         var stopwatchMock = new Mock<IStopwatch>();
         var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object);
-
+        state.NotifyHandshake("id1");
         state.ReportFailedTest("testUid", "id1");
         state.ReportFailedTest("testUid", "id1");
+        state.NotifyHandshake("id2");
         state.ReportFailedTest("testUid", "id2");
 
-        state.RetriedFailedTests.Should().Be(1);
+        state.RetriedFailedTests.Should().Be(2);
         state.FailedTests.Should().Be(1);
         state.TotalTests.Should().Be(1);
     }
@@ -129,14 +133,16 @@ public class TestProgressStateTests
     {
         var stopwatchMock = new Mock<IStopwatch>();
         var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object);
+        state.NotifyHandshake("id1");
         state.ReportFailedTest("testUid", "id1");
+        state.NotifyHandshake("id2");
         state.ReportFailedTest("testUid", "id2");
 
         Action act = () => state.ReportFailedTest("testUid", "id1");
 
         act.Should()
-           .Throw<InvalidOperationException>()
-           .WithMessage("This program location is thought to be unreachable.");
+           .Throw<UnreachableException>()
+           .WithMessage("Unexpected test result for attempt '1' while the last attempt is '2'");
     }
 
     /// <summary>
@@ -147,12 +153,14 @@ public class TestProgressStateTests
     {
         var stopwatchMock = new Mock<IStopwatch>();
         var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object);
+        state.NotifyHandshake("id1");
         state.ReportFailedTest("testUid", "id1");
         state.ReportFailedTest("testUid", "id1");
         state.ReportFailedTest("testUid", "id1");
         state.ReportSkippedTest("testUid", "id1");
         state.ReportSkippedTest("testUid", "id1");
 
+        state.NotifyHandshake("id2");
         state.ReportFailedTest("testUid", "id2");
         state.ReportPassingTest("testUid", "id2");
         state.ReportPassingTest("testUid", "id2");
@@ -162,7 +170,7 @@ public class TestProgressStateTests
         state.PassedTests.Should().Be(3);
         state.FailedTests.Should().Be(1);
         state.SkippedTests.Should().Be(1);
-        state.RetriedFailedTests.Should().Be(1);
+        state.RetriedFailedTests.Should().Be(3);
     }
     /// <summary>
     /// Tests that DiscoverTest increments PassedTests and adds the displayName and uid to DiscoveredTests.
@@ -201,6 +209,7 @@ public class TestProgressStateTests
         var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object);
 
         // First run
+        state.NotifyHandshake("run1");
         state.ReportFailedTest("failed-test", "run1");
         state.ReportPassingTest("passed-test", "run1");
         state.ReportSkippedTest("skipped-test", "run1");
@@ -212,6 +221,7 @@ public class TestProgressStateTests
         state.TotalTests.Should().Be(3);
 
         // Second run (first retry)
+        state.NotifyHandshake("run2");
         state.ReportFailedTest("failed-test", "run2");
 
         state.RetriedFailedTests.Should().Be(1);
@@ -221,6 +231,8 @@ public class TestProgressStateTests
         state.TotalTests.Should().Be(3);
 
         // Third run (second retry) - failing test passes
+        state.NotifyHandshake("run3");
+        state.ReportPassingTest("failed-test", "run3");
         state.RetriedFailedTests.Should().Be(2);
         state.FailedTests.Should().Be(0);
         state.PassedTests.Should().Be(2);
@@ -236,6 +248,7 @@ public class TestProgressStateTests
         var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object);
 
         // First run
+        state.NotifyHandshake("run1");
         state.ReportFailedTest("failed-test1", "run1"); // 2 test cases
         state.ReportFailedTest("failed-test1", "run1");
 
@@ -249,7 +262,8 @@ public class TestProgressStateTests
         state.TotalTests.Should().Be(4);
 
         // Second run (first retry)
-        state.ReportPassingTest("failed-test", "run2"); // 1 test case, now passes
+        state.NotifyHandshake("run2");
+        state.ReportPassingTest("failed-test1", "run2"); // 1 test case, now passes
 
         state.RetriedFailedTests.Should().Be(2);
         state.FailedTests.Should().Be(0);
@@ -266,6 +280,7 @@ public class TestProgressStateTests
         var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object);
 
         // First run
+        state.NotifyHandshake("run1");
         state.ReportFailedTest("failed-test1", "run1"); // 2 test cases, one passes, one fails
         state.ReportPassingTest("failed-test1", "run1");
 
@@ -279,13 +294,14 @@ public class TestProgressStateTests
         state.TotalTests.Should().Be(4);
 
         // Second run (first retry)
-        state.ReportFailedTest("failed-test", "run2"); // 1 test case still fails, but we also re-run the passing one
+        state.NotifyHandshake("run2");
+        state.ReportFailedTest("failed-test1", "run2"); // 1 test case still fails, but we also re-run the passing one
         state.ReportPassingTest("failed-test1", "run2");
 
         state.RetriedFailedTests.Should().Be(1);
         state.FailedTests.Should().Be(1);
         state.PassedTests.Should().Be(2);
         state.SkippedTests.Should().Be(1);
-        state.TotalTests.Should().Be(3);
+        state.TotalTests.Should().Be(4);
     }
 }
