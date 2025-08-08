@@ -566,14 +566,14 @@ This is equivalent to deleting project.assets.json.</value>
 The specified directory will be created if it does not exist.</value>
   </data>
   <data name="CmdConfigFileDescription" xml:space="preserve">
-    <value>The NuGet configuration file to use for the test execution.</value>
+    <value>Specifies a testconfig.json file.</value>
   </data>
   <data name="CmdConfigFilePath" xml:space="preserve">
     <value>CONFIG_FILE</value>
   </data>
   <data name="CmdDiagnosticOutputDirectoryDescription" xml:space="preserve">
-    <value>The directory where diagnostic output will be placed.
-The specified directory will be created if it does not exist.</value>
+    <value>Output directory of the diagnostic logging.
+If not specified the file will be generated inside the default 'TestResults' directory.</value>
   </data>
   <data name="CmdDiagnosticOutputDirectoryPath" xml:space="preserve">
     <value>DIAGNOSTIC_DIR</value>
