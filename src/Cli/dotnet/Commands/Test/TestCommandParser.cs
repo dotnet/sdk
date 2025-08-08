@@ -238,9 +238,6 @@ internal static class TestCommandParser
         command.Options.Add(TestingPlatformOptions.ResultsDirectoryOption);
         command.Options.Add(TestingPlatformOptions.ConfigFileOption);
         command.Options.Add(TestingPlatformOptions.DiagnosticOutputDirectoryOption);
-        command.Options.Add(TestingPlatformOptions.TimeoutOption);
-        command.Options.Add(TestingPlatformOptions.MinimumExpectedTestsOption);
-        command.Options.Add(TestingPlatformOptions.MaximumFailedTestsOption);
         command.Options.Add(TestingPlatformOptions.MaxParallelTestModulesOption);
         command.Options.Add(CommonOptions.ArchitectureOption);
         command.Options.Add(CommonOptions.PropertiesOption);

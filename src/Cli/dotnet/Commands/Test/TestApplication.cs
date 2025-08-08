@@ -125,21 +125,6 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             builder.Append($" {TestingPlatformOptions.DiagnosticOutputDirectoryOption.Name} {ArgumentEscaper.EscapeSingleArg(diagnosticOutputDirectoryPath)}");
         }
 
-        if (_buildOptions.Timeout is { } timeout)
-        {
-            builder.Append($" {TestingPlatformOptions.TimeoutOption.Name} {ArgumentEscaper.EscapeSingleArg(timeout)}");
-        }
-
-        if (_buildOptions.MinimumExpectedTests is { } minimumExpectedTests)
-        {
-            builder.Append($" {TestingPlatformOptions.MinimumExpectedTestsOption.Name} {ArgumentEscaper.EscapeSingleArg(minimumExpectedTests)}");
-        }
-
-        if (_buildOptions.MaximumFailedTests is { } maximumFailedTests)
-        {
-            builder.Append($" {TestingPlatformOptions.MaximumFailedTestsOption.Name} {ArgumentEscaper.EscapeSingleArg(maximumFailedTests)}");
-        }
-
         foreach (var arg in _buildOptions.UnmatchedTokens)
         {
             builder.Append($" {ArgumentEscaper.EscapeSingleArg(arg)}");

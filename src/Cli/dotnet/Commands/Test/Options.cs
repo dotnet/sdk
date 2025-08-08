@@ -16,7 +16,4 @@ internal record BuildOptions(
     bool NoLaunchProfileArguments,
     int DegreeOfParallelism, 
     List<string> UnmatchedTokens,
-    IEnumerable<string> MSBuildArgs,
-    string? Timeout,
-    string? MinimumExpectedTests,
-    string? MaximumFailedTests);
+    IEnumerable<string> MSBuildArgs);

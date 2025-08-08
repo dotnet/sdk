@@ -578,24 +578,6 @@ The specified directory will be created if it does not exist.</value>
   <data name="CmdDiagnosticOutputDirectoryPath" xml:space="preserve">
     <value>DIAGNOSTIC_DIR</value>
   </data>
-  <data name="CmdTimeoutDescription" xml:space="preserve">
-    <value>The timeout for the test execution in milliseconds.</value>
-  </data>
-  <data name="CmdTimeoutValue" xml:space="preserve">
-    <value>TIMEOUT</value>
-  </data>
-  <data name="CmdMinimumExpectedTestsDescription" xml:space="preserve">
-    <value>The minimum number of tests expected to be discovered.</value>
-  </data>
-  <data name="CmdMinimumExpectedTestsValue" xml:space="preserve">
-    <value>COUNT</value>
-  </data>
-  <data name="CmdMaximumFailedTestsDescription" xml:space="preserve">
-    <value>The maximum number of tests allowed to fail before the test run is terminated.</value>
-  </data>
-  <data name="CmdMaximumFailedTestsValue" xml:space="preserve">
-    <value>COUNT</value>
-  </data>
   <data name="CmdRootPathName" xml:space="preserve">
     <value>ROOT_PATH</value>
   </data>

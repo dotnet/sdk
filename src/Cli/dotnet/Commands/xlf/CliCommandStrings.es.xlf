@@ -583,26 +583,6 @@ Esta acción es equivalente a eliminar project.assets.json.</target>
         <target state="translated">Número máximo de módulos de prueba que se pueden ejecutar en paralelo.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdMaximumFailedTestsDescription">
-        <source>The maximum number of tests allowed to fail before the test run is terminated.</source>
-        <target state="new">The maximum number of tests allowed to fail before the test run is terminated.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdMaximumFailedTestsValue">
-        <source>COUNT</source>
-        <target state="new">COUNT</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdMinimumExpectedTestsDescription">
-        <source>The minimum number of tests expected to be discovered.</source>
-        <target state="new">The minimum number of tests expected to be discovered.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdMinimumExpectedTestsValue">
-        <source>COUNT</source>
-        <target state="new">COUNT</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
         <source>Specify either the project, solution, directory, or test modules option.</source>
         <target state="translated">Especifique la opción de módulos de proyecto, solución, directorio o prueba.</target>
@@ -875,16 +855,6 @@ Si no existe, se creará el directorio especificado.</target>
       <trans-unit id="CmdTestOutputDescription">
         <source>Verbosity of test output.</source>
         <target state="translated">Nivel de detalle de la salida de la prueba.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdTimeoutDescription">
-        <source>The timeout for the test execution in milliseconds.</source>
-        <target state="new">The timeout for the test execution in milliseconds.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdTimeoutValue">
-        <source>TIMEOUT</source>
-        <target state="new">TIMEOUT</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTransitiveDescription">

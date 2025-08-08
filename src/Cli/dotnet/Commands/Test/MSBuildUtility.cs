@@ -101,10 +101,7 @@ internal static class MSBuildUtility
             parseResult.GetValue(TestingPlatformOptions.NoLaunchProfileArgumentsOption),
             degreeOfParallelism,
             otherArgs,
-            msbuildArgs,
-            parseResult.GetValue(TestingPlatformOptions.TimeoutOption),
-            parseResult.GetValue(TestingPlatformOptions.MinimumExpectedTestsOption),
-            parseResult.GetValue(TestingPlatformOptions.MaximumFailedTestsOption));
+            msbuildArgs);
     }
 
     private static bool BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)

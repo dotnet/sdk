@@ -64,26 +64,7 @@ internal static class TestingPlatformOptions
         Arity = ArgumentArity.ExactlyOne
     };
 
-    public static readonly Option<string> TimeoutOption = new("--timeout")
-    {
-        Description = CliCommandStrings.CmdTimeoutDescription,
-        HelpName = CliCommandStrings.CmdTimeoutValue,
-        Arity = ArgumentArity.ExactlyOne
-    };
 
-    public static readonly Option<string> MinimumExpectedTestsOption = new("--minimum-expected-tests")
-    {
-        Description = CliCommandStrings.CmdMinimumExpectedTestsDescription,
-        HelpName = CliCommandStrings.CmdMinimumExpectedTestsValue,
-        Arity = ArgumentArity.ExactlyOne
-    };
-
-    public static readonly Option<string> MaximumFailedTestsOption = new("--maximum-failed-tests")
-    {
-        Description = CliCommandStrings.CmdMaximumFailedTestsDescription,
-        HelpName = CliCommandStrings.CmdMaximumFailedTestsValue,
-        Arity = ArgumentArity.ExactlyOne
-    };
 
     public static readonly Option<string> MaxParallelTestModulesOption = new("--max-parallel-test-modules")
     {
