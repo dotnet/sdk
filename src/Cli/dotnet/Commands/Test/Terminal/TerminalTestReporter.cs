@@ -45,6 +45,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private readonly TestProgressStateAwareTerminal _terminalWithProgress;
 
+    private int _handshakeFailuresCount;
+
     private readonly uint? _originalConsoleMode;
     private bool _isDiscovery;
     private bool _isHelp;
@@ -279,7 +281,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         bool notEnoughTests = totalTests < _options.MinimumExpectedTests;
         bool allTestsWereSkipped = totalTests == 0 || totalTests == totalSkippedTests;
         bool anyTestFailed = totalFailedTests > 0;
-        bool anyAssemblyFailed = _assemblies.Values.Any(a => !a.Success);
+        bool anyAssemblyFailed = _assemblies.Values.Any(a => !a.Success) || _handshakeFailuresCount > 0;
         bool runFailed = anyAssemblyFailed || anyTestFailed || notEnoughTests || allTestsWereSkipped || _wasCancelled;
         terminal.SetColor(runFailed ? TerminalColor.DarkRed : TerminalColor.DarkGreen);
 
@@ -334,7 +336,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         int passed = _assemblies.Values.Sum(t => t.PassedTests);
         int skipped = _assemblies.Values.Sum(t => t.SkippedTests);
         int retried = _assemblies.Values.Sum(t => t.RetriedFailedTests);
-        int error = _assemblies.Values.Sum(t => !t.Success && (t.TotalTests == 0 || t.FailedTests == 0) ? 1 : 0);
+        int error = _assemblies.Values.Sum(t => !t.Success && (t.TotalTests == 0 || t.FailedTests == 0) ? 1 : 0) + _handshakeFailuresCount;
         TimeSpan runDuration = _testExecutionStartTime != null && _testExecutionEndTime != null ? (_testExecutionEndTime - _testExecutionStartTime).Value : TimeSpan.Zero;
 
         bool colorizeFailed = failed > 0;
@@ -821,6 +823,22 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         _terminalWithProgress.WriteToTerminal(terminal =>
         {
+            AppendExecutableSummary(terminal, exitCode, outputData, errorData);
+        });
+    }
+
+    internal void HandshakeFailure(string assemblyPath, string targetFramework, int exitCode, string outputData, string errorData)
+    {
+        Interlocked.Increment(ref _handshakeFailuresCount);
+        _terminalWithProgress.WriteToTerminal(terminal =>
+        {
+            terminal.ResetColor();
+            AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assemblyPath, targetFramework, architecture: null);
+            terminal.Append(' ');
+            terminal.SetColor(TerminalColor.DarkRed);
+            terminal.Append(CliCommandStrings.ZeroTestsRan);
+            terminal.ResetColor();
+            terminal.AppendLine();
             AppendExecutableSummary(terminal, exitCode, outputData, errorData);
         });
     }
