@@ -168,7 +168,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress.StartShowingProgress(workerCount);
     }
 
-    public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string? executionId)
+    public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string executionId)
     {
         var assemblyRun = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
         assemblyRun.TryCount++;
@@ -197,10 +197,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
     }
 
-    private TestProgressState GetOrAddAssemblyRun(string assembly, string? targetFramework, string? architecture, string? executionId)
+    private TestProgressState GetOrAddAssemblyRun(string assembly, string? targetFramework, string? architecture, string executionId)
     {
-        string key = $"{assembly}|{targetFramework}|{architecture}|{executionId}";
-        return _assemblies.GetOrAdd(key, _ =>
+        return _assemblies.GetOrAdd(executionId, _ =>
         {
             IStopwatch sw = CreateStopwatch();
             var assemblyRun = new TestProgressState(Interlocked.Increment(ref _counter), assembly, targetFramework, architecture, sw);
@@ -454,7 +453,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string assembly,
         string? targetFramework,
         string? architecture,
-        string? executionId,
+        string executionId,
         string instanceId,
         string testNodeUid,
         string displayName,
@@ -467,7 +466,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? standardOutput,
         string? errorOutput)
     {
-        TestProgressState asm = _assemblies[$"{assembly}|{targetFramework}|{architecture}|{executionId}"];
+        TestProgressState asm = _assemblies[executionId];
         var attempt = asm.TryCount;
 
         if (_options.ShowActiveTests)
@@ -797,12 +796,12 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
     }
 
-    internal void AssemblyRunCompleted(string assembly, string? targetFramework, string? architecture, string? executionId,
+    internal void AssemblyRunCompleted(string executionId,
         // These parameters are useful only for "remote" runs in dotnet test, where we are reporting on multiple processes.
         // In single process run, like with testing platform .exe we report these via messages, and run exit.
-        int? exitCode, string? outputData, string? errorData)
+        int exitCode, string? outputData, string? errorData)
     {
-        TestProgressState assemblyRun = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
+        TestProgressState assemblyRun = _assemblies[executionId];
         assemblyRun.ExitCode = exitCode;
         assemblyRun.Success = exitCode == 0 && assemblyRun.FailedTests == 0;
         assemblyRun.Stopwatch.Stop();
@@ -814,7 +813,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             _terminalWithProgress.WriteToTerminal(terminal => AppendAssemblySummary(assemblyRun, terminal));
         }
 
-        if (exitCode is null or 0)
+        if (exitCode == 0)
         {
             // Report nothing, we don't want to report on success, because then we will also report on test-discovery etc.
             return;
@@ -936,11 +935,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string assembly,
         string? targetFramework,
         string? architecture,
-        string? executionId,
+        string executionId,
         string? displayName,
         string? uid)
     {
-        TestProgressState asm = _assemblies[$"{assembly}|{targetFramework}|{architecture}|{executionId}"];
+        TestProgressState asm = _assemblies[executionId];
 
         // TODO: add mode for discovered tests to the progress bar - jajares
         asm.DiscoverTest(displayName, uid);
@@ -1028,9 +1027,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string testNodeUid,
         string instanceId,
         string displayName,
-        string? executionId)
+        string executionId)
     {
-        TestProgressState asm = _assemblies[$"{assembly}|{targetFramework}|{architecture}|{executionId}"];
+        TestProgressState asm = _assemblies[executionId];
 
         if (_options.ShowActiveTests)
         {

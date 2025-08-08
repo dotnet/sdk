@@ -145,11 +145,16 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
 
         if (_executions.TryGetValue(testApplication, out var appInfo))
         {
-            _output.AssemblyRunCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
+            _output.AssemblyRunCompleted(appInfo.ExecutionId, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
         }
         else
         {
-            _output.AssemblyRunCompleted(testApplication.Module.TargetPath ?? testApplication.Module.ProjectFullPath, testApplication.Module.TargetFramework, architecture: null, null, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
+            // TODO: Important before merge.
+            // Report this as "test process exited unexpectedly".
+            // This is either a crash before we received the handshake, or a test process that is not actually handshaking with us (e.g, empty entry point).
+            // AssemblyRunCompleted doesn't expect null executionId. So we cannot call it.
+            // Effectively, AssemblyRunCompleted isn't expected to be called without a corresponding AssemblyRunStarted.
+            // _output.AssemblyRunCompleted(testApplication.Module.TargetPath ?? testApplication.Module.ProjectFullPath, testApplication.Module.TargetFramework, architecture: null, null, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
         }
 
         LogTestProcessExit(args);
