@@ -57,7 +57,7 @@
         <target state="translated">워크로드를 확인하는 동안 문제가 발생했습니다. 자세한 내용을 확인하려면 "dotnet workload update"를 실행하세요.</target>
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
-      <trans-unit id="WorkloadManfiestVersionColumn">
+      <trans-unit id="WorkloadManifestVersionColumn">
         <source>Manifest Version</source>
         <target state="translated">매니페스트 버전</target>
         <note />
@@ -80,6 +80,11 @@
       <trans-unit id="WriteCLIRecordForVisualStudioWorkloadMessage">
         <source>Writing install records for Visual Studio workloads: '{0}'</source>
         <target state="translated">Visual Studio 워크로드에 대한 설치 레코드를 쓰는 중: '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfiguration">
+        <source>Configured to use {0} when installing new manifests.</source>
+        <target state="translated">새 매니페스트를 설치할 때 {0}을(를) 사용하도록 구성됩니다.</target>
         <note />
       </trans-unit>
     </body>
