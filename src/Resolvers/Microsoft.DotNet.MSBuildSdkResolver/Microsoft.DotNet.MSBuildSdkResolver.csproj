@@ -71,7 +71,7 @@
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" VersionOverride="$(MicrosoftDeploymentDotNetReleasesToolsetPackageVersion)" />
     <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutableToolsetPackageVersion)" />
     <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />
-
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" VersionOverride="$(SystemDiagnosticsDiagnosticsSourceToolsetPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" PrivateAssets="All" ExcludeAssets="Runtime" />
   </ItemGroup>
 
