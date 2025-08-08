@@ -72,11 +72,25 @@ internal static class MSBuildUtility
             resultsDirectory = Path.Combine(Directory.GetCurrentDirectory(), resultsDirectory);
         }
 
+        string? configFile = parseResult.GetValue(TestingPlatformOptions.ConfigFileOption);
+        if (configFile is not null)
+        {
+            configFile = Path.Combine(Directory.GetCurrentDirectory(), configFile);
+        }
+
+        string? diagnosticOutputDirectory = parseResult.GetValue(TestingPlatformOptions.DiagnosticOutputDirectoryOption);
+        if (diagnosticOutputDirectory is not null)
+        {
+            diagnosticOutputDirectory = Path.Combine(Directory.GetCurrentDirectory(), diagnosticOutputDirectory);
+        }
+
         PathOptions pathOptions = new(
             parseResult.GetValue(TestingPlatformOptions.ProjectOption),
             parseResult.GetValue(TestingPlatformOptions.SolutionOption),
             parseResult.GetValue(TestingPlatformOptions.DirectoryOption),
-            resultsDirectory);
+            resultsDirectory,
+            configFile,
+            diagnosticOutputDirectory);
 
         return new BuildOptions(
             pathOptions,
@@ -87,7 +101,10 @@ internal static class MSBuildUtility
             parseResult.GetValue(TestingPlatformOptions.NoLaunchProfileArgumentsOption),
             degreeOfParallelism,
             otherArgs,
-            msbuildArgs);
+            msbuildArgs,
+            parseResult.GetValue(TestingPlatformOptions.TimeoutOption),
+            parseResult.GetValue(TestingPlatformOptions.MinimumExpectedTestsOption),
+            parseResult.GetValue(TestingPlatformOptions.MaximumFailedTestsOption));
     }
 
     private static bool BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)

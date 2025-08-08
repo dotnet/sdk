@@ -406,6 +406,11 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
         <target state="translated">使用する NuGet config ファイルのパス。'--outdated'、'--deprecated'、または '--vulnerable' のオプションが必要です。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdConfigFileDescription">
+        <source>The NuGet configuration file to use for the test execution.</source>
+        <target state="new">The NuGet configuration file to use for the test execution.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdConfigFileOption">
         <source>FILE</source>
         <target state="translated">FILE</target>
@@ -414,6 +419,11 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
       <trans-unit id="CmdConfigFileOptionDescription">
         <source>The NuGet configuration file to use.</source>
         <target state="translated">使用する NuGet 構成ファイル。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdConfigFilePath">
+        <source>CONFIG_FILE</source>
+        <target state="new">CONFIG_FILE</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCurrentRuntimeOptionDescription">
@@ -434,6 +444,18 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
       <trans-unit id="CmdDeprecatedDescription">
         <source>Lists packages that have been deprecated. Cannot be combined with '--vulnerable' or '--outdated' options.</source>
         <target state="translated">非推奨化されたパッケージを一覧表示します。'--vulnerable' または '--outdated' オプションと組み合わせることはできません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDiagnosticOutputDirectoryDescription">
+        <source>The directory where diagnostic output will be placed.
+The specified directory will be created if it does not exist.</source>
+        <target state="new">The directory where diagnostic output will be placed.
+The specified directory will be created if it does not exist.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDiagnosticOutputDirectoryPath">
+        <source>DIAGNOSTIC_DIR</source>
+        <target state="new">DIAGNOSTIC_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDirectoryDescription">
@@ -559,6 +581,26 @@ This is equivalent to deleting project.assets.json.</source>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
         <source>The max number of test modules that can run in parallel.</source>
         <target state="translated">並列で実行できるテスト モジュールの最大数。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMaximumFailedTestsDescription">
+        <source>The maximum number of tests allowed to fail before the test run is terminated.</source>
+        <target state="new">The maximum number of tests allowed to fail before the test run is terminated.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMaximumFailedTestsValue">
+        <source>COUNT</source>
+        <target state="new">COUNT</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMinimumExpectedTestsDescription">
+        <source>The minimum number of tests expected to be discovered.</source>
+        <target state="new">The minimum number of tests expected to be discovered.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMinimumExpectedTestsValue">
+        <source>COUNT</source>
+        <target state="new">COUNT</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
@@ -833,6 +875,16 @@ The specified directory will be created if it does not exist.</source>
       <trans-unit id="CmdTestOutputDescription">
         <source>Verbosity of test output.</source>
         <target state="translated">テスト出力の詳細。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTimeoutDescription">
+        <source>The timeout for the test execution in milliseconds.</source>
+        <target state="new">The timeout for the test execution in milliseconds.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTimeoutValue">
+        <source>TIMEOUT</source>
+        <target state="new">TIMEOUT</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTransitiveDescription">
