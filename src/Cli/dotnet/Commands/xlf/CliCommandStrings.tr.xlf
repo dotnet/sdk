@@ -407,8 +407,8 @@ MSTest için 2.2.4'ten önce, zaman aşımı tüm test durumları için kullanı
         <note />
       </trans-unit>
       <trans-unit id="CmdConfigFileDescription">
-        <source>The NuGet configuration file to use for the test execution.</source>
-        <target state="new">The NuGet configuration file to use for the test execution.</target>
+        <source>Specifies a testconfig.json file.</source>
+        <target state="new">Specifies a testconfig.json file.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfigFileOption">
@@ -447,10 +447,10 @@ MSTest için 2.2.4'ten önce, zaman aşımı tüm test durumları için kullanı
         <note />
       </trans-unit>
       <trans-unit id="CmdDiagnosticOutputDirectoryDescription">
-        <source>The directory where diagnostic output will be placed.
-The specified directory will be created if it does not exist.</source>
-        <target state="new">The directory where diagnostic output will be placed.
-The specified directory will be created if it does not exist.</target>
+        <source>Output directory of the diagnostic logging.
+If not specified the file will be generated inside the default 'TestResults' directory.</source>
+        <target state="new">Output directory of the diagnostic logging.
+If not specified the file will be generated inside the default 'TestResults' directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDiagnosticOutputDirectoryPath">
