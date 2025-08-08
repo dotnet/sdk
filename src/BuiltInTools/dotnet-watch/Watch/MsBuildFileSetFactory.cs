@@ -155,11 +155,6 @@ namespace Microsoft.DotNet.Watch
                 "/t:" + TargetName
             };
 
-            if (EnvironmentOptions.GetTestBinLogPath(rootProjectFile, "GenerateWatchList") is { } binLogPath)
-            {
-                arguments.Add($"/bl:{binLogPath}");
-            }
-
             arguments.AddRange(buildArguments);
 
             // Set dotnet-watch reserved properties after the user specified propeties,

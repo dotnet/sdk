@@ -101,6 +101,9 @@
       <TestExecutionDirectoryFiles Include="$(RepoRoot)eng\Versions.props">
         <DestinationFolder>eng/</DestinationFolder>
       </TestExecutionDirectoryFiles>
+      <TestExecutionDirectoryFiles Include="$(RepoRoot)eng\Version.Details.props">
+        <DestinationFolder>eng/</DestinationFolder>
+      </TestExecutionDirectoryFiles>
       <TestExecutionDirectoryFiles Include="$(RepoRoot)eng\ManualVersions.props">
         <DestinationFolder>eng/</DestinationFolder>
       </TestExecutionDirectoryFiles>

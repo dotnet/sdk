@@ -13,6 +13,8 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
     private readonly ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions = new();
     private readonly TerminalTestReporter _output = output;
 
+    public bool HasHandshakeFailure => _output.HasHandshakeFailure;
+
     public void OnHandshakeReceived(object sender, HandshakeArgs args)
     {
         var hostType = args.Handshake.Properties[HandshakeMessagePropertyNames.HostType];
@@ -141,11 +143,11 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
 
         if (_executions.TryGetValue(testApplication, out var appInfo))
         {
-            _output.AssemblyRunCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
+            _output.AssemblyRunCompleted(appInfo.ExecutionId, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
         }
         else
         {
-            _output.AssemblyRunCompleted(testApplication.Module.TargetPath ?? testApplication.Module.ProjectFullPath, testApplication.Module.TargetFramework, architecture: null, null, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
+            _output.HandshakeFailure(testApplication.Module.TargetPath ?? testApplication.Module.ProjectFullPath, testApplication.Module.TargetFramework, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
         }
 
         LogTestProcessExit(args);

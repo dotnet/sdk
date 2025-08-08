@@ -43,6 +43,13 @@ internal static class TestingPlatformOptions
         HelpName = CliCommandStrings.CmdRootPathName,
     };
 
+    public static readonly Option<string> ResultsDirectoryOption = new("--results-directory")
+    {
+        Description = CliCommandStrings.CmdResultsDirectoryDescription,
+        HelpName = CliCommandStrings.CmdPathToResultsDirectory,
+        Arity = ArgumentArity.ExactlyOne
+    };
+
     public static readonly Option<string> MaxParallelTestModulesOption = new("--max-parallel-test-modules")
     {
         Description = CliCommandStrings.CmdMaxParallelTestModulesDescription,
