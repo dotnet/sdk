@@ -1,0 +1,26 @@
+<Project>
+
+  <Target Name="GenerateArtifactChecksums"
+          DependsOnTargets="InitializeChecksumItemGroup;"
+          AfterTargets="GenerateInstallers"
+          Inputs="@(ArtifactsForGeneratingChecksums)"
+          Outputs="%(ArtifactsForGeneratingChecksums.DestinationPath)">
+    <GenerateChecksums Items="@(ArtifactsForGeneratingChecksums)" />
+  </Target>
+
+  <Target Name="InitializeChecksumItemGroup">
+    <ItemGroup>
+      <FilesToExcludeForChecksum Include="$(ArtifactsShippingPackagesDir)*.svg" />
+      <FilesToExcludeForChecksum Include="$(ArtifactsShippingPackagesDir)*.wixpdb" />
+      <FilesToExcludeForChecksum Include="$(ArtifactsShippingPackagesDir)*.nupkg" />
+      <FilesToExcludeForChecksum Include="$(ArtifactsShippingPackagesDir)*.sha" />
+      <FilesToExcludeForChecksum Include="$(ArtifactsShippingPackagesDir)*.cab" />
+      <ArtifactsForGeneratingChecksums Include="$(ArtifactsShippingPackagesDir)*.*" Exclude="@(FilesToExcludeForChecksum)" />
+
+      <ArtifactsForGeneratingChecksums>
+        <DestinationPath>%(ArtifactsForGeneratingChecksums.Identity).sha</DestinationPath>
+      </ArtifactsForGeneratingChecksums>
+    </ItemGroup>
+  </Target>
+
+</Project>
