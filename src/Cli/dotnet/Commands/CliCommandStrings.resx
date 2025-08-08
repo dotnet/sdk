@@ -2605,4 +2605,16 @@ Proceed?</value>
     <value>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</value>
     <comment>{Locked="--yes"}</comment>
   </data>
+  <data name="TestCommandUseSolution" xml:space="preserve">
+    <value>Specifying a solution for 'dotnet test' should be via '--solution'.</value>
+  </data>
+  <data name="TestCommandUseProject" xml:space="preserve">
+    <value>Specifying a project for 'dotnet test' should be via '--project'.</value>
+  </data>
+  <data name="TestCommandUseDirectory" xml:space="preserve">
+    <value>Specifying a directory for 'dotnet test' should be via '--directory'.</value>
+  </data>
+  <data name="TestCommandUseTestModules" xml:space="preserve">
+    <value>Specifying a dlls or executables for 'dotnet test' should be via '--test-modules'.</value>
+  </data>
 </root>
