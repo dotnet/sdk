@@ -163,7 +163,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var assemblyPath = Path.Combine(intermediateOutputPath, "SimpleMvc.dll");
 
             AssemblyInfo.Get(assemblyPath).Should().Contain(("AssemblyTitleAttribute", "SimpleMvc"));
-            AssemblyInfo.Get(assemblyPath).Should().Contain(("ProvideApplicationPartFactoryAttribute", "ConsolidatedAssemblyApplicationPartFactory"));
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("ProvideApplicationPartFactoryAttribute", "Microsoft.AspNetCore.Mvc.ApplicationParts.ConsolidatedAssemblyApplicationPartFactory, Microsoft.AspNetCore.Mvc.Razor"));
 
         }
 
