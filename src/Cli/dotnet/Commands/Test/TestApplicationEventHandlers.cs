@@ -13,6 +13,8 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
     private readonly ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions = new();
     private readonly TerminalTestReporter _output = output;
 
+    public bool HasHandshakeFailure => _output.HasHandshakeFailure;
+
     public void OnHandshakeReceived(object sender, HandshakeArgs args)
     {
         var hostType = args.Handshake.Properties[HandshakeMessagePropertyNames.HostType];

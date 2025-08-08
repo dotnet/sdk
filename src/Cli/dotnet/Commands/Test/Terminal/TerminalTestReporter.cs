@@ -61,6 +61,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private bool? _shouldShowPassedTests;
 
+    public bool HasHandshakeFailure => _handshakeFailuresCount > 0;
+
 #if NET7_0_OR_GREATER
     // Specifying no timeout, the regex is linear. And the timeout does not measure the regex only, but measures also any
     // thread suspends, so the regex gets blamed incorrectly.
@@ -281,7 +283,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         bool notEnoughTests = totalTests < _options.MinimumExpectedTests;
         bool allTestsWereSkipped = totalTests == 0 || totalTests == totalSkippedTests;
         bool anyTestFailed = totalFailedTests > 0;
-        bool anyAssemblyFailed = _assemblies.Values.Any(a => !a.Success) || _handshakeFailuresCount > 0;
+        bool anyAssemblyFailed = _assemblies.Values.Any(a => !a.Success) || HasHandshakeFailure;
         bool runFailed = anyAssemblyFailed || anyTestFailed || notEnoughTests || allTestsWereSkipped || _wasCancelled;
         terminal.SetColor(runFailed ? TerminalColor.DarkRed : TerminalColor.DarkGreen);
 
