@@ -194,8 +194,9 @@ public class TestProgressStateTests
     }
 
     [Fact]
-    public void ReportPreviouslyPassedTestsAndFailedTests_ShouldShowTheSameTotalCountsInEachRetry()
+    public void FailedTestRetryShouldShouldShowTheSameTotalCountsInEachRetry()
     {
+        // Tests are retried, total test count stays 3 to give use comparable counts, no matter how many times we retry.
         var stopwatchMock = new Mock<IStopwatch>();
         var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object);
 
@@ -212,12 +213,78 @@ public class TestProgressStateTests
 
         // Second run (first retry)
         state.ReportFailedTest("failed-test", "run2");
-        state.ReportPassingTest("passed-test", "run2");
-        state.ReportSkippedTest("skipped-test", "run2");
 
-        state.RetriedFailedTests.Should().Be(3);
+        state.RetriedFailedTests.Should().Be(1);
         state.FailedTests.Should().Be(1);
         state.PassedTests.Should().Be(1);
+        state.SkippedTests.Should().Be(1);
+        state.TotalTests.Should().Be(3);
+
+        // Third run (second retry) - failing test passes
+        state.RetriedFailedTests.Should().Be(2);
+        state.FailedTests.Should().Be(0);
+        state.PassedTests.Should().Be(2);
+        state.SkippedTests.Should().Be(1);
+        state.TotalTests.Should().Be(3);
+    }
+
+    [Fact]
+    public void FailedTestRetryShouldNotFailTheRunWhenSecondRunProducesLessDynamicTests()
+    {
+        // This is special test for dynamic tests where we don't know how many tests will be produced in the second run.
+        var stopwatchMock = new Mock<IStopwatch>();
+        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object);
+
+        // First run
+        state.ReportFailedTest("failed-test1", "run1"); // 2 test cases
+        state.ReportFailedTest("failed-test1", "run1");
+
+        state.ReportPassingTest("passed-test", "run1");
+        state.ReportSkippedTest("skipped-test", "run1");
+
+        state.RetriedFailedTests.Should().Be(0);
+        state.FailedTests.Should().Be(2);
+        state.PassedTests.Should().Be(1);
+        state.SkippedTests.Should().Be(1);
+        state.TotalTests.Should().Be(4);
+
+        // Second run (first retry)
+        state.ReportPassedTest("failed-test", "run2"); // 1 test case, now passes
+
+        state.RetriedFailedTests.Should().Be(2);
+        state.FailedTests.Should().Be(0);
+        state.PassedTests.Should().Be(2);
+        state.SkippedTests.Should().Be(1);
+        state.TotalTests.Should().Be(3);
+    }
+
+    [Fact]
+    public void FailedTestRetryShouldAccountPassedTestsInRetry()
+    {
+        // This is special test for dynamic tests where we cannot avoid re-running even non-failing tests from dynamic tests.
+        var stopwatchMock = new Mock<IStopwatch>();
+        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object);
+
+        // First run
+        state.ReportFailedTest("failed-test1", "run1"); // 2 test cases, one passes, one fails
+        state.ReportPassingTest("failed-test1", "run1");
+
+        state.ReportPassingTest("passed-test", "run1");
+        state.ReportSkippedTest("skipped-test", "run1");
+
+        state.RetriedFailedTests.Should().Be(0);
+        state.FailedTests.Should().Be(1);
+        state.PassedTests.Should().Be(2);
+        state.SkippedTests.Should().Be(1);
+        state.TotalTests.Should().Be(4);
+
+        // Second run (first retry)
+        state.ReportFailedTest("failed-test", "run2"); // 1 test case still fails, but we also re-run the passing one
+        state.ReportPassingTest("failed-test1", "run2");
+
+        state.RetriedFailedTests.Should().Be(1);
+        state.FailedTests.Should().Be(1);
+        state.PassedTests.Should().Be(2);
         state.SkippedTests.Should().Be(1);
         state.TotalTests.Should().Be(3);
     }
