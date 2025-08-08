@@ -3,8 +3,6 @@
 
 #nullable disable
 
-using Microsoft.VisualBasic;
-
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantToControlGeneratedAssemblyInfo : SdkTest
@@ -81,7 +79,7 @@ namespace Microsoft.NET.Build.Tests
             var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework, "Release").FullName, "HelloWorld.dll");
             var actualInfo = AssemblyInfo.Get(assemblyPath);
 
-            actualInfo.Should().Equal(expectedInfo);
+            actualInfo.Should().BeEquivalentTo(expectedInfo);
         }
 
         [Fact]
@@ -237,7 +235,7 @@ namespace Microsoft.NET.Build.Tests
             command.GetValues().Should().BeEquivalentTo(new[] { "1.2.3+abc.xyz" });
         }
 
-        [WindowsOnlyTheory]
+        [Theory]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         [InlineData("net45")]
         public void It_respects_version_prefix(string targetFramework)
