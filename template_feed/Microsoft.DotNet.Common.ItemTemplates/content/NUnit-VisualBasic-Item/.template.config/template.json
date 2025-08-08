@@ -6,9 +6,9 @@
   "defaultName": "NUnitTestItem",
   "generatorVersions": "[1.0.0.0-*)",
   "description": "Creates a new NUnit test class",
-  "groupIdentity": "NUnit.DotNetNew.ItemTemplate",
+  "groupIdentity": "NUnit3.DotNetNew.ItemTemplate",
   "precedence": "12000",
-  "identity": "NUnit.DotNetNew.ItemTemplate.VisualBasic.9.0",
+  "identity": "NUnit3.DotNetNew.ItemTemplate.VisualBasic.9.0",
   "shortName": "nunit-test",
   "tags": {
     "language": "VB",
