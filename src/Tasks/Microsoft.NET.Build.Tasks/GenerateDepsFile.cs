@@ -85,7 +85,7 @@ namespace Microsoft.NET.Build.Tasks
         // CopyLocal subset ot of @(ReferencePath), @(ReferenceDependencyPath)
         // Used to filter out non-runtime assemblies from deps file. Only project and direct references in this
         // set will be written to deps file as runtime dependencies.
-        public string[] UserRuntimeAssemblies { get; set; }
+        public ITaskItem[] UserRuntimeAssemblies { get; set; } = [];
 
         public bool IsSelfContained { get; set; }
 
@@ -154,7 +154,7 @@ namespace Microsoft.NET.Build.Tasks
                 AssemblyVersion,
                 AssemblySatelliteAssemblies);
 
-            var userRuntimeAssemblySet = new HashSet<string>(UserRuntimeAssemblies ?? Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase);
+            var userRuntimeAssemblySet = new HashSet<string>(UserRuntimeAssemblies is not null ? UserRuntimeAssemblies.Select(i => i.ItemSpec) : Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase);
             Func<ITaskItem, bool> isUserRuntimeAssembly = item => userRuntimeAssemblySet.Contains(item.ItemSpec);
 
             IEnumerable<ReferenceInfo> referenceAssemblyInfos =
@@ -251,7 +251,13 @@ namespace Microsoft.NET.Build.Tasks
                                 .Concat(ResolvedRuntimeTargetsFiles.Select(f => new ResolvedFile(f, true)));
             builder = builder.WithResolvedNuGetFiles(resolvedNuGetFiles);
 
-            DependencyContext dependencyContext = builder.Build(UserRuntimeAssemblies);
+            var userRuntimeAssemblies = UserRuntimeAssemblies.Select(i =>
+            {
+                string destinationSubDir = i.GetMetadata(MetadataKeys.DestinationSubDirectory);
+                string destinationSubPath = string.IsNullOrEmpty(destinationSubDir) ? null : Path.Combine(destinationSubDir, Path.GetFileName(i.ItemSpec));
+                return (i.ItemSpec, destinationSubPath);
+            }).ToArray();
+            DependencyContext dependencyContext = builder.Build(userRuntimeAssemblies);
 
             var writer = new DependencyContextWriter();
             using (var fileStream = File.Create(depsFilePath))

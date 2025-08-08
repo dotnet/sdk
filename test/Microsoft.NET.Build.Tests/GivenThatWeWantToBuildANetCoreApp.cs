@@ -4,7 +4,7 @@
 #nullable disable
 
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.NET.Build.Tasks;
 using Newtonsoft.Json.Linq;
@@ -1130,6 +1130,268 @@ class Program
             runCommand
                 .Execute()
                 .Should().HaveStdOut(expectedOutput);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_includes_local_path_for_package_dependencies(bool useCustomSubdirectory)
+        {
+            string targetFramework = ToolsetInfo.CurrentTargetFramework;
+
+            // Create a test project that references the package
+            TestProject testProject = new()
+            {
+                Name = "TestProjWithPackageDependencies",
+                TargetFrameworks = targetFramework,
+                IsExe = true
+            };
+
+            string culture = "fr";
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+            testProject.PackageReferences.Add(new TestPackageReference("Libuv", "1.10.0"));
+            testProject.PackageReferences.Add(new TestPackageReference($"Humanizer.Core.{culture}", "2.14.1"));
+            testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\packages";
+
+            // Add source that uses all the packages
+            testProject.SourceFiles[$"{testProject.Name}.cs"] =
+                $$""""
+                using System;
+                using System.Runtime.InteropServices;
+                using Humanizer;
+                class Program
+                {
+                    private static void UseNewtonsoftJson()
+                    {
+                        var jsonObject = Newtonsoft.Json.JsonConvert.DeserializeObject("{}");
+                        Console.WriteLine($"Used Newtonsoft.Json - deserialized: {jsonObject}");
+                    }
+                    private static void UseHumanizer()
+                    {
+                        string humanized = DateTime.Now.AddDays(-1).Humanize(culture: new System.Globalization.CultureInfo("{{culture}}"));
+                        Console.WriteLine($"Used Humanizer.Core.{{culture}} - yesterday humanized: {humanized}");
+                    }
+                    private static void UseLibuv()
+                    {
+                        uint libuvVersion = uv_version();
+                        Console.WriteLine($"Used Libuv - version: {libuvVersion}");
+
+                        [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+                        static extern uint uv_version();
+                    }
+                    static void Main(string[] args)
+                    {
+                        try
+                        {
+                            UseNewtonsoftJson();
+                        }
+                        catch (Exception ex) { Console.Error.WriteLine($"Failure using Newtonsoft.Json: {ex}"); }
+
+                        try
+                        {
+                            UseHumanizer();
+                        }
+                        catch (Exception ex) { Console.Error.WriteLine($"Failure using Humanizer.Core.{{culture}}: {ex}"); }
+
+                        try
+                        {
+                            UseLibuv();
+                        }
+                        catch (Exception ex) { Console.Error.WriteLine($"Failure using Libuv: {ex}"); }
+                    }
+                }
+                """";
+
+            string subdirectory = string.Empty;
+            if (useCustomSubdirectory)
+            {
+                // Put the resolved package assets in a subdirectory
+                subdirectory = "pkg-ref/";
+                testProject.ProjectChanges.Add(xml =>
+                {
+                    xml.Root.Add(XElement.Parse(
+                        $"""
+                        <Target Name="UpdateRuntimeCopyLocalItems" AfterTargets="ResolvePackageAssets">
+                          <ItemGroup>
+                            <RuntimeCopyLocalItems Update="@(RuntimeCopyLocalItems)" DestinationSubDirectory="{subdirectory}%(RuntimeCopyLocalItems.DestinationSubDirectory)" />
+                            <ResourceCopyLocalItems Update="@(ResourceCopyLocalItems)" DestinationSubDirectory="{subdirectory}%(ResourceCopyLocalItems.DestinationSubDirectory)" />
+                            <RuntimeTargetsCopyLocalItems Update="@(RuntimeTargetsCopyLocalItems)" DestinationSubDirectory="{subdirectory}%(RuntimeTargetsCopyLocalItems.DestinationSubDirectory)" />
+                          </ItemGroup>
+                        </Target>
+                        """));
+                });
+            }
+
+            var buildCommand = new BuildCommand(_testAssetsManager.CreateTestProject(testProject, identifier: $"{nameof(useCustomSubdirectory)}={useCustomSubdirectory}"));
+            buildCommand.Execute().Should().Pass();
+
+            // Expected package and local output paths for package assets
+            // Path for runtime and resource assets is a regex to match for the expected path in the .deps.json
+            (string Name, (string, string)[] Runtime, (string, string)[] Native, (string, string)[] Resource)[] expectedPackages = [
+                ("Newtonsoft.Json",
+                    Runtime: [
+                        ("lib/.*/Newtonsoft.Json.dll", $"{subdirectory}Newtonsoft.Json.dll") ],
+                    Native: [],
+                    Resource: []),
+                ("Libuv",
+                    Runtime: [],
+                    Native: [
+                        ("runtimes/linux-x64/native/libuv.so", $"{subdirectory}runtimes/linux-x64/native/libuv.so"),
+                        ("runtimes/win-x64/native/libuv.dll", $"{subdirectory}runtimes/win-x64/native/libuv.dll") ],
+                    Resource: []),
+                ($"Humanizer.Core",
+                    Runtime: [
+                        ("lib/.*/Humanizer.dll", $"{subdirectory}Humanizer.dll") ],
+                    Native: [],
+                    Resource: []),
+                ($"Humanizer.Core.{culture}",
+                    Runtime: [],
+                    Native: [],
+                    Resource: [
+                        ($"lib/.*/{culture}/Humanizer.resources.dll", $"{subdirectory}{culture}/Humanizer.resources.dll") ])
+            ];
+
+            string outputDirectory = buildCommand.GetOutputDirectory(testProject.TargetFrameworks).FullName;
+            string depsFile = Path.Combine(outputDirectory, $"{testProject.Name}.deps.json");
+            using (FileStream stream = File.OpenRead(depsFile))
+            {
+                DependencyContext dependencyContext = new DependencyContextJsonReader().Read(stream);
+                foreach (var expected in expectedPackages)
+                {
+                    // Validate package assets are in the deps file with the expected path and local paths
+                    RuntimeLibrary lib = dependencyContext.RuntimeLibraries.FirstOrDefault(lib => lib.Name == expected.Name);
+                    Assert.NotNull(lib);
+
+                    foreach ((string packagePath, string localPath) in expected.Runtime)
+                    {
+                        lib.RuntimeAssemblyGroups.Should().Contain(
+                            g => g.RuntimeFiles.Any(f => f.LocalPath == localPath && Regex.IsMatch(f.Path, packagePath)),
+                            $"runtime assemblies should have item with LocalPath={localPath} and Path matching {packagePath}");
+                    }
+
+                    foreach ((string packagePath, string localPath) in expected.Native)
+                    {
+                        lib.NativeLibraryGroups.Should().Contain(
+                            g => g.RuntimeFiles.Any(f => f.LocalPath == localPath && f.Path == packagePath),
+                            $"native libraries should have item with LocalPath={localPath} and Path={packagePath}");
+                    }
+
+                    foreach ((string packagePath, string localPath) in expected.Resource)
+                    {
+                        lib.ResourceAssemblies.Should().Contain(
+                            a => a.LocalPath == localPath && Regex.IsMatch(a.Path, packagePath),
+                            $"resource assemblies should have item with LocalPath={localPath} and Path matching {packagePath}");
+                    }
+                }
+            }
+
+            string app = Path.Join(outputDirectory, $"{testProject.Name}.dll");
+            var result = new DotnetCommand(Log, app).Execute();
+            result.Should().Pass();
+
+            if (useCustomSubdirectory)
+            {
+                // TODO: This should not have errors once we have a runtime that supports localPath
+                result.Should()
+                    .HaveStdErrContaining("System.IO.FileNotFoundException")
+                    .And.HaveStdErrContaining("System.DllNotFoundException");
+                foreach (var pkg in testProject.PackageReferences)
+                {
+                    result.Should().HaveStdErrContaining($"Failure using {pkg.ID}");
+                }
+            }
+            else
+            {
+                result.Should().NotHaveStdErr();
+                foreach (var pkg in testProject.PackageReferences)
+                {
+                    result.Should().HaveStdOutContaining($"Used {pkg.ID}");
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_includes_local_path_for_project_references(bool useCustomSubdirectory)
+        {
+            string targetFramework = ToolsetInfo.CurrentTargetFramework;
+
+            // Create a referenced library project
+            TestProject referencedProject = new()
+            {
+                Name = "ReferencedLibrary",
+                TargetFrameworks = targetFramework,
+                IsExe = false
+            };
+
+            // Create test project that references the library
+            TestProject testProject = new()
+            {
+                Name = "TestProjWithProjectReference",
+                TargetFrameworks = targetFramework,
+                IsExe = true
+            };
+            testProject.ReferencedProjects.Add(referencedProject);
+
+            string subdirectory = string.Empty;
+            if (useCustomSubdirectory)
+            {
+                // Put the project reference in a subdirectory
+                subdirectory = "proj-ref/";
+                testProject.ProjectChanges.Add(xml =>
+                {
+                    xml.Root.Add(XElement.Parse(
+                        $"""
+                    <Target Name="UpdateReferencePaths" AfterTargets="ResolveReferences">
+                      <ItemGroup>
+                        <ReferencePath Update="@(ReferencePath)->WithMetadataValue('CopyLocal', 'true')"
+                                       DestinationSubDirectory="{subdirectory}" />
+                        <_ToUpdate Include="@(ReferencePath)" Condition="'%(ReferencePath.CopyLocal)' == 'true'" />
+                        <ReferenceCopyLocalPaths Remove="@(_ToUpdate)" />
+                        <ReferenceCopyLocalPaths Include="@(_ToUpdate)" />
+                      </ItemGroup>
+                    </Target>
+                    """));
+                });
+            }
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: $"{nameof(useCustomSubdirectory)}={useCustomSubdirectory}");
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+
+            string outputDirectory = buildCommand.GetOutputDirectory(testProject.TargetFrameworks).FullName;
+            string depsFile = Path.Combine(outputDirectory, $"{testProject.Name}.deps.json");
+            using (FileStream stream = File.OpenRead(depsFile))
+            {
+                DependencyContext dependencyContext = new DependencyContextJsonReader().Read(stream);
+
+                // Find the referenced project in runtime libraries
+                RuntimeLibrary lib = dependencyContext.RuntimeLibraries.FirstOrDefault(lib => lib.Name.Contains(referencedProject.Name));
+                Assert.NotNull(lib);
+
+                // Validate project reference is the deps file with the expected path and local paths
+                string expectedPath = $"{referencedProject.Name}.dll";
+                string expectedLocalPath = useCustomSubdirectory ? $"{subdirectory}{referencedProject.Name}.dll" : null;
+                lib.RuntimeAssemblyGroups.Should().Contain(
+                    g => g.RuntimeFiles.Any(f => f.LocalPath == expectedLocalPath && f.Path == expectedPath),
+                    $"project reference should have LocalPath={expectedLocalPath} and Path={expectedPath}");
+            }
+
+            string app = Path.Join(outputDirectory, $"{testProject.Name}.dll");
+            var result = new DotnetCommand(Log, app).Execute();
+
+            if (useCustomSubdirectory)
+            {
+                // TODO: This should pass once we have a runtime that supports localPath
+                result.Should().Fail()
+                    .And.HaveStdErrContaining("System.IO.FileNotFoundException");
+            }
+            else
+            {
+                result.Should().Pass()
+                    .And.HaveStdOutContaining(referencedProject.Name);
+            }
         }
     }
 }
