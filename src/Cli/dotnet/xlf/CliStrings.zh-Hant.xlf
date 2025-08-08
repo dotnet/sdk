@@ -1,0 +1,1195 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-Hant" original="../CliStrings.resx">
+    <body>
+      <trans-unit id="Add">
+        <source>Add</source>
+        <target state="translated">加入</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AmbiguousCommandName">
+        <source>Ambiguous command name: {0}</source>
+        <target state="translated">不明確的命令名稱: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArchArgumentName">
+        <source>ARCH</source>
+        <target state="translated">ARCH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArchitectureOptionDescription">
+        <source>The target architecture.</source>
+        <target state="translated">目標結構。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArtifactsPathArgumentName">
+        <source>ARTIFACTS_DIR</source>
+        <target state="translated">ARTIFACTS_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArtifactsPathOptionDescription">
+        <source>The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.</source>
+        <target state="translated">成品路徑。來自專案的所有輸出 (包括建置、發佈和封裝輸出)，都會進入指定路徑下的子資料夾。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttemptingToCreateCommandSpec">
+        <source>{0}: attempting to create commandspec</source>
+        <target state="translated">{0}: 正在嘗試建立 commandspec</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttemptingToFindCommand">
+        <source>{0}: attempting to find command {1} in {2}</source>
+        <target state="translated">{0}: 正在嘗試於 {2} 中尋找命令 {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttemptingToResolve">
+        <source>{0}: attempting to resolve {1}</source>
+        <target state="translated">{0}: 正在嘗試解析 {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttemptingToResolveCommandSpec">
+        <source>{0}: Attempting to resolve command spec from tool {1}</source>
+        <target state="translated">{0}: 正在嘗試從工具 {1} 解析 command spec</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BuildOutputPathDoesNotExist">
+        <source>outputpathresolver: {0} does not exist</source>
+        <target state="translated">outputpathresolver: {0} 不存在</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotCreateShimForEmptyExecutablePath">
+        <source>Cannot create shell shim for an empty executable path.</source>
+        <target state="translated">無法為空白的可執行檔路徑建立殼層填充碼。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotFindAManifestFile">
+        <source>Cannot find a manifest file. The list of searched paths:
+{0}</source>
+        <target state="translated">找不到資訊清單檔。搜尋路徑清單:
+{0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotFindPackageIdInManifest">
+        <source>Cannot find a package with the package id {0} in the manifest file.</source>
+        <target state="translated">在資訊清單檔中找不到套件識別碼為 {0} 的套件。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotResolveRuntimeIdentifier">
+        <source>Resolving the current runtime identifier failed.</source>
+        <target state="translated">解析目前執行階段識別碼失敗。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotSpecifyBothRuntimeAndArchOptions">
+        <source>Specifying both the `-r|--runtime` and `-a|--arch` options is not supported.</source>
+        <target state="translated">不支援同時指定 `-r|--runtime` 與 `-a|--arch` 選項。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotSpecifyBothRuntimeAndOsOptions">
+        <source>Specifying both the `-r|--runtime` and `-os` options is not supported.</source>
+        <target state="translated">不支援同時指定 `-r|--runtime` 與 `-os` 選項。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdEnvironmentVariableDescription">
+        <source>Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</source>
+        <target state="translated">設定環境變數的值。
+若變數不存在，則加以建立; 若有，則予以覆寫。
+這會強制在隔離流程中執行測試。
+此引數可多次指定，以提供多項變數。
+
+範例:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdEnvironmentVariableExpression">
+        <source>NAME="VALUE"</source>
+        <target state="translated">NAME="VALUE"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdVersionSuffixDescription">
+        <source>Set the value of the $(VersionSuffix) property to use when building the project.</source>
+        <target state="translated">設定建置專案時，要使用之 $(VersionSuffix) 屬性的值。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ColumnMaxWidthMustBeGreaterThanZero">
+        <source>Column maximum width must be greater than zero.</source>
+        <target state="translated">資料行寬度上限必須大於零。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandAssembliesNotFound">
+        <source>The command executable for "{0}" was not found. The project may not have been restored or restore failed - run `dotnet restore`</source>
+        <target state="translated">找不到 "{0}" 的命令可執行檔。該專案可能尚未還原或還原失敗 - 請執行 `dotnet restore`</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandInteractiveOptionDescription">
+        <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
+        <target state="translated">允許命令停止並等候使用者輸入或動作 (例如: 完成驗證)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandPrereleaseOptionDescription">
+        <source>Allows prerelease packages to be installed.</source>
+        <target state="translated">允許安裝發行前版本套件。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandSpecIsNull">
+        <source>{0}: commandSpec is null.</source>
+        <target state="translated">{0}: commandSpec 為 null。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommonCmdFramework">
+        <source>FRAMEWORK</source>
+        <target state="translated">架構</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommonFileNotFound">
+        <source>File `{0}` not found.</source>
+        <target state="translated">找不到檔案 `{0}`。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigurationArgumentName">
+        <source>CONFIGURATION</source>
+        <target state="translated">CONFIGURATION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CouldNotFindAnyProjectInDirectory">
+        <source>Could not find any project in `{0}`.</source>
+        <target state="translated">在 `{0}` 中找不到任何專案。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CouldNotFindProjectOrDirectory">
+        <source>Could not find project or directory `{0}`.</source>
+        <target state="translated">找不到專案或目錄 `{0}`。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CouldNotFindSolutionIn">
+        <source>Specified solution file {0} does not exist, or there is no solution file in the directory.</source>
+        <target state="translated">指定的方案檔 {0} 不存在，或目錄中沒有方案檔。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CouldNotFindSolutionOrDirectory">
+        <source>Could not find solution or directory `{0}`.</source>
+        <target state="translated">找不到解決方案或目錄 `{0}`。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CouldNotFindToolRuntimeConfigFile">
+        <source>{0}: Could not find runtimeconfig.json file for tool {1}</source>
+        <target state="translated">{0}: 找不到工具 {1} 的 runtimeconfig.json 檔案</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Delete">
+        <source>Delete</source>
+        <target state="translated">刪除</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DepsJsonGeneratorProjectNotSet">
+        <source>Unable to find deps.json generator project.</source>
+        <target state="translated">找不到 deps.json 產生器專案。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DidNotFindAMatchingProject">
+        <source>{0}: Did not find a matching project {1}.</source>
+        <target state="translated">{0}: 未找到相符的專案 {1}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DidNotFindProject">
+        <source>{0}: ProjectFactory did not find Project.</source>
+        <target state="translated">{0}: ProjectFactory 未找到專案。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DidYouMean">
+        <source>Did you mean the following command?</source>
+        <target state="translated">您是指下列命令嗎?</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Directory">
+        <source>Directory</source>
+        <target state="translated">目錄</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisableBuildServersOptionDescription">
+        <source>Force the command to ignore any persistent build servers.</source>
+        <target state="translated">強制命令略過任何持續性組建伺服器。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoesNotExist">
+        <source>{0}: {1} does not exist</source>
+        <target state="translated">{0}: {1} 不存在</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvironmentPathLinuxManualInstructions">
+        <source>Tools directory '{0}' is not currently on the PATH environment variable.
+If you are using bash, you can add it to your profile by running the following command:
+
+cat &lt;&lt; \EOF &gt;&gt; ~/.bash_profile
+# Add .NET Core SDK tools
+export PATH="$PATH:{0}"
+EOF
+
+You can add it to the current session by running the following command:
+
+export PATH="$PATH:{0}"
+</source>
+        <target state="translated">工具目錄 '{0}' 目前不在 PATH 環境變數上。
+若目前使用 bash，可執行下列命令將其新增至您的設定檔:
+
+cat &lt;&lt; \EOF &gt;&gt; ~/.bash_profile
+# 新增 .NET Core SDK 工具
+export PATH="$PATH:{0}"
+EOF
+
+您可執行下列命令，將其新增至目前的工作階段:
+
+export PATH="$PATH:{0}"
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvironmentPathLinuxNeedLogout">
+        <source>Since you just installed the .NET SDK, you will need to logout or restart your session before running the tool you installed.</source>
+        <target state="translated">因為您剛才安裝了 .NET SDK，所以必須先登出或重新啟動工作階段，才能執行所安裝的工具。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvironmentPathOSXBashManualInstructions">
+        <source>Tools directory '{0}' is not currently on the PATH environment variable.
+If you are using bash, you can add it to your profile by running the following command:
+
+cat &lt;&lt; \EOF &gt;&gt; ~/.bash_profile
+# Add .NET Core SDK tools
+export PATH="$PATH:{0}"
+EOF
+
+You can add it to the current session by running the following command:
+
+export PATH="$PATH:{0}"
+</source>
+        <target state="translated">工具目錄 '{0}' 目前不在 PATH 環境變數上。
+若目前使用 bash，可執行下列命令將其新增至您的設定檔:
+
+cat &lt;&lt; \EOF &gt;&gt; ~/.bash_profile
+# 新增 .NET Core SDK 工具
+export PATH="$PATH:{0}"
+EOF
+
+您可執行下列命令，將其新增至目前的工作階段:
+
+export PATH="$PATH:{0}"
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvironmentPathOSXNeedReopen">
+        <source>Since you just installed the .NET SDK, you will need to reopen terminal before running the tool you installed.</source>
+        <target state="translated">因為您剛才安裝了 .NET SDK，所以必須先重新開啟終端，才能執行所安裝的工具。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvironmentPathOSXZshManualInstructions">
+        <source>Tools directory '{0}' is not currently on the PATH environment variable.
+If you are using zsh, you can add it to your profile by running the following command:
+
+cat &lt;&lt; \EOF &gt;&gt; ~/.zprofile
+# Add .NET Core SDK tools
+export PATH="$PATH:{0}"
+EOF
+
+And run `zsh -l` to make it available for current session.
+
+You can only add it to the current session by running the following command:
+
+export PATH="$PATH:{0}"
+</source>
+        <target state="translated">工具目錄 '{0}' 目前不在 PATH 環境變數上。
+如果您在使用 zsh，可以執行以下命令將其新增至您的設定檔:
+
+cat &lt;&lt; \EOF &gt;&gt; ~/.zprofile
+# 新增 .NET Core SDK 工具
+export PATH="$PATH:{0}"
+EOF
+
+並執行 zsh -l 讓其可用於目前的工作階段。
+
+您只能執行以下命令將其新增至目前的工作階段:
+
+export PATH="$PATH:{0}"
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvironmentPathWindowsManualInstructions">
+        <source>Tools directory '{0}' is not currently on the PATH environment variable.
+
+You can add the directory to the PATH by running the following command:
+
+setx PATH "%PATH%;{0}"
+</source>
+        <target state="translated">工具目錄 '{0}' 目前不在 PATH 環境變數上。
+
+您可執行下列命令將目錄新增至 PATH:
+
+setx PATH "%PATH%;{0}"
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvironmentPathWindowsNeedReopen">
+        <source>Since you just installed the .NET SDK, you will need to reopen the Command Prompt window before running the tool you installed.</source>
+        <target state="translated">因為您剛才安裝了 .NET SDK，所以必須先重新開啟 [命令提示字元] 視窗，才能執行所安裝的工具。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Error">
+        <source>Error</source>
+        <target state="translated">錯誤</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExpectDepsJsonAt">
+        <source>{0}: expect deps.json at: {1}</source>
+        <target state="translated">{0}: 於 {1} 需要 deps.json</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedSettingShimPermissions">
+        <source>Failed to set user executable permissions for shell shim: {0}</source>
+        <target state="translated">無法為殼層填充碼設定使用者可執行檔權限: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToCreateShellShim">
+        <source>Failed to create tool shim for command '{0}': {1}</source>
+        <target state="translated">無法為命令 '{0}' 建立工具填充碼: {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToFindCommandPath">
+        <source>{0}: failed to find commandPath {1}</source>
+        <target state="translated">{0}: 找不到 commandPath {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToFindLibraryInAssetsFile">
+        <source>Failed to find library in NuGet assets file for tool package '{0}': {1}</source>
+        <target state="translated">在 NuGet 資產檔案中找不到工具套件 '{0}' 的程式庫: {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToFindSourceUnderPackageSourceMapping">
+        <source>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
+        <target state="translated">已啟用封裝來源對應，但在指定的封裝識別碼下找不到來源: {0}。如需詳細資料，請參閱位於 https://aka.ms/nuget-package-source-mapping 的封裝來源對應文件。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToFindStagedToolPackage">
+        <source>Failed to find staged tool package '{0}'.</source>
+        <target state="translated">無法找到暫存工具套件 '{0}'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToFindToolAssembly">
+        <source>{0}: failed to find toolAssembly for {1}</source>
+        <target state="translated">{0}: 找不到 {1} 的 toolAssembly</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToLoadNuGetSource">
+        <source>Failed to load NuGet source {0}</source>
+        <target state="translated">無法載入 NuGet 來源{0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToMapSourceUnderPackageSourceMapping">
+        <source>Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
+        <target state="translated">已啟用封裝來源對應，但在指定的封裝識別碼下沒有對應的來源: {0}。如需詳細資料，請參閱位於 https://aka.ms/nuget-package-source-mapping 的封裝來源對應文件。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToReadNuGetLockFile">
+        <source>Failed to read NuGet assets file for tool package '{0}': {1}</source>
+        <target state="translated">無法讀取工具套件 '{0}' 的 NuGet 資產檔案: {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToReadPidFile">
+        <source>Failed to read pid file '{0}': {1}</source>
+        <target state="translated">無法讀取 pid 檔案 '{0}': {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToRemoveShellShim">
+        <source>Failed to remove tool shim for command '{0}': {1}</source>
+        <target state="translated">無法為命令 '{0}' 移除工具填充碼: {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToResolveCommandSpec">
+        <source>{0}: failed to resolve commandspec from library.</source>
+        <target state="translated">{0}: 無法從程式庫解析 commandspec。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToRetrieveToolConfiguration">
+        <source>Failed to retrieve tool configuration: {0}</source>
+        <target state="translated">無法擷取工具組態: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToSetToolsPathEnvironmentVariable">
+        <source>Failed to add '{0}' to the PATH environment variable. Add this directory to your PATH to use tools installed with 'dotnet tool install'.</source>
+        <target state="translated">無法將 '{0}' 新增到 PATH 環境變數。請將此目錄新增到您的 PATH，以使用由 'dotnet tool install' 所安裝的工具。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToUninstallToolPackage">
+        <source>Failed to uninstall tool package '{0}': {1}</source>
+        <target state="translated">無法將工具套件 '{0}' 解除安裝: {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToValidatePackageSigning">
+        <source>Failed to validate package signing.
+{0}</source>
+        <target state="translated">無法驗證套件簽署。
+{0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FieldCommandsIsMissing">
+        <source>Missing 'commands' entry.</source>
+        <target state="translated">遺漏 'commands' 項目。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="File">
+        <source>File</source>
+        <target state="translated">檔案</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FileArgumentDescription">
+        <source>The file-based app to operate on.</source>
+        <target state="translated">要執行的檔案型應用程式。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FormatVersionIsHigher">
+        <source>Format version is higher than supported. This tool may not be supported in this SDK version. Update your SDK.</source>
+        <target state="translated">格式版本高於支援的版本。此 SDK 版本可能不支援這項工具。請更新您的 SDK。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FormatVersionIsMalformed">
+        <source>Format version is malformed. This tool may not be supported in this SDK version. Contact the author of the tool.</source>
+        <target state="translated">格式版本的格式不正確。此 SDK 版本可能不支援這項工具。請連絡該工具的作者。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FormatVersionIsMissing">
+        <source>Format version is missing. This tool may not be supported in this SDK version. Contact the author of the tool.</source>
+        <target state="translated">遺漏格式版本。此 SDK 版本可能不支援這項工具。請連絡該工具的作者。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FoundInvalidProject">
+        <source>Found a project `{0}` but it is invalid.</source>
+        <target state="translated">找到專案 `{0}` 但無效。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FoundToolLockFile">
+        <source>{0}: found tool lockfile at : {1}</source>
+        <target state="translated">{0}: 於 {1} 找到工具鎖定檔案</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FrameworkArgumentName">
+        <source>FRAMEWORK</source>
+        <target state="translated">FRAMEWORK</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FrameworkDependentOptionDescription">
+        <source>Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.</source>
+        <target state="translated">將您的應用程式發佈為架構相依的應用程式。必須在目標機器上安裝相容的 .NET 執行階段，才能執行您的應用程式。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GeneratingDepsJson">
+        <source>Generating deps.json at: {0}</source>
+        <target state="translated">正在於 {0} 產生 deps.json</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IgnoringPreferCLIRuntimeFile">
+        <source>{0}: Ignoring prefercliruntime file as the tool target framework ({1}) has a different major version than the current CLI runtime ({2})</source>
+        <target state="translated">{0}: 因為工具目標架構 ({1}) 的主要版本與目前的 CLI 執行階段 ({2}) 不同，所以將忽略 prefercliruntime 檔案</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InPackage">
+        <source>In package {0}:
+{1}</source>
+        <target state="translated">位於套件 {0} 中:
+{1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IncorrectlyFormattedEnvironmentVariables">
+        <source>Incorrectly formatted environment variables: {0}</source>
+        <target state="translated">環境變數格式不正確: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidCommandResolverArguments">
+        <source>{0}: invalid commandResolverArguments</source>
+        <target state="translated">{0}: commandResolverArguments 無效</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidInputTypeInteger">
+        <source>{0} should be an integer</source>
+        <target state="translated">{0} 應為整數</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidManifestFilePrefix">
+        <source>Invalid manifest file. Path {0}:
+{1}</source>
+        <target state="translated">資訊清單檔無效。路徑 {0}:
+{1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidProject">
+        <source>Invalid project `{0}`.</source>
+        <target state="translated">專案 `{0}` 無效。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidProjectWithExceptionMessage">
+        <source>Invalid project `{0}`. {1}.</source>
+        <target state="translated">專案 `{0}` 無效。{1}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidRuntimeIdentifier">
+        <source>The runtime identifier {0} is invalid. Valid runtime identifiers are: {1}.</source>
+        <target state="translated">執行階段識別碼 {0} 無效。有效的執行階段識別碼為: {1}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidSolutionFormatString">
+        <source>Invalid solution `{0}`. {1}.</source>
+        <target state="translated">解決方案 `{0}` 無效。{1}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidVersion">
+        <source>Invalid version string: {0}</source>
+        <target state="translated">版本字串無效: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IsNotFoundInNuGetFeeds">
+        <source>{0} is not found in NuGet feeds {1}.</source>
+        <target state="translated">在 NuGet 摘要 {1} 中找不到 {0}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonParsingError">
+        <source>Json parsing error in file {0} : {1}</source>
+        <target state="translated">檔案 {0} 中發生 JSON 剖析錯誤: {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LevelArgumentName">
+        <source>LEVEL</source>
+        <target state="translated">LEVEL</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Library">
+        <source>Library</source>
+        <target state="translated">程式庫</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LibraryNotFoundInLockFile">
+        <source>{0}: library not found in lock file.</source>
+        <target state="translated">{0}: 鎖定檔案中找不到程式庫。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="List">
+        <source>List</source>
+        <target state="translated">列出</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LookingForPreferCliRuntimeFile">
+        <source>{0}: Looking for prefercliruntime file at `{1}`</source>
+        <target state="translated">{0}: 正在於 `{1}` 尋找 prefercliruntime 檔</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MSBuildAdditionalOptionTitle">
+        <source>.NET Cli Options:</source>
+        <target state="translated">.NET CLI 選項:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MSBuildArgs">
+        <source>MSBuild arguments: {0}</source>
+        <target state="translated">MSBuild 引數: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MSBuildExePath">
+        <source>{0}: MSBUILD_EXE_PATH = {1}</source>
+        <target state="translated">{0}: MSBUILD_EXE_PATH = {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MSBuildProjectPath">
+        <source>{0}: MSBuild project path = {1}</source>
+        <target state="translated">{0}: MSBuild 專案路徑 = {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MSBuildServer">
+        <source>MSBuild server</source>
+        <target state="translated">MSBuild 伺服器</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManifestHasMarkOfTheWeb">
+        <source>File {0} came from another computer and might be blocked to help protect this computer. For more information, including how to unblock, see https://aka.ms/motw</source>
+        <target state="translated">檔案 {0} 來自另一部電腦，但此電腦可能已封鎖而加以保護。如需詳細資訊，包括如何解除封鎖，請參閱 https://aka.ms/motw</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManifestMissingIsRoot">
+        <source>Missing 'isRoot' entry.</source>
+        <target state="translated">遺漏 'isRoot' 項目。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManifestPackageIdCollision">
+        <source>Cannot add package. Manifest file already contains version {0} of the package {1}. Uninstall/install or edit manifest file {2} to specify the new version {3}.</source>
+        <target state="translated">無法新增套件。資訊清單檔已包含了版本 {0} 的套件 {1}。請解除安裝/安裝資訊清單檔 {2} 或加以編輯，以指定新的版本 {3}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManifestVersion0">
+        <source>Manifest version 0 is not supported.</source>
+        <target state="translated">不支援資訊清單版本 0。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManifestVersionHigherThanSupported">
+        <source>Manifest version is {0}. This manifest may not be supported in this SDK version that can support up to manifest version {1}.</source>
+        <target state="translated">資訊清單版本為 {0}。此 SDK 版本中可能不支援這個資訊清單，最高支援到資訊清單版本 {1}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingToolEntryPointFile">
+        <source>Entry point file '{0}' for command '{1}' was not found in the package.</source>
+        <target state="translated">無法在套件中找到命令 '{1}' 的進入點檔案 '{0}'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingToolSettingsFile">
+        <source>Settings file 'DotnetToolSettings.xml' was not found in the package.</source>
+        <target state="translated">無法在套件中找到設定檔 'DotnetToolSettings.xml'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MoreThanOnePackagedShimAvailable">
+        <source>More than one packaged shim is available: {0}.</source>
+        <target state="translated">有多個經過封裝的填充碼可用: {0}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MoreThanOneProjectInDirectory">
+        <source>Found more than one project in `{0}`. Specify which one to use.</source>
+        <target state="translated">在 `{0}` 中找到多個專案。請指定要使用的專案。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MoreThanOneSolutionInDirectory">
+        <source>Found more than one solution file in {0}. Specify which one to use.</source>
+        <target state="translated">在 {0} 中找到多個解決方案檔。請指定要使用的檔案。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MultipleProjectFilesFound">
+        <source>Specify which project file to use because this '{0}' contains more than one project file.</source>
+        <target state="translated">指定要使用的專案檔，因為這個 '{0}' 包含多個專案檔。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MultipleSamePackageId">
+        <source>More than one entry exists for package(s): {0}.</source>
+        <target state="translated">封裝存在多個項目: {0}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NeedRunToolRestore">
+        <source>Run "dotnet tool restore" to make the "{0}" command available.</source>
+        <target state="translated">執行 "dotnet tool restore"，將 "{0}" 命令設為可以使用。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="New">
+        <source>New</source>
+        <target state="translated">新建</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoProjectsFound">
+        <source>No projects found in the solution.</source>
+        <target state="translated">在解決方案中找不到任何專案。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoReferencesFound">
+        <source>There are no {0} references in project {1}.</source>
+        <target state="translated">專案 {1} 中沒有任何 {0} 參考。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoRestoreDescription">
+        <source>Do not restore the project before building.</source>
+        <target state="translated">建置前請勿還原該專案。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NonRetriableNugetSearchFailure">
+        <source>Failed to search. NuGet Search API response detail:
+    RequestUrl: {0}. ReasonPhrase: {1}. StatusCode: {2}.</source>
+        <target state="translated">無法搜尋。NuGet 搜尋 API 回應詳細資料:
+    RequestUrl: {0}。ReasonPhrase: {1}。StatusCode: {2}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetPackageShouldNotBeSigned">
+        <source>Skipping signature verification for NuGet package "{0}" because it comes from a source that does not require signature validation.</source>
+        <target state="translated">正在略過 NuGet 套件的簽章驗證「{0}」，因為它的來源不需要簽章驗證。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetPackageSignatureVerificationSkipped">
+        <source>Skipping NuGet package signature verification.</source>
+        <target state="translated">正在略過 NuGet 套件簽章驗證。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetPackagesRoot">
+        <source>{0}: nuget packages root:
+{1}</source>
+        <target state="translated">{0}: NuGet 套件根:
+{1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OSArgumentName">
+        <source>OS</source>
+        <target state="translated">作業系統</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OnlyOneProjectAllowed">
+        <source>Only one project can be specified at a time using the -p option.</source>
+        <target state="translated">使用 -p 選項時，一次只能指定一個專案。</target>
+        <note>{Locked="-p"}</note>
+      </trans-unit>
+      <trans-unit id="OperatingSystemOptionDescription">
+        <source>The target operating system.</source>
+        <target state="translated">目標作業系統。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="P2P">
+        <source>Project to Project</source>
+        <target state="translated">專案對專案</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Package">
+        <source>Package</source>
+        <target state="translated">套件</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageIdentityArgumentDescription">
+        <source>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</source>
+        <target state="translated">套件參考的格式為套件識別碼，例如 'Newtonsoft.Json'，或是以 '@' 分隔的套件識別碼和版本，例如 'Newtonsoft.Json@13.0.3'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">
+        <source>Package reference id and version must not be null.</source>
+        <target state="translated">套件參考識別碼和版本不得為空。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageIdentityArgumentVersionOptionConflict">
+        <source>Cannot specify --version when the package argument already contains a version.</source>
+        <target state="translated">當套件引數已包含版本時，無法指定 --version。</target>
+        <note>{Locked="--version"}</note>
+      </trans-unit>
+      <trans-unit id="PackageReference">
+        <source>Package reference</source>
+        <target state="translated">套件參考</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionDefault">
+        <source>A version of {0} of package {1}</source>
+        <target state="translated">封裝 {1} 的版本 {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForExactVersionMatch">
+        <source>Version {0} of package {1}</source>
+        <target state="translated">封裝 {1} 的版本 {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForVersionWithLowerAndUpperBounds">
+        <source>A version between {0} and {1} of package {2}</source>
+        <target state="translated">封裝 {2} 的 {0} 與 {1} 之間的版本</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForVersionWithLowerBound">
+        <source>A version higher than {0} of package {1}</source>
+        <target state="translated">封裝 {1} 高於 {0} 的版本</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForVersionWithUpperBound">
+        <source>A version less than {0} of package {1}</source>
+        <target state="translated">封裝 {1} 小於 {0} 的版本</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Project">
+        <source>Project</source>
+        <target state="translated">專案</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectAddedToTheSolution">
+        <source>Project `{0}` added to the solution.</source>
+        <target state="translated">專案 `{0}` 已新增至解決方案。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectAlreadyHasAreference">
+        <source>Project already has a reference to `{0}`.</source>
+        <target state="translated">專案已經有 `{0}` 的參考。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectArgumentDescription">
+        <source>The project file to operate on. If a file is not specified, the command will search the current directory for one.</source>
+        <target state="translated">要進行作業的專案檔。若未指定檔案，此命令將會搜尋目前的目錄以取得一個檔案。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectArgumentName">
+        <source>PROJECT</source>
+        <target state="translated">PROJECT</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectCouldNotBeEvaluated">
+        <source>Project `{0}` could not be evaluated. Evaluation failed with following error:
+{1}.</source>
+        <target state="translated">無法評估專案 `{0}`。評估失敗，發生下列錯誤:
+{1}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectDoesNotExist">
+        <source>Project `{0}` does not exist.</source>
+        <target state="translated">專案 `{0}` 不存在。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectDoesNotTargetFramework">
+        <source>Project `{0}` does not target framework `{1}`.</source>
+        <target state="translated">專案 `{0}` 未將架構 `{1}` 設為目標。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectIsInvalid">
+        <source>Project `{0}` is invalid.</source>
+        <target state="translated">專案 `{0}` 無效。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectNotCompatibleWithFrameworks">
+        <source>Project `{0}` cannot be added due to incompatible targeted frameworks between the two projects. Review the project you are trying to add and verify that is compatible with the following targets:</source>
+        <target state="translated">因為兩個專案間的目標 Framework 不相容，所以無法新增專案 `{0}`。請檢閱您嘗試新增的專案，並驗證其與下列目標相容:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectNotFoundInTheSolution">
+        <source>Project `{0}` could not be found in the solution.</source>
+        <target state="translated">在解決方案中找不到專案 `{0}`。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectOrFileArgumentDescription">
+        <source>The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file.</source>
+        <target state="translated">要執行的專案檔案或 C# 檔案型應用程式。若未指定檔案，命令就會在目前的目錄中搜尋專案或檔案。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectOrFileArgumentName">
+        <source>PROJECT | FILE</source>
+        <target state="translated">專案 | 檔案</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectReference">
+        <source>Project reference</source>
+        <target state="translated">專案參考</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectReferenceCouldNotBeFound">
+        <source>Project reference `{0}` could not be found.</source>
+        <target state="translated">找不到專案參考 `{0}`。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectReferenceOneOrMore">
+        <source>Project reference(s)</source>
+        <target state="translated">專案參考</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectReferenceRemoved">
+        <source>Project reference `{0}` removed.</source>
+        <target state="translated">專案參考 `{0}` 已移除。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectRemoved">
+        <source>Project `{0}` removed from solution.</source>
+        <target state="translated">專案 `{0}` 已從解決方案移除。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectRemovedFromTheSolution">
+        <source>Project `{0}` removed from the solution.</source>
+        <target state="translated">專案 `{0}` 已從解決方案移除。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RazorServer">
+        <source>Razor build server</source>
+        <target state="translated">Razor 組建伺服器</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Reference">
+        <source>Reference</source>
+        <target state="translated">參考</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReferenceAddedToTheProject">
+        <source>Reference `{0}` added to the project.</source>
+        <target state="translated">參考 `{0}` 已新增至專案。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Remove">
+        <source>Remove</source>
+        <target state="translated">移除</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RequiredCommandNotPassed">
+        <source>Required command was not provided.</source>
+        <target state="translated">未提供所需的命令。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ResolvingCommandSpec">
+        <source>{0}: resolving commandspec from {1} Tool Libraries.</source>
+        <target state="translated">{0}: 正在從 {1} 工具程式庫解析 commandspec。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ResponseFileNotFound">
+        <source>Response file '{0}' does not exist.</source>
+        <target state="translated">回應檔 '{0}' 不存在。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RetriableNugetSearchFailure">
+        <source>Failed to search. Retry later may resolve the issue. NuGet Search API response detail:
+    RequestUrl: {0}. ReasonPhrase: {1}. StatusCode: {2}.</source>
+        <target state="translated">無法搜尋。稍後重試可能可以解決此問題。NuGet 搜尋 API 回應詳細資料:
+    RequestUrl: {0}。ReasonPhrase: {1}。StatusCode: {2}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RuntimeIdentifierArgumentName">
+        <source>RUNTIME_IDENTIFIER</source>
+        <target state="translated">RUNTIME_IDENTIFIER</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SDKDiagnosticsCommandDefinition">
+        <source>Enable diagnostic output.</source>
+        <target state="translated">啟用診斷輸出。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SDKSchemaCommandDefinition">
+        <source>Display the command schema as JSON.</source>
+        <target state="translated">以 JSON 格式顯示命令結構描述。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SelfContainAndNoSelfContainedConflict">
+        <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
+        <target state="translated">不能同時使用 '--self-contained' 和 '--no-self-contained' 選項。</target>
+        <note>{Locked="--self-contained"}{Locked="--no-self-contained"}</note>
+      </trans-unit>
+      <trans-unit id="SelfContainedOptionDescription">
+        <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
+The default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.</source>
+        <target state="translated">將 .NET 執行階段隨著您的應用程式發佈，以便您不需在目標電腦上安裝執行階段。
+預設值為 'false'。不過，當目標為 .NET 7 或更低版本時，如有指定執行階段識別碼，則預設值為 'true'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ShellShimConflict">
+        <source>Command '{0}' conflicts with an existing command from another tool.</source>
+        <target state="translated">命令 '{0}' 與來自另一個工具的現有命令發生衝突。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ShortWorkloadSearchVersionDescription">
+        <source>Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</source>
+        <target state="translated">搜尋可用的工作負載版本或工作負載版本的組成部分。如需詳細資訊，請使用 'dotnet workload search version --help'。</target>
+        <note>{Locked="dotnet workload search version --help"}</note>
+      </trans-unit>
+      <trans-unit id="ShowHelpDescription">
+        <source>Show command line help.</source>
+        <target state="translated">顯示命令列說明。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ShutdownCommandFailed">
+        <source>The shutdown command failed: {0}</source>
+        <target state="translated">關機命令失敗: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Solution">
+        <source>Solution</source>
+        <target state="translated">解決方案</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionAlreadyContainsProject">
+        <source>Solution {0} already contains project {1}.</source>
+        <target state="translated">解決方案 {0} 已經包含專案 {1}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionArgumentMisplaced">
+        <source>Solution argument '{0}' is misplaced.</source>
+        <target state="translated">解決方案引數 '{0}' 位置錯誤。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionDoesNotExist">
+        <source>Specified solution file {0} does not exist, or there is no solution file in the directory.</source>
+        <target state="translated">指定的方案檔 {0} 不存在，或目錄中沒有方案檔。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionOrProjectArgumentDescription">
+        <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
+        <target state="translated">要操作的專案或解決方案。若未指定檔案，命令就會在目前的目錄中搜尋一個檔案。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionOrProjectArgumentName">
+        <source>PROJECT | SOLUTION</source>
+        <target state="translated">PROJECT | SOLUTION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionOrProjectOrFileArgumentDescription">
+        <source>The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</source>
+        <target state="translated">要執行的專案或解決方案或 C# (基於檔案的程式) 檔案。若未指定檔案，命令就會在目前的目錄中搜尋專案或解決方案。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionOrProjectOrFileArgumentName">
+        <source>PROJECT | SOLUTION | FILE</source>
+        <target state="translated">專案 | 解決方案 | 檔案</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyAtLeastOne">
+        <source>Specify at least one {0}.</source>
+        <target state="translated">請至少指定一個 {0}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyAtLeastOneProjectToAdd">
+        <source>You must specify at least one project to add.</source>
+        <target state="translated">您必須指定至少一個要新增的專案。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyAtLeastOneProjectToRemove">
+        <source>You must specify at least one project to remove.</source>
+        <target state="translated">您必須至少指定一個要移除的專案。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyAtLeastOneReferenceToRemove">
+        <source>You must specify at least one reference to remove.</source>
+        <target state="translated">您必須指定至少一個要刪除的參考。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolLibraryFound">
+        <source>{0}: tool library found {1}</source>
+        <target state="translated">{0}: 找到工具程式庫 {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolMissingVersion">
+        <source>Missing 'version' entry.</source>
+        <target state="translated">遺漏 'version' 項目。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolPackageConflictPackageId">
+        <source>Tool '{0}' (version '{1}') is already installed.</source>
+        <target state="translated">工具 '{0}' ('{1}' 版) 已經安裝。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolPackageNotATool">
+        <source>Package {0} is not a .NET tool.</source>
+        <target state="translated">套件 {0} 不是 .NET 工具。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSettingsInvalidCommandName">
+        <source>Command '{0}' contains one or more of the following invalid characters: {1}.</source>
+        <target state="translated">命令 '{0}' 包含下列一或多個無效的字元: {1}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSettingsInvalidLeadingDotCommandName">
+        <source>The command name '{0}' cannot begin with a leading dot (.).</source>
+        <target state="translated">命令名稱 '{0}' 的開頭不能為點 (.)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSettingsInvalidXml">
+        <source>Invalid XML: {0}</source>
+        <target state="translated">XML 無效: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSettingsMissingCommandName">
+        <source>Tool defines a command with a missing name setting.</source>
+        <target state="translated">工具使用了缺少的名稱設定定義命令。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSettingsMissingEntryPoint">
+        <source>Command '{0}' is missing an entry point setting.</source>
+        <target state="translated">命令 '{0}' 缺少進入點設定。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSettingsMoreThanOneCommand">
+        <source>More than one command is defined for the tool.</source>
+        <target state="translated">為工具定義了多個命令。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSettingsUnsupportedRunner">
+        <source>Tool '{0}' uses unsupported runner '{1}'."</source>
+        <target state="translated">工具 '{0}' 使用不支援的執行器 '{1}'。"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolUnsupportedRuntimeIdentifier">
+        <source>The tool does not support the current architecture or operating system ({0}). Supported runtimes: {1}</source>
+        <target state="translated">該工具不支援目前的結構或作業系統 ({0})。支援的執行階段: {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Type">
+        <source>Type</source>
+        <target state="translated">類型</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnableToCheckCertificateChainPolicy">
+        <source>The requested certificate chain policy could not be checked: {0}</source>
+        <target state="translated">無法檢查要求的憑證鏈結原則: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnableToDeleteTemporaryDepsJson">
+        <source>unable to delete temporary deps.json file: {0}</source>
+        <target state="translated">無法刪除暫存 deps.json 檔: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnableToGenerateDepsJson">
+        <source>Unable to generate deps.json, it may have been already generated.  You can specify the "-d" option option after "dotnet" for diagnostic output (for example, "dotnet -d &lt;toolname&gt;": {0}</source>
+        <target state="translated">Deps.json 可能已經產生，因此無法再產生。您可於診斷輸出 "dotnet" 之後， 指定 "-d" 選項 (例如 "dotnet-d &lt;toolname&gt;": {0})</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnableToLocateDotnetMultiplexer">
+        <source>Unable to locate dotnet multiplexer</source>
+        <target state="translated">找不到 dotnet multiplexer</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedTypeInJson">
+        <source>Expected a {0} for property '{1}'.</source>
+        <target state="translated">對屬性 '{1}' 來說應為 {0}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnrecognizedCommandOrArgument">
+        <source>Unrecognized command or argument '{0}'</source>
+        <target state="translated">無法辨識的命令或引數 '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnsupportedProjectType">
+        <source>Project '{0}' has an unknown project type and cannot be added to the solution file. Contact your SDK provider for support.</source>
+        <target state="translated">專案 '{0}' 的專案類型不明，因而無法新增至解決方案檔。請連絡 SDK 提供者，以取得支援。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Update">
+        <source>Update</source>
+        <target state="translated">更新</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VBCSCompilerServer">
+        <source>VB/C# compiler server</source>
+        <target state="translated">VB/C# 編譯器伺服器</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Value">
+        <source>Value</source>
+        <target state="translated">值</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbosityOptionDescription">
+        <source>Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].</source>
+        <target state="translated">設定 MSBuild 的詳細程度層級。允許的值為 q[uiet]、m[inimal]、n[ormal]、d[etailed] 及 diag[nostic]。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerifyingNuGetPackageSignature">
+        <source>Verified that the NuGet package "{0}" has a valid signature.</source>
+        <target state="translated">已驗證 NuGet 套件「{0}」具備有效簽章。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VersionForPackageCouldNotBeResolved">
+        <source>Version for package `{0}` could not be resolved.</source>
+        <target state="translated">無法解析套件 `{0}` 的版本。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VersionIsInvalid">
+        <source>Version {0} is invalid.</source>
+        <target state="translated">版本 {0} 不正確。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VersionSuffixArgumentName">
+        <source>VERSION_SUFFIX</source>
+        <target state="translated">VERSION_SUFFIX</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadIntegrityCheckError">
+        <source>An issue was encountered verifying workloads. For more information, run "dotnet workload update".</source>
+        <target state="translated">驗證工作負載時發生問題。如需詳細資訊，請執行 "dotnet workload update"。</target>
+        <note>{Locked="dotnet workload update"}</note>
+      </trans-unit>
+      <trans-unit id="YesOptionDescription">
+        <source>Accept all confirmation prompts using "yes."</source>
+        <target state="translated">使用「是」，以接受所有確認提示。</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

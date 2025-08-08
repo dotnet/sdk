@@ -1,11 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
+using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -113,6 +116,10 @@ namespace Microsoft.NET.Build.Tests
             };
 
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore.Mvc.Razor", "2.1.0"));
+
+            //  This test relies on a package that would be pruned.  This doesn't seem to be a customer scenario, it looks like it was
+            //  an easier way to test that files that were removed 
+            testProject.AdditionalProperties["RestoreEnablePackagePruning"] = "false";
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -275,6 +282,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = false
             };
             referencedProject.PackageReferences.Add(new TestPackageReference("System.Text.Json", "8.0.0"));
+            referencedProject.AdditionalProperties["RestoreEnablePackagePruning"] = prunePackages.ToString();
 
             var testProject = new TestProject()
             {
@@ -301,6 +309,99 @@ namespace Microsoft.NET.Build.Tests
             else
             {
                 lockFileTarget.Libraries.Should().Contain(library => library.Name.Equals("System.Text.Json", StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        [CoreMSBuildOnlyTheory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [InlineData("net9.0")]
+        [InlineData("net8.0")]
+        [InlineData("net7.0")]
+        [InlineData("net6.0")]
+        [InlineData("netcoreapp3.1")]
+        [InlineData("netcoreapp3.0")]
+        [InlineData("netcoreapp2.1", false)] //TODO: https://github.com/dotnet/sdk/issues/49917
+        [InlineData("netcoreapp2.0", false)] //TODO: https://github.com/dotnet/sdk/issues/49917
+        [InlineData("netcoreapp1.1", false)]
+        [InlineData("netcoreapp1.0", false)]
+        [InlineData("netstandard2.1")]
+        [InlineData("netstandard2.0")]
+        [InlineData("netstandard1.1", false)]
+        [InlineData("netstandard1.0", false)]
+        [InlineData("net451", false)]
+        [InlineData("net462")]
+        [InlineData("net481")]
+        public void PrunePackageDataSucceeds(string targetFramework, bool shouldPrune = true)
+        {
+            var nugetFramework = NuGetFramework.Parse(targetFramework);
+
+            List<KeyValuePair<string,string>> GetPrunedPackages(string frameworkReference)
+            {
+                var testProject = new TestProject()
+                {
+                    TargetFrameworks = targetFramework
+                };
+
+                testProject.AdditionalProperties["RestoreEnablePackagePruning"] = "True";
+
+                if (!string.IsNullOrEmpty(frameworkReference))
+                {
+                    testProject.FrameworkReferences.Add(frameworkReference);
+                }
+
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && frameworkReference != null && frameworkReference.StartsWith("Microsoft.WindowsDesktop", StringComparison.OrdinalIgnoreCase))
+                {
+                    testProject.AdditionalProperties["EnableWindowsTargeting"] = "True";
+                }
+
+                var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod: nameof(PrunePackageDataSucceeds), identifier: targetFramework + frameworkReference);
+
+                var buildCommand = new BuildCommand(testAsset);
+
+                var prunePackageItemFile = Path.Combine(testAsset.TestRoot, "prunePackageItems.txt");
+
+                buildCommand.Execute("/t:CollectPrunePackageReferences", "-getItem:PrunePackageReference", $"-getResultOutputFile:{prunePackageItemFile}").Should().Pass();
+
+                var prunedPackages = ParsePrunePackageReferenceJson(File.ReadAllText(prunePackageItemFile));
+
+                foreach (var kvp in prunedPackages)
+                {
+                    var prunedPackageVersion = NuGetVersion.Parse(kvp.Value);
+                    if (nugetFramework.Framework.Equals(".NETCoreApp", StringComparison.OrdinalIgnoreCase) && !prunedPackageVersion.IsPrerelease)
+                    {
+                        prunedPackageVersion.Patch.Should().BeGreaterThan(99, $"Patch for {kvp.Key} should be at least 100");
+                    }
+                    else
+                    {
+                        prunedPackageVersion.Patch.Should().BeLessThan(1000, $"Patch for {kvp.Key} should be less than 1000");
+                    }
+                }
+
+
+                return prunedPackages;
+            }
+
+            var prunedPackages = GetPrunedPackages("");
+            if (shouldPrune)
+            {
+                prunedPackages.Should().NotBeEmpty();
+            }
+            else
+            {
+                prunedPackages.Should().BeEmpty();
+            }
+
+            if (nugetFramework.Framework.Equals(".NETCoreApp", StringComparison.OrdinalIgnoreCase) && nugetFramework.Version.Major >= 3)
+            {
+                foreach(var frameworkReference in new [] {
+                        "Microsoft.AspNetCore.App",
+                        "Microsoft.WindowsDesktop.App",
+                        "Microsoft.WindowsDesktop.App.WindowsForms",
+                    })
+                {
+                    var frameworkPrunedPackages = GetPrunedPackages(frameworkReference);
+                    frameworkPrunedPackages.Count.Should().BeGreaterThan(prunedPackages.Count, frameworkReference + " should have more pruned packages than base framework");
+                }
             }
         }
 
@@ -331,27 +432,28 @@ namespace Microsoft.NET.Build.Tests
             var itemsResult1 = getItemsCommand1.Execute("-getItem:PrunePackageReference");
             itemsResult1.Should().Pass();
 
-            var items1 = ParseItemsJson(itemsResult1.StdOut);
+            var items1 = ParsePrunePackageReferenceJson(itemsResult1.StdOut);
 
             var getItemsCommand2 = new MSBuildCommand(testAsset, "ResolvePackageAssets;AddTransitiveFrameworkReferences;AddPrunePackageReferences");
             var itemsResult2 = getItemsCommand2.Execute("-getItem:PrunePackageReference");
             itemsResult2.Should().Pass();
 
-            var items2 = ParseItemsJson(itemsResult2.StdOut);
+            var items2 = ParsePrunePackageReferenceJson(itemsResult2.StdOut);
 
             items2.Should().BeEquivalentTo(items1);
 
-            static List<KeyValuePair<string,string>> ParseItemsJson(string json)
+        }
+
+        static List<KeyValuePair<string, string>> ParsePrunePackageReferenceJson(string json)
+        {
+            List<KeyValuePair<string, string>> ret = new();
+            var root = JsonNode.Parse(json);
+            var items = (JsonArray)root["Items"]["PrunePackageReference"];
+            foreach (var item in items)
             {
-                List<KeyValuePair<string, string>> ret = new();
-                var root = JsonNode.Parse(json);
-                var items = (JsonArray) root["Items"]["PrunePackageReference"];
-                foreach (var item in items)
-                {
-                    ret.Add(new KeyValuePair<string, string>((string)item["Identity"], (string)item["Version"]));
-                }
-                return ret;
+                ret.Add(new KeyValuePair<string, string>((string)item["Identity"], (string)item["Version"]));
             }
+            return ret;
         }
     }
 }

@@ -9,6 +9,7 @@ using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.DotNetSdkResolver;
 using Microsoft.DotNet.NativeWrapper;
 using Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver;
+using static Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.CachingWorkloadResolver;
 
 namespace Microsoft.DotNet.MSBuildSdkResolver
 {
@@ -195,17 +196,17 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                         minimumVSDefinedSDKVersion);
                 }
 
-                string? dotnetExe = dotnetRoot != null ?
-                    Path.Combine(dotnetRoot, Constants.DotNetExe) :
-                    null;
-                if (File.Exists(dotnetExe))
+                string? fullPathToMuxer =
+                    TryResolveMuxerFromSdkResolution(resolverResult)
+                    ?? Path.Combine(dotnetRoot, RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Constants.DotNetExe : Constants.DotNet);
+                if (File.Exists(fullPathToMuxer))
                 {
                     propertiesToAdd ??= new Dictionary<string, string?>();
-                    propertiesToAdd.Add(DotnetHostExperimentalKey, dotnetExe);
+                    propertiesToAdd.Add(DotnetHostExperimentalKey, fullPathToMuxer);
                 }
                 else
                 {
-                    logger?.LogMessage($"Could not set '{DotnetHostExperimentalKey}' because dotnet executable '{dotnetExe}' does not exist.");
+                    logger?.LogMessage($"Could not set '{DotnetHostExperimentalKey}' because dotnet executable '{fullPathToMuxer}' does not exist.");
                 }
 
                 string? runtimeVersion = dotnetRoot != null ?
@@ -262,11 +263,15 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
 
             //  First check if requested SDK resolves to a workload SDK pack
             string? userProfileDir = CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath();
-            var workloadResult = workloadResolver.Resolve(sdkReference.Name, dotnetRoot!, netcoreSdkVersion!, userProfileDir, globalJsonPath);
+            ResolutionResult? workloadResult = null;
+            if (dotnetRoot is not null && netcoreSdkVersion is not null)
+            {
+                workloadResult = workloadResolver.Resolve(sdkReference.Name, dotnetRoot, netcoreSdkVersion, userProfileDir, globalJsonPath);
+            }
 
             if (workloadResult is not CachingWorkloadResolver.NullResolutionResult)
             {
-                return workloadResult.ToSdkResult(sdkReference, factory);
+                return workloadResult?.ToSdkResult(sdkReference, factory);
             }
 
             string msbuildSdkDir = Path.Combine(msbuildSdksDir, sdkReference.Name, "Sdk");
@@ -281,6 +286,26 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             }
 
             return factory.IndicateSuccess(msbuildSdkDir, netcoreSdkVersion, propertiesToAdd, itemsToAdd, warnings);
+        }
+
+        /// <summary>
+        /// Try to find the muxer binary from the SDK resolution result.
+        /// </summary>
+        /// <remarks>
+        /// SDK layouts always have a defined relationship to the location of the muxer -
+        /// the muxer binary should be exactly two directories above the SDK directory.
+        /// </remarks>
+        private static string? TryResolveMuxerFromSdkResolution(SdkResolutionResult resolverResult)
+        {
+            var expectedFileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Constants.DotNetExe : Constants.DotNet;
+            var currentDir = resolverResult.ResolvedSdkDirectory;
+            var expectedDotnetRoot = Path.GetDirectoryName(Path.GetDirectoryName(currentDir));
+            var expectedMuxerPath = Path.Combine(expectedDotnetRoot, expectedFileName);
+            if (File.Exists(expectedMuxerPath))
+            {
+                return expectedMuxerPath;
+            }
+            return null;
         }
 
         private static string? GetMSbuildRuntimeVersion(string sdkDirectory, string dotnetRoot)
@@ -382,12 +407,14 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             }
 
             if (!FXVersion.TryParse(netcoreSdkVersion, out netCoreSdkFXVersion) ||
-                !FXVersion.TryParse(minimumVersion, out minimumFXVersion))
+                netCoreSdkFXVersion is null ||
+                !FXVersion.TryParse(minimumVersion, out minimumFXVersion) ||
+                minimumFXVersion is null)
             {
                 return true;
             }
 
-            return FXVersion.Compare(netCoreSdkFXVersion!, minimumFXVersion!) < 0;
+            return FXVersion.Compare(netCoreSdkFXVersion, minimumFXVersion) < 0;
         }
 
 

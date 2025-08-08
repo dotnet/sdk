@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.Extensions.DependencyModel;
@@ -46,6 +48,8 @@ namespace Microsoft.NET.Build.Tasks
 
         [Required]
         public bool IncludeMainProject { get; set; }
+
+        public bool TrimDepsJsonLibrariesWithoutAssets { get; set; }
 
         // @(ReferencePath) that will be passed to
         public ITaskItem[] ReferencePaths { get; set; } = Array.Empty<ITaskItem>();
@@ -228,6 +232,7 @@ namespace Microsoft.NET.Build.Tasks
 
             builder = builder
                 .WithMainProjectInDepsFile(IncludeMainProject)
+                .WithTrimLibrariesWithoutAssets(TrimDepsJsonLibrariesWithoutAssets)
                 .WithReferenceAssemblies(referenceAssemblyInfos)
                 .WithDirectReferences(directReferences)
                 .WithDependencyReferences(dependencyReferences)

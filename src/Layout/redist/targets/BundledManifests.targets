@@ -1,0 +1,145 @@
+<Project>
+
+  <ItemGroup>
+    <BundledManifests Include="Microsoft.NET.Sdk.Android" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinAndroidWorkloadManifestVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+    <BundledManifests Include="Microsoft.NET.Sdk.iOS" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinIOSWorkloadManifestVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+    <BundledManifests Include="Microsoft.NET.Sdk.MacCatalyst" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinMacCatalystWorkloadManifestVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+    <BundledManifests Include="Microsoft.NET.Sdk.macOS" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinMacOSWorkloadManifestVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+    <BundledManifests Include="Microsoft.NET.Sdk.Maui" FeatureBand="$(MauiFeatureBand)" Version="$(MauiWorkloadManifestVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+    <BundledManifests Include="Microsoft.NET.Sdk.tvOS" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinTvOSWorkloadManifestVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.current" />
+    <BuiltinManifests Include="microsoft.net.workload.emscripten.current" />
+    <BuiltinManifests Include="microsoft.net.workload.emscripten.net6" />
+    <BuiltinManifests Include="microsoft.net.workload.emscripten.net7" />
+    <BuiltinManifests Include="microsoft.net.workload.emscripten.net8" />
+    <BuiltinManifests Include="microsoft.net.workload.emscripten.net9" />
+    <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.net6" />
+    <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.net7" />
+    <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.net8" />
+    <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.net9" />
+  </ItemGroup>
+
+  <!-- Calculate NuGet package IDs for bundled manifests -->
+  <PropertyGroup>
+    <!-- TODO: Not exactly sure how this value should be calculated -->
+    <!--<MsiArchitectureForWorkloadManifests>$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant)</MsiArchitectureForWorkloadManifests>-->
+    <MsiArchitectureForWorkloadManifests>$(TargetArchitecture)</MsiArchitectureForWorkloadManifests>
+  </PropertyGroup>
+  <ItemGroup>
+    <BundledManifests Update="@(BundledManifests)">
+      <NupkgId>%(Identity).Manifest-%(FeatureBand)</NupkgId>
+      <RestoredNupkgContentPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(NupkgId)', '').ToLower())/$([MSBuild]::ValueOrDefault('%(Version)', '').ToLower())</RestoredNupkgContentPath>
+      <MsiNupkgId>%(Identity).Manifest-%(FeatureBand).Msi.$(MsiArchitectureForWorkloadManifests)</MsiNupkgId>
+      <RestoredMsiNupkgContentPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(MsiNupkgId)', '').ToLower())/$([MSBuild]::ValueOrDefault('%(Version)', '').ToLower())</RestoredMsiNupkgContentPath>
+    </BundledManifests>
+  </ItemGroup>
+
+  <!-- Restore workload manifests via PackageDownload -->
+  <ItemGroup>
+    <PackageDownload Include="@(BundledManifests->'%(NupkgId)')">
+      <Version>[%(Version)]</Version>
+    </PackageDownload>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
+    <PackageDownload Include="@(BundledManifests->'%(MsiNupkgId)')">
+      <Version>[%(Version)]</Version>
+    </PackageDownload>
+
+    <PackageReference Include="Microsoft.DotNet.SignCheck" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <Target Name="ValidateBundledManifestSigning"
+          Condition=" '$(OS)' == 'Windows_NT' and
+          '$(Architecture)' != 'arm' and
+          $(BUILD_SOURCEBRANCH) != '' and
+          $(BUILD_SOURCEBRANCH.Contains('release')) "
+          BeforeTargets="GenerateWorkloadManifestsWxs">
+    <PropertyGroup>
+      <SignCheckExe>$(PkgMicrosoft_DotNet_SignCheck)\tools\Microsoft.DotNet.SignCheck.exe</SignCheckExe>
+      <SignCheckLog Condition="'$(SignCheckLog)' == ''">$(ArtifactsLogDir)\workloadmanifestsigncheck.log</SignCheckLog>
+      <SignCheckErrorLog Condition="'$(SignCheckErrorLog)' == ''">$(ArtifactsLogDir)\workloadmanifestsigncheck.errors.log</SignCheckErrorLog>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <!-- Don't try to validate signing for workload manifests that will be signed as part of post-build signing -->
+      <BundledManifestsToValidateSigning Include="@(BundledManifests)">
+        <RestoredMsiPathInNupkg>$([MSBuild]::NormalizePath($([System.IO.Directory]::GetFiles('%(RestoredMsiNupkgContentPath)/data/', '*$(MsiArchitectureForWorkloadManifests).msi'))))</RestoredMsiPathInNupkg>
+      </BundledManifestsToValidateSigning>
+
+      <SignCheckWorkloadManifestMsiInputFiles Include="@(BundledManifestsToValidateSigning->'%(RestoredMsiPathInNupkg)')" />
+    </ItemGroup>
+
+    <Exec Condition="'@(SignCheckWorkloadManifestMsiInputFiles->Count())' != '0'"
+                   Command="$(SignCheckExe) ^
+                   --recursive ^
+                   -f UnsignedFiles ^
+                   -i @(SignCheckWorkloadManifestMsiInputFiles, ' ') ^
+                   -l $(SignCheckLog) ^
+                   -e $(SignCheckErrorLog)" />
+
+    <Error
+      Text="Signing validation failed for workload manifest MSI. Check $(SignCheckErrorLog) for more information."
+      Condition="Exists($(SignCheckErrorLog)) and '$([System.IO.File]::ReadAllText($(SignCheckErrorLog)))' != ''" />
+
+    <Message
+      Text="##vso[artifact.upload containerfolder=LogFiles;artifactname=LogFiles]{SignCheckErrorLog}"
+      Condition="Exists($(SignCheckErrorLog)) and '$([System.IO.File]::ReadAllText($(SignCheckErrorLog)))' != ''" />
+  </Target>
+
+  <Target Name="LayoutManifests">
+    <ItemGroup>
+      <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\data\*"
+                       Condition="Exists('%(RestoredNupkgContentPath)\data')"
+                       DestinationPath="%(FeatureBand)/$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/%(Version)"
+                       RestoredNupkgContentPath="%(RestoredNupkgContentPath)"
+                       WorkloadManifestId="%(Identity)" />
+
+      <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\data\localize\*"
+                       Condition="Exists('%(RestoredNupkgContentPath)\data\localize')"
+                       DestinationPath="%(BundledManifests.FeatureBand)/$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/%(BundledManifests.Version)/localize" />
+    </ItemGroup>
+
+    <Error Text="No workload manifest content found." Condition="'@(BundledManifests)' != '' and '@(ManifestContent)' == ''" />
+
+    <Copy SourceFiles="@(ManifestContent)"
+          DestinationFolder="$(RedistInstallerLayoutPath)sdk-manifests/%(DestinationPath)" />
+
+    <MSBuild Projects="$(RepoRoot)src\Workloads\Manifests\manifest-packages.csproj"
+             Targets="LayoutBuiltinManifests"
+             Properties="ManifestDirectory=$(RedistInstallerLayoutPath)sdk-manifests\" />
+  </Target>
+
+  <PropertyGroup>
+    <!-- NOTE: When setting this to true, we need to also add logic to include it in the exe installation bundle, either via a new MSI or by including it in an existing one. -->
+    <GenerateBaselineWorkloadSet>false</GenerateBaselineWorkloadSet>
+  </PropertyGroup>
+  
+  <Target Name="LayoutBaselineWorkloadSet" DependsOnTargets="LayoutManifests" Condition="'$(GenerateBaselineWorkloadSet)' == 'true'">
+
+    <PropertyGroup>
+      <WorkloadSetVersion Condition="'$(DotNetFinalVersionKind)' == 'release'">$(VersionPrefix)-baseline$(_BuildNumberLabels)</WorkloadSetVersion>
+      <WorkloadSetVersion Condition="'$(DotNetFinalVersionKind)' != 'release'">$(Version)</WorkloadSetVersion>
+    </PropertyGroup>
+
+    <GetWorkloadSetFeatureBand WorkloadSetVersion="$(WorkloadSetVersion)">
+      <Output TaskParameter="WorkloadSetFeatureBand" PropertyName="WorkloadSetFeatureBand" />
+    </GetWorkloadSetFeatureBand>
+
+    <PropertyGroup>
+      <RealFormattedManifestPaths>$(RedistInstallerLayoutPath)sdk-manifests\$(WorkloadSetFeatureBand)\workloadsets\$(WorkloadSetVersion)</RealFormattedManifestPaths>      
+    </PropertyGroup>
+
+    <ItemGroup>
+      <FormattedBaselineManifest Include="{" />
+      <FormattedBaselineManifest Include="&quot;%(BundledManifests.Identity)&quot;: &quot;%(BundledManifests.Version)/%(BundledManifests.FeatureBand)&quot;," />
+      <FormattedBaselineManifest Include="}" />
+    </ItemGroup>
+
+    <WriteLinestoFile File="$(RealFormattedManifestPaths)\baseline.workloadset.json" Lines="@(FormattedBaselineManifest)" />
+  </Target>
+
+</Project>
