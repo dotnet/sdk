@@ -34,7 +34,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute(filename);
 
             result.ExitCode.Should().NotBe(0);
-            result.StdErr.Should().Contain(expectedErrorStart);
+            if (!TestContext.IsLocalized())
+            {
+                result.StdErr.Should().Contain(expectedErrorStart);
+            }
         }
 
         [Fact]
@@ -54,7 +57,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute("test_directory");
 
             result.ExitCode.Should().NotBe(0);
-            result.StdErr.Should().Contain("Specifying a directory for 'dotnet test' should be via '--directory'.");
+            if (!TestContext.IsLocalized())
+            {
+                result.StdErr.Should().Contain("Specifying a directory for 'dotnet test' should be via '--directory'.");
+            }
         }
 
         [Fact]
@@ -76,7 +82,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute("test.dll");
 
             result.ExitCode.Should().NotBe(0);
-            result.StdErr.Should().Contain("Specifying a dlls or executables for 'dotnet test' should be via '--test-modules'.");
+            if (!TestContext.IsLocalized())
+            {
+                result.StdErr.Should().Contain("Specifying a dlls or executables for 'dotnet test' should be via '--test-modules'.");
+            }
         }
     }
 }
