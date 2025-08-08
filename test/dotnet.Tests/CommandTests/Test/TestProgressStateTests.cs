@@ -14,17 +14,8 @@ namespace dotnet.Tests.CommandTests.Test;
 
 public class TestProgressStateTests
 {
-    /// <summary>
-    /// Tests that reporting skipped tests multiple times updates state correctly:
-    /// - First call adds a new entry and increments SkippedTests.
-    /// - Second call with same instance increments counts.
-    /// - Third call with a new instance triggers retry logic.
-    /// </summary>
-    [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    [InlineData(3)]
-    public void ReportSkippedTest_MultipleCalls_UpdatesStateCorrectly(int callCount)
+    [Fact]
+    public void ReportSkippedTest_MultipleCalls_DifferentInstanceId()
     {
         var stopwatchMock = new Mock<IStopwatch>();
         var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object);
@@ -33,30 +24,21 @@ public class TestProgressStateTests
         string instanceB = "instanceB";
         state.NotifyHandshake(instanceA);
         state.NotifyHandshake(instanceB);
-        for (int i = 1; i <= callCount; i++)
-        {
-            var instanceId = i <= 2 ? instanceA : instanceB;
-            state.ReportSkippedTest(testUid, instanceId);
-        }
 
-        switch (callCount)
-        {
-            case 1:
-                state.SkippedTests.Should().Be(1);
-                state.RetriedFailedTests.Should().Be(0);
-                state.TotalTests.Should().Be(1);
-                break;
-            case 2:
-                state.SkippedTests.Should().Be(2);
-                state.RetriedFailedTests.Should().Be(0);
-                state.TotalTests.Should().Be(2);
-                break;
-            case 3:
-                state.SkippedTests.Should().Be(1);
-                state.RetriedFailedTests.Should().Be(0);
-                state.TotalTests.Should().Be(1);
-                break;
-        }
+        state.ReportSkippedTest(testUid, instanceA);
+        state.SkippedTests.Should().Be(1);
+        state.RetriedFailedTests.Should().Be(0);
+        state.TotalTests.Should().Be(1);
+
+        state.ReportSkippedTest(testUid, instanceA);
+        state.SkippedTests.Should().Be(2);
+        state.RetriedFailedTests.Should().Be(0);
+        state.TotalTests.Should().Be(2);
+
+        state.ReportSkippedTest(testUid, instanceB);
+        state.SkippedTests.Should().Be(1);
+        state.RetriedFailedTests.Should().Be(0);
+        state.TotalTests.Should().Be(1);
     }
 
     /// <summary>
