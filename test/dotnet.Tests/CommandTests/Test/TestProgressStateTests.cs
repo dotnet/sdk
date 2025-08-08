@@ -192,4 +192,33 @@ public class TestProgressStateTests
         state.DiscoveredTests[0].DisplayName.Should().Be(displayName);
         state.DiscoveredTests[0].UID.Should().Be(uid);
     }
+
+    [Fact]
+    public void ReportPreviouslyPassedTestsAndFailedTests_ShouldShowTheSameTotalCountsInEachRetry()
+    {
+        var stopwatchMock = new Mock<IStopwatch>();
+        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object);
+
+        // First run
+        state.ReportFailedTest("failed-test", "run1");
+        state.ReportPassingTest("passed-test", "run1");
+        state.ReportSkippedTest("skipped-test", "run1");
+        
+        state.RetriedFailedTests.Should().Be(0);
+        state.FailedTests.Should().Be(1);
+        state.PassedTests.Should().Be(1);
+        state.SkippedTests.Should().Be(1);
+        state.TotalTests.Should().Be(3);
+
+        // Second run (first retry)
+        state.ReportFailedTest("failed-test", "run2");
+        state.ReportPassingTest("passed-test", "run2");
+        state.ReportSkippedTest("skipped-test", "run2");
+
+        state.RetriedFailedTests.Should().Be(3);
+        state.FailedTests.Should().Be(1);
+        state.PassedTests.Should().Be(1);
+        state.SkippedTests.Should().Be(1);
+        state.TotalTests.Should().Be(3);
+    }
 }
