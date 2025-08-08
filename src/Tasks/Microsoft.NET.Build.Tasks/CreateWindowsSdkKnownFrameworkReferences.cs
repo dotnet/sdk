@@ -98,7 +98,16 @@ namespace Microsoft.NET.Build.Tasks
                             knownFrameworkReferencesByWindowsSdkVersion[windowsSdkVersionParsed] = new();
                         }
 
-                        knownFrameworkReferencesByWindowsSdkVersion[windowsSdkVersionParsed].Add((normalizedMinimumVersion, CreateKnownFrameworkReferences(windowsSdkPackageVersion, TargetFrameworkVersion, supportedWindowsVersion.ItemSpec)));
+                        // We are intentionally using 'Version.ToString(4)' here instead of passing the 'ItemSpec'
+                        // on the current item (even though the version is parsed from it), so that if we are using
+                        // CsWinRT 3.0 and we have reverted the revision number to '0', we will correctly also match
+                        // that in the target platform version string (otherwise that would've been '.1').
+                        var createdKnownFrameworkReferences = CreateKnownFrameworkReferences(
+                            windowsSdkPackageVersion,
+                            TargetFrameworkVersion,
+                            targetPlatformVersion: windowsSdkVersionParsed.ToString(4));
+
+                        knownFrameworkReferencesByWindowsSdkVersion[windowsSdkVersionParsed].Add((normalizedMinimumVersion, createdKnownFrameworkReferences));
                     }
                 }
 
