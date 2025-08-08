@@ -105,6 +105,7 @@ internal static class RunCommandParser
         command.Options.Add(CommonOptions.ArchitectureOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.Options.Add(CommonOptions.BinaryLoggerOption);
         command.Options.Add(CommonOptions.ArtifactsPathOption);
         command.Options.Add(CommonOptions.EnvOption);
 

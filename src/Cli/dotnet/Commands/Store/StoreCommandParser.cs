@@ -89,6 +89,7 @@ internal static class StoreCommandParser
         command.Options.Add(CommonOptions.VerbosityOption());
         command.Options.Add(CommonOptions.CurrentRuntimeOption(CliCommandStrings.CurrentRuntimeOptionDescription));
         command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.Options.Add(CommonOptions.BinaryLoggerOption);
 
         command.SetAction(StoreCommand.Run);
 

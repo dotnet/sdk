@@ -251,6 +251,7 @@ internal static class TestCommandParser
         command.Options.Add(TestingPlatformOptions.OutputOption);
         command.Options.Add(TestingPlatformOptions.NoLaunchProfileOption);
         command.Options.Add(TestingPlatformOptions.NoLaunchProfileArgumentsOption);
+        command.Options.Add(CommonOptions.BinaryLoggerOption);
         command.Options.Add(MTPTargetOption);
 
         return command;
@@ -296,6 +297,7 @@ internal static class TestCommandParser
         command.Options.Add(CommonOptions.OperatingSystemOption);
         command.Options.Add(CommonOptions.PropertiesOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.Options.Add(CommonOptions.BinaryLoggerOption);
         command.Options.Add(VsTestTargetOption);
         command.SetAction(TestCommand.Run);
 

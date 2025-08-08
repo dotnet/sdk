@@ -8,6 +8,62 @@ namespace Microsoft.DotNet.Cli;
 
 internal static class LoggerUtility
 {
+    public static FacadeLogger? CreateBinaryLogger(BinaryLoggerParameters? parameters, string verb)
+    {
+        if (parameters == null)
+        {
+            return null;
+        }
+
+        List<BinaryLogger> binaryLoggers = [];
+
+        string filename;
+        if (!string.IsNullOrEmpty(parameters.LogFile))
+        {
+            filename = parameters.LogFile;
+            if (filename.EndsWith(".binlog"))
+            {
+                filename = filename.Substring(0, filename.Length - ".binlog".Length);
+                filename = $"{filename}-{verb}.binlog";
+            }
+        }
+        else
+        {
+            // Default filename when no specific file is provided
+            filename = $"msbuild-{verb}.binlog";
+        }
+
+        // Build the parameters string for the BinaryLogger
+        var parametersList = new List<string> { filename };
+        
+        // Add ProjectImports parameter if specified
+        if (parameters.ProjectImports.HasValue)
+        {
+            parametersList.Add($"ProjectImports={parameters.ProjectImports.Value}");
+        }
+        
+        // Add Verbosity parameter if specified
+        if (parameters.Verbosity.HasValue)
+        {
+            parametersList.Add($"Verbosity={parameters.Verbosity.Value}");
+        }
+        
+        // Add any additional parameters
+        if (parameters.Parameters != null)
+        {
+            foreach (var kvp in parameters.Parameters)
+            {
+                parametersList.Add($"{kvp.Key}={kvp.Value}");
+            }
+        }
+
+        string parameterString = string.Join(";", parametersList);
+        binaryLoggers.Add(new BinaryLogger { Parameters = parameterString });
+
+        // Create the facade logger
+        return CreateFacadeLogger(binaryLoggers);
+    }
+
     public static FacadeLogger? DetermineBinlogger(string[] restoreArgs, string verb)
     {
         List<BinaryLogger> binaryLoggers = [];

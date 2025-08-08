@@ -59,6 +59,7 @@ internal static class CleanCommandParser
         command.Options.Add(CommonOptions.ArtifactsPathOption);
         command.Options.Add(NoLogoOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.Options.Add(CommonOptions.BinaryLoggerOption);
         command.Options.Add(TargetOption);
         command.Subcommands.Add(CleanFileBasedAppArtifactsCommandParser.Command);
 

@@ -47,6 +47,11 @@ public class RunCommand
     public ReadOnlyDictionary<string, string>? RestoreProperties { get; }
 
     /// <summary>
+    /// Binary logger parameters, if specified on the command line.
+    /// </summary>
+    public BinaryLoggerParameters? BinaryLoggerParameters { get; }
+
+    /// <summary>
     /// unparsed/arbitrary CLI tokens to be passed to the running application
     /// </summary>
     public string[] ApplicationArgs { get; set; }
@@ -89,7 +94,8 @@ public class RunCommand
         string[] applicationArgs,
         bool readCodeFromStdin,
         IReadOnlyDictionary<string, string> environmentVariables,
-        ReadOnlyDictionary<string, string>? msbuildRestoreProperties)
+        ReadOnlyDictionary<string, string>? msbuildRestoreProperties,
+        BinaryLoggerParameters? binaryLoggerParameters)
     {
         Debug.Assert(projectFileFullPath is null ^ entryPointFileFullPath is null);
         Debug.Assert(!readCodeFromStdin || entryPointFileFullPath is not null);
@@ -108,6 +114,7 @@ public class RunCommand
         MSBuildArgs = SetupSilentBuildArgs(msbuildArgs);
         EnvironmentVariables = environmentVariables;
         RestoreProperties = msbuildRestoreProperties;
+        BinaryLoggerParameters = binaryLoggerParameters;
     }
 
     public int Execute()
@@ -356,7 +363,7 @@ public class RunCommand
             return CreateCommandForCscBuiltProgram(EntryPointFileFullPath);
         }
 
-        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([..MSBuildArgs.OtherMSBuildArgs], "dotnet-run");
+        FacadeLogger? logger = LoggerUtility.CreateBinaryLogger(BinaryLoggerParameters, "dotnet-run");
         var project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
         ValidatePreconditions(project);
         InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs);
@@ -582,23 +589,14 @@ public class RunCommand
             parseResult = ModifyParseResultForShorthandProjectOption(parseResult);
         }
 
-        // if the application arguments contain any binlog args then we need to remove them from the application arguments and apply
-        // them to the restore args.
-        // this is because we can't model the binlog command structure in MSbuild in the System.CommandLine parser, but we need
-        // bl information to synchronize the restore and build logger configurations
+        // Get application arguments (no need to separate binary log args since they're now handled as a ForwardedOption)
         var applicationArguments = parseResult.GetValue(RunCommandParser.ApplicationArguments)?.ToList();
 
-        LoggerUtility.SeparateBinLogArguments(applicationArguments, out var binLogArgs, out var nonBinLogArgs);
-
         var msbuildProperties = parseResult.OptionValuesToBeForwarded(RunCommandParser.GetCommand()).ToList();
-        if (binLogArgs.Count > 0)
-        {
-            msbuildProperties.AddRange(binLogArgs);
-        }
 
         // Only consider `-` to mean "read code from stdin" if it is before double dash `--`
         // (otherwise it should be forwarded to the target application as its command-line argument).
-        bool readCodeFromStdin = nonBinLogArgs is ["-", ..] &&
+        bool readCodeFromStdin = applicationArguments is ["-", ..] &&
             parseResult.Tokens.TakeWhile(static t => t.Type != TokenType.DoubleDash)
                 .Any(static t => t is { Type: TokenType.Argument, Value: "-" });
 
@@ -610,7 +608,7 @@ public class RunCommand
             throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandParser.ProjectOption.Name, RunCommandParser.FileOption.Name);
         }
 
-        string[] args = [.. nonBinLogArgs];
+        string[] args = [.. applicationArguments ?? []];
         string? projectFilePath = DiscoverProjectFilePath(
             filePath: fileOption,
             projectFileOrDirectoryPath: projectOption,
@@ -647,8 +645,11 @@ public class RunCommand
                 stdinStream.CopyTo(fileStream);
             }
 
-            Debug.Assert(nonBinLogArgs[0] == "-");
-            nonBinLogArgs[0] = entryPointFilePath;
+            Debug.Assert(applicationArguments?[0] == "-");
+            if (applicationArguments != null)
+            {
+                applicationArguments[0] = entryPointFilePath;
+            }
         }
 
         var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildProperties, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), RunCommandParser.VerbosityOption);
@@ -667,7 +668,8 @@ public class RunCommand
             applicationArgs: args,
             readCodeFromStdin: readCodeFromStdin,
             environmentVariables: parseResult.GetValue(CommonOptions.EnvOption) ?? ImmutableDictionary<string, string>.Empty,
-            msbuildRestoreProperties: parseResult.GetValue(CommonOptions.RestorePropertiesOption)
+            msbuildRestoreProperties: parseResult.GetValue(CommonOptions.RestorePropertiesOption),
+            binaryLoggerParameters: parseResult.GetValue(CommonOptions.BinaryLoggerOption)
         );
 
         return command;
