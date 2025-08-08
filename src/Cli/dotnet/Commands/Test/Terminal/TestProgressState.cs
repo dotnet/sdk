@@ -77,10 +77,6 @@ internal sealed class TestProgressState(long id, string assembly, string? target
                 // We will just increment the passed count.
                 _testUidToResults[testNodeUid] = incrementTestNodeInfoEntry(value);
             }
-            else if (_seenInstanceIds.Contains(instanceId))
-            {
-                throw new InvalidOperationException("This program location is thought to be unreachable.");
-            }
             else
             {
                 // We are getting a test result for a different instance id.
