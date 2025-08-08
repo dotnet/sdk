@@ -30,16 +30,20 @@
 /src/WasmSdk @lewing @akoeplinger @pavelsavara @maraf
 
 # Area-Format
-/src/Cli/dotnet/commands/dotnet-format @sharwell @arkalyanms
-/test/dotnet-format.Tests @sharwell @arkalyanms
+/src/Cli/dotnet/commands/dotnet-format @arunchndr
+/test/dotnet-format.UnitTests @arunchndr
 
 # Area-NuGet
-/src/Cli/dotnet/commands/dotnet-add/dotnet-add-package @dotnet/nuget-team
-/test/dotnet-add-package.Tests @dotnet/nuget-team
-/src/Cli/dotnet/commands/dotnet-nuget @dotnet/nuget-team
-/test/dotnet-nuget.UnitTests @dotnet/nuget-team
-/src/Cli/dotnet/commands/dotnet-list/dotnet-list-package @dotnet/nuget-team
-/test/dotnet-list-package.Tests @dotnet/nuget-team
+/src/Cli/dotnet/Commands/NuGet @dotnet/nuget-team
+/src/Cli/dotnet/Commands/Pack @dotnet/nuget-team
+/src/Cli/dotnet/Commands/Package @dotnet/nuget-team
+/src/Cli/dotnet/Commands/Restore @dotnet/nuget-team
+/test/Microsoft.NET.Restore.Tests @dotnet/nuget-team
+/test/Microsoft.NET.Pack.Tests @dotnet/nuget-team
+/test/dotnet.Tests/CommandTests/NuGet @dotnet/nuget-team
+/test/dotnet.Tests/CommandTests/Pack @dotnet/nuget-team
+/test/dotnet.Tests/CommandTests/Package @dotnet/nuget-team
+/test/dotnet.Tests/CommandTests/Restore @dotnet/nuget-team
 
 # Area-FSharp
 /src/Cli/dotnet/commands/dotnet-fsi @dotnet/fsharp
@@ -50,44 +54,45 @@
 /src/Cli/dotnet/commands/dotnet-vstest @dotnet/dotnet-testing-admin
 /test/dotnet-test.Tests @dotnet/dotnet-testing-admin
 /test/dotnet-vstest.Tests @dotnet/dotnet-testing-admin
-/test/dotnet-new.Tests @dotnet/dotnet-testing-admin
+/test/dotnet-new.IntegrationTests @dotnet/dotnet-testing-admin
 /template_feed/Microsoft.DotNet.Common.*/content/MSTest* @dotnet/dotnet-testing-admin
 /template_feed/Microsoft.DotNet.Common.*/content/NUnit* @dotnet/dotnet-testing-admin
 /template_feed/Microsoft.DotNet.Common.*/content/XUnit* @dotnet/dotnet-testing-admin
 
 # Area-Templates
 /src/Cli/dotnet/commands/dotnet-new @dotnet/templating-engine-maintainers
-/src/Cli/dotnet-new3 @dotnet/templating-engine-maintainers
 /src/Cli/Microsoft.TemplateEngine.Cli @dotnet/templating-engine-maintainers
-/test/dotnet-new.Tests @dotnet/templating-engine-maintainers
+/test/dotnet-new.IntegrationTests @dotnet/templating-engine-maintainers
 /test/Microsoft.TemplateEngine.* @dotnet/templating-engine-maintainers
 /template_feed @dotnet/templating-engine-maintainers
 
 # ILLink and ReadyToRun targets and tasks owned by runtime team
 # Area-ILLink Area-ReadyToRun
 /src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ILLink.targets @dotnet/illink
-/src/Tasks/Microsoft.NET.Build.Tasks/PrepareForReadyToRunCompilation.cs @AntonLapounov
-/src/Tasks/Microsoft.NET.Build.Tasks/RunReadyToRunCompiler.cs @AntonLapounov
 /test/Microsoft.NET.Publish.Tests/GivenThatWeWantToRunILLink.cs @dotnet/illink
-/test/Microsoft.NET.Publish.Tests/GivenThatWeWantToPublishReadyToRun.cs @AntonLapounov
 # Publish.targets related to ILLink and ReadyToRun is own by both runtime and SDK team
-/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Publish.targets @dotnet/illink @AntonLapounov @dotnet/dotnet-cli
+/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Publish.targets @dotnet/illink @dotnet/dotnet-cli
 # Area-ClickOnce
 /src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ClickOnce.targets @sujitnayak
 
 # Area-Watch
-/test/TestAssets/TestProjects/Watch*/ @tmat @arkalyanms @dotnet/roslyn-ide
-/test/dotnet-watch.Tests/ @tmat @arkalyanms @dotnet/roslyn-ide
+/test/TestAssets/TestProjects/Watch*/ @tmat @arunchndr @dotnet/roslyn-ide
+/test/dotnet-watch.Tests/ @tmat @arunchndr @dotnet/roslyn-ide
 /test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/ @dotnet/aspnet-blazor-eng
-/src/BuiltInTools/* @tmat @arkalyanms @dotnet/roslyn-ide
+/src/BuiltInTools/* @tmat @arunchndr @dotnet/roslyn-ide
 /src/BuiltInTools/BrowserRefresh @dotnet/aspnet-blazor-eng
-/src/BuiltInTools/AspireService @BillHiebert @dotnet/aspnet-blazor-eng
+/src/BuiltInTools/AspireService @dotnet/aspnet-blazor-eng
 
 # Compatibility tools owned by runtime team
 /src/Compatibility/ @dotnet/area-infrastructure-libraries
+
+# Area-ApiCompat
 /test/Microsoft.DotNet.ApiCompatibility*/ @dotnet/area-infrastructure-libraries
 /test/Microsoft.DotNet.ApiCompat*/ @dotnet/area-infrastructure-libraries
 /test/Microsoft.DotNet.PackageValidation*/ @dotnet/area-infrastructure-libraries
+
+# Area-ApiDiff
+/test/Microsoft.DotNet.ApiDiff.Tests/ @dotnet/area-infrastructure-libraries
 
 # Area-GenAPI
 /src/Compatibility/GenAPI/ @dotnet/area-infrastructure-libraries
@@ -103,11 +108,4 @@
 
 # dotnet-format
 /src/BuiltInTools/dotnet-format @dotnet/roslyn-ide
-/test/dotnet-format.Tests @dotnet/roslyn-ide
-
-# Area: VMR & SourceBuild
-/.devcontainer/ @dotnet/source-build
-/eng/pipelines/ @dotnet/source-build @dotnet/product-construction
-/eng/SourceBuild* @dotnet/source-build
-/src/SourceBuild/ @dotnet/source-build @dotnet/product-construction
-/src/VirtualMonoRepo/ @dotnet/product-construction
+/test/dotnet-format.UnitTests @dotnet/roslyn-ide

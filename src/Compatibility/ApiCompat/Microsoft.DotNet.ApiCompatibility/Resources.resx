@@ -147,9 +147,6 @@
   <data name="IndexShouldBeWithinSetSizeRange" xml:space="preserve">
     <value>The {0} index should be in the range zero through {1} inclusive.</value>
   </data>
-  <data name="MatchingAssemblyNotFound" xml:space="preserve">
-    <value>Could not find matching assembly: '{0}' in any of the search directories.</value>
-  </data>
   <data name="MemberExistsOnLeft" xml:space="preserve">
     <value>Member '{0}' exists on {1} but not on {2}</value>
   </data>
@@ -189,8 +186,8 @@
   <data name="CannotAddVirtualToMember" xml:space="preserve">
     <value>Cannot add virtual keyword to member '{0}'.</value>
   </data>
-  <data name="CannotRemoveVirtualFromMember" xml:space="preserve">
-    <value>Cannot remove virtual keyword from member '{0}'.</value>
+  <data name="CannotRemoveVirtualOrAbstractFromMember" xml:space="preserve">
+    <value>Cannot remove '{0}' keyword from member '{1}'.</value>
   </data>
   <data name="ApiCompatibilityHeader" xml:space="preserve">
     <value>API compatibility errors between '{0}' ({2}) and '{1}' ({3}):</value>

@@ -1,21 +1,23 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 
-namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
+
+public class ValidateStaticWebAssetsUniquePaths : Task
 {
-    public class ValidateStaticWebAssetsUniquePaths : Task
-    {
-        private const string BasePath = "BasePath";
-        private const string RelativePath = "RelativePath";
-        private const string TargetPath = "TargetPath";
+    private const string BasePath = "BasePath";
+    private const string RelativePath = "RelativePath";
+    private const string TargetPath = "TargetPath";
 
-        [Required]
-        public ITaskItem[] StaticWebAssets { get; set; }
+    [Required]
+    public ITaskItem[] StaticWebAssets { get; set; }
 
-        [Required]
-        public ITaskItem[] WebRootFiles { get; set; }
+    [Required]
+    public ITaskItem[] WebRootFiles { get; set; }
 
     public override bool Execute()
     {
@@ -34,20 +36,20 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     contentRootDefinition.GetMetadata(BasePath),
                     contentRootDefinition.GetMetadata(RelativePath));
 
-                    if (assetsByWebRootPaths.TryGetValue(webRootPath, out var existingWebRootPath))
+                if (assetsByWebRootPaths.TryGetValue(webRootPath, out var existingWebRootPath))
+                {
+                    if (!string.Equals(contentRootDefinition.ItemSpec, existingWebRootPath.ItemSpec, StringComparison.OrdinalIgnoreCase))
                     {
-                        if (!string.Equals(contentRootDefinition.ItemSpec, existingWebRootPath.ItemSpec, StringComparison.OrdinalIgnoreCase))
-                        {
-                            Log.LogError($"Conflicting assets with the same path '{webRootPath}' for content root paths '{contentRootDefinition.ItemSpec}' and '{existingWebRootPath.ItemSpec}'.");
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        assetsByWebRootPaths.Add(webRootPath, contentRootDefinition);
+                        Log.LogError($"Conflicting assets with the same path '{webRootPath}' for content root paths '{contentRootDefinition.ItemSpec}' and '{existingWebRootPath.ItemSpec}'.");
+                        return false;
                     }
                 }
+                else
+                {
+                    assetsByWebRootPaths.Add(webRootPath, contentRootDefinition);
+                }
             }
+        }
 
         for (var i = 0; i < WebRootFiles.Length; i++)
         {
@@ -61,22 +63,21 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             }
         }
 
-            return true;
-        }
+        return true;
+    }
 
-        // Normalizes /base/relative \base\relative\ base\relative and so on to /base/relative
-        private string GetWebRootPath(string webRoot, string basePath, string relativePath) => $"{webRoot}/{Path.Combine(basePath, relativePath.TrimStart('.').TrimStart('/')).Replace("\\", "/").Trim('/')}";
+    // Normalizes /base/relative \base\relative\ base\relative and so on to /base/relative
+    private static string GetWebRootPath(string webRoot, string basePath, string relativePath) => $"{webRoot}/{Path.Combine(basePath, relativePath.TrimStart('.').TrimStart('/')).Replace("\\", "/").Trim('/')}";
 
-        private bool EnsureRequiredMetadata(ITaskItem item, string metadataName)
+    private bool EnsureRequiredMetadata(ITaskItem item, string metadataName)
+    {
+        var value = item.GetMetadata(metadataName);
+        if (string.IsNullOrEmpty(value))
         {
-            var value = item.GetMetadata(metadataName);
-            if (string.IsNullOrEmpty(value))
-            {
-                Log.LogError($"Missing required metadata '{metadataName}' for '{item.ItemSpec}'.");
-                return false;
-            }
-
-            return true;
+            Log.LogError($"Missing required metadata '{metadataName}' for '{item.ItemSpec}'.");
+            return false;
         }
+
+        return true;
     }
 }

@@ -2,8 +2,8 @@
   "Version": 1,
   "Hash": "__hash__",
   "Source": "BlazorWasmHosted60.Server",
-  "BasePath": "_content/BlazorWasmHosted60.Server",
-  "Mode": "Default",
+  "BasePath": "/",
+  "Mode": "Root",
   "ManifestType": "Publish",
   "ReferencedProjectsConfiguration": [
     {
@@ -12,10 +12,10 @@
       "Source": "BlazorWasmHosted60.Client",
       "GetPublishAssetsTargets": "ComputeFilesToPublish;GetCurrentProjectPublishStaticWebAssetItems",
       "AdditionalPublishProperties": "_PublishingBlazorWasmProject=true;BuildProjectReferences=false;ResolveAssemblyReferencesFindRelatedSatellites=true",
-      "AdditionalPublishPropertiesToRemove": "NoBuild;RuntimeIdentifier;WebPublishProfileFile;TargetFramework",
+      "AdditionalPublishPropertiesToRemove": "NoBuild;RuntimeIdentifier;WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained",
       "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
       "AdditionalBuildProperties": "",
-      "AdditionalBuildPropertiesToRemove": "RuntimeIdentifier;SelfContained;WebPublishProfileFile;TargetFramework"
+      "AdditionalBuildPropertiesToRemove": "RuntimeIdentifier;SelfContained;WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"
     }
   ],
   "DiscoveryPatterns": [
@@ -186,29 +186,6 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\icudt_no_CJK.dat",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
-    },
-    {
-      "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\blazor.publish.boot.json",
-      "SourceId": "BlazorWasmHosted60.Client",
-      "SourceType": "Project",
-      "ContentRoot": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\publish\\wwwroot\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/blazor.boot.json",
-      "AssetKind": "Publish",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "WasmResource",
-      "AssetTraitValue": "manifest",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\blazor.publish.boot.json",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -1581,7 +1558,7 @@
       "AssetRole": "Alternative",
       "AssetMergeBehavior": "",
       "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\blazor.publish.boot.json",
+      "RelatedAsset": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "Fingerprint": "__fingerprint__",
@@ -1604,7 +1581,7 @@
       "AssetRole": "Alternative",
       "AssetMergeBehavior": "",
       "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\blazor.publish.boot.json",
+      "RelatedAsset": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "Fingerprint": "__fingerprint__",
@@ -2513,6 +2490,29 @@
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
+      "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json",
+      "SourceId": "BlazorWasmHosted60.Client",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\publish\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/blazor.boot.json",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "WasmResource",
+      "AssetTraitValue": "manifest",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\BlazorWasmHosted60.Client.styles.css",
       "SourceId": "BlazorWasmHosted60.Client",
       "SourceType": "Project",
@@ -2825,43 +2825,6 @@
         {
           "Name": "Content-Type",
           "Value": "application/octet-stream"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "_framework/blazor.boot.json",
-      "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\blazor.publish.boot.json",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/json"
         },
         {
           "Name": "ETag",
@@ -8874,6 +8837,30 @@
       ],
       "EndpointProperties": [
         {
+          "Name": "PreloadAs",
+          "Value": "script"
+        },
+        {
+          "Name": "PreloadCrossorigin",
+          "Value": "anonymous"
+        },
+        {
+          "Name": "PreloadGroup",
+          "Value": "webassembly"
+        },
+        {
+          "Name": "PreloadOrder",
+          "Value": "1"
+        },
+        {
+          "Name": "PreloadPriority",
+          "Value": "high"
+        },
+        {
+          "Name": "PreloadRel",
+          "Value": "preload"
+        },
+        {
           "Name": "integrity",
           "Value": "__integrity__"
         }
@@ -8973,6 +8960,30 @@
         }
       ],
       "EndpointProperties": [
+        {
+          "Name": "PreloadAs",
+          "Value": "script"
+        },
+        {
+          "Name": "PreloadCrossorigin",
+          "Value": "anonymous"
+        },
+        {
+          "Name": "PreloadGroup",
+          "Value": "webassembly"
+        },
+        {
+          "Name": "PreloadOrder",
+          "Value": "1"
+        },
+        {
+          "Name": "PreloadPriority",
+          "Value": "high"
+        },
+        {
+          "Name": "PreloadRel",
+          "Value": "preload"
+        },
         {
           "Name": "integrity",
           "Value": "__integrity__"
@@ -11109,6 +11120,67 @@
         }
       ],
       "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_framework/blazor.boot.json",
+      "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/json"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "PreloadAs",
+          "Value": "script"
+        },
+        {
+          "Name": "PreloadCrossorigin",
+          "Value": "anonymous"
+        },
+        {
+          "Name": "PreloadGroup",
+          "Value": "webassembly"
+        },
+        {
+          "Name": "PreloadOrder",
+          "Value": "1"
+        },
+        {
+          "Name": "PreloadPriority",
+          "Value": "high"
+        },
+        {
+          "Name": "PreloadRel",
+          "Value": "preload"
+        },
         {
           "Name": "integrity",
           "Value": "__integrity__"

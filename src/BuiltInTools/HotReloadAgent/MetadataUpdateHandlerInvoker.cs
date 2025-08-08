@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -327,7 +329,7 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
 
         static void Visit(Assembly[] assemblies, Assembly assembly, List<Assembly> sortedAssemblies, HashSet<string> visited)
         {
-            string assemblyIdentifier;
+            string? assemblyIdentifier;
 
             try
             {
