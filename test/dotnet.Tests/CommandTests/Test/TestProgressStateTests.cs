@@ -249,7 +249,7 @@ public class TestProgressStateTests
         state.TotalTests.Should().Be(4);
 
         // Second run (first retry)
-        state.ReportPassedTest("failed-test", "run2"); // 1 test case, now passes
+        state.ReportPassingTest("failed-test", "run2"); // 1 test case, now passes
 
         state.RetriedFailedTests.Should().Be(2);
         state.FailedTests.Should().Be(0);
