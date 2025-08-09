@@ -14,7 +14,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- Use a simplified approach without external package dependency -->
-		<PackageReference Include="Microsoft.Testing.Platform" Version="$(MicrosoftTestingPlatformVersion)" Condition="'$(SkipTestPlatformReferences)' != 'true'" />		
+		<PackageReference Include="Microsoft.Testing.Platform" Version="$(MicrosoftTestingPlatformVersion)" />		
 	</ItemGroup>
 </Project>

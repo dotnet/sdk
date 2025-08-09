@@ -382,10 +382,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectMTPWithUseAppHostFalse", Guid.NewGuid().ToString())
                 .WithSource();
 
-            // Run test without external package dependencies to avoid network issues
+            // Run test with UseAppHost=false
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute(CommonOptions.PropertiesOption.Name, "SkipTestPlatformReferences=true");
+                .Execute();
 
             // Verify the test runs successfully with UseAppHost=false
             result.ExitCode.Should().Be(0);
