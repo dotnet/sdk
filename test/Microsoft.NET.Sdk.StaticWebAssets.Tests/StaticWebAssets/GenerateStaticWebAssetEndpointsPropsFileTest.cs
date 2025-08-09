@@ -26,7 +26,7 @@ public class GenerateStaticWebAssetEndpointsPropsFileTest
       <AssetFile>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js))</AssetFile>
       <Selectors><![CDATA[[{"Name":"Content-Encoding","Value":"gzip","Quality":"0.1"}]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"__integrity__"}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Content-Length","Value":"10"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Content-Length","Value":"10"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
   </ItemGroup>
 </Project>
@@ -56,11 +56,6 @@ public class GenerateStaticWebAssetEndpointsPropsFileTest
                     Path.Combine("js", "sample.js"),
                     Path.GetFullPath(Path.Combine("wwwroot","js","sample.js")),
                     [
-                        new StaticWebAssetEndpointResponseHeader
-                        {
-                            Name = "Accept-Ranges",
-                            Value = "bytes"
-                        },
                         new StaticWebAssetEndpointResponseHeader
                         {
                             Name = "Content-Length",
@@ -131,11 +126,6 @@ public class GenerateStaticWebAssetEndpointsPropsFileTest
                     Path.Combine("js", "sample.js").Replace('\\', '/'),
                     Path.GetFullPath(Path.Combine("wwwroot","js","sample.js")),
                     [
-                        new StaticWebAssetEndpointResponseHeader
-                        {
-                            Name = "Accept-Ranges",
-                            Value = "bytes"
-                        },
                         new StaticWebAssetEndpointResponseHeader
                         {
                             Name = "Content-Length",
