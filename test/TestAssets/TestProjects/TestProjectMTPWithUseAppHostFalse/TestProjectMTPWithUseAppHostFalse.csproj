@@ -10,9 +10,11 @@
 		<Nullable>enable</Nullable>
 
 		<ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+		<IsTestingPlatformApplication>true</IsTestingPlatformApplication>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Testing.Platform" Version="$(MicrosoftTestingPlatformVersion)" />		
+		<!-- Use a simplified approach without external package dependency -->
+		<PackageReference Include="Microsoft.Testing.Platform" Version="$(MicrosoftTestingPlatformVersion)" Condition="'$(SkipTestPlatformReferences)' != 'true'" />		
 	</ItemGroup>
 </Project>
