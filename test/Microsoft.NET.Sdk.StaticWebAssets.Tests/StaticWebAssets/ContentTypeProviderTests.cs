@@ -114,6 +114,57 @@ public class ContentTypeProviderTests
         Assert.Equal("text/plain", contentType.MimeType);
     }
 
+    [Fact]
+    public void GetContentType_CustomMappingOverridesBuiltInMapping()
+    {
+        // Arrange
+        var customMapping = new ContentTypeMapping("text/html", "no-store, must-revalidate, no-cache", "*.html", 2);
+        var provider = new ContentTypeProvider([customMapping]);
+
+        // Act
+        var contentType = provider.ResolveContentTypeMapping(CreateContext("index.html"), _log);
+
+        // Assert
+        Assert.Equal("text/html", contentType.MimeType);
+        Assert.Equal("no-store, must-revalidate, no-cache", contentType.Cache);
+        Assert.Equal("*.html", contentType.Pattern);
+        Assert.Equal(2, contentType.Priority);
+    }
+
+    [Fact]
+    public void GetContentType_CustomMappingOverridesBuiltInMappingForCompressedFiles()
+    {
+        // Arrange
+        var customMapping = new ContentTypeMapping("text/html", "no-store, must-revalidate, no-cache", "*.html", 2);
+        var provider = new ContentTypeProvider([customMapping]);
+
+        // Act
+        var contentType = provider.ResolveContentTypeMapping(CreateContext("index.html.gz"), _log);
+
+        // Assert
+        Assert.Equal("text/html", contentType.MimeType);
+        Assert.Equal("no-store, must-revalidate, no-cache", contentType.Cache);
+        Assert.Equal("*.html", contentType.Pattern);
+        Assert.Equal(2, contentType.Priority);
+    }
+
+    [Fact]
+    public void GetContentType_CustomJavaScriptMappingOverridesBuiltIn()
+    {
+        // Arrange
+        var customMapping = new ContentTypeMapping("text/javascript", "max-age=3600", "*.js", 3);
+        var provider = new ContentTypeProvider([customMapping]);
+
+        // Act
+        var contentType = provider.ResolveContentTypeMapping(CreateContext("app.js"), _log);
+
+        // Assert
+        Assert.Equal("text/javascript", contentType.MimeType);
+        Assert.Equal("max-age=3600", contentType.Cache);
+        Assert.Equal("*.js", contentType.Pattern);
+        Assert.Equal(3, contentType.Priority);
+    }
+
     private class TestTaskLoggingHelper : TaskLoggingHelper
     {
         public TestTaskLoggingHelper() : base(new TestTask())
