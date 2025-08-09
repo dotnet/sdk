@@ -1,10 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.ObjectModel;
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using NuGet.Commands;
+using NuGet.Common;
+using NuGet.Versioning;
+using static Microsoft.DotNet.Cli.Commands.Run.CSharpDirective;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
@@ -61,6 +67,25 @@ internal static class PackCommandParser
     public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Pack", [("_IsPacking", "true")]);
     public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = BuildCommandParser.VerbosityOption;
 
+    public static Option<NuGetVersion> VersionOption =
+        new ForwardedOption<NuGetVersion>("--version")
+        {
+            Description = CliCommandStrings.PackCmdVersionDescription,
+            HelpName = CliCommandStrings.PackCmdVersion,
+            Arity = ArgumentArity.ExactlyOne,
+            CustomParser = r =>
+            {
+                if (r.Tokens.Count == 0)
+                    return null;
+                var value = r.Tokens[0].Value;
+                if (NuGetVersion.TryParse(value, out var version))
+                    return version;
+                r.AddError(string.Format(CliStrings.InvalidVersion, value));
+                return null;
+
+            }
+        }.ForwardAsSingle(o => $"--property:PackageVersion={o}");
+
     private static readonly Command Command = ConstructCommand();
 
     public static Command GetCommand()
@@ -84,6 +109,7 @@ internal static class PackCommandParser
         command.Options.Add(NoRestoreOption);
         command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.VersionSuffixOption);
+        command.Options.Add(VersionOption);
         command.Options.Add(ConfigurationOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(TargetOption);

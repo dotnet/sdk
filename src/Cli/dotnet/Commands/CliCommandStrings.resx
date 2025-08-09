@@ -2605,4 +2605,10 @@ Proceed?</value>
     <value>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</value>
     <comment>{Locked="--yes"}</comment>
   </data>
+  <data name="PackCmdVersionDescription" xml:space="preserve">
+    <value>The version of the package to create</value>
+  </data>
+  <data name="PackCmdVersion" xml:space="preserve">
+    <value>VERSION</value>
+  </data>
 </root>
