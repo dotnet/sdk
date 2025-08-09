@@ -50,6 +50,20 @@ internal static class TestingPlatformOptions
         Arity = ArgumentArity.ExactlyOne
     };
 
+    public static readonly Option<string> ConfigFileOption = new("--config-file")
+    {
+        Description = CliCommandStrings.CmdConfigFileDescription,
+        HelpName = CliCommandStrings.CmdConfigFilePath,
+        Arity = ArgumentArity.ExactlyOne
+    };
+
+    public static readonly Option<string> DiagnosticOutputDirectoryOption = new("--diagnostic-output-directory")
+    {
+        Description = CliCommandStrings.CmdDiagnosticOutputDirectoryDescription,
+        HelpName = CliCommandStrings.CmdDiagnosticOutputDirectoryPath,
+        Arity = ArgumentArity.ExactlyOne
+    };
+
     public static readonly Option<string> MaxParallelTestModulesOption = new("--max-parallel-test-modules")
     {
         Description = CliCommandStrings.CmdMaxParallelTestModulesDescription,

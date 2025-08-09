@@ -115,6 +115,16 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             builder.Append($" {TestingPlatformOptions.ResultsDirectoryOption.Name} {ArgumentEscaper.EscapeSingleArg(resultsDirectoryPath)}");
         }
 
+        if (_buildOptions.PathOptions.ConfigFilePath is { } configFilePath)
+        {
+            builder.Append($" {TestingPlatformOptions.ConfigFileOption.Name} {ArgumentEscaper.EscapeSingleArg(configFilePath)}");
+        }
+
+        if (_buildOptions.PathOptions.DiagnosticOutputDirectoryPath is { } diagnosticOutputDirectoryPath)
+        {
+            builder.Append($" {TestingPlatformOptions.DiagnosticOutputDirectoryOption.Name} {ArgumentEscaper.EscapeSingleArg(diagnosticOutputDirectoryPath)}");
+        }
+
         foreach (var arg in _buildOptions.UnmatchedTokens)
         {
             builder.Append($" {ArgumentEscaper.EscapeSingleArg(arg)}");
