@@ -25,10 +25,6 @@ public class GenerateStaticWebAssetEndpointsManifestTest
                 ResponseHeaders =
                 [
                     new() {
-                        Name = "Accept-Ranges",
-                        Value = "bytes"
-                    },
-                    new() {
                         Name = "Cache-Control",
                         Value = "max-age=31536000, immutable"
                     },
@@ -71,10 +67,6 @@ public class GenerateStaticWebAssetEndpointsManifestTest
                 Selectors = [],
                 ResponseHeaders =
                 [
-                    new() {
-                        Name = "Accept-Ranges",
-                        Value = "bytes"
-                    },
                     new() {
                         Name = "Cache-Control",
                         Value = "max-age=31536000, immutable"
@@ -119,10 +111,6 @@ public class GenerateStaticWebAssetEndpointsManifestTest
                 ResponseHeaders =
                 [
                     new() {
-                        Name = "Accept-Ranges",
-                        Value = "bytes"
-                    },
-                    new() {
                         Name = "Cache-Control",
                         Value = "no-cache"
                     },
@@ -155,10 +143,6 @@ public class GenerateStaticWebAssetEndpointsManifestTest
                 Selectors = [],
                 ResponseHeaders =
                 [
-                    new() {
-                        Name = "Accept-Ranges",
-                        Value = "bytes"
-                    },
                     new() {
                         Name = "Cache-Control",
                         Value = "no-cache"
