@@ -8,7 +8,7 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "Create an empty solution containing no projects",
   "groupIdentity": "ItemSolution",
-  "precedence": "100",
+  "precedence": "101",
   "identity": "Microsoft.Standard.QuickStarts.Solution",
   "shortName": [
     "sln",
