@@ -379,5 +379,20 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
+
+        [Fact]
+        public void RunMTPProjectWithUseAppHostFalse_ShouldWork()
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectMTPWithUseAppHostFalse", Guid.NewGuid().ToString())
+                .WithSource();
+
+            // Run test with UseAppHost=false
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute();
+
+            // Verify the test runs successfully with UseAppHost=false
+            result.ExitCode.Should().Be(0);
+        }
     }
 }
