@@ -197,13 +197,7 @@ public class ApplyCompressionNegotiationTest
                             Quality = "0.125000000000"
                     }
                 ],
-            ResponseHeaders = [
-            new ()
-            {
-                Name = "Accept-Ranges",
-                Value = "bytes"
-            },
-            new ()
+            ResponseHeaders = [            new ()
             {
                 Name = "Cache-Control",
                 Value = "max-age=31536000, immutable"
@@ -274,13 +268,7 @@ public class ApplyCompressionNegotiationTest
                 Quality = "0.100000000000"
                 }
             ],
-            ResponseHeaders = [
-                new ()
-                {
-                    Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
-                new ()
+            ResponseHeaders = [                new ()
                 {
                     Name = "Cache-Control",
                     Value = "max-age=31536000, immutable"
@@ -343,13 +331,7 @@ public class ApplyCompressionNegotiationTest
             {
                 Route = "candidate.fingerprint.js",
                 AssetFile = Path.Combine(AppContext.BaseDirectory, "wwwroot", "candidate.js"),
-                ResponseHeaders = [
-                new ()
-                {
-                    Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
-                new ()
+                ResponseHeaders = [                new ()
                 {
                     Name = "Cache-Control",
                     Value = "max-age=31536000, immutable"
@@ -397,13 +379,7 @@ public class ApplyCompressionNegotiationTest
             {
                 Route = "candidate.fingerprint.js.br",
                 AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.br"),
-                ResponseHeaders = [
-                new ()
-                {
-                        Name = "Accept-Ranges",
-                        Value = "bytes"
-                },
-                new ()
+                ResponseHeaders = [                new ()
                 {
                     Name = "Cache-Control",
                     Value = "max-age=31536000, immutable"
@@ -461,13 +437,7 @@ public class ApplyCompressionNegotiationTest
             {
                 Route = "candidate.fingerprint.js.gz",
                 AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.gz"),
-                ResponseHeaders = [
-                new ()
-                {
-                    Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
-                new ()
+                ResponseHeaders = [                new ()
                 {
                     Name = "Cache-Control",
                     Value = "max-age=31536000, immutable"
@@ -533,13 +503,7 @@ public class ApplyCompressionNegotiationTest
                 Quality = "0.125000000000"
                 }
             ],
-            ResponseHeaders = [
-                new ()
-                {
-                    Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
-                new ()
+            ResponseHeaders = [                new ()
                 {
                     Name = "Cache-Control",
                     Value = "no-cache"
@@ -600,13 +564,7 @@ public class ApplyCompressionNegotiationTest
                 Quality = "0.100000000000"
                 }
             ],
-            ResponseHeaders = [
-                new ()
-                {
-                    Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
-                new ()
+            ResponseHeaders = [                new ()
                 {
                     Name = "Cache-Control",
                     Value = "no-cache"
@@ -659,13 +617,7 @@ public class ApplyCompressionNegotiationTest
             {
                 Route = "candidate.js",
                 AssetFile = Path.Combine(AppContext.BaseDirectory, "wwwroot", "candidate.js"),
-                ResponseHeaders = [
-                new ()
-                {
-                    Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
-                new ()
+                ResponseHeaders = [                new ()
                 {
                     Name = "Cache-Control",
                     Value = "no-cache"
@@ -703,13 +655,7 @@ public class ApplyCompressionNegotiationTest
             {
                 Route = "candidate.js.br",
                 AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.br"),
-                ResponseHeaders = [
-                new ()
-                {
-                    Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
-                new ()
+                ResponseHeaders = [                new ()
                 {
                     Name = "Cache-Control",
                     Value = "no-cache"
@@ -757,12 +703,7 @@ public class ApplyCompressionNegotiationTest
             {
                 Route = "candidate.js.gz",
                 AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.gz"),
-                ResponseHeaders = [
-                new () {
-                Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
-                new () {
+                ResponseHeaders = [                new () {
                 Name = "Cache-Control",
                     Value = "no-cache"
                 },
