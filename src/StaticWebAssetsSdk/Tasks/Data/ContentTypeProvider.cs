@@ -459,7 +459,7 @@ internal sealed class ContentTypeProvider
         var match = _matcher.Match(context);
         if (match.IsMatch)
         {
-            if (_builtInMappings.TryGetValue(match.Pattern, out mapping) || _customMappings.TryGetValue(match.Pattern, out mapping))
+            if (_customMappings.TryGetValue(match.Pattern, out mapping) || _builtInMappings.TryGetValue(match.Pattern, out mapping))
             {
                 log.LogMessage(MessageImportance.Low, $"Matched {relativePath} to {mapping.MimeType} using pattern {match.Pattern}");
                 return true;
