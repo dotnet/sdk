@@ -10,7 +10,6 @@
 		<Nullable>enable</Nullable>
 
 		<ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
-		<IsTestingPlatformApplication>true</IsTestingPlatformApplication>
 	</PropertyGroup>
 
 	<ItemGroup>

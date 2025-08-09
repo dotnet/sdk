@@ -5,7 +5,6 @@
 
 using System.Diagnostics;
 using System.IO.Pipes;
-using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
@@ -55,16 +54,6 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
 
     private ProcessStartInfo CreateProcessStartInfo(TestOptions testOptions)
     {
-        // Check for architecture mismatch when UseAppHost=false
-        if (ShouldValidateArchitectureForUseAppHostFalse())
-        {
-            var archMismatchError = ValidateArchitectureCompatibility();
-            if (archMismatchError != null)
-            {
-                throw new GracefulException(archMismatchError);
-            }
-        }
-
         var processStartInfo = new ProcessStartInfo
         {
             // We should get correct RunProperties right away.
@@ -377,103 +366,6 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         }
 
         return builder.ToString();
-    }
-
-    private bool ShouldValidateArchitectureForUseAppHostFalse()
-    {
-        // Check if UseAppHost=false (RunArguments starts with "exec")
-        return !string.IsNullOrEmpty(Module.RunProperties.RunArguments) && 
-               Module.RunProperties.RunArguments.TrimStart().StartsWith("exec ", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private string ValidateArchitectureCompatibility()
-    {
-        // Extract the requested architecture from MSBuild args
-        string requestedArch = GetRequestedArchitecture();
-        if (string.IsNullOrEmpty(requestedArch))
-        {
-            // No architecture specified, no validation needed
-            return null;
-        }
-
-        // Get current muxer architecture 
-        string currentArch = GetCurrentMuxerArchitecture();
-        
-        // Normalize architecture names for comparison
-        string normalizedRequested = NormalizeArchitectureName(requestedArch);
-        string normalizedCurrent = NormalizeArchitectureName(currentArch);
-
-        if (!string.Equals(normalizedRequested, normalizedCurrent, StringComparison.OrdinalIgnoreCase))
-        {
-            return $"The current .NET host does not support the requested target architecture '{requestedArch}'. " +
-                   $"The current host is running '{currentArch}' architecture. " +
-                   $"When UseAppHost is false, the target architecture must match the current .NET host architecture.";
-        }
-
-        return null;
-    }
-
-    private string GetRequestedArchitecture()
-    {
-        // Look for architecture in MSBuild args
-        foreach (var arg in _buildOptions.MSBuildArgs)
-        {
-            if (arg.StartsWith("--property:RuntimeIdentifier=", StringComparison.OrdinalIgnoreCase) ||
-                arg.StartsWith("-property:RuntimeIdentifier=", StringComparison.OrdinalIgnoreCase) ||
-                arg.StartsWith("/property:RuntimeIdentifier=", StringComparison.OrdinalIgnoreCase) ||
-                arg.StartsWith("-p:RuntimeIdentifier=", StringComparison.OrdinalIgnoreCase) ||
-                arg.StartsWith("/p:RuntimeIdentifier=", StringComparison.OrdinalIgnoreCase))
-            {
-                var rid = arg.Split('=', 2)[1];
-                return ExtractArchitectureFromRid(rid);
-            }
-        }
-
-        // Also check UnmatchedTokens for --arch parameter
-        for (int i = 0; i < _buildOptions.UnmatchedTokens.Count - 1; i++)
-        {
-            if (_buildOptions.UnmatchedTokens[i] == "--arch" || _buildOptions.UnmatchedTokens[i] == "-a")
-            {
-                return _buildOptions.UnmatchedTokens[i + 1];
-            }
-        }
-
-        return null;
-    }
-
-    private static string ExtractArchitectureFromRid(string rid)
-    {
-        // RID format is typically os-arch (e.g., linux-x64, win-x86, osx-arm64)
-        var parts = rid.Split('-');
-        if (parts.Length >= 2)
-        {
-            return parts[^1]; // Last part is the architecture
-        }
-        return rid; // Fallback to the entire string
-    }
-
-    private static string GetCurrentMuxerArchitecture()
-    {
-        return RuntimeInformation.ProcessArchitecture switch
-        {
-            Architecture.X64 => "x64",
-            Architecture.X86 => "x86",
-            Architecture.Arm => "arm",
-            Architecture.Arm64 => "arm64",
-            _ => RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant()
-        };
-    }
-
-    private static string NormalizeArchitectureName(string arch)
-    {
-        return arch.ToLowerInvariant() switch
-        {
-            "amd64" => "x64",
-            "x86_64" => "x64",
-            "arm64" => "arm64",
-            "aarch64" => "arm64",
-            _ => arch.ToLowerInvariant()
-        };
     }
 
     public void Dispose()

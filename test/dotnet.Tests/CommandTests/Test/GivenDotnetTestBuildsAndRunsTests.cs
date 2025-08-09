@@ -379,15 +379,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void RunMTPProjectWithUseAppHostFalseAndArchMismatch_ShouldFailWithProperError()
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
-                .WithSource()
-                .WithProjectChanges(project =>
-                {
-                    // Modify the project to use UseAppHost=false
-                    var ns = project.Root!.Name.Namespace;
-                    var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
-                    propertyGroup.Add(new XElement(ns + "UseAppHost", "false"));
-                });
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectMTPWithUseAppHostFalse", Guid.NewGuid().ToString())
+                .WithSource();
 
             // Call test with wrong architecture
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
