@@ -39,6 +39,47 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         private const string SdkResolverGlobalJsonPath = "SdkResolverGlobalJsonPath";
         private static CachingWorkloadResolver _staticWorkloadResolver = new();
 
+        /// <summary>
+        /// This is a workaround for MSBuild API compatibility in older VS hosts.
+        /// To allow for working with the MSBuild 17.15 APIs while not blowing up our ability to build the SdkResolver in
+        /// VS-driven CI pipelines, we probe and invoke only if the expected method is present.
+        /// Once we can update our MSBuild API dependency this can go away.
+        /// </summary>
+        private static Func<
+            SdkResultFactory,
+            // path to sdk
+            string,
+            // sdk version
+            string?,
+            // properties to add
+            IDictionary<string, string?>?,
+            // items to add
+            IDictionary<string, SdkResultItem>?,
+            // warnings
+            List<string>?,
+            // environment variables to add
+            IDictionary<string, string?>?,
+            SdkResult>? _factorySuccessFunc = TryLocateNewMSBuildFactory();
+
+        private static Func<SdkResultFactory, string, string?, IDictionary<string, string?>?, IDictionary<string, SdkResultItem>?, List<string>?, IDictionary<string, string?>?, SdkResult>? TryLocateNewMSBuildFactory()
+        {
+            if (typeof(SdkResultFactory).GetMethod("IndicateSuccess", [
+                typeof(string), // path to sdk
+                typeof(string), // sdk version
+                typeof(IDictionary<string, string>), // properties to add
+                typeof(IDictionary<string, SdkResultItem>), // items to add
+                typeof(List<string>), // warnings
+                typeof(IDictionary<string, string>) // environment variables to add
+            ]) is MethodInfo m)
+            {
+                return (factory, path, version, properties, items, warnings, environmentVariables) =>
+                {
+                    return (SdkResult)m.Invoke(factory, [path, version, properties, items, warnings, environmentVariables]);
+                };
+            }
+            return null;
+        }
+
         private bool _shouldLog = false;
 
         public DotNetMSBuildSdkResolver()
@@ -293,8 +334,14 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                     Strings.MSBuildSDKDirectoryNotFound,
                     msbuildSdkDir);
             }
-
-            return factory.IndicateSuccess(msbuildSdkDir, netcoreSdkVersion, propertiesToAdd, itemsToAdd, warnings, environmentVariablesToAdd: environmentVariablesToAdd);
+            if (_factorySuccessFunc != null)
+            {
+                return _factorySuccessFunc.Invoke(factory, msbuildSdkDir, netcoreSdkVersion, propertiesToAdd, itemsToAdd, warnings, environmentVariablesToAdd);
+            }
+            else
+            {
+                return factory.IndicateSuccess(msbuildSdkDir, netcoreSdkVersion, propertiesToAdd, itemsToAdd, warnings);
+            }
         }
 
         /// <summary>

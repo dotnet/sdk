@@ -205,14 +205,8 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // DotnetHost is the path to dotnet.exe. Can be only on Windows.
-                result.PropertiesToAdd.Should().NotBeNull()
-                                        .And.HaveCount(1)
-                                        .And.NotContainKey(DotnetHostExperimentalKey);
-                result.EnvironmentVariablesToAdd.Should().NotBeNull()
-                                                .And.BeEquivalentTo(new Dictionary<string, string?>
-                                                {
-                                                    ["DOTNET_HOST"] = Path.Combine(environment.GetProgramFilesDirectory(ProgramFiles.X64).FullName, "dotnet", "dotnet.exe")
-                                                });
+                result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(2);
+                result.PropertiesToAdd.Should().ContainKey(DotnetHostExperimentalKey);
             }
             else
             {
@@ -237,9 +231,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var localSdkRoot = Path.Combine("some", "local", "dir");
             var localSdkDotnetRoot = Path.Combine(environment.TestDirectory.FullName, localSdkRoot, "dotnet");
             var ambientSdkDotnetRoot = Path.Combine(environment.GetProgramFilesDirectory(ProgramFiles.X64).FullName, "dotnet");
-            var _ambientMSBuildSkRoot = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "1.2.3");
-            var _localPathMSBuildSdkRoot = environment.CreateSdkDirectory(localSdkRoot, "Some.Test.Sdk", "1.2.4");
-            var _ambientDotnetBinary = environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
+            var ambientMSBuildSkRoot = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "1.2.3");
+            var localPathMSBuildSdkRoot = environment.CreateSdkDirectory(localSdkRoot, "Some.Test.Sdk", "1.2.4");
+            var ambientDotnetBinary = environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
             var localDotnetBinary = environment.CreateMuxer(localSdkRoot);
             environment.CreateGlobalJson(environment.TestDirectory, "1.2.3", [localSdkDotnetRoot, ambientSdkDotnetRoot]);
 
@@ -255,11 +249,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 context,
                 new MockFactory());
             result.Success.Should().BeTrue();
-            result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(1).And.ContainKey(MSBuildTaskHostRuntimeVersion);
-            result.EnvironmentVariablesToAdd.Should().NotBeNull().And.BeEquivalentTo(new Dictionary<string, string?>
-            {
-                [DotnetHostExperimentalKey] = localDotnetBinary
-            });
+            result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(2);
+            result.PropertiesToAdd.Should().ContainKey(DotnetHostExperimentalKey);
+            result.PropertiesToAdd[DotnetHostExperimentalKey].Should().Be(localDotnetBinary);
         }
 
         [Theory]
@@ -333,13 +325,8 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // DotnetHost is the path to dotnet.exe. Can be only on Windows.
-                result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(3);
-                result.PropertiesToAdd.Should().NotContainKey(DotnetHostExperimentalKey);
-                result.EnvironmentVariablesToAdd.Should().NotBeNull()
-                                                .And.BeEquivalentTo(new Dictionary<string, string?>
-                                                {
-                                                    ["DOTNET_HOST"] = Path.Combine(environment.GetProgramFilesDirectory(ProgramFiles.X64).FullName, "dotnet", "dotnet.exe")
-                                                });
+                result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(4);
+                result.PropertiesToAdd.Should().ContainKey(DotnetHostExperimentalKey);
             }
             else
             {
