@@ -3031,8 +3031,8 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseTestModules">
-        <source>Specifying a dlls or executables for 'dotnet test' should be via '--test-modules'.</source>
-        <target state="new">Specifying a dlls or executables for 'dotnet test' should be via '--test-modules'.</target>
+        <source>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</source>
+        <target state="new">Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestConfigurationOptionDescription">

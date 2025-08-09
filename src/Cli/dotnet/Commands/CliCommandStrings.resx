@@ -2615,6 +2615,6 @@ Proceed?</value>
     <value>Specifying a directory for 'dotnet test' should be via '--directory'.</value>
   </data>
   <data name="TestCommandUseTestModules" xml:space="preserve">
-    <value>Specifying a dlls or executables for 'dotnet test' should be via '--test-modules'.</value>
+    <value>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</value>
   </data>
 </root>
