@@ -70,10 +70,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -121,10 +117,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -169,10 +161,6 @@
       "AssetFile": "${ProjectPath}\\wwwroot\\test.js",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
