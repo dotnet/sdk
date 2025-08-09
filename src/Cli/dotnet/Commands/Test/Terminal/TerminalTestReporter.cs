@@ -172,10 +172,10 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress.StartShowingProgress(workerCount);
     }
 
-    public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string executionId)
+    public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string executionId, string instanceId)
     {
         var assemblyRun = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
-        assemblyRun.TryCount++;
+        assemblyRun.NotifyHandshake(instanceId);
 
         // If we fail to parse out the parameter correctly this will enable retry on re-run of the assembly within the same execution.
         // Not good enough for general use, because we want to show (try 1) even on the first try, but this will at
@@ -494,14 +494,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 break;
         }
 
-        if (_isRetry && asm.TryCount > 1 && outcome == TestOutcome.Passed)
-        {
-            // This is a retry of a test, and the test succeeded, so these tests are potentially flaky.
-            // Tests that come from dynamic data sources and previously succeeded will also run on the second attempt,
-            // and most likely will succeed as well, so we will get them here, even though they are probably not flaky.
-            asm.FlakyTests.Add(testNodeUid);
-
-        }
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
         if (outcome != TestOutcome.Passed || GetShowPassedTests())
         {
@@ -806,7 +798,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
         int exitCode, string? outputData, string? errorData)
     {
         TestProgressState assemblyRun = _assemblies[executionId];
-        assemblyRun.ExitCode = exitCode;
         assemblyRun.Success = exitCode == 0 && assemblyRun.FailedTests == 0;
         assemblyRun.Stopwatch.Stop();
 
@@ -959,6 +950,14 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? displayName,
         string? uid)
     {
+        if (!_isDiscovery)
+        {
+            // Don't count discovered tests if we are not in discovery mode.
+            // NOTE: DiscoverTest call increments PassedTests, so it must not be called when we get discovery message in run mode.
+            // Also, don't bother adding discovered tests to the DiscoveredTests list when the list is only used in discovery mode.
+            return;
+        }
+
         TestProgressState asm = _assemblies[executionId];
 
         // TODO: add mode for discovered tests to the progress bar - jajares
