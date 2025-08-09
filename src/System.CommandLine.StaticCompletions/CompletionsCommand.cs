@@ -67,8 +67,8 @@ public class CompletionsCommand : Command
             {
                 throw new InvalidOperationException(Strings.ShellDiscovery_ShellEnvironmentNotSet);
             }
-            var shellName = Path.GetFileName(shellPath);
-            if (shellMap.TryGetValue(shellPath, out var shellProvider))
+            var shellName = Path.GetFileName(shellPath).ToLower();
+            if (shellMap.TryGetValue(shellName, out var shellProvider))
             {
                 return shellProvider;
             }
