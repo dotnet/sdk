@@ -86,12 +86,12 @@ public static class ArgumentEscaper
         return escapedArgs;
     }
 
-    public static string EscapeSingleArg(string arg)
+    public static string EscapeSingleArg(string arg, Func<string, bool>? additionalShouldSurroundWithQuotes = null)
     {
         var sb = new StringBuilder();
 
         var length = arg.Length;
-        var needsQuotes = length == 0 || ShouldSurroundWithQuotes(arg);
+        var needsQuotes = length == 0 || ShouldSurroundWithQuotes(arg) || additionalShouldSurroundWithQuotes?.Invoke(arg) == true;
         var isQuoted = needsQuotes || IsSurroundedWithQuotes(arg);
 
         if (needsQuotes) sb.Append("\"");

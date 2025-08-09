@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     public class GivenDotnetCleanInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
         private const string NugetInteractiveProperty = "--property:NuGetInteractive=false";
-        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo", "-verbosity:normal", "--target:Clean", NugetInteractiveProperty];
+        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "-nologo", "--verbosity:normal", "--target:Clean", NugetInteractiveProperty];
 
 
         private static readonly string WorkingDirectory =
@@ -42,9 +42,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "--configuration", "<configuration>" },
             new string[] { "--property:Configuration=<configuration>" })]
         [InlineData(new string[] { "-v", "diag" },
-            new string[] { "-verbosity:diag" })]
+            new string[] { "--verbosity:diag" })]
         [InlineData(new string[] { "--verbosity", "diag" },
-            new string[] { "-verbosity:diag" })]
+            new string[] { "--verbosity:diag" })]
         [InlineData(new string[] { "--disable-build-servers" },
             new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
         public void MsbuildInvocationIsCorrect(string[] args, string[] expectedAdditionalArgs)

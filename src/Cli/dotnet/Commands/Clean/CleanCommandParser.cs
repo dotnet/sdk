@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Clean;
@@ -34,7 +35,7 @@ internal static class CleanCommandParser
 
     public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Clean");
 
-    public static readonly Option<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(VerbosityOptions.normal);
+    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal);
 
 
     private static readonly Command Command = ConstructCommand();
@@ -59,6 +60,7 @@ internal static class CleanCommandParser
         command.Options.Add(NoLogoOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(TargetOption);
+        command.Subcommands.Add(CleanFileBasedAppArtifactsCommandParser.Command);
 
         command.SetAction(CleanCommand.Run);
 

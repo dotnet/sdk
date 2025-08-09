@@ -50,11 +50,15 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     </CreateWindowsSdkKnownFrameworkReferences>
   </Target>
- 
+  
+  <!-- TODO: https://github.com/dotnet/sdk/issues/49917 Remove the framework based condition when the data for netcoreapp2.1 and below is fixed-->
   <Target Name="AddPrunePackageReferences" BeforeTargets="CollectPrunePackageReferences"
           DependsOnTargets="ProcessFrameworkReferences"
-          Condition="'$(RestoreEnablePackagePruning)' == 'true'">
-
+          Condition="'$(RestoreEnablePackagePruning)' == 'true'
+          AND (('$(TargetFrameworkIdentifier)' == '.NETCoreApp'
+          AND '$(TargetFrameworkVersion)' != ''
+          AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '3.0')))
+          OR ('$(TargetFrameworkIdentifier)' != '.NETCoreApp'))">
     <PropertyGroup>
       <PrunePackageDataRoot Condition="'$(PrunePackageDataRoot)' == ''">$(NetCoreRoot)\sdk\$(NETCoreSdkVersion)\PrunePackageData\</PrunePackageDataRoot>
       <PrunePackageTargetingPackRoots Condition="'$(PrunePackageTargetingPackRoots)' == ''">$(NetCoreTargetingPackRoot)</PrunePackageTargetingPackRoots>

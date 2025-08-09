@@ -12,11 +12,12 @@ namespace Microsoft.DotNet.Cli.Utils;
 /// </summary>
 public sealed class MSBuildArgs
 {
-    private MSBuildArgs(ReadOnlyDictionary<string, string>? properties, ReadOnlyDictionary<string, string>? restoreProperties, string[]? targets, string[]? otherMSBuildArgs)
+    private MSBuildArgs(ReadOnlyDictionary<string, string>? properties, ReadOnlyDictionary<string, string>? restoreProperties, string[]? targets, VerbosityOptions? verbosity, string[]? otherMSBuildArgs)
     {
         GlobalProperties = properties;
         RestoreGlobalProperties = restoreProperties;
         RequestedTargets = targets;
+        Verbosity = verbosity;
         OtherMSBuildArgs = otherMSBuildArgs is not null
             ? [.. otherMSBuildArgs]
             : new List<string>();
@@ -36,11 +37,21 @@ public sealed class MSBuildArgs
     /// The ordered list of targets that should be passed to MSBuild.
     /// </summary>
     public string[]? RequestedTargets { get; }
+    public VerbosityOptions? Verbosity { get; }
 
     /// <summary>
-    /// All non <c>-p</c> and <c>-rp</c> arguments that should be passed to MSBuild.
+    /// All other arguments that aren't already explicitly modeled by this structure.
+    /// The main categories of these today are logger configurations
     /// </summary>
     public List<string> OtherMSBuildArgs { get; }
+
+    /// <summary>
+    /// Ensures that when we do our MSBuild-property re-parses we parse in the same way as the dotnet CLI's parser.
+    /// </summary>
+    private static readonly ParserConfiguration _analysisParsingConfiguration = new()
+    {
+        EnablePosixBundling = false
+    };
 
     /// <summary>
     /// Takes all of the unstructured properties and arguments that have been accrued from the command line
@@ -55,35 +66,39 @@ public sealed class MSBuildArgs
         {
             fakeCommand.Options.Add(option);
         }
-
-        var propertyParsingConfiguration = new CommandLineConfiguration(fakeCommand)
-        {
-            EnablePosixBundling = false
-        };
-        var parseResult = propertyParsingConfiguration.Parse([..forwardedAndUserFacingArgs]);
+;
+        var parseResult = fakeCommand.Parse([.. forwardedAndUserFacingArgs], _analysisParsingConfiguration);
         var globalProperties = parseResult.GetResult("--property") is OptionResult propResult ? propResult.GetValueOrDefault<ReadOnlyDictionary<string, string>?>() : null;
         var restoreProperties = parseResult.GetResult("--restoreProperty") is OptionResult restoreResult ? restoreResult.GetValueOrDefault<ReadOnlyDictionary<string, string>?>() : null;
         var requestedTargets = parseResult.GetResult("--target") is OptionResult targetResult ? targetResult.GetValueOrDefault<string[]?>() : null;
+        var verbosity = parseResult.GetResult("--verbosity") is OptionResult verbosityResult
+            ? verbosityResult.GetValueOrDefault<VerbosityOptions?>()
+            : null;
         var otherMSBuildArgs = parseResult.UnmatchedTokens.ToArray();
         return new MSBuildArgs(
             properties: globalProperties,
             restoreProperties: restoreProperties,
             targets: requestedTargets,
-            otherMSBuildArgs: otherMSBuildArgs);
+            otherMSBuildArgs: otherMSBuildArgs,
+            verbosity: verbosity);
     }
 
 
     public static MSBuildArgs FromProperties(ReadOnlyDictionary<string, string>? properties)
     {
-        return new MSBuildArgs(properties, null, null, null);
+        return new MSBuildArgs(properties, null, null, null, null);
     }
 
     public static MSBuildArgs FromOtherArgs(params ReadOnlySpan<string> args)
     {
-        return new MSBuildArgs(null, null, null, args.ToArray());
+        return new MSBuildArgs(null, null, null, null, args.ToArray());
+    }
+    public static MSBuildArgs FromVerbosity(VerbosityOptions verbosity)
+    {
+        return new MSBuildArgs(null, null, null, verbosity, null);
     }
 
-    public static readonly MSBuildArgs ForHelp = new(null, null, null, ["--help"]);
+    public static readonly MSBuildArgs ForHelp = new(null, null, null, null, ["--help"]);
 
     /// <summary>
     /// Completely replaces the MSBuild arguments with the provided <paramref name="newArgs"/>.
@@ -94,7 +109,8 @@ public sealed class MSBuildArgs
             properties: GlobalProperties,
             restoreProperties: RestoreGlobalProperties,
             targets: RequestedTargets,
-            otherMSBuildArgs: newArgs);
+            otherMSBuildArgs: newArgs,
+            verbosity: Verbosity);
     }
 
     /// <summary>
@@ -105,10 +121,10 @@ public sealed class MSBuildArgs
         if (additionalArgs is null || additionalArgs.Length == 0)
         {
             // If there are no additional args, we can just return the current instance.
-            return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, RequestedTargets, OtherMSBuildArgs.ToArray());
+            return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, RequestedTargets, Verbosity, OtherMSBuildArgs.ToArray());
         }
 
-        return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, RequestedTargets, [.. OtherMSBuildArgs, .. additionalArgs]);
+        return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, RequestedTargets, Verbosity, [.. OtherMSBuildArgs, .. additionalArgs]);
     }
 
     public MSBuildArgs CloneWithAdditionalRestoreProperties(ReadOnlyDictionary<string, string>? additionalRestoreProperties)
@@ -116,11 +132,11 @@ public sealed class MSBuildArgs
         if (additionalRestoreProperties is null || additionalRestoreProperties.Count == 0)
         {
             // If there are no additional restore properties, we can just return the current instance.
-            return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, RequestedTargets, OtherMSBuildArgs.ToArray());
+            return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, RequestedTargets, Verbosity, OtherMSBuildArgs.ToArray());
         }
         if (RestoreGlobalProperties is null)
         {
-            return new MSBuildArgs(GlobalProperties, additionalRestoreProperties, RequestedTargets, OtherMSBuildArgs.ToArray());
+            return new MSBuildArgs(GlobalProperties, additionalRestoreProperties, RequestedTargets, Verbosity, OtherMSBuildArgs.ToArray());
         }
 
         var newRestoreProperties = new Dictionary<string, string>(RestoreGlobalProperties, StringComparer.OrdinalIgnoreCase);
@@ -128,7 +144,7 @@ public sealed class MSBuildArgs
         {
             newRestoreProperties[kvp.Key] = kvp.Value;
         }
-        return new MSBuildArgs(GlobalProperties, new(newRestoreProperties), RequestedTargets, OtherMSBuildArgs.ToArray());
+        return new MSBuildArgs(GlobalProperties, new(newRestoreProperties), RequestedTargets, Verbosity, OtherMSBuildArgs.ToArray());
     }
 
     public MSBuildArgs CloneWithAdditionalProperties(ReadOnlyDictionary<string, string>? additionalProperties)
@@ -136,11 +152,11 @@ public sealed class MSBuildArgs
         if (additionalProperties is null || additionalProperties.Count == 0)
         {
             // If there are no additional properties, we can just return the current instance.
-            return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, RequestedTargets, OtherMSBuildArgs.ToArray());
+            return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, RequestedTargets, Verbosity, OtherMSBuildArgs.ToArray());
         }
         if (GlobalProperties is null)
         {
-            return new MSBuildArgs(additionalProperties, RestoreGlobalProperties, RequestedTargets, OtherMSBuildArgs.ToArray());
+            return new MSBuildArgs(additionalProperties, RestoreGlobalProperties, RequestedTargets, Verbosity, OtherMSBuildArgs.ToArray());
         }
 
         var newProperties = new Dictionary<string, string>(GlobalProperties, StringComparer.OrdinalIgnoreCase);
@@ -148,7 +164,7 @@ public sealed class MSBuildArgs
         {
             newProperties[kvp.Key] = kvp.Value;
         }
-        return new MSBuildArgs(new(newProperties), RestoreGlobalProperties, RequestedTargets, OtherMSBuildArgs.ToArray());
+        return new MSBuildArgs(new(newProperties), RestoreGlobalProperties, RequestedTargets, Verbosity, OtherMSBuildArgs.ToArray());
     }
 
     public MSBuildArgs CloneWithAdditionalTarget(string additionalTarget)
@@ -156,9 +172,20 @@ public sealed class MSBuildArgs
         string[] newTargets = RequestedTargets is not null
             ? [.. RequestedTargets, additionalTarget]
             : [ additionalTarget ];
-        return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, newTargets, OtherMSBuildArgs.ToArray());
+        return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, newTargets, Verbosity, OtherMSBuildArgs.ToArray());
     }
 
+    public MSBuildArgs CloneWithVerbosity(VerbosityOptions newVerbosity)
+    {
+        return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, RequestedTargets, newVerbosity, OtherMSBuildArgs.ToArray());
+    }
+
+    /// <summary>
+    /// This mutates the <see cref="MSBuildArgs"/> instance, applying all of the current global properties
+    /// to the restore properties dictionary. This is necessary because MSBuild's processing of restore properties
+    /// is _exclusive_ - as soon as it sees a <c>-rp</c> flag, it will not apply any <c>-p</c> flags
+    /// to the implicit restore operation.
+    /// </summary>
     public void ApplyPropertiesToRestore()
     {
         if (RestoreGlobalProperties is null)

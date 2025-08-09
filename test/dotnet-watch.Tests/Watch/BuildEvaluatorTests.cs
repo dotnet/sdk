@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     public partial class BuildEvaluatorTests
     {
-        private static readonly EvaluationResult s_emptyEvaluationResult = new(new Dictionary<string, FileItem>(), projectGraph: null);
+        private static readonly MSBuildFileSetFactory.EvaluationResult s_emptyEvaluationResult = new(new Dictionary<string, FileItem>(), projectGraph: null);
 
         private static DotNetWatchContext CreateContext(bool suppressMSBuildIncrementalism = false)
         {
@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             return new DotNetWatchContext()
             {
                 Reporter = NullReporter.Singleton,
-                ProcessRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout, CancellationToken.None),
+                ProcessRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout),
                 Options = new(),
                 RootProjectOptions = TestOptions.ProjectOptions,
                 EnvironmentOptions = environmentOptions
@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // There's a chance that the watcher does not correctly report edits to msbuild files on
             // concurrent edits. MSBuildEvaluationFilter uses timestamps to additionally track changes to these files.
 
-            var result = new EvaluationResult(
+            var result = new MSBuildFileSetFactory.EvaluationResult(
                 new Dictionary<string, FileItem>()
                 {
                     { "Controlller.cs", new FileItem { FilePath = "Controlller.cs", ContainingProjectPaths = []} },

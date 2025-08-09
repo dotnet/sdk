@@ -32,18 +32,14 @@
        <Output TaskParameter="DependencyCommit" PropertyName="DepAspNetCoreCommit" />
     </GetDependencyInfo>
 
-    <GetDependencyInfo
-      VersionDetailsXmlFile="$(RepositoryEngineeringDir)Version.Details.xml"
-      DependencyName="Microsoft.WindowsDesktop.App.Ref"
-      Condition="'$(DotNetBuildFromVMR)' != 'true'">
-       <Output TaskParameter="DependencyVersion" PropertyName="DepWindowsDesktopVersion" />
-       <Output TaskParameter="DependencyCommit" PropertyName="DepWindowsDesktopCommit" />
-    </GetDependencyInfo>
-
     <ItemGroup Label="Version info">
       <Line Include="runtime" Version="$(MicrosoftNETCoreAppRefPackageVersion)" Commit="$([MSBuild]::ValueOrDefault('$(DepRuntimeCommit)', '$(BUILD_SOURCEVERSION)'))" />
       <Line Include="aspnetcore" Version="$(MicrosoftAspNetCoreAppRefPackageVersion)" Commit="$([MSBuild]::ValueOrDefault('$(DepAspNetCoreCommit)', '$(BUILD_SOURCEVERSION)'))" />
-      <Line Include="windowsdesktop" Version="$(MicrosoftWindowsDesktopAppRefPackageVersion)" Commit="$([MSBuild]::ValueOrDefault('$(DepWindowsDesktopCommit)', '$(BUILD_SOURCEVERSION)'))" />
+      <!-- For the WindowsDesktop commit, use the Microsoft.NETCore.App.Ref commit.
+           These will always be the same and the Microsoft.WindowsDesktop.App.Ref dependency has been eliminated from Version.Details.xml
+           so the info cannot be used since in VMR builds Linux/Mac do not build WindowsDesktop, even though
+           info about WindowsDesktop **does** leak into those SDKs. -->
+      <Line Include="windowsdesktop" Version="$(MicrosoftWindowsDesktopAppRefPackageVersion)" Commit="$([MSBuild]::ValueOrDefault('$(DepRuntimeCommit)', '$(BUILD_SOURCEVERSION)'))" />
       <Line Include="sdk" Version="$(PackageVersion)" Commit="$(BUILD_SOURCEVERSION)" />
     </ItemGroup>
 
@@ -445,6 +441,8 @@
         @(Net90NativeAOTRuntimePackRids);
         linux-riscv64;
         linux-musl-riscv64;
+        android-arm64;
+        android-x64;
         "/>
 
       <AspNetCore31RuntimePackRids Include="@(AspNetCore30RuntimePackRids)" />

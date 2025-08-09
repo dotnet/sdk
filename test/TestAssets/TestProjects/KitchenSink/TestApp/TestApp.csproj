@@ -29,6 +29,7 @@
     <RetainVMGarbageCollection>false</RetainVMGarbageCollection>
     <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
     <UseNativeHttpHandler>true</UseNativeHttpHandler>
+    <WasmEnableStreamingResponse>true</WasmEnableStreamingResponse>
     <_UseManagedNtlm>true</_UseManagedNtlm>
     <Http3Support>false</Http3Support>
     <MetadataUpdaterSupport>false</MetadataUpdaterSupport>

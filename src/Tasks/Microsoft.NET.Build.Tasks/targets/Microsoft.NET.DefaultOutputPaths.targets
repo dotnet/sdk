@@ -51,6 +51,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ArtifactsBinOutputName Condition="'$(ArtifactsBinOutputName)' == ''">bin</ArtifactsBinOutputName>
     <ArtifactsPublishOutputName Condition="'$(ArtifactsPublishOutputName)' == ''">publish</ArtifactsPublishOutputName>
     <ArtifactsPackageOutputName Condition="'$(ArtifactsPackageOutputName)' == ''">package</ArtifactsPackageOutputName>
+    <!-- By default MSBuild won't allow tracking/automatic clean-up of files that are outside of a Project's child directory structure.
+         This flag opts us into a mode where the Common targets will track and clean such files, which is good because
+         in Artifacts layout virtually all transitive and package references are such files. 
+         See https://github.com/dotnet/msbuild/pull/12096 for full details. -->
+    <TrackFileWritesShareableOutsideOfProjectDirectory>true</TrackFileWritesShareableOutsideOfProjectDirectory>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UseArtifactsOutput)' == 'true' And '$(ArtifactsPivots)' == ''">
@@ -90,9 +95,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- The package output path does not include the project name, and only includes the Configuration as a pivot -->
     <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(ArtifactsPath)\$(ArtifactsPackageOutputName)\$(Configuration.ToLowerInvariant())\</PackageOutputPath>
-    
+
   </PropertyGroup>
-  
+
   <PropertyGroup Condition="'$(UseArtifactsOutput)' != 'true'">
     <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">bin\</BaseOutputPath>
     <BaseOutputPath Condition="!HasTrailingSlash('$(BaseOutputPath)')">$(BaseOutputPath)\</BaseOutputPath>
@@ -155,7 +160,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <NetSdkError Condition="'$(UseArtifactsOutput)' == 'true' and '$(_ArtifactsPathSetEarly)' != 'true'"
                  ResourceName="ArtifactsPathCannotBeSetInProject" />
-    
+
     <NetSdkError Condition="'$(_ArtifactsPathLocationType)' == 'ProjectFolder'"
                  ResourceName="UseArtifactsOutputRequiresDirectoryBuildProps" />
 

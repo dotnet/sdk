@@ -10,6 +10,7 @@ namespace Microsoft.NET.TestFramework
 
         public const string Failed = "failed";
         public const string Passed = "passed";
+        public const string ZeroTestsRan = "Zero tests ran";
     }
 
     internal static class ExitCode

@@ -11,7 +11,7 @@ namespace Microsoft.NET.Restore.Tests
         {
         }
 
-        [FullMSBuildOnlyFact]
+        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/pull/49654/")]
         public void It_downloads_Microsoft_Net_Compilers_Toolset_Framework_when_requested()
         {
             const string testProjectName = "NetCoreApp";
@@ -46,7 +46,7 @@ namespace Microsoft.NET.Restore.Tests
                 .HaveStdOutContaining(Path.Combine(toolsetPackageDir, toolsetPackageVersion, "csc.exe") + " /noconfig");
         }
 
-        [FullMSBuildOnlyFact]
+        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/pull/49654/")]
         public void It_downloads_Microsoft_Net_Compilers_Toolset_Framework_when_MSBuild_is_torn()
         {
             const string testProjectName = "NetCoreApp";

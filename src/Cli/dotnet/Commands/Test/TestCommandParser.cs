@@ -86,13 +86,13 @@ internal static class TestCommandParser
     {
         Description = CliCommandStrings.CmdBlameDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:VSTestBlame=true");
+    }.ForwardIfEnabled("-property:VSTestBlame=true");
 
     public static readonly Option<bool> BlameCrashOption = new ForwardedOption<bool>("--blame-crash")
     {
         Description = CliCommandStrings.CmdBlameCrashDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:VSTestBlameCrash=true");
+    }.ForwardIfEnabled("-property:VSTestBlameCrash=true");
 
     public static readonly Option<string> BlameCrashDumpOption = CreateBlameCrashDumpOption();
 
@@ -112,7 +112,7 @@ internal static class TestCommandParser
     {
         Description = CliCommandStrings.CmdBlameCrashCollectAlwaysDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAsMany(o => ["-property:VSTestBlameCrash=true", "-property:VSTestBlameCrashCollectAlways=true"]);
+    }.ForwardIfEnabled(["-property:VSTestBlameCrash=true", "-property:VSTestBlameCrashCollectAlways=true"]);
 
     public static readonly Option<bool> BlameHangOption = new ForwardedOption<bool>("--blame-hang")
     {
@@ -144,7 +144,7 @@ internal static class TestCommandParser
     {
         Description = CliCommandStrings.TestCmdNoLogo,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:VSTestNoLogo=true");
+    }.ForwardIfEnabled("-property:VSTestNoLogo=true");
 
     public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
@@ -152,7 +152,7 @@ internal static class TestCommandParser
 
     public static readonly Option ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.TestConfigurationOptionDescription);
 
-    public static readonly Option<VerbosityOptions?> VerbosityOption = CommonOptions.VerbosityOption();
+    public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.VerbosityOption();
     public static readonly Option<string[]> VsTestTargetOption = CommonOptions.RequiredMSBuildTargetOption("VSTest");
     public static readonly Option<string[]> MTPTargetOption = CommonOptions.RequiredMSBuildTargetOption(CliConstants.MTPTarget);
 
@@ -235,6 +235,7 @@ internal static class TestCommandParser
         command.Options.Add(TestingPlatformOptions.DirectoryOption);
         command.Options.Add(TestingPlatformOptions.TestModulesFilterOption);
         command.Options.Add(TestingPlatformOptions.TestModulesRootDirectoryOption);
+        command.Options.Add(TestingPlatformOptions.ResultsDirectoryOption);
         command.Options.Add(TestingPlatformOptions.MaxParallelTestModulesOption);
         command.Options.Add(CommonOptions.ArchitectureOption);
         command.Options.Add(CommonOptions.PropertiesOption);
@@ -293,6 +294,7 @@ internal static class TestCommandParser
         command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.ArchitectureOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
+        command.Options.Add(CommonOptions.PropertiesOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(VsTestTargetOption);
         command.SetAction(TestCommand.Run);

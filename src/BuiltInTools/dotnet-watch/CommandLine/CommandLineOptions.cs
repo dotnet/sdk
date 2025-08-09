@@ -5,6 +5,8 @@ using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Data;
+using System.Diagnostics;
+using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
@@ -15,18 +17,27 @@ internal sealed class CommandLineOptions
 {
     public const string DefaultCommand = "run";
 
+    private static readonly ImmutableArray<string> s_binaryLogOptionNames = ["-bl", "/bl", "-binaryLogger", "--binaryLogger", "/binaryLogger"];
+
     public bool List { get; init; }
-    required public GlobalOptions GlobalOptions { get; init; }
+    public required GlobalOptions GlobalOptions { get; init; }
 
     public string? ProjectPath { get; init; }
     public string? TargetFramework { get; init; }
     public bool NoLaunchProfile { get; init; }
     public string? LaunchProfileName { get; init; }
 
-    public string? ExplicitCommand { get; init; }
-
+    /// <summary>
+    /// Arguments passed to <see cref="Command"/>.
+    /// </summary>
     public required IReadOnlyList<string> CommandArguments { get; init; }
+
+    /// <summary>
+    /// Arguments passed to `dotnet build` and to design-time build evaluation.
+    /// </summary>
     public required IReadOnlyList<string> BuildArguments { get; init; }
+
+    public string? ExplicitCommand { get; init; }
 
     public string Command => ExplicitCommand ?? DefaultCommand;
 
@@ -43,7 +54,7 @@ internal sealed class CommandLineOptions
 
         verboseOption.Validators.Add(v =>
         {
-            if (v.GetResult(quietOption) is not null && v.GetResult(verboseOption) is not null)
+            if (v.GetValue(quietOption) && v.GetValue(verboseOption))
             {
                 v.AddError(Resources.Error_QuietAndVerboseSpecified);
             }
@@ -90,17 +101,14 @@ internal sealed class CommandLineOptions
         var rootCommandInvoked = false;
         rootCommand.SetAction(parseResult => rootCommandInvoked = true);
 
-        var cliConfig = new CommandLineConfiguration(rootCommand)
+        ParserConfiguration parseConfig = new()
         {
-            Output = output,
-            Error = output,
-
             // To match dotnet command line parsing (see https://github.com/dotnet/sdk/blob/4712b35b94f2ad672e69ec35097cf86fc16c2e5e/src/Cli/dotnet/Parser.cs#L169):
             EnablePosixBundling = false,
         };
 
         // parse without forwarded options first:
-        var parseResult = rootCommand.Parse(args, cliConfig);
+        var parseResult = rootCommand.Parse(args, parseConfig);
         if (ReportErrors(parseResult, reporter))
         {
             errorCode = 1;
@@ -118,7 +126,7 @@ internal sealed class CommandLineOptions
         }
 
         // reparse with forwarded options:
-        parseResult = rootCommand.Parse(args, cliConfig);
+        parseResult = rootCommand.Parse(args, parseConfig);
         if (ReportErrors(parseResult, reporter))
         {
             errorCode = 1;
@@ -126,7 +134,12 @@ internal sealed class CommandLineOptions
         }
 
         // invoke to execute default actions for displaying help
-        errorCode = parseResult.Invoke();
+        errorCode = parseResult.Invoke(new()
+        {
+            Output = output,
+            Error = output
+        });
+
         if (!rootCommandInvoked)
         {
             // help displayed:
@@ -144,10 +157,16 @@ internal sealed class CommandLineOptions
             }
         }
 
-        var commandArguments = GetCommandArguments(parseResult, watchOptions, explicitCommand);
+        var commandArguments = GetCommandArguments(parseResult, watchOptions, explicitCommand, out var binLogToken, out var binLogPath);
 
         // We assume that forwarded options, if any, are intended for dotnet build.
-        var buildArguments = buildOptions.Select(option => ((IForwardedOption)option).GetForwardingFunction()(parseResult)).SelectMany(args => args).ToArray();
+        var buildArguments = buildOptions.Select(option => ((IForwardedOption)option).GetForwardingFunction()(parseResult)).SelectMany(args => args).ToList();
+
+        if (binLogToken != null)
+        {
+            buildArguments.Add(binLogToken);
+        }
+
         var targetFrameworkOption = (Option<string>?)buildOptions.SingleOrDefault(option => option.Name == "--framework");
 
         return new()
@@ -159,6 +178,7 @@ internal sealed class CommandLineOptions
                 NoHotReload = parseResult.GetValue(noHotReloadOption),
                 NonInteractive = parseResult.GetValue(NonInteractiveOption),
                 Verbose = parseResult.GetValue(verboseOption),
+                BinaryLogPath = ParseBinaryLogFilePath(binLogPath),
             },
 
             CommandArguments = commandArguments,
@@ -172,12 +192,36 @@ internal sealed class CommandLineOptions
         };
     }
 
+    /// <summary>
+    /// Parses the value of msbuild option `-binaryLogger[:[LogFile=]output.binlog[;ProjectImports={None,Embed,ZipFile}]]`.
+    /// Emulates https://github.com/dotnet/msbuild/blob/7f69ea906c29f2478cc05423484ad185de66e124/src/Build/Logging/BinaryLogger/BinaryLogger.cs#L481.
+    /// See https://github.com/dotnet/msbuild/issues/12256
+    /// </summary>
+    internal static string? ParseBinaryLogFilePath(string? value)
+        => value switch
+        {
+            null => null,
+            _ => (from parameter in value.Split(';', StringSplitOptions.RemoveEmptyEntries)
+                  where !string.Equals(parameter, "ProjectImports=None", StringComparison.OrdinalIgnoreCase) &&
+                        !string.Equals(parameter, "ProjectImports=Embed", StringComparison.OrdinalIgnoreCase) &&
+                        !string.Equals(parameter, "ProjectImports=ZipFile", StringComparison.OrdinalIgnoreCase) &&
+                        !string.Equals(parameter, "OmitInitialInfo", StringComparison.OrdinalIgnoreCase)
+                  let path = (parameter.StartsWith("LogFile=", StringComparison.OrdinalIgnoreCase) ? parameter["LogFile=".Length..] : parameter).Trim('"')
+                  let pathWithExtension = path.EndsWith(".binlog", StringComparison.OrdinalIgnoreCase) ? path : $"{path}.binlog"
+                  select pathWithExtension)
+                 .LastOrDefault("msbuild.binlog")
+        };
+
     private static IReadOnlyList<string> GetCommandArguments(
         ParseResult parseResult,
         IReadOnlyList<Option> watchOptions,
-        Command? explicitCommand)
+        Command? explicitCommand,
+        out string? binLogToken,
+        out string? binLogPath)
     {
         var arguments = new List<string>();
+        binLogToken = null;
+        binLogPath = null;
 
         foreach (var child in parseResult.CommandResult.Children)
         {
@@ -192,22 +236,16 @@ internal sealed class CommandLineOptions
                     continue;
                 }
 
-                // Some options _may_ be computed or have defaults, so not all may have an IdentifierToken.
-                // For those that do not, use the Option's Name instead.
-                var optionNameToForward = optionResult.IdentifierToken?.Value ?? optionResult.Option.Name;
+                // skip Option<bool> zero-arity options with an implicit optionresult - these weren't actually specified by the user:
+                if (optionResult.Option is Option<bool> boolOpt && boolOpt.Arity.Equals(ArgumentArity.Zero) && optionResult.Implicit)
+                {
+                    continue;
+                }
+
+                var optionNameToForward = GetOptionNameToForward(optionResult);
                 if (optionResult.Tokens.Count == 0 && !optionResult.Implicit)
                 {
                     arguments.Add(optionNameToForward);
-                }
-                else if (optionResult.Option.Name == "--property")
-                {
-                    foreach (var token in optionResult.Tokens)
-                    {
-                        // While dotnet-build allows "/p Name=Value", dotnet-msbuild does not.
-                        // Any command that forwards args to dotnet-msbuild will fail if we don't use colon.
-                        // See https://github.com/dotnet/sdk/issues/44655.
-                        arguments.Add($"{optionNameToForward}:{token.Value}");
-                    }
                 }
                 else
                 {
@@ -220,8 +258,6 @@ internal sealed class CommandLineOptions
             }
         }
 
-        var tokens = parseResult.UnmatchedTokens.ToArray();
-
         // Assuming that all tokens after "--" are unmatched:
         var dashDashIndex = IndexOf(parseResult.Tokens, t => t.Value == "--");
         var unmatchedTokensBeforeDashDash = parseResult.UnmatchedTokens.Count - (dashDashIndex >= 0 ? parseResult.Tokens.Count - dashDashIndex - 1 : 0);
@@ -233,10 +269,32 @@ internal sealed class CommandLineOptions
         {
             var token = parseResult.UnmatchedTokens[i];
 
-            if (i < unmatchedTokensBeforeDashDash && !seenCommand && token == explicitCommand?.Name)
+            if (i < unmatchedTokensBeforeDashDash)
             {
-                seenCommand = true;
-                continue;
+                if (!seenCommand && token == explicitCommand?.Name)
+                {
+                    seenCommand = true;
+                    continue;
+                }
+
+                // Workaround: commands do not have forwarding option for -bl
+                // https://github.com/dotnet/sdk/issues/49989
+                foreach (var name in s_binaryLogOptionNames)
+                {
+                    if (token.StartsWith(name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (token.Length == name.Length)
+                        {
+                            binLogToken = token;
+                            binLogPath = "";
+                        }
+                        else if (token.Length > name.Length + 1 && token[name.Length] == ':')
+                        {
+                            binLogToken = token;
+                            binLogPath = token[(name.Length + 1)..];
+                        }
+                    }
+                }
             }
 
             if (!dashDashInserted && i >= unmatchedTokensBeforeDashDash)
@@ -250,6 +308,11 @@ internal sealed class CommandLineOptions
 
         return arguments;
     }
+
+    private static string GetOptionNameToForward(OptionResult optionResult)
+        // Some options _may_ be computed or have defaults, so not all may have an IdentifierToken.
+        // For those that do not, use the Option's Name instead.
+        => optionResult.IdentifierToken?.Value ?? optionResult.Option.Name;
 
     private static Command? TryGetSubcommand(ParseResult parseResult)
     {

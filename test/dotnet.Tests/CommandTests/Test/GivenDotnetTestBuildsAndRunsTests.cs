@@ -118,13 +118,17 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
-        public void RunTestProjectWithTestsAndLaunchSettings_ShouldReturnExitCodeSuccess(string configuration)
+        [Theory, CombinatorialData]
+        public void RunTestProjectWithTestsAndLaunchSettings_ShouldReturnExitCodeSuccess(
+            [CombinatorialValues(TestingConstants.Debug, TestingConstants.Release)] string configuration, bool runJson)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", Guid.NewGuid().ToString())
                 .WithSource();
+
+            if (runJson)
+            {
+                File.Move(Path.Join(testInstance.Path, "Properties", "launchSettings.json"), Path.Join(testInstance.Path, "TestProjectWithLaunchSettings.run.json"));
+            }
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
@@ -133,7 +137,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             if (!TestContext.IsLocalized())
             {
                 result.StdOut
-                    .Should().Contain("Test run summary: Passed!")
+                    .Should().Contain("Using launch settings from")
+                    .And.Contain(runJson ? "TestProjectWithLaunchSettings.run.json..." : $"Properties{Path.DirectorySeparatorChar}launchSettings.json...")
+                    .And.Contain("Test run summary: Passed!")
                     .And.Contain("skipped Test1")
                     .And.Contain("total: 2")
                     .And.Contain("succeeded: 1")
@@ -159,7 +165,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         TestingPlatformOptions.NoLaunchProfileOption.Name);
 
             result.StdOut.Should()
-                .Contain("FAILED to find argument from launchSettings.json");
+                .Contain("FAILED to find argument from launchSettings.json")
+                .And.NotContain("Using launch settings from");
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -177,7 +184,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         TestingPlatformOptions.NoLaunchProfileArgumentsOption.Name, "true");
 
             result.StdOut.Should()
-                .Contain("FAILED to find argument from launchSettings.json");
+                .Contain("Using launch settings from")
+                .And.Contain($"Properties{Path.DirectorySeparatorChar}launchSettings.json...")
+                .And.Contain("FAILED to find argument from launchSettings.json");
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -221,7 +230,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, configuration, "8"), result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.ZeroTestsRan, true, configuration, "8"), result.StdOut);
                 Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Failed, true, configuration, "2"), result.StdOut);
                 Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("AnotherTestProject", TestingConstants.Failed, true, configuration, "9"), result.StdOut);
 
