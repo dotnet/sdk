@@ -78,11 +78,11 @@
     <PackageVersion Include="Microsoft.Web.Xdt" Version="$(MicrosoftWebXdtPackageVersion)" />
     <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="$(MicrosoftWin32SystemEventsPackageVersion)" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="$(MicrosoftWindowsCsWin32PackageVersion)" />
-    <PackageVersion Include="Microsoft.WixToolset.Bal.wixext" Version="$(MicrosoftWixToolsetVersion)" />
-    <PackageVersion Include="Microsoft.WixToolset.Dependency.wixext" Version="$(MicrosoftWixToolsetVersion)" />
-    <PackageVersion Include="Microsoft.WixToolset.Heat" Version="$(MicrosoftWixToolsetVersion)" />
-    <PackageVersion Include="Microsoft.WixToolset.Util.wixext" Version="$(MicrosoftWixToolsetVersion)" />
-    <PackageVersion Include="Microsoft.WixToolset.UI.wixext" Version="$(MicrosoftWixToolsetVersion)" />
+    <PackageVersion Include="Microsoft.WixToolset.Bal.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" />
+    <PackageVersion Include="Microsoft.WixToolset.Dependency.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" />
+    <PackageVersion Include="Microsoft.WixToolset.Heat" Version="$(MicrosoftWixToolsetSdkVersion)" />
+    <PackageVersion Include="Microsoft.WixToolset.Util.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" />
+    <PackageVersion Include="Microsoft.WixToolset.UI.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" />
     <PackageVersion Include="MSBuild.StructuredLogger" Version="2.2.386" />
     <PackageVersion Include="Moq" Version="$(MoqPackageVersion)" />
     <PackageVersion Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" />

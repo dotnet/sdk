@@ -95,14 +95,15 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(BuildWorkloads)' == 'true'">
+    <!-- we use MicrosoftNETCoreAppRuntimePackageVersion for both runtime and emsdk packages since they're aligned in VMR builds -->
     <PackageDownload Include="@(RuntimeWorkloadPacksToDownload)" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
-    <PackageDownload Include="@(EmsdkWorkloadPacksToDownload)" Version="[$(MicrosoftNETRuntimeEmscripten3156Cachewinx64Version)]" />
+    <PackageDownload Include="@(EmsdkWorkloadPacksToDownload)" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
   </ItemGroup>
 
   <Target Name="_CollectDownloadedWorkloadPacks">
     <ItemGroup>
       <DownloadedWorkloadPacks Include="$(NuGetPackageRoot)\%(RuntimeWorkloadPacksToDownload.Identity)\$(MicrosoftNETCoreAppRuntimePackageVersion)\*.nupkg" />
-      <DownloadedWorkloadPacks Include="$(NuGetPackageRoot)\%(EmsdkWorkloadPacksToDownload.Identity)\$(MicrosoftNETRuntimeEmscripten3156Cachewinx64Version)\*.nupkg" />
+      <DownloadedWorkloadPacks Include="$(NuGetPackageRoot)\%(EmsdkWorkloadPacksToDownload.Identity)\$(MicrosoftNETCoreAppRuntimePackageVersion)\*.nupkg" />
     </ItemGroup>
 
     <Copy SourceFiles="@(DownloadedWorkloadPacks)"

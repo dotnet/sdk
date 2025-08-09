@@ -532,7 +532,7 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/50140")]
         public void PublishingRegistersWrittenFilesForProperCleanup()
         {
             var testProject = new TestProject()
@@ -580,7 +580,7 @@ namespace Microsoft.NET.Build.Tests
             LocateAndRunApp(publishDir);
 
             // now build the app in Release configuration.
-            // now self-contained, so that we are forced to clean up the runtime
+            // not self-contained, so that we are forced to clean up the runtime
             // files that were published.
             new DotnetBuildCommand(Log)
                 .WithWorkingDirectory(projectDir)

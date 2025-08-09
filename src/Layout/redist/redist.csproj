@@ -73,8 +73,9 @@
     <ProjectReference Include="$(RepoRoot)template_feed\*\*.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\finalizer\finalizer.csproj" Condition="'$(OS)' == 'Windows_NT'" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+    <ProjectReference Include="..\pkg\windows\bundles\sdk\bundle.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Condition="'$(MSBuildRestoreSessionId)' != ''" />
+    <ProjectReference Include="..\finalizer\finalizer.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
   </ItemGroup>
 
   <!-- In .NET product build mode, explicitly build workloads in build pass 2.
