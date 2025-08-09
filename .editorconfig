@@ -165,6 +165,11 @@ dotnet_code_quality.api_surface = all
 file_header_template = Licensed to the .NET Foundation under one or more agreements.\nThe .NET Foundation licenses this file to you under the MIT license.
 
 # Code files
+
+# temp: while I scaffold things out 
+# RS0016: Add public types and members to the declared API
+dotnet_diagnostic.RS0016.severity = silent
+
 [*.{cs,vb}]
 # Analyzers
 dotnet_code_quality.ca1802.api_surface = private, internal

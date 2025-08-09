@@ -9,7 +9,7 @@ static class ContainerCli
 
     public static bool IsAvailable => _isAvailable.Value;
 
-    public static bool IsContainerdStoreEnabledForDocker => DockerCli.IsContainerdStoreEnabledForDocker();
+    public static bool IsContainerdStoreEnabledForDocker => _isContainerdStoreEnabledForDocker.Value;
 
     public static RunExeCommand PullCommand(ITestOutputHelper log, params string[] args)
       => CreateCommand(log, "pull", args);
@@ -59,9 +59,14 @@ static class ContainerCli
         return new RunExeCommand(log, commandPath, new[] { command }.Concat(args).ToArray());
     }
 
+    private static DockerCli _dockerCli = new DockerCli(loggerFactory: new TestLoggerFactory());
+
     private static readonly Lazy<bool> _isPodman =
-      new(() => new DockerCli(loggerFactory: new TestLoggerFactory()).GetCommand() == DockerCli.PodmanCommand);
+      new(() => _dockerCli.GetCommand() == DockerCli.PodmanCommand, LazyThreadSafetyMode.ExecutionAndPublication);
 
     private static readonly Lazy<bool> _isAvailable =
-      new(() => new DockerCli(loggerFactory: new TestLoggerFactory()).IsAvailable());
+      new(() => _dockerCli.IsAvailable(), LazyThreadSafetyMode.ExecutionAndPublication);
+
+    private static readonly Lazy<bool> _isContainerdStoreEnabledForDocker =
+        new(() => !_isPodman.Value && DockerCli.IsContainerdStoreEnabledForDocker(), LazyThreadSafetyMode.ExecutionAndPublication);
 }

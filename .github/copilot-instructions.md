@@ -16,3 +16,6 @@ Localization:
 
 Documentation:
 - Do not manually edit files under documentation/manpages/sdk as these are generated based on documentation and should not be manually modified.
+
+Building the repository:
+If you need to build the repository completely, especially for testing, use the build.cmd or build.sh scripts in the root directory. These scripts handle the build process and ensure all dependencies are correctly set up - specifically they ensure that the testing SDK layout in artifacts/redist/debug/dotnet is correctly set up.

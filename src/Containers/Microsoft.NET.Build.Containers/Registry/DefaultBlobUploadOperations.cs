@@ -22,12 +22,12 @@ internal class DefaultBlobUploadOperations : IBlobUploadOperations
         _logger = logger;
     }
 
-    public async Task CompleteAsync(Uri uploadUri, string digest, CancellationToken cancellationToken)
+    public async Task CompleteAsync(Uri uploadUri, Digest digest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         // PUT with digest to finalize
         UriBuilder builder = new(uploadUri.IsAbsoluteUri ? uploadUri : new Uri(_baseUri, uploadUri));
-        builder.Query += $"&digest={Uri.EscapeDataString(digest)}";
+        builder.Query += $"&digest={Uri.EscapeDataString(digest.ToString())}";
         Uri putUri = builder.Uri;
         HttpResponseMessage finalizeResponse = await _client.PutAsync(putUri, null, cancellationToken).ConfigureAwait(false);
 
@@ -64,10 +64,10 @@ internal class DefaultBlobUploadOperations : IBlobUploadOperations
         return new(location);
     }
 
-    public async Task<bool> TryMountAsync(string destinationRepository, string sourceRepository, string digest, CancellationToken cancellationToken)
+    public async Task<bool> TryMountAsync(string destinationRepository, string sourceRepository, Digest digest, CancellationToken cancellationToken)
     {
         // Blob wasn't there; can we tell the server to get it from the base image?
-        HttpResponseMessage pushResponse = await _client.PostAsync(new Uri(_baseUri, $"/v2/{destinationRepository}/blobs/uploads/?mount={digest}&from={sourceRepository}"), content: null, cancellationToken).ConfigureAwait(false);
+        HttpResponseMessage pushResponse = await _client.PostAsync(new Uri(_baseUri, $"/v2/{destinationRepository}/blobs/uploads/?mount={digest.ToUriString()}&from={sourceRepository}"), content: null, cancellationToken).ConfigureAwait(false);
         return pushResponse.StatusCode == HttpStatusCode.Created;
     }
 

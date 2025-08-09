@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
@@ -37,13 +38,35 @@ internal class DefaultManifestOperations : IManifestOperations
             _ => await LogAndThrowContainerHttpException<HttpResponseMessage>(response, cancellationToken).ConfigureAwait(false)
         };
     }
-
-    public async Task PutAsync(string repositoryName, string reference, string manifestJson, string mediaType, CancellationToken cancellationToken)
+        public async Task<HttpResponseMessage> GetAsync(string repositoryName, Digest digest, CancellationToken cancellationToken)
     {
-        HttpContent manifestUploadContent = new StringContent(manifestJson);
-        manifestUploadContent.Headers.ContentType = new MediaTypeHeaderValue(mediaType);
+        cancellationToken.ThrowIfCancellationRequested();
+        using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, new Uri(_baseUri, $"/v2/{repositoryName}/manifests/{digest.ToUriString()}")).AcceptManifestFormats();
+        HttpResponseMessage response = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        return response.StatusCode switch
+        {
+            HttpStatusCode.OK => response,
+            HttpStatusCode.NotFound => throw new RepositoryNotFoundException(_registryName, repositoryName, digest.ToString()),
+            HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => throw new UnableToAccessRepositoryException(_registryName, repositoryName),
+            _ => await LogAndThrowContainerHttpException<HttpResponseMessage>(response, cancellationToken).ConfigureAwait(false)
+        };
+    }
 
+    public async Task PutAsync<T>(string repositoryName, string reference, T manifest, CancellationToken cancellationToken) where T : IManifest
+    {
+        JsonContent manifestUploadContent = JsonContent.Create(manifest, mediaType: new MediaTypeHeaderValue(manifest.MediaType!));
         HttpResponseMessage putResponse = await _client.PutAsync(new Uri(_baseUri, $"/v2/{repositoryName}/manifests/{reference}"), manifestUploadContent, cancellationToken).ConfigureAwait(false);
+
+        if (!putResponse.IsSuccessStatusCode)
+        {
+            await putResponse.LogHttpResponseAsync(_logger, cancellationToken).ConfigureAwait(false);
+            throw new ContainerHttpException(Resource.FormatString(nameof(Strings.RegistryPushFailed), putResponse.StatusCode), putResponse.RequestMessage?.RequestUri?.ToString(), putResponse.StatusCode);
+        }
+    }
+        public async Task PutAsync<T>(string repositoryName, Digest digest, T manifest, CancellationToken cancellationToken) where T : IManifest
+    {
+        JsonContent manifestUploadContent = JsonContent.Create(manifest, mediaType: new MediaTypeHeaderValue(manifest.MediaType!));
+        HttpResponseMessage putResponse = await _client.PutAsync(new Uri(_baseUri, $"/v2/{repositoryName}/manifests/{digest.ToUriString()}"), manifestUploadContent, cancellationToken).ConfigureAwait(false);
 
         if (!putResponse.IsSuccessStatusCode)
         {
