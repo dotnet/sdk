@@ -191,7 +191,7 @@ public class ApplyCompressionNegotiation : Task
             new()
             {
                 Name = "Vary",
-                Value = "Content-Encoding"
+                Value = "Accept-Encoding"
             }
         ];
 

@@ -617,7 +617,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -662,7 +662,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -729,7 +729,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -788,7 +788,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -841,7 +841,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -896,7 +896,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -941,7 +941,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -996,7 +996,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1041,7 +1041,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1096,7 +1096,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1141,7 +1141,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1196,7 +1196,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1241,7 +1241,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1296,7 +1296,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1341,7 +1341,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1396,7 +1396,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1441,7 +1441,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1496,7 +1496,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1541,7 +1541,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1596,7 +1596,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1641,7 +1641,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1696,7 +1696,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
