@@ -686,7 +686,7 @@ class Program
                 new DotnetNewCommand(Log)
                     .WithVirtualHive()
                     .WithWorkingDirectory(testAsset.TestRoot)
-                    .Execute("sln")
+                    .Execute("sln", "--format", "sln")
                     .Should()
                     .Pass();
 

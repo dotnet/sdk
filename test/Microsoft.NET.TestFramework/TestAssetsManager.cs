@@ -95,7 +95,7 @@ namespace Microsoft.NET.TestFramework
 
             var testAsset = CreateTestProjectsInDirectory(testProjects, testDestinationDirectory);
 
-            var slnCreationResult = new DotnetNewCommand(Log, "sln")
+            var slnCreationResult = new DotnetNewCommand(Log, "sln", "--format", "sln")
                 .WithVirtualHive()
                 .WithWorkingDirectory(testDestinationDirectory)
                 .Execute();
