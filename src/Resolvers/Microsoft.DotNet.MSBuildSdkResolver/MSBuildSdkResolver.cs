@@ -247,6 +247,10 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                     ?? Path.Combine(dotnetRoot, RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Constants.DotNetExe : Constants.DotNet);
                 if (File.Exists(fullPathToMuxer))
                 {
+                    // keeping this in until this component no longer needs to handle 17.14.
+                    propertiesToAdd ??= new Dictionary<string, string?>();
+                    propertiesToAdd.Add(DotnetHostExperimentalKey, fullPathToMuxer);
+                    // this is the future-facing implementation.
                     environmentVariablesToAdd ??= new Dictionary<string, string?>(1)
                     {
                         [DOTNET_HOST] = fullPathToMuxer
