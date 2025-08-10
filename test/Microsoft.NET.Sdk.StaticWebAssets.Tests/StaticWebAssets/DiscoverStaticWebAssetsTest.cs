@@ -769,8 +769,7 @@ for path 'candidate.js'");
             task.Assets[1].GetMetadata(nameof(StaticWebAsset.BasePath)).Should().Be("_content/Microsoft.AspNetCore.Components.CustomElements");
         }
 
-        [ConditionalFact]
-        [SkipOnPlatform(TestPlatforms.Windows, "Uses Unix-style paths")]
+        [LinuxOnlyFact]
         public void ComputesRelativePath_ForAssets_ExplicitPaths()
         {
             var errorMessages = new List<string>();
