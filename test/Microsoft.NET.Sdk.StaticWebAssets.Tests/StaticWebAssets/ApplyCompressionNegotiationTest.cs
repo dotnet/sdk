@@ -235,7 +235,7 @@ public class ApplyCompressionNegotiationTest
             new ()
             {
                 Name = "Vary",
-                Value = "Content-Encoding"
+                Value = "Accept-Encoding"
             }
         ],
         EndpointProperties = [
@@ -306,7 +306,7 @@ public class ApplyCompressionNegotiationTest
                 new ()
                 {
                     Name = "Vary",
-                    Value = "Content-Encoding"
+                    Value = "Accept-Encoding"
                 }
             ],
             EndpointProperties = [
@@ -412,7 +412,7 @@ public class ApplyCompressionNegotiationTest
                 new ()
                 {
                     Name = "Vary",
-                    Value = "Content-Encoding"
+                    Value = "Accept-Encoding"
                 }
             ],
             EndpointProperties = [
@@ -470,7 +470,7 @@ public class ApplyCompressionNegotiationTest
                 new ()
                 {
                     Name = "Vary",
-                    Value = "Content-Encoding"
+                    Value = "Accept-Encoding"
                 }
             ],
             EndpointProperties = [
@@ -541,7 +541,7 @@ public class ApplyCompressionNegotiationTest
                 new ()
                 {
                     Name = "Vary",
-                    Value = "Content-Encoding"
+                    Value = "Accept-Encoding"
                 }
             ],
             EndpointProperties = [
@@ -602,7 +602,7 @@ public class ApplyCompressionNegotiationTest
                 new ()
                 {
                     Name = "Vary",
-                    Value = "Content-Encoding"
+                    Value = "Accept-Encoding"
                 }
             ],
             EndpointProperties = [
@@ -688,7 +688,7 @@ public class ApplyCompressionNegotiationTest
                 new ()
                 {
                     Name = "Vary",
-                    Value = "Content-Encoding"
+                    Value = "Accept-Encoding"
                 }
             ],
             EndpointProperties = [
@@ -729,7 +729,7 @@ public class ApplyCompressionNegotiationTest
                 },
                 new () {
                 Name = "Vary",
-                    Value = "Content-Encoding"
+                    Value = "Accept-Encoding"
                 }
             ],
             EndpointProperties = [
