@@ -1303,7 +1303,7 @@
         },
         {
           "Name": "Link",
-          "Value": "<_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css>; rel=\"preload\"; as=\"style\", <_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css>; rel=\"preload\"; as=\"style\""
+          "Value": "\u003C_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
         },
         {
           "Name": "Vary",
@@ -1358,7 +1358,7 @@
         },
         {
           "Name": "Link",
-          "Value": "<_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css>; rel=\"preload\"; as=\"style\", <_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css>; rel=\"preload\"; as=\"style\""
+          "Value": "\u003C_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
         },
         {
           "Name": "Vary",
@@ -1775,7 +1775,7 @@
         },
         {
           "Name": "Link",
-          "Value": "<_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css>; rel=\"preload\"; as=\"style\", <_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css>; rel=\"preload\"; as=\"style\""
+          "Value": "\u003C_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
         }
       ],
       "EndpointProperties": [
@@ -1812,7 +1812,7 @@
         },
         {
           "Name": "Link",
-          "Value": "<_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css>; rel=\"preload\"; as=\"style\", <_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css>; rel=\"preload\"; as=\"style\""
+          "Value": "\u003C_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
         }
       ],
       "EndpointProperties": [
@@ -1961,7 +1961,7 @@
         },
         {
           "Name": "Link",
-          "Value": "<_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css>; rel=\"preload\"; as=\"style\", <_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css>; rel=\"preload\"; as=\"style\""
+          "Value": "\u003C_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
         },
         {
           "Name": "Vary",
@@ -2016,7 +2016,7 @@
         },
         {
           "Name": "Link",
-          "Value": "<_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css>; rel=\"preload\"; as=\"style\", <_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css>; rel=\"preload\"; as=\"style\""
+          "Value": "\u003C_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
         },
         {
           "Name": "Vary",
