@@ -227,7 +227,7 @@ public partial class RunCommand
                 return ambientEnvVarValue;
             }
 
-            return propertyName;
+            return match.Value;
         });
     }
 
