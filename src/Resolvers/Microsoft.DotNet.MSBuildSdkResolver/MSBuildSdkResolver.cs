@@ -45,23 +45,15 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         /// VS-driven CI pipelines, we probe and invoke only if the expected method is present.
         /// Once we can update our MSBuild API dependency this can go away.
         /// </summary>
-        private static Func<
-            SdkResultFactory,
-            // path to sdk
-            string,
-            // sdk version
-            string?,
-            // properties to add
-            IDictionary<string, string?>?,
-            // items to add
-            IDictionary<string, SdkResultItem>?,
-            // warnings
-            List<string>?,
-            // environment variables to add
-            IDictionary<string, string?>?,
-            SdkResult>? _factorySuccessFunc = TryLocateNewMSBuildFactory();
+        private static UpdatedSdkResultFactorySuccess? _factorySuccessFunc = TryLocateNewMSBuildFactory();
 
-        private static Func<SdkResultFactory, string, string?, IDictionary<string, string?>?, IDictionary<string, SdkResultItem>?, List<string>?, IDictionary<string, string?>?, SdkResult>? TryLocateNewMSBuildFactory()
+        /// <summary>
+        /// This represents the 'open delegate' form of the updated SdkResultFactory.IndicateSuccess method with environment variable support.
+        /// Because it is an open delegate, we can provide an object instance to be called as the first argument.
+        /// </summary>
+        public delegate SdkResult UpdatedSdkResultFactorySuccess(SdkResultFactory factory, string sdkPath, string? sdkVersion, IDictionary<string, string?>? propertiesToAdd, IDictionary<string, SdkResultItem>? itemsToAdd, List<string>? warnings, IDictionary<string, string?>? environmentVariablesToAdd);
+
+        private static UpdatedSdkResultFactorySuccess? TryLocateNewMSBuildFactory()
         {
             if (typeof(SdkResultFactory).GetMethod("IndicateSuccess", [
                 typeof(string), // path to sdk
@@ -72,10 +64,10 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 typeof(IDictionary<string, string>) // environment variables to add
             ]) is MethodInfo m)
             {
-                return (factory, path, version, properties, items, warnings, environmentVariables) =>
-                {
-                    return (SdkResult)m.Invoke(factory, [path, version, properties, items, warnings, environmentVariables]);
-                };
+                return Delegate.CreateDelegate(
+                    typeof(Func<SdkResultFactory, string, string?, IDictionary<string, string?>?, IDictionary<string, SdkResultItem>?, List<string>?, IDictionary<string, string?>?, SdkResult>),
+                    null,
+                    m) as UpdatedSdkResultFactorySuccess;
             }
             return null;
         }
@@ -340,7 +332,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             }
             if (_factorySuccessFunc != null)
             {
-                return _factorySuccessFunc.Invoke(factory, msbuildSdkDir, netcoreSdkVersion, propertiesToAdd, itemsToAdd, warnings, environmentVariablesToAdd);
+                return _factorySuccessFunc(factory, msbuildSdkDir, netcoreSdkVersion, propertiesToAdd, itemsToAdd, warnings, environmentVariablesToAdd);
             }
             else
             {
