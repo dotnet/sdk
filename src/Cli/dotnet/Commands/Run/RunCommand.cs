@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
@@ -21,7 +22,7 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
-public class RunCommand
+public partial class RunCommand
 {
     public bool NoBuild { get; }
 
@@ -145,8 +146,8 @@ public class RunCommand
 
         try
         {
-            ICommand targetCommand = GetTargetCommand(projectFactory);
-            ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings);
+            (ICommand targetCommand, ProjectInstance? project) = GetTargetCommand(projectFactory);
+            ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings, project);
 
             // Env variables specified on command line override those specified in launch profile:
             foreach (var (name, value) in EnvironmentVariables)
@@ -167,7 +168,7 @@ public class RunCommand
         }
     }
 
-    internal void ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings)
+    internal void ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings, ProjectInstance? project)
     {
         if (launchSettings == null)
         {
@@ -190,8 +191,44 @@ public class RunCommand
 
         if (!NoLaunchProfileArguments && string.IsNullOrEmpty(targetCommand.CommandArgs) && launchSettings.CommandLineArgs != null)
         {
-            targetCommand.SetCommandArgs(launchSettings.CommandLineArgs);
+            var expandedCommandLineArgs = ExpandPropertiesInCommandArgs(launchSettings.CommandLineArgs, project);
+            targetCommand.SetCommandArgs(expandedCommandLineArgs);
         }
+    }
+
+    /// <summary>
+    /// Launch Profile command line arguments can have placeholders in MSBuild-property-access syntax - $(PropertyName).
+    /// This method expands those placeholders with properties from the evaluated project (if one exists).
+    /// For parity with VS/DevKit this also expands current environment variables (again, as MSBuild does by default).
+    /// </summary>
+    private string ExpandPropertiesInCommandArgs(string commandLineArgs, ProjectInstance? project)
+    {
+        return MSBuildPropertyUsagePattern().Replace(commandLineArgs, match =>
+        {
+            string propertyName = match.Groups["token"].Value;
+
+            // user-passed env vars have precedence
+            if (EnvironmentVariables is not null && EnvironmentVariables.TryGetValue(propertyName, out string? commandEnvVarValue))
+            {
+                // If the environment variable is defined, use it instead of the project property value
+                return commandEnvVarValue;
+            }
+            
+            // then project properties
+            if (project is not null && project.GetPropertyValue(propertyName) is string projectPropertyValue && !string.IsNullOrEmpty(projectPropertyValue))
+            {
+                // If the property is defined in the project, use it
+                return projectPropertyValue;
+            }
+
+            // finally ambient environment
+            if (Environment.GetEnvironmentVariable(propertyName) is string ambientEnvVarValue)
+            {
+                return ambientEnvVarValue;
+            }
+
+            return propertyName;
+        });
     }
 
     internal bool TryGetLaunchProfileSettingsIfNeeded(out ProjectLaunchSettingsModel? launchSettingsModel)
@@ -346,24 +383,31 @@ public class RunCommand
         return msbuildArgs;
     }
 
-    internal ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
+    /// <summary>
+    /// Gets the target command and project instance for the specified project factory.
+    /// The Project is used to fill in any 'holes' in the arguments from the launch profile chosen, if any.
+    /// </summary>
+    /// <param name="projectFactory"></param>
+    /// <returns></returns>
+    /// <exception cref="GracefulException"></exception>
+    internal (Utils.Command command, ProjectInstance? project) GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
     {
         if (projectFactory is null && ProjectFileFullPath is null)
         {
             // If we are running a file-based app and projectFactory is null, it means csc was used instead of full msbuild.
             // So we can skip project evaluation to continue the optimized path.
             Debug.Assert(EntryPointFileFullPath is not null);
-            return CreateCommandForCscBuiltProgram(EntryPointFileFullPath);
+            return (CreateCommandForCscBuiltProgram(EntryPointFileFullPath), null);
         }
 
-        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([..MSBuildArgs.OtherMSBuildArgs], "dotnet-run");
+        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. MSBuildArgs.OtherMSBuildArgs], "dotnet-run");
         var project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
         ValidatePreconditions(project);
         InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs);
         logger?.ReallyShutdown();
         var runProperties = ReadRunPropertiesFromProject(project, ApplicationArgs);
         var command = CreateCommandFromRunProperties(project, runProperties);
-        return command;
+        return (command, project);
 
         static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, MSBuildArgs msbuildArgs, ILogger? binaryLogger)
         {
@@ -403,7 +447,7 @@ public class RunCommand
             return runProperties;
         }
 
-        static ICommand CreateCommandFromRunProperties(ProjectInstance project, RunProperties runProperties)
+        static Utils.Command CreateCommandFromRunProperties(ProjectInstance project, RunProperties runProperties)
         {
             CommandSpec commandSpec = new(runProperties.RunCommand, runProperties.RunArguments);
 
@@ -416,7 +460,7 @@ public class RunCommand
                 project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"),
                 project.GetPropertyValue("TargetFrameworkVersion"));
 
-            return command;
+            return (Utils.Command)command;
         }
 
         static void SetRootVariableName(ICommand command, string runtimeIdentifier, string defaultAppHostRuntimeIdentifier, string targetFrameworkVersion)
@@ -431,7 +475,7 @@ public class RunCommand
             }
         }
 
-        static ICommand CreateCommandForCscBuiltProgram(string entryPointFileFullPath)
+        static Utils.Command CreateCommandForCscBuiltProgram(string entryPointFileFullPath)
         {
             var artifactsPath = VirtualProjectBuildingCommand.GetArtifactsPath(entryPointFileFullPath);
             var exePath = Path.Join(artifactsPath, "bin", "debug", Path.GetFileNameWithoutExtension(entryPointFileFullPath) + FileNameSuffixes.CurrentPlatform.Exe);
@@ -445,7 +489,7 @@ public class RunCommand
                 defaultAppHostRuntimeIdentifier: RuntimeInformation.RuntimeIdentifier,
                 targetFrameworkVersion: $"v{VirtualProjectBuildingCommand.TargetFrameworkVersion}");
 
-            return command;
+            return (Utils.Command)command;
         }
 
         static void InvokeRunArgumentsTarget(ProjectInstance project, bool noBuild, FacadeLogger? binaryLogger, MSBuildArgs buildArgs)
@@ -742,4 +786,7 @@ public class RunCommand
         var newParseResult = Parser.Parse(tokensToParse);
         return newParseResult;
     }
+
+    [GeneratedRegex(@"\$\((?<token>[^\)]+)\)", RegexOptions.IgnoreCase, "en-US")]
+    private static partial Regex MSBuildPropertyUsagePattern();
 }

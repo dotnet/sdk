@@ -110,10 +110,11 @@ internal abstract class RunApiInput
                 environmentVariables: ReadOnlyDictionary<string, string>.Empty,
                 msbuildRestoreProperties: ReadOnlyDictionary<string, string>.Empty);
 
+            
             runCommand.TryGetLaunchProfileSettingsIfNeeded(out var launchSettings);
-            var targetCommand = (Utils.Command)runCommand.GetTargetCommand(buildCommand.CreateProjectInstance);
-            runCommand.ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings);
-
+            (var targetCommand, var project) = runCommand.GetTargetCommand(buildCommand.CreateProjectInstance);
+            runCommand.ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings, project);
+            
             return new RunApiOutput.RunCommand
             {
                 ExecutablePath = targetCommand.CommandName,
