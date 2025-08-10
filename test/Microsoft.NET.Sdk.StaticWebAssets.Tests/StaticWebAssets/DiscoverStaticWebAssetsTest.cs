@@ -778,9 +778,8 @@ for path 'candidate.js'");
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
             buildEngine.SetupGet(e => e.ProjectFileOfTaskNode)
-                .Returns(Path.Combine(Environment.CurrentDirectory, "Debug", "TestProject.csproj"));
+                .Returns("/home/user/work/Repo/Project/");
 
-            var debugDir = Path.Combine(Environment.CurrentDirectory, "Debug");
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
