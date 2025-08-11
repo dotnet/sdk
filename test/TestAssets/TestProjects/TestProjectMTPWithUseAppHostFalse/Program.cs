@@ -22,7 +22,7 @@ public class DummyTestAdapter : ITestFramework, IDataProducer
 
 	public Task<bool> IsEnabledAsync() => Task.FromResult(true);
 
-	public Type[] DataTypesProduced => [];
+	public Type[] DataTypesProduced { get; } = [typeof(TestNodeUpdateMessage)];
 
 	public Task<CreateTestSessionResult> CreateTestSessionAsync(CreateTestSessionContext context)
 		=> Task.FromResult(new CreateTestSessionResult() { IsSuccess = true });
