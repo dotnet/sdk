@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             return new()
             {
                 Reporter = NullReporter.Singleton,
-                ProcessRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout, CancellationToken.None),
+                ProcessRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout),
                 Options = new(),
                 RootProjectOptions = TestOptions.GetProjectOptions(args),
                 EnvironmentOptions = environmentOptions,

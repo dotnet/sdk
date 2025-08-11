@@ -69,6 +69,12 @@ public class RunCommand
     public bool NoLaunchProfile { get; }
 
     /// <summary>
+    /// The verbosity of the run-portion of this command specifically. If implicit builds are performed, they will always happen
+    /// at a quiet verbosity by default, but it's important that we enable separate verbosity for the run command itself.
+    /// </summary>
+    public VerbosityOptions RunCommandVerbosity { get; private set; }
+
+    /// <summary>
     /// True to ignore command line arguments specified by launch profile.
     /// </summary>
     public bool NoLaunchProfileArguments { get; }
@@ -211,7 +217,7 @@ public class RunCommand
             return true;
         }
 
-        if (MSBuildArgs.Verbosity?.IsQuiet() != true)
+        if (!RunCommandVerbosity.IsQuiet())
         {
             Reporter.Output.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
@@ -354,11 +360,20 @@ public class RunCommand
     {
         msbuildArgs = msbuildArgs.CloneWithAdditionalArgs("-nologo");
 
-        if (msbuildArgs.Verbosity is null)
+        if (msbuildArgs.Verbosity is VerbosityOptions userVerbosity)
         {
+            // if the user had a desired verbosity, we use that for the run command
+            RunCommandVerbosity = userVerbosity;
+            return msbuildArgs;
+        }
+        else
+        {
+            // Apply defaults if the user didn't expressly set the verbosity.
+            // Setting RunCommandVerbosity to minimal ensures that we keep the previous launchsettings
+            // and related diagnostics messages on by default.
+            RunCommandVerbosity = VerbosityOptions.minimal;
             return msbuildArgs.CloneWithVerbosity(VerbosityOptions.quiet);
         }
-        return msbuildArgs;
     }
 
     internal ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties)
@@ -481,20 +496,6 @@ public class RunCommand
 
     static readonly string ComputeRunArgumentsTarget = "ComputeRunArguments";
 
-    private static LoggerVerbosity ToLoggerVerbosity(VerbosityOptions? verbosity)
-    {
-        // map all cases of VerbosityOptions enum to the matching LoggerVerbosity enum
-        return verbosity switch
-        {
-            VerbosityOptions.quiet | VerbosityOptions.q => LoggerVerbosity.Quiet,
-            VerbosityOptions.minimal | VerbosityOptions.m => LoggerVerbosity.Minimal,
-            VerbosityOptions.normal | VerbosityOptions.n => LoggerVerbosity.Normal,
-            VerbosityOptions.detailed | VerbosityOptions.d => LoggerVerbosity.Detailed,
-            VerbosityOptions.diagnostic | VerbosityOptions.diag => LoggerVerbosity.Diagnostic,
-            _ => LoggerVerbosity.Quiet // default to quiet because run should be invisible if possible
-        };
-    }
-
     internal static void ThrowUnableToRunError(ProjectInstance project)
     {
         string targetFrameworks = project.GetPropertyValue("TargetFrameworks");
@@ -535,6 +536,12 @@ public class RunCommand
         string? projectFilePath = Directory.Exists(projectFileOrDirectoryPath)
             ? TryFindSingleProjectInDirectory(projectFileOrDirectoryPath)
             : projectFileOrDirectoryPath;
+
+        // Check if the project file actually exists when it's specified as a direct file path
+        if (projectFilePath is not null && !emptyProjectOption && !File.Exists(projectFilePath))
+        {
+            throw new GracefulException(CliCommandStrings.CmdNonExistentFileErrorDescription, projectFilePath);
+        }
 
         // If no project exists in the directory and no --project was given,
         // try to resolve an entry-point file instead.

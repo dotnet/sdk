@@ -235,6 +235,9 @@ internal static class TestCommandParser
         command.Options.Add(TestingPlatformOptions.DirectoryOption);
         command.Options.Add(TestingPlatformOptions.TestModulesFilterOption);
         command.Options.Add(TestingPlatformOptions.TestModulesRootDirectoryOption);
+        command.Options.Add(TestingPlatformOptions.ResultsDirectoryOption);
+        command.Options.Add(TestingPlatformOptions.ConfigFileOption);
+        command.Options.Add(TestingPlatformOptions.DiagnosticOutputDirectoryOption);
         command.Options.Add(TestingPlatformOptions.MaxParallelTestModulesOption);
         command.Options.Add(CommonOptions.ArchitectureOption);
         command.Options.Add(CommonOptions.PropertiesOption);
@@ -293,6 +296,7 @@ internal static class TestCommandParser
         command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.ArchitectureOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
+        command.Options.Add(CommonOptions.PropertiesOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(VsTestTargetOption);
         command.SetAction(TestCommand.Run);

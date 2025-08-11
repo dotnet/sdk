@@ -79,6 +79,7 @@ namespace Microsoft.NET.Publish.Tests
             ""System.Linq.Enumerable.IsSizeOptimized"": true,
             ""System.Net.Http.EnableActivityPropagation"": false,
             ""System.Net.Http.UseNativeHttpHandler"": true,
+            ""System.Net.Http.WasmEnableStreamingResponse"": true,
             ""System.Net.Security.UseManagedNtlm"": true,
             ""System.Net.SocketsHttpHandler.Http3Support"": false,
             ""System.Reflection.Metadata.MetadataUpdater.IsSupported"": false,

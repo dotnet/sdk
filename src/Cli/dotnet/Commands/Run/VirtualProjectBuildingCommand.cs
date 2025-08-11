@@ -90,61 +90,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </remarks>
     private static readonly IEnumerable<string> s_ignorableProperties =
     [
-        // This is set by default by `dotnet run`, so it must be ignored otherwise the CSC optimization would not kick in by default.
+        // These are set by default by `dotnet run`, so at least these must be ignored otherwise the CSC optimization would not kick in by default.
         "NuGetInteractive",
+        "_BuildNonexistentProjectsByDefault",
+        "RestoreUseSkipNonexistentTargets",
     ];
 
     public static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
-
-    internal static readonly string TargetOverrides = """
-          <!--
-            Override targets which don't work with project files that are not present on disk.
-            See https://github.com/NuGet/Home/issues/14148.
-          -->
-
-          <Target Name="_FilterRestoreGraphProjectInputItems"
-                  DependsOnTargets="_LoadRestoreGraphEntryPoints">
-            <!-- No-op, the original output is not needed by the overwritten targets. -->
-          </Target>
-
-          <Target Name="_GetAllRestoreProjectPathItems"
-                  DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GenerateRestoreProjectPathWalk"
-                  Returns="@(_RestoreProjectPathItems)">
-            <!-- Output from dependency _GenerateRestoreProjectPathWalk. -->
-          </Target>
-
-          <Target Name="_GenerateRestoreGraph"
-                  DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
-                  Returns="@(_RestoreGraphEntry)">
-            <!-- Output partly from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph. -->
-
-            <ItemGroup>
-              <_GenerateRestoreGraphProjectEntryInput Include="@(_RestoreProjectPathItems)" Exclude="$(MSBuildProjectFullPath)" />
-            </ItemGroup>
-
-            <MSBuild
-                BuildInParallel="$(RestoreBuildInParallel)"
-                Projects="@(_GenerateRestoreGraphProjectEntryInput)"
-                Targets="_GenerateRestoreGraphProjectEntry"
-                Properties="$(_GenerateRestoreGraphProjectEntryInputProperties)">
-
-              <Output
-                  TaskParameter="TargetOutputs"
-                  ItemName="_RestoreGraphEntry" />
-            </MSBuild>
-
-            <MSBuild
-                BuildInParallel="$(RestoreBuildInParallel)"
-                Projects="@(_GenerateRestoreGraphProjectEntryInput)"
-                Targets="_GenerateProjectRestoreGraph"
-                Properties="$(_GenerateRestoreGraphProjectEntryInputProperties)">
-
-              <Output
-                  TaskParameter="TargetOutputs"
-                  ItemName="_RestoreGraphEntry" />
-            </MSBuild>
-          </Target>
-        """;
 
     public VirtualProjectBuildingCommand(
         string entryPointFileFullPath,
@@ -153,7 +105,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         Debug.Assert(Path.IsPathFullyQualified(entryPointFileFullPath));
 
         EntryPointFileFullPath = entryPointFileFullPath;
-        MSBuildArgs = msbuildArgs;
+        MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            // See https://github.com/dotnet/msbuild/blob/main/documentation/specs/build-nonexistent-projects-by-default.md.
+            { "_BuildNonexistentProjectsByDefault", bool.TrueString },
+            { "RestoreUseSkipNonexistentTargets", bool.FalseString },
+        }
+        .AsReadOnly());
     }
 
     public string EntryPointFileFullPath { get; }
@@ -358,6 +316,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
 
             BuildManager.DefaultBuildManager.EndBuild();
+            consoleLogger = null; // avoid double disposal which would throw
 
             return 0;
         }
@@ -374,7 +333,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
 
             binaryLogger?.Value.ReallyShutdown();
-            consoleLogger.Shutdown();
+            consoleLogger?.Shutdown();
         }
 
         static Action<IDictionary<string, string>> AddRestoreGlobalProperties(ReadOnlyDictionary<string, string>? restoreProperties)
@@ -906,7 +865,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     <Clean Include="{EscapeValue(artifactsPath)}/*" />
                   </ItemGroup>
 
-                  <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                 """);
 
             if (firstSdkVersion is null)
@@ -1099,11 +1057,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     """);
             }
 
-            writer.WriteLine($"""
-
-                {TargetOverrides}
-
-                """);
+            writer.WriteLine();
         }
 
         writer.WriteLine("""

@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-environment-variables" "7" "2025-06-13" "" ".NET Documentation"
+.TH "dotnet-environment-variables" "7" "2025-07-30" "" ".NET Documentation"
 .hy
 .SH NAME
 .PP
@@ -281,9 +281,26 @@ GitHub issue dotnet/core#7699 (https://github.com/dotnet/core/issues/7699)
 .IP \[bu] 2
 GitHub issue dotnet/runtime#79237 (https://github.com/dotnet/runtime/issues/79237)
 .PP
-This environment variable is used only when running apps via generated executables (apphosts).
-\f[V]DOTNET_ROOT(x86)\f[R] is used instead when running a 32-bit executable on a 64-bit OS.
-\f[V]DOTNET_ROOT_X64\f[R] is used instead when running a 64-bit executable on an ARM64 OS.
+These environment variables are used only when running apps via generated executables (apphosts).
+The order in which the environment variables are considered is:
+.IP "1." 3
+\f[V]DOTNET_ROOT_<ARCH>\f[R], where \f[V]<ARCH>\f[R] is the architecture of the running executable (apphost).
+For example:
+.RS 4
+.IP \[bu] 2
+\f[V]DOTNET_ROOT_ARM64\f[R] is used for an Arm64 process.
+.IP \[bu] 2
+\f[V]DOTNET_ROOT_X64\f[R] is used for an x64 process.
+This process might be running on x64 or Arm64 architecture.
+.IP \[bu] 2
+\f[V]DOTNET_ROOT_X86\f[R] is used for an x86 process.
+This process might be running on x86 or x64 architecture.
+.RE
+.IP "2." 3
+\f[V]DOTNET_ROOT(x86)\f[R] is used when a 32-bit process is running on 64-bit Windows.
+In other cases, this environment variable is ignored.
+.IP "3." 3
+\f[V]DOTNET_ROOT\f[R].
 .SS \f[V]DOTNET_HOST_PATH\f[R]
 .PP
 Specifies the absolute path to a \f[V]dotnet\f[R] host (\f[V]dotnet.exe\f[R] on Windows, \f[V]dotnet\f[R] on Linux and macOS) that was used to launch the currently-running \f[V]dotnet\f[R] process.
@@ -508,18 +525,20 @@ For more information, see Advertising manifests.
 .PP
 Specifies whether .NET SDK local tools search for tool manifest files in the root folder on Windows.
 The default is \f[V]false\f[R].
-.SS \f[V]COREHOST_TRACE\f[R]
+.SS \f[V]DOTNET_HOST_TRACE\f[R]
+.PP
+\f[B]This variable applies to .NET 10 and later versions.\f[R] For older versions, replace the \f[V]DOTNET_HOST_\f[R] prefix with \f[V]COREHOST_\f[R].
 .PP
 Controls diagnostics tracing from the hosting components, such as \f[V]dotnet.exe\f[R], \f[V]hostfxr\f[R], and \f[V]hostpolicy\f[R].
 .IP \[bu] 2
-\f[V]COREHOST_TRACE=[0/1]\f[R] - default is \f[V]0\f[R] - tracing disabled.
+\f[V]DOTNET_HOST_TRACE=[0/1]\f[R] - default is \f[V]0\f[R] - tracing disabled.
 If set to \f[V]1\f[R], diagnostics tracing is enabled.
 .IP \[bu] 2
-\f[V]COREHOST_TRACEFILE=<file path>\f[R] - has an effect only if tracing is enabled by setting \f[V]COREHOST_TRACE=1\f[R].
+\f[V]DOTNET_HOST_TRACEFILE=<file path>\f[R] - has an effect only if tracing is enabled by setting \f[V]DOTNET_HOST_TRACE=1\f[R].
 When set, the tracing information is written to the specified file; otherwise, the trace information is written to \f[V]stderr\f[R].
 .IP \[bu] 2
-\f[V]COREHOST_TRACE_VERBOSITY=[1/2/3/4]\f[R] - default is \f[V]4\f[R].
-The setting is used only when tracing is enabled via \f[V]COREHOST_TRACE=1\f[R].
+\f[V]DOTNET_HOST_TRACE_VERBOSITY=[1/2/3/4]\f[R] - default is \f[V]4\f[R].
+The setting is used only when tracing is enabled via \f[V]DOTNET_HOST_TRACE=1\f[R].
 .RS 2
 .IP \[bu] 2
 \f[V]4\f[R] - all tracing information is written
@@ -531,8 +550,22 @@ The setting is used only when tracing is enabled via \f[V]COREHOST_TRACE=1\f[R].
 \f[V]1\f[R] - only error messages are written
 .RE
 .PP
-The typical way to get detailed trace information about application startup is to set \f[V]COREHOST_TRACE=1\f[R] and\f[V]COREHOST_TRACEFILE=host_trace.txt\f[R] and then run the application.
+The typical way to get detailed trace information about application startup is to set \f[V]DOTNET_HOST_TRACE=1\f[R] and \f[V]DOTNET_HOST_TRACEFILE=host_trace.txt\f[R] and then run the application.
 A new file \f[V]host_trace.txt\f[R] will be created in the current directory with the detailed information.
+.SS \f[V]COREHOST_TRACE\f[R]
+.PP
+Controls diagnostics tracing from the hosting components, such as \f[V]dotnet.exe\f[R], \f[V]hostfxr\f[R], and \f[V]hostpolicy\f[R].
+.RS
+.PP
+Starting with .NET 10, use the \f[V]DOTNET_HOST_TRACE\f[R] environment variables instead.
+The \f[V]COREHOST_TRACE\f[R] variables work the same as \f[V]DOTNET_HOST_TRACE\f[R] variables.
+.RE
+.IP \[bu] 2
+\f[V]COREHOST_TRACE\f[R] - see \f[V]DOTNET_HOST_TRACE\f[R].
+.IP \[bu] 2
+\f[V]COREHOST_TRACEFILE\f[R] - see \f[V]DOTNET_HOST_TRACEFILE\f[R].
+.IP \[bu] 2
+\f[V]COREHOST_TRACE_VERBOSITY\f[R] - see \f[V]DOTNET_HOST_TRACE_VERBOSITY\f[R].
 .SS \f[V]SuppressNETCoreSdkPreviewMessage\f[R]
 .PP
 If set to \f[V]true\f[R], invoking \f[V]dotnet\f[R] won\[cq]t produce a warning when a preview SDK is being used.
