@@ -84,7 +84,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().NotBe(0);
             if (!TestContext.IsLocalized())
             {
-                result.StdErr.Should().Contain("Specifying a dlls or executables for 'dotnet test' should be via '--test-modules'.");
+                result.StdErr.Should().Contain("Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.");
             }
         }
     }
