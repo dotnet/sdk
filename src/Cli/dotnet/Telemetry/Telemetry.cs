@@ -101,17 +101,17 @@ public class Telemetry : ITelemetry
         }
 
         //continue the task in different threads
-            if (_trackEventTask == null)
-            {
-                _trackEventTask = Task.Run(() => TrackEventTask(eventName, properties, measurements));
-                return;
-            }
-            else
-            {
-                _trackEventTask = _trackEventTask.ContinueWith(
-                    x => TrackEventTask(eventName, properties, measurements)
-                );
-            }
+        if (_trackEventTask == null)
+        {
+            _trackEventTask = Task.Run(() => TrackEventTask(eventName, properties, measurements));
+            return;
+        }
+        else
+        {
+            _trackEventTask = _trackEventTask.ContinueWith(
+                x => TrackEventTask(eventName, properties, measurements)
+            );
+        }
     }
 
     public void Flush()
