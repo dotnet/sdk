@@ -112,7 +112,7 @@ $locJson = @{
         @{
             LanguageSet = $LanguageSet
             CloneLanguageSet = "WiX_CloneLanguages"
-            LssFiles = @( "wxl_loc.lss" )
+            LssFiles = @( "wxl_loc.lss", "P210WxlSchemaV4.lss" )
             LocItems = @(
                 $wxlFiles | ForEach-Object {
                     $outputPath = "$($_.Directory.FullName | Resolve-Path -Relative)\"
