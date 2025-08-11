@@ -17,7 +17,7 @@ public class Telemetry : ITelemetry
     internal static bool DisabledForTests = false;
     private readonly int _senderCount;
     private TelemetryClient? _client = null;
-    private FrozenDictionary<string, string>? _commonProperties = null;
+    private FrozenDictionary<string, string?>? _commonProperties = null;
     private FrozenDictionary<string, double>? _commonMeasurements = null;
     private Task? _trackEventTask = null;
 
@@ -87,26 +87,31 @@ public class Telemetry : ITelemetry
         return sentinel.Exists();
     }
 
-    public void TrackEvent(string eventName, IDictionary<string, string> properties,
-        IDictionary<string, double> measurements)
+    public void TrackEvent(string? eventName, IDictionary<string, string?>? properties,
+        IDictionary<string, double>? measurements)
     {
         if (!Enabled)
         {
             return;
         }
 
-        //continue the task in different threads
-        if (_trackEventTask == null)
+        if (eventName is null)
         {
-            _trackEventTask = Task.Run(() => TrackEventTask(eventName, properties, measurements));
             return;
         }
-        else
-        {
-            _trackEventTask = _trackEventTask.ContinueWith(
-                x => TrackEventTask(eventName, properties, measurements)
-            );
-        }
+
+        //continue the task in different threads
+            if (_trackEventTask == null)
+            {
+                _trackEventTask = Task.Run(() => TrackEventTask(eventName, properties, measurements));
+                return;
+            }
+            else
+            {
+                _trackEventTask = _trackEventTask.ContinueWith(
+                    x => TrackEventTask(eventName, properties, measurements)
+                );
+            }
     }
 
     public void Flush()
@@ -129,9 +134,13 @@ public class Telemetry : ITelemetry
         }
     }
 
-    public void ThreadBlockingTrackEvent(string eventName, IDictionary<string, string> properties, IDictionary<string, double> measurements)
+    public void ThreadBlockingTrackEvent(string? eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)
     {
         if (!Enabled)
+        {
+            return;
+        }
+        if (eventName is null)
         {
             return;
         }
@@ -167,8 +176,8 @@ public class Telemetry : ITelemetry
 
     private void TrackEventTask(
         string eventName,
-        IDictionary<string, string> properties,
-        IDictionary<string, double> measurements)
+        IDictionary<string, string?>? properties,
+        IDictionary<string, double>? measurements)
     {
         if (_client == null)
         {
@@ -180,7 +189,7 @@ public class Telemetry : ITelemetry
             var eventProperties = GetEventProperties(properties);
             var eventMeasurements = GetEventMeasures(measurements);
 
-            eventProperties ??= new Dictionary<string, string>();
+            eventProperties ??= new Dictionary<string, string?>();
             eventProperties.Add("event id", Guid.NewGuid().ToString());
 
             _client.TrackEvent(PrependProducerNamespace(eventName), eventProperties, eventMeasurements);
@@ -194,7 +203,7 @@ public class Telemetry : ITelemetry
 
     private static ActivityEvent CreateActivityEvent(
         string eventName,
-        IDictionary<string, string>? properties,
+        IDictionary<string, string?>? properties,
         IDictionary<string, double>? measurements)
     {
         var tags = MakeTags(properties, measurements);
@@ -204,7 +213,7 @@ public class Telemetry : ITelemetry
     }
 
     private static ActivityTagsCollection? MakeTags(
-        IDictionary<string, string>? properties,
+        IDictionary<string, string?>? properties,
         IDictionary<string, double>? measurements)
     {
         if (properties == null && measurements == null)
@@ -236,12 +245,12 @@ public class Telemetry : ITelemetry
         };
     }
 
-    private IDictionary<string, string>? GetEventProperties(IDictionary<string, string>? properties)
+    private IDictionary<string, string?>? GetEventProperties(IDictionary<string, string?>? properties)
     {
         return (properties, _commonProperties) switch
         {
             (null, null) => null,
-            (null, not null) => _commonProperties == FrozenDictionary<string, string>.Empty ? null : new Dictionary<string, string>(_commonProperties),
+            (null, not null) => _commonProperties == FrozenDictionary<string, string?>.Empty ? null : new Dictionary<string, string?>(_commonProperties),
             (not null, null) => properties,
             (not null, not null) => Combine(_commonProperties, properties),
         };

@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Configurer
             _dotnetFirstRunConfiguration = dotnetFirstRunConfiguration;
             _reporter = reporter;
             _pathAdder = pathAdder ?? throw new ArgumentNullException(nameof(pathAdder));
-            _performanceMeasurements ??= performanceMeasurements;
+            _performanceMeasurements = performanceMeasurements ?? [];
             _skipFirstTimeUseCheck = skipFirstTimeUseCheck;
         }
 
