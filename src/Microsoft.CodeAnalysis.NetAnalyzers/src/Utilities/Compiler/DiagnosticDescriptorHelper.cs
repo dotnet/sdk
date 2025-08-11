@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-#if NET_ANALYZERS || TEXT_ANALYZERS
-
 using System.Diagnostics;
 using System.Linq;
 using Analyzer.Utilities.Extensions;
@@ -86,5 +84,3 @@ namespace Analyzer.Utilities
         }
     }
 }
-
-#endif

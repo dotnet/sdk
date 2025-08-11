@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-#if NET_ANALYZERS || TEXT_ANALYZERS || MICROSOFT_CODEANALYSIS_ANALYZERS
-
 namespace Microsoft.CodeAnalysis
 {
 #pragma warning disable CA1008 // Enums should have zero value
@@ -65,5 +63,3 @@ namespace Microsoft.CodeAnalysis
 
     }
 }
-
-#endif

@@ -8,26 +8,19 @@
   <PropertyGroup Label="Configuration">
     <Import_RootNamespace>Analyzer.Utilities</Import_RootNamespace>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(MicrosoftCodeAnalysisVersion)' == '' OR $([MSBuild]::VersionGreaterThanOrEquals($(MicrosoftCodeAnalysisVersion),'3.3'))">
-    <DefineConstants>$(DefineConstants),CODEANALYSIS_V3_OR_BETTER</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(MicrosoftCodeAnalysisVersion)' == '' OR $([MSBuild]::VersionGreaterThanOrEquals($(MicrosoftCodeAnalysisVersion),'3.7'))">
-    <DefineConstants>$(DefineConstants),CODEANALYSIS_V3_7_OR_BETTER</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(MicrosoftCodeAnalysisVersion)' == '' OR $([MSBuild]::VersionNotEquals('$(MicrosoftCodeAnalysisVersion)','1.2.1'))">
-    <DefineConstants>$(DefineConstants);HAS_IOPERATION</DefineConstants>
-    <HasIOperation>true</HasIOperation>
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants),HAS_IOPERATION,CODEANALYSIS_V3_OR_BETTER,CODEANALYSIS_V3_7_OR_BETTER</DefineConstants>
     <!-- Explicitly enable nullable for all projects that link Analyzer.Utilities.
 	     This is needed as this project is linked into test projects which don't yet have nullable enabled,
 		 and building the test projects without the explicit enable nullable below leads to following warnings:
 			"warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context" -->
     <Nullable>enable</Nullable>
   </PropertyGroup>
-  <ItemGroup Condition="'$(HasIOperation)' == 'true'">
+  <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ImmutableHashSetExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\PooledHashSetExtensions.cs" />
   </ItemGroup>
-  <ItemGroup Condition="'$(IsTestProject)' != 'true' and '$(NonShipping)' != 'true'">
+  <ItemGroup Condition="'$(IsTestProject)' != 'true' and '$(IsTestUtilityProject)' != 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)CodeMetrics\CodeAnalysisMetricData.AssemblyMetricData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeMetrics\CodeAnalysisMetricData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeMetrics\CodeAnalysisMetricData.EventMetricData.cs" />
@@ -144,6 +137,6 @@
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)DiagnosticCategoryAndIdRanges.txt" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(MicrosoftCodeAnalysisVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" VersionOverride="$(MicrosoftCodeAnalysisVersionForNetAnalyzers)" />
   </ItemGroup>
 </Project>

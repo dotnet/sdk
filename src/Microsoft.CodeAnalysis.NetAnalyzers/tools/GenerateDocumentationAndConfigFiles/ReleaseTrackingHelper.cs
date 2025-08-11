@@ -11,10 +11,6 @@ using Analyzer.Utilities;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis.Text;
 
-#if MICROSOFT_CODEANALYSIS_ANALYZERS
-using Analyzer.Utilities.Extensions;
-#endif
-
 namespace Microsoft.CodeAnalysis.ReleaseTracking
 {
     internal static class ReleaseTrackingHelper

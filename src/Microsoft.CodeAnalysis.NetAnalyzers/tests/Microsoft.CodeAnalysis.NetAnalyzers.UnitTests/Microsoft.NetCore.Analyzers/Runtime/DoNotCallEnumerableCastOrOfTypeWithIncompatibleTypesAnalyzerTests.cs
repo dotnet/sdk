@@ -319,9 +319,10 @@ VerifyCS.Diagnostic(castRule).WithLocation(53).WithArguments("Grass", "ITree")
         {
             Assert.Throws<InvalidCastException>(()
                 => (new int[][] { new int[] { 1 } }).Cast<object[]>().ToArray());
+#pragma warning disable CA2021 // Type 'int' is incompatible with type 'System.Enum' and cast attempts will throw InvalidCastException
             Assert.Throws<InvalidCastException>(()
                 => (new[] { 1 }).Cast<string>().ToArray());
-
+#pragma warning restore CA2021
             Assert.Throws<InvalidCastException>(()
                 => (new object[][] { Array.Empty<object>() }).Cast<int[]>().ToArray());
 
@@ -430,7 +431,9 @@ class C
         [Fact]
         public async Task EnumCasesCSharp()
         {
+#pragma warning disable CA2021 // Type 'int' is incompatible with type 'System.Enum' and cast attempts will throw InvalidCastException
             Assert.Throws<InvalidCastException>(() => new int[] { 1 }.Cast<Enum>().ToArray());
+#pragma warning restore CA2021
 
             // this is ok!
             _ = new StringComparison[] { StringComparison.OrdinalIgnoreCase }.Cast<Enum>().ToArray();

@@ -1,23 +1,20 @@
-﻿<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information. -->
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <!--
-      PackageId is used by Restore. If we set it to Microsoft.CodeAnalysis.NetAnalyzers
-      Restore would conclude that there is a cyclic dependency between us and the Microsoft.CodeAnalysis.NetAnalyzers nuget package.
-    -->
-    <PackageId>*$(MSBuildProjectFile)*</PackageId>
-    <RootNamespace></RootNamespace>
+    <RootNamespace />
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <MicrosoftCodeAnalysisVersion Condition="'$(MicrosoftCodeAnalysisVersion)' == ''">$(MicrosoftCodeAnalysisVersionForNetAnalyzers)</MicrosoftCodeAnalysisVersion>
   </PropertyGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.CodeAnalysis.CSharp.NetAnalyzers" />
     <InternalsVisibleTo Include="Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers" />
     <InternalsVisibleTo Include="Microsoft.CodeAnalysis.NetAnalyzers.UnitTests" />
     <InternalsVisibleTo Include="Analyzer.Utilities.UnitTests" />
   </ItemGroup>
-  <Import Project="..\..\Utilities\Compiler\Analyzer.Utilities.projitems" Label="Shared" />
-  <Import Project="..\..\Utilities\FlowAnalysis\FlowAnalysis.Utilities.projitems" Label="Shared" />
-  <Import Project="..\..\Utilities\Workspaces\Workspaces.Utilities.projitems" Label="Shared" />
+
+  <Import Project="..\Utilities\Compiler\Analyzer.Utilities.projitems" Label="Shared" />
+  <Import Project="..\Utilities\FlowAnalysis\FlowAnalysis.Utilities.projitems" Label="Shared" />
+  <Import Project="..\Utilities\Workspaces\Workspaces.Utilities.projitems" Label="Shared" />
+
 </Project>

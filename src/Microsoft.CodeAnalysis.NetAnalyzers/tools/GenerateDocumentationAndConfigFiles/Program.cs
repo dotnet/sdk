@@ -253,7 +253,7 @@ namespace GenerateDocumentationAndConfigFiles
                 var fileContents =
                     $"""
                     <Project>
-                      {disableNetAnalyzersImport}{getCodeAnalysisTreatWarningsAsErrors()}{getCompilerVisibleProperties()}
+                      {disableNetAnalyzersImport}{getCodeAnalysisTreatWarningsAsErrors()}
                     </Project>
                     """;
                 var directory = Directory.CreateDirectory(propsFileDir);
@@ -290,8 +290,6 @@ namespace GenerateDocumentationAndConfigFiles
                 {
                     if (!string.IsNullOrEmpty(propsFileToDisableNetAnalyzersInNuGetPackageName))
                     {
-                        Debug.Assert(analyzerPackageName is NetAnalyzersPackageName or TextAnalyzersPackageName);
-
                         return $"""
 
                               <!-- 
@@ -311,7 +309,6 @@ namespace GenerateDocumentationAndConfigFiles
                             """;
                     }
 
-                    Debug.Assert(!containsPortedFxCopRules);
                     return string.Empty;
                 }
             }
@@ -330,31 +327,6 @@ namespace GenerateDocumentationAndConfigFiles
                         <WarningsNotAsErrors Condition="'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == 'false' and '$(TreatWarningsAsErrors)' == 'true'">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
                       </PropertyGroup>
                     """;
-            }
-
-            string getCompilerVisibleProperties()
-            {
-                return analyzerPackageName switch
-                {
-                    ResxSourceGeneratorPackageName => """
-
-                      <ItemGroup>
-                        <CompilerVisibleProperty Include="RootNamespace" />
-                        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="WithCulture" />
-                        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenerateSource" />
-                        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="RelativeDir" />
-                        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="ClassName" />
-                        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="OmitGetResourceString" />
-                        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="AsConstants" />
-                        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="IncludeDefaultValues" />
-                        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="EmitFormatMethods" />
-                        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Public" />
-                        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="NoWarn" />
-                      </ItemGroup>
-
-                    """,
-                    _ => "",
-                };
             }
 
             void createAnalyzerDocumentationFile()
@@ -1418,7 +1390,7 @@ namespace GenerateDocumentationAndConfigFiles
 
             var fileContents =
                 $"""
-                <Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificContents(packageName)}
+                <Project>{GetCommonContents(packageName, categories)}
                 </Project>
                 """;
             var directory = Directory.CreateDirectory(targetsFileDir);
@@ -1515,57 +1487,51 @@ namespace GenerateDocumentationAndConfigFiles
                     string analysisLevelSuffixPropName,
                     string effectiveAnalysisLevelPropName)
                 {
-                    if (packageName == NetAnalyzersPackageName)
+                    var propertyStr = string.Empty;
+                    if (!string.IsNullOrEmpty(category))
                     {
-                        var propertyStr = string.Empty;
-
-                        if (!string.IsNullOrEmpty(category))
-                        {
-                            // For category-specific logic, we need to duplicate logic from SDK targets to set
-                            // category-specific AnalysisLevel property values. In future, we should consider removing similar logic from
-                            // SDK targets for core AnalysisLevel and instead generalize this logic.
-
-                            propertyStr += $"""
-
-                                      <!-- Default '{analysisLevelPropName}' to the core 'AnalysisLevel' and compute '{analysisLevelPrefixPropName}', '{analysisLevelSuffixPropName}' and '{effectiveAnalysisLevelPropName}' -->
-                                      <{analysisLevelPropName} Condition="'$({analysisLevelPropName})' == ''">$(AnalysisLevel)</{analysisLevelPropName}>
-
-                                      <!-- {analysisLevelPropName} can also contain compound values with a prefix and suffix separated by a '-' character.
-                                           The prefix indicates the core AnalysisLevel for '{category}' rules and the suffix indicates the bucket of
-                                           rules to enable for '{category}' rules by default. For example, some valid compound values for {analysisLevelPropName} are:
-                                             1. '5-all' - Indicates core {analysisLevelPropName} = '5' with 'all' the '{category}' rules enabled by default.
-                                             2. 'latest-none' - Indicates core {analysisLevelPropName} = 'latest' with 'none' of the '{category}' rules enabled by default.
-                                           {analysisLevelPrefixPropName} is used to set the {effectiveAnalysisLevelPropName} below.
-                                           {analysisLevelSuffixPropName} is used to map to the correct global config.
-                                      -->
-                                      <{analysisLevelPrefixPropName} Condition="$({analysisLevelPropName}.Contains('-'))">$([System.Text.RegularExpressions.Regex]::Replace($({analysisLevelPropName}), '-(.)*', ''))</{analysisLevelPrefixPropName}>
-                                      <{analysisLevelSuffixPropName} Condition="'$({analysisLevelPrefixPropName})' != ''">$([System.Text.RegularExpressions.Regex]::Replace($({analysisLevelPropName}), '$({analysisLevelPrefixPropName})-', ''))</{analysisLevelSuffixPropName}>
-
-                                      <!-- {effectiveAnalysisLevelPropName} is used to differentiate from user specified strings (such as 'none')
-                                           and an implied numerical option (such as '4') -->
-                                      <{effectiveAnalysisLevelPropName} Condition="'$({analysisLevelPropName})' == 'none' or '$({analysisLevelPrefixPropName})' == 'none'">$(_NoneAnalysisLevel)</{effectiveAnalysisLevelPropName}>
-                                      <{effectiveAnalysisLevelPropName} Condition="'$({analysisLevelPropName})' == 'latest' or '$({analysisLevelPrefixPropName})' == 'latest'">$(_LatestAnalysisLevel)</{effectiveAnalysisLevelPropName}>
-                                      <{effectiveAnalysisLevelPropName} Condition="'$({analysisLevelPropName})' == 'preview' or '$({analysisLevelPrefixPropName})' == 'preview'">$(_PreviewAnalysisLevel)</{effectiveAnalysisLevelPropName}>
-
-                                      <!-- Set {effectiveAnalysisLevelPropName} to the value of {analysisLevelPropName} if it is a version number -->
-                                      <{effectiveAnalysisLevelPropName} Condition="'$({effectiveAnalysisLevelPropName})' == '' And
-                                                                         '$({analysisLevelPrefixPropName})' != ''">$({analysisLevelPrefixPropName})</{effectiveAnalysisLevelPropName}>
-                                      <{effectiveAnalysisLevelPropName} Condition="'$({effectiveAnalysisLevelPropName})' == '' And
-                                                                         '$({analysisLevelPropName})' != ''">$({analysisLevelPropName})</{effectiveAnalysisLevelPropName}>
-
-                                """;
-                        }
+                        // For category-specific logic, we need to duplicate logic from SDK targets to set
+                        // category-specific AnalysisLevel property values. In future, we should consider removing similar logic from
+                        // SDK targets for core AnalysisLevel and instead generalize this logic.
 
                         propertyStr += $"""
 
-                                  <!-- Default '{packageVersionPropName}' to '{effectiveAnalysisLevelPropName}' with trimmed trailing '.0' -->
-                                  <{packageVersionPropName} Condition="'$({packageVersionPropName})' == '' and '$({effectiveAnalysisLevelPropName})' != ''">$([System.Text.RegularExpressions.Regex]::Replace($({effectiveAnalysisLevelPropName}), '(\.0)*$', ''))</{packageVersionPropName}>
+                                    <!-- Default '{analysisLevelPropName}' to the core 'AnalysisLevel' and compute '{analysisLevelPrefixPropName}', '{analysisLevelSuffixPropName}' and '{effectiveAnalysisLevelPropName}' -->
+                                    <{analysisLevelPropName} Condition="'$({analysisLevelPropName})' == ''">$(AnalysisLevel)</{analysisLevelPropName}>
+
+                                    <!-- {analysisLevelPropName} can also contain compound values with a prefix and suffix separated by a '-' character.
+                                        The prefix indicates the core AnalysisLevel for '{category}' rules and the suffix indicates the bucket of
+                                        rules to enable for '{category}' rules by default. For example, some valid compound values for {analysisLevelPropName} are:
+                                            1. '5-all' - Indicates core {analysisLevelPropName} = '5' with 'all' the '{category}' rules enabled by default.
+                                            2. 'latest-none' - Indicates core {analysisLevelPropName} = 'latest' with 'none' of the '{category}' rules enabled by default.
+                                        {analysisLevelPrefixPropName} is used to set the {effectiveAnalysisLevelPropName} below.
+                                        {analysisLevelSuffixPropName} is used to map to the correct global config.
+                                    -->
+                                    <{analysisLevelPrefixPropName} Condition="$({analysisLevelPropName}.Contains('-'))">$([System.Text.RegularExpressions.Regex]::Replace($({analysisLevelPropName}), '-(.)*', ''))</{analysisLevelPrefixPropName}>
+                                    <{analysisLevelSuffixPropName} Condition="'$({analysisLevelPrefixPropName})' != ''">$([System.Text.RegularExpressions.Regex]::Replace($({analysisLevelPropName}), '$({analysisLevelPrefixPropName})-', ''))</{analysisLevelSuffixPropName}>
+
+                                    <!-- {effectiveAnalysisLevelPropName} is used to differentiate from user specified strings (such as 'none')
+                                        and an implied numerical option (such as '4') -->
+                                    <{effectiveAnalysisLevelPropName} Condition="'$({analysisLevelPropName})' == 'none' or '$({analysisLevelPrefixPropName})' == 'none'">$(_NoneAnalysisLevel)</{effectiveAnalysisLevelPropName}>
+                                    <{effectiveAnalysisLevelPropName} Condition="'$({analysisLevelPropName})' == 'latest' or '$({analysisLevelPrefixPropName})' == 'latest'">$(_LatestAnalysisLevel)</{effectiveAnalysisLevelPropName}>
+                                    <{effectiveAnalysisLevelPropName} Condition="'$({analysisLevelPropName})' == 'preview' or '$({analysisLevelPrefixPropName})' == 'preview'">$(_PreviewAnalysisLevel)</{effectiveAnalysisLevelPropName}>
+
+                                    <!-- Set {effectiveAnalysisLevelPropName} to the value of {analysisLevelPropName} if it is a version number -->
+                                    <{effectiveAnalysisLevelPropName} Condition="'$({effectiveAnalysisLevelPropName})' == '' And
+                                                                        '$({analysisLevelPrefixPropName})' != ''">$({analysisLevelPrefixPropName})</{effectiveAnalysisLevelPropName}>
+                                    <{effectiveAnalysisLevelPropName} Condition="'$({effectiveAnalysisLevelPropName})' == '' And
+                                                                        '$({analysisLevelPropName})' != ''">$({analysisLevelPropName})</{effectiveAnalysisLevelPropName}>
 
                             """;
-                        return propertyStr;
                     }
 
-                    return string.Empty;
+                    propertyStr += $"""
+
+                                <!-- Default '{packageVersionPropName}' to '{effectiveAnalysisLevelPropName}' with trimmed trailing '.0' -->
+                                <{packageVersionPropName} Condition="'$({packageVersionPropName})' == '' and '$({effectiveAnalysisLevelPropName})' != ''">$([System.Text.RegularExpressions.Regex]::Replace($({effectiveAnalysisLevelPropName}), '(\.0)*$', ''))</{packageVersionPropName}>
+
+                        """;
+                    return propertyStr;
                 }
             }
 
@@ -1653,81 +1619,6 @@ namespace GenerateDocumentationAndConfigFiles
 
                     """;
             }
-
-            const string AddAllResxFilesAsAdditionalFilesTarget = """
-                  <!-- Target to add all 'EmbeddedResource' files with '.resx' extension as analyzer additional files -->
-                  <Target Name="AddAllResxFilesAsAdditionalFiles" DependsOnTargets="PrepareResourceNames" BeforeTargets="GenerateMSBuildEditorConfigFileCore;CoreCompile" Condition="'@(EmbeddedResource)' != '' AND '$(SkipAddAllResxFilesAsAdditionalFiles)' != 'true'">
-                    <ItemGroup>
-                      <EmbeddedResourceWithResxExtension Include="@(EmbeddedResource)" Condition="'%(Extension)' == '.resx'" />
-                      <AdditionalFiles Include="@(EmbeddedResourceWithResxExtension)" />
-                    </ItemGroup>
-                  </Target>
-                """;
-
-            static string GetPackageSpecificContents(string packageName)
-                => packageName switch
-                {
-                    CodeAnalysisAnalyzersPackageName => $"""
-
-                    {AddAllResxFilesAsAdditionalFilesTarget}
-
-                      <!-- Workaround for https://github.com/dotnet/roslyn/issues/4655 -->
-                      <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\AnalyzerReleases.Shipped.md')" >
-                    	<AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
-                      </ItemGroup>
-                      <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\AnalyzerReleases.Unshipped.md')" >
-                    	<AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
-                      </ItemGroup>
-                    """,
-                    PublicApiAnalyzersPackageName => """
-
-
-                      <!-- Workaround for https://github.com/dotnet/roslyn/issues/4655 -->
-                      <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt')" >
-                    	<AdditionalFiles Include="PublicAPI.Shipped.txt" />
-                      </ItemGroup>
-                      <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt')" >
-                    	<AdditionalFiles Include="PublicAPI.Unshipped.txt" />
-                      </ItemGroup>
-                    """,
-                    PerformanceSensitiveAnalyzersPackageName => """
-
-                      <PropertyGroup>
-                        <GeneratePerformanceSensitiveAttribute Condition="'$(GeneratePerformanceSensitiveAttribute)' == ''">true</GeneratePerformanceSensitiveAttribute>
-                        <PerformanceSensitiveAttributePath Condition="'$(PerformanceSensitiveAttributePath)' == ''">$(MSBuildThisFileDirectory)PerformanceSensitiveAttribute$(DefaultLanguageSourceExtension)</PerformanceSensitiveAttributePath>
-                      </PropertyGroup>
-
-                      <ItemGroup Condition="'$(GeneratePerformanceSensitiveAttribute)' == 'true' and Exists($(PerformanceSensitiveAttributePath))">
-                        <Compile Include="$(PerformanceSensitiveAttributePath)" Visible="false" />
-
-                        <!-- Make sure the source file is embedded in PDB to support Source Link -->
-                        <EmbeddedFiles Condition="'$(DebugType)' != 'none'" Include="$(PerformanceSensitiveAttributePath)" />
-                      </ItemGroup>
-                    """,
-                    ResxSourceGeneratorPackageName => $"""
-
-                      <!-- Special handling for embedded resources to show as nested in Solution Explorer -->
-                      <ItemGroup>
-                        <!-- Localized embedded resources are just dependent on the parent RESX -->
-                        <EmbeddedResource Update="**\*.??.resx;**\*.??-??.resx;**\*.??-????.resx" DependentUpon="$([System.IO.Path]::ChangeExtension($([System.IO.Path]::GetFileNameWithoutExtension(%(Identity))), '.resx'))" />
-                      </ItemGroup>
-
-                    {AddAllResxFilesAsAdditionalFilesTarget}
-
-                      <!-- Target to add 'EmbeddedResource' files with '.resx' extension and explicit- or implicit-GenerateSource as analyzer additional files. This only needs to run when SkipAddAllResxFilesAsAdditionalFiles is set to true.
-                             Explicit GenerateSource: The embedded resource has GenerateSource="true"
-                             Implicit GenerateSource: The embedded resource did not set GenerateSource, and also does not have WithCulture set to true
-                      -->
-                      <Target Name="AddGenerateSourceResxFilesAsAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileCore;CoreCompile" Condition="'@(EmbeddedResource)' != '' AND '$(SkipAddAllResxFilesAsAdditionalFiles)' == 'true' AND '$(SkipAddGenerateSourceResxFilesAsAdditionalFiles)' != 'true'">
-                        <ItemGroup>
-                          <EmbeddedResourceWithResxExtensionAndGenerateSource Include="@(EmbeddedResource)" Condition="'%(Extension)' == '.resx' AND ('%(EmbeddedResource.GenerateSource)' == 'true' OR ('%(EmbeddedResource.GenerateSource)' != 'false' AND '%(EmbeddedResource.WithCulture)' != 'true'))" />
-                          <AdditionalFiles Include="@(EmbeddedResourceWithResxExtensionAndGenerateSource)" />
-                        </ItemGroup>
-                      </Target>
-
-                    """,
-                    _ => string.Empty,
-                };
         }
 
         private enum RulesetKind

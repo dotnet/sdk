@@ -102,6 +102,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftWindowsDesktopAppRefPackageVersion>10.0.0-preview.7.25377.103</MicrosoftWindowsDesktopAppRefPackageVersion>
     <SystemCodeDomPackageVersion>10.0.0-preview.7.25377.103</SystemCodeDomPackageVersion>
     <SystemCommandLinePackageVersion>2.0.0-rc.1.25377.103</SystemCommandLinePackageVersion>
+    <SystemComponentModelCompositionPackageVersion>10.0.0-preview.7.25377.103</SystemComponentModelCompositionPackageVersion>
     <SystemCompositionAttributedModelPackageVersion>10.0.0-preview.7.25377.103</SystemCompositionAttributedModelPackageVersion>
     <SystemCompositionConventionPackageVersion>10.0.0-preview.7.25377.103</SystemCompositionConventionPackageVersion>
     <SystemCompositionHostingPackageVersion>10.0.0-preview.7.25377.103</SystemCompositionHostingPackageVersion>
@@ -243,6 +244,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftWindowsDesktopAppRefVersion>$(MicrosoftWindowsDesktopAppRefPackageVersion)</MicrosoftWindowsDesktopAppRefVersion>
     <SystemCodeDomVersion>$(SystemCodeDomPackageVersion)</SystemCodeDomVersion>
     <SystemCommandLineVersion>$(SystemCommandLinePackageVersion)</SystemCommandLineVersion>
+    <SystemComponentModelCompositionVersion>$(SystemComponentModelCompositionPackageVersion)</SystemComponentModelCompositionVersion>
     <SystemCompositionAttributedModelVersion>$(SystemCompositionAttributedModelPackageVersion)</SystemCompositionAttributedModelVersion>
     <SystemCompositionConventionVersion>$(SystemCompositionConventionPackageVersion)</SystemCompositionConventionVersion>
     <SystemCompositionHostingVersion>$(SystemCompositionHostingPackageVersion)</SystemCompositionHostingVersion>
