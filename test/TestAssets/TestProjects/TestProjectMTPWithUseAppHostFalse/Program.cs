@@ -39,16 +39,7 @@ public class DummyTestAdapter : ITestFramework, IDataProducer
 			{
 				Uid = "dummy_test_1",
 				DisplayName = "Dummy Test 1",
-				Properties = new PropertyBag()
-			}));
-
-		context.MessageBus.PublishAsync(this, new TestResultMessage(
-			context.Request.Session.SessionUid,
-			new PassedTestResult()
-			{
-				Uid = "dummy_test_1",
-				DisplayName = "Dummy Test 1",
-				Duration = TimeSpan.FromMilliseconds(1)
+				Properties = new PropertyBag(PassedTestNodeStateProperty.CachedInstance)
 			}));
 
 		context.Complete();
