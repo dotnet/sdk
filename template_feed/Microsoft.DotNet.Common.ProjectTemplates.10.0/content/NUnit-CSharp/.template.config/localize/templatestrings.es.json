@@ -1,6 +1,6 @@
 ﻿{
   "author": "Aleksei Kharlov aka halex2005 (codeofclimber.ru)",
-  "name": "Proyecto de prueba de NUnit",
+  "name": "NUnit Test Project",
   "description": "Proyecto que contiene pruebas NUnit que se pueden ejecutar en .NET en Windows, Linux y macOS",
   "symbols/TargetFrameworkOverride/description": "Invalida la plataforma de destino",
   "symbols/TargetFrameworkOverride/displayName": "Invalidación de la plataforma de destino",
