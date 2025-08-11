@@ -136,7 +136,6 @@ public class DefineStaticWebAssetEndpoints : Task
                 var (mimeType, cacheSetting) = ResolveContentType(asset, ContentTypeProvider, matchContext, Log);
 
                 _headersList.Clear();
-                _headersList.Add(new() { Name = "Accept-Ranges", Value = "bytes" });
                 _headersList.Add(new() { Name = "Content-Length", Value = length });
                 _headersList.Add(new() { Name = "Content-Type", Value = mimeType });
                 _headersList.Add(new() { Name = "ETag", Value = $"\"{asset.Integrity}\"" });
