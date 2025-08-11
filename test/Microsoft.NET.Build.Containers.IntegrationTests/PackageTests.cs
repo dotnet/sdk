@@ -9,7 +9,7 @@ namespace Microsoft.NET.Build.Containers.IntegrationTests;
 public class PackageTests
 {
     [Fact]
-    public void SanityTest_ContainerizeDependencies()
+    public void SanityTest_CreateLayerTarballDependencies()
     {
         IReadOnlyList<string> knownPackageReferences = new List<string>()
         {
@@ -23,15 +23,15 @@ public class PackageTests
             "..\\..\\Cli\\Microsoft.DotNet.Cli.Utils\\Microsoft.DotNet.Cli.Utils.csproj"
         };
 
-        string projectFilePath = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "ProjectFiles", "containerize.csproj");
+        string projectFilePath = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "ProjectFiles", "CreateLayerTarball.csproj");
         XDocument project = XDocument.Load(projectFilePath);
         XNamespace ns = project.Root?.Name.Namespace ?? throw new InvalidOperationException("Project file is empty");
 
         IEnumerable<string?> packageReferences = project.Descendants().Where(element => element.Name.Equals(ns + "PackageReference")).Select(element => element.Attribute("Include")?.Value);
-        packageReferences.Should().BeEquivalentTo(knownPackageReferences, $"Known package references for containerize project are different from actual. Check if this is expected. If the new package reference is expected, add it to {nameof(knownPackageReferences)} and verify they are included to NuGet package in package.csproj correctly");
+        packageReferences.Should().BeEquivalentTo(knownPackageReferences, $"Known package references for CreateLayerTarball project are different from actual. Check if this is expected. If the new package reference is expected, add it to {nameof(knownPackageReferences)} and verify they are included to NuGet package in package.csproj correctly");
 
         IEnumerable<string?> projectReferences = project.Descendants().Where(element => element.Name.Equals(ns + "ProjectReference")).Select(element => element.Attribute("Include")?.Value);
-        projectReferences.Should().BeEquivalentTo(knownProjectReferences, $"Known project references for containerize project are different from actual. Check if this is expected. If the new project reference is expected, add it to {nameof(knownProjectReferences)} and verify they are included to NuGet package in package.csproj correctly");
+        projectReferences.Should().BeEquivalentTo(knownProjectReferences, $"Known project references for CreateLayerTarball project are different from actual. Check if this is expected. If the new project reference is expected, add it to {nameof(knownProjectReferences)} and verify they are included to NuGet package in package.csproj correctly");
     }
 
     [Fact]
@@ -75,36 +75,36 @@ public class PackageTests
               "[Content_Types].xml",
               "build/Microsoft.NET.Build.Containers.props",
               "build/Microsoft.NET.Build.Containers.targets",
-              "containerize/containerize.dll",
-              "containerize/containerize.runtimeconfig.json",
-              "containerize/Microsoft.DotNet.Cli.Utils.dll",
-              "containerize/Microsoft.Extensions.Configuration.Abstractions.dll",
-              "containerize/Microsoft.Extensions.Configuration.Binder.dll",
-              "containerize/Microsoft.Extensions.Configuration.dll",
-              "containerize/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
-              "containerize/Microsoft.Extensions.DependencyInjection.dll",
-              "containerize/Microsoft.Extensions.DependencyModel.dll",
-              "containerize/Microsoft.Extensions.Logging.Abstractions.dll",
-              "containerize/Microsoft.Extensions.Logging.Configuration.dll",
-              "containerize/Microsoft.Extensions.Logging.Console.dll",
-              "containerize/Microsoft.Extensions.Logging.MSBuild.dll",
-              "containerize/Microsoft.Extensions.Logging.dll",
-              "containerize/Microsoft.Extensions.Options.ConfigurationExtensions.dll",
-              "containerize/Microsoft.Extensions.Options.dll",
-              "containerize/Microsoft.Extensions.Primitives.dll",
-              "containerize/Microsoft.NET.Build.Containers.dll",
-              "containerize/Newtonsoft.Json.dll",
-              "containerize/NuGet.Common.dll",
-              "containerize/NuGet.Configuration.dll",
-              "containerize/NuGet.DependencyResolver.Core.dll",
-              "containerize/NuGet.Frameworks.dll",
-              "containerize/NuGet.LibraryModel.dll",
-              "containerize/NuGet.Packaging.dll",
-              "containerize/NuGet.ProjectModel.dll",
-              "containerize/NuGet.Protocol.dll",
-              "containerize/NuGet.Versioning.dll",
-              "containerize/System.CommandLine.dll",
-              "containerize/Valleysoft.DockerCredsProvider.dll",
+              "CreateLayerTarball/CreateLayerTarball.dll",
+              "CreateLayerTarball/CreateLayerTarball.runtimeconfig.json",
+              "CreateLayerTarball/Microsoft.DotNet.Cli.Utils.dll",
+              "CreateLayerTarball/Microsoft.Extensions.Configuration.Abstractions.dll",
+              "CreateLayerTarball/Microsoft.Extensions.Configuration.Binder.dll",
+              "CreateLayerTarball/Microsoft.Extensions.Configuration.dll",
+              "CreateLayerTarball/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+              "CreateLayerTarball/Microsoft.Extensions.DependencyInjection.dll",
+              "CreateLayerTarball/Microsoft.Extensions.DependencyModel.dll",
+              "CreateLayerTarball/Microsoft.Extensions.Logging.Abstractions.dll",
+              "CreateLayerTarball/Microsoft.Extensions.Logging.Configuration.dll",
+              "CreateLayerTarball/Microsoft.Extensions.Logging.Console.dll",
+              "CreateLayerTarball/Microsoft.Extensions.Logging.MSBuild.dll",
+              "CreateLayerTarball/Microsoft.Extensions.Logging.dll",
+              "CreateLayerTarball/Microsoft.Extensions.Options.ConfigurationExtensions.dll",
+              "CreateLayerTarball/Microsoft.Extensions.Options.dll",
+              "CreateLayerTarball/Microsoft.Extensions.Primitives.dll",
+              "CreateLayerTarball/Microsoft.NET.Build.Containers.dll",
+              "CreateLayerTarball/Newtonsoft.Json.dll",
+              "CreateLayerTarball/NuGet.Common.dll",
+              "CreateLayerTarball/NuGet.Configuration.dll",
+              "CreateLayerTarball/NuGet.DependencyResolver.Core.dll",
+              "CreateLayerTarball/NuGet.Frameworks.dll",
+              "CreateLayerTarball/NuGet.LibraryModel.dll",
+              "CreateLayerTarball/NuGet.Packaging.dll",
+              "CreateLayerTarball/NuGet.ProjectModel.dll",
+              "CreateLayerTarball/NuGet.Protocol.dll",
+              "CreateLayerTarball/NuGet.Versioning.dll",
+              "CreateLayerTarball/System.CommandLine.dll",
+              "CreateLayerTarball/Valleysoft.DockerCredsProvider.dll",
               "Icon.png",
               "Microsoft.NET.Build.Containers.nuspec",
               "README.md",
