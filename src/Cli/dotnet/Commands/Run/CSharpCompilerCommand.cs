@@ -210,8 +210,6 @@ internal sealed partial class CSharpCompilerCommand
                 build_property.EnableSingleFileAnalyzer = true
                 build_property.EnableTrimAnalyzer = true
                 build_property.IncludeAllContentForSelfExtract = 
-                build_property.VerifyReferenceTrimCompatibility = 
-                build_property.VerifyReferenceAotCompatibility = 
                 build_property.TargetFramework = net{TargetFrameworkVersion}
                 build_property.TargetFrameworkIdentifier = .NETCoreApp
                 build_property.TargetFrameworkVersion = v{TargetFrameworkVersion}
