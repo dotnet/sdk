@@ -3,8 +3,6 @@
 
 using System.CommandLine;
 using System.CommandLine.Invocation;
-using System.CommandLine.Parsing;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli;
@@ -21,27 +19,21 @@ internal static class CommonOptionsFactory
     {
         Description = CliStrings.SDKDiagnosticsCommandDefinition,
         Recursive = recursive,
-        Arity = ArgumentArity.Zero
+        Arity = ArgumentArity.Zero,
+        Action = new SetDiagnosticModeAction()
     };
 
-    internal class SetDiagnosticModeAction(Option<bool> diagnosticOption) : SynchronousCommandLineAction
+    /// <summary>
+    /// Sets a few verbose diagnostics flags across the CLI.
+    /// Other commands may also use this to set their verbosity flags to a higher value or similar behaviors.
+    /// </summary>
+    internal class SetDiagnosticModeAction() : SynchronousCommandLineAction
     {
         public override int Invoke(ParseResult parseResult)
         {
-            if (parseResult.IsDotnetBuiltInCommand())
-            {
-                var diagIsChildOfRoot = parseResult.RootCommandResult.Children.FirstOrDefault((s) => s is OptionResult opt && opt.Option == diagnosticOption) is not null;
-
-                // We found --diagnostic or -d, but we still need to determine whether the option should
-                // be attached to the dotnet command or the subcommand.
-                if (diagIsChildOfRoot)
-                {
-                    Environment.SetEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString);
-                    CommandLoggingContext.SetVerbose(true);
-                    Reporter.Reset();
-                }
-            }
-
+            Environment.SetEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString);
+            CommandLoggingContext.SetVerbose(true);
+            Reporter.Reset();
             return 0;
         }
     }
