@@ -28,7 +28,7 @@ public class MSBuildForwardingApp : CommandBase
             }
             catch (Exception)
             {
-                // Exceptions during _telemetry shouldn't cause anything else to fail
+                // Exceptions during telemetry shouldn't cause anything else to fail
             }
         }
         return msbuildArgs;
