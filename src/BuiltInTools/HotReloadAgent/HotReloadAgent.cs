@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.HotReload;
 #if NET
 [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Hot reload is only expected to work when trimming is disabled.")]
 #endif
-internal sealed class HotReloadAgent : IDisposable
+internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
 {
     private const string MetadataUpdaterTypeName = "System.Reflection.Metadata.MetadataUpdater";
     private const string ApplyUpdateMethodName = "ApplyUpdate";
@@ -104,10 +104,7 @@ internal sealed class HotReloadAgent : IDisposable
         }
     }
 
-    public IReadOnlyCollection<(string message, AgentMessageSeverity severity)> GetAndClearLogEntries(ResponseLoggingLevel loggingLevel)
-        => Reporter.GetAndClearLogEntries(loggingLevel);
-
-    public void ApplyDeltas(IEnumerable<RuntimeManagedCodeUpdate> updates)
+    public void ApplyManagedCodeUpdates(IEnumerable<RuntimeManagedCodeUpdate> updates)
     {
         Debug.Assert(Capabilities.Length > 0);
         Debug.Assert(_applyUpdate != null);

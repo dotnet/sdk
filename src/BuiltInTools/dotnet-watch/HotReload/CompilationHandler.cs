@@ -165,7 +165,7 @@ namespace Microsoft.DotNet.Watch
                 var updatesToApply = _previousUpdates.Skip(appliedUpdateCount).ToImmutableArray();
                 if (updatesToApply.Any())
                 {
-                    _ = await deltaApplier.ApplyManagedCodeUpdates(ToManagedCodeUpdates(updatesToApply), processCommunicationCancellationSource.Token);
+                    _ = await deltaApplier.ApplyManagedCodeUpdates(ToManagedCodeUpdates(updatesToApply), isProcessSuspended: false, processCommunicationCancellationSource.Token);
                 }
 
                 appliedUpdateCount += updatesToApply.Length;
@@ -299,7 +299,7 @@ namespace Microsoft.DotNet.Watch
                     try
                     {
                         using var processCommunicationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(runningProject.ProcessExitedSource.Token, cancellationToken);
-                        var applySucceded = await runningProject.DeltaApplier.ApplyManagedCodeUpdates(ToManagedCodeUpdates(updates.ProjectUpdates), processCommunicationCancellationSource.Token) != ApplyStatus.Failed;
+                        var applySucceded = await runningProject.DeltaApplier.ApplyManagedCodeUpdates(ToManagedCodeUpdates(updates.ProjectUpdates), isProcessSuspended: false, processCommunicationCancellationSource.Token) != ApplyStatus.Failed;
                         if (applySucceded)
                         {
                             runningProject.Reporter.Report(MessageDescriptor.HotReloadSucceeded);
@@ -569,7 +569,7 @@ namespace Microsoft.DotNet.Watch
                         _reporter.Verbose($"Sending static file update request for asset '{relativeUrl}'.");
                     }
 
-                    await runningProject.DeltaApplier.ApplyStaticAssetUpdates([.. updates], cancellationToken);
+                    await runningProject.DeltaApplier.ApplyStaticAssetUpdates([.. updates], isProcessSuspended: false, cancellationToken);
                 }
             });
 

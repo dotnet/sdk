@@ -18,4 +18,6 @@
     <PackageReference Include="Moq" />
   </ItemGroup>
 
+  <Import Project="..\..\src\BuiltInTools\HotReloadClient\Microsoft.DotNet.HotReload.Client.projitems" Label="Shared" />
+
 </Project>
