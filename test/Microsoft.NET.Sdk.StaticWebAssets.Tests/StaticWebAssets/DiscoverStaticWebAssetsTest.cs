@@ -777,7 +777,7 @@ for path 'candidate.js'");
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
             buildEngine.SetupGet(e => e.ProjectFileOfTaskNode)
-                .Returns("/home/user/work/Repo/Project/");
+                .Returns("/home/user/work/Repo/Project/Project.csproj");
 
             var task = new DefineStaticWebAssets
             {
@@ -802,6 +802,7 @@ for path 'candidate.js'");
             task.Assets.Length.Should().Be(1);
             task.Assets[0].GetMetadata(nameof(StaticWebAsset.RelativePath)).Should().Be("Components/Dropdown/Dropdown.razor.js");
             task.Assets[0].GetMetadata(nameof(StaticWebAsset.BasePath)).Should().Be("_content/Project");
+            task.Assets[0].GetMetadata(nameof(StaticWebAsset.ContentRoot)).Should().Be("/home/user/work/Repo/Project/");
         }
 
         private static TaskLoggingHelper CreateLogger()

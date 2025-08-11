@@ -116,7 +116,16 @@ public partial class DefineStaticWebAssets : Task
                         var normalizedDirectoryPath = Path.GetDirectoryName(BuildEngine.ProjectFileOfTaskNode);
                         if (normalizedAssetPath.StartsWith(normalizedDirectoryPath))
                         {
-                            var result = normalizedAssetPath.Substring(normalizedDirectoryPath.Length);
+                            var directoryPathLength = normalizedDirectoryPath switch
+                            {
+                                null => 0,
+                                "" => 0,
+#pragma warning disable IDE0056 // Indexers are not available. in .NET Framework
+                                var withSeparator when withSeparator[withSeparator.Length - 1] == Path.DirectorySeparatorChar || withSeparator[withSeparator.Length - 1] == Path.AltDirectorySeparatorChar => normalizedDirectoryPath.Length,
+                                _ => normalizedDirectoryPath.Length + 1
+                            };
+#pragma warning restore IDE0056
+                            var result = normalizedAssetPath.Substring(directoryPathLength);
                             Log.LogMessage(MessageImportance.Low, "FullPath '{0}' starts with content root '{1}' for candidate '{2}'. Using '{3}' as relative path.", normalizedAssetPath, normalizedDirectoryPath, candidate.ItemSpec, result);
                             candidateMatchPath = result;
                         }
