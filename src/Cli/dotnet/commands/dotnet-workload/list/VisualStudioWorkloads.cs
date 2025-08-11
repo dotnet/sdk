@@ -129,11 +129,12 @@ namespace Microsoft.DotNet.Workloads.Workload
         /// This is to fix a bug where updating the manifests in the CLI will cause VS to also be told to use these newer workloads via the workload resolver.
         /// ...  but these workloads don't have their corresponding packs installed as VS doesn't update its workloads as the CLI does.
         /// </summary>
-        internal static void WriteSDKInstallRecordsForVSWorkloads(IInstaller workloadInstaller, IWorkloadResolver workloadResolver,
+        /// <returns>Updated list of workloads including any that may have had new install records written</returns>
+        internal static IEnumerable<WorkloadId> WriteSDKInstallRecordsForVSWorkloads(IInstaller workloadInstaller, IWorkloadResolver workloadResolver,
             IEnumerable<WorkloadId> workloadsWithExistingInstallRecords, IReporter reporter)
         {
             // Do this check to avoid adding an unused & unnecessary method to FileBasedInstallers
-            if (OperatingSystem.IsWindows() && typeof(NetSdkMsiInstallerClient) == workloadInstaller.GetType())
+            if (OperatingSystem.IsWindows() && workloadInstaller is NetSdkMsiInstallerClient)
             {
                 InstalledWorkloadsCollection vsWorkloads = new();
                 GetInstalledWorkloads(workloadResolver, vsWorkloads);
@@ -148,10 +149,15 @@ namespace Microsoft.DotNet.Workloads.Workload
                         string.Format(LocalizableStrings.WriteCLIRecordForVisualStudioWorkloadMessage,
                         string.Join(", ", workloadsToWriteRecordsFor.Select(w => w.ToString()).ToArray()))
                     );
-                }
 
-                ((NetSdkMsiInstallerClient)workloadInstaller).WriteWorkloadInstallRecords(workloadsToWriteRecordsFor);
+                    ((NetSdkMsiInstallerClient)workloadInstaller).WriteWorkloadInstallRecords(workloadsToWriteRecordsFor);
+
+                    return workloadsWithExistingInstallRecords.Concat(workloadsToWriteRecordsFor).ToList();
+                }
             }
+
+            return workloadsWithExistingInstallRecords;
+
         }
 
         /// <summary>
