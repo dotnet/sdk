@@ -702,7 +702,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 isVirtualProject: true,
                 targetFilePath: EntryPointFileFullPath,
                 artifactsPath: ArtifactsPath,
-                includeRuntimeConfigInformation: !MSBuildArgs.RequestedTargets?.Contains("Publish") ?? true);
+                includeRuntimeConfigInformation: MSBuildArgs.RequestedTargets?.ContainsAny("Publish", "Pack") != true);
             var projectFileText = projectFileWriter.ToString();
 
             using var reader = new StringReader(projectFileText);
