@@ -20,6 +20,10 @@
     <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.Contracts" PrivateAssets="all"/>
+  </ItemGroup>
+
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <!-- netstandard2.0 polyfills
       Since this code may be run in Visual Studio / full framework MSBuild, these packages need to use the "toolset" package versions so they
@@ -42,6 +46,12 @@
     <Using Remove="@(Using)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="@(Compile)">
+      <Link Condition="'%(NuGetPackageId)' != ''">External\%(NuGetPackageId)\%(Link)</Link>
+    </Compile>
+  </ItemGroup>
+  
   <Import Project="..\HotReloadAgent.PipeRpc\Microsoft.DotNet.HotReload.Agent.PipeRpc.projitems" Label="Shared" />
   <Import Project="..\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.projitems" Label="Shared" />
 
