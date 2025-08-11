@@ -13,6 +13,8 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
     private readonly ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions = new();
     private readonly TerminalTestReporter _output = output;
 
+    public bool HasHandshakeFailure => _output.HasHandshakeFailure;
+
     public void OnHandshakeReceived(object sender, HandshakeArgs args)
     {
         var hostType = args.Handshake.Properties[HandshakeMessagePropertyNames.HostType];
@@ -24,11 +26,12 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
             // Calling it for both test host and test host controllers means we will count retries incorrectly, and will messages twice.
             var testApplication = (TestApplication)sender;
             var executionId = args.Handshake.Properties[HandshakeMessagePropertyNames.ExecutionId];
+            var instanceId = args.Handshake.Properties[HandshakeMessagePropertyNames.InstanceId];
             var arch = args.Handshake.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
             var tfm = TargetFrameworkParser.GetShortTargetFramework(args.Handshake.Properties[HandshakeMessagePropertyNames.Framework]);
             (string ModulePath, string TargetFramework, string Architecture, string ExecutionId) appInfo = new(testApplication.Module.TargetPath, tfm, arch, executionId);
             _executions[testApplication] = appInfo;
-            _output.AssemblyRunStarted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId);
+            _output.AssemblyRunStarted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId, instanceId);
         }
 
         LogHandshake(args);
@@ -66,11 +69,6 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
 
     public void OnTestResultsReceived(object sender, TestResultEventArgs args)
     {
-        // TODO: If we got some results for ExecutionId1 and InstanceId1
-        // Then we started getting ExecutionId1 and InstanceId2,
-        // Then we started getting ExecutionId1 and InstanceId1 again.
-        // Should we discard the last result from ExecutionId1 and InstanceId1 completely?
-        // Or is it considered a violation of the protocol and should never happen? (in that case maybe we should throw?)
         var testApp = (TestApplication)sender;
         var appInfo = _executions[testApp];
 
@@ -145,11 +143,11 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
 
         if (_executions.TryGetValue(testApplication, out var appInfo))
         {
-            _output.AssemblyRunCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
+            _output.AssemblyRunCompleted(appInfo.ExecutionId, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
         }
         else
         {
-            _output.AssemblyRunCompleted(testApplication.Module.TargetPath ?? testApplication.Module.ProjectFullPath, testApplication.Module.TargetFramework, architecture: null, null, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
+            _output.HandshakeFailure(testApplication.Module.TargetPath ?? testApplication.Module.ProjectFullPath, testApplication.Module.TargetFramework, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
         }
 
         LogTestProcessExit(args);
