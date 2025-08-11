@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -14,35 +15,56 @@ public class PackCommand(
     string? msbuildPath = null
     ) : RestoringCommand(msbuildArgs, noRestore, msbuildPath: msbuildPath)
 {
-    public static PackCommand FromArgs(string[] args, string? msbuildPath = null)
+    public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
         var parseResult = Parser.Parse(["dotnet", "pack", ..args]);
         return FromParseResult(parseResult, msbuildPath);
     }
 
-    public static PackCommand FromParseResult(ParseResult parseResult, string? msbuildPath = null)
+    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
     {
         parseResult.ShowHelpOrErrorIfAppropriate();
 
-        var msbuildArgs = parseResult.OptionValuesToBeForwarded(PackCommandParser.GetCommand()).Concat(parseResult.GetValue(PackCommandParser.SlnOrProjectArgument) ?? []);
+        var args = parseResult.GetValue(PackCommandParser.SlnOrProjectOrFileArgument) ?? [];
 
-        ReleasePropertyProjectLocator projectLocator = new(parseResult, MSBuildPropertyNames.PACK_RELEASE,
-            new ReleasePropertyProjectLocator.DependentCommandOptions(
-                    parseResult.GetValue(PackCommandParser.SlnOrProjectArgument),
-                    parseResult.HasOption(PackCommandParser.ConfigurationOption) ? parseResult.GetValue(PackCommandParser.ConfigurationOption) : null
-                )
-        );
+        LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
 
-        bool noRestore = parseResult.HasOption(PackCommandParser.NoRestoreOption) || parseResult.HasOption(PackCommandParser.NoBuildOption);
-        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
-            msbuildArgs,
-            CommonOptions.PropertiesOption,
-            CommonOptions.RestorePropertiesOption,
-            PackCommandParser.TargetOption,
-            PackCommandParser.VerbosityOption);
-        return new PackCommand(
-            parsedMSBuildArgs.CloneWithAdditionalProperties(projectLocator.GetCustomDefaultConfigurationValueIfSpecified()),
-            noRestore,
+        bool noBuild = parseResult.HasOption(PackCommandParser.NoBuildOption);
+
+        bool noRestore = noBuild || parseResult.HasOption(PackCommandParser.NoRestoreOption);
+
+        return CommandFactory.CreateVirtualOrPhysicalCommand(
+            PackCommandParser.GetCommand(),
+            PackCommandParser.SlnOrProjectOrFileArgument,
+            (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
+                entryPointFileFullPath: Path.GetFullPath(appFilePath),
+                msbuildArgs: msbuildArgs)
+            {
+                NoBuild = noBuild,
+                NoRestore = noRestore,
+                NoCache = true,
+            },
+            (msbuildArgs, msbuildPath) =>
+            {
+                ReleasePropertyProjectLocator projectLocator = new(parseResult, MSBuildPropertyNames.PACK_RELEASE,
+                    new ReleasePropertyProjectLocator.DependentCommandOptions(
+                            nonBinLogArgs,
+                            parseResult.HasOption(PackCommandParser.ConfigurationOption) ? parseResult.GetValue(PackCommandParser.ConfigurationOption) : null
+                        )
+                );
+                return new PackCommand(
+                    msbuildArgs.CloneWithAdditionalProperties(projectLocator.GetCustomDefaultConfigurationValueIfSpecified()),
+                    noRestore,
+                    msbuildPath);
+            },
+            optionsToUseWhenParsingMSBuildFlags:
+            [
+                CommonOptions.PropertiesOption,
+                CommonOptions.RestorePropertiesOption,
+                PackCommandParser.TargetOption,
+                PackCommandParser.VerbosityOption,
+            ],
+            parseResult,
             msbuildPath);
     }
 
