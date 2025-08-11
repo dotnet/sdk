@@ -10,13 +10,15 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Loader;
+using System.Threading;
 
 namespace Microsoft.DotNet.HotReload;
 
 #if NET
 [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Hot reload is only expected to work when trimming is disabled.")]
 #endif
-internal sealed class HotReloadAgent : IDisposable
+internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
 {
     private const string MetadataUpdaterTypeName = "System.Reflection.Metadata.MetadataUpdater";
     private const string ApplyUpdateMethodName = "ApplyUpdate";
@@ -32,9 +34,14 @@ internal sealed class HotReloadAgent : IDisposable
     private readonly string? _capabilities;
     private readonly MetadataUpdateHandlerInvoker _metadataUpdateHandlerInvoker;
 
-    public HotReloadAgent()
+    // handler to install on first managed update:
+    private Func<AssemblyLoadContext, AssemblyName, Assembly?>? _assemblyResolvingHandlerToInstall;
+    private Func<AssemblyLoadContext, AssemblyName, Assembly?>? _installedAssemblyResolvingHandler;
+
+    public HotReloadAgent(Func<AssemblyLoadContext, AssemblyName, Assembly?>? assemblyResolvingHandler)
     {
         _metadataUpdateHandlerInvoker = new(Reporter);
+        _assemblyResolvingHandlerToInstall = assemblyResolvingHandler;
 
         GetUpdaterMethodsAndCapabilities(out _applyUpdate, out _capabilities);
 
@@ -44,6 +51,7 @@ internal sealed class HotReloadAgent : IDisposable
     public void Dispose()
     {
         AppDomain.CurrentDomain.AssemblyLoad -= OnAssemblyLoad;
+        AssemblyLoadContext.Default.Resolving -= _installedAssemblyResolvingHandler;
     }
 
     private void GetUpdaterMethodsAndCapabilities(out ApplyUpdateDelegate? applyUpdate, out string? capabilities)
@@ -104,13 +112,17 @@ internal sealed class HotReloadAgent : IDisposable
         }
     }
 
-    public IReadOnlyCollection<(string message, AgentMessageSeverity severity)> GetAndClearLogEntries(ResponseLoggingLevel loggingLevel)
-        => Reporter.GetAndClearLogEntries(loggingLevel);
-
-    public void ApplyDeltas(IEnumerable<RuntimeManagedCodeUpdate> updates)
+    public void ApplyManagedCodeUpdates(IEnumerable<RuntimeManagedCodeUpdate> updates)
     {
         Debug.Assert(Capabilities.Length > 0);
         Debug.Assert(_applyUpdate != null);
+
+        var handler = Interlocked.Exchange(ref _assemblyResolvingHandlerToInstall, null);
+        if (handler != null)
+        {
+            AssemblyLoadContext.Default.Resolving += handler;
+            _installedAssemblyResolvingHandler = handler;
+        }
 
         foreach (var update in updates)
         {

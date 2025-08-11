@@ -299,7 +299,7 @@ namespace Microsoft.DotNet.Watch
             => SendAndReceiveAsync(request: _ => messageBytes, response: null, cancellationToken);
 
         public async ValueTask SendAndReceiveAsync<TRequest>(
-            Func<string?, TRequest> request,
+            Func<string?, TRequest>? request,
             Action<ReadOnlySpan<byte>, ILogger>? response,
             CancellationToken cancellationToken)
         {
@@ -307,12 +307,15 @@ namespace Microsoft.DotNet.Watch
 
             foreach (var connection in GetOpenBrowserConnections())
             {
-                var requestValue = request(connection.SharedSecret);
-                var requestBytes = requestValue is ReadOnlyMemory<byte> bytes ? bytes : SerializeJson(requestValue);
-
-                if (!await connection.TrySendMessageAsync(requestBytes, cancellationToken))
+                if (request != null)
                 {
-                    continue;
+                    var requestValue = request(connection.SharedSecret);
+                    var requestBytes = requestValue is ReadOnlyMemory<byte> bytes ? bytes : SerializeJson(requestValue);
+
+                    if (!await connection.TrySendMessageAsync(requestBytes, cancellationToken))
+                    {
+                        continue;
+                    }
                 }
 
                 if (response != null && !await connection.TryReceiveMessageAsync(response, cancellationToken))

@@ -110,7 +110,7 @@ internal static partial class WebAssemblyHotReload
                 {
                     agent.Reporter.Report($"Reapplying update {i}/{updates.Length}.", AgentMessageSeverity.Verbose);
 
-                    agent.ApplyDeltas(
+                    agent.ApplyManagedCodeUpdates(
                         update.Deltas.Select(d => new RuntimeManagedCodeUpdate(Guid.Parse(d.ModuleId, CultureInfo.InvariantCulture), d.MetadataDelta, d.ILDelta, d.PdbDelta, d.UpdatedTypes)));
 
                     i++;
@@ -140,7 +140,7 @@ internal static partial class WebAssemblyHotReload
             return [];
         }
 
-        agent.ApplyDeltas(
+        agent.ApplyManagedCodeUpdates(
             deltas.Select(d => new RuntimeManagedCodeUpdate(Guid.Parse(d.ModuleId, CultureInfo.InvariantCulture), d.MetadataDelta, d.ILDelta, d.PdbDelta, d.UpdatedTypes)));
 
         return agent.Reporter.GetAndClearLogEntries((ResponseLoggingLevel)loggingLevel)
