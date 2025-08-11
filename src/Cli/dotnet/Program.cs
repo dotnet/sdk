@@ -285,7 +285,7 @@ public class Program
                     otherTokens.Add(token.Value);
                 }
             }
-            parseResult = Parser.Parse(["run", unmatchedCommandOrFile, .. otherTokens]);
+            parseResult = Parser.Parse(["run", "--file", unmatchedCommandOrFile, .. otherTokens]);
 
             InvokeBuiltInCommand(parseResult, out var exitCode);
             return exitCode;
