@@ -197,18 +197,9 @@ public static class Parser
 
         rootCommand.SetAction(parseResult =>
         {
-            if (parseResult.GetValue(DiagOption) && parseResult.Tokens.Count == 1)
-            {
-                // when user does not specify any args except of diagnostics ("dotnet -d"), we do nothing
-                // as Program.ProcessArgs already enabled the diagnostic output
-                return 0;
-            }
-            else
-            {
-                // when user does not specify any args (just "dotnet"), a usage needs to be printed
-                parseResult.InvocationConfiguration.Output.WriteLine(CliUsage.HelpText);
-                return 0;
-            }
+            // when user does not specify any args (just "dotnet"), a usage needs to be printed
+            parseResult.InvocationConfiguration.Output.WriteLine(CliUsage.HelpText);
+            return 0;
         });
 
         return rootCommand;
