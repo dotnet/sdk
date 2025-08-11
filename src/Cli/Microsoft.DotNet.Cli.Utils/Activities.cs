@@ -23,6 +23,7 @@ public static class Activities
     /// track spans across calls.
     /// </summary>
     public const string TRACEPARENT = nameof(TRACEPARENT);
+
     /// <summary>
     /// The environment variable used to transfer the trace state of the parent activities.
     /// This should be used when constructing new sub-processes in order to
