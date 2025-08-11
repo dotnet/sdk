@@ -43,7 +43,6 @@ public struct StaticWebAssetEndpointProperty : IComparable<StaticWebAssetEndpoin
     {
         properties.Clear();
 
-        properties.Clear();
         if (string.IsNullOrEmpty(value))
         {
             return;
@@ -69,7 +68,6 @@ public struct StaticWebAssetEndpointProperty : IComparable<StaticWebAssetEndpoin
 
         try
         {
-            reader.Read(); // Move to start array
             PopulateFromMetadataValue(ref reader, properties);
         }
         finally
