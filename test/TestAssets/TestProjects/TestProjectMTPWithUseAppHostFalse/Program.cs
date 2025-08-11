@@ -30,10 +30,10 @@ public class DummyTestAdapter : ITestFramework, IDataProducer
 	public Task<CloseTestSessionResult> CloseTestSessionAsync(CloseTestSessionContext context)
 		=> Task.FromResult(new CloseTestSessionResult() { IsSuccess = true });
 
-	public Task ExecuteRequestAsync(ExecuteRequestContext context)
+	public async Task ExecuteRequestAsync(ExecuteRequestContext context)
 	{
 		// Simple dummy test that always passes
-		context.MessageBus.PublishAsync(this, new TestNodeUpdateMessage(
+		await context.MessageBus.PublishAsync(this, new TestNodeUpdateMessage(
 			context.Request.Session.SessionUid,
 			new TestNode()
 			{
@@ -43,6 +43,5 @@ public class DummyTestAdapter : ITestFramework, IDataProducer
 			}));
 
 		context.Complete();
-		return Task.CompletedTask;
 	}
 }
