@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     internal class TemplateCommand : Command
     {
         private static readonly TimeSpan ConstraintEvaluationTimeout = TimeSpan.FromMilliseconds(1000);
-        private static readonly string[] _helpAliases = new[] { "-h", "/h", "--help", "-?", "/?" };
+        private static readonly string[] _helpAliases = ["-h", "/h", "--help", "-?", "/?"];
         private readonly TemplatePackageManager _templatePackageManager;
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly BaseCommand _instantiateCommand;
@@ -146,19 +146,23 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal async Task<NewCommandStatus> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
         {
+            using var templateInvocationActivity = Activities.Source.StartActivity("invoke-template");
             TemplateCommandArgs args = new(this, _instantiateCommand, parseResult);
             TemplateInvoker invoker = new(_environmentSettings, () => Console.ReadLine() ?? string.Empty);
             TemplatePackageCoordinator packageCoordinator = new(_environmentSettings, _templatePackageManager);
-            TemplateConstraintManager constraintManager = new(_environmentSettings);
+            using TemplateConstraintManager constraintManager = new(_environmentSettings);
             TemplatePackageDisplay templatePackageDisplay = new(Reporter.Output, Reporter.Error);
 
             CancellationTokenSource cancellationTokenSource = new();
             cancellationTokenSource.CancelAfter(ConstraintEvaluationTimeout);
 
+#pragma warning disable CA2025 // Do not pass 'IDisposable' instances into unawaited tasks
             Task<IReadOnlyList<TemplateConstraintResult>> constraintsEvaluation = ValidateConstraintsAsync(constraintManager, args.Template, args.IsForceFlagSpecified ? cancellationTokenSource.Token : cancellationToken);
+#pragma warning restore CA2025 // Do not pass 'IDisposable' instances into unawaited tasks
 
             if (!args.IsForceFlagSpecified)
             {
+                using var constraintResultsActivity = Activities.Source.StartActivity("validate-constraints");
                 var constraintResults = await constraintsEvaluation.ConfigureAwait(false);
                 if (constraintResults.Any())
                 {
@@ -173,7 +177,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Task<(string Id, string Version, string Provider)> builtInPackageCheck = packageCoordinator.ValidateBuiltInPackageAvailabilityAsync(args.Template, cancellationToken);
             Task<CheckUpdateResult?> checkForUpdateTask = packageCoordinator.CheckUpdateForTemplate(args, cancellationToken);
 
-            Task[] tasksToWait = new Task[] { instantiateTask, builtInPackageCheck, checkForUpdateTask };
+            Task[] tasksToWait = [instantiateTask, builtInPackageCheck, checkForUpdateTask];
 
             await Task.WhenAll(tasksToWait).ConfigureAwait(false);
             Reporter.Output.WriteLine();
