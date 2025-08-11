@@ -18,7 +18,6 @@ internal static class EnvironmentVariables
         public const string AspNetCoreAutoReloadWSKey = "ASPNETCORE_AUTO_RELOAD_WS_KEY";
 
         public const string DotNetWatchHotReloadNamedPipeName = HotReload.AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName;
-        public const string DotNetWatchHotReloadTargetProcessPath = HotReload.AgentEnvironmentVariables.DotNetWatchHotReloadTargetProcessPath;
         public const string DotNetStartupHooks = HotReload.AgentEnvironmentVariables.DotNetStartupHooks;
         public const string DotNetModifiableAssemblies = HotReload.AgentEnvironmentVariables.DotNetModifiableAssemblies;
         public const string HotReloadDeltaClientLogMessages = HotReload.AgentEnvironmentVariables.HotReloadDeltaClientLogMessages;

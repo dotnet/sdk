@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
@@ -22,6 +23,18 @@ namespace Microsoft.DotNet.HotReload
         private Task<ImmutableArray<string>>? _capabilitiesTask;
         private NamedPipeServerStream? _pipe;
         private bool _managedCodeUpdateFailedOrCancelled;
+
+        public override void Dispose()
+        {
+            DisposePipe();
+        }
+
+        private void DisposePipe()
+        {
+            Logger.LogDebug("Disposing agent communication pipe");
+            _pipe?.Dispose();
+            _pipe = null;
+        }
 
         public override void CreateConnection(string namedPipeName, CancellationToken cancellationToken)
         {
@@ -69,24 +82,31 @@ namespace Microsoft.DotNet.HotReload
             }
         }
 
-        public override Task WaitForProcessRunningAsync(CancellationToken cancellationToken)
-            // Should only be called after CreateConnection
+        private Task<ImmutableArray<string>> GetCapabilitiesTask()
             => _capabilitiesTask ?? throw new InvalidOperationException();
 
+        [MemberNotNull(nameof(_pipe))]
+        private void EnsureReadyForUpdates()
+        {
+            // should only be called after connection has been created:
+            _ = GetCapabilitiesTask();
+
+            if (_pipe == null)
+                throw new InvalidOperationException("Pipe has been disposed.");
+        }
+
+        public override Task WaitForProcessRunningAsync(CancellationToken cancellationToken)
+            => GetCapabilitiesTask();
+
         public override Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)
-            // Should only be called after CreateConnection
-            => _capabilitiesTask ?? throw new InvalidOperationException();
+            => GetCapabilitiesTask();
 
         private ResponseLoggingLevel ResponseLoggingLevel
             => Logger.IsEnabled(LogLevel.Debug) ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
 
         public override async Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken cancellationToken)
         {
-            // Should only be called after CreateConnection
-            Debug.Assert(_capabilitiesTask != null);
-
-            // Should not be disposed:
-            Debug.Assert(_pipe != null);
+            EnsureReadyForUpdates();
 
             if (_managedCodeUpdateFailedOrCancelled)
             {
@@ -150,6 +170,8 @@ namespace Microsoft.DotNet.HotReload
 
         public async override Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<HotReloadStaticAssetUpdate> updates, CancellationToken cancellationToken)
         {
+            EnsureReadyForUpdates();
+
             var appliedUpdateCount = 0;
 
             foreach (var update in updates)
@@ -221,11 +243,7 @@ namespace Microsoft.DotNet.HotReload
 
         public override async Task InitialUpdatesApplied(CancellationToken cancellationToken)
         {
-            // Should only be called after CreateConnection
-            Debug.Assert(_capabilitiesTask != null);
-
-            // Should not be disposed:
-            Debug.Assert(_pipe != null);
+            EnsureReadyForUpdates();
 
             if (_managedCodeUpdateFailedOrCancelled)
             {
@@ -234,18 +252,6 @@ namespace Microsoft.DotNet.HotReload
 
             await _pipe.WriteAsync((byte)RequestType.InitialUpdatesCompleted, cancellationToken);
             await _pipe.FlushAsync(cancellationToken);
-        }
-
-        private void DisposePipe()
-        {
-            Logger.LogDebug("Disposing agent communication pipe");
-            _pipe?.Dispose();
-            _pipe = null;
-        }
-
-        public override void Dispose()
-        {
-            DisposePipe();
         }
     }
 }
