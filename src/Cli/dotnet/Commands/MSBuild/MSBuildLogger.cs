@@ -71,7 +71,7 @@ public sealed class MSBuildLogger : INodeLogger
         }
         catch (Exception)
         {
-            // Exceptions during _telemetry shouldn't cause anything else to fail
+            // Exceptions during telemetry shouldn't cause anything else to fail
         }
     }
 
@@ -113,7 +113,7 @@ public sealed class MSBuildLogger : INodeLogger
         }
         catch (Exception)
         {
-            // Exceptions during _telemetry shouldn't cause anything else to fail
+            // Exceptions during telemetry shouldn't cause anything else to fail
         }
     }
 

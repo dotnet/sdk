@@ -7,7 +7,7 @@ using NuGetWhyCommand = NuGet.CommandLine.XPlat.Commands.Why.WhyCommand;
 
 namespace Microsoft.DotNet.Cli.Commands.NuGet;
 
-// This parser is used for completion and _telemetry.
+// This parser is used for completion and telemetry.
 // See https://github.com/NuGet/NuGet.Client for the actual implementation.
 internal static class NuGetCommandParser
 {
