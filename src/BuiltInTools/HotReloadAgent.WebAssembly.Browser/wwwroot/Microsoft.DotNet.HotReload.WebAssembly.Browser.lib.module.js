@@ -1,6 +1,10 @@
+let isHotReloadEnabled = false;
+
 export async function onRuntimeConfigLoaded(config) {
     // If we have 'aspnetcore-browser-refresh', configure mono runtime for HotReload.
     if (config.debugLevel !== 0 && globalThis.window?.document?.querySelector("script[src*='aspnetcore-browser-refresh']")) {
+        isHotReloadEnabled = true;
+
         if (!config.environmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"]) {
             config.environmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"] = "debug";
         }
@@ -14,6 +18,10 @@ export async function onRuntimeConfigLoaded(config) {
 }
 
 export async function onRuntimeReady({ getAssemblyExports }) {
+    if (!isHotReloadEnabled) {
+        return;
+    }
+    
     const exports = await getAssemblyExports("Microsoft.DotNet.HotReload.WebAssembly.Browser");
     await exports.Microsoft.DotNet.HotReload.WebAssembly.Browser.WebAssemblyHotReload.InitializeAsync(document.baseURI);
 
