@@ -1115,21 +1115,21 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     /// Scripts in repo root should not include <c>.resx</c> files.
     /// Part of <see href="https://github.com/dotnet/sdk/issues/49826"/>.
     /// </summary>
-    [Fact]
-    public void EmbeddedResource_AlongsideSln()
+    [Theory, CombinatorialData]
+    public void EmbeddedResource_AlongsideProj([CombinatorialValues("sln", "slnx", "csproj", "vbproj", "shproj", "proj")] string ext)
     {
+        bool considered = ext is "sln" or "slnx" or "csproj";
+
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programReadingEmbeddedResource);
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
-        File.WriteAllText(Path.Join(testInstance.Path, "repo.sln"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, $"repo.{ext}"), "");
 
-        new DotnetCommand(Log, "run", "Program.cs")
+        new DotnetCommand(Log, "run", "--file", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOut("""
-                Resource not found
-                """);
+            .And.HaveStdOut(considered ? "Resource not found" : "[MyString, TestValue]");
     }
 
     [Fact]

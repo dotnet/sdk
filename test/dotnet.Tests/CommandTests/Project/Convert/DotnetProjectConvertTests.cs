@@ -541,9 +541,11 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// Scripts in repo root should not include default items.
     /// Part of <see href="https://github.com/dotnet/sdk/issues/49826"/>.
     /// </summary>
-    [Fact]
-    public void DefaultItems_AlongsideSln()
+    [Theory, CombinatorialData]
+    public void DefaultItems_AlongsideProj([CombinatorialValues("sln", "slnx", "csproj", "vbproj", "shproj", "proj")] string ext)
     {
+        bool considered = ext is "sln" or "slnx" or "csproj";
+
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             Console.WriteLine();
@@ -551,7 +553,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         File.WriteAllText(Path.Join(testInstance.Path, "my.json"), "");
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), "");
         File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "");
-        File.WriteAllText(Path.Join(testInstance.Path, "repo.sln"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, $"repo.{ext}"), "");
 
         new DotnetCommand(Log, "project", "convert", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
@@ -560,11 +562,13 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program", "Program.cs", "Resources.resx", "Util.cs", "my.json", "repo.sln"]);
+            .Should().BeEquivalentTo(["Program", "Program.cs", "Resources.resx", "Util.cs", "my.json", $"repo.{ext}"]);
 
         new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program.csproj", "Program.cs"]);
+            .Should().BeEquivalentTo(considered
+                ? ["Program.csproj", "Program.cs"]
+                : ["my.json", "Program.csproj", "Program.cs", "Resources.resx"]);
     }
 
     /// <summary>
