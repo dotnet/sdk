@@ -58,7 +58,7 @@ public sealed class MSBuildLogger : INodeLogger
         }
         catch (Exception)
         {
-            // Exceptions during _telemetry shouldn't cause anything else to fail
+            // Exceptions during telemetry shouldn't cause anything else to fail
         }
     }
 
@@ -88,7 +88,7 @@ public sealed class MSBuildLogger : INodeLogger
         }
         catch (Exception)
         {
-            // Exceptions during _telemetry shouldn't cause anything else to fail
+            // Exceptions during telemetry shouldn't cause anything else to fail
         }
     }
 
@@ -170,7 +170,7 @@ public sealed class MSBuildLogger : INodeLogger
         {
             if (eventProperties.TryGetValue(propertyToBeHashed, out string? value) && value is not null)
             {
-                // Lets lazy allocate in case there is tons of _telemetry
+                // Lets lazy allocate in case there is tons of
                 properties ??= new Dictionary<string, string?>(eventProperties);
                 properties[propertyToBeHashed] = Sha256Hasher.HashWithNormalizedCasing(value);
             }
@@ -180,12 +180,12 @@ public sealed class MSBuildLogger : INodeLogger
         {
             if (eventProperties.TryGetValue(propertyToBeMeasured, out string? value))
             {
-                // Lets lazy allocate in case there is tons of _telemetry
+                // Lets lazy allocate in case there is tons of telemetry
                 properties ??= new Dictionary<string, string?>(eventProperties);
                 properties.Remove(propertyToBeMeasured);
                 if (double.TryParse(value, CultureInfo.InvariantCulture, out double realValue))
                 {
-                    // Lets lazy allocate in case there is tons of _telemetry
+                    // Lets lazy allocate in case there is tons of telemetry
                     measurements ??= [];
                     measurements[propertyToBeMeasured] = realValue;
                 }
