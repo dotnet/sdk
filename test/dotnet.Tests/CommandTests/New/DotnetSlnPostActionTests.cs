@@ -35,11 +35,9 @@ namespace Microsoft.DotNet.Cli.New.Tests
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
             _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
             EnsureParentDirectoriesExist(targetBasePath);
-            Console.WriteLine($"slnx_targetBasePath_Value: {targetBasePath}");
 
             string solutionFileFullPath = Path.Combine(targetBasePath, "MySln.slnx");
             _engineEnvironmentSettings.Host.FileSystem.WriteAllText(solutionFileFullPath, string.Empty);
-            Console.WriteLine($"slnx_solutionFileFullPath_Value: {solutionFileFullPath}");
 
             IReadOnlyList<string> solutionFiles = DotnetSlnPostActionProcessor.FindSolutionFilesAtOrAbovePath(_engineEnvironmentSettings.Host.FileSystem, targetBasePath);
             Assert.Single(solutionFiles);
@@ -51,18 +49,16 @@ namespace Microsoft.DotNet.Cli.New.Tests
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
             _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
-            EnsureParentDirectoriesExist(targetBasePath);            
-            Console.WriteLine($"sln_targetBasePath_Value: {targetBasePath}");
+            EnsureParentDirectoriesExist(targetBasePath);
             
             string slnFileFullPath = Path.Combine(targetBasePath, "MySln.sln");
             string slnxFileFullPath = Path.Combine(targetBasePath, "MySln.slnx");
             _engineEnvironmentSettings.Host.FileSystem.WriteAllText(slnFileFullPath, string.Empty);
             _engineEnvironmentSettings.Host.FileSystem.WriteAllText(slnxFileFullPath, string.Empty);
-            Console.WriteLine($"sln_solutionFileFullPath_Value: {slnFileFullPath}");
 
             IReadOnlyList<string> solutionFiles = DotnetSlnPostActionProcessor.FindSolutionFilesAtOrAbovePath(_engineEnvironmentSettings.Host.FileSystem, targetBasePath);
             Assert.Single(solutionFiles);
-            Assert.NotEqual(slnFileFullPath, solutionFiles[0]);
+            Assert.Equal(slnFileFullPath, solutionFiles[0]);
         }
 
         [Fact(DisplayName = nameof(AddProjectToSolutionPostActionFindsOneProjectToAdd))]
