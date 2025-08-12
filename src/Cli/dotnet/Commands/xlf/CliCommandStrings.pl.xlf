@@ -406,6 +406,11 @@ W przypadku platformy MSTest przed wersją 2.2.4 limit czasu jest używany dla w
         <target state="translated">Ścieżka do pliku konfiguracji NuGet do użycia. Wymaga opcji „--outdated”, „--deprecated” lub „--vulnerable”.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdConfigFileDescription">
+        <source>Specifies a testconfig.json file.</source>
+        <target state="new">Specifies a testconfig.json file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdConfigFileOption">
         <source>FILE</source>
         <target state="translated">FILE</target>
@@ -414,6 +419,11 @@ W przypadku platformy MSTest przed wersją 2.2.4 limit czasu jest używany dla w
       <trans-unit id="CmdConfigFileOptionDescription">
         <source>The NuGet configuration file to use.</source>
         <target state="translated">Plik konfiguracji programu NuGet do użycia.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdConfigFilePath">
+        <source>CONFIG_FILE</source>
+        <target state="new">CONFIG_FILE</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCurrentRuntimeOptionDescription">
@@ -434,6 +444,18 @@ W przypadku platformy MSTest przed wersją 2.2.4 limit czasu jest używany dla w
       <trans-unit id="CmdDeprecatedDescription">
         <source>Lists packages that have been deprecated. Cannot be combined with '--vulnerable' or '--outdated' options.</source>
         <target state="translated">Wyświetla pakiety, które są przestarzałe. Nie można łączyć z opcją „--vulnerable” ani „--outdated”.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDiagnosticOutputDirectoryDescription">
+        <source>Output directory of the diagnostic logging.
+If not specified the file will be generated inside the default 'TestResults' directory.</source>
+        <target state="new">Output directory of the diagnostic logging.
+If not specified the file will be generated inside the default 'TestResults' directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDiagnosticOutputDirectoryPath">
+        <source>DIAGNOSTIC_DIR</source>
+        <target state="new">DIAGNOSTIC_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDirectoryDescription">
@@ -3013,6 +3035,26 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
       <trans-unit id="TestCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseDirectory">
+        <source>Specifying a directory for 'dotnet test' should be via '--directory'.</source>
+        <target state="new">Specifying a directory for 'dotnet test' should be via '--directory'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseProject">
+        <source>Specifying a project for 'dotnet test' should be via '--project'.</source>
+        <target state="new">Specifying a project for 'dotnet test' should be via '--project'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseSolution">
+        <source>Specifying a solution for 'dotnet test' should be via '--solution'.</source>
+        <target state="new">Specifying a solution for 'dotnet test' should be via '--solution'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseTestModules">
+        <source>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</source>
+        <target state="new">Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestConfigurationOptionDescription">

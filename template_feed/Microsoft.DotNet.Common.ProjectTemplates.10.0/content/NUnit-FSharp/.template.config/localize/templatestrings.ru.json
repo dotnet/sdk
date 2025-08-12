@@ -1,6 +1,6 @@
 ﻿{
   "author": "Алексей Харлов aka halex2005 (codeofclimber.ru)",
-  "name": "Тестовый проект NUnit 3",
+  "name": "Тестовый проект NUnit",
   "description": "Проект, содержащий тесты NUnit, которые могут работать на .NET в Windows, Linux и macOS.",
   "symbols/TargetFrameworkOverride/description": "Переопределяет целевую платформу",
   "symbols/TargetFrameworkOverride/displayName": "Переопределение целевой платформы",
