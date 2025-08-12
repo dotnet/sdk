@@ -656,7 +656,7 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("netstandard2.0", true)]
         [InlineData("netstandard2.0;net5.0", true)] // None of these TFMs are supported for single-file
         [InlineData("netstandard2.0;net6.0", false)] // Net6.0 is the min TFM supported for single-file and targeting.
-        [InlineData("netstandard2.0;net8.0", true)] // Net8.0 is supported for single-file, but leaves a "gap" for the supported net6./net7.0 TFMs.
+        [InlineData("netstandard2.0;net8.0", false)] // Net8.0 is supported for single-file
         [InlineData("alias-ns2", true)]
         [InlineData("alias-n6", false)]
         [InlineData("alias-n6;alias-n8", false)] // If all TFMs are supported, there's no warning even though the project uses aliases.
@@ -669,18 +669,19 @@ namespace Microsoft.NET.Publish.Tests
                 TargetFrameworks = targetFrameworks
             };
             testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "true";
+            testProject.AdditionalProperties["CheckEolTargetFramework"] = "false"; // Silence warning about targeting EOL TFMs
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFrameworks)
                 .WithProjectChanges(AddTargetFrameworkAliases);
-
+            
             var buildCommand = new BuildCommand(testAsset);
-            var resultAssertion = buildCommand.Execute("/bl:my.binlog")
+            var resultAssertion = buildCommand.Execute("/p:CheckEolTargetFramework=false")
                 .Should().Pass();
             if (shouldWarn) {
                 // Note: can't check for Strings.EnableSingleFileAnalyzerUnsupported because each line of
                 // the message gets prefixed with a file path by MSBuild.
                 resultAssertion
                     .And.HaveStdOutContaining($"warning NETSDK1211")
-                    .And.HaveStdOutContaining($"<EnableSingleFileAnalyzer Condition=\"$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))\">true</EnableSingleFileAnalyzer>");
+                    .And.HaveStdOutContaining($"<EnableSingleFileAnalyzer Condition=\"$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))\">true</EnableSingleFileAnalyzer>");
             } else {
                 resultAssertion.And.NotHaveStdOutContaining($"warning");
             }
