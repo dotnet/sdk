@@ -18,6 +18,7 @@ internal static class KnownStrings
         public static readonly string ContainerImageTags = nameof(ContainerImageTags);
         public static readonly string ContainerWorkingDirectory = nameof(ContainerWorkingDirectory);
         public static readonly string ContainerEntrypoint = nameof(ContainerEntrypoint);
+        public static readonly string ContainerAppCommand = nameof(ContainerAppCommand);
         public static readonly string UseAppHost = nameof(UseAppHost);
         public static readonly string ContainerLabel = nameof(ContainerLabel);
         public static readonly string SelfContained = nameof(SelfContained);
@@ -30,6 +31,7 @@ internal static class KnownStrings
         public static readonly string ContainerBaseRegistry = nameof(ContainerBaseRegistry);
         public static readonly string ContainerBaseName = nameof(ContainerBaseName);
         public static readonly string ContainerBaseTag = nameof(ContainerBaseTag);
+        public static readonly string ContainerBaseDigest = nameof(ContainerBaseDigest);
 
         public static readonly string ContainerGenerateLabels = nameof(ContainerGenerateLabels);
 

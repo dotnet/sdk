@@ -12,6 +12,11 @@
         <target state="translated">Driver di test per la piattaforma .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
+        <source>The additional msbuild parameters to pass.</source>
+        <target state="translated">Parametri msbuild aggiuntivi da passare.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Abilita la raccolta del dump di arresto anomalo in caso di chiusura prevista e imprevista dell'host di test.</target>
@@ -96,6 +101,11 @@ Esempi:
       <trans-unit id="CmdEnvironmentVariableExpression">
         <source>NAME="VALUE"</source>
         <target state="translated">NAME="VALORE"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMaxParallelTestModulesDescription">
+        <source>The max number of test modules that can run in parallel.</source>
+        <target state="translated">Numero massimo di moduli di test che possono essere eseguiti in parallelo.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
@@ -223,6 +233,16 @@ Se non esiste, la directory specificata verrà creata.</target>
       <trans-unit id="IgnoredArgumentsMessage">
         <source>The following arguments have been ignored : "{0}"</source>
         <target state="translated">Gli argomenti seguenti sono stati ignorati: "{0}"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoSerializerRegisteredWithIdErrorMessage">
+        <source>No serializer registered with ID '{0}'</source>
+        <target state="translated">Nessun serializzatore registrato con ID '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoSerializerRegisteredWithTypeErrorMessage">
+        <source>No serializer registered with type '{0}'</source>
+        <target state="translated">Nessun serializzatore registrato con tipo '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="RunSettingsArgumentsDescription">
