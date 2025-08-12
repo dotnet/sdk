@@ -83,7 +83,7 @@ public class ApplyCompressionNegotiationTest
                     new () { Name = "Content-Encoding", Value = "gzip" },
                     new () { Name = "Content-Length", Value = "9" },
                     new () { Name = "Content-Type", Value = "text/javascript" },
-                    new () { Name = "Vary", Value = "Content-Encoding" }
+                    new () { Name = "Vary", Value = "Accept-Encoding" }
                 ],
                 EndpointProperties = [],
                 Selectors = [ new () { Name = "Content-Encoding", Value = "gzip", Quality = "0.100000000000" } ],
@@ -109,7 +109,7 @@ public class ApplyCompressionNegotiationTest
                     new () { Name = "Content-Encoding", Value = "gzip" },
                     new () { Name = "Content-Length", Value = "9" },
                     new () { Name = "Content-Type", Value = "text/javascript" },
-                    new () { Name = "Vary", Value = "Content-Encoding" }
+                    new () { Name = "Vary", Value = "Accept-Encoding" }
                 ],
                 EndpointProperties = [],
                 Selectors = []
@@ -197,13 +197,7 @@ public class ApplyCompressionNegotiationTest
                             Quality = "0.125000000000"
                     }
                 ],
-            ResponseHeaders = [
-            new ()
-            {
-                Name = "Accept-Ranges",
-                Value = "bytes"
-            },
-            new ()
+            ResponseHeaders = [            new ()
             {
                 Name = "Cache-Control",
                 Value = "max-age=31536000, immutable"
@@ -241,7 +235,7 @@ public class ApplyCompressionNegotiationTest
             new ()
             {
                 Name = "Vary",
-                Value = "Content-Encoding"
+                Value = "Accept-Encoding"
             }
         ],
         EndpointProperties = [
@@ -274,13 +268,7 @@ public class ApplyCompressionNegotiationTest
                 Quality = "0.100000000000"
                 }
             ],
-            ResponseHeaders = [
-                new ()
-                {
-                    Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
-                new ()
+            ResponseHeaders = [                new ()
                 {
                     Name = "Cache-Control",
                     Value = "max-age=31536000, immutable"
@@ -318,7 +306,7 @@ public class ApplyCompressionNegotiationTest
                 new ()
                 {
                     Name = "Vary",
-                    Value = "Content-Encoding"
+                    Value = "Accept-Encoding"
                 }
             ],
             EndpointProperties = [
@@ -343,13 +331,7 @@ public class ApplyCompressionNegotiationTest
             {
                 Route = "candidate.fingerprint.js",
                 AssetFile = Path.Combine(AppContext.BaseDirectory, "wwwroot", "candidate.js"),
-                ResponseHeaders = [
-                new ()
-                {
-                    Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
-                new ()
+                ResponseHeaders = [                new ()
                 {
                     Name = "Cache-Control",
                     Value = "max-age=31536000, immutable"
@@ -397,13 +379,7 @@ public class ApplyCompressionNegotiationTest
             {
                 Route = "candidate.fingerprint.js.br",
                 AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.br"),
-                ResponseHeaders = [
-                new ()
-                {
-                        Name = "Accept-Ranges",
-                        Value = "bytes"
-                },
-                new ()
+                ResponseHeaders = [                new ()
                 {
                     Name = "Cache-Control",
                     Value = "max-age=31536000, immutable"
@@ -436,7 +412,7 @@ public class ApplyCompressionNegotiationTest
                 new ()
                 {
                     Name = "Vary",
-                    Value = "Content-Encoding"
+                    Value = "Accept-Encoding"
                 }
             ],
             EndpointProperties = [
@@ -461,13 +437,7 @@ public class ApplyCompressionNegotiationTest
             {
                 Route = "candidate.fingerprint.js.gz",
                 AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.gz"),
-                ResponseHeaders = [
-                new ()
-                {
-                    Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
-                new ()
+                ResponseHeaders = [                new ()
                 {
                     Name = "Cache-Control",
                     Value = "max-age=31536000, immutable"
@@ -500,7 +470,7 @@ public class ApplyCompressionNegotiationTest
                 new ()
                 {
                     Name = "Vary",
-                    Value = "Content-Encoding"
+                    Value = "Accept-Encoding"
                 }
             ],
             EndpointProperties = [
@@ -533,13 +503,7 @@ public class ApplyCompressionNegotiationTest
                 Quality = "0.125000000000"
                 }
             ],
-            ResponseHeaders = [
-                new ()
-                {
-                    Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
-                new ()
+            ResponseHeaders = [                new ()
                 {
                     Name = "Cache-Control",
                     Value = "no-cache"
@@ -577,7 +541,7 @@ public class ApplyCompressionNegotiationTest
                 new ()
                 {
                     Name = "Vary",
-                    Value = "Content-Encoding"
+                    Value = "Accept-Encoding"
                 }
             ],
             EndpointProperties = [
@@ -600,13 +564,7 @@ public class ApplyCompressionNegotiationTest
                 Quality = "0.100000000000"
                 }
             ],
-            ResponseHeaders = [
-                new ()
-                {
-                    Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
-                new ()
+            ResponseHeaders = [                new ()
                 {
                     Name = "Cache-Control",
                     Value = "no-cache"
@@ -644,7 +602,7 @@ public class ApplyCompressionNegotiationTest
                 new ()
                 {
                     Name = "Vary",
-                    Value = "Content-Encoding"
+                    Value = "Accept-Encoding"
                 }
             ],
             EndpointProperties = [
@@ -659,13 +617,7 @@ public class ApplyCompressionNegotiationTest
             {
                 Route = "candidate.js",
                 AssetFile = Path.Combine(AppContext.BaseDirectory, "wwwroot", "candidate.js"),
-                ResponseHeaders = [
-                new ()
-                {
-                    Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
-                new ()
+                ResponseHeaders = [                new ()
                 {
                     Name = "Cache-Control",
                     Value = "no-cache"
@@ -703,13 +655,7 @@ public class ApplyCompressionNegotiationTest
             {
                 Route = "candidate.js.br",
                 AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.br"),
-                ResponseHeaders = [
-                new ()
-                {
-                    Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
-                new ()
+                ResponseHeaders = [                new ()
                 {
                     Name = "Cache-Control",
                     Value = "no-cache"
@@ -742,7 +688,7 @@ public class ApplyCompressionNegotiationTest
                 new ()
                 {
                     Name = "Vary",
-                    Value = "Content-Encoding"
+                    Value = "Accept-Encoding"
                 }
             ],
             EndpointProperties = [
@@ -757,12 +703,7 @@ public class ApplyCompressionNegotiationTest
             {
                 Route = "candidate.js.gz",
                 AssetFile = Path.Combine(AppContext.BaseDirectory, $"{expectedName}.gz"),
-                ResponseHeaders = [
-                new () {
-                Name = "Accept-Ranges",
-                    Value = "bytes"
-                },
-                new () {
+                ResponseHeaders = [                new () {
                 Name = "Cache-Control",
                     Value = "no-cache"
                 },
@@ -788,7 +729,7 @@ public class ApplyCompressionNegotiationTest
                 },
                 new () {
                 Name = "Vary",
-                    Value = "Content-Encoding"
+                    Value = "Accept-Encoding"
                 }
             ],
             EndpointProperties = [
@@ -874,7 +815,7 @@ public class ApplyCompressionNegotiationTest
                 [
                     new () { Name = "Content-Encoding", Value = "gzip" },
                     new () { Name = "Content-Type", Value = "text/javascript" },
-                    new () { Name = "Vary", Value = "Content-Encoding" }
+                    new () { Name = "Vary", Value = "Accept-Encoding" }
                 ],
                 EndpointProperties = [],
                 Selectors = [ new () { Name = "Content-Encoding", Value = "gzip", Quality = "0.100000000000" } ],
@@ -898,7 +839,7 @@ public class ApplyCompressionNegotiationTest
                 [
                     new () { Name = "Content-Encoding", Value = "gzip" },
                     new () { Name = "Content-Type", Value = "text/javascript" },
-                    new () { Name = "Vary", Value = "Content-Encoding" }
+                    new () { Name = "Vary", Value = "Accept-Encoding" }
                 ],
                 EndpointProperties = [],
                 Selectors = [ new () { Name = "Content-Encoding", Value = "gzip", Quality = "0.100000000000" } ],
@@ -922,7 +863,7 @@ public class ApplyCompressionNegotiationTest
                 [
                     new () { Name = "Content-Encoding", Value = "gzip" },
                     new () { Name = "Content-Type", Value = "text/javascript" },
-                    new () { Name = "Vary", Value = "Content-Encoding" }
+                    new () { Name = "Vary", Value = "Accept-Encoding" }
                 ],
                 EndpointProperties = [],
                 Selectors = []
@@ -977,7 +918,7 @@ public class ApplyCompressionNegotiationTest
                     [
                         new () { Name = "Content-Encoding", Value = "gzip" },
                         new (){ Name = "Content-Type", Value = "text/javascript" },
-                        new (){ Name = "Vary", Value = "Content-Encoding" }
+                        new (){ Name = "Vary", Value = "Accept-Encoding" }
                     ],
                     EndpointProperties = [],
                     Selectors = [ new StaticWebAssetEndpointSelector { Name = "Content-Encoding", Value = "gzip", Quality = "0.100000000000" } ],
@@ -1001,7 +942,7 @@ public class ApplyCompressionNegotiationTest
                     [
                         new (){ Name = "Content-Encoding", Value = "gzip" },
                         new (){ Name = "Content-Type", Value = "text/javascript" },
-                        new (){ Name = "Vary", Value = "Content-Encoding" }
+                        new (){ Name = "Vary", Value = "Accept-Encoding" }
                     ],
                     EndpointProperties = [],
                     Selectors = [ new () { Name = "Content-Encoding", Value = "gzip", Quality = "0.100000000000" } ],
@@ -1025,7 +966,7 @@ public class ApplyCompressionNegotiationTest
                     [
                         new () { Name = "Content-Encoding", Value = "gzip" },
                         new () { Name = "Content-Type", Value = "text/javascript" },
-                        new () { Name = "Vary", Value = "Content-Encoding" }
+                        new () { Name = "Vary", Value = "Accept-Encoding" }
                     ],
                     EndpointProperties = [],
                     Selectors = []
@@ -1048,7 +989,7 @@ public class ApplyCompressionNegotiationTest
                 [
                     new () { Name = "Content-Encoding", Value = "gzip" },
                     new () { Name = "Content-Type", Value = "text/javascript" },
-                    new () { Name = "Vary", Value = "Content-Encoding" }
+                    new () { Name = "Vary", Value = "Accept-Encoding" }
                 ],
                 EndpointProperties = [],
                 Selectors = [ new StaticWebAssetEndpointSelector { Name = "Content-Encoding", Value = "gzip", Quality = "0.100000000000" } ],
@@ -1072,7 +1013,7 @@ public class ApplyCompressionNegotiationTest
                 [
                     new () { Name = "Content-Encoding", Value = "gzip" },
                     new () { Name = "Content-Type", Value = "text/javascript" },
-                    new () { Name = "Vary", Value = "Content-Encoding" }
+                    new () { Name = "Vary", Value = "Accept-Encoding" }
                 ],
                 EndpointProperties = [],
                 Selectors = [ new StaticWebAssetEndpointSelector { Name = "Content-Encoding", Value = "gzip", Quality = "0.100000000000" } ],
@@ -1096,7 +1037,7 @@ public class ApplyCompressionNegotiationTest
                 [
                     new () { Name = "Content-Encoding", Value = "gzip" },
                     new () { Name = "Content-Type", Value = "text/javascript" },
-                    new () { Name = "Vary", Value = "Content-Encoding" }
+                    new () { Name = "Vary", Value = "Accept-Encoding" }
                 ],
                 EndpointProperties = [],
                 Selectors = []
@@ -1167,7 +1108,7 @@ public class ApplyCompressionNegotiationTest
                     [
                         new () { Name = "Content-Encoding", Value = "gzip" },
                         new (){ Name = "Content-Type", Value = "text/javascript" },
-                        new (){ Name = "Vary", Value = "Content-Encoding" }
+                        new (){ Name = "Vary", Value = "Accept-Encoding" }
                     ],
                     EndpointProperties = [],
                     Selectors = [ new StaticWebAssetEndpointSelector { Name = "Content-Encoding", Value = "gzip", Quality = "0.100000000000" } ],
@@ -1191,7 +1132,7 @@ public class ApplyCompressionNegotiationTest
                     [
                         new (){ Name = "Content-Encoding", Value = "gzip" },
                         new (){ Name = "Content-Type", Value = "text/javascript" },
-                        new (){ Name = "Vary", Value = "Content-Encoding" }
+                        new (){ Name = "Vary", Value = "Accept-Encoding" }
                     ],
                     EndpointProperties = [],
                     Selectors = [ new () { Name = "Content-Encoding", Value = "gzip", Quality = "0.100000000000" } ],
@@ -1215,7 +1156,7 @@ public class ApplyCompressionNegotiationTest
                     [
                         new () { Name = "Content-Encoding", Value = "gzip" },
                         new () { Name = "Content-Type", Value = "text/javascript" },
-                        new () { Name = "Vary", Value = "Content-Encoding" }
+                        new () { Name = "Vary", Value = "Accept-Encoding" }
                     ],
                     EndpointProperties = [],
                     Selectors = []
@@ -1249,7 +1190,7 @@ public class ApplyCompressionNegotiationTest
                 [
                     new () { Name = "Content-Encoding", Value = "gzip" },
                     new () { Name = "Content-Type", Value = "text/javascript" },
-                    new () { Name = "Vary", Value = "Content-Encoding" }
+                    new () { Name = "Vary", Value = "Accept-Encoding" }
                 ],
                 EndpointProperties = [],
                 Selectors = [ new StaticWebAssetEndpointSelector { Name = "Content-Encoding", Value = "gzip", Quality = "0.100000000000" } ],
@@ -1262,7 +1203,7 @@ public class ApplyCompressionNegotiationTest
                 [
                     new () { Name = "Content-Encoding", Value = "br" },
                     new () { Name = "Content-Type", Value = "text/javascript" },
-                    new () { Name = "Vary", Value = "Content-Encoding" }
+                    new () { Name = "Vary", Value = "Accept-Encoding" }
                 ],
                 EndpointProperties = [],
                 Selectors = [ new StaticWebAssetEndpointSelector { Name = "Content-Encoding", Value = "br", Quality = "0.100000000000" } ],
@@ -1286,7 +1227,7 @@ public class ApplyCompressionNegotiationTest
                 [
                     new () { Name = "Content-Encoding", Value = "gzip" },
                     new () { Name = "Content-Type", Value = "text/javascript" },
-                    new () { Name = "Vary", Value = "Content-Encoding" }
+                    new () { Name = "Vary", Value = "Accept-Encoding" }
                 ],
                 EndpointProperties = [],
                 Selectors = [ new StaticWebAssetEndpointSelector { Name = "Content-Encoding", Value = "gzip", Quality = "0.100000000000" } ],
@@ -1299,7 +1240,7 @@ public class ApplyCompressionNegotiationTest
                 [
                     new () { Name = "Content-Encoding", Value = "br" },
                     new () { Name = "Content-Type", Value = "text/javascript" },
-                    new () { Name = "Vary", Value = "Content-Encoding" }
+                    new () { Name = "Vary", Value = "Accept-Encoding" }
                 ],
                 EndpointProperties = [],
                 Selectors = [ new StaticWebAssetEndpointSelector { Name = "Content-Encoding", Value = "br", Quality = "0.100000000000" } ],
@@ -1323,7 +1264,7 @@ public class ApplyCompressionNegotiationTest
                 [
                     new () { Name = "Content-Encoding", Value = "gzip" },
                     new () { Name = "Content-Type", Value = "text/javascript" },
-                    new () { Name = "Vary", Value = "Content-Encoding" }
+                    new () { Name = "Vary", Value = "Accept-Encoding" }
                 ],
                 EndpointProperties = [],
                 Selectors = []
@@ -1336,7 +1277,7 @@ public class ApplyCompressionNegotiationTest
                 [
                     new () { Name = "Content-Encoding", Value = "br" },
                     new () { Name = "Content-Type", Value = "text/javascript" },
-                    new () { Name = "Vary", Value = "Content-Encoding" }
+                    new () { Name = "Vary", Value = "Accept-Encoding" }
                 ],
                 EndpointProperties = [],
                 Selectors = []

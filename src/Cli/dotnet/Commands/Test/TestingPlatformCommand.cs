@@ -80,7 +80,9 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
         }
 
         _actionQueue.EnqueueCompleted();
-        return _actionQueue.WaitAllActions();
+        var exitCode = _actionQueue.WaitAllActions();
+        // Don't inline exitCode variable. We want to always call WaitAllActions first.
+        return _eventHandlers.HasHandshakeFailure ? ExitCode.GenericFailure : exitCode;
     }
 
     private void PrepareEnvironment(ParseResult parseResult, out TestOptions testOptions, out int degreeOfParallelism)

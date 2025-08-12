@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Test;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
@@ -59,6 +60,19 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             var result = TestCommandParser.SurroundWithDoubleQuotes(input);
             result.Should().Be("\"" + input + "\\\"");
+        }
+
+        [Fact]
+        public void VSTestCommandIncludesPropertiesOption()
+        {
+            var command = TestCommandParser.GetCommand();
+            
+            // Verify that the command includes a property option that supports the /p alias
+            var propertyOption = command.Options.FirstOrDefault(o => 
+                o.Aliases.Contains("/p") || o.Aliases.Contains("--property"));
+            
+            propertyOption.Should().NotBeNull("VSTest command should include CommonOptions.PropertiesOption to support /p Property=Value syntax");
+            propertyOption.Aliases.Should().Contain("/p", "PropertiesOption should include /p alias for MSBuild compatibility");
         }
     }
 }
