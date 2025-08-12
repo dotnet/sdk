@@ -3,6 +3,7 @@
     <File Path="eng/dogfood.cmd" />
     <File Path="eng/dogfood.sh" />
     <File Path="eng/Versions.props" />
+    <File Path="eng/Version.Details.props" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />

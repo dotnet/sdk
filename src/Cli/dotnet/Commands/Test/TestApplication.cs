@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.CommandLine;
 using System.Diagnostics;
 using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
@@ -62,7 +63,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             FileName = Module.RunProperties.RunCommand,
             Arguments = GetArguments(testOptions),
             RedirectStandardOutput = true,
-            RedirectStandardError = true
+            RedirectStandardError = true,
         };
 
         if (!string.IsNullOrEmpty(Module.RunProperties.RunWorkingDirectory))
@@ -75,7 +76,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             foreach (var entry in Module.LaunchSettings.EnvironmentVariables)
             {
                 string value = Environment.ExpandEnvironmentVariables(entry.Value);
-                processStartInfo.EnvironmentVariables[entry.Key] = value;
+                processStartInfo.Environment[entry.Key] = value;
             }
 
             if (!_buildOptions.NoLaunchProfileArguments &&
@@ -83,6 +84,11 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             {
                 processStartInfo.Arguments = $"{processStartInfo.Arguments} {Module.LaunchSettings.CommandLineArgs}";
             }
+        }
+
+        if (Module.DotnetRootArchVariableName is not null)
+        {
+            processStartInfo.Environment[Module.DotnetRootArchVariableName] = Path.GetDirectoryName(new Muxer().MuxerPath);
         }
 
         return processStartInfo;
@@ -102,6 +108,21 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         if (testOptions.IsHelp)
         {
             builder.Append($" {TestingPlatformOptions.HelpOption.Name}");
+        }
+
+        if (_buildOptions.PathOptions.ResultsDirectoryPath is { } resultsDirectoryPath)
+        {
+            builder.Append($" {TestingPlatformOptions.ResultsDirectoryOption.Name} {ArgumentEscaper.EscapeSingleArg(resultsDirectoryPath)}");
+        }
+
+        if (_buildOptions.PathOptions.ConfigFilePath is { } configFilePath)
+        {
+            builder.Append($" {TestingPlatformOptions.ConfigFileOption.Name} {ArgumentEscaper.EscapeSingleArg(configFilePath)}");
+        }
+
+        if (_buildOptions.PathOptions.DiagnosticOutputDirectoryPath is { } diagnosticOutputDirectoryPath)
+        {
+            builder.Append($" {TestingPlatformOptions.DiagnosticOutputDirectoryOption.Name} {ArgumentEscaper.EscapeSingleArg(diagnosticOutputDirectoryPath)}");
         }
 
         foreach (var arg in _buildOptions.UnmatchedTokens)

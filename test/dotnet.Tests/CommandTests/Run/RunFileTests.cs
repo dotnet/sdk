@@ -1597,7 +1597,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 Message: ''
                 """);
 
-        new DotnetCommand(Log, "run", "Program.cs")
+        // quiet runs here so that launch-profile useage messages don't impact test assertions
+        new DotnetCommand(Log, "run", "-v", "q", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
@@ -1607,7 +1608,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 Message: 'PropertiesLaunchSettingsJson1'
                 """);
 
-        new DotnetCommand(Log, "run", "-lp", "TestProfile2", "Program.cs")
+        new DotnetCommand(Log, "run", "-v", "q", "-lp", "TestProfile2", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
@@ -1634,7 +1635,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(Path.Join(testInstance.Path, "Second.cs"), source);
         File.WriteAllText(Path.Join(testInstance.Path, "Second.run.json"), s_launchSettings.Replace("TestProfileMessage", "Second"));
 
-        new DotnetCommand(Log, "run", "First.cs")
+        // do these runs with quiet verbosity so that default run output doesn't impact the tests
+        new DotnetCommand(Log, "run", "-v", "q", "First.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
@@ -1643,7 +1645,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 Message: 'First1'
                 """);
 
-        new DotnetCommand(Log, "run", "Second.cs")
+        new DotnetCommand(Log, "run", "-v", "q",  "Second.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()

@@ -14,4 +14,4 @@ if [[ "$@" != *"-pack"* ]]; then
 fi
 
 export DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT="true"
-. "$ScriptRoot/eng/common/build.sh" --build --restore $skipFlags "$@"
+. "$ScriptRoot/eng/common/build.sh" --build --restore $skipFlags /tlp:summary "$@"
