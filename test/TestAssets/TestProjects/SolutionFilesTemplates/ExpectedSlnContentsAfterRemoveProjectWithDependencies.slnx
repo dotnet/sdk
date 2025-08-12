@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="App/App.csproj">
+    <BuildDependency Project="First/First.csproj" />
+  </Project>
+  <Project Path="First/First.csproj" />
+</Solution>

@@ -1,5 +1,11 @@
 ﻿{
   "author": "Microsoft",
   "name": "Çözüm Dosyası",
-  "description": "Hiçbir proje içermeyen boş bir çözüm oluştur"
+  "description": "Hiçbir proje içermeyen boş bir çözüm oluştur",
+  "symbols/Format/description": "Çözüm dosyasının biçimini seçin: sln veya slnx.",
+  "symbols/Format/displayName": "Çözüm dosyası biçimi",
+  "symbols/Format/choices/sln/description": "Çözüm dosyası",
+  "symbols/Format/choices/sln/displayName": ".sln biçimi",
+  "symbols/Format/choices/slnx/description": "XML Çözüm dosyası",
+  "symbols/Format/choices/slnx/displayName": ".slnx biçimi"
 }

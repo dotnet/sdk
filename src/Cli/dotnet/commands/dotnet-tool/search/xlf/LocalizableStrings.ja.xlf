@@ -47,6 +47,15 @@
         <target state="translated">最新バージョン</target>
         <note>Table lable</note>
       </trans-unit>
+      <trans-unit id="NeedNuGetInConfig">
+        <source>The 'dotnet tool search' command unconditionally accesses nuget.org to find tools, but it is not present in your nuget.config. Add it to run this command.
+    This can be done with this command:
+  dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org</source>
+        <target state="translated">'dotnet tool search' コマンドは、nuget.org に無条件でアクセスしてツールを検索しますが、nuget.config には存在しません。このコマンドを実行するには、追加してください。
+    これは、次のコマンドで実行できます:
+  dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org</target>
+        <note>Do not translate 'dotnet tool search' or 'nuget.config'. Do not localize the last line at all.</note>
+      </trans-unit>
       <trans-unit id="NoResult">
         <source>Could not find any results.</source>
         <target state="translated">結果が見つかりませんでした。</target>
