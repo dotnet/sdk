@@ -84,14 +84,14 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             NuGetVersion packageVersion = null,
             PackageSourceLocation packageSourceLocation = null,
             bool includePreview = false,
-            bool includeUnlisted = false,
+            bool? includeUnlisted = null,
             DirectoryPath? downloadFolder = null,
             PackageSourceMapping packageSourceMapping = null)
         {
             CancellationToken cancellationToken = CancellationToken.None;
 
             (var source, var resolvedPackageVersion) = await GetPackageSourceAndVersion(packageId, packageVersion,
-                packageSourceLocation, includePreview, includeUnlisted, packageSourceMapping).ConfigureAwait(false);
+                packageSourceLocation, includePreview, includeUnlisted ?? packageVersion is not null, packageSourceMapping).ConfigureAwait(false);
 
             FindPackageByIdResource resource = null;
             SourceRepository repository = GetSourceRepository(source);
