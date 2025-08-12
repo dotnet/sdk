@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
         private Dictionary<string, List<TConflictItem>> _unresolvedConflictItems = new(StringComparer.Ordinal);
 
         //  Callback for unresolved conflicts, currently just used as a test hook
-        public Action<TConflictItem> UnresolvedConflictHandler { get; set; }
+        public Action<TConflictItem>? UnresolvedConflictHandler { get; set; }
 
         public ConflictResolver(PackageRank packageRank, PackageOverrideResolver<TConflictItem> packageOverrideResolver, Logger log)
         {
@@ -27,7 +27,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             _packageOverrideResolver = packageOverrideResolver;
         }
 
-        public void ResolveConflicts(IEnumerable<TConflictItem> conflictItems, Func<TConflictItem, string> getItemKey,
+        public void ResolveConflicts(IEnumerable<TConflictItem> conflictItems, Func<TConflictItem, string?> getItemKey,
             ConflictCallback<TConflictItem> foundConflict, bool commitWinner = true)
         {
             if (conflictItems == null)
@@ -44,9 +44,9 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     continue;
                 }
 
-                TConflictItem existingItem;
+                TConflictItem? existingItem;
 
-                if (_winningItemsByKey.TryGetValue(itemKey, out existingItem))
+                if (itemKey is not null && _winningItemsByKey.TryGetValue(itemKey, out existingItem))
                 {
                     // a conflict was found, determine the winner.
                     var winner = ResolveConflict(existingItem, conflictItem, logUnresolvedConflicts: false);
@@ -58,7 +58,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                         //  compared to each other) can be counted as conflicts and removed from
                         //  the corresponding list.
 
-                        List<TConflictItem> unresolvedConflictsForKey;
+                        List<TConflictItem>? unresolvedConflictsForKey;
                         if (!_unresolvedConflictItems.TryGetValue(itemKey, out unresolvedConflictsForKey))
                         {
                             unresolvedConflictsForKey = new List<TConflictItem>();
@@ -95,7 +95,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     //  If there were any other items that tied with the loser, report them as conflicts here
                     //  if they lose against the new winner.  Otherwise, keep them in the unresolved conflict
                     //  list.
-                    List<TConflictItem> previouslyUnresolvedConflicts;
+                    List<TConflictItem>? previouslyUnresolvedConflicts;
                     if (_unresolvedConflictItems.TryGetValue(itemKey, out previouslyUnresolvedConflicts) &&
                         previouslyUnresolvedConflicts.Contains(loser))
                     {
@@ -126,8 +126,6 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                                 }
                                 newUnresolvedConflicts.Add(previouslyUnresolvedItem);
                             }
-
-
                         }
                         _unresolvedConflictItems.Remove(itemKey);
                         if (newUnresolvedConflicts.Count > 0)
@@ -136,7 +134,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                         }
                     }
                 }
-                else if (commitWinner)
+                else if (itemKey is not null && commitWinner)
                 {
                     _winningItemsByKey[itemKey] = conflictItem;
                 }
@@ -161,11 +159,10 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     //  Call ResolveConflict to generate the right log message about the unresolved conflict
                     ResolveConflict(firstItem, unresolvedConflictItem, logUnresolvedConflicts: true);
                 }
-
             }
         }
 
-        private TConflictItem ResolveConflict(TConflictItem item1, TConflictItem item2, bool logUnresolvedConflicts)
+        private TConflictItem? ResolveConflict(TConflictItem item1, TConflictItem item2, bool logUnresolvedConflicts)
         {
             var winner = _packageOverrideResolver.Resolve(item1, item2);
             if (winner != null)
@@ -214,9 +211,9 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             // only handle cases where assembly version is different, and not null (implicit here due to xor above)
             if (assemblyVersion1 != assemblyVersion2)
             {
-                string winningDisplayName;
-                Version winningVersion;
-                Version losingVersion;
+                string? winningDisplayName;
+                Version? winningVersion;
+                Version? losingVersion;
                 if (assemblyVersion1 > assemblyVersion2)
                 {
                     winningDisplayName = item1.DisplayName;
@@ -263,9 +260,9 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
             if (fileVersion1 != fileVersion2)
             {
-                string winningDisplayName;
-                Version winningVersion;
-                Version losingVersion;
+                string? winningDisplayName;
+                Version? winningVersion;
+                Version? losingVersion;
                 if (fileVersion1 > fileVersion2)
                 {
                     winningDisplayName = item1.DisplayName;
@@ -354,7 +351,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             return null;
         }
 
-        private void LogMessage(string conflictMessage, string format, params object[] args)
+        private void LogMessage(string conflictMessage, string format, params object?[] args)
         {
             _log.LogMessage(
                 MessageImportance.Low,

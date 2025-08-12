@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -144,7 +146,9 @@ namespace Microsoft.NET.Publish.Tests
             // See https://github.com/dotnet/cli/blob/358568b07f16749108dd33e7fea2f2c84ccf4563/test/dotnet-store.Tests/GivenDotnetStoresAndPublishesProjects.cs
         }
 
-        [Fact]
+        //  https://github.com/dotnet/sdk/issues/49665
+        //   error : NETSDK1056: Project is targeting runtime 'osx-arm64' but did not resolve any runtime-specific packages. This runtime may not be supported by the target framework.
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void It_publishes_projects_with_filter_and_rid()
         {
             string project = "SimpleDependencies";

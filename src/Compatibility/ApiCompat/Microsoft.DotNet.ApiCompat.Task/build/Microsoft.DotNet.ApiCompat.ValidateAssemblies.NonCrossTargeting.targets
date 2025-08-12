@@ -50,8 +50,8 @@
   <!-- Annotate the TargetPath item to make the ApiCompatContractAssembly property accessible in the the cross-targeting build. -->
   <Target Name="ApiCompatAnnotateTargetPathWithTargetPlatformMoniker"
           Condition="'$(ApiCompatValidateAssemblies)' == 'true'"
-          DependsOnTargets="GetApiCompatContractAssembly;GetReferencesForApiCompatValidateAssemblies"
-          AfterTargets="GetTargetPathWithTargetPlatformMoniker">
+          DependsOnTargets="GetApiCompatContractAssembly;GetReferencesForApiCompatValidateAssemblies;GetTargetPathWithTargetPlatformMoniker"
+          BeforeTargets="GetTargetPath">
     <ItemGroup>
       <TargetPathWithTargetPlatformMoniker ApiCompatContractAssembly="$(ApiCompatContractAssembly)"
                                            ApiCompatAssemblyReferences="@(ApiCompatAssemblyReferences, ',')"

@@ -1,0 +1,34 @@
+<Project>
+
+  <Import Project="..\..\..\Directory.Build.props" />
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <PackageDescription>Internal toolchain package not meant for direct consumption. Please do not reference directly.</PackageDescription>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
+    <IsShipping Condition="'$(MSBuildProjectName)' == 'Microsoft.NET.Workload.Emscripten.Current.Transport.Manifest'">false</IsShipping>
+    <IsShippingPackage>$(IsShipping)</IsShippingPackage>
+    <IncludeSymbols>false</IncludeSymbols>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_workloadVersionSuffix Condition="'$(DotNetFinalVersionKind)' != 'release' and '$(PrereleaseVersionLabel)' != 'rtm'">-$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</_workloadVersionSuffix>
+    <_workloadVersionSuffix Condition="'$(DotNetFinalVersionKind)' != 'release' and '$(PrereleaseVersionLabel)' != 'rtm'">-$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</_workloadVersionSuffix>
+    <PackageId>$(MSBuildProjectName)-$(BuiltinWorkloadFeatureBand)$(_workloadVersionSuffix)</PackageId>
+    <PackageId Condition="'$(MSBuildProjectName)' == 'Microsoft.NET.Workload.Emscripten.Current.Transport.Manifest'">Microsoft.NET.Workload.Emscripten.Current.Manifest-$(BuiltinWorkloadFeatureBand).Transport</PackageId>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- NU5128: This package doesn't contain any lib or ref assemblies because it's a tooling package. -->
+    <!-- NU5039: NuGet is unable to find the readme file in the package. -->
+    <NoWarn>$(NoWarn);NU5128;NU5039</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

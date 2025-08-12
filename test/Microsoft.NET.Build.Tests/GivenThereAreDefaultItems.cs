@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
 
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -736,7 +737,7 @@ public class Class1
 
             var newtonsoftReferences = packageReferences.Where(pr => pr.value == "Newtonsoft.Json");
 
-            newtonsoftReferences.Count().Should().BeGreaterOrEqualTo(1);
+            newtonsoftReferences.Count().Should().BeGreaterThanOrEqualTo(1);
 
             foreach (var r in newtonsoftReferences)
             {
