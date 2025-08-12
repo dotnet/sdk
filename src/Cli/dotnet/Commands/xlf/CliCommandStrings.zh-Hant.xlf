@@ -3037,6 +3037,26 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestCommandUseDirectory">
+        <source>Specifying a directory for 'dotnet test' should be via '--directory'.</source>
+        <target state="new">Specifying a directory for 'dotnet test' should be via '--directory'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseProject">
+        <source>Specifying a project for 'dotnet test' should be via '--project'.</source>
+        <target state="new">Specifying a project for 'dotnet test' should be via '--project'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseSolution">
+        <source>Specifying a solution for 'dotnet test' should be via '--solution'.</source>
+        <target state="new">Specifying a solution for 'dotnet test' should be via '--solution'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseTestModules">
+        <source>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</source>
+        <target state="new">Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TestConfigurationOptionDescription">
         <source>The configuration to use for running tests. The default for most projects is 'Debug'.</source>
         <target state="translated">要用於執行測試的組態。大部分的專案預設為「偵錯」。</target>

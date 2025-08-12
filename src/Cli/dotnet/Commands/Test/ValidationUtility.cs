@@ -53,6 +53,7 @@ internal static class ValidationUtility
             }
         }
     }
+
     public static bool ValidateBuildPathOptions(BuildOptions buildPathOptions, TerminalTestReporter output)
     {
         PathOptions pathOptions = buildPathOptions.PathOptions;
@@ -74,6 +75,47 @@ internal static class ValidationUtility
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Validates that arguments requiring specific command-line switches are used correctly for Microsoft.Testing.Platform.
+    /// Provides helpful error messages when users provide file/directory arguments without proper switches.
+    /// </summary>
+    public static void ValidateSolutionOrProjectOrDirectoryOrModulesArePassedCorrectly(ParseResult parseResult)
+    {
+        if (Environment.GetEnvironmentVariable("DOTNET_TEST_DISABLE_SWITCH_VALIDATION") is "true" or "1")
+        {
+            // In case there is a valid case, users can opt-out.
+            // Note that the validation here is added to have a "better" error message for scenarios that will already fail.
+            // So, disabling validation is okay if the user scenario is valid.
+            return;
+        }
+
+        foreach (string token in parseResult.UnmatchedTokens)
+        {
+            // Check for .sln files
+            if ((token.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) ||
+                token.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase)) && File.Exists(token))
+            {
+                throw new GracefulException(CliCommandStrings.TestCommandUseSolution);
+            }
+            else if ((token.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
+                     token.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase) ||
+                     token.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase)) && File.Exists(token))
+            {
+                throw new GracefulException(CliCommandStrings.TestCommandUseProject);
+            }
+            else if (Directory.Exists(token))
+            {
+                throw new GracefulException(CliCommandStrings.TestCommandUseDirectory);
+            }
+            else if ((token.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
+                      token.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) &&
+                     File.Exists(token))
+            {
+                throw new GracefulException(CliCommandStrings.TestCommandUseTestModules);
+            }
+        }
     }
 
     private static bool ValidateSolutionFilePath(string filePath, TerminalTestReporter output)
