@@ -1,13 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
 
@@ -19,7 +16,6 @@ public class InternalReportInstallSuccessCommand
     {
         var telemetry = new ThreadBlockingTelemetry();
         ProcessInputAndSendTelemetry(parseResult, telemetry);
-        telemetry.Dispose();
         return 0;
     }
 
@@ -42,33 +38,24 @@ public class InternalReportInstallSuccessCommand
 
     internal class ThreadBlockingTelemetry : ITelemetry
     {
-        private readonly Telemetry.Telemetry telemetry;
+        private readonly Telemetry.Telemetry _telemetry;
 
         internal ThreadBlockingTelemetry()
         {
-            var sessionId =
-            Environment.GetEnvironmentVariable(TelemetrySessionIdEnvironmentVariableName);
-            telemetry = new Telemetry.Telemetry(new NoOpFirstTimeUseNoticeSentinel(), sessionId, blockThreadInitialization: true);
-        }
-        public bool Enabled => telemetry.Enabled;
-
-        public void Flush()
-        {
+            var sessionId = Environment.GetEnvironmentVariable(TelemetrySessionIdEnvironmentVariableName);
+            _telemetry = new Telemetry.Telemetry(sessionId);
         }
 
-        public void Dispose()
-        {
-            telemetry.Dispose();
-        }
+        public bool Enabled => _telemetry.Enabled;
 
-        public void TrackEvent(string eventName, IDictionary<string, string> properties, IDictionary<string, double> measurements)
+        public void TrackEvent(string eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)
         {
-            telemetry.ThreadBlockingTrackEvent(eventName, properties, measurements);
+            _telemetry.ThreadBlockingTrackEvent(eventName, properties, measurements);
         }
     }
 }
 
-internal class InstallerSuccessReport(string exeName)
+internal class InstallerSuccessReport(string? exeName)
 {
     public string ExeName { get; } = exeName ?? throw new ArgumentNullException(nameof(exeName));
 }
