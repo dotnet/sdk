@@ -815,7 +815,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private RuntimeFile CreateRuntimeFile(ResolvedFile resolvedFile)
         {
-            string relativePath = resolvedFile.PathInPackage ?? resolvedFile.DestinationSubPath;
+            string relativePath = string.IsNullOrEmpty(resolvedFile.PathInPackage) ? resolvedFile.DestinationSubPath : resolvedFile.PathInPackage;
             return CreateRuntimeFile(relativePath, resolvedFile.SourcePath, resolvedFile.DestinationSubPath);
         }
 
