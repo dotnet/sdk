@@ -212,7 +212,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 new("Project1/wwwroot/js/site.js", "wwwroot/js/site.js"),
                 new("RCL/Code.cs"),
                 new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/{ToolsetInfo.CurrentTargetFrameworkMoniker}.AssemblyAttributes.cs", graphOnly: true),
+                new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/EmbeddedAttribute.cs", graphOnly: true),
                 new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/RCL.AssemblyInfo.cs", graphOnly: true),
+                new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/RCL.GlobalUsings.g.cs", graphOnly: true),
+                new($"RCL/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/ValidatableTypeAttribute.cs", graphOnly: true),
                 new("RCL/Page1.razor"),
                 new("RCL/Page1.razor.css"),
                 new("RCL/Page2.cshtml"),
@@ -425,7 +428,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDirectory, muxerPath: MuxerPath);
             var processRunner = new ProcessRunner(options.ProcessCleanupTimeout);
-            var buildReporter = new BuildReporter(_reporter, options);
+            var buildReporter = new BuildReporter(_reporter, new GlobalOptions(), options);
 
             var filesetFactory = new MSBuildFileSetFactory(projectA, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], processRunner, buildReporter);
 
@@ -484,7 +487,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: Path.GetDirectoryName(project1Path)!, muxerPath: MuxerPath);
             var processRunner = new ProcessRunner(options.ProcessCleanupTimeout);
-            var buildReporter = new BuildReporter(_reporter, options);
+            var buildReporter = new BuildReporter(_reporter, new GlobalOptions(), options);
 
             var factory = new MSBuildFileSetFactory(project1Path, buildArguments: [], processRunner, buildReporter);
             var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
@@ -523,7 +526,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDir, muxerPath: MuxerPath) with { TestOutput = testDir };
                 var processRunner = new ProcessRunner(options.ProcessCleanupTimeout);
                 var buildArguments = targetFramework != null ? new[] { "/p:TargetFramework=" + targetFramework } : [];
-                var buildReporter = new BuildReporter(_reporter, options);
+                var buildReporter = new BuildReporter(_reporter, new GlobalOptions(), options);
                 var factory = new MSBuildFileSetFactory(rootProjectPath, buildArguments, processRunner, buildReporter);
                 var targetsResult = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
                 Assert.NotNull(targetsResult);

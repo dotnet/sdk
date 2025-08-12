@@ -23,7 +23,7 @@
       <Payload Id="thm_$(LCID)" Compressed="yes" Name="$(LCID)\thm.wxl" SourceFile="LCID\$(LCID)\bundle.wxl" />
       <?endforeach?>
 
-      <Payload Name="DotNetLogo_124x.png" Compressed="yes" SourceFile="DotNetLogo_124x.png" />
+      <Payload Name="DotNetLogo_256x.png" Compressed="yes" SourceFile="DotNetLogo_256x.png" />
       <Payload Name="dotnet.ico" Compressed="yes" SourceFile="..\..\dotnet.ico" />
     </BootstrapperApplication>
 

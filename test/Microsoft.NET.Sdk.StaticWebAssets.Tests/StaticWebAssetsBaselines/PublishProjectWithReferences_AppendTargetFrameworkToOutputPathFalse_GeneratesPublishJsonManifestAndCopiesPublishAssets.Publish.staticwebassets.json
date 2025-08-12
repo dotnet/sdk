@@ -744,10 +744,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -773,7 +769,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -795,10 +791,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -828,7 +820,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -843,10 +835,6 @@
       "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\_content\\AnotherClassLib\\js\\project-direct-dep.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -873,7 +861,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -895,10 +883,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -928,7 +912,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -943,10 +927,6 @@
       "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\publish\\_content\\AnotherClassLib\\css\\site.css.br",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -973,7 +953,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -995,10 +975,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1028,7 +1004,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1043,10 +1019,6 @@
       "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\publish\\_content\\AnotherClassLib\\js\\project-direct-dep.js.br",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -1073,7 +1045,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1095,10 +1067,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1128,7 +1096,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1143,10 +1111,6 @@
       "AssetFile": "${ProjectPath}\\AnotherClassLib\\wwwroot\\css\\site.css",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -1181,10 +1145,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1218,10 +1178,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1247,7 +1203,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1262,10 +1218,6 @@
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\AppWithPackageAndP2PReference#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"
@@ -1292,7 +1244,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1322,10 +1274,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1359,7 +1307,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1380,10 +1328,6 @@
         }
       ],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"
@@ -1418,7 +1362,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1442,10 +1386,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1471,7 +1411,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1493,10 +1433,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1526,7 +1462,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1542,10 +1478,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1571,7 +1503,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1593,10 +1525,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1626,7 +1554,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1641,10 +1569,6 @@
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\_content\\RazorPackageLibraryDirectDependency\\js\\pkg-direct-dep.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -1671,7 +1595,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1693,10 +1617,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1726,7 +1646,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1742,10 +1662,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1771,7 +1687,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1793,10 +1709,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1826,7 +1738,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1841,10 +1753,6 @@
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\bundle\\AppWithPackageAndP2PReference.styles.css",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -1882,10 +1790,6 @@
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\bundle\\AppWithPackageAndP2PReference.styles.css",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"
@@ -1932,10 +1836,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1961,7 +1861,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1976,10 +1876,6 @@
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\publish\\AppWithPackageAndP2PReference#[.{fingerprint=__fingerprint__}]?.styles.css.br",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"
@@ -2006,7 +1902,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2036,10 +1932,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2073,7 +1965,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2094,10 +1986,6 @@
         }
       ],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"
@@ -2132,7 +2020,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2156,10 +2044,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2185,7 +2069,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2207,10 +2091,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2240,7 +2120,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2256,10 +2136,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2285,7 +2161,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2307,10 +2183,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2340,7 +2212,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2355,10 +2227,6 @@
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\publish\\_content\\RazorPackageLibraryDirectDependency\\js\\pkg-direct-dep.js.br",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -2385,7 +2253,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2407,10 +2275,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2440,7 +2304,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2456,10 +2320,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2485,7 +2345,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2507,10 +2367,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2540,7 +2396,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2555,10 +2411,6 @@
       "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -2585,7 +2437,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2600,10 +2452,6 @@
       "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"
@@ -2630,7 +2478,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2660,10 +2508,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2693,7 +2537,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2714,10 +2558,6 @@
         }
       ],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"
@@ -2748,7 +2588,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2772,10 +2612,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2801,7 +2637,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2823,10 +2659,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2856,7 +2688,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2872,10 +2704,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2901,7 +2729,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2923,10 +2751,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2956,7 +2780,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2971,10 +2795,6 @@
       "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\projectbundle\\ClassLibrary.bundle.scp.css",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -3008,10 +2828,6 @@
       "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\projectbundle\\ClassLibrary.bundle.scp.css",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"
@@ -3054,10 +2870,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3083,7 +2895,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3098,10 +2910,6 @@
       "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\publish\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"
@@ -3128,7 +2936,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3158,10 +2966,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3191,7 +2995,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3212,10 +3016,6 @@
         }
       ],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"
@@ -3246,7 +3046,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3270,10 +3070,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3299,7 +3095,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3321,10 +3117,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3354,7 +3146,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3370,10 +3162,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3399,7 +3187,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3421,10 +3209,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3454,7 +3238,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3469,10 +3253,6 @@
       "AssetFile": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.js",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -3507,10 +3287,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3544,10 +3320,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3580,10 +3352,6 @@
       "AssetFile": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"
@@ -3626,10 +3394,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3663,10 +3427,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3699,10 +3459,6 @@
       "AssetFile": "${RestorePath}\\razorpackagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\js\\pkg-transitive-dep.js",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"

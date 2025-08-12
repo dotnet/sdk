@@ -18,7 +18,8 @@
   <!-- In v5, Window@Width and Window@Height refers to the client area, not the window area. wixstdba calls 
        AdjustWindowRectEx or AdjustWindowRectExForDpi (if supported) to produce a window with the desired client area. -->
   <Window Width="644" Height="460" HexStyle="100a0000" FontId="DefaultFont" Caption="#(loc.Caption)" IconFile="dotnet.ico">
-    <ImageControl Name="DotNetLogo" X="12" Y="-48" Width="124" Height="124" ImageFile="DotNetLogo_124x.png" Visible="yes" />
+    <!-- Use the 256x256 logo as that displays better at 200% scaling for high DPI -->
+    <ImageControl Name="DotNetLogo" X="12" Y="-48" Width="124" Height="124" ImageFile="DotNetLogo_256x.png" Visible="yes" />
 
     <!-- A width of 0 extends the control to the right of the window. The first label will render an opaque rectangle using
          the background color of the specified font. The second label overlays the title text. This is necessary since
