@@ -1153,6 +1153,9 @@ class Program
             testProject.PackageReferences.Add(new TestPackageReference($"Humanizer.Core.{culture}", "2.14.1"));
             testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\packages";
 
+            // Libuv package does not have a native library for macOS arm64, so don't try to call into it.
+            bool shouldUseLibuv = !OperatingSystem.IsMacOS() || RuntimeInformation.OSArchitecture != Architecture.Arm64;
+
             // Add source that uses all the packages
             testProject.SourceFiles[$"{testProject.Name}.cs"] =
                 $$""""
@@ -1193,11 +1196,14 @@ class Program
                         }
                         catch (Exception ex) { Console.Error.WriteLine($"Failure using Humanizer.Core.{{culture}}: {ex}"); }
 
-                        try
+                        if ({{shouldUseLibuv.ToString().ToLowerInvariant()}})
                         {
-                            UseLibuv();
+                            try
+                            {
+                                UseLibuv();
+                            }
+                            catch (Exception ex) { Console.Error.WriteLine($"Failure using Libuv: {ex}"); }
                         }
-                        catch (Exception ex) { Console.Error.WriteLine($"Failure using Libuv: {ex}"); }
                     }
                 }
                 """";
@@ -1292,11 +1298,17 @@ class Program
             if (useCustomSubdirectory)
             {
                 // TODO: This should not have errors once we have a runtime that supports localPath
-                result.Should()
-                    .HaveStdErrContaining("System.IO.FileNotFoundException")
-                    .And.HaveStdErrContaining("System.DllNotFoundException");
+                result.Should().HaveStdErrContaining("System.IO.FileNotFoundException");
+                if (shouldUseLibuv)
+                {
+                    result.Should().HaveStdErrContaining("System.DllNotFoundException");
+                }
+
                 foreach (var pkg in testProject.PackageReferences)
                 {
+                    if (!shouldUseLibuv && pkg.ID == "Libuv")
+                        continue;
+
                     result.Should().HaveStdErrContaining($"Failure using {pkg.ID}");
                 }
             }
@@ -1305,6 +1317,9 @@ class Program
                 result.Should().NotHaveStdErr();
                 foreach (var pkg in testProject.PackageReferences)
                 {
+                    if (!shouldUseLibuv && pkg.ID == "Libuv")
+                        continue;
+
                     result.Should().HaveStdOutContaining($"Used {pkg.ID}");
                 }
             }
