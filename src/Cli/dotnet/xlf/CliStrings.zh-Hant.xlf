@@ -349,6 +349,11 @@ setx PATH "%PATH%;{0}"
         <target state="translated">錯誤</target>
         <note />
       </trans-unit>
+      <trans-unit id="Error_NU1302_HttpSourceUsed">
+        <source>error NU1302: You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
+        <target state="new">error NU1302: You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ExpectDepsJsonAt">
         <source>{0}: expect deps.json at: {1}</source>
         <target state="translated">{0}: 於 {1} 需要 deps.json</target>
@@ -1178,11 +1183,6 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
       <trans-unit id="VersionSuffixArgumentName">
         <source>VERSION_SUFFIX</source>
         <target state="translated">VERSION_SUFFIX</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Warning_HttpSourceUsed">
-        <source>warn : You are using an HTTP source. HTTP package sources are insecure and may expose your credentials in plaintext. Consider using HTTPS instead. See https://aka.ms/nuget-secure-feeds for more information.</source>
-        <target state="new">warn : You are using an HTTP source. HTTP package sources are insecure and may expose your credentials in plaintext. Consider using HTTPS instead. See https://aka.ms/nuget-secure-feeds for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadIntegrityCheckError">

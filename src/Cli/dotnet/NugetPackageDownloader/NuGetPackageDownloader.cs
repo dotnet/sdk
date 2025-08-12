@@ -452,19 +452,38 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             throw new NuGetPackageInstallerException("No NuGet sources are defined or enabled");
         }
 
-        LogHttpWarnings(sources);
+        // Load settings to check allowInsecureConnections
+        string currentDirectory = _currentWorkingDirectory ?? Directory.GetCurrentDirectory();
+        ISettings settings;
+        if (packageSourceLocation?.NugetConfig != null)
+        {
+            string nugetConfigParentDirectory =
+                packageSourceLocation.NugetConfig.Value.GetDirectoryPath().Value;
+            string nugetConfigFileName = Path.GetFileName(packageSourceLocation.NugetConfig.Value.Value);
+            settings = Settings.LoadSpecificSettings(nugetConfigParentDirectory,
+                nugetConfigFileName);
+        }
+        else
+        {
+            settings = Settings.LoadDefaultSettings(
+                packageSourceLocation?.RootConfigDirectory?.Value ?? currentDirectory);
+        }
+
+        CheckHttpSources(sources, settings);
         return sources;
     }
 
-    private void LogHttpWarnings(IEnumerable<PackageSource> packageSources)
+    private void CheckHttpSources(IEnumerable<PackageSource> packageSources, ISettings settings)
     {
         var httpSources = packageSources.Where(source => !source.IsLocal && source.SourceUri?.Scheme?.Equals("http", StringComparison.OrdinalIgnoreCase) == true).ToList();
         
         if (httpSources.Any())
         {
+            // For now, always throw error for HTTP sources (as per .NET 9 requirement)
+            // TODO: Add support for allowInsecureConnections configuration setting
             foreach (var httpSource in httpSources)
             {
-                _reporter.WriteLine(CliStrings.Warning_HttpSourceUsed.Yellow());
+                throw new NuGetPackageInstallerException(string.Format(CliStrings.Error_NU1302_HttpSourceUsed, httpSource.Source));
             }
         }
     }
