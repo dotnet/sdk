@@ -960,16 +960,15 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithHttpSourceItShouldThrowError()
         {
-            var httpNugetConfig = Path.Combine(_temporaryDirectory, "httpNuGet.config");
-            
-            _fileSystem.File.WriteAllText(httpNugetConfig, @"<?xml version=""1.0"" encoding=""utf-8""?>
+            // Write the HTTP config to the default nuget.config location in the temporary directory
+            _fileSystem.File.WriteAllText(Path.Combine(_temporaryDirectory, "nuget.config"), @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
     <add key=""httpsource"" value=""http://insecure.nuget.org/v3/index.json"" />
   </packageSources>
 </configuration>");
 
-            var parseResult = Parser.Parse($"dotnet tool install -g {PackageId} --configfile {httpNugetConfig}");
+            var parseResult = Parser.Parse($"dotnet tool install -g {PackageId}");
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 parseResult,
@@ -983,6 +982,9 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action act = () => toolInstallGlobalOrToolPathCommand.Execute();
             act.Should().Throw<Exception>()
                 .And.Message.Should().Contain("NU1302");
+
+            // Clean up
+            _fileSystem.File.Delete(Path.Combine(_temporaryDirectory, "nuget.config"));
         }
     }
 }

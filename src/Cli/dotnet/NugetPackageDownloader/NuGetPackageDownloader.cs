@@ -479,8 +479,11 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         
         if (httpSources.Any())
         {
+            // TODO: Check if allowInsecureConnections is set to true in the config section
+            // The NuGet Configuration API for reading specific settings needs further investigation
             // For now, always throw error for HTTP sources (as per .NET 9 requirement)
-            // TODO: Add support for allowInsecureConnections configuration setting
+            
+            // Throw error for each HTTP source found
             foreach (var httpSource in httpSources)
             {
                 throw new NuGetPackageInstallerException(string.Format(CliStrings.Error_NU1302_HttpSourceUsed, httpSource.Source));
