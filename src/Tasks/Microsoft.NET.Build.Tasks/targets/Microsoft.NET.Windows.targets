@@ -179,9 +179,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CsWinRTGenerateInteropAssembly Condition="'$(CsWinRTGenerateInteropAssembly)' == '' and '$(_TargetPlatformVersionUsesCsWinRT3)' == 'true'">true</CsWinRTGenerateInteropAssembly>
     <CsWinRTGenerateInteropAssembly Condition="'$(CsWinRTGenerateInteropAssembly)' == ''">false</CsWinRTGenerateInteropAssembly>
 
-    <!-- Default property values for 'cswinrtgen' -->
-    <CsWinRTToolsDirectory Condition="'$(CsWinRTToolsDirectory)' == ''"></CsWinRTToolsDirectory>
-    <CsWinRTToolsArchitecture Condition="'$(CsWinRTToolsArchitecture)' == ''"></CsWinRTToolsArchitecture>
+    <!--
+      Default property values for 'cswinrtgen'. Not setting 'CsWinRTToolsDirectory' and
+      'CsWinRTToolsArchitecture' because the task can handle their default values on its
+      own, and it will use that to automatically set the right directory and architecture.
+    -->
     <CsWinRTGeneratorInteropAssemblyDirectory Condition="'$(CsWinRTGeneratorInteropAssemblyDirectory)' == ''">$(IntermediateOutputPath)</CsWinRTGeneratorInteropAssemblyDirectory>
     <CsWinRTGeneratorValidateWinRTRuntimeAssemblyVersion Condition="'$(CsWinRTGeneratorValidateWinRTRuntimeAssemblyVersion)' == ''">true</CsWinRTGeneratorValidateWinRTRuntimeAssemblyVersion>
     <CsWinRTGeneratorValidateWinRTRuntimeDllVersion2References Condition="'$(CsWinRTGeneratorValidateWinRTRuntimeDllVersion2References)' == ''">true</CsWinRTGeneratorValidateWinRTRuntimeDllVersion2References>
