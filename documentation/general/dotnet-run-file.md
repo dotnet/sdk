@@ -47,6 +47,10 @@ Additionally, the implicit project file has the following customizations:
 
   - `FileBasedProgram` property is set to `true` and can be used by SDK targets to detect file-based apps.
 
+  - `DisableDefaultItemsInProjectFolder` property is set to `true` which results in `EnableDefaultItems=false` by default
+    in case there is a project or solution in the same directory as the file-based app.
+    This ensures that items from nested projects and artifacts are not included by the app.
+
 ## Grow up
 
 When file-based programs reach an inflection point where build customizations in a project file are needed,
@@ -326,7 +330,7 @@ When disabled, [grow up](#grow-up) would generate projects in subdirectories
 similarly to [multi-entry-point scenarios](#multiple-entry-points) to preserve the program's behavior.
 
 Including `.cs` files from nested folders which contain `.csproj`s might be unexpected,
-hence we could consider reporting an error in such situations.
+hence we could consider excluding items from nested project folders.
 
 Similarly, we could report an error if there are many nested directories and files,
 so for example, if someone puts a C# file into `C:/sources` and executes `dotnet run C:/sources/file.cs` or opens that in the IDE,

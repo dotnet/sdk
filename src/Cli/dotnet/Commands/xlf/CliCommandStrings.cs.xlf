@@ -408,7 +408,7 @@ Pro MSTest před 2.2.4 se časový limit použije pro všechny testovací příp
       </trans-unit>
       <trans-unit id="CmdConfigFileDescription">
         <source>Specifies a testconfig.json file.</source>
-        <target state="new">Specifies a testconfig.json file.</target>
+        <target state="translated">Určuje soubor testconfig.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfigFileOption">

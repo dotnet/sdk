@@ -408,7 +408,7 @@ Pour MSTest avant la version 2.2.4, le délai d’expiration est utilisé pour 
       </trans-unit>
       <trans-unit id="CmdConfigFileDescription">
         <source>Specifies a testconfig.json file.</source>
-        <target state="new">Specifies a testconfig.json file.</target>
+        <target state="translated">Spécifie un fichier testconfig.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfigFileOption">
