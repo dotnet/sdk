@@ -18,7 +18,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload
 {
-    internal sealed class DefaultDeltaApplier(ILogger logger) : SingleProcessDeltaApplier(logger)
+    internal sealed class DefaultHotReloadClient(ILogger logger, bool enableStaticAssetUpdates) : HotReloadClient(logger)
     {
         private Task<ImmutableArray<string>>? _capabilitiesTask;
         private NamedPipeServerStream? _pipe;
@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.HotReload
             _pipe = null;
         }
 
-        public override void CreateConnection(string namedPipeName, CancellationToken cancellationToken)
+        public override void InitiateConnection(string namedPipeName, CancellationToken cancellationToken)
         {
 #if NET
             var options = PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly;
@@ -89,11 +89,13 @@ namespace Microsoft.DotNet.HotReload
             }
         }
 
+        [MemberNotNull(nameof(_capabilitiesTask))]
         private Task<ImmutableArray<string>> GetCapabilitiesTask()
             => _capabilitiesTask ?? throw new InvalidOperationException();
 
         [MemberNotNull(nameof(_pipe))]
-        private void EnsureReadyForUpdates()
+        [MemberNotNull(nameof(_capabilitiesTask))]
+        private void RequireReadyForUpdates()
         {
             // should only be called after connection has been created:
             _ = GetCapabilitiesTask();
@@ -102,18 +104,18 @@ namespace Microsoft.DotNet.HotReload
                 throw new InvalidOperationException("Pipe has been disposed.");
         }
 
-        public override Task WaitForProcessRunningAsync(CancellationToken cancellationToken)
+        public override Task WaitForConnectionEstablishedAsync(CancellationToken cancellationToken)
             => GetCapabilitiesTask();
 
-        public override Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)
+        public override Task<ImmutableArray<string>> GetUpdateCapabilitiesAsync(CancellationToken cancellationToken)
             => GetCapabilitiesTask();
 
         private ResponseLoggingLevel ResponseLoggingLevel
             => Logger.IsEnabled(LogLevel.Debug) ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
 
-        public override async Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<HotReloadManagedCodeUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
+        public override async Task<ApplyStatus> ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
         {
-            EnsureReadyForUpdates();
+            RequireReadyForUpdates();
 
             if (_managedCodeUpdateFailedOrCancelled)
             {
@@ -183,9 +185,15 @@ namespace Microsoft.DotNet.HotReload
                    ImmutableCollectionsMarshal.AsArray(update.UpdatedTypes)!))];
         }
 
-        public async override Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<HotReloadStaticAssetUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
+        public async override Task<ApplyStatus> ApplyStaticAssetUpdatesAsync(ImmutableArray<HotReloadStaticAssetUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
         {
-            EnsureReadyForUpdates();
+            if (!enableStaticAssetUpdates)
+            {
+                // The client has no concept of static assets.
+                return ApplyStatus.AllChangesApplied;
+            }
+
+            RequireReadyForUpdates();
 
             var appliedUpdateCount = 0;
 
@@ -294,9 +302,9 @@ namespace Microsoft.DotNet.HotReload
             return success;
         }
 
-        public override async Task InitialUpdatesApplied(CancellationToken cancellationToken)
+        public override async Task InitialUpdatesAppliedAsync(CancellationToken cancellationToken)
         {
-            EnsureReadyForUpdates();
+            RequireReadyForUpdates();
 
             if (_managedCodeUpdateFailedOrCancelled)
             {

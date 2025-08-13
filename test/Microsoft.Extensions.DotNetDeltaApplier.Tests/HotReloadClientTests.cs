@@ -1,19 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.ComponentModel.DataAnnotations;
-using System.IO.Pipes;
-using System.Threading.Tasks;
 using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class DeltaApplierTests(ITestOutputHelper output)
+public class HotReloadClientTests(ITestOutputHelper output)
 {
     private sealed class Test : IAsyncDisposable
     {
         public readonly TestLogger Logger;
-        public readonly DefaultDeltaApplier Applier;
+        public readonly DefaultHotReloadClient Client;
         private readonly CancellationTokenSource _cancellationSource;
         private readonly Task<Task> _listenerTaskFactory;
 
@@ -21,11 +18,11 @@ public class DeltaApplierTests(ITestOutputHelper output)
         {
             var pipeName = Guid.NewGuid().ToString();
             Logger = new TestLogger(output);
-            Applier = new DefaultDeltaApplier(Logger);
+            Client = new DefaultHotReloadClient(Logger, enableStaticAssetUpdates: true);
 
             _cancellationSource = new CancellationTokenSource();
 
-            Applier.CreateConnection(pipeName, CancellationToken.None);
+            Client.InitiateConnection(pipeName, CancellationToken.None);
             var listener = new PipeListener(pipeName, agent, log: _ => { }, connectionTimeoutMS: Timeout.Infinite);
             _listenerTaskFactory = Task.Run<Task>(() => listener.Listen(_cancellationSource.Token));
         }
@@ -35,7 +32,7 @@ public class DeltaApplierTests(ITestOutputHelper output)
             _cancellationSource.Cancel();
             await await _listenerTaskFactory;
 
-            Applier.Dispose();
+            Client.Dispose();
         }
     }
 
@@ -58,7 +55,7 @@ public class DeltaApplierTests(ITestOutputHelper output)
 
         await using var test = new Test(output, agent);
 
-        var actualCapabilities = await test.Applier.GetApplyUpdateCapabilitiesAsync(CancellationToken.None);
+        var actualCapabilities = await test.Client.GetUpdateCapabilitiesAsync(CancellationToken.None);
         AssertEx.SequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType"], actualCapabilities);
 
         var update = new HotReloadManagedCodeUpdate(
@@ -71,7 +68,7 @@ public class DeltaApplierTests(ITestOutputHelper output)
 
         var agentMessage = "[Debug] Writing capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType";
 
-        Assert.Equal(ApplyStatus.AllChangesApplied, await test.Applier.ApplyManagedCodeUpdates([update], isProcessSuspended: false, CancellationToken.None));
+        Assert.Equal(ApplyStatus.AllChangesApplied, await test.Client.ApplyManagedCodeUpdatesAsync([update], isProcessSuspended: false, CancellationToken.None));
 
         // agent log messages were reported to the client logger:
         Assert.Contains(agentMessage, test.Logger.Messages);
@@ -90,7 +87,7 @@ public class DeltaApplierTests(ITestOutputHelper output)
 
         await using var test = new Test(output, agent);
 
-        var actualCapabilities = await test.Applier.GetApplyUpdateCapabilitiesAsync(CancellationToken.None);
+        var actualCapabilities = await test.Client.GetUpdateCapabilitiesAsync(CancellationToken.None);
         AssertEx.SequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType"], actualCapabilities);
 
         var update = new HotReloadManagedCodeUpdate(
@@ -103,7 +100,7 @@ public class DeltaApplierTests(ITestOutputHelper output)
 
         var agentMessage = "[Debug] Writing capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType";
 
-        Assert.Equal(ApplyStatus.AllChangesApplied, await test.Applier.ApplyManagedCodeUpdates([update], isProcessSuspended: true, CancellationToken.None));
+        Assert.Equal(ApplyStatus.AllChangesApplied, await test.Client.ApplyManagedCodeUpdatesAsync([update], isProcessSuspended: true, CancellationToken.None));
 
         // agent log messages not reported to the client logger while the process is suspended:
         Assert.Contains("[Debug] Update #0 will be completed after app resumes.", test.Logger.Messages);
@@ -112,7 +109,7 @@ public class DeltaApplierTests(ITestOutputHelper output)
         test.Logger.Messages.Clear();
 
         // all pending agent log messages are reported to the client logger at the next update:
-        Assert.Equal(ApplyStatus.AllChangesApplied, await test.Applier.ApplyManagedCodeUpdates([update], isProcessSuspended: false, CancellationToken.None));
+        Assert.Equal(ApplyStatus.AllChangesApplied, await test.Client.ApplyManagedCodeUpdatesAsync([update], isProcessSuspended: false, CancellationToken.None));
         Assert.Contains(agentMessage, test.Logger.Messages);
     }
 
@@ -127,7 +124,7 @@ public class DeltaApplierTests(ITestOutputHelper output)
 
         await using var test = new Test(output, agent);
 
-        var actualCapabilities = await test.Applier.GetApplyUpdateCapabilitiesAsync(CancellationToken.None);
+        var actualCapabilities = await test.Client.GetUpdateCapabilitiesAsync(CancellationToken.None);
         AssertEx.SequenceEqual(["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType"], actualCapabilities);
 
         var update = new HotReloadManagedCodeUpdate(
@@ -138,7 +135,7 @@ public class DeltaApplierTests(ITestOutputHelper output)
             updatedTypes: [],
             requiredCapabilities: ["Baseline"]);
 
-        Assert.Equal(ApplyStatus.Failed, await test.Applier.ApplyManagedCodeUpdates([update], isProcessSuspended: false, CancellationToken.None));
+        Assert.Equal(ApplyStatus.Failed, await test.Client.ApplyManagedCodeUpdatesAsync([update], isProcessSuspended: false, CancellationToken.None));
 
         // agent log messages were reported to the client logger:
         Assert.Contains("[Error] The runtime failed to applying the change: Bug!", test.Logger.Messages);
