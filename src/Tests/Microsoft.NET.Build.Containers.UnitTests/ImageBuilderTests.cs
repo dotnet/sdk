@@ -702,6 +702,6 @@ public class ImageBuilderTests
             Layers = new List<ManifestLayer>(),
             KnownDigest = StaticKnownDigestValue
         };
-        return new ImageBuilder(manifest, new ImageConfig(baseImageConfig), _loggerFactory.CreateLogger(testName));
+        return new ImageBuilder(manifest, manifest.MediaType, new ImageConfig(baseImageConfig), _loggerFactory.CreateLogger(testName));
     }
 }
