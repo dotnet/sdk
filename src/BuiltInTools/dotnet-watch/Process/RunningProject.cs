@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Watch
     internal sealed class RunningProject(
         ProjectGraphNode projectNode,
         ProjectOptions options,
-        DeltaApplier deltaApplier,
+        HotReloadClients clients,
         IReporter reporter,
         BrowserRefreshServer? browserRefreshServer,
         Task<int> runningProcess,
@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Watch
         public readonly ProjectGraphNode ProjectNode = projectNode;
         public readonly ProjectOptions Options = options;
         public readonly BrowserRefreshServer? BrowserRefreshServer = browserRefreshServer;
-        public readonly DeltaApplier DeltaApplier = deltaApplier;
+        public readonly HotReloadClients Clients = clients;
         public readonly ImmutableArray<string> Capabilities = capabilities;
         public readonly IReporter Reporter = reporter;
         public readonly Task<int> RunningProcess = runningProcess;
@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Watch
 
         public void Dispose()
         {
-            DeltaApplier.Dispose();
+            Clients.Dispose();
             ProcessTerminationSource.Dispose();
             ProcessExitedSource.Dispose();
 
@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Watch
         /// </summary>
         public async ValueTask WaitForProcessRunningAsync(CancellationToken cancellationToken)
         {
-            await DeltaApplier.WaitForProcessRunningAsync(cancellationToken);
+            await Clients.WaitForConnectionEstablishedAsync(cancellationToken);
         }
 
         public async ValueTask<int> TerminateAsync()

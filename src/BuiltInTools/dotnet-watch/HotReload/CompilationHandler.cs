@@ -103,8 +103,8 @@ namespace Microsoft.DotNet.Watch
         {
             var projectPath = projectNode.ProjectInstance.FullPath;
 
-            var deltaApplier = appModel.CreateDeltaApplier(browserRefreshServer, processReporter.Logger);
-            if (deltaApplier == null)
+            var clients = appModel.CreateClients(browserRefreshServer, processReporter.Logger);
+            if (clients.IsEmpty)
             {
                 // error already reported
                 return null;
@@ -114,11 +114,11 @@ namespace Microsoft.DotNet.Watch
             var processCommunicationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(processExitedSource.Token, cancellationToken);
 
             // Dispose these objects on failure:
-            using var disposables = new Disposables([deltaApplier, processExitedSource, processCommunicationCancellationSource]);
+            using var disposables = new Disposables([clients, processExitedSource, processCommunicationCancellationSource]);
 
-            // It is important to first create the named pipe connection (delta applier is the server)
+            // It is important to first create the named pipe connection (Hot Reload client is the named pipe server)
             // and then start the process (named pipe client). Otherwise, the connection would fail.
-            deltaApplier.CreateConnection(namedPipeName, processCommunicationCancellationSource.Token);
+            clients.InitiateConnection(namedPipeName, processCommunicationCancellationSource.Token);
 
             processSpec.OnExit += (_, _) =>
             {
@@ -136,12 +136,12 @@ namespace Microsoft.DotNet.Watch
 
             // Wait for agent to create the name pipe and send capabilities over.
             // the agent blocks the app execution until initial updates are applied (if any).
-            var capabilities = await deltaApplier.GetApplyUpdateCapabilitiesAsync(processCommunicationCancellationSource.Token);
+            var capabilities = await clients.GetUpdateCapabilitiesAsync(processCommunicationCancellationSource.Token);
 
             var runningProject = new RunningProject(
                 projectNode,
                 projectOptions,
-                deltaApplier,
+                clients,
                 processReporter,
                 browserRefreshServer,
                 runningProcess,
@@ -165,7 +165,7 @@ namespace Microsoft.DotNet.Watch
                 var updatesToApply = _previousUpdates.Skip(appliedUpdateCount).ToImmutableArray();
                 if (updatesToApply.Any())
                 {
-                    _ = await deltaApplier.ApplyManagedCodeUpdates(ToManagedCodeUpdates(updatesToApply), isProcessSuspended: false, processCommunicationCancellationSource.Token);
+                    _ = await clients.ApplyManagedCodeUpdatesAsync(ToManagedCodeUpdates(updatesToApply), isProcessSuspended: false, processCommunicationCancellationSource.Token);
                 }
 
                 appliedUpdateCount += updatesToApply.Length;
@@ -197,7 +197,7 @@ namespace Microsoft.DotNet.Watch
             }
 
             // Notifies the agent that it can unblock the execution of the process:
-            await deltaApplier.InitialUpdatesApplied(cancellationToken);
+            await clients.InitialUpdatesApplied(cancellationToken);
 
             // If non-empty solution is loaded into the workspace (a Hot Reload session is active):
             if (Workspace.CurrentSolution is { ProjectIds: not [] } currentSolution)
@@ -215,6 +215,7 @@ namespace Microsoft.DotNet.Watch
                 .SelectMany(p => p.Value)
                 .SelectMany(p => p.Capabilities)
                 .Distinct(StringComparer.Ordinal)
+                .Order()
                 .ToImmutableArray();
 
             _reporter.Verbose($"Hot reload capabilities: {string.Join(" ", capabilities)}.", Emoji.HotReload);
@@ -299,7 +300,7 @@ namespace Microsoft.DotNet.Watch
                     try
                     {
                         using var processCommunicationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(runningProject.ProcessExitedSource.Token, cancellationToken);
-                        var applySucceded = await runningProject.DeltaApplier.ApplyManagedCodeUpdates(ToManagedCodeUpdates(updates.ProjectUpdates), isProcessSuspended: false, processCommunicationCancellationSource.Token) != ApplyStatus.Failed;
+                        var applySucceded = await runningProject.Clients.ApplyManagedCodeUpdatesAsync(ToManagedCodeUpdates(updates.ProjectUpdates), isProcessSuspended: false, processCommunicationCancellationSource.Token) != ApplyStatus.Failed;
                         if (applySucceded)
                         {
                             runningProject.Reporter.Report(MessageDescriptor.HotReloadSucceeded);
@@ -569,7 +570,7 @@ namespace Microsoft.DotNet.Watch
                         _reporter.Verbose($"Sending static file update request for asset '{relativeUrl}'.");
                     }
 
-                    await runningProject.DeltaApplier.ApplyStaticAssetUpdates([.. updates], isProcessSuspended: false, cancellationToken);
+                    await runningProject.Clients.ApplyStaticAssetUpdatesAsync([.. updates], isProcessSuspended: false, cancellationToken);
                 }
             });
 

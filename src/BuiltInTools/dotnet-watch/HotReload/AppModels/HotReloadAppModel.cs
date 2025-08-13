@@ -12,7 +12,7 @@ internal abstract partial class HotReloadAppModel(ProjectGraphNode? agentInjecti
 {
     public abstract bool RequiresBrowserRefresh { get; }
 
-    public abstract DeltaApplier? CreateDeltaApplier(BrowserRefreshServer? browserRefreshServer, ILogger processLogger);
+    public abstract HotReloadClients CreateClients(BrowserRefreshServer? browserRefreshServer, ILogger processLogger);
 
     /// <summary>
     /// Returns true and the path to the client agent implementation binary if the application needs the agent to be injected.

@@ -6,11 +6,10 @@ using System.Collections.Immutable;
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class BlazorWebAssemblyDeltaApplier(ILogger logger, BrowserRefreshServer browserRefreshServer, ProjectGraphNode project) : SingleProcessDeltaApplier(logger)
+    internal sealed class BlazorWebAssemblyHotReloadClient(ILogger logger, BrowserRefreshServer browserRefreshServer, ProjectGraphNode project) : HotReloadClient(logger)
     {
         private static readonly ImmutableArray<string> s_defaultCapabilities60 =
             ["Baseline"];
@@ -37,16 +36,16 @@ namespace Microsoft.DotNet.Watch
             // Do nothing.
         }
 
-        public override void CreateConnection(string namedPipeName, CancellationToken cancellationToken)
+        public override void InitiateConnection(string namedPipeName, CancellationToken cancellationToken)
         {
         }
 
-        public override async Task WaitForProcessRunningAsync(CancellationToken cancellationToken)
+        public override async Task WaitForConnectionEstablishedAsync(CancellationToken cancellationToken)
             // Wait for the browser connection to be established as an indication that the process has started.
             // Alternatively, we could inject agent into blazor-devserver.dll and establish a connection on the named pipe.
             => await browserRefreshServer.WaitForClientConnectionAsync(cancellationToken);
 
-        public override Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)
+        public override Task<ImmutableArray<string>> GetUpdateCapabilitiesAsync(CancellationToken cancellationToken)
         {
             var capabilities = project.GetWebAssemblyCapabilities().ToImmutableArray();
 
@@ -73,7 +72,7 @@ namespace Microsoft.DotNet.Watch
             return Task.FromResult(capabilities);
         }
 
-        public override async Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<HotReloadManagedCodeUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
+        public override async Task<ApplyStatus> ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
         {
             var applicableUpdates = await FilterApplicableUpdatesAsync(updates, cancellationToken);
             if (applicableUpdates.Count == 0)
@@ -147,7 +146,7 @@ namespace Microsoft.DotNet.Watch
             return (!anySuccess && anyFailure) ? ApplyStatus.Failed : (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
         }
 
-        public override Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<HotReloadStaticAssetUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
+        public override Task<ApplyStatus> ApplyStaticAssetUpdatesAsync(ImmutableArray<HotReloadStaticAssetUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
             // static asset updates are handled by browser refresh server:
             => Task.FromResult(ApplyStatus.NoChangesApplied);
 
@@ -186,7 +185,7 @@ namespace Microsoft.DotNet.Watch
             return data.Success;
         }
 
-        public override Task InitialUpdatesApplied(CancellationToken cancellationToken)
+        public override Task InitialUpdatesAppliedAsync(CancellationToken cancellationToken)
             => Task.CompletedTask;
 
         private readonly struct JsonApplyHotReloadDeltasRequest
