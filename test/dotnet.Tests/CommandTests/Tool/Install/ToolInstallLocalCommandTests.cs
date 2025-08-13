@@ -418,7 +418,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
 
             installLocalCommand.Execute().Should().Be(0);
-            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, ".config", "dotnet-tools.json")).Should().BeTrue();
+            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, "dotnet-tools.json")).Should().BeTrue();
         }
 
         [Fact]
@@ -440,7 +440,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
 
             installLocalCommand.Execute().Should().Be(0);
-            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, ".config", "dotnet-tools.json")).Should().BeTrue();
+            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, "dotnet-tools.json")).Should().BeTrue();
         }
 
         [Fact]
@@ -465,7 +465,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
 
             installLocalCommand.Execute().Should().Be(0);
-            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, ".config", "dotnet-tools.json")).Should().BeTrue();
+            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, "dotnet-tools.json")).Should().BeTrue();
         }
 
         [Fact]
@@ -487,7 +487,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
 
             installLocalCommand.Execute().Should().Be(0);
-            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, ".config", "dotnet-tools.json")).Should().BeTrue();
+            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, "dotnet-tools.json")).Should().BeTrue();
         }
 
         private IToolPackageDownloader GetToolToolPackageInstallerWithPreviewInFeed()
