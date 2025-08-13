@@ -891,6 +891,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 writer.WriteLine("""
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                        <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
                     """);
             }
 
