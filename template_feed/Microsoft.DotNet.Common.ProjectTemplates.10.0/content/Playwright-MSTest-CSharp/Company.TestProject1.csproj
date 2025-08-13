@@ -44,7 +44,7 @@
 <!--#if (CoverageTool == "coverlet")-->
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
 <!--#endif-->
-    <PackageReference Include="Microsoft.Playwright.MSTest" Version="1.51.0" />
+    <PackageReference Include="Microsoft.Playwright.MSTest.v4" Version="1.55.0-beta-4" />
     <PackageReference Include="MSTest" Version="4.0.0-preview.25372.6" />
   </ItemGroup>
 
