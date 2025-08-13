@@ -1461,8 +1461,18 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void Pack()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        var programFile = Path.Join(testInstance.Path, "Program.cs");
-        File.WriteAllText(programFile, s_program);
+        var programFile = Path.Join(testInstance.Path, "MyFileBasedTool.cs");
+        File.WriteAllText(programFile, """
+            #:property PackAsTool=true
+            Console.WriteLine($"Hello; EntryPointFilePath set? {AppContext.GetData("EntryPointFilePath") is string}");
+            """);
+
+        // Run unpacked.
+        new DotnetCommand(Log, "run", "MyFileBasedTool.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello; EntryPointFilePath set? True");
 
         var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
@@ -1470,13 +1480,22 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var outputDir = Path.Join(testInstance.Path, "artifacts");
         if (Directory.Exists(outputDir)) Directory.Delete(outputDir, recursive: true);
 
-        new DotnetCommand(Log, "pack", "Program.cs")
+        // Pack.
+        new DotnetCommand(Log, "pack", "MyFileBasedTool.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
 
-        new DirectoryInfo(outputDir).Sub("Program").File("Program.1.0.0.nupkg").Should().Exist();
+        var packageDir = new DirectoryInfo(outputDir).Sub("MyFileBasedTool");
+        packageDir.File("MyFileBasedTool.1.0.0.nupkg").Should().Exist();
         new DirectoryInfo(artifactsDir).Sub("package").Should().NotExist();
+
+        // Run the packed tool.
+        new DotnetCommand(Log, "tool", "exec", "MyFileBasedTool", "--yes", "--add-source", packageDir.FullName)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello; EntryPointFilePath set? False");
     }
 
     [Fact]
