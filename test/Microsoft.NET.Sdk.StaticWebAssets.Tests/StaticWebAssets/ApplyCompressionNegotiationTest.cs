@@ -96,6 +96,7 @@ public class ApplyCompressionNegotiationTest
                 [
                     new () { Name = "Content-Length", Value = "20" },
                     new () { Name = "Content-Type", Value = "text/javascript" },
+                    new () { Name = "Vary", Value = "Accept-Encoding" },
                 ],
                 EndpointProperties = [],
                 Selectors = [],
@@ -355,6 +356,11 @@ public class ApplyCompressionNegotiationTest
                 {
                     Name = "Last-Modified",
                     Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
+                },
+                new ()
+                {
+                    Name = "Vary",
+                    Value = "Accept-Encoding"
                 }
             ],
             EndpointProperties = [
@@ -641,6 +647,11 @@ public class ApplyCompressionNegotiationTest
                 {
                     Name = "Last-Modified",
                     Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
+                },
+                new ()
+                {
+                    Name = "Vary",
+                    Value = "Accept-Encoding"
                 }
             ],
             EndpointProperties = [
@@ -828,7 +839,8 @@ public class ApplyCompressionNegotiationTest
                 AssetFile = Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")),
                 ResponseHeaders =
                 [
-                    new () { Name = "Content-Type", Value = "text/javascript" }
+                    new () { Name = "Content-Type", Value = "text/javascript" },
+                    new () { Name = "Vary", Value = "Accept-Encoding" }
                 ],
                 EndpointProperties = [],
                 Selectors = [],
@@ -852,7 +864,8 @@ public class ApplyCompressionNegotiationTest
                 AssetFile = Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")),
                 ResponseHeaders =
                 [
-                    new () { Name = "Content-Type", Value = "text/javascript" }
+                    new () { Name = "Content-Type", Value = "text/javascript" },
+                    new () { Name = "Vary", Value = "Accept-Encoding" }
                 ],
                 EndpointProperties = [],
                 Selectors = [],
@@ -1002,7 +1015,8 @@ public class ApplyCompressionNegotiationTest
                 AssetFile = Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")),
                 ResponseHeaders =
                 [
-                    new () { Name = "Content-Type", Value = "text/javascript" }
+                    new () { Name = "Content-Type", Value = "text/javascript" },
+                    new () { Name = "Vary", Value = "Accept-Encoding" }
                 ],
                 EndpointProperties = [],
                 Selectors = [],
@@ -1026,7 +1040,8 @@ public class ApplyCompressionNegotiationTest
                 AssetFile = Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")),
                 ResponseHeaders =
                 [
-                    new () { Name = "Content-Type", Value = "text/javascript" }
+                    new () { Name = "Content-Type", Value = "text/javascript" },
+                    new () { Name = "Vary", Value = "Accept-Encoding" }
                 ],
                 EndpointProperties = [],
                 Selectors = [],
@@ -1216,7 +1231,8 @@ public class ApplyCompressionNegotiationTest
                 AssetFile = Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")),
                 ResponseHeaders =
                 [
-                    new () { Name = "Content-Type", Value = "text/javascript" }
+                    new () { Name = "Content-Type", Value = "text/javascript" },
+                    new () { Name = "Vary", Value = "Accept-Encoding" }
                 ],
                 EndpointProperties = [],
                 Selectors = [],
@@ -1253,7 +1269,8 @@ public class ApplyCompressionNegotiationTest
                 AssetFile = Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")),
                 ResponseHeaders =
                 [
-                    new () { Name = "Content-Type", Value = "text/javascript" }
+                    new () { Name = "Content-Type", Value = "text/javascript" },
+                    new () { Name = "Vary", Value = "Accept-Encoding" }
                 ],
                 EndpointProperties = [],
                 Selectors = [],
@@ -1325,7 +1342,7 @@ public class ApplyCompressionNegotiationTest
                     "gzip",
                     9
                 ),
-                // This represents a different asset (e.g., a publish asset) that shares the same route 
+                // This represents a different asset (e.g., a publish asset) that shares the same route
                 // but wasn't part of the compression processing
                 CreateCandidate(
                     Path.Combine("publish", "candidate.js"),
@@ -1388,6 +1405,7 @@ public class ApplyCompressionNegotiationTest
                 [
                     new () { Name = "Content-Length", Value = "20" },
                     new () { Name = "Content-Type", Value = "text/javascript" },
+                    new () { Name = "Vary", Value = "Accept-Encoding" },
                 ],
                 EndpointProperties = [],
                 Selectors = [],
