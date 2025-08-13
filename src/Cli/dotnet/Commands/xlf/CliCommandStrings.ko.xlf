@@ -408,7 +408,7 @@ MSTest 2.2.4 이전의 경우 시간 제한은 모든 테스트케이스에 사�
       </trans-unit>
       <trans-unit id="CmdConfigFileDescription">
         <source>Specifies a testconfig.json file.</source>
-        <target state="new">Specifies a testconfig.json file.</target>
+        <target state="translated">testconfig.json 파일을 지정합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfigFileOption">
