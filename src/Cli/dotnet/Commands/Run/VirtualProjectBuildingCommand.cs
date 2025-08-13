@@ -105,7 +105,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         Debug.Assert(Path.IsPathFullyQualified(entryPointFileFullPath));
 
         EntryPointFileFullPath = entryPointFileFullPath;
-        MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(new Dictionary<string, string>(2, StringComparer.OrdinalIgnoreCase)
         {
             // See https://github.com/dotnet/msbuild/blob/main/documentation/specs/build-nonexistent-projects-by-default.md.
             { "_BuildNonexistentProjectsByDefault", bool.TrueString },
@@ -157,7 +157,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public override int Execute()
     {
         Debug.Assert(!(NoRestore && NoBuild));
-        var verbosity = MSBuildArgs.Verbosity ?? VerbosityOptions.quiet;
+        var verbosity = MSBuildArgs.Verbosity ?? MSBuildForwardingAppWithoutLogging.DefaultVerbosity;
         var consoleLogger = TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]);
         var binaryLogger = GetBinaryLogger(MSBuildArgs.OtherMSBuildArgs);
 

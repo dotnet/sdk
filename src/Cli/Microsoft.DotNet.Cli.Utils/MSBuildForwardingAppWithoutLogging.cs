@@ -5,11 +5,10 @@
 
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Cli;
 
 namespace Microsoft.DotNet.Cli.Utils;
 
-internal class MSBuildForwardingAppWithoutLogging
+internal sealed class MSBuildForwardingAppWithoutLogging
 {
     private static readonly bool AlwaysExecuteMSBuildOutOfProc = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_RUN_MSBUILD_OUTOFPROC");
     private static readonly bool UseMSBuildServer = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_USE_MSBUILD_SERVER", false);
@@ -41,7 +40,9 @@ internal class MSBuildForwardingAppWithoutLogging
 
     private readonly Dictionary<string, string?> _msbuildRequiredEnvironmentVariables = GetMSBuildRequiredEnvironmentVariables();
 
-    private readonly List<string> _msbuildRequiredParameters = [ "-maxcpucount", "--verbosity:m" ];
+    private readonly List<string> _msbuildRequiredParameters = ["-maxcpucount", $"--verbosity:{DefaultVerbosity}"];
+
+    internal const VerbosityOptions DefaultVerbosity = VerbosityOptions.m;
 
     public MSBuildForwardingAppWithoutLogging(MSBuildArgs msbuildArgs, string? msbuildPath = null, bool includeLogo = false, bool isRestoring = true)
     {
@@ -93,7 +94,7 @@ internal class MSBuildForwardingAppWithoutLogging
 
     public string[] GetAllArguments()
     {
-        return [.. _msbuildRequiredParameters, ..EmitMSBuildArgs(_msbuildArgs) ];
+        return [.. _msbuildRequiredParameters, .. EmitMSBuildArgs(_msbuildArgs)];
     }
 
     private string[] EmitMSBuildArgs(MSBuildArgs msbuildArgs) => [
