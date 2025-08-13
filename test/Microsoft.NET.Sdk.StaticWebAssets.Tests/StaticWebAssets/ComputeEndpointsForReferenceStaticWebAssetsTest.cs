@@ -60,7 +60,8 @@ public class ComputeEndpointsForReferenceStaticWebAssetsTest
         task.Endpoints.Should().ContainSingle();
         task.Endpoints[0].ItemSpec.Should().Be("base/candidate.js");
         task.Endpoints[0].GetMetadata("AssetFile").Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
-        var properties = StaticWebAssetEndpointProperty.FromMetadataValue(task.Endpoints[0].GetMetadata("EndpointProperties"));
+        var properties = new List<StaticWebAssetEndpointProperty>();
+        StaticWebAssetEndpointProperty.PopulateFromMetadataValue(task.Endpoints[0].GetMetadata("EndpointProperties"), properties);
         properties.Should().ContainSingle();
         properties[0].Name.Should().Be("label");
         properties[0].Value.Should().Be("base/label-value");

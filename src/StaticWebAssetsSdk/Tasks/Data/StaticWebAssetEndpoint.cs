@@ -60,7 +60,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         }
     }
 
-    private string SelectorsString
+    internal string SelectorsString
     {
         get
         {
@@ -87,7 +87,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         }
     }
 
-    private string ResponseHeadersString
+    internal string ResponseHeadersString
     {
         get
         {
@@ -113,7 +113,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         }
     }
 
-    private string EndpointPropertiesString
+    internal string EndpointPropertiesString
     {
         get
         {
@@ -143,6 +143,31 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
     {
         _modified = true;
         _endpointPropertiesModified = true;
+    }
+
+    // Helper methods to set string properties directly while maintaining synchronization
+    internal void SetSelectorsString(string value)
+    {
+        _selectorsString = value;
+        _selectors = null;
+        _selectorsModified = false;
+        _modified = true;
+    }
+
+    internal void SetResponseHeadersString(string value)
+    {
+        _responseHeadersString = value;
+        _responseHeaders = null;
+        _responseHeadersModified = false;
+        _modified = true;
+    }
+
+    internal void SetEndpointPropertiesString(string value)
+    {
+        _endpointPropertiesString = value;
+        _endpointProperties = null;
+        _endpointPropertiesModified = false;
+        _modified = true;
     }
 
     public static IEqualityComparer<StaticWebAssetEndpoint> RouteAndAssetComparer { get; } = new RouteAndAssetEqualityComparer();
@@ -279,7 +304,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
 
     public int CompareTo(StaticWebAssetEndpoint other)
     {
-        var routeComparison = StringComparer.Ordinal.Compare(Route, Route);
+        var routeComparison = StringComparer.Ordinal.Compare(Route, other.Route);
         if (routeComparison != 0)
         {
             return routeComparison;

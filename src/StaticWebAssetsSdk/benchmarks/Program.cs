@@ -3,7 +3,7 @@
 
 using BenchmarkDotNet.Running;
 
-namespace Microsoft.NET.Sdk.StaticWebAssets.Benchmarks;
+namespace Microsoft.AspNetCore.StaticWebAssets.Benchmarks;
 
 public class Program
 {
