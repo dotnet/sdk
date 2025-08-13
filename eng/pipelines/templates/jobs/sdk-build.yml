@@ -137,7 +137,7 @@ jobs:
       - ${{ if eq(parameters.runAoTTests, true) }}:
         # For the reason this is here, see: https://github.com/dotnet/sdk/issues/22655
         - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(buildConfiguration)/dotnet/dotnet workload install wasm-tools --skip-manifest-update
-          workingDirectory: $(Build.SourcesDirectory)/artifacts
+          workingDirectory: $(Build.SourcesDirectory)/artifacts/bin
           displayName: 🟣 Install wasm-tools Workload
       # For the /p:Projects syntax for PowerShell, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1146466335
       - ${{ if eq(parameters.pool.os, 'windows') }}:

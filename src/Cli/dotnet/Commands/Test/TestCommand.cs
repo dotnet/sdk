@@ -154,8 +154,7 @@ public class TestCommand(
 
     public static TestCommand FromArgs(string[] args, string? testSessionCorrelationId = null, string? msbuildPath = null)
     {
-        var parser = Parser.Instance;
-        var parseResult = parser.ParseFrom("dotnet test", args);
+        var parseResult = Parser.Parse(["dotnet", "test", ..args]);
 
         // settings parameters are after -- (including --), these should not be considered by the parser
         string[] settings = [.. args.SkipWhile(a => a != "--")];
@@ -218,7 +217,7 @@ public class TestCommand(
             msbuildArgs.Add($"-property:VSTestSessionCorrelationId={testSessionCorrelationId}");
         }
 
-        bool noRestore = (result.GetResult(TestCommandParser.NoRestoreOption) ?? result.GetResult(TestCommandParser.NoBuildOption)) is not null;
+        bool noRestore = result.GetValue(TestCommandParser.NoRestoreOption) || result.GetValue(TestCommandParser.NoBuildOption);
 
         var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
             msbuildArgs,
@@ -241,11 +240,9 @@ public class TestCommand(
             }
         }
 
-        // Set DOTNET_PATH if it isn't already set in the environment as it is required
-        // by the testhost which uses the apphost feature (Windows only).
-        (bool hasRootVariable, string rootVariableName, string rootValue) = VSTestForwardingApp.GetRootVariable();
-        if (!hasRootVariable)
-        {
+        
+        Dictionary<string, string> variables = VSTestForwardingApp.GetVSTestRootVariables();
+        foreach (var (rootVariableName, rootValue) in variables) {
             testCommand.EnvironmentVariable(rootVariableName, rootValue);
             VSTestTrace.SafeWriteTrace(() => $"Root variable set {rootVariableName}:{rootValue}");
         }

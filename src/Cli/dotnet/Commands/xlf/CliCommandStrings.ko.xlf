@@ -259,6 +259,46 @@ Paths searched: '{1}', '{2}'.</source>
         <target state="translated">.NET 프로젝트의 빌드 출력을 정리합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsCommandDescription">
+        <source>Removes artifacts created for file-based apps</source>
+        <target state="translated">파일 기반 앱에 대해 만든 아티팩트 제거</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsDays">
+        <source>How many days an artifact folder needs to be unused in order to be removed</source>
+        <target state="translated">아티팩트 폴더를 제거하기 위해 사용하지 않아야 하는 일 수</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsDirectoryNotFound">
+        <source>Warning: Artifacts directory does not exist: {0}</source>
+        <target state="translated">경고: 아티팩트 디렉터리가 없음: {0}</target>
+        <note>{0} is directory path.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsDryRun">
+        <source>Determines changes without actually modifying the file system</source>
+        <target state="translated">파일 시스템을 실제로 수정하지 않고 변경 내용을 결정합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsErrorRemovingFolder">
+        <source>Error removing folder '{0}': {1}</source>
+        <target state="translated">'{0}'폴더를 제거하는 동안 오류 발생: {1}</target>
+        <note>{0} is folder path. {1} is inner error message.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsScanning">
+        <source>Scanning for folders to remove in: {0}</source>
+        <target state="translated">제거할 폴더 검색 위치: {0}</target>
+        <note>{0} is directory path.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsTotalFoldersRemoved">
+        <source>Total folders removed: {0}</source>
+        <target state="translated">제거된 총 폴더 수: {0}</target>
+        <note>{0} is count.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsWouldRemoveFolders">
+        <source>Would remove folders: {0}</source>
+        <target state="translated">제거할 폴더 수: {0}</target>
+        <note>{0} is count.</note>
+      </trans-unit>
       <trans-unit id="CleanFrameworkOptionDescription">
         <source>The target framework to clean for. The target framework must also be specified in the project file.</source>
         <target state="translated">정리할 대상 프레임워크입니다. 대상 프레임워크는 프로젝트 파일에도 지정되어야 합니다.</target>
@@ -366,6 +406,11 @@ MSTest 2.2.4 이전의 경우 시간 제한은 모든 테스트케이스에 사�
         <target state="translated">사용할 NuGet 구성 파일의 경로입니다. '--outdated', '--deprecated' 또는 '--vulnerable' 옵션이 필요합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdConfigFileDescription">
+        <source>Specifies a testconfig.json file.</source>
+        <target state="translated">testconfig.json 파일을 지정합니다.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdConfigFileOption">
         <source>FILE</source>
         <target state="translated">FILE</target>
@@ -374,6 +419,11 @@ MSTest 2.2.4 이전의 경우 시간 제한은 모든 테스트케이스에 사�
       <trans-unit id="CmdConfigFileOptionDescription">
         <source>The NuGet configuration file to use.</source>
         <target state="translated">사용할 NuGet 구성 파일입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdConfigFilePath">
+        <source>CONFIG_FILE</source>
+        <target state="new">CONFIG_FILE</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCurrentRuntimeOptionDescription">
@@ -394,6 +444,18 @@ MSTest 2.2.4 이전의 경우 시간 제한은 모든 테스트케이스에 사�
       <trans-unit id="CmdDeprecatedDescription">
         <source>Lists packages that have been deprecated. Cannot be combined with '--vulnerable' or '--outdated' options.</source>
         <target state="translated">사용되지 않는 패키지를 나열합니다. '--vulnerable' 또는 '--outdated' 옵션과 함께 사용할 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDiagnosticOutputDirectoryDescription">
+        <source>Output directory of the diagnostic logging.
+If not specified the file will be generated inside the default 'TestResults' directory.</source>
+        <target state="new">Output directory of the diagnostic logging.
+If not specified the file will be generated inside the default 'TestResults' directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDiagnosticOutputDirectoryPath">
+        <source>DIAGNOSTIC_DIR</source>
+        <target state="new">DIAGNOSTIC_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDirectoryDescription">
@@ -880,6 +942,16 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">COMMAND_NAME</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionFileDescription">
+        <source>The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).</source>
+        <target state="translated">실행할 파일 기반 앱의 경로입니다(현재 디렉터리에 프로젝트가 없는 경우 첫 번째 인수로도 전달할 수 있습니다).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionFileHelpName">
+        <source>FILE_PATH</source>
+        <target state="translated">FILE_PATH</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionLaunchProfileDescription">
         <source>The name of the launch profile (if any) to use when launching the application.</source>
         <target state="translated">애플리케이션을 시작할 때 사용하는 시작 프로필(있는 경우)의 이름입니다.</target>
@@ -906,9 +978,9 @@ dotnet.config is a name don't translate.</note>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileDescription">
-        <source>Do not attempt to use launchSettings.json to configure the application.</source>
-        <target state="translated">launchSettings.json을 사용하여 애플리케이션을 구성하지 마세요.</target>
-        <note />
+        <source>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</source>
+        <target state="translated">launchSettings.json 또는 [app].run.json을 사용하여 애플리케이션을 구성하지 마세요.</target>
+        <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
       </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
         <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
@@ -1031,11 +1103,9 @@ dotnet.config is a name don't translate.</note>
         <note />
       </trans-unit>
       <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading launchSettings.json.
-{0}</source>
-        <target state="translated">launchSettings.json을 읽는 동안 오류가 발생했습니다.
-{0}</target>
-        <note />
+        <source>An error was encountered when reading '{0}': {1}</source>
+        <target state="translated">'{0}'을 읽는 동안 오류가 발생했습니다. {1}</target>
+        <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
@@ -1051,6 +1121,12 @@ dotnet.config is a name don't translate.</note>
         <source>Enables diagnostic output.</source>
         <target state="translated">진단 출력을 사용하도록 설정합니다.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="DirectivesRemoved">
+        <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
+        <target state="translated">다음에서 '{2}'에 대한 '{0}' 지시문({1})을 제거했습니다. {3}</target>
+        <note>{0} is a directive kind (like '#:package'). {1} is number of removed directives.
+    {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</note>
       </trans-unit>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
@@ -1451,10 +1527,10 @@ Make the profile names distinct.</source>
         <target state="translated">지정한 파일이 존재해야 하며 '.cs' 파일 확장명이 있어야 합니다. '{0}'.</target>
         <note>{Locked=".cs"}</note>
       </trans-unit>
-      <trans-unit id="InvalidOptionCombination">
-        <source>Cannot combine option '{0}' and '{1}'.</source>
-        <target state="translated">옵션 '{0}'와(과) '{1}'을(를) 결합할 수 없습니다.</target>
-        <note>{0} and {1} are option names like '--no-build'.</note>
+      <trans-unit id="InvalidOptionForFileBasedApp">
+        <source>Cannot specify option '{0}' when operating on a file-based app.</source>
+        <target state="translated">파일 기반 앱에서 작업할 때 '{0}' 옵션을 지정할 수 없습니다.</target>
+        <note>{0} is an option name like '--source'.</note>
       </trans-unit>
       <trans-unit id="InvalidOptionForStdin">
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
@@ -1677,8 +1753,13 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">작업 버전 {0}을(를) 설치하는 중입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoBinaryLogBecauseRunningJustCsc">
+        <source>Warning: Binary log option was specified but MSBuild will be skipped because running just csc is enough. Specify '--no-cache' to force full build.</source>
+        <target state="translated">경고: 이진 로그 옵션이 지정되었지만 csc만 실행하면 충분하므로 MSBuild는 건너뜁니다. 전체 빌드를 강제 적용하려면 '--no-cache'를 지정하세요.</target>
+        <note>{Locked="--no-cache"}{Locked="MSBuild"}{Locked="csc"}</note>
+      </trans-unit>
       <trans-unit id="NoBinaryLogBecauseUpToDate">
-        <source>Warning: Binary log option was specified but build will be skipped because output is up to date, specify '--no-cache' to force build.</source>
+        <source>Warning: Binary log option was specified but build will be skipped because output is up to date. Specify '--no-cache' to force build.</source>
         <target state="translated">경고: 이진 로그 옵션이 지정되었지만 출력이 최신 상태이므로 빌드를 건너뜁니다. 빌드를 강제로 진행하려면 '--no-cache'를 지정하세요.</target>
         <note>{Locked="--no-cache"}</note>
       </trans-unit>
@@ -2292,42 +2373,42 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory ({0}):</source>
-        <target state="new">Specify the output directory ({0}):</target>
+        <target state="translated">출력 디렉터리 지정({0}):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
         <source>Determines changes without actually modifying the file system</source>
-        <target state="new">Determines changes without actually modifying the file system</target>
+        <target state="translated">파일 시스템을 실제로 수정하지 않고 변경 내용을 결정합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>
-        <target state="new">Dry run: would remove file-level directives from file: {0}</target>
+        <target state="translated">시험 실행: 파일에서 파일 수준 지시문을 제거합니다. {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldCopyFile">
         <source>Dry run: would copy file '{0}' to '{1}'.</source>
-        <target state="new">Dry run: would copy file '{0}' to '{1}'.</target>
+        <target state="translated">시험 실행: '{0}' 파일을 '{1}'에 복사합니다.</target>
         <note>{0} and {1} are file full paths.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldCreateDirectory">
         <source>Dry run: would create directory: {0}</source>
-        <target state="new">Dry run: would create directory: {0}</target>
+        <target state="translated">시험 실행: 디렉터리를 만듭니다. {0}</target>
         <note>{0} is the directory full path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldCreateFile">
         <source>Dry run: would create file: {0}</source>
-        <target state="new">Dry run: would create file: {0}</target>
+        <target state="translated">시험 실행: 파일을 만듭니다. {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldDeleteFile">
         <source>Dry run: would delete file: {0}</source>
-        <target state="new">Dry run: would delete file: {0}</target>
+        <target state="translated">시험 실행: 파일을 삭제합니다. {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldMoveFile">
         <source>Dry run: would move file '{0}' to '{1}'.</source>
-        <target state="new">Dry run: would move file '{0}' to '{1}'.</target>
+        <target state="translated">시험 실행: '{0}' 파일을 '{1}'(으)로 이동합니다.</target>
         <note>{0} and {1} are file full paths.</note>
       </trans-unit>
       <trans-unit id="ProjectManifest">
@@ -2570,8 +2651,10 @@ The default is to publish a framework-dependent application.</source>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
-        <source>The specified launch profile '{0}' could not be located.</source>
-        <target state="translated">지정한 '{0}' 시작 프로필을 찾을 수 없습니다.</target>
+        <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
+{1}</source>
+        <target state="translated">시작 설정 파일을 찾을 수 없으므로 시작 프로필 '{0}'을(를) 사용할 수 없습니다. 시도한 위치: 
+{1}</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionMultipleProjects">
@@ -2611,6 +2694,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <source>'{0}' is not a valid project file.</source>
         <target state="translated">'{0}'은(는) 유효한 프로젝트 파일이 아닙니다.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="RunCommandWarningRunJsonNotUsed">
+        <source>Warning: Settings from '{0}' are not used because '{1}' has precedence.</source>
+        <target state="translated">경고: '{0}'의 설정은 '{1}'이(가) 우선하므로 사용되지 않습니다.</target>
+        <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
       </trans-unit>
       <trans-unit id="RunConfigurationOptionDescription">
         <source>The configuration to run for. The default for most projects is 'Debug'.</source>
@@ -2947,6 +3035,26 @@ Your project targets multiple frameworks. Specify which framework to run using '
       <trans-unit id="TestCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseDirectory">
+        <source>Specifying a directory for 'dotnet test' should be via '--directory'.</source>
+        <target state="new">Specifying a directory for 'dotnet test' should be via '--directory'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseProject">
+        <source>Specifying a project for 'dotnet test' should be via '--project'.</source>
+        <target state="new">Specifying a project for 'dotnet test' should be via '--project'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseSolution">
+        <source>Specifying a solution for 'dotnet test' should be via '--solution'.</source>
+        <target state="new">Specifying a solution for 'dotnet test' should be via '--solution'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseTestModules">
+        <source>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</source>
+        <target state="new">Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestConfigurationOptionDescription">

@@ -15,7 +15,7 @@ internal partial class FrameworkPackages
         {
             { "Microsoft.CSharp", "4.6.0" },
             { "Microsoft.Win32.Registry", "4.6.0" },
-            { "System.Buffers", "4.5.1" },
+            { "System.Buffers", "4.6.1" },
             { "System.Collections.Immutable", "1.6.0" },
             { "System.ComponentModel.Annotations", "4.6.0" },
             { "System.Data.DataSetExtensions", "4.5.0" },
@@ -30,7 +30,8 @@ internal partial class FrameworkPackages
             { "System.Security.AccessControl", "4.6.0" },
             { "System.Security.Cryptography.Cng", "4.6.0" },
             { "System.Security.Cryptography.OpenSsl", "4.6.0" },
-            { "System.Security.Cryptography.Xml", "4.4.0" },
+            // this package was listed in the package overrides.txt for netcoreapp3.0, but it is not actually in the targeting pack
+            // { "System.Security.Cryptography.Xml", "4.4.0" },
             { "System.Security.Principal.Windows", "4.6.0" },
             { "System.Text.Encoding.CodePages", "4.6.0" },
             { "System.Text.Encodings.Web", "4.6.0" },

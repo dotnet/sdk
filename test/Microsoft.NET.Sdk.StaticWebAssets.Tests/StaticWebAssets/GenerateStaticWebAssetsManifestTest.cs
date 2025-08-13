@@ -136,11 +136,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                     {
                         Name = "Last-Modified",
                         Value = "__last-modified__"
-                    },
-                    new()
-                    {
-                        Name = "Accept-Ranges",
-                        Value = "bytes"
                     }
                 ]
             };

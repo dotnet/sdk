@@ -108,7 +108,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         //  https://github.com/dotnet/sdk/issues/49665
-        //  ILLINK : Failed to load /private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/10.0.0-preview.6.25315.102/libhostpolicy.dylib, error : dlopen(/private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/10.0.0-preview.6.25315.102/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/10.0.0-preview.6.25315.102/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), 
+        //  ILLINK : Failed to load /private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/10.0.0-preview.6.25315.102/libhostpolicy.dylib, error : dlopen(/private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/10.0.0-preview.6.25315.102/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/10.0.0-preview.6.25315.102/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')),
         [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
         public void ILLink_links_simple_app_without_analysis_warnings_and_it_runs(string targetFramework)
@@ -599,7 +599,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         //  https://github.com/dotnet/sdk/issues/49665
-        //  ILLINK : Failed to load /private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/7.0.0/libhostpolicy.dylib, error : dlopen(/private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/7.0.0/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/7.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), 
+        //  ILLINK : Failed to load /private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/7.0.0/libhostpolicy.dylib, error : dlopen(/private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/7.0.0/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/7.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')),
         [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [MemberData(nameof(Net6Plus), MemberType = typeof(PublishTestUtils))]
         public void ILLink_analysis_warnings_are_enabled_by_default(string targetFramework)
@@ -966,14 +966,20 @@ namespace Microsoft.NET.Publish.Tests
                     "ILLink : Trim analysis warning IL2026: System.ComponentModel.DefaultValueAttribute.DefaultValueAttribute(Type, String): Using member"
                 });
             }
-            // windows-only COM warnings
-            if (Net10Plus.Any(tfm => (string)tfm[0] == targetFramework) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (Net10Plus.Any(tfm => (string)tfm[0] == targetFramework))
             {
                 expectedWarnings.AddRange(new string[] {
-                    "ILLink : Trim analysis warning IL2045: Internal.Runtime.InteropServices.ComActivator.BasicClassFactory.CreateValidatedInterfaceType(Type, Guid&, Object): Attribute 'System.Runtime.InteropServices.ClassInterfaceAttribute' is being referenced in code but the trimmer was instructed to remove all instances of this attribute. If the attribute instances are necessary make sure to either remove the trimmer attribute XML portion which removes the attribute instances, or override the removal by using the trimmer XML descriptor to keep the attribute type (which in turn keeps all of its instances).",
-                    "ILLink : Trim analysis warning IL2045: Internal.Runtime.InteropServices.ComActivator.BasicClassFactory.CreateValidatedInterfaceType(Type, Guid&, Object): Attribute 'System.Runtime.InteropServices.ClassInterfaceAttribute' is being referenced in code but the trimmer was instructed to remove all instances of this attribute. If the attribute instances are necessary make sure to either remove the trimmer attribute XML portion which removes the attribute instances, or override the removal by using the trimmer XML descriptor to keep the attribute type (which in turn keeps all of its instances).",
-                    "ILLink : Trim analysis warning IL2045: Internal.Runtime.InteropServices.ComActivator.BasicClassFactory.CreateValidatedInterfaceType(Type, Guid&, Object): Attribute 'System.Runtime.InteropServices.ClassInterfaceAttribute' is being referenced in code but the trimmer was instructed to remove all instances of this attribute. If the attribute instances are necessary make sure to either remove the trimmer attribute XML portion which removes the attribute instances, or override the removal by using the trimmer XML descriptor to keep the attribute type (which in turn keeps all of its instances)."
+                    "ILLink : Trim analysis warning IL2067: System.ComponentModel.DefaultValueAttribute.DefaultValueAttribute(Type, String): 'typeToConvert' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'System.ComponentModel.DefaultValueAttribute"
                 });
+                // windows-only COM warnings
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    expectedWarnings.AddRange(new string[] {
+                        "ILLink : Trim analysis warning IL2045: Internal.Runtime.InteropServices.ComActivator.BasicClassFactory.CreateValidatedInterfaceType(Type, Guid&, Object): Attribute 'System.Runtime.InteropServices.ClassInterfaceAttribute' is being referenced in code but the trimmer was instructed to remove all instances of this attribute. If the attribute instances are necessary make sure to either remove the trimmer attribute XML portion which removes the attribute instances, or override the removal by using the trimmer XML descriptor to keep the attribute type (which in turn keeps all of its instances).",
+                        "ILLink : Trim analysis warning IL2045: Internal.Runtime.InteropServices.ComActivator.BasicClassFactory.CreateValidatedInterfaceType(Type, Guid&, Object): Attribute 'System.Runtime.InteropServices.ClassInterfaceAttribute' is being referenced in code but the trimmer was instructed to remove all instances of this attribute. If the attribute instances are necessary make sure to either remove the trimmer attribute XML portion which removes the attribute instances, or override the removal by using the trimmer XML descriptor to keep the attribute type (which in turn keeps all of its instances).",
+                        "ILLink : Trim analysis warning IL2045: Internal.Runtime.InteropServices.ComActivator.BasicClassFactory.CreateValidatedInterfaceType(Type, Guid&, Object): Attribute 'System.Runtime.InteropServices.ClassInterfaceAttribute' is being referenced in code but the trimmer was instructed to remove all instances of this attribute. If the attribute instances are necessary make sure to either remove the trimmer attribute XML portion which removes the attribute instances, or override the removal by using the trimmer XML descriptor to keep the attribute type (which in turn keeps all of its instances)."
+                    });
+                }
             }
 
             var testProject = CreateTestProjectForILLinkTesting(_testAssetsManager, targetFramework, projectName);
@@ -1774,7 +1780,7 @@ namespace Microsoft.NET.Publish.Tests
             var runtimeConfigPath = Path.Combine(outputDirectory, $"{projectName}.runtimeconfig.json");
 
             // injects the IsTrimmable attribute
-            AssemblyInfo.Get(assemblyPath)["AssemblyMetadataAttribute"].Should().Be("IsTrimmable:True");
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("AssemblyMetadataAttribute", "IsTrimmable:True"));
 
             // just setting IsTrimmable doesn't enable feature settings
             // (these only affect apps, and wouldn't make sense for libraries either)
@@ -1817,7 +1823,7 @@ namespace Microsoft.NET.Publish.Tests
             configProperties["System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault"].Value<bool>().Should().BeFalse();
 
             // just setting PublishTrimmed doesn't inject the IsTrimmable attribute
-            AssemblyInfo.Get(assemblyPath).ContainsKey("AssemblyMetadataAttribute").Should().BeFalse();
+            AssemblyInfo.Get(assemblyPath).Should().NotContain(i => i.Key == "AssemblyMetadataAttribute");
         }
     }
 

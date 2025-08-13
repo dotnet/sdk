@@ -217,7 +217,6 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         uncompressedAppJsEndpoint.Should().HaveCount(1);
         uncompressedAppJsEndpoint.Single().ResponseHeaders.Select(h => h.Name).Should().BeEquivalentTo(
             [
-                "Accept-Ranges",
                 "Cache-Control",
                 "Content-Length",
                 "Content-Type",
@@ -232,7 +231,6 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         gzipCompressedAppJsEndpoint.Should().HaveCount(1);
         gzipCompressedAppJsEndpoint.Single().ResponseHeaders.Select(h => h.Name).Should().BeEquivalentTo(
             [
-                "Accept-Ranges",
                 "Cache-Control",
                 "Content-Length",
                 "Content-Type",
@@ -251,7 +249,6 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         brotliCompressedAppJsEndpoint.Should().HaveCount(1);
         brotliCompressedAppJsEndpoint.Single().ResponseHeaders.Select(h => h.Name).Should().BeEquivalentTo(
             [
-                "Accept-Ranges",
                 "Cache-Control",
                 "Content-Length",
                 "Content-Type",
@@ -425,6 +422,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
                     var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
                     itemGroup.Add(serviceWorkerAssetsManifest);
                     itemGroup.Add(fingerprintAssets);
+                    itemGroup.Add(new XElement("WasmEnableHotReload", false));
                     doc.Root.Add(itemGroup);
                 }
             });
@@ -449,6 +447,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
                         var itemGroup = new XElement("PropertyGroup");
                         var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
                         itemGroup.Add(fingerprintAssets);
+                        itemGroup.Add(new XElement("WasmEnableHotReload", false));
                         doc.Root.Add(itemGroup);
                     }
                 });
@@ -475,6 +474,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
                     var itemGroup = new XElement("PropertyGroup");
                     var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
                     itemGroup.Add(fingerprintAssets);
+                    itemGroup.Add(new XElement("WasmEnableHotReload", false));
                     doc.Root.Add(itemGroup);
                 }
             });
@@ -500,6 +500,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
                     var itemGroup = new XElement("PropertyGroup");
                     var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
                     itemGroup.Add(fingerprintAssets);
+                    itemGroup.Add(new XElement("WasmEnableHotReload", false));
                     doc.Root.Add(itemGroup);
                 }
             });

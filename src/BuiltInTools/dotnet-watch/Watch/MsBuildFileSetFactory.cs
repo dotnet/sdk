@@ -49,6 +49,7 @@ namespace Microsoft.DotNet.Watch
                 {
                     Executable = EnvironmentOptions.MuxerPath,
                     WorkingDirectory = projectDir,
+                    IsUserApplication = false,
                     Arguments = arguments,
                     OnOutput = line =>
                     {
@@ -61,7 +62,7 @@ namespace Microsoft.DotNet.Watch
 
                 Reporter.Verbose($"Running MSBuild target '{TargetName}' on '{rootProjectFile}'");
 
-                var exitCode = await processRunner.RunAsync(processSpec, Reporter, isUserApplication: false, launchResult: null, cancellationToken);
+                var exitCode = await processRunner.RunAsync(processSpec, Reporter, launchResult: null, cancellationToken);
 
                 var success = exitCode == 0 && File.Exists(watchList);
 
@@ -153,11 +154,6 @@ namespace Microsoft.DotNet.Watch
                 rootProjectFile,
                 "/t:" + TargetName
             };
-
-            if (EnvironmentOptions.GetTestBinLogPath(rootProjectFile, "GenerateWatchList") is { } binLogPath)
-            {
-                arguments.Add($"/bl:{binLogPath}");
-            }
 
             arguments.AddRange(buildArguments);
 
