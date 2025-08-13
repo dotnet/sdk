@@ -1,6 +1,6 @@
 ﻿{
   "author": "Aleksei Kharlov aka halex2005 (codeofclimber.ru)",
-  "name": "NUnit Test Project",
+  "name": "NUnit 테스트 프로젝트",
   "description": "Windows, Linux 및 macOS의 .NET에서 실행할 수 있는 NUnit 테스트가 포함된 프로젝트",
   "symbols/TargetFrameworkOverride/description": "대상 프레임워크를 재정의합니다.",
   "symbols/TargetFrameworkOverride/displayName": "대상 프레임워크 재정의",
