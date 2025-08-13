@@ -37,11 +37,6 @@ namespace Microsoft.DotNet.Watch
 
         private bool _isDisposed;
 
-        static CompilationHandler()
-        {
-            WatchHotReloadService.RequireCommit = true;
-        }
-
         public CompilationHandler(IReporter reporter, ProcessRunner processRunner)
         {
             _reporter = reporter;
