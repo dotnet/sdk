@@ -408,7 +408,7 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
       </trans-unit>
       <trans-unit id="CmdConfigFileDescription">
         <source>Specifies a testconfig.json file.</source>
-        <target state="new">Specifies a testconfig.json file.</target>
+        <target state="translated">testconfig.json ファイルを指定します。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfigFileOption">

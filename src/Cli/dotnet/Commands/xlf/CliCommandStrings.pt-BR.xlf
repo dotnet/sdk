@@ -408,7 +408,7 @@ Para MSTest antes de 2.2.4, o tempo limite é usado para todos os casos de teste
       </trans-unit>
       <trans-unit id="CmdConfigFileDescription">
         <source>Specifies a testconfig.json file.</source>
-        <target state="new">Specifies a testconfig.json file.</target>
+        <target state="translated">Especifica um arquivo testconfig.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfigFileOption">
