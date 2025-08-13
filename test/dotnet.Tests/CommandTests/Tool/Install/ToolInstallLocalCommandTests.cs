@@ -315,6 +315,26 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                                "But restore do not need to 'revert' since it just set in nuget global directory");
         }
 
+        [Fact]
+        public void WhenRunWithExistingManifestInConfigDirectoryItShouldAddToExistingManifest()
+        {
+            // Test backward compatibility: ensure tools can be added to existing manifests in .config directories
+            _fileSystem.File.Delete(_manifestFilePath);
+            var configDirectory = Path.Combine(_temporaryDirectory, ".config");
+            _fileSystem.Directory.CreateDirectory(configDirectory);
+            var configManifestPath = Path.Combine(configDirectory, "dotnet-tools.json");
+            _fileSystem.File.WriteAllText(configManifestPath, _jsonContent);
+
+            var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
+
+            toolInstallLocalCommand.Execute().Should().Be(0);
+
+            // Verify the tool was added to the existing .config manifest
+            var manifestPackages = _toolManifestFinder.Find();
+            manifestPackages.Should().HaveCount(1);
+            manifestPackages.First().PackageId.Should().Be(_packageIdA);
+        }
+
         private ToolInstallLocalCommand GetDefaultTestToolInstallLocalCommand()
         {
             return new ToolInstallLocalCommand(
