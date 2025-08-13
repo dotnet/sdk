@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Contracts" PrivateAssets="all"/>
+    <PackageReference Include="Microsoft.CodeAnalysis.Contracts" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
@@ -30,10 +30,11 @@
       don't depend on higher versions of the packages than are available in those environments.
     -->
     <PackageReference Include="System.Buffers" VersionOverride="$(SystemBuffersToolsetPackageVersion)" />
+    <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutableToolsetPackageVersion)"/>
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" VersionOverride="$(SystemDiagnosticsDiagnosticSourceToolsetPackageVersion)"/>
     <PackageReference Include="System.Memory" VersionOverride="$(SystemMemoryToolsetPackageVersion)" />
     <PackageReference Include="System.Threading.Tasks.Extensions" VersionOverride="$(SystemThreadingTasksExtensionsToolsetPackageVersion)" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="$(MicrosoftBclAsyncInterfacesToolsetPackageVersion)"/>
-    <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutableToolsetPackageVersion)"/>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" VersionOverride="$(MicrosoftExtensionsLoggingAbstractionsToolsetPackageVersion)"/>
   </ItemGroup>
 
