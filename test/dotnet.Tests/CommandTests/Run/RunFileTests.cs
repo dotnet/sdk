@@ -1091,6 +1091,31 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         records.Count(static r => r.Args is ProjectEvaluationFinishedEventArgs).Should().BeGreaterThanOrEqualTo(2);
     }
 
+    [Theory, CombinatorialData]
+    public void TerminalLogger(bool on)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        var result = new DotnetCommand(Log, "run", "Program.cs", "--no-cache")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("MSBUILDTERMINALLOGGER", on ? "on" : "off")
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("Hello from Program");
+
+        const string terminalLoggerSubstring = "\x1b";
+        if (on)
+        {
+            result.And.HaveStdOutContaining(terminalLoggerSubstring);
+        }
+        else
+        {
+            result.And.NotHaveStdOutContaining(terminalLoggerSubstring);
+        }
+    }
+
     /// <summary>
     /// Default projects include embedded resources by default.
     /// </summary>
