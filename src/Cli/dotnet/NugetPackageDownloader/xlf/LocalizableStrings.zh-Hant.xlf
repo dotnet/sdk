@@ -33,8 +33,8 @@
         <note />
       </trans-unit>
       <trans-unit id="IsNotFoundInNuGetFeeds">
-        <source>{0} is not found in NuGet feeds {1}".</source>
-        <target state="translated">在 NuGet 摘要 {1} 中找不到 {0}"。</target>
+        <source>{0} is not found in NuGet feeds {1}.</source>
+        <target state="translated">在 NuGet 摘要 {1} 中找不到 {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
