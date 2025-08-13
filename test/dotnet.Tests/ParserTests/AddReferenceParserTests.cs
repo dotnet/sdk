@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Instance.Parse("dotnet add reference my.csproj --interactive");
 
-            result.GetValue<bool>(AddProjectToProjectReferenceParser.InteractiveOption)
+            result.GetValue<bool>(ReferenceAddCommandParser.InteractiveOption)
                 .Should().BeTrue();
         }
 
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Instance.Parse("dotnet add reference my.csproj");
 
-            result.GetValue<bool>(AddProjectToProjectReferenceParser.InteractiveOption)
+            result.GetValue<bool>(ReferenceAddCommandParser.InteractiveOption)
                 .Should().BeFalse();
         }
 
