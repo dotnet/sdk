@@ -423,7 +423,7 @@ Pour MSTest avant la version 2.2.4, le délai d’expiration est utilisé pour 
       </trans-unit>
       <trans-unit id="CmdConfigFilePath">
         <source>CONFIG_FILE</source>
-        <target state="new">CONFIG_FILE</target>
+        <target state="translated">CONFIG_FILE</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCurrentRuntimeOptionDescription">
@@ -449,13 +449,13 @@ Pour MSTest avant la version 2.2.4, le délai d’expiration est utilisé pour 
       <trans-unit id="CmdDiagnosticOutputDirectoryDescription">
         <source>Output directory of the diagnostic logging.
 If not specified the file will be generated inside the default 'TestResults' directory.</source>
-        <target state="new">Output directory of the diagnostic logging.
-If not specified the file will be generated inside the default 'TestResults' directory.</target>
+        <target state="translated">Répertoire de sortie de la journalisation des diagnostics.
+S’il n’est pas spécifié, le fichier est généré dans le répertoire « TestResults » par défaut.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDiagnosticOutputDirectoryPath">
         <source>DIAGNOSTIC_DIR</source>
-        <target state="new">DIAGNOSTIC_DIR</target>
+        <target state="translated">DIAGNOSTIC_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDirectoryDescription">

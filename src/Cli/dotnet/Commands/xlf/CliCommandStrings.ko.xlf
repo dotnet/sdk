@@ -423,7 +423,7 @@ MSTest 2.2.4 이전의 경우 시간 제한은 모든 테스트케이스에 사�
       </trans-unit>
       <trans-unit id="CmdConfigFilePath">
         <source>CONFIG_FILE</source>
-        <target state="new">CONFIG_FILE</target>
+        <target state="translated">CONFIG_FILE</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCurrentRuntimeOptionDescription">
@@ -449,13 +449,13 @@ MSTest 2.2.4 이전의 경우 시간 제한은 모든 테스트케이스에 사�
       <trans-unit id="CmdDiagnosticOutputDirectoryDescription">
         <source>Output directory of the diagnostic logging.
 If not specified the file will be generated inside the default 'TestResults' directory.</source>
-        <target state="new">Output directory of the diagnostic logging.
-If not specified the file will be generated inside the default 'TestResults' directory.</target>
+        <target state="translated">진단 로깅의 출력 디렉터리입니다.
+지정하지 않으면 파일이 기본 'TestResults' 디렉터리 내에 생성됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDiagnosticOutputDirectoryPath">
         <source>DIAGNOSTIC_DIR</source>
-        <target state="new">DIAGNOSTIC_DIR</target>
+        <target state="translated">DIAGNOSTIC_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDirectoryDescription">
