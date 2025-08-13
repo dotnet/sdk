@@ -14,42 +14,42 @@
       <Sha>34e844f17facdfbdeaa0d9ae40ef792d19b3775b</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.19">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.20">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>fce8ed90dc43047eabec2b32c04ee46b789ad5d1</Sha>
+      <Sha>6b12df1a810008460d16ef9bfd2cecb1a9a8c29f</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.NetCore.SharedFramework.x64.8.0" Version="8.0.19-servicing.25365.14">
+    <Dependency Name="VS.Redist.Common.NetCore.SharedFramework.x64.8.0" Version="8.0.20-servicing.25412.10">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>fce8ed90dc43047eabec2b32c04ee46b789ad5d1</Sha>
+      <Sha>6b12df1a810008460d16ef9bfd2cecb1a9a8c29f</Sha>
       <SourceBuild RepoName="runtime" ManagedOnly="false" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.NetCore.TargetingPack.x64.8.0" Version="8.0.19-servicing.25365.14">
+    <Dependency Name="VS.Redist.Common.NetCore.TargetingPack.x64.8.0" Version="8.0.20-servicing.25412.10">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>fce8ed90dc43047eabec2b32c04ee46b789ad5d1</Sha>
+      <Sha>6b12df1a810008460d16ef9bfd2cecb1a9a8c29f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="8.0.19">
+    <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="8.0.20">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>fce8ed90dc43047eabec2b32c04ee46b789ad5d1</Sha>
+      <Sha>6b12df1a810008460d16ef9bfd2cecb1a9a8c29f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Host.win-x64" Version="8.0.19">
+    <Dependency Name="Microsoft.NETCore.App.Host.win-x64" Version="8.0.20">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>fce8ed90dc43047eabec2b32c04ee46b789ad5d1</Sha>
+      <Sha>6b12df1a810008460d16ef9bfd2cecb1a9a8c29f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.Platforms" Version="8.0.19-servicing.25365.14">
+    <Dependency Name="Microsoft.NETCore.Platforms" Version="8.0.20-servicing.25412.10">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>fce8ed90dc43047eabec2b32c04ee46b789ad5d1</Sha>
+      <Sha>6b12df1a810008460d16ef9bfd2cecb1a9a8c29f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.HostModel" Version="8.0.19-servicing.25365.14">
+    <Dependency Name="Microsoft.NET.HostModel" Version="8.0.20-servicing.25412.10">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>fce8ed90dc43047eabec2b32c04ee46b789ad5d1</Sha>
+      <Sha>6b12df1a810008460d16ef9bfd2cecb1a9a8c29f</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.DependencyModel" Version="8.0.2">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>81cabf2857a01351e5ab578947c7403a5b128ad1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.DotNetHostResolver" Version="8.0.19">
+    <Dependency Name="Microsoft.NETCore.DotNetHostResolver" Version="8.0.20">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>fce8ed90dc43047eabec2b32c04ee46b789ad5d1</Sha>
+      <Sha>6b12df1a810008460d16ef9bfd2cecb1a9a8c29f</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-8.0.100" Version="8.0.19" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/emsdk</Uri>
@@ -200,9 +200,9 @@
       <Uri>https://github.com/microsoft/vstest</Uri>
       <Sha>aa59400b11e1aeee2e8af48928dbd48748a8bef9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="8.0.19">
+    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="8.0.20">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>fce8ed90dc43047eabec2b32c04ee46b789ad5d1</Sha>
+      <Sha>6b12df1a810008460d16ef9bfd2cecb1a9a8c29f</Sha>
     </Dependency>
     <Dependency Name="System.Formats.Asn1" Version="8.0.2">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
