@@ -1865,7 +1865,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
     <comment>{Locked="--sdk-version"}</comment>
   </data>
   <data name="ShouldInstallAWorkloadSet" xml:space="preserve">
-    <value>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</value>
+    <value>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</value>
     <comment>{Locked="dotnet workload restore"}</comment>
   </data>
   <data name="ShutDownFailed" xml:space="preserve">
@@ -2481,8 +2481,12 @@ To display a value, specify the corresponding command-line option without provid
   <data name="WorkloadManifestIdColumn" xml:space="preserve">
     <value>Workload manifest ID</value>
   </data>
-  <data name="WorkloadManifestInstallationConfiguration" xml:space="preserve">
-    <value>Configured to use {0} when installing new manifests.</value>
+  <data name="WorkloadManifestInstallationConfigurationWorkloadSets" xml:space="preserve">
+    <value>Configured to use workload sets when installing new manifests.</value>
+    <comment>{Locked="workload sets"}</comment>
+  </data>
+  <data name="WorkloadManifestInstallationConfigurationLooseManifests" xml:space="preserve">
+    <value>Configured to use loose manifests when installing new manifests.</value>
   </data>
   <data name="WorkloadManifestPathColumn" xml:space="preserve">
     <value>Manifest Path</value>
@@ -2617,5 +2621,17 @@ Proceed?</value>
   <data name="ToolDownloadNeedsConfirmation" xml:space="preserve">
     <value>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</value>
     <comment>{Locked="--yes"}</comment>
+  </data>
+  <data name="TestCommandUseSolution" xml:space="preserve">
+    <value>Specifying a solution for 'dotnet test' should be via '--solution'.</value>
+  </data>
+  <data name="TestCommandUseProject" xml:space="preserve">
+    <value>Specifying a project for 'dotnet test' should be via '--project'.</value>
+  </data>
+  <data name="TestCommandUseDirectory" xml:space="preserve">
+    <value>Specifying a directory for 'dotnet test' should be via '--directory'.</value>
+  </data>
+  <data name="TestCommandUseTestModules" xml:space="preserve">
+    <value>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</value>
   </data>
 </root>

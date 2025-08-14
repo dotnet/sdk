@@ -14,10 +14,6 @@ on:
 permissions:
   contents: read
 
-env:
-  # Allow Copilot to access Visual Studio assets URLs needed for NuGet restore
-  COPILOT_AGENT_FIREWALL_ALLOW_LIST_ADDITIONS: "vsblob.vsassets.io"
-
 jobs:
 
   copilot-setup-steps:
