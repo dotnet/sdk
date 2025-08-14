@@ -170,7 +170,7 @@ namespace Microsoft.DotNet.HotReload
 
             if (success)
             {
-                Logger.LogDebug("Updates applied: {AppliedCount} out of {TotalCount}.", applicableUpdates.Count, updates.Length);
+                Logger.Log(LogEvents.UpdatesApplied, applicableUpdates.Count, updates.Length);
             }
 
             return

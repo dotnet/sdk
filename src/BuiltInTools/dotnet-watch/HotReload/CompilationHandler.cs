@@ -419,7 +419,7 @@ namespace Microsoft.DotNet.Watch
                         continue;
                     }
 
-                    ReportDiagnostic(diagnostic, GetLogEventId(diagnostic, verbose: false));
+                    ReportDiagnostic(diagnostic, GetMessageDescriptor(diagnostic, verbose: false));
                 }
             }
 
@@ -447,7 +447,7 @@ namespace Microsoft.DotNet.Watch
                             projectsRebuiltDueToRudeEdits.Contains(projectId) ? "[auto-rebuild] " :
                             "";
 
-                        var eventId = GetLogEventId(diagnostic, verbose: prefix != "");
+                        var eventId = GetMessageDescriptor(diagnostic, verbose: prefix != "");
                         ReportDiagnostic(diagnostic, eventId, prefix);
                     }
                 }
@@ -456,12 +456,11 @@ namespace Microsoft.DotNet.Watch
             bool IsAutoRestartEnabled(ProjectId id)
                 => runningProjectInfos.TryGetValue(id, out var info) && info.RestartWhenChangesHaveNoEffect;
 
-            void ReportDiagnostic(Diagnostic diagnostic, EventId eventId, string prefix = "")
+            void ReportDiagnostic(Diagnostic diagnostic, MessageDescriptor descriptor, string prefix = "")
             {
                 var display = CSharpDiagnosticFormatter.Instance.Format(diagnostic);
-                _reporter.ReportWithPrefix(eventId, prefix, [display]);
+                _reporter.ReportWithPrefix(descriptor, prefix, [display]);
 
-                var descriptor = MessageDescriptor.GetDescriptor(eventId);
                 if (descriptor.Severity != MessageSeverity.None)
                 {
                     diagnosticsToDisplayInApp.Add(descriptor.GetMessage(prefix, [display]));
@@ -470,7 +469,7 @@ namespace Microsoft.DotNet.Watch
 
             // Use the default severity of the diagnostic as it conveys impact on Hot Reload
             // (ignore warnings as errors and other severity configuration).
-            static EventId GetLogEventId(Diagnostic diagnostic, bool verbose)
+            static MessageDescriptor GetMessageDescriptor(Diagnostic diagnostic, bool verbose)
             {
                 if (verbose)
                 {
