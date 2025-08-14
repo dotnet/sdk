@@ -11,7 +11,8 @@ namespace Microsoft.DotNet.Watch
 {
     internal sealed class HotReloadDotNetWatcher
     {
-        public const string LogComponentName = nameof(HotReloadDotNetWatcher);
+        public const string ClientLogComponentName = $"{nameof(HotReloadDotNetWatcher)}:Client";
+        public const string AgentLogComponentName = $"{nameof(HotReloadDotNetWatcher)}:Agent";
 
         private readonly IConsole _console;
         private readonly IRuntimeProcessLauncherFactory? _runtimeProcessLauncherFactory;
