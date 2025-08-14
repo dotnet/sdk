@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.Watch
                 _context.RootProjectOptions.ProjectPath,
                 _context.RootProjectOptions.BuildArguments,
                 _context.ProcessRunner,
-                new BuildReporter(_context.Reporter, _context.Options, _context.EnvironmentOptions));
+                new BuildReporter(_context.BuildLogger, _context.Options, _context.EnvironmentOptions));
 
         public IReadOnlyList<string> GetProcessArguments(int iteration)
         {
@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.Watch
 
                 await FileWatcher.WaitForFileChangeAsync(
                     _fileSetFactory.RootProjectFile,
-                    _context.Reporter,
+                    _context.Logger,
                     _context.EnvironmentOptions,
                     startedWatching: () => _context.Reporter.Report(MessageDescriptor.FixBuildError),
                     cancellationToken);

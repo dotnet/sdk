@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <Compile Include="..\dotnet-watch.Tests\TestUtilities\AssertEx.cs" Link="Utilities\AssertEx.cs" />
+    <Compile Include="..\dotnet-watch.Tests\TestUtilities\TestLogger.cs" Link="Mocks\TestLogger.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,5 +20,4 @@
   </ItemGroup>
 
   <Import Project="..\..\src\BuiltInTools\HotReloadClient\Microsoft.DotNet.HotReload.Client.projitems" Label="Shared" />
-
 </Project>

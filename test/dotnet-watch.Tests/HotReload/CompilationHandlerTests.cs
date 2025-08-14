@@ -15,15 +15,15 @@ public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTest
         var hostDir = Path.Combine(testAsset.Path, "Host");
         var hostProject = Path.Combine(hostDir, "Host.csproj");
 
-        var reporter = new TestReporter(Logger);
         var options = TestOptions.GetProjectOptions(["--project", hostProject]);
 
         var environmentOptions = TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory, "dotnet");
 
         var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout);
 
-        var projectGraph = ProjectGraphUtilities.TryLoadProjectGraph(options.ProjectPath, globalOptions: [], reporter, projectGraphRequired: false, CancellationToken.None);
-        var handler = new CompilationHandler(reporter, processRunner);
+        var logger = new TestLogger(Logger);
+        var projectGraph = ProjectGraphUtilities.TryLoadProjectGraph(options.ProjectPath, globalOptions: [], logger, projectGraphRequired: false, CancellationToken.None);
+        var handler = new CompilationHandler(logger, processRunner);
 
         await handler.Workspace.UpdateProjectConeAsync(hostProject, CancellationToken.None);
 
