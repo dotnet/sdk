@@ -70,6 +70,12 @@ public class RunCommand
     public bool NoLaunchProfile { get; }
 
     /// <summary>
+    /// The verbosity of the run-portion of this command specifically. If implicit builds are performed, they will always happen
+    /// at a quiet verbosity by default, but it's important that we enable separate verbosity for the run command itself.
+    /// </summary>
+    public VerbosityOptions RunCommandVerbosity { get; private set; }
+
+    /// <summary>
     /// True to ignore command line arguments specified by launch profile.
     /// </summary>
     public bool NoLaunchProfileArguments { get; }
@@ -208,7 +214,7 @@ public class RunCommand
             return true;
         }
 
-        if (MSBuildArgs.Verbosity?.IsQuiet() != true)
+        if (!RunCommandVerbosity.IsQuiet())
         {
             Reporter.Output.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
@@ -339,11 +345,20 @@ public class RunCommand
     {
         msbuildArgs = msbuildArgs.CloneWithAdditionalArgs("-nologo");
 
-        if (msbuildArgs.Verbosity is null)
+        if (msbuildArgs.Verbosity is VerbosityOptions userVerbosity)
         {
+            // if the user had a desired verbosity, we use that for the run command
+            RunCommandVerbosity = userVerbosity;
+            return msbuildArgs;
+        }
+        else
+        {
+            // Apply defaults if the user didn't expressly set the verbosity.
+            // Setting RunCommandVerbosity to minimal ensures that we keep the previous launchsettings
+            // and related diagnostics messages on by default.
+            RunCommandVerbosity = VerbosityOptions.minimal;
             return msbuildArgs.CloneWithVerbosity(VerbosityOptions.quiet);
         }
-        return msbuildArgs;
     }
 
     internal ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
@@ -356,7 +371,7 @@ public class RunCommand
             return CreateCommandForCscBuiltProgram(EntryPointFileFullPath);
         }
 
-        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([..MSBuildArgs.OtherMSBuildArgs], "dotnet-run");
+        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. MSBuildArgs.OtherMSBuildArgs], "dotnet-run");
         var project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
         ValidatePreconditions(project);
         InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs);

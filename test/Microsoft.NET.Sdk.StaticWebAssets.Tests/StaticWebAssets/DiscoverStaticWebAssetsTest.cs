@@ -688,6 +688,123 @@ for path 'candidate.js'");
                 File.Delete(manifestPath);
             }
         }
+
+        [Fact]
+        public void ComputesRelativePath_ForDiscoveredAssetsWithFullPath()
+        {
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+            buildEngine.SetupGet(e => e.ProjectFileOfTaskNode)
+                .Returns(Path.Combine(Environment.CurrentDirectory, "Debug", "TestProject.csproj"));
+
+            var debugDir = Path.Combine(Environment.CurrentDirectory, "Debug", "wwwroot");
+            var task = new DefineStaticWebAssets
+            {
+                BuildEngine = buildEngine.Object,
+                CandidateAssets = [
+                    new TaskItem(Path.Combine(debugDir, "Microsoft.AspNetCore.Components.CustomElements.lib.module.js"),
+                        new Dictionary<string,string>{ ["Integrity"] = "integrity", ["Fingerprint"] = "fingerprint"}),
+                    new TaskItem(Path.Combine(debugDir, "Microsoft.AspNetCore.Components.CustomElements.lib.module.js.map"),
+                        new Dictionary<string,string>{ ["Integrity"] = "integrity", ["Fingerprint"] = "fingerprint"})
+                ],
+                RelativePathPattern = "wwwroot/**",
+                SourceType = "Discovered",
+                SourceId = "Microsoft.AspNetCore.Components.CustomElements",
+                ContentRoot = debugDir,
+                BasePath = "_content/Microsoft.AspNetCore.Components.CustomElements",
+                TestResolveFileDetails = _testResolveFileDetails,
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            result.Should().BeTrue($"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
+            task.Assets.Length.Should().Be(2);
+            task.Assets[0].GetMetadata(nameof(StaticWebAsset.RelativePath)).Should().Be("Microsoft.AspNetCore.Components.CustomElements.lib.module.js");
+            task.Assets[0].GetMetadata(nameof(StaticWebAsset.BasePath)).Should().Be("_content/Microsoft.AspNetCore.Components.CustomElements");
+            task.Assets[1].GetMetadata(nameof(StaticWebAsset.RelativePath)).Should().Be("Microsoft.AspNetCore.Components.CustomElements.lib.module.js.map");
+            task.Assets[1].GetMetadata(nameof(StaticWebAsset.BasePath)).Should().Be("_content/Microsoft.AspNetCore.Components.CustomElements");
+        }
+
+        [Fact]
+        public void ComputesRelativePath_WorksForItemsWithRelativePaths()
+        {
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+            buildEngine.SetupGet(e => e.ProjectFileOfTaskNode)
+                .Returns(Path.Combine(Environment.CurrentDirectory, "Debug", "TestProject.csproj"));
+
+            var debugDir = Path.Combine(Environment.CurrentDirectory, "Debug", "wwwroot");
+            var task = new DefineStaticWebAssets
+            {
+                BuildEngine = buildEngine.Object,
+                CandidateAssets = [
+                    new TaskItem(Path.Combine("wwwroot", "Microsoft.AspNetCore.Components.CustomElements.lib.module.js"),
+                        new Dictionary<string,string>{ ["Integrity"] = "integrity", ["Fingerprint"] = "fingerprint"}),
+                    new TaskItem(Path.Combine("wwwroot", "Microsoft.AspNetCore.Components.CustomElements.lib.module.js.map"),
+                        new Dictionary<string,string>{ ["Integrity"] = "integrity", ["Fingerprint"] = "fingerprint"})
+                ],
+                RelativePathPattern = "wwwroot/**",
+                SourceType = "Discovered",
+                SourceId = "Microsoft.AspNetCore.Components.CustomElements",
+                ContentRoot = debugDir,
+                BasePath = "_content/Microsoft.AspNetCore.Components.CustomElements",
+                TestResolveFileDetails = _testResolveFileDetails,
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            result.Should().BeTrue($"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
+            task.Assets.Length.Should().Be(2);
+            task.Assets[0].GetMetadata(nameof(StaticWebAsset.RelativePath)).Should().Be("Microsoft.AspNetCore.Components.CustomElements.lib.module.js");
+            task.Assets[0].GetMetadata(nameof(StaticWebAsset.BasePath)).Should().Be("_content/Microsoft.AspNetCore.Components.CustomElements");
+            task.Assets[1].GetMetadata(nameof(StaticWebAsset.RelativePath)).Should().Be("Microsoft.AspNetCore.Components.CustomElements.lib.module.js.map");
+            task.Assets[1].GetMetadata(nameof(StaticWebAsset.BasePath)).Should().Be("_content/Microsoft.AspNetCore.Components.CustomElements");
+        }
+
+        [LinuxOnlyFact]
+        public void ComputesRelativePath_ForAssets_ExplicitPaths()
+        {
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+            buildEngine.SetupGet(e => e.ProjectFileOfTaskNode)
+                .Returns("/home/user/work/Repo/Project/Project.csproj");
+
+            var task = new DefineStaticWebAssets
+            {
+                BuildEngine = buildEngine.Object,
+                CandidateAssets = [
+                    new TaskItem("/home/user/work/Repo/Project/Components/Dropdown/Dropdown.razor.js",
+                        new Dictionary<string,string>{ ["Integrity"] = "integrity", ["Fingerprint"] = "fingerprint"}),
+                ],
+                RelativePathPattern = "**",
+                SourceType = "Discovered",
+                SourceId = "Project",
+                ContentRoot = "/home/user/work/Repo/Project",
+                BasePath = "_content/Project",
+                TestResolveFileDetails = _testResolveFileDetails,
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            result.Should().BeTrue($"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
+            task.Assets.Length.Should().Be(1);
+            task.Assets[0].GetMetadata(nameof(StaticWebAsset.RelativePath)).Should().Be("Components/Dropdown/Dropdown.razor.js");
+            task.Assets[0].GetMetadata(nameof(StaticWebAsset.BasePath)).Should().Be("_content/Project");
+            task.Assets[0].GetMetadata(nameof(StaticWebAsset.ContentRoot)).Should().Be("/home/user/work/Repo/Project/");
+        }
+
         private static TaskLoggingHelper CreateLogger()
         {
             var errorMessages = new List<string>();
