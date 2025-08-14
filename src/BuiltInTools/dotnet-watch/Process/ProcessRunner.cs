@@ -35,11 +35,6 @@ namespace Microsoft.DotNet.Watch
 
             var onOutput = processSpec.OnOutput;
 
-            // If output isn't already redirected (build invocation) we redirect it to the reporter.
-            // The reporter synchronizes the output of the process with the reporter output,
-            // so that the printed lines don't interleave.
-            onOutput ??= line => reporter.ReportProcessOutput(line);
-
             using var process = CreateProcess(processSpec, onOutput, state, reporter);
 
             stopwatch.Start();

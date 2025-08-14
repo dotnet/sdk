@@ -220,19 +220,13 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor SkippingConfiguringBrowserRefresh_NotWebApp = Create("Skipping configuring browser-refresh middleware since this is not a webapp.", Emoji.Watch, MessageSeverity.Verbose);
     }
 
-    internal interface IReporter
+    internal interface IProcessOutputReporter
     {
-        void Report(MessageDescriptor descriptor, string prefix, object?[] args);
-
-        public bool IsVerbose
-            => false;
-
         /// <summary>
         /// If true, the output of the process will be prefixed with the project display name.
         /// Used for testing.
         /// </summary>
-        public bool PrefixProcessOutput
-            => false;
+        bool PrefixProcessOutput { get; }
 
         /// <summary>
         /// Reports the output of a process that is being watched.
@@ -240,7 +234,15 @@ namespace Microsoft.DotNet.Watch
         /// <remarks>
         /// Not used to report output of dotnet-build processed launched by dotnet-watch to build or evaluate projects.
         /// </remarks>
-        void ReportProcessOutput(OutputLine line);
+        void ReportOutput(OutputLine line);
+    }
+
+    internal interface IReporter
+    {
+        void Report(MessageDescriptor descriptor, string prefix, object?[] args);
+
+        public bool IsVerbose
+            => false;
 
         void ReportWithPrefix(MessageDescriptor descriptor, string prefix, params object?[] args)
             => Report(descriptor, prefix, args);

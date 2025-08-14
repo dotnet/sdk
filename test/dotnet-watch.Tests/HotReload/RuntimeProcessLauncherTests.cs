@@ -103,6 +103,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
            console,
            environmentOptions,
            reporter,
+           reporter,
            out var errorCode);
 
         Assert.Equal(0, errorCode);

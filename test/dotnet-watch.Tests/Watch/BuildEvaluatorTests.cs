@@ -19,6 +19,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             return new DotNetWatchContext()
             {
                 Reporter = NullReporter.Singleton,
+                ProcessOutputReporter = NullReporter.Singleton,
                 LoggerFactory = NullLoggerFactory.Instance,
                 ProcessRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout),
                 Options = new(),

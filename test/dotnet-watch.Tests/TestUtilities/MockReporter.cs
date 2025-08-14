@@ -7,10 +7,6 @@ internal class MockReporter : IReporter
 {
     public readonly List<string> Messages = [];
 
-    public void ReportProcessOutput(OutputLine line)
-    {
-    }
-
     public void Report(MessageDescriptor descriptor, string prefix, object?[] args)
     {
         if (descriptor.Severity != MessageSeverity.None)

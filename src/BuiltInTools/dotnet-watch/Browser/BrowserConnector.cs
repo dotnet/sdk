@@ -137,9 +137,6 @@ namespace Microsoft.DotNet.Watch
 
             void handler(OutputLine line)
             {
-                // We've redirected the output, but want to ensure that it continues to appear in the user's console.
-                (line.IsError ? Console.Error : Console.Out).WriteLine(line.Content);
-
                 if (matchFound)
                 {
                     return;
