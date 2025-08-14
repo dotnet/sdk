@@ -88,7 +88,12 @@
 
         Keep excluded files in sync with the list in GenerateLayout.targets.
       -->
-      <_DotnetWatchInputFile Include="$(TargetDir)**" Condition="('%(Filename)' != 'Microsoft.CodeAnalysis' and&#xD;&#xA;                                         '%(Filename)' != 'Microsoft.CodeAnalysis.resources' and&#xD;&#xA;                                         '%(Filename)' != 'Microsoft.CodeAnalysis.CSharp' and&#xD;&#xA;                                         '%(Filename)' != 'Microsoft.CodeAnalysis.CSharp.resources') or&#xD;&#xA;                                        $([MSBuild]::ValueOrDefault('%(FullPath)', '').Contains('BuildHost'))" />
+      <_DotnetWatchInputFile Include="$(TargetDir)**"
+                             Condition="('%(Filename)' != 'Microsoft.CodeAnalysis' and
+                                         '%(Filename)' != 'Microsoft.CodeAnalysis.resources' and
+                                         '%(Filename)' != 'Microsoft.CodeAnalysis.CSharp' and
+                                         '%(Filename)' != 'Microsoft.CodeAnalysis.CSharp.resources') or
+                                        $([MSBuild]::ValueOrDefault('%(FullPath)', '').Contains('BuildHost'))" />
     </ItemGroup>
 
     <Copy SourceFiles="@(_DotnetWatchInputFile)" DestinationFiles="@(_DotnetWatchInputFile->'$(TestHostDotNetRoot)sdk\$(Version)\DotnetTools\dotnet-watch\$(Version)\tools\$(SdkTargetFramework)\any\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true">
