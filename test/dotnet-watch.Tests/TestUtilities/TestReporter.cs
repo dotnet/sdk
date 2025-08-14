@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests
@@ -28,12 +27,15 @@ namespace Microsoft.DotNet.Watch.UnitTests
             OnProcessOutput?.Invoke(line);
         }
 
-        public SemaphoreSlim RegisterSemaphore(EventId eventId)
+        public SemaphoreSlim RegisterSemaphore(MessageDescriptor descriptor)
         {
             var semaphore = new SemaphoreSlim(initialCount: 0);
-            RegisterAction(eventId, () => semaphore.Release());
+            RegisterAction(descriptor, () => semaphore.Release());
             return semaphore;
         }
+
+        public void RegisterAction(MessageDescriptor eventId, Action action)
+            => RegisterAction(eventId.Id, action);
 
         public void RegisterAction(EventId eventId, Action action)
         {
@@ -58,7 +60,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 WriteTestOutput($"{ToString(descriptor.Severity)} {descriptor.Emoji.ToDisplay()} {message}");
             }
 
-            if (descriptor.Id.HasValue && _actions.TryGetValue(descriptor.Id.Value, out var action))
+            if (_actions.TryGetValue(descriptor.Id, out var action))
             {
                 action();
             }

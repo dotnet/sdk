@@ -32,11 +32,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         public bool UsePollingWatcher { get; set; }
 
-        public static string GetLinePrefix(EventId eventId, string projectDisplay = null)
-        {
-            var descriptor = MessageDescriptor.GetDescriptor(eventId);
-            return $"dotnet watch {descriptor.Emoji.ToDisplay()}{(projectDisplay != null ? $" [{projectDisplay}]" : "")} {descriptor.Format}";
-        }
+        public static string GetLinePrefix(MessageDescriptor descriptor, string projectDisplay = null)
+            => $"dotnet watch {descriptor.Emoji.ToDisplay()}{(projectDisplay != null ? $" [{projectDisplay}]" : "")} {descriptor.Format}";
 
         public void AssertOutputContains(string message)
             => AssertEx.ContainsSubstring(message, Process.Output);
@@ -47,8 +44,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void AssertOutputContains(Regex pattern)
             => AssertEx.ContainsPattern(pattern, Process.Output);
 
-        public void AssertOutputContains(EventId eventId, string projectDisplay = null)
-            => AssertOutputContains(GetLinePrefix(eventId, projectDisplay));
+        public void AssertOutputContains(MessageDescriptor descriptor, string projectDisplay = null)
+            => AssertOutputContains(GetLinePrefix(descriptor, projectDisplay));
 
         public async ValueTask WaitUntilOutputContains(string message, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
         {
@@ -68,8 +65,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        public Task<string> AssertOutputLineStartsWith(EventId eventId, string projectDisplay = null, Predicate<string> failure = null, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
-            => AssertOutputLineStartsWith(GetLinePrefix(eventId, projectDisplay), failure, testPath, testLine);
+        public Task<string> AssertOutputLineStartsWith(MessageDescriptor descriptor, string projectDisplay = null, Predicate<string> failure = null, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
+            => AssertOutputLineStartsWith(GetLinePrefix(descriptor, projectDisplay), failure, testPath, testLine);
 
         /// <summary>
         /// Asserts that the watched process outputs a line starting with <paramref name="expectedPrefix"/> and returns the remainder of that line.
