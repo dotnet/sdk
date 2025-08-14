@@ -5,8 +5,19 @@
   <PropertyGroup>
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
 
-   <!-- RS1024: Compare symbols correctly https://github.com/dotnet/roslyn-analyzers/issues/6381 -->
+    <!-- RS1024: Compare symbols correctly https://github.com/dotnet/roslyn-analyzers/issues/6381 -->
     <NoWarn>$(NoWarn);RS1024</NoWarn>
+
+    <!-- RS1036: A project containing analyzers or source generators should specify the property '<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>'.
+         https://github.com/dotnet/roslyn-analyzers/issues/6443 tracks enabling RS1036 and fixing RS1035 violations -->
+    <NoWarn>$(NoWarn);RS1036</NoWarn>
+
+    <!--
+      Analyzers currently reference Microsoft.CodeAnalysis.Workspaces which triggers this warning.
+      RS1038: Compiler extensions should be implemented in assemblies with compiler-provided references
+    -->
+    <NoWarn>$(NoWarn);RS1038</NoWarn>
+
     <!-- CS1573: Parameter 'parameter' has no matching param tag in the XML comment for 'member' (but other parameters do) -->
     <NoWarn Condition="'$(Language)' == 'C#'">$(NoWarn);1573</NoWarn>
 
@@ -23,6 +34,15 @@
     <GeneratePerformanceSensitiveAttribute>false</GeneratePerformanceSensitiveAttribute>
 
     <NetAnalyzersRootDir>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)..'))</NetAnalyzersRootDir>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <!-- When building in source build mode, treat this set of warnings not as errors.-->
+    <!-- Some crefs reference internal APIs not present in the reference package. -->
+    <NoWarn>$(NoWarn);CS0618;CS1574;CS8600;CS8602;CS8604;CS8625</NoWarn>
+    <!-- Source build reference assemblies are not correctly annotated.
+      https://github.com/dotnet/source-build/issues/3531 -->
+    <NoWarn>$(NoWarn);CS8603</NoWarn>
   </PropertyGroup>
 
 </Project>
