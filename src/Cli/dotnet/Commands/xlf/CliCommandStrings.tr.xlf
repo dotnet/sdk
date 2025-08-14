@@ -408,7 +408,7 @@ MSTest için 2.2.4'ten önce, zaman aşımı tüm test durumları için kullanı
       </trans-unit>
       <trans-unit id="CmdConfigFileDescription">
         <source>Specifies a testconfig.json file.</source>
-        <target state="new">Specifies a testconfig.json file.</target>
+        <target state="translated">testconfig.json dosyası belirtir.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfigFileOption">
@@ -423,7 +423,7 @@ MSTest için 2.2.4'ten önce, zaman aşımı tüm test durumları için kullanı
       </trans-unit>
       <trans-unit id="CmdConfigFilePath">
         <source>CONFIG_FILE</source>
-        <target state="new">CONFIG_FILE</target>
+        <target state="translated">CONFIG_FILE</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCurrentRuntimeOptionDescription">
@@ -449,13 +449,13 @@ MSTest için 2.2.4'ten önce, zaman aşımı tüm test durumları için kullanı
       <trans-unit id="CmdDiagnosticOutputDirectoryDescription">
         <source>Output directory of the diagnostic logging.
 If not specified the file will be generated inside the default 'TestResults' directory.</source>
-        <target state="new">Output directory of the diagnostic logging.
-If not specified the file will be generated inside the default 'TestResults' directory.</target>
+        <target state="translated">Tanılama günlüğünün çıkış dizini.
+Belirtilmezse dosya varsayılan 'TestResults' dizini içinde oluşturulur.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDiagnosticOutputDirectoryPath">
         <source>DIAGNOSTIC_DIR</source>
-        <target state="new">DIAGNOSTIC_DIR</target>
+        <target state="translated">DIAGNOSTIC_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDirectoryDescription">
@@ -2818,8 +2818,8 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
         <note>{Locked="--sdk-version"}</note>
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
-        <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
-        <target state="translated">İş yükleri, iş yükü sürümlerini kullanarak yüklenip güncelleştirilmek üzere yapılandırıldı, ancak herhangi bir iş yükü bulunamadı. İş yükü sürümünü yüklemek için "dotnet workload restore" komutunu çalıştırın.</target>
+        <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
+        <target state="needs-review-translation">İş yükleri, iş yükü sürümlerini kullanarak yüklenip güncelleştirilmek üzere yapılandırıldı, ancak herhangi bir iş yükü bulunamadı. İş yükü sürümünü yüklemek için "dotnet workload restore" komutunu çalıştırın.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">
@@ -3865,10 +3865,15 @@ Bir değeri görüntülemek için, bir değer sağlamadan ilgili komut satırı 
         <target state="translated">İş yükü bildirimi kimliği</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadManifestInstallationConfiguration">
-        <source>Configured to use {0} when installing new manifests.</source>
-        <target state="translated">Yeni bildirimler yüklenirken {0} kullanılacak şekilde yapılandırıldı.</target>
+      <trans-unit id="WorkloadManifestInstallationConfigurationLooseManifests">
+        <source>Configured to use loose manifests when installing new manifests.</source>
+        <target state="new">Configured to use loose manifests when installing new manifests.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfigurationWorkloadSets">
+        <source>Configured to use workload sets when installing new manifests.</source>
+        <target state="new">Configured to use workload sets when installing new manifests.</target>
+        <note>{Locked="workload sets"}</note>
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">
         <source>Manifest Path</source>

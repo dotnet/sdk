@@ -538,6 +538,40 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     }
 
     /// <summary>
+    /// Scripts in repo root should not include default items.
+    /// Part of <see href="https://github.com/dotnet/sdk/issues/49826"/>.
+    /// </summary>
+    [Theory, CombinatorialData]
+    public void DefaultItems_AlongsideProj([CombinatorialValues("sln", "slnx", "csproj", "vbproj", "shproj", "proj")] string ext)
+    {
+        bool considered = ext is "sln" or "slnx" or "csproj";
+
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine();
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "my.json"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, $"repo.{ext}"), "");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program", "Program.cs", "Resources.resx", "Util.cs", "my.json", $"repo.{ext}"]);
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(considered
+                ? ["Program.csproj", "Program.cs"]
+                : ["my.json", "Program.csproj", "Program.cs", "Resources.resx"]);
+    }
+
+    /// <summary>
     /// When processing fails due to invalid directives, no conversion should be performed
     /// (e.g., the target directory should not be created).
     /// </summary>
