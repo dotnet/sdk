@@ -142,8 +142,8 @@ This file should be imported by eng/Versions.props
     <!-- nuget/nuget.client dependencies -->
     <NuGetLocalizationPackageVersion>7.0.0-preview.1.100</NuGetLocalizationPackageVersion>
     <!-- microsoft/testfx dependencies -->
-    <MicrosoftTestingPlatformPackageVersion>1.9.0-preview.25412.3</MicrosoftTestingPlatformPackageVersion>
-    <MSTestPackageVersion>3.11.0-preview.25412.3</MSTestPackageVersion>
+    <MicrosoftTestingPlatformPackageVersion>1.9.0-preview.25413.5</MicrosoftTestingPlatformPackageVersion>
+    <MSTestPackageVersion>3.11.0-preview.25413.5</MSTestPackageVersion>
   </PropertyGroup>
   <!--Property group for alternate package version names-->
   <PropertyGroup>
