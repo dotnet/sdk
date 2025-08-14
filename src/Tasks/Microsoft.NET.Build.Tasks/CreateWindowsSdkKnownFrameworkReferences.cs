@@ -17,8 +17,6 @@ namespace Microsoft.NET.Build.Tasks
     {
         public bool UseWindowsSDKPreview { get; set; }
 
-        public bool UseCsWinRT3 { get; set; }
-
         public string WindowsSdkPackageVersion { get; set; }
 
         public string TargetFrameworkIdentifier { get; set; }
@@ -78,36 +76,12 @@ namespace Microsoft.NET.Build.Tasks
                             continue;
                         }
 
-                        // If we're using CsWinRT 3.0, filter to only items with '1' as the revision number.
-                        // Otherwise, if we're using CsWinRT 2.0, exclude all of them and pick '0' revisions.
-                        if ((UseCsWinRT3 && windowsSdkVersionParsed.Revision == 0) ||
-                            (!UseCsWinRT3 && windowsSdkVersionParsed.Revision == 1))
-                        {
-                            continue;
-                        }
-
-                        // Normalize the revision back to '0' now, as that matches the actual Windows SDK version
-                        windowsSdkVersionParsed = new Version(
-                            windowsSdkVersionParsed.Major,
-                            windowsSdkVersionParsed.Minor,
-                            windowsSdkVersionParsed.Build,
-                            revision: 0);
-
                         if (!knownFrameworkReferencesByWindowsSdkVersion.ContainsKey(windowsSdkVersionParsed))
                         {
                             knownFrameworkReferencesByWindowsSdkVersion[windowsSdkVersionParsed] = new();
                         }
 
-                        // We are intentionally using 'Version.ToString(4)' here instead of passing the 'ItemSpec'
-                        // on the current item (even though the version is parsed from it), so that if we are using
-                        // CsWinRT 3.0 and we have reverted the revision number to '0', we will correctly also match
-                        // that in the target platform version string (otherwise that would've been '.1').
-                        var createdKnownFrameworkReferences = CreateKnownFrameworkReferences(
-                            windowsSdkPackageVersion,
-                            TargetFrameworkVersion,
-                            targetPlatformVersion: windowsSdkVersionParsed.ToString(4));
-
-                        knownFrameworkReferencesByWindowsSdkVersion[windowsSdkVersionParsed].Add((normalizedMinimumVersion, createdKnownFrameworkReferences));
+                        knownFrameworkReferencesByWindowsSdkVersion[windowsSdkVersionParsed].Add((normalizedMinimumVersion, CreateKnownFrameworkReferences(windowsSdkPackageVersion, TargetFrameworkVersion, supportedWindowsVersion.ItemSpec)));
                     }
                 }
 
@@ -125,10 +99,11 @@ namespace Microsoft.NET.Build.Tasks
 
         private static TaskItem[] CreateKnownFrameworkReferences(string windowsSdkPackageVersion, string targetFrameworkVersion, string targetPlatformVersion)
         {
-            // Return three items:
+            // Return multiple items for different profiles:
             //   - No profile: with the entire Windows SDK (including Windows.UI.Xaml.* types), only used by downlevel .NET SDKs
             //   - "Windows": just the Windows SDK, without anything in Windows.UI.Xaml.* .dll
             //   - "Xaml": just the Windows.UI.Xaml types
+            //   - "Windows2" and "Xaml2": these profiles use the CSWinRT projections
             //
             // Note: we still need to return the item with no profile even if unused, so that the filtering logic for profiles will work correctly.
             return
@@ -136,6 +111,8 @@ namespace Microsoft.NET.Build.Tasks
                 CreateKnownFrameworkReference(windowsSdkPackageVersion, targetFrameworkVersion, targetPlatformVersion, profile: null),
                 CreateKnownFrameworkReference(windowsSdkPackageVersion, targetFrameworkVersion, targetPlatformVersion, profile: "Windows"),
                 CreateKnownFrameworkReference(windowsSdkPackageVersion, targetFrameworkVersion, targetPlatformVersion, profile: "Xaml"),
+                CreateKnownFrameworkReference(windowsSdkPackageVersion, targetFrameworkVersion, targetPlatformVersion, profile: "Windows2"),
+                CreateKnownFrameworkReference(windowsSdkPackageVersion, targetFrameworkVersion, targetPlatformVersion, profile: "Xaml2"),
             ];
         }
 

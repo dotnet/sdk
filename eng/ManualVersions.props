@@ -9,17 +9,6 @@
   Basically: In this file, choose the highest version when resolving merge conflicts.
  -->
   <PropertyGroup>
-
-    <!-- CsWinRT 3.0 targeting packs -->
-    <MicrosoftWindowsSDKNETRef10_0_17763_1PackageVersion>10.0.17763.57</MicrosoftWindowsSDKNETRef10_0_17763_1PackageVersion>
-    <MicrosoftWindowsSDKNETRef10_0_18362_1PackageVersion>10.0.18362.57</MicrosoftWindowsSDKNETRef10_0_18362_1PackageVersion>
-    <MicrosoftWindowsSDKNETRef10_0_19041_1PackageVersion>10.0.19041.57</MicrosoftWindowsSDKNETRef10_0_19041_1PackageVersion>
-    <MicrosoftWindowsSDKNETRef10_0_20348_1PackageVersion>10.0.20348.57</MicrosoftWindowsSDKNETRef10_0_20348_1PackageVersion>
-    <MicrosoftWindowsSDKNETRef10_0_22000_1PackageVersion>10.0.22000.57</MicrosoftWindowsSDKNETRef10_0_22000_1PackageVersion>
-    <MicrosoftWindowsSDKNETRef10_0_22621_1PackageVersion>10.0.22621.57</MicrosoftWindowsSDKNETRef10_0_22621_1PackageVersion>
-    <MicrosoftWindowsSDKNETRef10_0_26100_1PackageVersion>10.0.26100.57</MicrosoftWindowsSDKNETRef10_0_26100_1PackageVersion>
-
-    <!-- CsWinRT 2.x targeting packs-->
     <MicrosoftWindowsSDKNETRef10_0_17763PackageVersion>10.0.17763.57</MicrosoftWindowsSDKNETRef10_0_17763PackageVersion>
     <MicrosoftWindowsSDKNETRef10_0_18362PackageVersion>10.0.18362.57</MicrosoftWindowsSDKNETRef10_0_18362PackageVersion>
     <MicrosoftWindowsSDKNETRef10_0_19041PackageVersion>10.0.19041.57</MicrosoftWindowsSDKNETRef10_0_19041PackageVersion>

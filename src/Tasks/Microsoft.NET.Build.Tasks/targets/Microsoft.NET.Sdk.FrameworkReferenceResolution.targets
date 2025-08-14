@@ -39,7 +39,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Generate KnownFrameworkReference items for the Windows SDK pack -->
     <CreateWindowsSdkKnownFrameworkReferences
       UseWindowsSDKPreview="$(UseWindowsSDKPreview)"
-      UseCsWinRT3="$(_TargetPlatformVersionUsesCsWinRT3)"
       WindowsSdkPackageVersion="$(WindowsSdkPackageVersion)"
       TargetFrameworkIdentifier="$(TargetFrameworkIdentifier)"
       TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"

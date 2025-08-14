@@ -66,8 +66,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Also add the Windows.UI.Xaml.* projections from the Windows SDK if 'UseUwp' is set in the project.
        Note: we only add this reference if the TFM is .NET 8 or above, as the Windows SDK projections
        that are used on .NET 6 and below do not have the Windows.UI.Xaml profile, so this wouldn't work. -->
-  <ItemGroup Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true' ">
-    <FrameworkReference Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) and '$(TargetPlatformIdentifier)' == 'Windows' and '$(UseUwp)' == 'true' " Include="Microsoft.Windows.SDK.NET.Ref.Xaml" />
+  <ItemGroup Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true' And
+                          '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) and '$(TargetPlatformIdentifier)' == 'Windows' and '$(UseUwp)' == 'true' ">
+    <FrameworkReference Condition="'$(_TargetPlatformVersionUsesCsWinRT3)' != 'true'"
+                        Include="Microsoft.Windows.SDK.NET.Ref.Xaml" />
+    <FrameworkReference Condition="'$(_TargetPlatformVersionUsesCsWinRT3)' == 'true'"
+                        Include="Microsoft.Windows.SDK.NET.Ref.Xaml2" />
   </ItemGroup>
 
   <!-- If WindowsSdkPackageVersion is specified and it is an older version before profile support was added, 
