@@ -2819,7 +2819,7 @@ Ele tem diversas estruturas como destino. Especifique que estrutura executar usa
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
         <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
-        <target state="new">No workload sets are installed. Run "dotnet workload restore" to install a workload set.</target>
+        <target state="needs-review-translation">As cargas de trabalho estão configuradas para instalar e atualizar usando versões de carga de trabalho, mas nenhuma foi encontrada. Execute "dotnet workload restore" para instalar uma versão de carga de trabalho.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">

@@ -2819,7 +2819,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
         <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
-        <target state="new">No workload sets are installed. Run "dotnet workload restore" to install a workload set.</target>
+        <target state="needs-review-translation">ワークロードは、ワークロード バージョンを使用してインストールおよび更新するように構成されていますが、何も見つかりませんでした。"dotnet workload restore" を実行して、ワークロード バージョンをインストールします。</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">

@@ -2819,7 +2819,7 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
         <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
-        <target state="new">No workload sets are installed. Run "dotnet workload restore" to install a workload set.</target>
+        <target state="needs-review-translation">Las cargas de trabajo están configuradas para instalarse y actualizarse con versiones de carga de trabajo, pero no se encontró ninguna. Ejecute "dotnet workload restore" para instalar una versión de carga de trabajo.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">

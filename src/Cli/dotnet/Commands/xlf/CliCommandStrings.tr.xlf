@@ -2819,7 +2819,7 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
         <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
-        <target state="new">No workload sets are installed. Run "dotnet workload restore" to install a workload set.</target>
+        <target state="needs-review-translation">İş yükleri, iş yükü sürümlerini kullanarak yüklenip güncelleştirilmek üzere yapılandırıldı, ancak herhangi bir iş yükü bulunamadı. İş yükü sürümünü yüklemek için "dotnet workload restore" komutunu çalıştırın.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">

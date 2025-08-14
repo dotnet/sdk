@@ -2819,7 +2819,7 @@ Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches 
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
         <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
-        <target state="new">No workload sets are installed. Run "dotnet workload restore" to install a workload set.</target>
+        <target state="needs-review-translation">Workloads sind so konfiguriert, dass sie mithilfe von Workloadversionen installiert und aktualisiert werden, es wurden jedoch keine gefunden. Führen Sie „dotnet workload restore“ aus, um eine Workloadversion zu installieren.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">

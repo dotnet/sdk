@@ -2819,7 +2819,7 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
         <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
-        <target state="new">No workload sets are installed. Run "dotnet workload restore" to install a workload set.</target>
+        <target state="needs-review-translation">Úlohy jsou nakonfigurované tak, aby se instalovaly a aktualizovaly pomocí verzí úloh, ale žádná nebyla nalezena. Spusťte příkaz dotnet workload restore a nainstalujte verzi úlohy.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">

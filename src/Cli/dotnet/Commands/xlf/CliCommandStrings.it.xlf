@@ -2819,7 +2819,7 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
         <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
-        <target state="new">No workload sets are installed. Run "dotnet workload restore" to install a workload set.</target>
+        <target state="needs-review-translation">I carichi di lavoro sono configurati per l'installazione e l'aggiornamento con le versioni del carico di lavoro, ma non ne sono stati trovati. Eseguire il "dotnet workload restore" per installare una versione del carico di lavoro.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">
