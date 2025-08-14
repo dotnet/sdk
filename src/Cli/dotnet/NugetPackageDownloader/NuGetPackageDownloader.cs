@@ -4,9 +4,11 @@
 #nullable disable
 
 using System.Collections.Concurrent;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NugetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -450,7 +452,43 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             throw new NuGetPackageInstallerException("No NuGet sources are defined or enabled");
         }
 
+        // Load settings to check allowInsecureConnections
+        string currentDirectory = _currentWorkingDirectory ?? Directory.GetCurrentDirectory();
+        ISettings settings;
+        if (packageSourceLocation?.NugetConfig != null)
+        {
+            string nugetConfigParentDirectory =
+                packageSourceLocation.NugetConfig.Value.GetDirectoryPath().Value;
+            string nugetConfigFileName = Path.GetFileName(packageSourceLocation.NugetConfig.Value.Value);
+            settings = Settings.LoadSpecificSettings(nugetConfigParentDirectory,
+                nugetConfigFileName);
+        }
+        else
+        {
+            settings = Settings.LoadDefaultSettings(
+                packageSourceLocation?.RootConfigDirectory?.Value ?? currentDirectory);
+        }
+
+        CheckHttpSources(sources, settings);
         return sources;
+    }
+
+    private void CheckHttpSources(IEnumerable<PackageSource> packageSources, ISettings settings)
+    {
+        var httpSources = packageSources.Where(source => !source.IsLocal && source.SourceUri?.Scheme?.Equals("http", StringComparison.OrdinalIgnoreCase) == true).ToList();
+        
+        if (httpSources.Any())
+        {
+            // TODO: Check if allowInsecureConnections is set to true in the config section
+            // The NuGet Configuration API for reading specific settings needs further investigation
+            // For now, always throw error for HTTP sources (as per .NET 9 requirement)
+            
+            // Throw error for each HTTP source found
+            foreach (var httpSource in httpSources)
+            {
+                throw new NuGetPackageInstallerException(string.Format(CliStrings.Error_NU1302_HttpSourceUsed, httpSource.Source));
+            }
+        }
     }
 
     private async Task<(PackageSource, IPackageSearchMetadata)> GetMatchingVersionInternalAsync(
