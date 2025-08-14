@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "Config"
+  ],
+  "name": "dotnet config file",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "A file for configuring dotnet CLI behavior.",
+  "tags": {
+    "type": "item"
+  },
+  "groupIdentity": "DotnetConfigFile",
+  "precedence": "100",
+  "identity": "Microsoft.Standard.QuickStarts.DotnetConfigFile",
+  "shortName": [ "dotnetconfig", "dotnet.config" ],
+  "sourceName": "unused",
+  "primaryOutputs": [
+    {
+      "path": "dotnet.config"
+    }
+  ],
+  "defaultName": "dotnet.config",
+  "symbols": {
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
+    "runner": {
+      "type": "parameter",
+      "datatype": "string",
+      "description": "The test runner to use.",
+      "displayName": "Test runner",
+      "defaultValue": "",
+      "replaces": "RUNNER_NAME"
+    },
+    "hasRunner": {
+      "type": "computed",
+      "value": "(runner != \"\")"
+    }
+  },
+  "postActions": [
+    {
+      "id": "open-file",
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "description": "Opens dotnet.config in the editor",
+      "manualInstructions": [],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "0"
+      },
+      "continueOnError": true
+    }
+  ]
+}

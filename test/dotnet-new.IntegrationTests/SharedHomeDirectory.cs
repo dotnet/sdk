@@ -99,6 +99,19 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And
                 .NotHaveStdErr();
+
+            // Install the ItemTemplates that contain templates like global.json, gitignore, etc.
+            string itemTemplatesPath = Path.Combine(Environment.CurrentDirectory, "template_feed", "Microsoft.DotNet.Common.ItemTemplates", "content");
+            if (Directory.Exists(itemTemplatesPath))
+            {
+                new DotnetNewCommand(Log, "install", itemTemplatesPath)
+                    .WithCustomHive(HomeDirectory)
+                    .Execute()
+                    .Should()
+                    .ExitWith(0)
+                    .And
+                    .NotHaveStdErr();
+            }
         }
     }
 }
