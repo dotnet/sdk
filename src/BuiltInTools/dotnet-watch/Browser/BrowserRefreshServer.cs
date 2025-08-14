@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Watch
     /// Communicates with aspnetcore-browser-refresh.js loaded in the browser.
     /// Associated with a project instance.
     /// </summary>
-    internal sealed class BrowserRefreshServer : IAsyncDisposable, IStaticAssetChangeApplier
+    internal sealed class BrowserRefreshServer : IAsyncDisposable
     {
         public const string ServerLogComponentName = nameof(BrowserRefreshServer);
         
