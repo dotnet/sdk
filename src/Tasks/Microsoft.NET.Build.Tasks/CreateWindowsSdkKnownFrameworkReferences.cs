@@ -19,6 +19,8 @@ namespace Microsoft.NET.Build.Tasks
 
         public string WindowsSdkPackageVersion { get; set; }
 
+        public string WindowsSdkPackageMinimumRevision { get; set; }
+
         public string TargetFrameworkIdentifier { get; set; }
 
         public string TargetFrameworkVersion { get; set; }
@@ -79,6 +81,17 @@ namespace Microsoft.NET.Build.Tasks
                         if (!knownFrameworkReferencesByWindowsSdkVersion.ContainsKey(windowsSdkVersionParsed))
                         {
                             knownFrameworkReferencesByWindowsSdkVersion[windowsSdkVersionParsed] = new();
+                        }
+
+                        if (!string.IsNullOrEmpty(WindowsSdkPackageMinimumRevision) &&
+                            Version.TryParse(windowsSdkPackageVersion, out var windowsSdkPackageVersionParsed) &&
+                            int.TryParse(WindowsSdkPackageMinimumRevision, out var minimumWindowsSdkRevision))
+                        {
+                            if (windowsSdkPackageVersionParsed.Revision < minimumWindowsSdkRevision)
+                            {
+                                windowsSdkPackageVersionParsed = new Version(windowsSdkPackageVersionParsed.Major, windowsSdkPackageVersionParsed.Minor, windowsSdkPackageVersionParsed.Build, minimumWindowsSdkRevision);
+                                windowsSdkPackageVersion = windowsSdkPackageVersionParsed.ToString();
+                            }
                         }
 
                         knownFrameworkReferencesByWindowsSdkVersion[windowsSdkVersionParsed].Add((normalizedMinimumVersion, CreateKnownFrameworkReferences(windowsSdkPackageVersion, TargetFrameworkVersion, supportedWindowsVersion.ItemSpec)));
