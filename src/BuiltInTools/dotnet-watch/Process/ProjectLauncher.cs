@@ -120,6 +120,7 @@ internal sealed class ProjectLauncher(
             processSpec,
             restartOperation,
             processReporter,
+            context.ProcessOutputReporter,
             processTerminationSource,
             cancellationToken);
     }

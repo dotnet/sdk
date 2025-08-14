@@ -11,6 +11,7 @@ namespace Microsoft.DotNet.Watch
         public required GlobalOptions Options { get; init; }
         public required EnvironmentOptions EnvironmentOptions { get; init; }
         public required IReporter Reporter { get; init; }
+        public required IProcessOutputReporter ProcessOutputReporter { get; init; }
         public required ILoggerFactory LoggerFactory { get; init; }
         public required ProcessRunner ProcessRunner { get; init; }
 

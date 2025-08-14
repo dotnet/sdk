@@ -98,6 +98,7 @@ namespace Microsoft.DotNet.Watch
             ProcessSpec processSpec,
             RestartOperation restartOperation,
             ProjectSpecificReporter processReporter,
+            IProcessOutputReporter outputReporter,
             CancellationTokenSource processTerminationSource,
             CancellationToken cancellationToken)
         {
@@ -127,6 +128,16 @@ namespace Microsoft.DotNet.Watch
             };
 
             var launchResult = new ProcessLaunchResult();
+            var projectDisplayName = projectNode.GetDisplayName();
+
+            // If output isn't already redirected (build invocation) we redirect it to the reporter.
+            // The reporter synchronizes the output of the process with the reporter output,
+            // so that the printed lines don't interleave.
+            processSpec.OnOutput ??= line =>
+            {
+                outputReporter.ReportOutput(outputReporter.PrefixProcessOutput ? line with { Content = $"[{projectDisplayName}] {line.Content}" } : line);
+            };
+
             var runningProcess = _processRunner.RunAsync(processSpec, processReporter, launchResult, processTerminationSource.Token);
             if (launchResult.ProcessId == null)
             {

@@ -24,6 +24,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 console,
                 TestOptions.GetEnvironmentOptions(workingDirectory: testAsset.Path, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset),
                 reporter,
+                reporter,
                 out var errorCode);
 
             Assert.Equal(0, errorCode);

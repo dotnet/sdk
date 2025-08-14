@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
-    internal class TestReporter(ITestOutputHelper output) : IReporter
+    internal class TestReporter(ITestOutputHelper output) : IReporter, IProcessOutputReporter
     {
         private readonly Dictionary<EventId, Action> _actions = [];
         public readonly List<string> ProcessOutput = [];
@@ -14,12 +14,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public bool IsVerbose
             => true;
 
-        public bool PrefixProcessOutput
+        bool IProcessOutputReporter.PrefixProcessOutput
             => true;
 
         public event Action<OutputLine>? OnProcessOutput;
 
-        public void ReportProcessOutput(OutputLine line)
+        void IProcessOutputReporter.ReportOutput(OutputLine line)
         {
             WriteTestOutput(line.Content);
             ProcessOutput.Add(line.Content);

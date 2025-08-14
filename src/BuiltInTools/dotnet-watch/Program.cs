@@ -8,7 +8,7 @@ using Microsoft.Build.Locator;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class Program(IConsole console, IReporter reporter, ProjectOptions rootProjectOptions, CommandLineOptions options, EnvironmentOptions environmentOptions)
+    internal sealed class Program(IConsole console, IReporter reporter, IProcessOutputReporter processOutputReporter, ProjectOptions rootProjectOptions, CommandLineOptions options, EnvironmentOptions environmentOptions)
     {
         public static async Task<int> Main(string[] args)
         {
@@ -64,11 +64,11 @@ namespace Microsoft.DotNet.Watch
             }
 
             var reporter = new ConsoleReporter(console, verbose || options.GlobalOptions.Verbose, options.GlobalOptions.Quiet, environmentOptions.SuppressEmojis);
-            return TryCreate(options, console, environmentOptions, reporter, out errorCode);
+            return TryCreate(options, console, environmentOptions, reporter, reporter, out errorCode);
         }
 
         // internal for testing
-        internal static Program? TryCreate(CommandLineOptions options, IConsole console, EnvironmentOptions environmentOptions, IReporter reporter, out int errorCode)
+        internal static Program? TryCreate(CommandLineOptions options, IConsole console, EnvironmentOptions environmentOptions, IReporter reporter, IProcessOutputReporter processOutputReporter, out int errorCode)
         {
             var workingDirectory = environmentOptions.WorkingDirectory;
             reporter.Verbose($"Working directory: '{workingDirectory}'");
@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Watch
 
             var rootProjectOptions = options.GetProjectOptions(projectPath, workingDirectory);
             errorCode = 0;
-            return new Program(console, reporter, rootProjectOptions, options, environmentOptions);
+            return new Program(console, reporter, processOutputReporter, rootProjectOptions, options, environmentOptions);
         }
 
         /// <summary>
@@ -215,6 +215,7 @@ namespace Microsoft.DotNet.Watch
             => new()
             {
                 Reporter = reporter,
+                ProcessOutputReporter = processOutputReporter,
                 LoggerFactory = new LoggerFactory(reporter),
                 ProcessRunner = processRunner,
                 Options = options.GlobalOptions,
