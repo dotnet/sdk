@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 using Microsoft.NET.HostModel.Bundle;
 
@@ -28,6 +30,7 @@ namespace Microsoft.NET.Build.Tasks
         public bool ShowDiagnosticOutput { get; set; }
         [Required]
         public bool EnableCompressionInSingleFile { get; set; }
+        public bool EnableMacOsCodeSign { get; set; } = true;
 
         [Output]
         public ITaskItem[] ExcludedFiles { get; set; }
@@ -64,7 +67,8 @@ namespace Microsoft.NET.Build.Tasks
                 targetOS,
                 targetArch,
                 version,
-                ShowDiagnosticOutput);
+                ShowDiagnosticOutput,
+                macosCodesign: EnableMacOsCodeSign);
 
             var fileSpec = new List<FileSpec>(FilesToBundle.Length);
 

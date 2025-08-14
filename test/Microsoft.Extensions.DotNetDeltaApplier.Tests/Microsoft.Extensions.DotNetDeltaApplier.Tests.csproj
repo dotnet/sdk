@@ -3,13 +3,12 @@
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.Extensions.DotNetDeltaApplier</RootNamespace>
-    <Nullable>enable</Nullable>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\dotnet-watch.Tests\Utilities\AssertEx.cs" Link="Utilities\AssertEx.cs" />
+    <Compile Include="..\dotnet-watch.Tests\TestUtilities\AssertEx.cs" Link="Utilities\AssertEx.cs" />
   </ItemGroup>
 
   <ItemGroup>

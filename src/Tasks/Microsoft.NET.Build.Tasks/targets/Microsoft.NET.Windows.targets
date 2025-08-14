@@ -167,4 +167,178 @@ Copyright (c) .NET Foundation. All rights reserved.
                       and '$(UseUwp)' == 'true' ">
     <NetSdkError ResourceName="WindowsSDKXamlInvalidTfm" />
   </Target>
+
+  <!-- Setup common properties for '_RunCsWinRTGenerator' below -->
+  <PropertyGroup>
+
+    <!--
+      Running 'cswinrtgen' is required for CsWinRT 3.0, and it is currently in preview.
+      So the switch for it is currently opt-in. It can be changed to opt-out in the future.
+      We only enable this automatically if the project is explicitly targeting CsWinRT 3.0.
+    -->
+    <CsWinRTGenerateInteropAssembly Condition="'$(CsWinRTGenerateInteropAssembly)' == '' and '$(_TargetPlatformVersionUsesCsWinRT3)' == 'true'">true</CsWinRTGenerateInteropAssembly>
+    <CsWinRTGenerateInteropAssembly Condition="'$(CsWinRTGenerateInteropAssembly)' == ''">false</CsWinRTGenerateInteropAssembly>
+
+    <!--
+      Default property values for 'cswinrtgen'. Not setting 'CsWinRTToolsDirectory' and
+      'CsWinRTToolsArchitecture' because the task can handle their default values on its
+      own, and it will use that to automatically set the right directory and architecture.
+    -->
+    <CsWinRTGeneratorInteropAssemblyDirectory Condition="'$(CsWinRTGeneratorInteropAssemblyDirectory)' == ''">$(IntermediateOutputPath)</CsWinRTGeneratorInteropAssemblyDirectory>
+    <CsWinRTGeneratorValidateWinRTRuntimeAssemblyVersion Condition="'$(CsWinRTGeneratorValidateWinRTRuntimeAssemblyVersion)' == ''">true</CsWinRTGeneratorValidateWinRTRuntimeAssemblyVersion>
+    <CsWinRTGeneratorValidateWinRTRuntimeDllVersion2References Condition="'$(CsWinRTGeneratorValidateWinRTRuntimeDllVersion2References)' == ''">true</CsWinRTGeneratorValidateWinRTRuntimeDllVersion2References>
+    <CsWinRTGeneratorEnableIncrementalGeneration Condition="'$(CsWinRTGeneratorEnableIncrementalGeneration)' == ''">true</CsWinRTGeneratorEnableIncrementalGeneration>
+    <CsWinRTGeneratorTreatWarningsAsErrors Condition="'$(CsWinRTGeneratorTreatWarningsAsErrors)' == ''">false</CsWinRTGeneratorTreatWarningsAsErrors>
+    <CsWinRTGeneratorMaxDegreesOfParallelism Condition="'$(CsWinRTGeneratorMaxDegreesOfParallelism)' == ''">-1</CsWinRTGeneratorMaxDegreesOfParallelism>
+    <CsWinRTGeneratorStandardOutputImportance Condition="'$(CsWinRTGeneratorStandardOutputImportance)' == ''">High</CsWinRTGeneratorStandardOutputImportance>
+    <CsWinRTGeneratorStandardErrorImportance Condition="'$(CsWinRTGeneratorStandardErrorImportance)' == ''">High</CsWinRTGeneratorStandardErrorImportance>
+    <CsWinRTGeneratorLogStandardErrorAsError Condition="'$(CsWinRTGeneratorLogStandardErrorAsError)' == ''">true</CsWinRTGeneratorLogStandardErrorAsError>
+
+    <!-- Derived properties for 'cswinrtgen' tooling -->
+    <_CsWinRTGeneratorInteropAssemblyName>WinRT.Interop</_CsWinRTGeneratorInteropAssemblyName>
+    <_CsWinRTGeneratorInteropAssemblyFileName>$(_CsWinRTGeneratorInteropAssemblyName).dll</_CsWinRTGeneratorInteropAssemblyFileName>
+    <_CsWinRTGeneratorInteropAssemblyPath>$([MSBuild]::NormalizePath('$(CsWinRTGeneratorInteropAssemblyDirectory)', '$(_CsWinRTGeneratorInteropAssemblyFileName)'))</_CsWinRTGeneratorInteropAssemblyPath>
+
+    <!--
+      Set the path of the file with the hash of all input properties for 'cswinrtgen'.
+      This is needed to make the target incremental with respect to property changes.
+    -->
+    <_RunCsWinRTGeneratorPropertyInputsCachePath Condition="'$(_RunCsWinRTGeneratorPropertyInputsCachePath)' == ''">$(IntermediateOutputPath)$(MSBuildProjectName).cswinrtgen.cache</_RunCsWinRTGeneratorPropertyInputsCachePath>
+    <_RunCsWinRTGeneratorPropertyInputsCachePath>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(_RunCsWinRTGeneratorPropertyInputsCachePath)'))</_RunCsWinRTGeneratorPropertyInputsCachePath>
+  </PropertyGroup>
+
+  <!--
+    ============================================================
+                        _ComputeRunCsWinRTGeneratorCache
+
+    Computes the cache file for '_RunCsWinRTGenerator' with the
+    hash of all input properties, to support incremental builds.
+    ============================================================
+  -->
+  <Target Name="_ComputeRunCsWinRTGeneratorCache" DependsOnTargets="ResolveAssemblyReferences">
+
+    <!--
+      If the user hasn't specified the 'CsWinRTToolsDirectory' property, we need to resolve the correct
+      tools path to use to find the 'cswinrtgen' binary that matches the 'WinRT.Runtime.dll' assembly in
+      use. To do so, we can leverage the assembly resolution logic that the .NET SDK is already doing.
+      We know that the right 'cswinrtgen' binary will always be in the '\tools' directory of whatever
+      package contains the 'WinRT.Runtime.dll' assembly (i.e. either 'Microsoft.Windows.SDK.NET.Ref' or
+      'Microsoft.Windows.CsWinRT'). So we can get the resolved assembly and compute the tools directory
+      path relative to it. We can use this value whenever 'CsWinRTToolsDirectory' isn't set.
+    -->
+    <ItemGroup>
+      <_WinRTRuntimeDllReferencePath
+        Include="@(ReferencePath)"
+        Condition="'%(Filename)%(Extension)' == 'WinRT.Runtime.dll'" />
+    </ItemGroup>
+    
+    <!-- Compute the implicit '\tools' path, and use that if 'CsWinRTToolsDirectory' isn't set -->
+    <PropertyGroup>
+      <_WinRTRuntimeDllDirectory>$([System.IO.Path]::GetDirectoryName('%(_WinRTRuntimeDllReferencePath.FullPath)'))</_WinRTRuntimeDllDirectory>
+      <_CsWinRTOrTargetingPackLibDirectory>$([System.IO.Path]::GetDirectoryName('$(_WinRTRuntimeDllDirectory)'))</_CsWinRTOrTargetingPackLibDirectory>
+      <_CsWinRTOrTargetingPackRootDirectory>$([System.IO.Path]::GetDirectoryName('$(_CsWinRTOrTargetingPackLibDirectory)'))</_CsWinRTOrTargetingPackRootDirectory>
+      <_CsWinRTOrTargetingPackToolsDirectory>$([System.IO.Path]::Combine('$(_CsWinRTOrTargetingPackRootDirectory)', 'tools'))</_CsWinRTOrTargetingPackToolsDirectory>
+
+      <CsWinRTEffectiveToolsDirectory>$(CsWinRTToolsDirectory)</CsWinRTEffectiveToolsDirectory>
+      <CsWinRTEffectiveToolsDirectory Condition="'$(CsWinRTEffectiveToolsDirectory)' == ''">$(_CsWinRTOrTargetingPackToolsDirectory)</CsWinRTEffectiveToolsDirectory>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTEffectiveToolsDirectory)" />
+      <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTToolsArchitecture)" />
+      <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorInteropAssemblyDirectory)" />
+      <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorDebugReproDirectory)" />
+      <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTUseWindowsUIXamlProjections)" />
+      <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorValidateWinRTRuntimeAssemblyVersion)" />
+      <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorValidateWinRTRuntimeDllVersion2References)" />
+      <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorEnableIncrementalGeneration)" />
+      <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorTreatWarningsAsErrors)" />
+      <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorMaxDegreesOfParallelism)" />
+      <_RunCsWinRTGeneratorInputsCacheToHash Include="@(CsWinRTGeneratorAdditionalArgument)" />
+      <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorStandardOutputImportance)" />
+      <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorStandardErrorImportance)" />
+      <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorLogStandardErrorAsError)" />
+    </ItemGroup>
+
+    <Hash ItemsToHash="@(_RunCsWinRTGeneratorInputsCacheToHash)">
+      <Output TaskParameter="HashResult" PropertyName="_RunCsWinRTGeneratorInputsCacheHash" />
+    </Hash>
+
+    <WriteLinesToFile
+      Lines="$(_RunCsWinRTGeneratorInputsCacheHash)"
+      File="$(_RunCsWinRTGeneratorPropertyInputsCachePath)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+  </Target>
+
+  <!--
+    ============================================================
+                        _RunCsWinRTGenerator
+
+    Runs 'cswinrtgen' to produce the 'WinRT.Interop.dll' assembly.
+    ============================================================
+  -->
+  <UsingTask Condition="'$(CsWinRTGeneratorTasksOverriden)' != 'true'" TaskName="RunCsWinRTGenerator" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <Target
+    Name="_RunCsWinRTGenerator"
+    DependsOnTargets="CoreCompile;$(GetTargetPathDependsOn);$(GetTargetPathWithTargetPlatformMonikerDependsOn);_ComputeRunCsWinRTGeneratorCache"
+    BeforeTargets="GetTargetPath;GetTargetPathWithTargetPlatformMoniker;GenerateBuildDependencyFile;GeneratePublishDependencyFile;GetCopyToOutputDirectoryItems;GetCopyToPublishDirectoryItems"
+    Inputs="@(ReferencePath);@(IntermediateAssembly);$(_RunCsWinRTGeneratorPropertyInputsCachePath)"
+    Outputs="$(_CsWinRTGeneratorInteropAssemblyPath)"
+    Condition="'$(CsWinRTGenerateInteropAssembly)' == 'true'">
+
+    <!-- Invoke 'cswinrtgen' -->
+    <RunCsWinRTGenerator
+      ReferenceAssemblyPaths="@(ReferencePath)"
+      OutputAssemblyPath="@(IntermediateAssembly)"
+      InteropAssemblyDirectory="$(CsWinRTGeneratorInteropAssemblyDirectory)"
+      DebugReproDirectory="$(CsWinRTGeneratorDebugReproDirectory)"
+      CsWinRTToolsDirectory="$(CsWinRTEffectiveToolsDirectory)"
+      CsWinRTToolsArchitecture="$(CsWinRTToolsArchitecture)"
+      UseWindowsUIXamlProjections="$(CsWinRTUseWindowsUIXamlProjections)"
+      ValidateWinRTRuntimeAssemblyVersion="$(CsWinRTGeneratorValidateWinRTRuntimeAssemblyVersion)"
+      ValidateWinRTRuntimeDllVersion2References="$(CsWinRTGeneratorValidateWinRTRuntimeDllVersion2References)"
+      EnableIncrementalGeneration="$(CsWinRTGeneratorEnableIncrementalGeneration)"
+      TreatWarningsAsErrors="$(CsWinRTGeneratorTreatWarningsAsErrors)"
+      MaxDegreesOfParallelism="$(CsWinRTGeneratorMaxDegreesOfParallelism)"
+      AdditionalArguments="@(CsWinRTGeneratorAdditionalArgument)"
+      StandardOutputImportance="$(CsWinRTGeneratorStandardOutputImportance)"
+      StandardErrorImportance="$(CsWinRTGeneratorStandardErrorImportance)"
+      LogStandardErrorAsError="$(CsWinRTGeneratorLogStandardErrorAsError)" />
+
+    <!-- Set the metadata for the interop .dll item -->
+    <ItemGroup>
+      <CsWinRTGeneratorInteropAssemblyPath Include="$(_CsWinRTGeneratorInteropAssemblyPath)">
+        <AssemblyName>$(_CsWinRTGeneratorInteropAssemblyName)</AssemblyName>
+        <TargetFrameworkIdentifier>.NETCoreApp</TargetFrameworkIdentifier>
+        <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+        <IncludeRuntimeDependency>true</IncludeRuntimeDependency>
+        <Private>true</Private>
+        <MSBuildSourceTargetName>_RunCsWinRTGenerator</MSBuildSourceTargetName>
+        <Platforms>AnyCPU</Platforms>
+      </CsWinRTGeneratorInteropAssemblyPath>
+    </ItemGroup>
+
+    <!-- Add the interop .dll to the required output groups -->
+    <ItemGroup>
+
+      <!-- 'ReferencePath' handles adding the interop .dll to '.deps.json', which is needed for '[UnsafeAccessor]' to work -->
+      <ReferencePath Include="@(CsWinRTGeneratorInteropAssemblyPath)" />
+
+      <!-- '_SourceItemsToCopyToOutputDirectory' handles copying the interop .dll to the build output folder -->
+      <_SourceItemsToCopyToOutputDirectory
+        Include="@(CsWinRTGeneratorInteropAssemblyPath)"
+        TargetPath="$(_CsWinRTGeneratorInteropAssemblyFileName)" />
+
+      <!-- '_SourceItemsToCopyToPublishDirectory' handles copying the interop .dll to the publish output folder -->
+      <_SourceItemsToCopyToPublishDirectory
+        Include="@(CsWinRTGeneratorInteropAssemblyPath)"
+        TargetPath="$(_CsWinRTGeneratorInteropAssemblyFileName)" />
+    </ItemGroup>
+
+    <!-- Append to 'FileWrites' so the interop .dll will be removed on clean -->
+    <ItemGroup>
+      <FileWrites Include="@(CsWinRTGeneratorInteropAssemblyPath)"/>
+    </ItemGroup>
+  </Target>
 </Project>
