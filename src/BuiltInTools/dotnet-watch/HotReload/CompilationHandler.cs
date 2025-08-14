@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Watch
     internal sealed class CompilationHandler : IDisposable
     {
         public readonly IncrementalMSBuildWorkspace Workspace;
-        private readonly IReporter _reporter;
+        private readonly ILogger _logger;
         private readonly WatchHotReloadService _hotReloadService;
         private readonly ProcessRunner _processRunner;
 
@@ -39,11 +39,11 @@ namespace Microsoft.DotNet.Watch
 
         private bool _isDisposed;
 
-        public CompilationHandler(IReporter reporter, ProcessRunner processRunner)
+        public CompilationHandler(ILogger logger, ProcessRunner processRunner)
         {
-            _reporter = reporter;
+            _logger = logger;
             _processRunner = processRunner;
-            Workspace = new IncrementalMSBuildWorkspace(reporter);
+            Workspace = new IncrementalMSBuildWorkspace(logger);
             _hotReloadService = new WatchHotReloadService(Workspace.CurrentSolution.Services, () => ValueTask.FromResult(GetAggregateCapabilities()));
         }
 
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Watch
 
         public async ValueTask TerminateNonRootProcessesAndDispose(CancellationToken cancellationToken)
         {
-            _reporter.Verbose("Disposing remaining child processes.");
+            _logger.LogDebug("Disposing remaining child processes.");
 
             var projectsToDispose = await TerminateNonRootProcessesAsync(projectPaths: null, cancellationToken);
 
@@ -82,11 +82,11 @@ namespace Microsoft.DotNet.Watch
         }
         public async ValueTask StartSessionAsync(CancellationToken cancellationToken)
         {
-            _reporter.Report(MessageDescriptor.HotReloadSessionStarting);
+            _logger.Log(MessageDescriptor.HotReloadSessionStarting);
 
             await _hotReloadService.StartSessionAsync(Workspace.CurrentSolution, cancellationToken);
 
-            _reporter.Report(MessageDescriptor.HotReloadSessionStarted);
+            _logger.Log(MessageDescriptor.HotReloadSessionStarted);
         }
 
         public async Task<RunningProject?> TrackRunningProjectAsync(
@@ -138,7 +138,7 @@ namespace Microsoft.DotNet.Watch
                 outputReporter.ReportOutput(outputReporter.PrefixProcessOutput ? line with { Content = $"[{projectDisplayName}] {line.Content}" } : line);
             };
 
-            var runningProcess = _processRunner.RunAsync(processSpec, processReporter, launchResult, processTerminationSource.Token);
+            var runningProcess = _processRunner.RunAsync(processSpec, processReporter.ClientLogger, launchResult, processTerminationSource.Token);
             if (launchResult.ProcessId == null)
             {
                 // error already reported
@@ -229,7 +229,7 @@ namespace Microsoft.DotNet.Watch
                 .Order()
                 .ToImmutableArray();
 
-            _reporter.Verbose($"Hot reload capabilities: {string.Join(" ", capabilities)}.", Emoji.HotReload);
+            _logger.Log(MessageDescriptor.HotReloadCapabilities, string.Join(" ", capabilities));
             return capabilities;
         }
 
@@ -289,7 +289,7 @@ namespace Microsoft.DotNet.Watch
             {
                 _hotReloadService.DiscardUpdate();
 
-                _reporter.Output("Hot reload suspended. To continue hot reload, press \"Ctrl + R\".", Emoji.HotReload);
+                _logger.Log(MessageDescriptor.HotReloadSuspended);
                 await Task.Delay(-1, cancellationToken);
 
                 return ([], [], [], []);
@@ -377,11 +377,11 @@ namespace Microsoft.DotNet.Watch
                     break;
 
                 case WatchHotReloadService.Status.NoChangesToApply:
-                    _reporter.Report(MessageDescriptor.NoCSharpChangesToApply);
+                    _logger.Log(MessageDescriptor.NoCSharpChangesToApply);
                     break;
 
                 case WatchHotReloadService.Status.Blocked:
-                    _reporter.Output("Unable to apply hot reload due to compilation errors.");
+                    _logger.Log(MessageDescriptor.UnableToApplyChanges);
                     break;
 
                 default:
@@ -390,7 +390,7 @@ namespace Microsoft.DotNet.Watch
 
             if (!updates.ProjectsToRestart.IsEmpty)
             {
-                _reporter.Output("Restart is needed to apply the changes.");
+                _logger.Log(MessageDescriptor.RestartNeededToApplyChanges);
             }
 
             var diagnosticsToDisplayInApp = new List<string>();
@@ -458,8 +458,8 @@ namespace Microsoft.DotNet.Watch
                             projectsRebuiltDueToRudeEdits.Contains(projectId) ? "[auto-rebuild] " :
                             "";
 
-                        var eventId = GetMessageDescriptor(diagnostic, verbose: prefix != "");
-                        ReportDiagnostic(diagnostic, eventId, prefix);
+                        var descriptor = GetMessageDescriptor(diagnostic, verbose: prefix != "");
+                        ReportDiagnostic(diagnostic, descriptor, prefix);
                     }
                 }
             }
@@ -470,7 +470,7 @@ namespace Microsoft.DotNet.Watch
             void ReportDiagnostic(Diagnostic diagnostic, MessageDescriptor descriptor, string prefix = "")
             {
                 var display = CSharpDiagnosticFormatter.Instance.Format(diagnostic);
-                _reporter.ReportWithPrefix(descriptor, prefix, [display]);
+                _logger.Log(descriptor, prefix, display);
 
                 if (descriptor.Severity != MessageSeverity.None)
                 {
@@ -523,7 +523,7 @@ namespace Microsoft.DotNet.Watch
                     if (!projectMap.Map.TryGetValue(containingProjectPath, out var containingProjectNodes))
                     {
                         // Shouldn't happen.
-                        _reporter.Warn($"Project '{containingProjectPath}' not found in the project graph.");
+                        _logger.LogWarning("Project '{Path}' not found in the project graph.", containingProjectPath);
                         continue;
                     }
 
@@ -574,7 +574,7 @@ namespace Microsoft.DotNet.Watch
                         }
                         catch (Exception e)
                         {
-                            _reporter.Error(e.Message);
+                            _logger.LogError(e.Message);
                             continue;
                         }
 
@@ -584,7 +584,7 @@ namespace Microsoft.DotNet.Watch
                             content: content,
                             isApplicationProject: containingProject == runningProject.ProjectNode));
 
-                        _reporter.Verbose($"Sending static file update request for asset '{relativeUrl}'.");
+                        _logger.LogDebug("Sending static file update request for asset '{Url}'.", relativeUrl);
                     }
 
                     await runningProject.Clients.ApplyStaticAssetUpdatesAsync([.. updates], isProcessSuspended: false, cancellationToken);
@@ -593,7 +593,7 @@ namespace Microsoft.DotNet.Watch
 
             await Task.WhenAll(tasks).WaitAsync(cancellationToken);
 
-            _reporter.Output("Hot reload of static files succeeded.", Emoji.HotReload);
+            _logger.Log(MessageDescriptor.HotReloadOfStaticAssetsSucceeded);
 
             return allFilesHandled;
         }
@@ -651,7 +651,7 @@ namespace Microsoft.DotNet.Watch
                 if (!runningProjectsByPath.TryGetValue(projectPath, out var runningProjects) ||
                     runningProjects.Remove(project) is var updatedRunningProjects && runningProjects == updatedRunningProjects)
                 {
-                    _reporter.Verbose($"Ignoring an attempt to terminate process {project.ProcessId} of project '{projectPath}' that has no associated running processes.");
+                    _logger.LogDebug("Ignoring an attempt to terminate process {ProcessId} of project '{Path}' that has no associated running processes.", project.ProcessId, projectPath);
                     return runningProjectsByPath;
                 }
 

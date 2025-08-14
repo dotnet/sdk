@@ -8,6 +8,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
     public class EvaluationTests(ITestOutputHelper output)
     {
         private readonly TestReporter _reporter = new(output);
+        private readonly TestLogger _logger = new(output);
         private readonly TestAssetsManager _testAssets = new(output);
 
         private static string MuxerPath
@@ -428,7 +429,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDirectory, muxerPath: MuxerPath);
             var processRunner = new ProcessRunner(options.ProcessCleanupTimeout);
-            var buildReporter = new BuildReporter(_reporter, new GlobalOptions(), options);
+            var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
 
             var filesetFactory = new MSBuildFileSetFactory(projectA, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], processRunner, buildReporter);
 
@@ -465,7 +466,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                     "Collecting watch items from 'F'",
                     "Collecting watch items from 'G'",
                 ],
-                _reporter.Messages.Where(l => l.text.Contains("Collecting watch items from")).Select(l => l.text.Trim()).Order());
+                _logger.Messages.Where(m => m.Contains("Collecting watch items from")).Select(m => m.Trim()).Order());
         }
 
         [Fact]
@@ -487,7 +488,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: Path.GetDirectoryName(project1Path)!, muxerPath: MuxerPath);
             var processRunner = new ProcessRunner(options.ProcessCleanupTimeout);
-            var buildReporter = new BuildReporter(_reporter, new GlobalOptions(), options);
+            var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
 
             var factory = new MSBuildFileSetFactory(project1Path, buildArguments: [], processRunner, buildReporter);
             var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
@@ -495,8 +496,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             // note: msbuild prints errors to stdout, we match the pattern and report as error:
             AssertEx.Equal(
-                (MessageSeverity.Error, $"{project1Path} : error NU1201: Project Project2 is not compatible with net462 (.NETFramework,Version=v4.6.2). Project Project2 supports: netstandard2.1 (.NETStandard,Version=v2.1)"),
-                _reporter.Messages.Single(l => l.text.Contains("error NU1201")));
+                $"[Error] {project1Path} : error NU1201: Project Project2 is not compatible with net462 (.NETFramework,Version=v4.6.2). Project Project2 supports: netstandard2.1 (.NETStandard,Version=v2.1)",
+                _logger.Messages.Single(m => m.Contains("error NU1201")));
         }
 
         private readonly struct ExpectedFile(string path, string? staticAssetUrl = null, bool targetsOnly = false, bool graphOnly = false)
@@ -526,7 +527,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDir, muxerPath: MuxerPath) with { TestOutput = testDir };
                 var processRunner = new ProcessRunner(options.ProcessCleanupTimeout);
                 var buildArguments = targetFramework != null ? new[] { "/p:TargetFramework=" + targetFramework } : [];
-                var buildReporter = new BuildReporter(_reporter, new GlobalOptions(), options);
+                var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
                 var factory = new MSBuildFileSetFactory(rootProjectPath, buildArguments, processRunner, buildReporter);
                 var targetsResult = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
                 Assert.NotNull(targetsResult);

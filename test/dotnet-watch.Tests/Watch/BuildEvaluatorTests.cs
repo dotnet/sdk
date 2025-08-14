@@ -20,6 +20,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             {
                 Reporter = NullReporter.Singleton,
                 ProcessOutputReporter = NullReporter.Singleton,
+                Logger = NullLogger.Instance,
+                BuildLogger = NullLogger.Instance,
                 LoggerFactory = NullLoggerFactory.Instance,
                 ProcessRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout),
                 Options = new(),

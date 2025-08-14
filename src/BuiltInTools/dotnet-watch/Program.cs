@@ -212,16 +212,21 @@ namespace Microsoft.DotNet.Watch
 
         // internal for testing
         internal DotNetWatchContext CreateContext(ProcessRunner processRunner)
-            => new()
+        {
+            var loggerFactory = new LoggerFactory(reporter);
+            return new()
             {
                 Reporter = reporter,
                 ProcessOutputReporter = processOutputReporter,
-                LoggerFactory = new LoggerFactory(reporter),
+                LoggerFactory = loggerFactory,
+                Logger = loggerFactory.CreateLogger(DotNetWatchContext.DefaultLogComponentName),
+                BuildLogger = loggerFactory.CreateLogger(DotNetWatchContext.BuildLogComponentName),
                 ProcessRunner = processRunner,
                 Options = options.GlobalOptions,
                 EnvironmentOptions = environmentOptions,
                 RootProjectOptions = rootProjectOptions,
             };
+        }
 
         private bool IsHotReloadEnabled()
         {
@@ -243,11 +248,14 @@ namespace Microsoft.DotNet.Watch
 
         private async Task<int> ListFilesAsync(ProcessRunner processRunner, CancellationToken cancellationToken)
         {
+            var loggerFactory = new LoggerFactory(reporter);
+            var buildLogger = loggerFactory.CreateLogger(DotNetWatchContext.BuildLogComponentName);
+
             var fileSetFactory = new MSBuildFileSetFactory(
                 rootProjectOptions.ProjectPath,
                 rootProjectOptions.BuildArguments,
                 processRunner,
-                new BuildReporter(reporter, options.GlobalOptions, environmentOptions));
+                new BuildReporter(buildLogger, options.GlobalOptions, environmentOptions));
 
             if (await fileSetFactory.TryCreateAsync(requireProjectGraph: null, cancellationToken) is not { } evaluationResult)
             {
