@@ -18,7 +18,7 @@ internal sealed class BlazorWebAssemblyHostedAppModel(ProjectGraphNode clientPro
 {
     public override bool RequiresBrowserRefresh => true;
 
-    public override HotReloadClients CreateClients(BrowserRefreshServer? browserRefreshServer, ILogger processLogger)
+    public override HotReloadClients CreateClients(BrowserRefreshServer? browserRefreshServer, ILogger clientLogger, ILogger agentLogger)
     {
         if (browserRefreshServer == null)
         {
@@ -28,8 +28,8 @@ internal sealed class BlazorWebAssemblyHostedAppModel(ProjectGraphNode clientPro
 
         return new(
         [
-            (new BlazorWebAssemblyHotReloadClient(processLogger, browserRefreshServer, clientProject), "client"),
-            (new DefaultHotReloadClient(processLogger, enableStaticAssetUpdates: false), "host")
+            (new BlazorWebAssemblyHotReloadClient(clientLogger, agentLogger, browserRefreshServer, clientProject), "client"),
+            (new DefaultHotReloadClient(clientLogger, agentLogger, enableStaticAssetUpdates: false), "host")
         ]);
     }
 }

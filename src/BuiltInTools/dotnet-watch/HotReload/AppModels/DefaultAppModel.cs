@@ -16,6 +16,6 @@ internal sealed class DefaultAppModel(ProjectGraphNode project)
 {
     public override bool RequiresBrowserRefresh => false;
 
-    public override HotReloadClients CreateClients(BrowserRefreshServer? browserRefreshServer, ILogger processLogger)
-        => new(new DefaultHotReloadClient(processLogger, enableStaticAssetUpdates: true));
+    public override HotReloadClients CreateClients(BrowserRefreshServer? browserRefreshServer, ILogger clientLogger, ILogger agentLogger)
+        => new(new DefaultHotReloadClient(clientLogger, agentLogger, enableStaticAssetUpdates: true));
 }

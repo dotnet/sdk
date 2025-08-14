@@ -11,13 +11,15 @@ internal sealed class ProjectSpecificReporter : IReporter
     private readonly string _projectDisplayName;
     private readonly IReporter _underlyingReporter;
 
-    public readonly ILogger Logger;
+    public readonly ILogger ClientLogger;
+    public readonly ILogger AgentLogger;
 
     public ProjectSpecificReporter(ProjectGraphNode node, IReporter underlyingReporter, ILoggerFactory loggerFactory)
     {
         _underlyingReporter = underlyingReporter;
         _projectDisplayName = node.GetDisplayName();
-        Logger = loggerFactory.CreateLogger(HotReloadDotNetWatcher.LogComponentName, _projectDisplayName);
+        ClientLogger = loggerFactory.CreateLogger(HotReloadDotNetWatcher.ClientLogComponentName, _projectDisplayName);
+        AgentLogger = loggerFactory.CreateLogger(HotReloadDotNetWatcher.AgentLogComponentName, _projectDisplayName);
     }
 
     public bool IsVerbose

@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal abstract class HotReloadClient(ILogger logger) : IDisposable
+internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : IDisposable
 {
     /// <summary>
     /// List of modules that can't receive changes anymore.
@@ -22,6 +22,7 @@ internal abstract class HotReloadClient(ILogger logger) : IDisposable
     private readonly HashSet<Guid> _frozenModules = [];
 
     public readonly ILogger Logger = logger;
+    public readonly ILogger AgentLogger = agentLogger;
 
     /// <summary>
     /// Initiates connection with the agent in the target process.

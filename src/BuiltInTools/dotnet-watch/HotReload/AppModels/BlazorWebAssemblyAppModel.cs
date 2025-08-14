@@ -17,7 +17,7 @@ internal sealed class BlazorWebAssemblyAppModel(ProjectGraphNode clientProject)
 {
     public override bool RequiresBrowserRefresh => true;
 
-    public override HotReloadClients CreateClients(BrowserRefreshServer? browserRefreshServer, ILogger processLogger)
+    public override HotReloadClients CreateClients(BrowserRefreshServer? browserRefreshServer, ILogger clientLogger, ILogger agentLogger)
     {
         if (browserRefreshServer == null)
         {
@@ -25,6 +25,6 @@ internal sealed class BlazorWebAssemblyAppModel(ProjectGraphNode clientProject)
             return HotReloadClients.Empty;
         }
 
-        return new(new BlazorWebAssemblyHotReloadClient(processLogger, browserRefreshServer, clientProject));
+        return new(new BlazorWebAssemblyHotReloadClient(clientLogger, agentLogger, browserRefreshServer, clientProject));
     }
 }

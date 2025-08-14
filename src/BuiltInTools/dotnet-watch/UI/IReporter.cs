@@ -175,7 +175,8 @@ namespace Microsoft.DotNet.Watch
                 : this;
 
         public static readonly ImmutableDictionary<string, Emoji> ComponentEmojis = ImmutableDictionary<string, Emoji>.Empty
-            .Add(HotReloadDotNetWatcher.LogComponentName, Emoji.HotReload)
+            .Add(HotReloadDotNetWatcher.ClientLogComponentName, Emoji.HotReload)
+            .Add(HotReloadDotNetWatcher.AgentLogComponentName, Emoji.Agent)
             .Add(BrowserRefreshServer.ServerLogComponentName, Emoji.Refresh)
             .Add(BrowserConnection.AgentLogComponentName, Emoji.Agent)
             .Add(BrowserConnection.ServerLogComponentName, Emoji.Browser);

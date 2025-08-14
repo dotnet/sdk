@@ -9,7 +9,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class BlazorWebAssemblyHotReloadClient(ILogger logger, BrowserRefreshServer browserRefreshServer, ProjectGraphNode project) : HotReloadClient(logger)
+    internal sealed class BlazorWebAssemblyHotReloadClient(ILogger logger, ILogger agentLogger, BrowserRefreshServer browserRefreshServer, ProjectGraphNode project)
+        : HotReloadClient(logger, agentLogger)
     {
         private static readonly ImmutableArray<string> s_defaultCapabilities60 =
             ["Baseline"];

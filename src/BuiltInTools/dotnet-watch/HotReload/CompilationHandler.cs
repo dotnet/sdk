@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.Watch
         {
             var projectPath = projectNode.ProjectInstance.FullPath;
 
-            var clients = appModel.CreateClients(browserRefreshServer, processReporter.Logger);
+            var clients = appModel.CreateClients(browserRefreshServer, processReporter.ClientLogger, processReporter.AgentLogger);
             if (clients.IsEmpty)
             {
                 // error already reported

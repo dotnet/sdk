@@ -18,7 +18,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload
 {
-    internal sealed class DefaultHotReloadClient(ILogger logger, bool enableStaticAssetUpdates) : HotReloadClient(logger)
+    internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger, bool enableStaticAssetUpdates) : HotReloadClient(logger, agentLogger)
     {
         private Task<ImmutableArray<string>>? _capabilitiesTask;
         private NamedPipeServerStream? _pipe;
@@ -296,7 +296,7 @@ namespace Microsoft.DotNet.HotReload
 
             await foreach (var (message, severity) in log)
             {
-                ReportLogEntry(Logger, message, severity);
+                ReportLogEntry(AgentLogger, message, severity);
             }
 
             return success;
