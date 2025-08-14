@@ -335,13 +335,13 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             manifestPackages.First().PackageId.Should().Be(_packageIdA);
 
             // Verify that the manifest under the .config folder has been updated
-            _fileSystem.File.Exists(configManifestPath).Should().BeTrue("the .config manifest file should exist");
+            _fileSystem.File.Exists(configManifestPath).Should().BeTrue("The .config manifest file should exist");
             var configManifestContent = _fileSystem.File.ReadAllText(configManifestPath);
-            configManifestContent.Should().Contain(_packageIdA.ToString(), "the .config manifest should contain the installed tool");
-            configManifestContent.Should().NotBe(_jsonContent, "the .config manifest should have been updated with the new tool");
+            configManifestContent.Should().Contain(_packageIdA.ToString(), "The .config manifest should contain the installed tool");
+            configManifestContent.Should().NotBe(_jsonContent, "The .config manifest should have been updated with the new tool");
 
             // Verify that no manifest exists in the root folder after the install command is run
-            _fileSystem.File.Exists(_manifestFilePath).Should().BeFalse("no manifest should exist in the root folder");
+            _fileSystem.File.Exists(_manifestFilePath).Should().BeFalse("No manifest should exist in the root folder");
         }
 
         private ToolInstallLocalCommand GetDefaultTestToolInstallLocalCommand()
