@@ -325,7 +325,8 @@ public class ReferencedExeProgram
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [CombinatorialData]
         public void TestProjectCanReferenceExe(
-            [CombinatorialValues("xunit", "mstest")] string testTemplateName,
+            // Note: xunit.v3 is always a "real" executable even with VSTest. So it's irrelevant here.
+            [CombinatorialValues("nunit", "mstest")] string testTemplateName,
             bool setSelfContainedProperty)
         {
             var testConsoleProject = new TestProject("ConsoleApp")
@@ -467,7 +468,8 @@ public class ReferencedExeProgram
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [CombinatorialData]
         public void ExeProjectCanReferenceTestProject(
-            [CombinatorialValues("xunit", "mstest")] string testTemplateName,
+            // Note: xunit.v3 is always a "real" executable even with VSTest. So it's irrelevant here.
+            [CombinatorialValues("nunit", "mstest")] string testTemplateName,
             bool setSelfContainedProperty,
             bool buildWithSelfContainedFromCommandLine)
         {
