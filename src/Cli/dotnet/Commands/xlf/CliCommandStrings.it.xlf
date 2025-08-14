@@ -408,7 +408,7 @@ Per MSTest anteriore a 2.2.4, il timeout viene usato per tutti i test case.</tar
       </trans-unit>
       <trans-unit id="CmdConfigFileDescription">
         <source>Specifies a testconfig.json file.</source>
-        <target state="new">Specifies a testconfig.json file.</target>
+        <target state="translated">Specifica un file testconfig.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfigFileOption">
@@ -423,7 +423,7 @@ Per MSTest anteriore a 2.2.4, il timeout viene usato per tutti i test case.</tar
       </trans-unit>
       <trans-unit id="CmdConfigFilePath">
         <source>CONFIG_FILE</source>
-        <target state="new">CONFIG_FILE</target>
+        <target state="translated">CONFIG_FILE</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCurrentRuntimeOptionDescription">
@@ -449,13 +449,13 @@ Per MSTest anteriore a 2.2.4, il timeout viene usato per tutti i test case.</tar
       <trans-unit id="CmdDiagnosticOutputDirectoryDescription">
         <source>Output directory of the diagnostic logging.
 If not specified the file will be generated inside the default 'TestResults' directory.</source>
-        <target state="new">Output directory of the diagnostic logging.
-If not specified the file will be generated inside the default 'TestResults' directory.</target>
+        <target state="translated">Directory di output della registrazione diagnostica.
+Se non specificato, il file verrà generato all'interno della directory 'TestResults' predefinita.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDiagnosticOutputDirectoryPath">
         <source>DIAGNOSTIC_DIR</source>
-        <target state="new">DIAGNOSTIC_DIR</target>
+        <target state="translated">DIAGNOSTIC_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDirectoryDescription">
@@ -2818,8 +2818,8 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <note>{Locked="--sdk-version"}</note>
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
-        <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
-        <target state="translated">I carichi di lavoro sono configurati per l'installazione e l'aggiornamento con le versioni del carico di lavoro, ma non ne sono stati trovati. Eseguire il "dotnet workload restore" per installare una versione del carico di lavoro.</target>
+        <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
+        <target state="needs-review-translation">I carichi di lavoro sono configurati per l'installazione e l'aggiornamento con le versioni del carico di lavoro, ma non ne sono stati trovati. Eseguire il "dotnet workload restore" per installare una versione del carico di lavoro.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">
@@ -3865,10 +3865,15 @@ Per visualizzare un valore, specifica l'opzione della riga di comando corrispond
         <target state="translated">ID manifesto del carico di lavoro</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadManifestInstallationConfiguration">
-        <source>Configured to use {0} when installing new manifests.</source>
-        <target state="translated">Configurato per l'uso {0} durante l'installazione di nuovi manifesti.</target>
+      <trans-unit id="WorkloadManifestInstallationConfigurationLooseManifests">
+        <source>Configured to use loose manifests when installing new manifests.</source>
+        <target state="new">Configured to use loose manifests when installing new manifests.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfigurationWorkloadSets">
+        <source>Configured to use workload sets when installing new manifests.</source>
+        <target state="new">Configured to use workload sets when installing new manifests.</target>
+        <note>{Locked="workload sets"}</note>
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">
         <source>Manifest Path</source>

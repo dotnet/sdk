@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests;
 
 public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 {
-    private static readonly string s_program = """
+    private static readonly string s_program = /* lang=C#-Test */ """
         if (args.Length > 0)
         {
             Console.WriteLine("echo args:" + string.Join(";", args));
@@ -29,7 +29,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         #endif
         """;
 
-    private static readonly string s_programDependingOnUtil = """
+    private static readonly string s_programDependingOnUtil = /* lang=C#-Test */ """
         if (args.Length > 0)
         {
             Console.WriteLine("echo args:" + string.Join(";", args));
@@ -37,7 +37,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Console.WriteLine("Hello, " + Util.GetMessage());
         """;
 
-    private static readonly string s_util = """
+    private static readonly string s_util = /* lang=C#-Test */ """
         static class Util
         {
             public static string GetMessage()
@@ -45,6 +45,29 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 return "String from Util";
             }
         }
+        """;
+
+    private static readonly string s_programReadingEmbeddedResource = /* lang=C#-Test */ """
+        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+        var resourceName = assembly.GetManifestResourceNames().SingleOrDefault();
+
+        if (resourceName is null)
+        {
+            Console.WriteLine("Resource not found");
+            return;
+        }
+
+        using var stream = assembly.GetManifestResourceStream(resourceName)!;
+        using var reader = new System.Resources.ResourceReader(stream);
+        Console.WriteLine(reader.Cast<System.Collections.DictionaryEntry>().Single());
+        """;
+
+    private static readonly string s_resx = """
+        <root>
+          <data name="MyString">
+            <value>TestValue</value>
+          </data>
+        </root>
         """;
 
     private static readonly string s_consoleProject = $"""
@@ -150,7 +173,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     /// <summary>
     /// <c>dotnet file.cs</c> is equivalent to <c>dotnet run file.cs</c>.
     /// </summary>
-    [Fact(Skip = "Waiting for VMR codeflow from runtime: https://github.com/dotnet/dotnet/pull/1563")]
+    [Fact]
     public void FilePath_WithoutRun()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -225,6 +248,16 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 Hello from Program
                 Release config
                 """);
+
+        new DotnetCommand(Log, "Program.cs", "arg1", "arg2")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:arg1;arg2
+                Hello from Program
+                Release config
+                """);
     }
 
     /// <summary>
@@ -292,7 +325,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     /// <summary>
     /// Even if there is a file-based app <c>./build</c>, <c>dotnet build</c> should not execute that.
     /// </summary>
-    [Theory(Skip="Waiting for VMR codeflow from runtime: https://github.com/dotnet/dotnet/pull/1563")]
+    [Theory]
     // error MSB1003: Specify a project or solution file. The current working directory does not contain a project or solution file.
     [InlineData("build", "MSB1003")]
     // dotnet watch: Could not find a MSBuild project file in '...'. Specify which project to use with the --project option.
@@ -363,7 +396,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
     //  https://github.com/dotnet/sdk/issues/49665
     //  Failed to load /private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, error: dlopen(/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), '/System/Volumes/Preboot/Cryptexes/OS/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (no such file), '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64'))
-    [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX, Skip = " Waiting for VMR codeflow from runtime: https://github.com/dotnet/dotnet/pull/1563")]
+    [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
     public void Precedence_NuGetTool()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -522,7 +555,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 """);
     }
 
-    [Fact(Skip = " Waiting for VMR codeflow from runtime: https://github.com/dotnet/dotnet/pull/1563")]
+    [Fact]
     public void ProjectInCurrentDirectory_NoRunVerb()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -1058,6 +1091,31 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         records.Count(static r => r.Args is ProjectEvaluationFinishedEventArgs).Should().BeGreaterThanOrEqualTo(2);
     }
 
+    [Theory, CombinatorialData]
+    public void TerminalLogger(bool on)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        var result = new DotnetCommand(Log, "run", "Program.cs", "--no-cache")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("MSBUILDTERMINALLOGGER", on ? "on" : "off")
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("Hello from Program");
+
+        const string terminalLoggerSubstring = "\x1b";
+        if (on)
+        {
+            result.And.HaveStdOutContaining(terminalLoggerSubstring);
+        }
+        else
+        {
+            result.And.NotHaveStdOutContaining(terminalLoggerSubstring);
+        }
+    }
+
     /// <summary>
     /// Default projects include embedded resources by default.
     /// </summary>
@@ -1065,26 +1123,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void EmbeddedResource()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        string code = """
-            using var stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("Program.Resources.resources");
-
-            if (stream is null)
-            {
-                Console.WriteLine("Resource not found");
-                return;
-            }
-
-            using var reader = new System.Resources.ResourceReader(stream);
-            Console.WriteLine(reader.Cast<System.Collections.DictionaryEntry>().Single());
-            """;
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), code);
-        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), """
-            <root>
-              <data name="MyString">
-                <value>TestValue</value>
-              </data>
-            </root>
-            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programReadingEmbeddedResource);
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
 
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
@@ -1097,7 +1137,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         // This behavior can be overridden.
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
             #:property EnableDefaultEmbeddedResourceItems=false
-            {code}
+            {s_programReadingEmbeddedResource}
             """);
 
         new DotnetCommand(Log, "run", "Program.cs")
@@ -1107,6 +1147,27 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("""
                 Resource not found
                 """);
+    }
+
+    /// <summary>
+    /// Scripts in repo root should not include <c>.resx</c> files.
+    /// Part of <see href="https://github.com/dotnet/sdk/issues/49826"/>.
+    /// </summary>
+    [Theory, CombinatorialData]
+    public void EmbeddedResource_AlongsideProj([CombinatorialValues("sln", "slnx", "csproj", "vbproj", "shproj", "proj")] string ext)
+    {
+        bool considered = ext is "sln" or "slnx" or "csproj";
+
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programReadingEmbeddedResource);
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
+        File.WriteAllText(Path.Join(testInstance.Path, $"repo.{ext}"), "");
+
+        new DotnetCommand(Log, "run", "--file", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(considered ? "Resource not found" : "[MyString, TestValue]");
     }
 
     [Fact]
@@ -2090,7 +2151,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             {
                 Log.WriteLine($"{codeFilePath.FullName} needs to be updated:");
                 Log.WriteLine(newText);
-                if (Environment.GetEnvironmentVariable("CI") == "true")
+                if (Env.GetEnvironmentVariableAsBool("CI"))
                 {
                     throw new InvalidOperationException($"Not updating file in CI: {codeFilePath.FullName}");
                 }
@@ -2217,7 +2278,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             var msbuildFileText = File.ReadAllText(msbuildFile);
             if (cscOnlyFileText.ReplaceLineEndings() != msbuildFileText.ReplaceLineEndings())
             {
-                Log.WriteLine($"File differs between MSBuild and CSC-only runs: {cscOnlyFile}");
+                Log.WriteLine($"File differs between MSBuild and CSC-only runs (if this is expected, find the template in '{nameof(CSharpCompilerCommand)}.cs' and update it): {cscOnlyFile}");
                 const int limit = 3_000;
                 if (cscOnlyFileText.Length < limit && msbuildFileText.Length < limit)
                 {
@@ -2664,6 +2725,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <TargetFramework>net11.0</TargetFramework>
                         <LangVersion>preview</LangVersion>
                         <Features>$(Features);FileBasedProgram</Features>
@@ -2731,6 +2793,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
 
@@ -2795,6 +2858,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
 
