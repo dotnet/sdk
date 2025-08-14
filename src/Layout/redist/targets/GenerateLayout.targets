@@ -1,17 +1,19 @@
 <Project>
 
+  <ItemGroup>
+    <PackageDownload Include="Microsoft.NETCore.Platforms" Version="[$(MicrosoftNETCorePlatformsPackageVersion)]" />
+  </ItemGroup>
+
   <Target Name="PublishPortableRuntimeIdentifierGraph"
           BeforeTargets="Build">
 
-      <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true' AND '$(TargetRid)' != '' AND '$(PortableRid)' != '' AND '$(TargetRid)' != '$(PortableRid)'">
-        <AdditionalRuntimeIdentifier Include="$(TargetRid)" Imports="$(PortableRid)" />
-      </ItemGroup>
+    <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsPackageVersion)/runtime.json"
+          DestinationFiles="$(OutputPath)RuntimeIdentifierGraph.json"
+          SkipUnchangedFiles="true" />
 
-      <UpdatePortableRuntimeIdentifierGraph
-        InputFile="PortableRuntimeIdentifierGraph.json"
-        OutputFile="$(OutputPath)/PortableRuntimeIdentifierGraph.json"
-        AdditionalRuntimeIdentifiers="@(AdditionalRuntimeIdentifier)"
-        />
+    <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsPackageVersion)/PortableRuntimeIdentifierGraph.json"
+          DestinationFolder="$(OutputPath)"
+          SkipUnchangedFiles="true" />
 
   </Target>
 
@@ -19,14 +21,14 @@
           BeforeTargets="Build">
 
     <WriteLinesToFile File="$(OutputPath)/.toolsetversion"
-                      Lines="$(GitCommitHash);$(Version);$(Rid)"
+                      Lines="$(SourceRevisionId);$(Version);$(Rid)"
                       Overwrite="true" />
 
     <!-- The .version file in the final product will be the .NET Core SDK version.  But
          for the layout we produce here, use the toolset information, so that we don't
          just always use the stage 0 version. -->
     <WriteLinesToFile File="$(OutputPath)/.version"
-                      Lines="$(GitCommitHash);$(Version);$(Rid)"
+                      Lines="$(SourceRevisionId);$(Version);$(Rid)"
                       Overwrite="true" />
 
 	<!-- Development env and CI loads DotnetFiles type from the following location
@@ -43,7 +45,7 @@
       <RoslynDirectory>$(OutputPath)/Roslyn</RoslynDirectory>
     </PropertyGroup>
     <ItemGroup>
-      <RoslynBits Include="$(NuGetPackageRoot)/microsoft.net.compilers.toolset/$(MicrosoftNetCompilersToolsetPackageVersion)/tasks/netcore/**/*" />
+      <RoslynBits Include="$(NuGetPackageRoot)/microsoft.net.compilers.toolset/$(MicrosoftNetCompilersToolsetVersion)/tasks/netcore/**/*" />
     </ItemGroup>
     <Error Condition="'@(RoslynBits)' == ''" Text="Something moved around in Roslyn package, adjust code here accordingly. TFM change?" />
     <Copy SourceFiles="@(RoslynBits)" DestinationFiles="@(RoslynBits->'$(RoslynDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
@@ -105,20 +107,18 @@
     <Copy SourceFiles="@(ILLinkAnalyzersAssemblies)" DestinationFiles="@(ILLinkAnalyzersAssemblies->'$(AnalyzerAssembliesDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
-  <Target Name="PublishDotnetFormat"
-          BeforeTargets="Build;PublishNetSdk">
+  <Target Name="PublishDotnetFormat" AfterTargets="Build" BeforeTargets="PublishNetSdk">
     <PropertyGroup>
       <DotnetFormatDestinationDirectory>$(OutputPath)/DotnetTools/dotnet-format</DotnetFormatDestinationDirectory>
     </PropertyGroup>
 
     <ItemGroup>
-      <DotnetFormatDllFiles Include="$(Pkgdotnet-format)/tools/net8.0/any/**/*.dll" />
-      <DotnetFormatConfigFiles Include="$(Pkgdotnet-format)/tools/net8.0/any/**/*.json" />
-      <DotnetFormatConfigFiles Include="$(Pkgdotnet-format)/tools/net8.0/any/**/*.config" />
+      <DotnetFormatDllFiles Include="$(ArtifactsBinDir)/dotnet-format/$(Configuration)/$(NetCurrent)/**/*.dll" />
+      <DotnetFormatDllFiles Include="$(ArtifactsBinDir)/dotnet-format/$(Configuration)/$(NetCurrent)/**/*.exe" />
+      <DotnetFormatConfigFiles Include="$(ArtifactsBinDir)/dotnet-format/$(Configuration)/$(NetCurrent)/**/*.json" />
+      <DotnetFormatConfigFiles Include="$(ArtifactsBinDir)/dotnet-format/$(Configuration)/$(NetCurrent)/**/*.config" />
     </ItemGroup>
 
-    <Error Condition="'@(DotnetFormatDllFiles)' == ''" Text="Something moved around in dotnet-format package, adjust code here accordingly. TFM change?" />
-    <Error Condition="'@(DotnetFormatConfigFiles)' == ''" Text="Something moved around in dotnet-format package, adjust code here accordingly. TFM change?" />
     <Copy SourceFiles="@(DotnetFormatDllFiles)" DestinationFiles="@(DotnetFormatDllFiles->'$(DotnetFormatDestinationDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(DotnetFormatConfigFiles)" DestinationFiles="@(DotnetFormatConfigFiles->'$(DotnetFormatDestinationDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
@@ -177,8 +177,8 @@
   <Target Name="PublishTestCli"
           BeforeTargets="Build">
     <PropertyGroup>
-      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildFromSource)' != 'true'" >netcoreapp3.1</TestCliNuGetDirectoryTargetFramework>
-      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'" >net8.0</TestCliNuGetDirectoryTargetFramework>
+      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' != 'true'" >netcoreapp3.1</TestCliNuGetDirectoryTargetFramework>
+      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true'" >net9.0</TestCliNuGetDirectoryTargetFramework>
       <TestCliNuGetDirectory>$(NuGetPackageRoot)/microsoft.testplatform.cli/$(MicrosoftTestPlatformCLIPackageVersion)/contentFiles/any/$(TestCliNuGetDirectoryTargetFramework)/</TestCliNuGetDirectory>
     </PropertyGroup>
     <ItemGroup>
@@ -217,7 +217,7 @@
       Targets="Publish"
       Projects="$(RepoRoot)/src/Containers/Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj"
       Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/Containers/tasks/net472;TargetFramework=net472"
-      Condition="'$(DotNetBuildFromSource)' != 'true'" />
+      Condition="'$(OSName)' == 'win'" />
     <MSBuild
       Targets="Publish"
       Projects="$(RepoRoot)/src/Containers/Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj"
@@ -226,7 +226,7 @@
       Targets="Publish"
       Projects="$(RepoRoot)/src/Containers/containerize/containerize.csproj"
       Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/Containers/containerize"
-      Condition="'$(DotNetBuildFromSource)' != 'true'" />
+      Condition="'$(OSName)' == 'win'" />
   </Target>
 
   <Target Name="GenerateCliRuntimeConfigurationFiles"
@@ -395,14 +395,6 @@
                                    AssetPath="%(NuPkgContentForMSBuildExtensionsRelativePaths.Identity)" />
   </Target>
 
-  <!-- The msdia140typelib_clr0200.dll file is not MIT licensed (and it only used on Windows). Remove it, so
-       we can MIT license the published dotnet -->
-  <Target Name="RemoveMSDiaTypeLib"
-          AfterTargets="Build"
-          Condition="'$(OSName)' != 'win'">
-    <Delete Files="$(OutputPath)/TestHost/msdia140typelib_clr0200.dll" />
-  </Target>
-
   <Target Name="PublishSdks"
           AfterTargets="Build">
     <ItemGroup>
@@ -488,7 +480,6 @@
                             MakeFscRunnableAndMoveToPublishDir;
                             RemoveFscFilesAfterPublish;
                             PublishTargetExtensions;
-                            RemoveMSDiaTypeLib;
                             PublishSdks;
                             ChmodPublishDir;
                             DeleteSymbolsFromPublishDir;

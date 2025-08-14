@@ -28,10 +28,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Paths to tools, tasks, and extensions are calculated relative to the StaticWebAssetsSdkDirectoryRoot. This can be modified to test a local build. -->
     <StaticWebAssetsSdkDirectoryRoot Condition="'$(StaticWebAssetsSdkDirectoryRoot)'==''">$(MSBuildThisFileDirectory)..\</StaticWebAssetsSdkDirectoryRoot>
     <StaticWebAssetsSdkBuildTasksDirectoryRoot Condition="'$(StaticWebAssetsSdkBuildTasksDirectoryRoot)'==''">$(StaticWebAssetsSdkDirectoryRoot)tasks\</StaticWebAssetsSdkBuildTasksDirectoryRoot>
-    <_StaticWebAssetsSdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net8.0</_StaticWebAssetsSdkTasksTFM>
+    <_StaticWebAssetsSdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net9.0</_StaticWebAssetsSdkTasksTFM>
     <_StaticWebAssetsSdkTasksTFM Condition=" '$(_StaticWebAssetsSdkTasksTFM)' == ''">net472</_StaticWebAssetsSdkTasksTFM>
     <StaticWebAssetsSdkBuildTasksAssembly>$(StaticWebAssetsSdkBuildTasksDirectoryRoot)$(_StaticWebAssetsSdkTasksTFM)\Microsoft.NET.Sdk.StaticWebAssets.Tasks.dll</StaticWebAssetsSdkBuildTasksAssembly>
-    <_StaticWebAssetsSdkToolAssembly>$(StaticWebAssetsSdkDirectoryRoot)tools\net8.0\Microsoft.NET.Sdk.StaticWebAssets.Tool.dll</_StaticWebAssetsSdkToolAssembly>
+    <_StaticWebAssetsSdkToolAssembly>$(StaticWebAssetsSdkDirectoryRoot)tools\net9.0\Microsoft.NET.Sdk.StaticWebAssets.Tool.dll</_StaticWebAssetsSdkToolAssembly>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
@@ -43,11 +43,33 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Resolve the TFM-specific attributes conditionally. -->
   <Choose>
+    <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '9.0')) ">
+      <PropertyGroup>
+        <_TargetingNETCoreApp30OrLater>true</_TargetingNETCoreApp30OrLater>
+        <_TargetingNET50OrLater>true</_TargetingNET50OrLater>
+        <_TargetingNET60OrLater>true</_TargetingNET60OrLater>
+        <_TargetingNET70OrLater>true</_TargetingNET70OrLater>
+        <_TargetingNET80OrLater>true</_TargetingNET80OrLater>
+        <_TargetingNET90OrLater>true</_TargetingNET90OrLater>
+        <_RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">9.0</_RazorLangVersion>
+      </PropertyGroup>
+    </When>
+    <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0')) ">
+      <PropertyGroup>
+        <_TargetingNETCoreApp30OrLater>true</_TargetingNETCoreApp30OrLater>
+        <_TargetingNET50OrLater>true</_TargetingNET50OrLater>
+        <_TargetingNET60OrLater>true</_TargetingNET60OrLater>
+        <_TargetingNET70OrLater>true</_TargetingNET70OrLater>
+        <_TargetingNET80OrLater>true</_TargetingNET80OrLater>
+        <_RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">8.0</_RazorLangVersion>
+      </PropertyGroup>
+    </When>
     <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '7.0')) ">
       <PropertyGroup>
         <_TargetingNETCoreApp30OrLater>true</_TargetingNETCoreApp30OrLater>
         <_TargetingNET50OrLater>true</_TargetingNET50OrLater>
         <_TargetingNET60OrLater>true</_TargetingNET60OrLater>
+        <_TargetingNET70OrLater>true</_TargetingNET70OrLater>
         <_RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">7.0</_RazorLangVersion>
       </PropertyGroup>
     </When>

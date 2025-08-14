@@ -1,0 +1,643 @@
+<Project TreatAsLocalProperty="PublicBaseURL">
+
+  <PropertyGroup>
+    <RedistLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet\</RedistLayoutPath>
+    <SdkInternalLayoutPath>$(BaseOutputPath)$(Configuration)\internal\</SdkInternalLayoutPath>
+    <DownloadsFolder>$(IntermediateOutputPath)downloads\</DownloadsFolder>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Blob storage directories are not stabilized, so these must refer to a package that does not stabilize -->
+    <!-- In unified build, the layout does match, so use the runtime package versions rather than the VS redist versions -->
+    <AspNetCoreBlobVersion>$(MicrosoftAspNetCoreAppRefInternalPackageVersion)</AspNetCoreBlobVersion>
+
+    <NetRuntimeBlobVersion>$(MicrosoftNETCorePlatformsPackageVersion)</NetRuntimeBlobVersion>
+
+    <WindowsDesktopBlobVersion>$(VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion)</WindowsDesktopBlobVersion>
+    <WindowsDesktopBlobVersion Condition=" '$(DotNetBuildOrchestrator)' == 'true' ">$(MicrosoftWindowsDesktopAppRuntimePackageVersion)</WindowsDesktopBlobVersion>
+
+    <NETStandardTargetingPackBlobVersion>3.0.0</NETStandardTargetingPackBlobVersion>
+  </PropertyGroup>
+
+  <Target Name="SetupBundledComponents" DependsOnTargets="GetCurrentRuntimeInformation;SetupFileExtensions;SetBuildDefaults">
+    <PropertyGroup>
+      <SdkOutputDirectory>$(RedistLayoutPath)sdk\$(Version)\</SdkOutputDirectory>
+
+      <InternalBuild Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">true</InternalBuild>
+      <InternalBaseURL Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">https://dotnetbuilds.blob.core.windows.net/internal/</InternalBaseURL>
+
+      <!-- Base url for official releases. Used to obtain some assets from older releases when necessary. -->
+      <OfficialBaseURL>https://dotnetcli.blob.core.windows.net/dotnet/</OfficialBaseURL>
+      <PublicBaseURL Condition="'$(PublicBaseURL)' == ''">$(OfficialBaseURL)</PublicBaseURL>
+      <!-- MSBuild removes the '//' slashes when passing PublicBaseURL from the outer to the inner build. -->
+      <PublicBaseURL Condition="$(PublicBaseURL.StartsWith('file:')) and '$(OS)' != 'Windows_NT'">$([System.Text.RegularExpressions.Regex]::Replace('$(PublicBaseURL)', '%28file:\/{1,}%29%28.+%29', 'file:///%242'))</PublicBaseURL>
+
+      <NetRuntimeRid Condition="'$(NetRuntimeRid)' == ''">$(HostRid)</NetRuntimeRid>
+      <NetRuntimeRid Condition=" ('$(OSName)' == 'win' or '$(OSName)' == 'osx' or '$(OSName)' == 'freebsd') and '$(DotNetBuildSourceOnly)' != 'true' ">$(OSName)-$(Architecture)</NetRuntimeRid>
+      <NetRuntimeRid Condition="'$(DotNetBuild)' != 'true' and $(NetRuntimeRid.StartsWith('mariner.2.0'))">$(HostRid.Replace('mariner.2.0', 'cm.2'))</NetRuntimeRid>
+
+      <!-- only the runtime OSX .pkgs have a `-internal` suffix -->
+      <InstallerStartSuffix Condition="$([MSBuild]::IsOSPlatform('OSX'))">-internal</InstallerStartSuffix>
+
+      <!-- Downloaded Installers + Archives -->
+
+      <!-- Use the "x64" Rid when downloading Linux shared framework 'DEB' installer files. -->
+      <SharedFrameworkInstallerFileRid>$(NetRuntimeRid)</SharedFrameworkInstallerFileRid>
+      <SharedFrameworkInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true' ">$(InstallerTargetArchitecture)</SharedFrameworkInstallerFileRid>
+
+      <!-- Use the "x64" Rid when downloading Linux runtime dependencies Debian package. -->
+      <RuntimeDepsInstallerFileRid>$(NetRuntimeRid)</RuntimeDepsInstallerFileRid>
+      <RuntimeDepsInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' ">$(Architecture)</RuntimeDepsInstallerFileRid>
+      <RuntimeDepsInstallerFileRid Condition=" '$(IsRPMBasedDistro)' == 'true' And '$(UsePortableLinuxSharedFramework)' != 'true' ">$(OSName)-$(InstallerTargetArchitecture)</RuntimeDepsInstallerFileRid>
+      <RuntimeDepsInstallerFileRid Condition=" '$(NetRuntimeRid)' == 'rhel.7-x64' And '$(Architecture)' == 'Arm64' And '$(UsePortableLinuxSharedFramework)' == 'true' ">rhel.7-aarch64</RuntimeDepsInstallerFileRid>
+
+      <AlternateArchitecture Condition="'$(Architecture)' == 'x86'">x64</AlternateArchitecture>
+      <AlternateArchitecture Condition="'$(Architecture)' == 'x64'">x86</AlternateArchitecture>
+      <DownloadedSharedHostInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-host$(InstallerStartSuffix)-$(SharedHostVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedHostInstallerFileName>
+      <DownloadedHostFxrInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-hostfxr$(InstallerStartSuffix)-$(HostFxrVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedHostFxrInstallerFileName>
+      <DownloadedSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' and '$(PgoInstrument)' != 'true' ">dotnet-runtime$(InstallerStartSuffix)-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedFrameworkInstallerFileName>
+      <DownloadedSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' and '$(PgoInstrument)' == 'true' ">dotnet-runtime$(InstallerStartSuffix)$(PgoTerm)-$(VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedFrameworkInstallerFileName>
+      <DownloadedRuntimeDepsInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-runtime-deps-$(SharedHostVersion)-$(RuntimeDepsInstallerFileRid)$(InstallerExtension)</DownloadedRuntimeDepsInstallerFileName>
+      <DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' ">windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName>
+      <DownloadedNetCoreAppTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-targeting-pack-$(MicrosoftNETCoreAppRefPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetCoreAppTargetingPackInstallerFileName>
+      <DownloadedNetCoreAppHostPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-apphost-pack-$(MicrosoftNETCoreAppHostPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetCoreAppHostPackInstallerFileName>
+      <DownloadedAlternateNetCoreAppHostPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-apphost-pack-$(MicrosoftNETCoreAppHostPackageVersion)-$(SharedFrameworkInstallerFileRid)_$(AlternateArchitecture)$(InstallerExtension)</DownloadedAlternateNetCoreAppHostPackInstallerFileName>
+      <DownloadedArm64NetCoreAppHostPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-apphost-pack-$(MicrosoftNETCoreAppHostPackageVersion)-$(SharedFrameworkInstallerFileRid)_arm64$(InstallerExtension)</DownloadedArm64NetCoreAppHostPackInstallerFileName>
+      <DownloadedWindowsDesktopTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">windowsdesktop-targeting-pack-$(MicrosoftWindowsDesktopAppRefPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWindowsDesktopTargetingPackInstallerFileName>
+      <DownloadedNetStandardTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">netstandard-targeting-pack-$(NETStandardLibraryRefPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetStandardTargetingPackInstallerFileName>
+      <!-- osx-arm64 netstandard targeting pack pkg is unavailable. Use osx-x64.
+          This should be OK, because the package is just a compressed file containing reference assemblies and
+          runtime independent manifest text files.
+      -->
+      <DownloadedNetStandardTargetingPackInstallerFileName Condition="'$(SharedFrameworkInstallerFileRid)' == 'osx-arm64'">netstandard-targeting-pack-$(NETStandardLibraryRefPackageVersion)-osx-x64$(InstallerExtension)</DownloadedNetStandardTargetingPackInstallerFileName>
+      <NetStandardTargetingPackTargetFramework>netstandard$(NETStandardLibraryRefPackageVersion.Split('.')[0])$(NETStandardLibraryRefPackageVersion.Split('.')[1])</NetStandardTargetingPackTargetFramework>
+
+      <!-- Use the portable "linux-x64" Rid when downloading Linux shared framework compressed file. -->
+      <SharedFrameworkRid>$(NetRuntimeRid)</SharedFrameworkRid>
+      <SharedFrameworkRid Condition="$(ProductMonikerRid.StartsWith('linux-musl'))">$(ProductMonikerRid)</SharedFrameworkRid>
+      <SharedFrameworkRid Condition=" '$(UsePortableLinuxSharedFramework)' == 'true' ">linux-$(Architecture)</SharedFrameworkRid>
+      <CombinedFrameworkHostArchiveFileName Condition=" '$(PgoInstrument)' != 'true' ">dotnet-runtime-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
+      <CombinedFrameworkHostArchiveFileName Condition=" '$(PgoInstrument)' == 'true' ">dotnet-runtime$(PgoTerm)-$(VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
+      <WinFormsAndWpfSharedFxArchiveFileName>windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
+
+      <Crossgen2Rid>$(HostOSName)-$(BuildArchitecture)</Crossgen2Rid>
+      <Crossgen2Rid Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(SharedFrameworkRid)</Crossgen2Rid>
+
+      <AspNetCoreInstallerRid Condition="'$(AspNetCoreInstallerRid)' == ''">$(SharedFrameworkRid)</AspNetCoreInstallerRid>
+      <AspNetCoreInstallerRid Condition="'$(SharedFrameworkRid)' == 'rhel.6-x64'">linux-x64</AspNetCoreInstallerRid>
+      <AspNetCoreArchiveRid>$(AspNetCoreInstallerRid)</AspNetCoreArchiveRid>
+      <AspNetCoreInstallerRid Condition="('$(InstallerExtension)' == '.deb' OR '$(InstallerExtension)' == '.rpm') AND '$(Architecture)' != 'arm64'">x64</AspNetCoreInstallerRid>
+      <AspNetCoreInstallerRid Condition="'$(InstallerExtension)' == '.rpm' AND '$(Architecture)' == 'arm64'">aarch64</AspNetCoreInstallerRid>
+
+      <DownloadedAspNetCoreSharedFxInstallerFileName Condition=" '$(InstallerExtension)' != '' AND !$([MSBuild]::IsOSPlatform('OSX')) ">aspnetcore-runtime-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
+      <DownloadedAspNetCoreSharedFxInstallerFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcore-runtime-$(VSRedistCommonAspNetCoreSharedFrameworkx6490PackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
+      <DownloadedAspNetCoreSharedFxWixLibFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcore-runtime-internal-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreInstallerRid).wixlib</DownloadedAspNetCoreSharedFxWixLibFileName>
+      <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefPackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
+      <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefInternalPackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
+      <DownloadedAspNetCoreV2ModuleInstallerFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcoremodule_$(Architecture)_en_v2_$(MicrosoftAspNetCoreAppRuntimePackageVersion)$(InstallerExtension)</DownloadedAspNetCoreV2ModuleInstallerFileName>
+      <AspNetTargetingPackArchiveFileName>aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefPackageVersion)-$(AspNetCoreArchiveRid)$(ArchiveExtension)</AspNetTargetingPackArchiveFileName>
+      <AspNetCoreSharedFxArchiveFileName>aspnetcore-runtime-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreArchiveRid)$(ArchiveExtension)</AspNetCoreSharedFxArchiveFileName>
+
+      <!-- Used to detect if ASP.NET Core is built against the same version of Microsoft.NETCore.App. -->
+      <AspNetCoreSharedFxBaseRuntimeVersionFileName>aspnetcore_base_runtime.version</AspNetCoreSharedFxBaseRuntimeVersionFileName>
+    </PropertyGroup>
+
+    <!-- Generate the version specific URLs to the targeting packs, runtime packs, etc. -->
+    <PropertyGroup>
+      <NetRuntimeRootUrl>$(PublicBaseURL)Runtime/$(NetRuntimeBlobVersion)</NetRuntimeRootUrl>
+
+      <NetStandardTargetingPackRootUrl>$(OfficialBaseURL)Runtime/$(NETStandardTargetingPackBlobVersion)</NetStandardTargetingPackRootUrl>
+
+      <AspNetCoreSharedFxRootUrl>$(PublicBaseURL)aspnetcore/Runtime/$(AspNetCoreBlobVersion)</AspNetCoreSharedFxRootUrl>
+      <!-- Aspnet is not currently built in the VMR. Remove this line when https://github.com/dotnet/source-build/issues/4022 is complete. -->
+      <AspNetCoreSharedFxRootUrl Condition=" '$(DotNetBuildOrchestrator)' == 'true' and '$(DotNetBuildSourceOnly)' != 'true'">$(FallbackPublicBaseURL)aspnetcore/Runtime/$(AspNetCoreBlobVersion)</AspNetCoreSharedFxRootUrl>
+
+      <WinFormsAndWpfSharedFxRootUrl>$(PublicBaseURL)WindowsDesktop/$(WindowsDesktopBlobVersion)</WinFormsAndWpfSharedFxRootUrl>
+
+      <ToolsetArchiveRootUrl>$(PublicBaseURL)Sdk/$(MicrosoftDotnetToolsetInternalPackageVersion)</ToolsetArchiveRootUrl>
+
+      <NetRuntimeDownloadDirectory>$(IntermediateDirectory)/coreSetupDownload/$(MicrosoftNETCoreAppRuntimePackageVersion)</NetRuntimeDownloadDirectory>
+      <CombinedSharedHostAndFrameworkArchive>$(NetRuntimeDownloadDirectory)/combinedSharedHostAndFrameworkArchive$(ArchiveExtension)</CombinedSharedHostAndFrameworkArchive>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('WINDOWS')) And !$(Architecture.StartsWith('arm'))">
+      <AlternateAppHostRid>win-$(AlternateArchitecture)</AlternateAppHostRid>
+      <Arm64AppHostRid>win-arm64</Arm64AppHostRid>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('WINDOWS')) And '$(Architecture)' == 'arm64'">
+      <AlternateAppHostRid>win-x86</AlternateAppHostRid>
+      <x64AppHostRid>win-x64</x64AppHostRid>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <BundledLayoutComponent Include="CombinedSharedHostAndFrameworkArchive">
+        <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
+        <DownloadFileName>$(CombinedFrameworkHostArchiveFileName)</DownloadFileName>
+        <RelativeLayoutPath></RelativeLayoutPath>
+      </BundledLayoutComponent>
+
+      <BundledLayoutPackage Include="MicrosoftNetCoreAppTargetingPackNupkg">
+        <PackageName>Microsoft.NETCore.App.Ref</PackageName>
+        <PackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</PackageVersion>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
+      <BundledLayoutPackage Include="MicrosoftNetStandardTargetingPackNupkg">
+        <PackageName>NETStandard.Library.Ref</PackageName>
+        <PackageVersion>$(NETStandardLibraryRefPackageVersion)</PackageVersion>
+        <TargetFramework>$(NetStandardTargetingPackTargetFramework)</TargetFramework>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
+      <BundledLayoutPackage Include="MicrosoftAspNetCoreAppTargetingPackNupkg">
+        <PackageName>Microsoft.AspNetCore.App.Ref</PackageName>
+        <PackageVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</PackageVersion>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
+      <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg">
+        <PackageName>Microsoft.NETCore.App.Host.$(SharedFrameworkRid)</PackageName>
+        <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
+      <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg_Alternate" Condition="'$(AlternateAppHostRid)' != ''">
+        <PackageName>Microsoft.NETCore.App.Host.$(AlternateAppHostRid)</PackageName>
+        <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
+      <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg_Arm64" Condition="'$(Arm64AppHostRid)' != ''">
+        <PackageName>Microsoft.NETCore.App.Host.$(Arm64AppHostRid)</PackageName>
+        <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
+      <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg_x64" Condition="'$(x64AppHostRid)' != ''">
+        <PackageName>Microsoft.NETCore.App.Host.$(x64AppHostRid)</PackageName>
+        <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
+      <BundledLayoutPackage Include="MicrosoftNetCoreAppRuntimePackNupkg" Condition="'$(BundleRuntimePacks)' == 'true'">
+        <PackageName>Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)</PackageName>
+        <PackageVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</PackageVersion>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
+      <BundledLayoutPackage Include="MicrosoftAspNetCoreAppRuntimePackNupkg" Condition="'$(BundleRuntimePacks)' == 'true'">
+        <PackageName>Microsoft.AspNetCore.App.Runtime.$(SharedFrameworkRid)</PackageName>
+        <PackageVersion>$(MicrosoftAspNetCoreAppRuntimePackageVersion)</PackageVersion>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
+      <BundledLayoutPackage Include="MicrosoftDotNetILCompilerPackNupkg" Condition="'$(BundleNativeAotCompiler)' == 'true'">
+        <PackageName>runtime.$(SharedFrameworkRid).Microsoft.DotNet.ILCompiler</PackageName>
+        <PackageVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</PackageVersion>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
+      <BundledLayoutLibraryPackage Include="$(SourceBuiltShippingPackagesDir)/../runtime/Microsoft.DotNet.ILCompiler.$(MicrosoftNETCoreAppRuntimePackageVersion).nupkg" Condition="'$(BundleNativeAotCompiler)' == 'true'" />
+
+      <BundledLayoutLibraryPackage Include="$(SourceBuiltShippingPackagesDir)/../runtime/Microsoft.NET.ILLink.Tasks.$(MicrosoftNETILLinkTasksPackageVersion).nupkg" Condition="'$(BundleNativeAotCompiler)' == 'true'" />
+
+      <BundledInstallerComponent Include="DownloadedRuntimeDepsInstallerFile"
+                                 Condition="('$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true') And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+        <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
+        <DownloadFileName>$(DownloadedRuntimeDepsInstallerFileName)</DownloadFileName>
+      </BundledInstallerComponent>
+
+      <BundledInstallerComponent Include="DownloadedSharedFrameworkInstallerFile"
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
+        <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
+        <DownloadFileName>$(DownloadedSharedFrameworkInstallerFileName)</DownloadFileName>
+      </BundledInstallerComponent>
+
+      <BundledInstallerComponent Include="DownloadedSharedHostInstallerFile"
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
+        <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
+        <DownloadFileName>$(DownloadedSharedHostInstallerFileName)</DownloadFileName>
+      </BundledInstallerComponent>
+
+      <BundledInstallerComponent Include="DownloadedHostFxrInstallerFile"
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
+        <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
+        <DownloadFileName>$(DownloadedHostFxrInstallerFileName)</DownloadFileName>
+      </BundledInstallerComponent>
+
+      <BundledInstallerComponent Include="DownloadedNetCoreAppTargetingPackInstallerFile"
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
+        <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
+        <DownloadFileName>$(DownloadedNetCoreAppTargetingPackInstallerFileName)</DownloadFileName>
+      </BundledInstallerComponent>
+
+      <!-- TODO: Should we somehow obtain a .NET Standard ARM64 package? -->
+      <BundledInstallerComponent Include="DownloadedNetStandardTargetingPackInstallerFile"
+                           Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'osx-arm64')">
+        <BaseUrl>$(NetStandardTargetingPackRootUrl)</BaseUrl>
+        <DownloadFileName>$(DownloadedNetStandardTargetingPackInstallerFileName)</DownloadFileName>
+      </BundledInstallerComponent>
+
+      <BundledInstallerComponent Include="DownloadedNetCoreAppHostPackInstallerFile"
+                     Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
+        <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
+        <DownloadFileName>$(DownloadedNetCoreAppHostPackInstallerFileName)</DownloadFileName>
+      </BundledInstallerComponent>
+
+      <!-- WORKAROUND: Generating the MSIs for x86 and x64 requires the outputs from the other VMR build. Disabled for now. -->
+      <BundledInstallerComponent Include="DownloadedAlternateNetCoreAppHostPackInstallerFile"
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' == '.msi' And !$(Architecture.StartsWith('arm'))">
+        <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
+        <!-- Alternate and arm64 apphosts aren't currently built in the same vertical.
+             This is an issue (see https://github.com/dotnet/source-build/issues/4114). For now, use the
+             dotnetbuilds url in VMR mode to find them. -->
+        <BaseUrl Condition="'$(DotNetBuild)' == 'true'">$(FallbackPublicBaseURL)Runtime/$(NetRuntimeBlobVersion)</BaseUrl>
+        <DownloadFileName>$(DownloadedAlternateNetCoreAppHostPackInstallerFileName)</DownloadFileName>
+      </BundledInstallerComponent>
+
+      <BundledInstallerComponent Include="DownloadedArm64NetCoreAppHostPackInstallerFile"
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' == '.msi' And !$(Architecture.StartsWith('arm'))">
+        <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
+        <!-- Alternate and arm64 apphosts aren't currently built in the same vertical.
+             This is an issue (see https://github.com/dotnet/source-build/issues/4114). For now, use the
+             dotnetbuilds url in VMR mode to find them. -->
+        <BaseUrl Condition="'$(DotNetBuild)' == 'true'">$(FallbackPublicBaseURL)Runtime/$(NetRuntimeBlobVersion)</BaseUrl>
+        <DownloadFileName>$(DownloadedArm64NetCoreAppHostPackInstallerFileName)</DownloadFileName>
+      </BundledInstallerComponent>
+
+      <BundledInstallerComponent Include="DownloadedWindowsDesktopTargetingPackInstallerFile"
+                                 Condition="'$(InstallerExtension)' == '.msi' And '$(SkipBuildingInstallers)' != 'true'">
+        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)</BaseUrl>
+        <DownloadFileName>$(DownloadedWindowsDesktopTargetingPackInstallerFileName)</DownloadFileName>
+      </BundledInstallerComponent>
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
+      <BundledLayoutComponent Include="DownloadedAspNetCoreSharedFxArchiveFile">
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
+        <DownloadFileName>$(AspNetCoreSharedFxArchiveFileName)</DownloadFileName>
+        <RelativeLayoutPath></RelativeLayoutPath>
+        <DirectoriesToCopy>shared/Microsoft.AspNetCore.App</DirectoriesToCopy>
+      </BundledLayoutComponent>
+
+      <!-- The AspNet does not provide native MacOS PKG installers at this time; we use AspNet archives.
+           https://github.com/aspnet/AspNetCore/issues/8806 -->
+      <BundledLayoutComponent Include="DownloadedAspNetTargetingPackArchiveFile"
+                              Condition="'$(InstallerExtension)' == '.pkg' And '$(SkipBuildingInstallers)' != 'true' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'osx-arm64')">
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
+        <DownloadFileName>$(AspNetTargetingPackArchiveFileName)</DownloadFileName>
+        <RelativeLayoutPath></RelativeLayoutPath>
+      </BundledLayoutComponent>
+
+      <BundledInstallerComponent Include="DownloadedAspNetTargetingPackInstallerFile"
+                                 Condition="'$(InstallerExtension)' != '.pkg' And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64')">
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
+        <DownloadFileName>$(DownloadedAspNetTargetingPackInstallerFileName)</DownloadFileName>
+      </BundledInstallerComponent>
+
+      <BundledInstallerComponent Include="DownloadedAspNetCoreSharedFxInstallerFile"
+                                 Condition="'$(InstallerExtension)' != '.pkg' And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64')">
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
+        <DownloadFileName>$(DownloadedAspNetCoreSharedFxInstallerFileName)</DownloadFileName>
+      </BundledInstallerComponent>
+
+      <BundledInstallerComponent Include="DownloadedAspNetCoreSharedFxWixLibFile"
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' == '.msi'">
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
+        <DownloadFileName>$(DownloadedAspNetCoreSharedFxWixLibFileName)</DownloadFileName>
+      </BundledInstallerComponent>
+
+      <BundledInstallerComponent Include="DownloadedAspNetCoreV2ModuleInstallerFile"
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' == '.msi' And !$(Architecture.StartsWith('arm'))">
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
+        <DownloadFileName>$(DownloadedAspNetCoreV2ModuleInstallerFileName)</DownloadFileName>
+      </BundledInstallerComponent>
+
+      <BundledInstallerComponent Include="AspNetCoreSharedFxBaseRuntimeVersionFile"
+                                 Condition="!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64'">
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
+        <DownloadFileName>$(AspNetCoreSharedFxBaseRuntimeVersionFileName)</DownloadFileName>
+      </BundledInstallerComponent>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <IncludeWpfAndWinForms Condition=" '$(IncludeWpfAndWinForms)' == '' AND '$(Architecture)' == 'arm'">false</IncludeWpfAndWinForms>
+      <IncludeWpfAndWinForms Condition=" '$(IncludeWpfAndWinForms)' == '' AND '$(OS)' == 'Windows_NT'">true</IncludeWpfAndWinForms>
+      <IncludeWpfAndWinForms Condition=" '$(IncludeWpfAndWinForms)' == '' ">false</IncludeWpfAndWinForms>
+    </PropertyGroup>
+
+    <ItemGroup Condition=" '$(IncludeWpfAndWinForms)' != 'false' ">
+      <BundledLayoutPackage Include="MicrosoftWindowsDesktopAppTargetingPackNupkg">
+        <PackageName>Microsoft.WindowsDesktop.App.Ref</PackageName>
+        <PackageVersion>$(MicrosoftWindowsDesktopAppRefPackageVersion)</PackageVersion>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
+      <BundledLayoutComponent Include="WinFormsAndWpfSharedFxArchiveFile">
+        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)</BaseUrl>
+        <DownloadFileName>$(WinFormsAndWpfSharedFxArchiveFileName)</DownloadFileName>
+        <DirectoriesToCopy>shared/Microsoft.WindowsDesktop.App</DirectoriesToCopy>
+      </BundledLayoutComponent>
+
+      <BundledInstallerComponent Include="DownloadedWinFormsAndWpfSharedFrameworkInstallerFile"
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
+        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)</BaseUrl>
+        <DownloadFileName>$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)</DownloadFileName>
+      </BundledInstallerComponent>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="DownloadBundledComponents" DependsOnTargets="SetupBundledComponents">
+    <ItemGroup>
+      <BundledLayoutComponent>
+        <DownloadDestination>$(DownloadsFolder)%(DownloadFileName)</DownloadDestination>
+      </BundledLayoutComponent>
+      <BundledInstallerComponent>
+        <DownloadDestination>$(DownloadsFolder)%(DownloadFileName)</DownloadDestination>
+      </BundledInstallerComponent>
+      <ComponentToDownload Include="@(BundledLayoutComponent);@(BundledInstallerComponent)">
+        <ShouldDownload Condition="!Exists('%(DownloadDestination)')">true</ShouldDownload>
+
+        <!--
+          Replaces the public base url with the private one.
+        -->
+        <PrivateBaseUrl>%(BaseUrl)</PrivateBaseUrl>
+        <PrivateBaseUrl Condition="'$(InternalBuild)' == 'true'">$([System.String]::new('%(ComponentToDownload.PrivateBaseUrl)').Replace('$(PublicBaseURL)', '$(InternalBaseURL)'))</PrivateBaseUrl>
+      </ComponentToDownload>
+
+      <!-- Now transform the group of components into a list of Uris,
+           with shared metadata DownloadDestination and potentially the encoded key token for the private url.
+           Then use task batching to send batched itemgroups to the DownloadFile task that have the same
+           DownloadDestination. -->
+
+      <UrisToDownload Include="%(ComponentToDownload.BaseUrl)/%(ComponentToDownload.DownloadFileName)" Condition="'%(ComponentToDownload.ShouldDownload)' == 'true'">
+        <ShouldDownload>%(ComponentToDownload.ShouldDownload)</ShouldDownload>
+        <DownloadDestination>%(ComponentToDownload.DownloadDestination)</DownloadDestination>
+      </UrisToDownload>
+    </ItemGroup>
+
+    <!-- If building in product source build mode, there is no need to attempt the external URIs. These are not desired,
+            and won't work anyway because the source build file URI doesn't use the same structure as the storage accounts.
+            For example, the dotnetbuilds uri for 'file:///vmr/dotnet2/artifacts/obj/x64/Release/blob-feed/assets//aspnetcore_base_runtime.version'
+            would end up 'https://dotnetbuilds.blob.core.windows.net/public//dotnet-runtime-8.0.0-rc.1.23381.3-centos.8-x64.tar.gz'. This is
+            missing the runtime version number directory. -->
+    <ItemGroup Condition="'$(DotNetBuildOrchestrator)' != 'true'">
+      <UrisToDownload Include="$([System.String]::Copy('%(ComponentToDownload.BaseUrl)').Replace($(PublicBaseURL), 'https://dotnetbuilds.blob.core.windows.net/public/'))/%(ComponentToDownload.DownloadFileName)"
+                      Condition="'%(ComponentToDownload.ShouldDownload)' == 'true'">
+        <ShouldDownload>%(ComponentToDownload.ShouldDownload)</ShouldDownload>
+        <DownloadDestination>%(ComponentToDownload.DownloadDestination)</DownloadDestination>
+      </UrisToDownload>
+      <UrisToDownload Include="%(ComponentToDownload.PrivateBaseUrl)/%(ComponentToDownload.DownloadFileName)"
+                      Condition="'%(ComponentToDownload.ShouldDownload)' == 'true' and '$(DotNetRuntimeSourceFeedKey)' != ''">
+        <ShouldDownload>%(ComponentToDownload.ShouldDownload)</ShouldDownload>
+        <DownloadDestination>%(ComponentToDownload.DownloadDestination)</DownloadDestination>
+        <token>$(DotNetRuntimeSourceFeedKey)</token>
+      </UrisToDownload>
+    </ItemGroup>
+
+    <DownloadFile Condition="'@(UrisToDownload)' != '' and %(ShouldDownload)"
+                  Uris="@(UrisToDownload)"
+                  DestinationPath="%(DownloadDestination)" />
+
+    <ItemGroup>
+      <BundledLayoutPackageDownloadProject Include="$(MSBuildThisFileDirectory)..\projects\DownloadPackage.csproj">
+        <Properties>
+          PackageToRestore=%(BundledLayoutPackage.PackageName);
+          PackageVersionToRestore=%(BundledLayoutPackage.PackageVersion);
+          TargetFramework=%(BundledLayoutPackage.TargetFramework)
+        </Properties>
+      </BundledLayoutPackageDownloadProject>
+    </ItemGroup>
+
+    <MSBuild Projects="@(BundledLayoutPackageDownloadProject)" />
+
+    <ItemGroup>
+      <!-- Use lowercase package name in package path -->
+      <BundledLayoutPackage>
+        <LoweredPackageName>$([MSBuild]::ValueOrDefault('%(BundledLayoutPackage.PackageName)', '').ToLower())</LoweredPackageName>
+      </BundledLayoutPackage>
+
+      <BundledLayoutPackageDownloadFiles Include="$(NuGetPackageRoot)\%(BundledLayoutPackage.LoweredPackageName)\%(BundledLayoutPackage.PackageVersion)\**\*.*">
+        <RelativeLayoutPath>%(BundledLayoutPackage.RelativeLayoutPath)</RelativeLayoutPath>
+        <LayoutPackageDescription>%(BundledLayoutPackage.Identity)</LayoutPackageDescription>
+      </BundledLayoutPackageDownloadFiles>
+
+      <!-- Remove files from the root of the package, as these are either files NuGet writes, or not necessary -->
+      <BundledLayoutPackageDownloadFiles Remove="$(NuGetPackageRoot)\%(BundledLayoutPackage.LoweredPackageName)\%(BundledLayoutPackage.PackageVersion)\*.*" />
+
+      <!-- Set destination path in layout -->
+      <BundledLayoutPackageDownloadFiles>
+        <DestinationPath>%(BundledLayoutPackageDownloadFiles.RecursiveDir)%(BundledLayoutPackageDownloadFiles.Filename)%(BundledLayoutPackageDownloadFiles.Extension)</DestinationPath>
+      </BundledLayoutPackageDownloadFiles>
+      <BundledLayoutPackageDownloadFiles>
+        <DestinationPath>$(RedistLayoutPath)/%(BundledLayoutPackageDownloadFiles.RelativeLayoutPath)/%(BundledLayoutPackageDownloadFiles.DestinationPath)</DestinationPath>
+      </BundledLayoutPackageDownloadFiles>
+      <BundledLayoutPackageDownloadFiles>
+        <DestinationPath>$([MSBuild]::NormalizePath(%(BundledLayoutPackageDownloadFiles.DestinationPath)))</DestinationPath>
+      </BundledLayoutPackageDownloadFiles>
+
+      <!-- Creating a new item here isn't strictly necessary, but makes it easier to see what's going on in the .binlog,
+           since the metadata updates don't show up there -->
+      <BundledLayoutPackageDownloadFilesWithDestination Include="@(BundledLayoutPackageDownloadFiles)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CleanLayoutPath">
+    <!-- Remove everything from the publish directory so we don't have left over items from previous builds -->
+    <RemoveDir Directories="$(RedistLayoutPath)" />
+    <MakeDir Directories="$(RedistLayoutPath)" />
+  </Target>
+
+  <Target Name="LayoutBundledComponents">
+    <ExtractArchiveToDirectory SourceArchive="%(BundledLayoutComponent.DownloadDestination)"
+                               DestinationDirectory="$(RedistLayoutPath)/%(BundledLayoutComponent.RelativeLayoutPath)"
+                               DirectoriesToCopy="%(BundledLayoutComponent.DirectoriesToCopy)" />
+
+    <Copy SourceFiles="@(BundledLayoutPackageDownloadFilesWithDestination)"
+          DestinationFiles="@(BundledLayoutPackageDownloadFilesWithDestination->'%(DestinationPath)')"
+          SkipUnchangedFiles="true"
+          />
+
+    <Copy SourceFiles="@(BundledLayoutLibraryPackage)"
+          DestinationFolder="$(RedistLayoutPath)/library-packs"
+          SkipUnchangedFiles="true"
+          />
+
+    <!-- From Version.targets in SDK redist -->
+    <PropertyGroup>
+      <ArtifactNameSdk>dotnet-toolset-internal</ArtifactNameSdk>
+      <ArtifactNameSdkLanguagePack>dotnet-toolset-langpack</ArtifactNameSdkLanguagePack>
+    </PropertyGroup>
+
+    <!-- From GenerateLayout.targets in SDK redist -->
+    <PropertyGroup>
+      <LayoutDirectory>$(ArtifactsBinDir)redist\$(Configuration)\layouts\</LayoutDirectory>
+      <SdkLayoutOutputDirectory>$(LayoutDirectory)$(ArtifactNameSdk)\</SdkLayoutOutputDirectory>
+      <SdkLanguagePackOutputDirectory>$(LayoutDirectory)$(ArtifactNameSdkLanguagePack)\</SdkLanguagePackOutputDirectory>
+    </PropertyGroup>
+
+    <!-- https://github.com/dotnet/msbuild/issues/5881#issuecomment-802492423 -->
+    <ItemGroup>
+      <DotnetToolsetInternalSource Include="$(SdkLayoutOutputDirectory)**\*" />
+      <DotnetToolsetInternalDestination Include="@(DotnetToolsetInternalSource->'$(RedistLayoutPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(DotnetToolsetInternalSource)" DestinationFiles="@(DotnetToolsetInternalDestination)" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="RetargetTools">
+    <ItemGroup>
+      <ToolRuntimeConfigPath Include="$(RedistLayoutPath)sdk/$(Version)/**/*.runtimeconfig.json" />
+    </ItemGroup>
+
+    <!-- Update runtimeconfig files for tools in the SDK to pin the shared frameworks to the one carried by this installer. -->
+    <UpdateRuntimeConfig
+      RuntimeConfigPaths="@(ToolRuntimeConfigPath)"
+      MicrosoftNetCoreAppVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+      MicrosoftAspNetCoreAppVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
+  </Target>
+
+  <Target Name="GenerateVersionFile"
+          DependsOnTargets="SetupBundledComponents;GenerateFullNuGetVersion">
+    <WriteLinesToFile File="$(SdkOutputDirectory).version"
+                      Lines="$(SourceRevisionId);$(Version);$(Rid);$(FullNugetVersion);$(SdkFeatureBand)"
+                      Overwrite="true" />
+
+    <!-- This is a hack to make the full nuget version available during the publishing step -->
+    <WriteLinesToFile File="$(ArtifactsTmpDir)FullNugetVersion.version"
+                      Lines="$(FullNugetVersion)"
+                      Overwrite="true" />
+  </Target>
+
+  <Target Name="CopyKnownWorkloadManifestFile">
+    <ItemGroup>
+      <WorkloadManifestFilesContent Include="$([MSBuild]::ValueOrDefault('%(BundledManifests.Identity)', '').ToLower())" />
+    </ItemGroup>
+
+    <Error Text="No workload manifest content found." Condition="'@(WorkloadManifestFilesContent->Count())' == '0'" />
+
+    <ItemGroup>
+      <WorkloadManifestFilesContent Include="samsung.net.sdk.tizen" />
+    </ItemGroup>
+
+    <WriteLinesToFile File="$(SdkOutputDirectory)KnownWorkloadManifests.txt"
+                      Lines="@(WorkloadManifestFilesContent)"
+                      Overwrite="true" />
+  </Target>
+
+  <Target Name="LayoutWorkloadUserLocalMarker"
+          Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <WriteLinesToFile File="$(RedistLayoutPath)metadata/workloads/$(CliProductBandVersion)00/userlocal"
+                      Overwrite="true" />
+  </Target>
+
+  <Target Name="LayoutAppHostTemplate" DependsOnTargets="RunResolvePackageDependencies">
+    <PropertyGroup>
+      <NETCoreAppHostPackageName>Microsoft.NETCore.App.Host.$(SharedFrameworkRid)</NETCoreAppHostPackageName>
+      <AppHostRestorePath>$(IntermediateOutputPath)AppHostRestore\</AppHostRestorePath>
+      <AppHostTemplatePath>$(SdkOutputDirectory)AppHostTemplate</AppHostTemplatePath>
+    </PropertyGroup>
+
+    <RemoveDir Directories="$(AppHostRestorePath)" />
+    <MakeDir Directories="$(AppHostRestorePath)" />
+
+    <ItemGroup>
+      <AppHostTemplateDownloadPackageProject Include="$(MSBuildThisFileDirectory)..\projects\DownloadPackage.csproj">
+        <Properties>
+          PackageToRestore=$(NETCoreAppHostPackageName);
+          PackageVersionToRestore=$(MicrosoftNETCoreAppHostPackageVersion);
+          TargetFramework=$(TargetFramework);
+          RestorePackagesPath=$(AppHostRestorePath);
+          RuntimeIdentifier=$(Rid)
+        </Properties>
+      </AppHostTemplateDownloadPackageProject>
+    </ItemGroup>
+
+    <MSBuild Projects="@(AppHostTemplateDownloadPackageProject)" />
+
+    <PropertyGroup>
+      <AppHostExecutableName>AppHost$(ExeExtension)</AppHostExecutableName>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <AllFileOfRestoredAppHostPackage Include="$(AppHostRestorePath)\**\*.*" />
+      <NativeRestoredAppHostNETCore
+          Include="@(AllFileOfRestoredAppHostPackage)"
+          Condition="'%(FileName)%(Extension)' == '$(AppHostExecutableName)'" />
+    </ItemGroup>
+
+    <Error Condition="@(NativeRestoredAppHostNETCore->Distinct()->Count()) != 1"
+           Text="Failed to determine the $(NETCoreAppHostPackageName) executable in @(AllFileOfRestoredAppHostPackage)" />
+
+    <Copy
+        SourceFiles="@(NativeRestoredAppHostNETCore)"
+        DestinationFolder="$(AppHostTemplatePath)" />
+
+    <Message Text="Copy from @(NativeRestoredAppHostNETCore) to $(AppHostTemplatePath)."
+             Importance="High" />
+  </Target>
+
+  <!-- This target no longer runs by default. The ResolveAssemblyReference task is substantially faster if it has a cache, so the idea was to precompute a cache for commonly resolved (SDK) assemblies,
+       but the expected performance win did not materialize. This target can take multiple minutes to run with every build, so disabling it until/unless we find good value for it. -->
+  <Target Name="GeneratePrecomputedRarCache" DependsOnTargets="LayoutTemplates;LayoutManifests;LayoutBundledTools">
+    <ItemGroup>
+      <AssembliesToResolve Include="$(RedistLayoutPath)\**\*.dll" Exclude="$(RedistLayoutPath)\**\native\**\*.dll" />
+    </ItemGroup>
+    <ResolveAssemblyReference AssemblyFiles="@(AssembliesToResolve)" Silent="$(ResolveAssemblyReferencesSilent)" AssemblyInformationCacheOutputPath="$(RedistLayoutPath)sdk\$(Version)\SDKPrecomputedAssemblyReferences.cache" SearchPaths="{RawFileName}" WarnOrErrorOnTargetArchitectureMismatch="$(ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch)" />
+  </Target>
+
+  <!-- Replace files from the runtime packs with symbolic links to the corresponding shared framework files (and hostfxr) to reduce the size of the runtime pack directories. -->
+  <Target Name="ReplaceBundledRuntimePackFilesWithSymbolicLinks" DependsOnTargets="LayoutBundledComponents"
+                                                                 Condition="'$(BundleRuntimePacks)' == 'true' and  !$([MSBuild]::IsOSPlatform('WINDOWS'))">
+    <ReplaceFilesWithSymbolicLinks Directory="$(RedistLayoutPath)/packs/Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)/$(MicrosoftNETCoreAppRuntimePackageVersion)" LinkToFilesFrom="$(RedistLayoutPath)/shared/Microsoft.NETCore.App/$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    <ReplaceFilesWithSymbolicLinks Directory="$(RedistLayoutPath)/packs/Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)/$(MicrosoftNETCoreAppRuntimePackageVersion)" LinkToFilesFrom="$(RedistLayoutPath)/host/fxr/$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    <ReplaceFilesWithSymbolicLinks Directory="$(RedistLayoutPath)/packs/Microsoft.AspNetCore.App.Runtime.$(SharedFrameworkRid)/$(MicrosoftAspNetCoreAppRuntimePackageVersion)" LinkToFilesFrom="$(RedistLayoutPath)/shared/Microsoft.AspNetCore.App/$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
+  </Target>
+
+  <Target Name="GenerateLayout"
+          DependsOnTargets="DownloadBundledComponents;
+                            CleanLayoutPath;
+                            LayoutBundledComponents;
+                            GenerateFullNuGetVersion;
+                            GenerateVersionFile;
+                            CopyKnownWorkloadManifestFile;
+                            GenerateBundledVersions;
+                            LayoutRuntimeGraph;
+                            LayoutTemplates;
+                            LayoutManifests;
+                            LayoutBaselineWorkloadSet;
+                            LayoutWorkloadUserLocalMarker;
+                            LayoutBundledTools;
+                            RetargetTools;
+                            CrossgenLayout;
+                            LayoutAppHostTemplate;
+                            ReplaceBundledRuntimePackFilesWithSymbolicLinks"
+          BeforeTargets="AfterBuild" />
+
+  <Target Name="GenerateInternalLayout"
+          DependsOnTargets="GenerateLayout"
+          BeforeTargets="AfterBuild" >
+    <RemoveDir Directories="$(SdkInternalLayoutPath)" />
+    <MakeDir Directories="$(SdkInternalLayoutPath)" />
+
+    <!-- Create "SDK Internal" layout to create the MSI to bundle -->
+    <ItemGroup>
+      <SdkInternalFiles Include="$(RedistLayoutPath)sdk/$(Version)/**/*.*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(SdkInternalFiles)"
+          DestinationFiles="@(SdkInternalFiles -> '$(SdkInternalLayoutPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+
+</Project>
