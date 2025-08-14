@@ -2818,8 +2818,8 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <note>{Locked="--sdk-version"}</note>
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
-        <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
-        <target state="translated">Las cargas de trabajo están configuradas para instalarse y actualizarse con versiones de carga de trabajo, pero no se encontró ninguna. Ejecute "dotnet workload restore" para instalar una versión de carga de trabajo.</target>
+        <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
+        <target state="needs-review-translation">Las cargas de trabajo están configuradas para instalarse y actualizarse con versiones de carga de trabajo, pero no se encontró ninguna. Ejecute "dotnet workload restore" para instalar una versión de carga de trabajo.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">
@@ -3865,10 +3865,15 @@ Para mostrar un valor, especifique la opción de línea de comandos correspondie
         <target state="translated">Id. de manifiesto de carga de trabajo</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadManifestInstallationConfiguration">
-        <source>Configured to use {0} when installing new manifests.</source>
-        <target state="translated">Configurado para usar {0} al instalar nuevos manifiestos.</target>
+      <trans-unit id="WorkloadManifestInstallationConfigurationLooseManifests">
+        <source>Configured to use loose manifests when installing new manifests.</source>
+        <target state="new">Configured to use loose manifests when installing new manifests.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfigurationWorkloadSets">
+        <source>Configured to use workload sets when installing new manifests.</source>
+        <target state="new">Configured to use workload sets when installing new manifests.</target>
+        <note>{Locked="workload sets"}</note>
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">
         <source>Manifest Path</source>
