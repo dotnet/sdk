@@ -65,7 +65,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
             // Filter out the endpoints to those that point to the assets that are part of the manifest
             var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints);
             var filteredEndpoints = new List<StaticWebAssetEndpoint>();
-
+            var updatedManifest = false;
             foreach (var endpoint in endpoints)
             {
                 if (!manifestAssets.TryGetValue(endpoint.AssetFile, out var asset))
@@ -81,6 +81,15 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
                     var match = exclusionMatcher.Match(route);
                     if (match.IsMatch)
                     {
+                        if (updatedManifest && File.Exists(ManifestPath))
+                        {
+                            updatedManifest = true;
+                            // Touch the manifest if we are excluding endpoints to ensure we don't keep reporting out of date
+                            // for the excluded endpoints.
+                            // (The SWA manifest we use as cache might get updated, but if we filter out the new endpoints, we won't
+                            // update the endpoints manifest file and on the next build we will re-enter this loop).
+                            File.SetLastWriteTime(ManifestPath, DateTime.UtcNow);
+                        }
                         Log.LogMessage(MessageImportance.Low, "Excluding endpoint '{0}' based on exclusion patterns", route);
                         continue;
                     }
