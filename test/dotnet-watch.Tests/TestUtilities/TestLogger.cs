@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-internal class TestLogger(ITestOutputHelper output) : ILogger
+internal class TestLogger(ITestOutputHelper? output = null) : ILogger
 {
     public readonly List<string> Messages = [];
 
@@ -14,7 +14,7 @@ internal class TestLogger(ITestOutputHelper output) : ILogger
         var message = $"[{logLevel}] {formatter(state, exception)}";
 
         Messages.Add(message);
-        output.WriteLine(message);
+        output?.WriteLine(message);
     }
 
     public IDisposable? BeginScope<TState>(TState state)

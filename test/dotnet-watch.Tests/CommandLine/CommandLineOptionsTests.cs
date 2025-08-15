@@ -3,15 +3,11 @@
 
 #nullable disable
 
-using System.Reflection;
-using Microsoft.Build.Framework;
-using Microsoft.Build.Logging;
-
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class CommandLineOptionsTests
     {
-        private readonly MockReporter _testReporter = new();
+        private readonly TestLogger _testLogger = new();
 
         private CommandLineOptions VerifyOptions(string[] args, string expectedOutput = "", string[] expectedMessages = null)
             => VerifyOptions(args, actualOutput => AssertEx.Equal(expectedOutput, actualOutput), expectedMessages ?? []);
@@ -19,9 +15,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
         private CommandLineOptions VerifyOptions(string[] args, Action<string> outputValidator, string[] expectedMessages)
         {
             var output = new StringWriter();
-            var options = CommandLineOptions.Parse(args, _testReporter, output: output, errorCode: out var errorCode);
+            var options = CommandLineOptions.Parse(args, _testLogger, output: output, errorCode: out var errorCode);
 
-            Assert.Equal(expectedMessages, _testReporter.Messages);
+            Assert.Equal(expectedMessages, _testLogger.Messages);
             outputValidator(output.ToString());
 
             Assert.NotNull(options);
@@ -32,9 +28,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
         private void VerifyErrors(string[] args, params string[] expectedErrors)
         {
             var output = new StringWriter();
-            var options = CommandLineOptions.Parse(args, _testReporter, output: output, errorCode: out var errorCode);
+            var options = CommandLineOptions.Parse(args, _testLogger, output: output, errorCode: out var errorCode);
 
-            AssertEx.Equal(expectedErrors, _testReporter.Messages);
+            AssertEx.Equal(expectedErrors, _testLogger.Messages);
             Assert.Empty(output.ToString());
 
             Assert.Null(options);
@@ -49,11 +45,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void HelpArgs(string[] args)
         {
             var output = new StringWriter();
-            var options = CommandLineOptions.Parse(args, _testReporter, output: output, errorCode: out var errorCode);
+            var options = CommandLineOptions.Parse(args, _testLogger, output: output, errorCode: out var errorCode);
             Assert.Null(options);
             Assert.Equal(0, errorCode);
 
-            Assert.Empty(_testReporter.Messages);
+            Assert.Empty(_testLogger.Messages);
             Assert.Contains("Usage:", output.ToString());
         }
 
@@ -153,7 +149,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void RunOptions_LaunchProfile_Both()
         {
             VerifyErrors(["-lp", "P1", "run", "-lp", "P2"],
-                "error ❌ Option '-lp' expects a single argument but 2 were provided.");
+                "[Error] Option '-lp' expects a single argument but 2 were provided.");
         }
 
         [Fact]
@@ -396,7 +392,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void OptionDuplicates_NotAllowed(string option)
         {
             VerifyErrors([option, "abc", "run", option, "xyz"],
-                $"error ❌ Option '{option}' expects a single argument but 2 were provided.");
+                $"[Error] Option '{option}' expects a single argument but 2 were provided.");
         }
 
         [Theory]
@@ -418,14 +414,14 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void CannotHaveQuietAndVerbose()
         {
             VerifyErrors(["--quiet", "--verbose"],
-                $"error ❌ {Resources.Error_QuietAndVerboseSpecified}");
+                $"[Error] {Resources.Error_QuietAndVerboseSpecified}");
         }
 
         [Fact]
         public void ShortFormForProjectArgumentPrintsWarning()
         {
             var options = VerifyOptions(["-p", "MyProject.csproj"],
-                expectedMessages: [$"warning ⚠ {Resources.Warning_ProjectAbbreviationDeprecated}"]);
+                expectedMessages: [$"[Warning] {Resources.Warning_ProjectAbbreviationDeprecated}"]);
 
             Assert.Equal("MyProject.csproj", options.ProjectPath);
         }

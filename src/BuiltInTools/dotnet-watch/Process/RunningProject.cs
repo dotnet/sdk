@@ -5,6 +5,7 @@
 using System.Collections.Immutable;
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.HotReload;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -14,7 +15,7 @@ namespace Microsoft.DotNet.Watch
         ProjectGraphNode projectNode,
         ProjectOptions options,
         HotReloadClients clients,
-        IReporter reporter,
+        ILogger logger,
         BrowserRefreshServer? browserRefreshServer,
         Task<int> runningProcess,
         int processId,
@@ -29,7 +30,7 @@ namespace Microsoft.DotNet.Watch
         public readonly BrowserRefreshServer? BrowserRefreshServer = browserRefreshServer;
         public readonly HotReloadClients Clients = clients;
         public readonly ImmutableArray<string> Capabilities = capabilities;
-        public readonly IReporter Reporter = reporter;
+        public readonly ILogger Logger = logger;
         public readonly Task<int> RunningProcess = runningProcess;
         public readonly int ProcessId = processId;
         public readonly RestartOperation RestartOperation = restartOperation;

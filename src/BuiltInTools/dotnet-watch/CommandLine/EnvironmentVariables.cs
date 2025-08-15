@@ -21,6 +21,8 @@ internal static class EnvironmentVariables
         public const string DotNetStartupHooks = HotReload.AgentEnvironmentVariables.DotNetStartupHooks;
         public const string DotNetModifiableAssemblies = HotReload.AgentEnvironmentVariables.DotNetModifiableAssemblies;
         public const string HotReloadDeltaClientLogMessages = HotReload.AgentEnvironmentVariables.HotReloadDeltaClientLogMessages;
+
+        public const string SuppressBrowserRefresh = "DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH";
     }
 
     public static bool VerboseCliOutput => ReadBool("DOTNET_CLI_CONTEXT_VERBOSE");
@@ -39,7 +41,7 @@ internal static class EnvironmentVariables
     public static bool SuppressHandlingStaticContentFiles => ReadBool("DOTNET_WATCH_SUPPRESS_STATIC_FILE_HANDLING");
     public static bool SuppressMSBuildIncrementalism => ReadBool("DOTNET_WATCH_SUPPRESS_MSBUILD_INCREMENTALISM");
     public static bool SuppressLaunchBrowser => ReadBool("DOTNET_WATCH_SUPPRESS_LAUNCH_BROWSER");
-    public static bool SuppressBrowserRefresh => ReadBool("DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH");
+    public static bool SuppressBrowserRefresh => ReadBool(Names.SuppressBrowserRefresh);
 
     public static TestFlags TestFlags => Environment.GetEnvironmentVariable("__DOTNET_WATCH_TEST_FLAGS") is { } value ? Enum.Parse<TestFlags>(value) : TestFlags.None;
     public static string TestOutputDir => Environment.GetEnvironmentVariable("__DOTNET_WATCH_TEST_OUTPUT_DIR") ?? "";  

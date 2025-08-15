@@ -36,7 +36,7 @@ internal abstract partial class HotReloadAppModel(ProjectGraphNode? agentInjecti
         return true;
     }
 
-    public static HotReloadAppModel InferFromProject(ProjectGraphNode projectNode, IReporter reporter)
+    public static HotReloadAppModel InferFromProject(ProjectGraphNode projectNode, ILogger logger)
     {
         if (projectNode.IsWebApp())
         {
@@ -65,11 +65,11 @@ internal abstract partial class HotReloadAppModel(ProjectGraphNode? agentInjecti
                         // We saw a previous project that was AspNetCore. This must be a blazor hosted app.
                         if (aspnetCoreProject is not null && aspnetCoreProject.ProjectInstance != currentNode.ProjectInstance)
                         {
-                            reporter.Verbose($"HotReloadProfile: BlazorHosted. {aspnetCoreProject.ProjectInstance.FullPath} references BlazorWebAssembly project {currentNode.ProjectInstance.FullPath}.", Emoji.HotReload);
+                            logger.Log(MessageDescriptor.HotReloadProfile_BlazorHosted, aspnetCoreProject.ProjectInstance.FullPath, currentNode.ProjectInstance.FullPath);
                             return new BlazorWebAssemblyHostedAppModel(clientProject: currentNode, serverProject: aspnetCoreProject);
                         }
 
-                        reporter.Verbose("HotReloadProfile: BlazorWebAssembly.", Emoji.HotReload);
+                        logger.Log(MessageDescriptor.HotReloadProfile_BlazorWebAssembly);
                         return new BlazorWebAssemblyAppModel(clientProject: currentNode);
                     }
                 }
@@ -84,7 +84,7 @@ internal abstract partial class HotReloadAppModel(ProjectGraphNode? agentInjecti
             }
         }
 
-        reporter.Verbose("HotReloadProfile: Default.", Emoji.HotReload);
+        logger.Log(MessageDescriptor.HotReloadProfile_Default);
         return new DefaultAppModel(projectNode);
     }
 }

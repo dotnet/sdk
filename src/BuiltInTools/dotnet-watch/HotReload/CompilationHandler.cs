@@ -15,6 +15,7 @@ namespace Microsoft.DotNet.Watch
     internal sealed class CompilationHandler : IDisposable
     {
         public readonly IncrementalMSBuildWorkspace Workspace;
+        private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
         private readonly WatchHotReloadService _hotReloadService;
         private readonly ProcessRunner _processRunner;
@@ -39,8 +40,9 @@ namespace Microsoft.DotNet.Watch
 
         private bool _isDisposed;
 
-        public CompilationHandler(ILogger logger, ProcessRunner processRunner)
+        public CompilationHandler(ILoggerFactory loggerFactory, ILogger logger, ProcessRunner processRunner)
         {
+            _loggerFactory = loggerFactory;
             _logger = logger;
             _processRunner = processRunner;
             Workspace = new IncrementalMSBuildWorkspace(logger);
@@ -97,14 +99,15 @@ namespace Microsoft.DotNet.Watch
             BrowserRefreshServer? browserRefreshServer,
             ProcessSpec processSpec,
             RestartOperation restartOperation,
-            ProjectSpecificReporter processReporter,
-            IProcessOutputReporter outputReporter,
             CancellationTokenSource processTerminationSource,
             CancellationToken cancellationToken)
         {
-            var projectPath = projectNode.ProjectInstance.FullPath;
+            // create loggers that include project name in messages:
+            var projectDisplayName = projectNode.GetDisplayName();
+            var clientLogger = _loggerFactory.CreateLogger(HotReloadDotNetWatcher.ClientLogComponentName, projectDisplayName);
+            var agentLogger = _loggerFactory.CreateLogger(HotReloadDotNetWatcher.AgentLogComponentName, projectDisplayName);
 
-            var clients = appModel.CreateClients(browserRefreshServer, processReporter.ClientLogger, processReporter.AgentLogger);
+            var clients = appModel.CreateClients(browserRefreshServer, clientLogger, agentLogger);
             if (clients.IsEmpty)
             {
                 // error already reported
@@ -128,17 +131,7 @@ namespace Microsoft.DotNet.Watch
             };
 
             var launchResult = new ProcessLaunchResult();
-            var projectDisplayName = projectNode.GetDisplayName();
-
-            // If output isn't already redirected (build invocation) we redirect it to the reporter.
-            // The reporter synchronizes the output of the process with the reporter output,
-            // so that the printed lines don't interleave.
-            processSpec.OnOutput ??= line =>
-            {
-                outputReporter.ReportOutput(outputReporter.PrefixProcessOutput ? line with { Content = $"[{projectDisplayName}] {line.Content}" } : line);
-            };
-
-            var runningProcess = _processRunner.RunAsync(processSpec, processReporter.ClientLogger, launchResult, processTerminationSource.Token);
+            var runningProcess = _processRunner.RunAsync(processSpec, clientLogger, launchResult, processTerminationSource.Token);
             if (launchResult.ProcessId == null)
             {
                 // error already reported
@@ -153,7 +146,7 @@ namespace Microsoft.DotNet.Watch
                 projectNode,
                 projectOptions,
                 clients,
-                processReporter,
+                clientLogger,
                 browserRefreshServer,
                 runningProcess,
                 launchResult.ProcessId.Value,
@@ -162,6 +155,8 @@ namespace Microsoft.DotNet.Watch
                 restartOperation: restartOperation,
                 disposables: [processCommunicationCancellationSource],
                 capabilities);
+
+            var projectPath = projectNode.ProjectInstance.FullPath;
 
             // ownership transferred to running project:
             disposables.Items.Clear();
@@ -337,17 +332,17 @@ namespace Microsoft.DotNet.Watch
                     var applySucceded = await runningProject.Clients.ApplyManagedCodeUpdatesAsync(ToManagedCodeUpdates(updates.ProjectUpdates), isProcessSuspended: false, processCommunicationCancellationSource.Token) != ApplyStatus.Failed;
                     if (applySucceded)
                     {
-                        runningProject.Reporter.Report(MessageDescriptor.HotReloadSucceeded);
+                        runningProject.Logger.Log(MessageDescriptor.HotReloadSucceeded);
                         if (runningProject.BrowserRefreshServer is { } server)
                         {
-                            runningProject.Reporter.Verbose("Refreshing browser.");
+                            runningProject.Logger.LogDebug("Refreshing browser.");
                             await server.RefreshBrowserAsync(cancellationToken);
                         }
                     }
                 }
                 catch (OperationCanceledException) when (runningProject.ProcessExitedSource.Token.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
                 {
-                    runningProject.Reporter.Verbose("Hot reload canceled because the process exited.", Emoji.HotReload);
+                    runningProject.Logger.Log(MessageDescriptor.HotReloadCanceledProcessExited);
                 }
             }, cancellationToken);
         }
@@ -470,11 +465,13 @@ namespace Microsoft.DotNet.Watch
             void ReportDiagnostic(Diagnostic diagnostic, MessageDescriptor descriptor, string prefix = "")
             {
                 var display = CSharpDiagnosticFormatter.Instance.Format(diagnostic);
-                _logger.Log(descriptor, prefix, display);
+                var args = new[] { prefix, display };
+
+                _logger.Log(descriptor, args);
 
                 if (descriptor.Severity != MessageSeverity.None)
                 {
-                    diagnosticsToDisplayInApp.Add(descriptor.GetMessage(prefix, [display]));
+                    diagnosticsToDisplayInApp.Add(descriptor.GetMessage(args));
                 }
             }
 

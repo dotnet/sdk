@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Watch
         Agent,
         Build,
         Refresh,
-        LigthBulb,
+        LightBulb,
     }
 
     internal static class Extensions
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Watch
                 Emoji.Agent => "🕵️",
                 Emoji.Build => "🔨",
                 Emoji.Refresh => "🔃",
-                Emoji.LigthBulb => "💡",
+                Emoji.LightBulb => "💡",
                 _ => throw new InvalidOperationException()
             };
 
@@ -66,12 +66,13 @@ namespace Microsoft.DotNet.Watch
                 descriptor.Id,
                 state: (descriptor, args),
                 exception: null,
-                formatter: static (state, _) => state.descriptor.GetMessage(prefix: "", state.args));
+                formatter: static (state, _) => state.descriptor.GetMessage(state.args));
         }
 
         public static LogLevel ToLogLevel(this MessageSeverity severity)
             => severity switch
             {
+                MessageSeverity.None => LogLevel.None,
                 MessageSeverity.Verbose => LogLevel.Debug,
                 MessageSeverity.Output => LogLevel.Information,
                 MessageSeverity.Warning => LogLevel.Warning,
@@ -86,6 +87,7 @@ namespace Microsoft.DotNet.Watch
                 LogLevel.Information => MessageSeverity.Output,
                 LogLevel.Warning => MessageSeverity.Warning,
                 LogLevel.Error => MessageSeverity.Error,
+                LogLevel.None => MessageSeverity.None,
                 _ => throw new InvalidOperationException()
             };
     }
@@ -107,26 +109,14 @@ namespace Microsoft.DotNet.Watch
 
                 var emoji = severity switch
                 {
+                    _ when descriptor.Emoji != Emoji.Default => descriptor.Emoji,
                     MessageSeverity.Error => Emoji.Error,
                     MessageSeverity.Warning => Emoji.Warning,
-                    _ when descriptor.Emoji != Emoji.Default => descriptor.Emoji,
                     _ when MessageDescriptor.ComponentEmojis.TryGetValue(name, out var componentEmoji) => componentEmoji,
                     _ => Emoji.Watch
                 };
 
-                object?[] args;
-                if (eventId.Id == 0)
-                {
-                    // ad-hoc message
-                    descriptor = new MessageDescriptor(formatter(state, exception), emoji, severity, Id: default);
-                    args = [];
-                }
-                else
-                {
-                    args = state is IReadOnlyList<KeyValuePair<string, object?>> namedArgs ? [.. namedArgs.Select(na => na.Value)] : [];
-                }
-
-                reporter.Report(descriptor, prefix, args);
+                reporter.Report(eventId, emoji, severity, prefix + formatter(state, exception));
             }
 
             public IDisposable? BeginScope<TState>(TState state) where TState : notnull
@@ -166,8 +156,8 @@ namespace Microsoft.DotNet.Watch
         public static MessageDescriptor GetDescriptor(EventId id)
             => s_descriptors[id];
 
-        public string GetMessage(string? prefix, object?[] args)
-            => prefix + (Id.Id == 0 ? Format : string.Format(Format, args));
+        public string GetMessage(object?[] args)
+            => Id.Id == 0 ? Format : string.Format(Format, args);
 
         public MessageDescriptor WithSeverityWhen(MessageSeverity severity, bool condition)
             => condition && Severity != severity
@@ -175,13 +165,15 @@ namespace Microsoft.DotNet.Watch
                 : this;
 
         public static readonly ImmutableDictionary<string, Emoji> ComponentEmojis = ImmutableDictionary<string, Emoji>.Empty
+            .Add(Program.LogComponentName, Emoji.Watch)
             .Add(DotNetWatchContext.DefaultLogComponentName, Emoji.Watch)
             .Add(DotNetWatchContext.BuildLogComponentName, Emoji.Build)
             .Add(HotReloadDotNetWatcher.ClientLogComponentName, Emoji.HotReload)
             .Add(HotReloadDotNetWatcher.AgentLogComponentName, Emoji.Agent)
             .Add(BrowserRefreshServer.ServerLogComponentName, Emoji.Refresh)
             .Add(BrowserConnection.AgentLogComponentName, Emoji.Agent)
-            .Add(BrowserConnection.ServerLogComponentName, Emoji.Browser);
+            .Add(BrowserConnection.ServerLogComponentName, Emoji.Browser)
+            .Add(AspireServiceFactory.AspireLogComponentName, Emoji.Aspire);
 
         // predefined messages used for testing:
         public static readonly MessageDescriptor HotReloadSessionStarting = Create("Hot reload session starting.", Emoji.HotReload, MessageSeverity.None);
@@ -238,7 +230,11 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor UnableToApplyChanges = Create("Unable to apply changes due to compilation errors.", Emoji.HotReload, MessageSeverity.Output);
         public static readonly MessageDescriptor RestartNeededToApplyChanges = Create("Restart is needed to apply the changes.", Emoji.HotReload, MessageSeverity.Output);
         public static readonly MessageDescriptor HotReloadEnabled = Create("Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload.", Emoji.HotReload, MessageSeverity.Output);
-        public static readonly MessageDescriptor PressCtrlRToRestart = Create("Press Ctrl+R to restart.", Emoji.LigthBulb, MessageSeverity.Output);
+        public static readonly MessageDescriptor PressCtrlRToRestart = Create("Press Ctrl+R to restart.", Emoji.LightBulb, MessageSeverity.Output);
+        public static readonly MessageDescriptor HotReloadCanceledProcessExited = Create("Hot reload canceled because the process exited.", Emoji.HotReload, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor HotReloadProfile_BlazorHosted = Create("HotReloadProfile: BlazorHosted. '{0}' references BlazorWebAssembly project '{1}'.", Emoji.HotReload, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor HotReloadProfile_BlazorWebAssembly = Create("HotReloadProfile: BlazorWebAssembly.", Emoji.HotReload, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor HotReloadProfile_Default = Create("HotReloadProfile: Default.", Emoji.HotReload, MessageSeverity.Verbose);
     }
 
     internal interface IProcessOutputReporter
@@ -260,33 +256,9 @@ namespace Microsoft.DotNet.Watch
 
     internal interface IReporter
     {
-        void Report(MessageDescriptor descriptor, string prefix, object?[] args);
+        void Report(EventId id, Emoji emoji, MessageSeverity severity, string message);
 
         public bool IsVerbose
             => false;
-
-        void ReportWithPrefix(MessageDescriptor descriptor, string prefix, params object?[] args)
-            => Report(descriptor, prefix, args);
-
-        void Report(MessageDescriptor descriptor, params object?[] args)
-            => ReportWithPrefix(descriptor, prefix: "", args);
-
-        void ReportAs(MessageDescriptor descriptor, MessageSeverity severity, bool when, params object?[] args)
-            => Report(descriptor.WithSeverityWhen(severity, when), prefix: "", args);
-
-        void Report(string message, Emoji emoji, MessageSeverity severity)
-            => Report(new MessageDescriptor(message, emoji, severity, Id: default), prefix: "", args: []);
-
-        void Verbose(string message, Emoji emoji = Emoji.Watch)
-            => Report(message, emoji, MessageSeverity.Verbose);
-
-        void Output(string message, Emoji emoji = Emoji.Watch)
-            => Report(message, emoji, MessageSeverity.Output);
-
-        void Warn(string message)
-            => Report(message, Emoji.Warning, MessageSeverity.Warning);
-
-        void Error(string message)
-            => Report(message, Emoji.Error, MessageSeverity.Error);
     }
 }

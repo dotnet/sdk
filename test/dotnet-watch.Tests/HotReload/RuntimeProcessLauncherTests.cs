@@ -95,6 +95,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
     {
         var console = new TestConsole(Logger);
         var reporter = new TestReporter(Logger);
+        var loggerFactory = new LoggerFactory(reporter);
         var environmentOptions = TestOptions.GetEnvironmentOptions(workingDirectory ?? testAsset.Path, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset);
         var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout);
 
@@ -102,7 +103,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
            TestOptions.GetCommandLineOptions(["--verbose", ..args]),
            console,
            environmentOptions,
-           reporter,
+           loggerFactory,
            reporter,
            out var errorCode);
 
@@ -127,7 +128,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             catch (Exception e) when (e is not OperationCanceledException)
             {
                 shutdownSource.Cancel();
-                ((IReporter)reporter).Error($"Unexpected exception {e}");
+                Logger.WriteLine($"Unexpected exception {e}");
                 throw;
             }
         }, shutdownSource.Token);
