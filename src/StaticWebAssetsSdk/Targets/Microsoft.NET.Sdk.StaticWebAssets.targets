@@ -443,8 +443,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAssetDevelopmentManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.development.json</StaticWebAssetDevelopmentManifestPath>
       <StaticWebAssetEndpointsBuildManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.build.endpoints.json</StaticWebAssetEndpointsBuildManifestPath>
       <StaticWebAssetEndpointsPublishManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.publish.endpoints.json</StaticWebAssetEndpointsPublishManifestPath>
-      <StaticWebAssetEndpointsBuildExclusionPatternsCachePath>$(_StaticWebAssetsManifestBase)staticwebassets.build.endpoints.exclusions.cache</StaticWebAssetEndpointsBuildExclusionPatternsCachePath>
-      <StaticWebAssetEndpointsPublishExclusionPatternsCachePath>$(_StaticWebAssetsManifestBase)staticwebassets.publish.endpoints.exclusions.cache</StaticWebAssetEndpointsPublishExclusionPatternsCachePath>
+      <StaticWebAssetEndpointsBuildExclusionPatternsCachePath>$(_StaticWebAssetsManifestBase)swae.build.ex.cache</StaticWebAssetEndpointsBuildExclusionPatternsCachePath>
+      <StaticWebAssetEndpointsPublishExclusionPatternsCachePath>$(_StaticWebAssetsManifestBase)swae.publish.ex.cache</StaticWebAssetEndpointsPublishExclusionPatternsCachePath>
       <StaticWebAssetPublishManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.publish.json</StaticWebAssetPublishManifestPath>
 
       <_StaticWebAssetsIntermediateOutputPath>$(IntermediateOutputPath)staticwebassets\</_StaticWebAssetsIntermediateOutputPath>
