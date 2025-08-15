@@ -92,6 +92,7 @@
     <PropertyGroup>
       <InstallerOutputDirectory>$(ArtifactsShippingPackagesDir)</InstallerOutputDirectory>
       <SdkDebInstallerFile>$(InstallerOutputDirectory)$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(InstallerExtension)</SdkDebInstallerFile>
+      <NewKeyDebInstallerFile>$(InstallerOutputDirectory)$(NewKeyArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(InstallerExtension)</NewKeyDebInstallerFile>
       <SdkDebianIntermediateDirectory>$(IntermediateOutputPath)debian/sdk/</SdkDebianIntermediateDirectory>
       <DotNetDebToolOutputDirectory>$(SdkDebianIntermediateDirectory)deb-tool-output</DotNetDebToolOutputDirectory>
       <DebianTestResultsXmlFile>$(SdkDebianIntermediateDirectory)debian-testResults.xml</DebianTestResultsXmlFile>
@@ -220,7 +221,7 @@
 
       <AspNetVersionPatchSeparator>$(AspNetSimpleVersion.LastIndexOf('.'))</AspNetVersionPatchSeparator>
       <AspNetSimpleVersion Condition=" '$(AspNetVersionPatchSeparator)' != -1 ">$(AspNetSimpleVersion.Substring(0, $(AspNetVersionPatchSeparator)))</AspNetSimpleVersion>
-      
+
       <!-- dotnet-runtime package may not currently be available -->
       <InstallAspNetCoreSharedFxArgs>--ignore-depends=dotnet-runtime-$(AspNetSimpleVersion)</InstallAspNetCoreSharedFxArgs>
     </PropertyGroup>
@@ -315,7 +316,12 @@
       OverwriteReadOnlyFiles="True"
       SkipUnchangedFiles="False"
       UseHardlinksIfPossible="False" />
-
+    <Copy
+      DestinationFiles="$(NewKeyDebInstallerFile)"
+      SourceFiles="@(GeneratedDebFiles)"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False"/>
     <!-- Proactively remove all possible Shared Framework and Debian Packages -->
     <ItemGroup>
       <SetupDebPackageToRemove Include="$(SdkDebianPackageName)" />
@@ -374,7 +380,7 @@
     <DotNetTest ProjectPath="$(EndToEndTestProject)"
                 EnvironmentVariables="@(TestSdkDebTaskEnvironmentVariables)"
                 ToolPath="$(DebianInstalledDirectory)" />-->
-  
+
     <!-- Clean up Packages -->
     <!-- The following line is needed. So it won't warning dotnet folder is not empty after uninstall -->
     <Exec Command="sudo rm -rf /usr/share/dotnet/sdk/NuGetFallbackFolder" />
