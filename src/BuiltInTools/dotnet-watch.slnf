@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\..\\sdk.sln",
+    "path": "..\\..\\sdk.slnx",
     "projects": [
       "src\\BuiltInTools\\AspireService\\Microsoft.WebTools.AspireService.Package.csproj",
       "src\\BuiltInTools\\AspireService\\Microsoft.WebTools.AspireService.shproj",
@@ -13,6 +13,7 @@
       "src\\BuiltInTools\\HotReloadAgent.Data\\Microsoft.DotNet.HotReload.Agent.Data.shproj",
       "src\\BuiltInTools\\HotReloadAgent.PipeRpc\\Microsoft.DotNet.HotReload.Agent.PipeRpc.Package.csproj",
       "src\\BuiltInTools\\HotReloadAgent.PipeRpc\\Microsoft.DotNet.HotReload.Agent.PipeRpc.shproj",
+      "src\\BuiltInTools\\HotReloadAgent.WebAssembly.Browser\\Microsoft.DotNet.HotReload.WebAssembly.Browser.csproj",
       "src\\BuiltInTools\\dotnet-watch\\dotnet-watch.csproj",
       "test\\Microsoft.AspNetCore.Watch.BrowserRefresh.Tests\\Microsoft.AspNetCore.Watch.BrowserRefresh.Tests.csproj",
       "test\\Microsoft.Extensions.DotNetDeltaApplier.Tests\\Microsoft.Extensions.DotNetDeltaApplier.Tests.csproj",

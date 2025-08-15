@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Build.Tests
@@ -58,6 +60,10 @@ namespace Microsoft.NET.Build.Tests
 
             //  Set packs folder to nonexistent folder so the project won't use installed targeting or runtime packs
             testProject.AdditionalProperties["NetCoreTargetingPackRoot"] = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
+            //  Package pruning may load data from the targeting packs directory.  Since we're disabling the targeting pack
+            //  root, we need to allow it to succeed even if it can't find that data.
+            testProject.AdditionalProperties["AllowMissingPrunePackageData"] = "true";
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testName, identifier: referenceAspNet.ToString());
 
@@ -125,6 +131,10 @@ namespace Microsoft.NET.Build.Tests
 
             //  Set packs folder to nonexistent folder so the project won't use installed targeting or runtime packs
             testProject.AdditionalProperties["NetCoreTargetingPackRoot"] = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
+            //  Package pruning may load data from the targeting packs directory.  Since we're disabling the targeting pack
+            //  root, we need to allow it to succeed even if it can't find that data.
+            testProject.AdditionalProperties["AllowMissingPrunePackageData"] = "true";
 
             testProject.ReferencedProjects.Add(referencedProject);
 
