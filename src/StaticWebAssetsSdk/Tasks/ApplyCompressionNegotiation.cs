@@ -371,7 +371,6 @@ public class ApplyCompressionNegotiation : Task
                 Log.LogMessage(MessageImportance.Low, "  Adding header '{0}' to related endpoint '{1}'", header.Name, relatedEndpointCandidate.Route);
                 headers.Add(header);
             }
-
             else if (string.Equals(header.Name, "Content-Type", StringComparison.Ordinal))
             {
                 Log.LogMessage(MessageImportance.Low, "Adding Content-Type '{1}' header to related endpoint '{0}'", relatedEndpointCandidate.Route, header.Value);
