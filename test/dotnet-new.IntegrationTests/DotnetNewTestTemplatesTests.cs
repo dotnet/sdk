@@ -211,7 +211,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 result.Should().Pass();
 
                 result.StdOut.Should().Contain("Passed!");
-                result.StdOut.Should().MatchRegex(@"Passed:\s*1");
+                result.StdOut.Should().MatchRegex(isMTP ? "succeeded: 1" : @"Passed:\s*1");
             }
 
             // After executing dotnet new and before cleaning up
