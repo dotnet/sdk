@@ -6,6 +6,8 @@
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Utils;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.DotNet.Cli.Run.Tests
 {
@@ -964,6 +966,37 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .Pass()
                .And
                .HaveStdOutContaining("env: MyCoolEnvironmentVariableKey=OverriddenEnvironmentVariableValue");
+        }
+
+        [Fact]
+        public void ItInterpolatesMSBuildPropertiesInLaunchSettingsCommandArgs()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
+                .WithSource();
+
+            var testProjectDirectory = testInstance.Path;
+            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
+
+            // Update the TestAppWithLaunchSettings profile to include $(MSBuildProjectDirectory) in commandLineArgs
+            var json = File.ReadAllText(launchSettingsPath);
+            var root = JsonNode.Parse(json)!.AsObject();
+            var profiles = root["profiles"]!.AsObject();
+            var profile = profiles["TestAppWithLaunchSettings"]!.AsObject();
+            var existingArgs = profile["commandLineArgs"]?.GetValue<string>() ?? string.Empty;
+            profile["commandLineArgs"] = string.IsNullOrEmpty(existingArgs)
+                ? "$(ProjectDir)"
+                : existingArgs + " $(MSBuildProjectDirectory)";
+            File.WriteAllText(launchSettingsPath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+
+            var cmd = new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(testProjectDirectory)
+                .Execute();
+
+            var expectedPath = testProjectDirectory.TrimEnd(Path.DirectorySeparatorChar);
+            cmd.Should().Pass()
+                .And.HaveStdOutContaining(expectedPath);
+
+            cmd.StdErr.Should().BeEmpty();
         }
 
         [Fact]

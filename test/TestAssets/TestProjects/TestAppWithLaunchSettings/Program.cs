@@ -14,13 +14,9 @@ namespace ConsoleApplication
             Console.WriteLine($"env: DOTNET_LAUNCH_PROFILE={Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")}");
             Console.WriteLine($"env: ASPNETCORE_URLS={Environment.GetEnvironmentVariable("ASPNETCORE_URLS")}");
             Console.WriteLine($"env: Configuration={Environment.GetEnvironmentVariable("Configuration")}");
-            if (args.Length > 0)
+            foreach (var arg in args)
             {
-                Console.WriteLine(args[0]);
-            }
-            if (args.Length > 1)
-            {
-                Console.WriteLine(args[1]);
+                Console.WriteLine(arg);
             }
         }
     }
