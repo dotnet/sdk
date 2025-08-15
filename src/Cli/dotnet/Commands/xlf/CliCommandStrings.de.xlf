@@ -2829,7 +2829,7 @@ Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches 
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
         <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
-        <target state="new">No workload sets are installed. Run "dotnet workload restore" to install a workload set.</target>
+        <target state="translated">Es sind keine Workloadsätze installiert. Führen Sie „dotnet workload restore“ aus, um einen Workloadsatz zu installieren.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">
@@ -3877,12 +3877,12 @@ Um einen Wert anzuzeigen, geben Sie die entsprechende Befehlszeilenoption an, oh
       </trans-unit>
       <trans-unit id="WorkloadManifestInstallationConfigurationLooseManifests">
         <source>Configured to use loose manifests when installing new manifests.</source>
-        <target state="new">Configured to use loose manifests when installing new manifests.</target>
+        <target state="translated">Für die Verwendung von losen Manifesten bei der Installation neuer Manifeste konfiguriert.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadManifestInstallationConfigurationWorkloadSets">
         <source>Configured to use workload sets when installing new manifests.</source>
-        <target state="new">Configured to use workload sets when installing new manifests.</target>
+        <target state="translated">Für die Verwendung von workload sets bei der Installation neuer Manifeste konfiguriert.</target>
         <note>{Locked="workload sets"}</note>
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">
