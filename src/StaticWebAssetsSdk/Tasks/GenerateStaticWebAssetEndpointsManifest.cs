@@ -75,9 +75,9 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
                 }
 
                 // Check if endpoint should be excluded based on patterns
+                var route = asset.ResolvedAsset.ReplaceTokens(endpoint.Route, StaticWebAssetTokenResolver.Instance);
                 if (exclusionMatcher != null)
                 {
-                    var route = asset.ResolvedAsset.ReplaceTokens(endpoint.Route, StaticWebAssetTokenResolver.Instance);
                     var match = exclusionMatcher.Match(route);
                     if (match.IsMatch)
                     {
@@ -88,12 +88,11 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
 
                 filteredEndpoints.Add(endpoint);
                 // Update the endpoint to use the target path of the asset, this will be relative to the wwwroot
-                var path = endpoint.AssetFile;
 
                 endpoint.AssetFile = asset.ResolvedAsset.ComputeTargetPath("", '/', StaticWebAssetTokenResolver.Instance);
-                endpoint.Route = asset.ResolvedAsset.ReplaceTokens(endpoint.Route, StaticWebAssetTokenResolver.Instance);
+                endpoint.Route = route;
 
-                Log.LogMessage(MessageImportance.Low, "Including endpoint '{0}' for asset '{1}' with final location '{2}'", endpoint.Route, path, asset.TargetPath);
+                Log.LogMessage(MessageImportance.Low, "Including endpoint '{0}' for asset '{1}' with final location '{2}'", endpoint.Route, endpoint.AssetFile, asset.TargetPath);
             }
 
             var manifest = new StaticWebAssetEndpointsManifest()
