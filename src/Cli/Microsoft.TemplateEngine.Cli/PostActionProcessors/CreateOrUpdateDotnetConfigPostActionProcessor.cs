@@ -110,8 +110,28 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                     return currentDirectory;
                 }
 
-                if (fileSystem.EnumerateFiles(currentDirectory, "*.sln", SearchOption.TopDirectoryOnly).Any() ||
-                    fileSystem.EnumerateFiles(currentDirectory, "*.slnx", SearchOption.TopDirectoryOnly).Any())
+                // DirectoryExists here should always be in practice, but for the way tests are mocking the file system, it's not.
+                // The check was added to prevent test failures similar to:
+                // System.IO.DirectoryNotFoundException : Could not find a part of the path '/Users/runner/work/1/s/artifacts/bin/Microsoft.TemplateEngine.Cli.UnitTests/Release/sandbox'.
+                // at System.IO.Enumeration.FileSystemEnumerator`1.CreateDirectoryHandle(String path, Boolean ignoreNotFound)
+                // at System.IO.Enumeration.FileSystemEnumerator`1.Init()
+                // at System.IO.Enumeration.FileSystemEnumerable`1..ctor(String directory, FindTransform transform, EnumerationOptions options, Boolean isNormalized)
+                // at System.IO.Enumeration.FileSystemEnumerableFactory.UserFiles(String directory, String expression, EnumerationOptions options)
+                // at System.IO.Directory.InternalEnumeratePaths(String path, String searchPattern, SearchTarget searchTarget, EnumerationOptions enumerationOptions)
+                // at Microsoft.TemplateEngine.Utils.PhysicalFileSystem.EnumerateFiles(String path, String pattern, SearchOption searchOption)
+                // at Microsoft.TemplateEngine.TestHelper.MonitoredFileSystem.EnumerateFiles(String path, String pattern, SearchOption searchOption)
+                // at Microsoft.TemplateEngine.Utils.InMemoryFileSystem.EnumerateFiles(String path, String pattern, SearchOption searchOption)+MoveNext()
+                // at Microsoft.TemplateEngine.Utils.InMemoryFileSystem.EnumerateFiles(String path, String pattern, SearchOption searchOption)+MoveNext()
+                // at System.Linq.Enumerable.Any[TSource](IEnumerable`1 source)
+                // at Microsoft.TemplateEngine.Cli.PostActionProcessors.CreateOrUpdateDotnetConfigPostActionProcessor.GetRootDirectory(IPhysicalFileSystem fileSystem, String outputBasePath) in /_/src/Cli/Microsoft.TemplateEngine.Cli/PostActionProcessors/CreateOrUpdateDotnetConfigPostActionProcessor.cs:line 113
+                // at Microsoft.TemplateEngine.Cli.PostActionProcessors.CreateOrUpdateDotnetConfigPostActionProcessor.ProcessInternal(IEngineEnvironmentSettings environment, IPostAction action, ICreationEffects creationEffects, ICreationResult templateCreationResult, String outputBasePath) in /_/src/Cli/Microsoft.TemplateEngine.Cli/PostActionProcessors/CreateOrUpdateDotnetConfigPostActionProcessor.cs:line 47
+                // at Microsoft.TemplateEngine.Cli.PostActionProcessors.PostActionProcessorBase.Process(IEngineEnvironmentSettings environment, IPostAction action, ICreationEffects creationEffects, ICreationResult templateCreationResult, String outputBasePath) in /_/src/Cli/Microsoft.TemplateEngine.Cli/PostActionProcessors/PostActionProcessorBase.cs:line 26
+                // at Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests.CreateOrUpdateDotnetConfigPostActionTests.CreatesDotnetConfigWhenDoesNotExist() in /Users/runner/work/1/s/test/Microsoft.TemplateEngine.Cli.UnitTests/PostActionTests/CreateOrUpdateDotnetConfigPostActionTests.cs:line 84
+                // at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+                // at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+                if (fileSystem.DirectoryExists(currentDirectory) &&
+                    (fileSystem.EnumerateFiles(currentDirectory, "*.sln", SearchOption.TopDirectoryOnly).Any() ||
+                    fileSystem.EnumerateFiles(currentDirectory, "*.slnx", SearchOption.TopDirectoryOnly).Any()))
                 {
                     directoryWithSln = currentDirectory;
                 }
