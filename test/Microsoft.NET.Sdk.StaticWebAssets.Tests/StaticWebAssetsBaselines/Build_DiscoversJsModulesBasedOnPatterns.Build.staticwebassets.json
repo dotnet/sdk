@@ -490,10 +490,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -535,10 +531,6 @@
         {
           "Name": "Content-Type",
           "Value": "text/css"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
         },
         {
           "Name": "ETag",
@@ -690,10 +682,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -735,10 +723,6 @@
         {
           "Name": "Content-Type",
           "Value": "text/css"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
         },
         {
           "Name": "ETag",
@@ -841,10 +825,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -931,10 +911,6 @@
         {
           "Name": "Content-Type",
           "Value": "text/javascript"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
         },
         {
           "Name": "ETag",
@@ -1082,10 +1058,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -1127,10 +1099,6 @@
         {
           "Name": "Content-Type",
           "Value": "text/javascript"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
         },
         {
           "Name": "ETag",
@@ -1282,10 +1250,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -1327,10 +1291,6 @@
         {
           "Name": "Content-Type",
           "Value": "text/javascript"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
         },
         {
           "Name": "ETag",
