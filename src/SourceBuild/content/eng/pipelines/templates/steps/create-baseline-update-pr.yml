@@ -1,0 +1,48 @@
+parameters:
+# The pipeline that is being run
+# Used to determine the correct baseline update tool to run
+# Currently only supports "sdk" and "license"
+- name: pipeline
+  type: string
+
+# The GitHub repository to create the PR in.
+# Should be in the form '<owner>/<repo-name>'
+- name: repo
+  type: string
+
+# Path to the directory containing the original test files
+# Should be relative to the "repo" parameter
+- name: originalFilesDirectory
+  type: string
+
+# Path to the directory containing the updated test files
+# Should be absolute or relative to the working directory of the tool
+- name: updatedFilesDirectory
+  type: string
+
+- name: pullRequestTitle
+  type: string
+  default: Update Test Baselines
+
+steps:
+  - script: |
+      restoreSources="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json"
+      restoreSources+="%3Bhttps://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-libraries/nuget/v3/index.json"
+
+      branchName=$(echo "$(Build.SourceBranch)" | sed 's/refs\/heads\///g')
+
+      .dotnet/dotnet run \
+        --project eng/tools/CreateBaselineUpdatePR/ \
+        --property:RestoreSources="$restoreSources" \
+        "${{ parameters.pipeline }}" \
+        "${{ parameters.repo }}" \
+        "${{ parameters.originalFilesDirectory }}" \
+        "${{ parameters.updatedFilesDirectory }}" \
+        "$(Build.BuildId)" \
+        --title "${{ parameters.pullRequestTitle }}" \
+        --branch "$branchName"
+    displayName: Publish Test Results PR
+    workingDirectory: $(Build.SourcesDirectory)
+    condition: succeededOrFailed()
+    env:
+      GH_TOKEN: $(BotAccount-dotnet-sb-bot-pat)

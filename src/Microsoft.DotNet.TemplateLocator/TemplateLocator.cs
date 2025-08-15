@@ -12,19 +12,18 @@ namespace Microsoft.DotNet.TemplateLocator
         private IWorkloadManifestProvider? _workloadManifestProvider;
         private IWorkloadResolver? _workloadResolver;
         private readonly Lazy<NETCoreSdkResolver> _netCoreSdkResolver;
-        private readonly Func<string, string> _getEnvironmentVariable;
+        private readonly Func<string, string?> _getEnvironmentVariable;
         private readonly Func<string>? _getCurrentProcessPath;
-#nullable disable
+
         public TemplateLocator()
             : this(Environment.GetEnvironmentVariable, null, VSSettings.Ambient, null, null)
         {
         }
-#nullable restore
 
         /// <summary>
         /// Test constructor
         /// </summary>
-        public TemplateLocator(Func<string, string> getEnvironmentVariable, Func<string>? getCurrentProcessPath, VSSettings vsSettings,
+        public TemplateLocator(Func<string, string?> getEnvironmentVariable, Func<string>? getCurrentProcessPath, VSSettings vsSettings,
             IWorkloadManifestProvider? workloadManifestProvider, IWorkloadResolver? workloadResolver)
         {
             _netCoreSdkResolver =
@@ -66,7 +65,7 @@ namespace Microsoft.DotNet.TemplateLocator
 
         public bool TryGetDotnetSdkVersionUsedInVs(string vsVersion, out string? sdkVersion)
         {
-            string dotnetExeDir = EnvironmentProvider.GetDotnetExeDirectory(_getEnvironmentVariable, _getCurrentProcessPath);
+            string? dotnetExeDir = EnvironmentProvider.GetDotnetExeDirectory(_getEnvironmentVariable, _getCurrentProcessPath);
 
             if (!Version.TryParse(vsVersion, out var parsedVsVersion))
             {

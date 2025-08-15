@@ -353,6 +353,9 @@
   <data name="NewWorkloadSet" xml:space="preserve">
     <value>Installing workload version {0}.</value>
   </data>
+  <data name="DeletingWorkloadSet" xml:space="preserve">
+    <value>Deleting workload version {0}.</value>
+  </data>
   <data name="CannotSpecifyVersionOnCommandLineAndInGlobalJson" xml:space="preserve">
     <value>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</value>
   </data>
