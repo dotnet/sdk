@@ -891,7 +891,7 @@ namespace Microsoft.DotNet.Watch
                 Arguments = ["build", projectPath, "-consoleLoggerParameters:NoSummary;Verbosity=minimal", .. buildArguments]
             };
 
-            _context.BuildLogger.LogInformation("Building {ProjectPath} ...", projectPath);
+            _context.BuildLogger.Log(MessageDescriptor.Building, projectPath);
 
             var exitCode = await _context.ProcessRunner.RunAsync(processSpec, _context.Logger, launchResult: null, cancellationToken);
             return (exitCode == 0, buildOutput.ToImmutableArray(), projectPath);

@@ -19,11 +19,11 @@ internal static partial class BuildOutput
         {
             if (success)
             {
-                logger.LogInformation($"Build succeeded: {projectDisplay}");
+                logger.Log(MessageDescriptor.BuildSucceeded, projectDisplay);
             }
             else
             {
-                logger.LogInformation($"Build failed: {projectDisplay}");
+                logger.Log(MessageDescriptor.BuildFailed, projectDisplay);
             }
         }
 

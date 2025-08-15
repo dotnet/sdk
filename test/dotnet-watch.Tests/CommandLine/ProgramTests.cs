@@ -200,7 +200,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, ["--verbose", "test", "--list-tests", "/p:VSTestUseMSBuildOutput=false"]);
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
             App.AssertOutputContains("The following Tests are available:");
             App.AssertOutputContains("    TestNamespace.VSTestXunitTests.VSTestXunitPassTest");
@@ -211,7 +211,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var content = File.ReadAllText(testFile, Encoding.UTF8);
             File.WriteAllText(testFile, content.Replace("VSTestXunitPassTest", "VSTestXunitPassTest2"), Encoding.UTF8);
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
             App.AssertOutputContains("The following Tests are available:");
             App.AssertOutputContains("    TestNamespace.VSTestXunitTests.VSTestXunitPassTest2");
@@ -237,7 +237,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, ["--verbose", "--property", "TestProperty=123", "build", "/t:TestTarget"]);
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
             // evaluation affected by -c option:
             Assert.Contains("TestProperty", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
@@ -255,7 +255,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, ["--verbose", "/p:TestProperty=123", "msbuild", "/t:TestTarget"]);
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
             // TestProperty is not passed to evaluation since msbuild command doesn't include it in forward options:
             Assert.DoesNotContain("TestProperty", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
@@ -275,7 +275,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var packagePath = Path.Combine(testAsset.Path, "bin", "Release", "WatchNoDepsApp.1.0.0.nupkg");
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
             // evaluation affected by -c option:
             Assert.Contains("-property:Configuration=Release", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
@@ -293,7 +293,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, ["--verbose", "publish", "-c", "Release"]);
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
             // evaluation affected by -c option:
             Assert.Contains("-property:Configuration=Release", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
@@ -313,7 +313,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.DotnetWatchArgs.Clear();
             App.Start(testAsset, ["--verbose", "format", "--verbosity", "detailed"]);
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
             App.AssertOutputContains("dotnet watch ⌚ Command 'format' does not support Hot Reload.");
             App.AssertOutputContains("dotnet watch ⌚ Command 'format' does not support browser refresh.");

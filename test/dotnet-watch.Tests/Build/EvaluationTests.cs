@@ -7,7 +7,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class EvaluationTests(ITestOutputHelper output)
     {
-        private readonly TestReporter _reporter = new(output);
         private readonly TestLogger _logger = new(output);
         private readonly TestAssetsManager _testAssets = new(output);
 
@@ -428,7 +427,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var projectA = Path.Combine(testDirectory, "A", "A.csproj");
 
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDirectory, muxerPath: MuxerPath);
-            var processRunner = new ProcessRunner(options.ProcessCleanupTimeout);
+            var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
             var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
 
             var filesetFactory = new MSBuildFileSetFactory(projectA, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], processRunner, buildReporter);
@@ -456,17 +455,18 @@ namespace Microsoft.DotNet.Watch.UnitTests
             ], Inspect(testDirectory, result.Files));
 
             // ensure each project is only visited once for collecting watch items
+            var prefix = "[Debug]   Collecting watch items from ";
             AssertEx.SequenceEqual(
                 [
-                    "Collecting watch items from 'A'",
-                    "Collecting watch items from 'B'",
-                    "Collecting watch items from 'C'",
-                    "Collecting watch items from 'D'",
-                    "Collecting watch items from 'E'",
-                    "Collecting watch items from 'F'",
-                    "Collecting watch items from 'G'",
+                    "'A'",
+                    "'B'",
+                    "'C'",
+                    "'D'",
+                    "'E'",
+                    "'F'",
+                    "'G'",
                 ],
-                _logger.Messages.Where(m => m.Contains("Collecting watch items from")).Select(m => m.Trim()).Order());
+                _logger.Messages.Where(m => m.Contains(prefix)).Select(m => m.Trim()[prefix.Length..]).Order());
         }
 
         [Fact]
@@ -487,7 +487,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var project1Path = GetTestProjectPath(testAsset);
 
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: Path.GetDirectoryName(project1Path)!, muxerPath: MuxerPath);
-            var processRunner = new ProcessRunner(options.ProcessCleanupTimeout);
+            var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
             var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
 
             var factory = new MSBuildFileSetFactory(project1Path, buildArguments: [], processRunner, buildReporter);
@@ -525,7 +525,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             async Task VerifyTargetsEvaluation()
             {
                 var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDir, muxerPath: MuxerPath) with { TestOutput = testDir };
-                var processRunner = new ProcessRunner(options.ProcessCleanupTimeout);
+                var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
                 var buildArguments = targetFramework != null ? new[] { "/p:TargetFramework=" + targetFramework } : [];
                 var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
                 var factory = new MSBuildFileSetFactory(rootProjectPath, buildArguments, processRunner, buildReporter);
@@ -544,7 +544,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 using var watchableApp = new WatchableApp(new DebugTestOutputLogger(output));
                 var arguments = targetFramework != null ? new[] { "-f", targetFramework } : [];
                 watchableApp.Start(testAsset, arguments, relativeProjectDirectory: testAsset.TestProject!.Name);
-                await watchableApp.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting, failure: _ => false);
+                await watchableApp.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
                 var normalizedActual = ParseOutput(watchableApp.Process.Output).OrderBy(f => f.relativePath);
                 var normalizedExpected = expectedFiles.Where(f => !f.TargetsOnly).Select(f => (f.Path, f.StaticAssetUrl)).OrderBy(f => f.Path);

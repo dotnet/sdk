@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.HotReload
                     // When the client connects, the first payload it sends is the initialization payload which includes the apply capabilities.
 
                     var capabilities = (await ClientInitializationResponse.ReadAsync(_pipe, cancellationToken)).Capabilities;
-                    Logger.LogDebug("Capabilities: '{Capabilities}'", capabilities);
+                    Logger.Log(LogEvents.Capabilities, capabilities);
                     return [.. capabilities.Split(' ')];
                 }
                 catch (EndOfStreamException)

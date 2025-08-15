@@ -19,4 +19,5 @@ internal static class LogEvents
         => logger.Log(logEvent.Level, logEvent.Id, logEvent.Message, args);
 
     public static readonly LogEvent UpdatesApplied = Create(LogLevel.Debug, "Updates applied: {0} out of {1}.");
+    public static readonly LogEvent Capabilities = Create(LogLevel.Debug, "Capabilities: '{1}'.");
 }

@@ -156,7 +156,7 @@ namespace Microsoft.DotNet.Watch
         public static MessageDescriptor GetDescriptor(EventId id)
             => s_descriptors[id];
 
-        public string GetMessage(object?[] args)
+        public string GetMessage(params object?[] args)
             => Id.Id == 0 ? Format : string.Format(Format, args);
 
         public MessageDescriptor WithSeverityWhen(MessageSeverity severity, bool condition)
@@ -187,6 +187,7 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor HotReloadChangeHandled = Create("Hot reload change handled in {0}ms.", Emoji.HotReload, MessageSeverity.Verbose);
         public static readonly MessageDescriptor HotReloadSucceeded = Create("Hot reload succeeded.", Emoji.HotReload, MessageSeverity.Output);
         public static readonly MessageDescriptor UpdatesApplied = Create(LogEvents.UpdatesApplied, Emoji.HotReload);
+        public static readonly MessageDescriptor Capabilities = Create(LogEvents.Capabilities, Emoji.HotReload);
         public static readonly MessageDescriptor WaitingForFileChangeBeforeRestarting = Create("Waiting for a file to change before restarting ...", Emoji.Wait, MessageSeverity.Warning);
         public static readonly MessageDescriptor WatchingWithHotReload = Create("Watching with Hot Reload.", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor RestartInProgress = Create("Restart in progress.", Emoji.Restart, MessageSeverity.Output);
@@ -214,17 +215,20 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor SkippingConfiguringBrowserRefresh_NotWebApp = Create("Skipping configuring browser-refresh middleware since this is not a webapp.", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor FailedToLaunchProcess = Create("Failed to launch '{0}' with arguments '{1}': {2}", Emoji.Error, MessageSeverity.Error);
         public static readonly MessageDescriptor ApplicationFailed = Create("Application failed: {0}", Emoji.Error, MessageSeverity.Error);
-        public static readonly MessageDescriptor ProcessRunAndExited = Create("Process id {0} ran for {1}ms and exited with exit code {2}.", Emoji.Default, MessageSeverity.Verbose);
-        public static readonly MessageDescriptor WaitingForProcessToExitWithin = Create("Waiting for process {0} to exit within {1}s.", Emoji.Default, MessageSeverity.Verbose);
-        public static readonly MessageDescriptor WaitingForProcessToExit = Create("Waiting for process {0} to exit ({1}).", Emoji.Default, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor ProcessRunAndExited = Create("Process id {0} ran for {1}ms and exited with exit code {2}.", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor WaitingForProcessToExitWithin = Create("Waiting for process {0} to exit within {1}s.", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor WaitingForProcessToExit = Create("Waiting for process {0} to exit ({1}).", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor FailedToKillProcess = Create("Failed to kill process {0}: {1}.", Emoji.Error, MessageSeverity.Error);
-        public static readonly MessageDescriptor TerminatingProcess = Create("Terminating process {0} ({1}).", Emoji.Default, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor TerminatingProcess = Create("Terminating process {0} ({1}).", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor FailedToSendSignalToProcess = Create("Failed to send {0} signal to process {1}: {2}", Emoji.Warning, MessageSeverity.Warning);
-        public static readonly MessageDescriptor ErrorReadingProcessOutput = Create("Error reading {0} of process {1}: {2}", Emoji.Default, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor ErrorReadingProcessOutput = Create("Error reading {0} of process {1}: {2}", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor HotReloadOfScopedCssSucceeded = Create("Hot reload of scoped css succeeded.", Emoji.HotReload, MessageSeverity.Output);
         public static readonly MessageDescriptor HotReloadOfScopedCssPartiallySucceeded = Create("Hot reload of scoped css partially succeeded: {0} project(s) out of {1} were updated.", Emoji.HotReload, MessageSeverity.Output);
         public static readonly MessageDescriptor HotReloadOfScopedCssFailed = Create("Hot reload of scoped css failed.", Emoji.Error, MessageSeverity.Error);
         public static readonly MessageDescriptor HotReloadOfStaticAssetsSucceeded = Create("Hot reload of static assets succeeded.", Emoji.HotReload, MessageSeverity.Output);
+        public static readonly MessageDescriptor SendingStaticAssetUpdateRequest = Create("Sending static asset update request to connected browsers: '{0}'.", Emoji.Refresh, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor UpdatingDiagnosticsInConnectedBrowsers = Create("Updating diagnostics in connected browsers.", Emoji.Refresh, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor FailedToReceiveResponseFromConnectedBrowser = Create("Failed to receive response from a connected browser.", Emoji.Refresh, MessageSeverity.Verbose);
         public static readonly MessageDescriptor HotReloadCapabilities = Create("Hot reload capabilities: {0}.", Emoji.HotReload, MessageSeverity.Verbose);
         public static readonly MessageDescriptor HotReloadSuspended = Create("Hot reload suspended. To continue hot reload, press \"Ctrl + R\".", Emoji.HotReload, MessageSeverity.Output);
         public static readonly MessageDescriptor UnableToApplyChanges = Create("Unable to apply changes due to compilation errors.", Emoji.HotReload, MessageSeverity.Output);
@@ -235,6 +239,11 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor HotReloadProfile_BlazorHosted = Create("HotReloadProfile: BlazorHosted. '{0}' references BlazorWebAssembly project '{1}'.", Emoji.HotReload, MessageSeverity.Verbose);
         public static readonly MessageDescriptor HotReloadProfile_BlazorWebAssembly = Create("HotReloadProfile: BlazorWebAssembly.", Emoji.HotReload, MessageSeverity.Verbose);
         public static readonly MessageDescriptor HotReloadProfile_Default = Create("HotReloadProfile: Default.", Emoji.HotReload, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor WatchingFilesForChanges = Create("Watching {0} file(s) for changes", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor WatchingFilesForChanges_FilePath = Create("> {0}", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor Building = Create("Building {0} ...", Emoji.Default, MessageSeverity.Output);
+        public static readonly MessageDescriptor BuildSucceeded = Create(" Build succeeded: {0}", Emoji.Default, MessageSeverity.Output);
+        public static readonly MessageDescriptor BuildFailed = Create(" Build failed: {0}", Emoji.Default, MessageSeverity.Output);
     }
 
     internal interface IProcessOutputReporter

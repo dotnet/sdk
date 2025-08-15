@@ -328,7 +328,7 @@ namespace Microsoft.DotNet.Watch
 
             if (!responded)
             {
-                _logger.LogDebug("Failed to receive response from a connected browser.");
+                _logger.Log(MessageDescriptor.FailedToReceiveResponseFromConnectedBrowser);
             }
 
             await DisposeClosedBrowserConnectionsAsync();
@@ -362,7 +362,7 @@ namespace Microsoft.DotNet.Watch
 
         public ValueTask ReportCompilationErrorsInBrowserAsync(ImmutableArray<string> compilationErrors, CancellationToken cancellationToken)
         {
-            _logger.LogDebug("Updating diagnostics in connected browsers.");
+            _logger.Log(MessageDescriptor.UpdatingDiagnosticsInConnectedBrowsers);
             if (compilationErrors.IsEmpty)
             {
                 return SendJsonMessageAsync(new AspNetCoreHotReloadApplied(), cancellationToken);
@@ -378,7 +378,7 @@ namespace Microsoft.DotNet.Watch
             // Serialize all requests sent to a single server:
             foreach (var relativeUrl in relativeUrls)
             {
-                _logger.LogDebug("Sending static asset update request to connected browsers: '{RelativeUrl}'.", relativeUrl);
+                _logger.Log(MessageDescriptor.SendingStaticAssetUpdateRequest, relativeUrl);
                 var message = JsonSerializer.SerializeToUtf8Bytes(new UpdateStaticFileMessage { Path = relativeUrl }, s_jsonSerializerOptions);
                 await SendAsync(message, cancellationToken);
             }
