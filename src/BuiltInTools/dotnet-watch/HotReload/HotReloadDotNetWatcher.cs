@@ -3,6 +3,8 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using Microsoft.Build.Execution;
+using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.DotNet.Watch
@@ -240,7 +242,7 @@ namespace Microsoft.DotNet.Watch
 
                         extendTimeout = false;
 
-                        var changedFiles = await CaptureChangedFilesSnapshot(rebuiltProjects: null);
+                        var changedFiles = await CaptureChangedFilesSnapshot(rebuiltProjects: []);
                         if (changedFiles is [])
                         {
                             continue;
@@ -269,7 +271,7 @@ namespace Microsoft.DotNet.Watch
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.CompilationHandler);
 
-                        var (projectsToRebuild, projectsToRestart) = await compilationHandler.HandleManagedCodeChangesAsync(
+                        var (managedCodeUpdates, projectsToRebuild, projectsToRedeploy, projectsToRestart) = await compilationHandler.HandleManagedCodeChangesAsync(
                             autoRestart: _context.Options.NonInteractive || _rudeEditRestartPrompt?.AutoRestartPreference is true,
                             restartPrompt: async (projectNames, cancellationToken) =>
                             {
@@ -334,7 +336,7 @@ namespace Microsoft.DotNet.Watch
                                 try
                                 {
                                     var buildResults = await Task.WhenAll(
-                                        projectsToRebuild.Values.Select(projectPath => BuildProjectAsync(projectPath, rootProjectOptions.BuildArguments, iterationCancellationToken)));
+                                        projectsToRebuild.Select(projectPath => BuildProjectAsync(projectPath, rootProjectOptions.BuildArguments, iterationCancellationToken)));
 
                                     foreach (var (success, output, projectPath) in buildResults)
                                     {
@@ -363,7 +365,21 @@ namespace Microsoft.DotNet.Watch
                             // Apply them to the workspace.
                             _ = await CaptureChangedFilesSnapshot(projectsToRebuild);
 
-                            _context.Reporter.Report(MessageDescriptor.ProjectsRebuilt, projectsToRebuild.Count);
+                            _context.Reporter.Report(MessageDescriptor.ProjectsRebuilt, projectsToRebuild.Length);
+                        }
+
+                        // Deploy dependencies after rebuilding and before restarting.
+                        if (!projectsToRedeploy.IsEmpty)
+                        {
+                            DeployProjectDependencies(evaluationResult.ProjectGraph, projectsToRedeploy, iterationCancellationToken);
+                            _context.Reporter.Report(MessageDescriptor.ProjectDependenciesDeployed, projectsToRedeploy.Length);
+                        }
+
+                        // Apply updates only after dependencies have been deployed,
+                        // so that updated code doesn't attempt to access the dependency before it has been deployed.
+                        if (!managedCodeUpdates.IsEmpty)
+                        {
+                            await compilationHandler.ApplyUpdatesAsync(managedCodeUpdates, iterationCancellationToken);
                         }
 
                         if (!projectsToRestart.IsEmpty)
@@ -393,7 +409,7 @@ namespace Microsoft.DotNet.Watch
 
                         _context.Reporter.Report(MessageDescriptor.HotReloadChangeHandled, stopwatch.ElapsedMilliseconds);
 
-                        async Task<ImmutableList<ChangedFile>> CaptureChangedFilesSnapshot(ImmutableDictionary<ProjectId, string>? rebuiltProjects)
+                        async Task<ImmutableList<ChangedFile>> CaptureChangedFilesSnapshot(ImmutableArray<string> rebuiltProjects)
                         {
                             var changedPaths = Interlocked.Exchange(ref changedFilesAccumulator, []);
                             if (changedPaths is [])
@@ -464,12 +480,12 @@ namespace Microsoft.DotNet.Watch
                                 _context.Reporter.Report(MessageDescriptor.ReEvaluationCompleted);
                             }
 
-                            if (rebuiltProjects != null)
+                            if (!rebuiltProjects.IsEmpty)
                             {
                                 // Filter changed files down to those contained in projects being rebuilt.
                                 // File changes that affect projects that are not being rebuilt will stay in the accumulator
                                 // and be included in the next Hot Reload change set.
-                                var rebuiltProjectPaths = rebuiltProjects.Values.ToHashSet();
+                                var rebuiltProjectPaths = rebuiltProjects.ToHashSet();
 
                                 var newAccumulator = ImmutableList<ChangedPath>.Empty;
                                 var newChangedFiles = ImmutableList<ChangedFile>.Empty;
@@ -550,6 +566,72 @@ namespace Microsoft.DotNet.Watch
                     {
                         using var shutdownOrForcedRestartSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, forceRestartCancellationSource.Token);
                         await WaitForFileChangeBeforeRestarting(fileWatcher, evaluationResult, shutdownOrForcedRestartSource.Token);
+                    }
+                }
+            }
+        }
+
+        private void DeployProjectDependencies(ProjectGraph graph, ImmutableArray<string> projectPaths, CancellationToken cancellationToken)
+        {
+            var projectPathSet = projectPaths.ToImmutableHashSet(PathUtilities.OSSpecificPathComparer);
+            var buildReporter = new BuildReporter(_context.Reporter, _context.Options, _context.EnvironmentOptions);
+            var targetName = TargetNames.ReferenceCopyLocalPathsOutputGroup;
+
+            foreach (var node in graph.ProjectNodes)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var projectPath = node.ProjectInstance.FullPath;
+
+                if (!projectPathSet.Contains(projectPath))
+                {
+                    continue;
+                }
+
+                if (!node.ProjectInstance.Targets.ContainsKey(targetName))
+                {
+                    continue;
+                }
+
+                if (node.GetOutputDirectory() is not { } relativeOutputDir)
+                {
+                    continue;
+                }
+
+                using var loggers = buildReporter.GetLoggers(projectPath, targetName);
+                if (!node.ProjectInstance.Build([targetName], loggers, out var targetOutputs))
+                {
+                    _context.Reporter.Verbose($"{targetName} target failed");
+                    loggers.ReportOutput();
+                    continue;
+                }
+
+                var outputDir = Path.Combine(Path.GetDirectoryName(projectPath)!, relativeOutputDir);
+
+                foreach (var item in targetOutputs[targetName].Items)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    var sourcePath = item.ItemSpec;
+                    var targetPath = Path.Combine(outputDir, item.GetMetadata(MetadataNames.TargetPath));
+                    if (!File.Exists(targetPath))
+                    {
+                        _context.Reporter.Verbose($"Deploying project dependency '{targetPath}' from '{sourcePath}'");
+
+                        try
+                        {
+                            var directory = Path.GetDirectoryName(targetPath);
+                            if (directory != null)
+                            {
+                                Directory.CreateDirectory(directory);
+                            }
+
+                            File.Copy(sourcePath, targetPath, overwrite: false);
+                        }
+                        catch (Exception e)
+                        {
+                            _context.Reporter.Verbose($"Copy failed: {e.Message}");
+                        }
                     }
                 }
             }
