@@ -36,6 +36,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
         var existingPatternString = !string.IsNullOrEmpty(ExclusionPatternsCacheFilePath) && File.Exists(ExclusionPatternsCacheFilePath)
             ? File.ReadAllText(ExclusionPatternsCacheFilePath)
             : null;
+        existingPatternString = string.IsNullOrEmpty(existingPatternString) ? null : existingPatternString;
         if (!string.IsNullOrEmpty(CacheFilePath) && File.Exists(ManifestPath) && File.GetLastWriteTimeUtc(ManifestPath) > File.GetLastWriteTimeUtc(CacheFilePath))
         {
             // Check if exclusion patterns cache is also up to date
@@ -46,7 +47,9 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
             }
             else
             {
-                Log.LogMessage(MessageImportance.Low, "Generating manifest file '{0}' because exclusion patterns have changed.", ManifestPath);
+                Log.LogMessage(MessageImportance.Low, "Generating manifest file '{0}' because exclusion patterns have '{1}', '{2}'.", ManifestPath,
+                    existingPatternString ?? "no patterns",
+                    patternString ?? "no patterns");
             }
         }
         else
