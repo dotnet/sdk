@@ -167,11 +167,11 @@ public sealed class MSBuildArgs
         return new MSBuildArgs(new(newProperties), RestoreGlobalProperties, RequestedTargets, Verbosity, OtherMSBuildArgs.ToArray());
     }
 
-    public MSBuildArgs CloneWithAdditionalTarget(string additionalTarget)
+    public MSBuildArgs CloneWithAdditionalTargets(params ReadOnlySpan<string> additionalTargets)
     {
         string[] newTargets = RequestedTargets is not null
-            ? [.. RequestedTargets, additionalTarget]
-            : [ additionalTarget ];
+            ? [.. RequestedTargets, .. additionalTargets]
+            : [.. additionalTargets];
         return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, newTargets, Verbosity, OtherMSBuildArgs.ToArray());
     }
 
