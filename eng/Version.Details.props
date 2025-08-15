@@ -119,6 +119,7 @@ This file should be imported by eng/Versions.props
     <NuGetVersioningPackageVersion>7.0.0-preview.1.42003</NuGetVersioningPackageVersion>
     <SystemCodeDomPackageVersion>10.0.0-rc.1.25414.103</SystemCodeDomPackageVersion>
     <SystemCommandLinePackageVersion>2.0.0-rc.1.25414.103</SystemCommandLinePackageVersion>
+    <SystemComponentModelCompositionPackageVersion>10.0.0-preview.7.25377.103</SystemComponentModelCompositionPackageVersion>
     <SystemCompositionAttributedModelPackageVersion>10.0.0-rc.1.25414.103</SystemCompositionAttributedModelPackageVersion>
     <SystemCompositionConventionPackageVersion>10.0.0-rc.1.25414.103</SystemCompositionConventionPackageVersion>
     <SystemCompositionHostingPackageVersion>10.0.0-rc.1.25414.103</SystemCompositionHostingPackageVersion>
