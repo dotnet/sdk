@@ -423,7 +423,7 @@ MSTest 2.2.4 이전의 경우 시간 제한은 모든 테스트케이스에 사�
       </trans-unit>
       <trans-unit id="CmdConfigFilePath">
         <source>CONFIG_FILE</source>
-        <target state="new">CONFIG_FILE</target>
+        <target state="translated">CONFIG_FILE</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCurrentRuntimeOptionDescription">
@@ -449,13 +449,13 @@ MSTest 2.2.4 이전의 경우 시간 제한은 모든 테스트케이스에 사�
       <trans-unit id="CmdDiagnosticOutputDirectoryDescription">
         <source>Output directory of the diagnostic logging.
 If not specified the file will be generated inside the default 'TestResults' directory.</source>
-        <target state="new">Output directory of the diagnostic logging.
-If not specified the file will be generated inside the default 'TestResults' directory.</target>
+        <target state="translated">진단 로깅의 출력 디렉터리입니다.
+지정하지 않으면 파일이 기본 'TestResults' 디렉터리 내에 생성됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDiagnosticOutputDirectoryPath">
         <source>DIAGNOSTIC_DIR</source>
-        <target state="new">DIAGNOSTIC_DIR</target>
+        <target state="translated">DIAGNOSTIC_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDirectoryDescription">
@@ -1908,6 +1908,16 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">빌드된 패키지를 배치할 출력 디렉터리입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackCmdVersion">
+        <source>VERSION</source>
+        <target state="new">VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersionDescription">
+        <source>The version of the package to create</source>
+        <target state="new">The version of the package to create</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PackConfigurationOptionDescription">
         <source>The configuration to use for building the package. The default is 'Release'.</source>
         <target state="translated">패키지를 빌드하는 데 사용할 구성입니다. 기본값은 'Release'입니다.</target>
@@ -2819,7 +2829,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
         <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
-        <target state="needs-review-translation">워크로드 버전을 사용하여 설치하고 업데이트하도록 워크로드를 구성했지만, 워크로드 버전을 찾을 수 없습니다. "dotnet workload restore"를 실행하여 워크로드 버전을 설치하세요.</target>
+        <target state="new">No workload sets are installed. Run "dotnet workload restore" to install a workload set.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">
@@ -3039,22 +3049,22 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="TestCommandUseDirectory">
         <source>Specifying a directory for 'dotnet test' should be via '--directory'.</source>
-        <target state="new">Specifying a directory for 'dotnet test' should be via '--directory'.</target>
+        <target state="translated">'dotnet test'에 대한 디렉터리를 지정하려면 '--directory'를 통해 지정해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseProject">
         <source>Specifying a project for 'dotnet test' should be via '--project'.</source>
-        <target state="new">Specifying a project for 'dotnet test' should be via '--project'.</target>
+        <target state="translated">'dotnet test'에 대한 프로젝트를 지정하려면 '--project'를 통해 지정해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseSolution">
         <source>Specifying a solution for 'dotnet test' should be via '--solution'.</source>
-        <target state="new">Specifying a solution for 'dotnet test' should be via '--solution'.</target>
+        <target state="translated">'dotnet test'에 대한 솔루션을 지정하려면 '--solution'을 통해 지정해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseTestModules">
         <source>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</source>
-        <target state="new">Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</target>
+        <target state="translated">'dotnet test'에 대한 dll 또는 실행 파일을 지정하는 것은 '--test-modules'를 통해 지정해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestConfigurationOptionDescription">

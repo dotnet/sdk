@@ -221,7 +221,8 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
                 "Content-Length",
                 "Content-Type",
                 "ETag",
-                "Last-Modified"
+                "Last-Modified",
+                "Vary",
             ]
         );
 
