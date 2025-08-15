@@ -15,12 +15,7 @@ internal static class TestOptions
     public static readonly ProjectOptions ProjectOptions = GetProjectOptions([]);
 
     public static EnvironmentOptions GetEnvironmentOptions(string workingDirectory = "", string muxerPath = "", TestAsset? asset = null)
-    {
-        // 0 timeout for process cleanup in tests. We can't send Ctrl+C on Windows, so process termination must be forced.
-        var processCleanupTimeout = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? TimeSpan.FromSeconds(0) : TimeSpan.FromSeconds(1);
-
-        return new(workingDirectory, muxerPath, processCleanupTimeout, IsPollingEnabled: true, TestFlags: TestFlags.RunningAsTest, TestOutput: asset != null ? GetWatchTestOutputPath(asset) : "");
-    }
+        => new(workingDirectory, muxerPath, TimeSpan.Zero, IsPollingEnabled: true, TestFlags: TestFlags.RunningAsTest, TestOutput: asset != null ? GetWatchTestOutputPath(asset) : "");
 
     public static CommandLineOptions GetCommandLineOptions(string[] args)
         => CommandLineOptions.Parse(args, NullLogger.Instance, TextWriter.Null, out _) ?? throw new InvalidOperationException();

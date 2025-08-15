@@ -213,13 +213,13 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor SkippingConfiguringBrowserRefresh_NotWebApp = Create("Skipping configuring browser-refresh middleware since this is not a webapp.", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor FailedToLaunchProcess = Create("Failed to launch '{0}' with arguments '{1}': {2}", Emoji.Error, MessageSeverity.Error);
         public static readonly MessageDescriptor ApplicationFailed = Create("Application failed: {0}", Emoji.Error, MessageSeverity.Error);
-        public static readonly MessageDescriptor ProcessRunAndExited = Create("Process id {0} ran for {1}ms and exited with exit code {2}.", Emoji.Default, MessageSeverity.Verbose);
-        public static readonly MessageDescriptor WaitingForProcessToExitWithin = Create("Waiting for process {0} to exit within {1}s.", Emoji.Default, MessageSeverity.Verbose);
-        public static readonly MessageDescriptor WaitingForProcessToExit = Create("Waiting for process {0} to exit ({1}).", Emoji.Default, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor ProcessRunAndExited = Create("Process id {0} ran for {1}ms and exited with exit code {2}.", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor WaitingForProcessToExitWithin = Create("Waiting for process {0} to exit within {1}s.", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor WaitingForProcessToExit = Create("Waiting for process {0} to exit ({1}).", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor FailedToKillProcess = Create("Failed to kill process {0}: {1}.", Emoji.Error, MessageSeverity.Error);
-        public static readonly MessageDescriptor TerminatingProcess = Create("Terminating process {0} ({1}).", Emoji.Default, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor TerminatingProcess = Create("Terminating process {0} ({1}).", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor FailedToSendSignalToProcess = Create("Failed to send {0} signal to process {1}: {2}", Emoji.Warning, MessageSeverity.Warning);
-        public static readonly MessageDescriptor ErrorReadingProcessOutput = Create("Error reading {0} of process {1}: {2}", Emoji.Default, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor ErrorReadingProcessOutput = Create("Error reading {0} of process {1}: {2}", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor HotReloadOfScopedCssSucceeded = Create("Hot reload of scoped css succeeded.", Emoji.HotReload, MessageSeverity.Output);
         public static readonly MessageDescriptor HotReloadOfScopedCssPartiallySucceeded = Create("Hot reload of scoped css partially succeeded: {0} project(s) out of {1} were updated.", Emoji.HotReload, MessageSeverity.Output);
         public static readonly MessageDescriptor HotReloadOfScopedCssFailed = Create("Hot reload of scoped css failed.", Emoji.Error, MessageSeverity.Error);
@@ -234,6 +234,8 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor HotReloadProfile_BlazorHosted = Create("HotReloadProfile: BlazorHosted. '{0}' references BlazorWebAssembly project '{1}'.", Emoji.HotReload, MessageSeverity.Verbose);
         public static readonly MessageDescriptor HotReloadProfile_BlazorWebAssembly = Create("HotReloadProfile: BlazorWebAssembly.", Emoji.HotReload, MessageSeverity.Verbose);
         public static readonly MessageDescriptor HotReloadProfile_Default = Create("HotReloadProfile: Default.", Emoji.HotReload, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor WatchingFilesForChanges = Create("Watching {0} file(s) for changes", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor WatchingFilesForChanges_FilePath = Create("> {0}", Emoji.Watch, MessageSeverity.Verbose);
     }
 
     internal interface IProcessOutputReporter

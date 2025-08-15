@@ -8,8 +8,8 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 internal class MockFileSetFactory() : MSBuildFileSetFactory(
     rootProjectFile: "test.csproj",
     buildArguments: [],
-    new ProcessRunner((TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory, "dotnet") is var options ? options : options).ProcessCleanupTimeout),
-    new BuildReporter(NullLogger.Instance, new GlobalOptions(), options))
+    new ProcessRunner(processCleanupTimeout: TimeSpan.Zero),
+    new BuildReporter(NullLogger.Instance, new GlobalOptions(), TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory, "dotnet") is var options ? options : options))
 {
     public Func<EvaluationResult?>? TryCreateImpl;
 

@@ -88,6 +88,8 @@ namespace Microsoft.DotNet.Watch
                 Task<ChangedFile?> fileSetTask;
                 Task finishedTask;
 
+                context.Logger.Log(MessageDescriptor.WaitingForChanges);
+
                 while (true)
                 {
                     fileSetTask = fileSetWatcher.WaitForFileChangeAsync(evaluationResult.Files, startedWatching: null, combinedCancellationSource.Token);

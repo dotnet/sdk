@@ -30,8 +30,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         public Dictionary<string, string> EnvironmentVariables { get; } = [];
 
-        public bool UsePollingWatcher { get; set; }
-
         public static string GetLinePrefix(MessageDescriptor descriptor, string projectDisplay = null)
             => $"dotnet watch {descriptor.Emoji.ToDisplay()}{(projectDisplay != null ? $" [{projectDisplay}]" : "")} {descriptor.Format}";
 
@@ -151,7 +149,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             commandSpec.WithEnvironmentVariable("DCP_IDE_REQUEST_TIMEOUT_SECONDS", "100000");
             commandSpec.WithEnvironmentVariable("DCP_IDE_NOTIFICATION_TIMEOUT_SECONDS", "100000");
             commandSpec.WithEnvironmentVariable("DCP_IDE_NOTIFICATION_KEEPALIVE_SECONDS", "100000");
-            commandSpec.WithEnvironmentVariable("DOTNET_WATCH_PROCESS_CLEANUP_TIMEOUT_MS", "100000");
             commandSpec.WithEnvironmentVariable("ASPIRE_ALLOW_UNSECURED_TRANSPORT", "1");
 
             foreach (var env in EnvironmentVariables)

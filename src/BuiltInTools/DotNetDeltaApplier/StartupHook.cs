@@ -37,7 +37,6 @@ internal sealed class StartupHook
             return;
         }
 
-
         RegisterSignalHandlers();
 
         var agent = new HotReloadAgent();

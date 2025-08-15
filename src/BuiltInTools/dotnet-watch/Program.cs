@@ -154,7 +154,8 @@ namespace Microsoft.DotNet.Watch
             var shutdownCancellationSourceDisposed = false;
             var shutdownCancellationSource = new CancellationTokenSource();
             var shutdownCancellationToken = shutdownCancellationSource.Token;
-            var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout);
+            var isHotReloadEnabled = IsHotReloadEnabled();
+            var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout(isHotReloadEnabled));
 
             console.KeyPressed += key =>
             {
@@ -194,7 +195,7 @@ namespace Microsoft.DotNet.Watch
 
                 var context = CreateContext(processRunner);
 
-                if (IsHotReloadEnabled())
+                if (isHotReloadEnabled)
                 {
                     var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: null);
                     await watcher.WatchAsync(shutdownCancellationToken);

@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 Logger = NullLogger.Instance,
                 BuildLogger = NullLogger.Instance,
                 LoggerFactory = NullLoggerFactory.Instance,
-                ProcessRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout),
+                ProcessRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero),
                 Options = new(),
                 RootProjectOptions = TestOptions.ProjectOptions,
                 EnvironmentOptions = environmentOptions

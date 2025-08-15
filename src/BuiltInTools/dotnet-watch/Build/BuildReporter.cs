@@ -21,13 +21,13 @@ internal sealed class BuildReporter(ILogger logger, GlobalOptions options, Envir
 
     public void ReportWatchedFiles(Dictionary<string, FileItem> fileItems)
     {
-        logger.LogDebug("Watching {Count} file(s) for changes", fileItems.Count);
+        logger.Log(MessageDescriptor.WatchingFilesForChanges, fileItems.Count);
 
         if (environmentOptions.TestFlags.HasFlag(TestFlags.RunningAsTest))
         {
             foreach (var file in fileItems.Values)
             {
-                logger.LogDebug("> {Path}", file.StaticWebAssetPath != null
+                logger.Log(MessageDescriptor.WatchingFilesForChanges_FilePath, file.StaticWebAssetPath != null
                     ? $"{file.FilePath}{Path.PathSeparator}{file.StaticWebAssetPath}"
                     : $"{file.FilePath}");
             }

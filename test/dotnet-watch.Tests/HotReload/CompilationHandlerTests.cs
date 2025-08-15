@@ -19,7 +19,7 @@ public class CompilationHandlerTests(ITestOutputHelper output) : DotNetWatchTest
 
         var environmentOptions = TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory, "dotnet");
 
-        var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout);
+        var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
 
         var reporter = new TestReporter(Logger);
         var loggerFactory = new LoggerFactory(reporter);
