@@ -253,6 +253,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ApplyCompressionNegotiation
       CandidateEndpoints="@(StaticWebAssetEndpoint)"
       CandidateAssets="@(_CompressionCurrentProjectBuildAssets)"
+      AttachWeakETagToCompressedAssets="$(AttachWeakETagToCompressedAssetsDuringDevelopment)"
     >
       <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedCompressionBuildEndpoints" />
     </ApplyCompressionNegotiation>
@@ -376,9 +377,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ApplyCompressionNegotiation
       CandidateEndpoints="@(StaticWebAssetEndpoint)"
-      CandidateAssets="@(_CompressionCurrentProjectPublishAssets)"
-      AttachWeakETagToCompressedAssets="$(AttachWeakETagToCompressedAssetsDuringDevelopment)"
-    >
+      CandidateAssets="@(_CompressionCurrentProjectPublishAssets)">
       <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedCompressionPublishEndpoints" />
     </ApplyCompressionNegotiation>
 
