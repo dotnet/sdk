@@ -3877,7 +3877,7 @@ Per visualizzare un valore, specifica l'opzione della riga di comando corrispond
       </trans-unit>
       <trans-unit id="WorkloadManifestInstallationConfigurationLooseManifests">
         <source>Configured to use loose manifests when installing new manifests.</source>
-        <target state="new">Configured to use loose manifests when installing new manifests.</target>
+        <target state="translated">Configurato per l'uso manifesti staccati durante l'installazione di nuovi manifesti.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadManifestInstallationConfigurationWorkloadSets">

@@ -3882,7 +3882,7 @@ Aby wyświetlić wartość, należy podać odpowiednią opcję wiersza poleceń 
       </trans-unit>
       <trans-unit id="WorkloadManifestInstallationConfigurationWorkloadSets">
         <source>Configured to use workload sets when installing new manifests.</source>
-        <target state="new">Configured to use workload sets when installing new manifests.</target>
+        <target state="translated">Skonfigurowano używanie workload sets podczas instalowania nowych manifestów.</target>
         <note>{Locked="workload sets"}</note>
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">
