@@ -4,13 +4,12 @@
 using System.CommandLine;
 using System.Net.Http;
 using Microsoft.Deployment.DotNet.Releases;
-using Microsoft.DotNet.Cli.Utils;
 using Spectre.Console;
 
 
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
-namespace Microsoft.DotNet.Cli.Commands.Sdk.Install;
+namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
 internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 {
@@ -51,7 +50,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                 !installPathFromGlobalJson.Equals(_installPath, StringComparison.OrdinalIgnoreCase))
             {
                 //  TODO: Add parameter to override error
-                Reporter.Error.WriteLine($"Error: The install path specified in global.json ({installPathFromGlobalJson}) does not match the install path provided ({_installPath}).");
+                Console.Error.WriteLine($"Error: The install path specified in global.json ({installPathFromGlobalJson}) does not match the install path provided ({_installPath}).");
                 return 1;
             }
 
@@ -290,14 +289,14 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
     string? ResolveInstallPathFromGlobalJson(string globalJsonPath)
     {
-        return Env.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_SDK_INSTALL_PATH");
+        return Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_SDK_INSTALL_PATH");
     }
 
     string? ResolveChannelFromGlobalJson(string globalJsonPath)
     {
         //return null;
         //return "9.0";
-        return Env.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_SDK_CHANNEL");
+        return Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_SDK_CHANNEL");
     }
 
     string GetDefaultInstallPath()
@@ -352,19 +351,19 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
     DefaultInstall GetDefaultInstallState(out string? currentInstallPath)
     {
-        var testHookDefaultInstall = Env.GetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_INSTALL");
+        var testHookDefaultInstall = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_INSTALL");
         DefaultInstall returnValue = DefaultInstall.None;
         if (!Enum.TryParse<DefaultInstall>(testHookDefaultInstall, out returnValue))
         {
             returnValue = DefaultInstall.None;
         }
-        currentInstallPath = Env.GetEnvironmentVariable("DOTNET_TESTHOOK_CURRENT_INSTALL_PATH");
+        currentInstallPath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_CURRENT_INSTALL_PATH");
         return returnValue;
     }
 
     string GetLatestInstalledAdminVersion()
     {
-        var latestAdminVersion = Env.GetEnvironmentVariable("DOTNET_TESTHOOK_LATEST_ADMIN_VERSION");
+        var latestAdminVersion = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_LATEST_ADMIN_VERSION");
         if (string.IsNullOrEmpty(latestAdminVersion))
         {
             latestAdminVersion = "10.0.203";

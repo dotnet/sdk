@@ -2,15 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Microsoft.DotNet.Cli.Commands.Sdk.Install;
+namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
 internal static class SdkInstallCommandParser
 {
     
 
-    public static readonly DynamicArgument<string?> ChannelArgument = new("channel")
+    public static readonly Argument<string?> ChannelArgument = new("channel")
     {
         HelpName = "CHANNEL",
         Description = "The channel of the .NET SDK to install.  For example: latest, 10, or 9.0.3xx.  A specific version (for example 9.0.304) can also be specified.",
@@ -37,7 +36,7 @@ internal static class SdkInstallCommandParser
         DefaultValueFactory = r => null
     };
 
-    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption();
+    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
 
     private static readonly Command SdkInstallCommand = ConstructCommand();
 
