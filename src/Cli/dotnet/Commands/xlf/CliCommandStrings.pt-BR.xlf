@@ -423,7 +423,7 @@ Para MSTest antes de 2.2.4, o tempo limite é usado para todos os casos de teste
       </trans-unit>
       <trans-unit id="CmdConfigFilePath">
         <source>CONFIG_FILE</source>
-        <target state="new">CONFIG_FILE</target>
+        <target state="translated">CONFIG_FILE</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCurrentRuntimeOptionDescription">
@@ -449,13 +449,13 @@ Para MSTest antes de 2.2.4, o tempo limite é usado para todos os casos de teste
       <trans-unit id="CmdDiagnosticOutputDirectoryDescription">
         <source>Output directory of the diagnostic logging.
 If not specified the file will be generated inside the default 'TestResults' directory.</source>
-        <target state="new">Output directory of the diagnostic logging.
-If not specified the file will be generated inside the default 'TestResults' directory.</target>
+        <target state="translated">Diretório de saída do registro em log de diagnóstico.
+Se não for especificado, o arquivo será gerado dentro do diretório padrão “TestResults”.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDiagnosticOutputDirectoryPath">
         <source>DIAGNOSTIC_DIR</source>
-        <target state="new">DIAGNOSTIC_DIR</target>
+        <target state="translated">DIAGNOSTIC_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDirectoryDescription">
@@ -1906,6 +1906,16 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
       <trans-unit id="PackCmdOutputDirDescription">
         <source>The output directory to place built packages in.</source>
         <target state="translated">O diretório de saída no qual os pacotes do build serão colocados.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersion">
+        <source>VERSION</source>
+        <target state="new">VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersionDescription">
+        <source>The version of the package to create</source>
+        <target state="new">The version of the package to create</target>
         <note />
       </trans-unit>
       <trans-unit id="PackConfigurationOptionDescription">

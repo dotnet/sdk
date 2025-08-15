@@ -1908,6 +1908,16 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">Выходной каталог для размещения собранных пакетов.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackCmdVersion">
+        <source>VERSION</source>
+        <target state="new">VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersionDescription">
+        <source>The version of the package to create</source>
+        <target state="new">The version of the package to create</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PackConfigurationOptionDescription">
         <source>The configuration to use for building the package. The default is 'Release'.</source>
         <target state="translated">Конфигурация, используемая для сборки пакета. Значение по умолчанию — "Release".</target>
@@ -3039,22 +3049,22 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="TestCommandUseDirectory">
         <source>Specifying a directory for 'dotnet test' should be via '--directory'.</source>
-        <target state="new">Specifying a directory for 'dotnet test' should be via '--directory'.</target>
+        <target state="translated">Указание каталога для "dotnet test" следует выполнять через "--directory".</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseProject">
         <source>Specifying a project for 'dotnet test' should be via '--project'.</source>
-        <target state="new">Specifying a project for 'dotnet test' should be via '--project'.</target>
+        <target state="translated">Указание проекта для "dotnet test" следует выполнять через "--project".</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseSolution">
         <source>Specifying a solution for 'dotnet test' should be via '--solution'.</source>
-        <target state="new">Specifying a solution for 'dotnet test' should be via '--solution'.</target>
+        <target state="translated">Указание решения для "dotnet test" следует выполнять через "--solution".</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseTestModules">
         <source>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</source>
-        <target state="new">Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</target>
+        <target state="translated">Указание DLL или исполняемых файлов для "dotnet test" следует выполнять через "--test-modules".</target>
         <note />
       </trans-unit>
       <trans-unit id="TestConfigurationOptionDescription">
