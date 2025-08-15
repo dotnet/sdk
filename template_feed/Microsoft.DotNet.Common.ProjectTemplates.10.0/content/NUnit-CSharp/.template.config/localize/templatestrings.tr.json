@@ -1,6 +1,6 @@
 ﻿{
   "author": "Aleksei Kharlov, halex2005 (codeofclimber.ru)",
-  "name": "NUnit Test Project",
+  "name": "NUnit Test Projesi",
   "description": "Windows, Linux ve macOS üzerinde .NET'te çalışabilen NUnit testlerini içeren bir proje",
   "symbols/TargetFrameworkOverride/description": "Hedef çerçeveyi geçersiz kılar",
   "symbols/TargetFrameworkOverride/displayName": "Hedef çerçeveyi geçersiz kılma",

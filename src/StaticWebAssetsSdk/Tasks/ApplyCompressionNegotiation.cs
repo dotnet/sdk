@@ -78,6 +78,19 @@ public class ApplyCompressionNegotiation : Task
                     // the ItemSpec, we want to add the original as well so that it gets re-added.
                     // The endpoint pointing to the uncompressed asset doesn't have a Content-Encoding selector and
                     // will use the default "identity" encoding during content negotiation.
+                    if(!HasVaryResponseHeaderWithAcceptEncoding(relatedEndpointCandidate))
+                    {
+                        Log.LogMessage(MessageImportance.Low, "  Adding Vary response header to related endpoint '{0}'", relatedEndpointCandidate.Route);
+
+                        relatedEndpointCandidate.ResponseHeaders = [
+                            ..relatedEndpointCandidate.ResponseHeaders,
+                            new StaticWebAssetEndpointResponseHeader
+                            {
+                                Name = "Vary",
+                                Value = "Accept-Encoding"
+                            }
+                        ];
+                    }
                     updatedEndpoints.Add(relatedEndpointCandidate);
                 }
             }
@@ -122,19 +135,42 @@ public class ApplyCompressionNegotiation : Task
                 foreach (var endpoint in endpoints)
                 {
                     Log.LogMessage(MessageImportance.Low, "    Adding endpoint '{0}'", endpoint.AssetFile);
-                }
-                foreach (var endpoint in endpoints)
-                {
+                    if (!HasVaryResponseHeaderWithAcceptEncoding(endpoint))
+                    {
+                        endpoint.ResponseHeaders = [
+                            .. endpoint.ResponseHeaders,
+                            new StaticWebAssetEndpointResponseHeader
+                            {
+                                Name = "Vary",
+                                Value = "Accept-Encoding"
+                            }
+                        ];
+                    }
                     additionalUpdatedEndpoints.Add(endpoint);
                 }
             }
         }
 
-        updatedEndpoints.UnionWith(additionalUpdatedEndpoints);
+        additionalUpdatedEndpoints.UnionWith(updatedEndpoints);
 
-        UpdatedEndpoints = StaticWebAssetEndpoint.ToTaskItems(updatedEndpoints);
+        UpdatedEndpoints = StaticWebAssetEndpoint.ToTaskItems(additionalUpdatedEndpoints);
 
         return true;
+    }
+
+    private static bool HasVaryResponseHeaderWithAcceptEncoding(StaticWebAssetEndpoint endpoint)
+    {
+        for (var i = 0; i < endpoint.ResponseHeaders.Length; i++)
+        {
+            var header = endpoint.ResponseHeaders[i];
+            if (string.Equals(header.Name, "Vary", StringComparison.OrdinalIgnoreCase) &&
+                header.Value.Contains("Accept-Encoding", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static HashSet<string> GetCompressedHeaders(StaticWebAssetEndpoint compressedEndpoint)
@@ -191,7 +227,7 @@ public class ApplyCompressionNegotiation : Task
             new()
             {
                 Name = "Vary",
-                Value = "Content-Encoding"
+                Value = "Accept-Encoding"
             }
         ];
 

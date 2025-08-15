@@ -129,10 +129,6 @@ internal sealed partial class CSharpCompilerCommand
 
     private void PrepareAuxiliaryFiles(out string rspPath)
     {
-        Reporter.Verbose.WriteLine(CanReuseAuxiliaryFiles
-            ? "CSC auxiliary files can be reused."
-            : "CSC auxiliary files can NOT be reused.");
-
         string fileDirectory = Path.GetDirectoryName(EntryPointFileFullPath) ?? string.Empty;
         string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(EntryPointFileFullPath);
 
@@ -210,6 +206,8 @@ internal sealed partial class CSharpCompilerCommand
                 build_property.EnableSingleFileAnalyzer = true
                 build_property.EnableTrimAnalyzer = true
                 build_property.IncludeAllContentForSelfExtract = 
+                build_property.VerifyReferenceTrimCompatibility = 
+                build_property.VerifyReferenceAotCompatibility = 
                 build_property.TargetFramework = net{TargetFrameworkVersion}
                 build_property.TargetFrameworkIdentifier = .NETCoreApp
                 build_property.TargetFrameworkVersion = v{TargetFrameworkVersion}

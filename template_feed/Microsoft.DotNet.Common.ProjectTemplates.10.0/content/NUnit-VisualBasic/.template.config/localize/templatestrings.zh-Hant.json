@@ -1,6 +1,6 @@
 ﻿{
   "author": "Aleksei Kharlov aka halex2005 (codeofclimber.ru)",
-  "name": "NUnit Test Project",
+  "name": "NUnit 測試專案",
   "description": "包含可以在 Windows、Linux 和 macOS 版的 .NET 上執行的 NUnit 測試的專案",
   "symbols/TargetFrameworkOverride/description": "覆寫目標 Framework",
   "symbols/TargetFrameworkOverride/displayName": "目標架構覆寫",

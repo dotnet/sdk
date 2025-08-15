@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Compression;
+using Microsoft.Build.Logging.StructuredLogger;
+using NuGet.Packaging;
 
 namespace Microsoft.DotNet.Pack.Tests
 {
@@ -288,6 +290,146 @@ namespace Microsoft.DotNet.Pack.Tests
 
             result.Should().Fail()
                 .And.HaveStdOutContaining("NETSDK1083");
+        }
+
+        [Fact]
+        public void DotnetPack_AcceptsVersionOption()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
+                .WithSource();
+            string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
+            var result = new DotnetPackCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(nuspecPath, "--property", "id=PackNoCsproj",
+                "--property", "authors=CustomAuthor", "--version", "1.2.3");
+
+            result.Should().Pass();
+
+            var outputDir = new DirectoryInfo(testInstance.Path);
+            outputDir.Should().Exist()
+                .And.HaveFile("PackNoCsproj.1.2.3.nupkg");
+
+            var nupkgPath = Path.Combine(testInstance.Path, "PackNoCsproj.1.2.3.nupkg");
+            File.Exists(nupkgPath).Should().BeTrue("The package should be created with the specified version.");
+
+            using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+            {
+                var nuspecReader = nupkgReader.NuspecReader;
+                nuspecReader.Should().NotBeNull();
+
+                nuspecReader.GetVersion().ToNormalizedString().Should().Be("1.2.3", "The package should contain the custom version");
+            }
+        }
+
+        [Fact]
+        public void DotnetPack_FailsWhenVersionOptionHasNoValue()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
+                .WithSource();
+            string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
+            var result = new DotnetPackCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(nuspecPath, "--property", "id=PackNoCsproj","--property", "authors=author", "--version");
+
+            result.Should().Fail();
+            result.StdErr.Should().Contain("Required argument missing for option: '--version'.");
+        }
+
+        [Fact]
+        public void DotnetPack_AcceptsCustomProperties()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
+                .WithSource();
+
+            string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
+
+            var result = new DotnetPackCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(
+                nuspecPath, "--property", "id=CustomID",
+                "--property", "authors=CustomAuthor"
+                );
+
+            result.Should().Pass();
+
+            var nupkgPath = Path.Combine(testInstance.Path, "CustomID.1.0.0.nupkg");
+            File.Exists(nupkgPath).Should().BeTrue("The package should be created with the custom id.");
+
+            using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+            {
+                var nuspecReader = nupkgReader.NuspecReader;
+                nuspecReader.Should().NotBeNull();
+
+                nuspecReader.GetId().Should().Be("CustomID", "The nuspec file should contain the custom id");
+                nuspecReader.GetAuthors().Should().Be("CustomAuthor", "The nuspec file should contain the custom author");
+            }
+        }
+
+        [Theory]
+        [InlineData("Debug")]
+        [InlineData("Release")]
+        public void DotnetPack_AcceptsConfigurationOption(string configuration)
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecWithConfigFiles")
+                .WithSource();
+            string nuspecPath = Path.Combine(testInstance.Path, "TestingPackWithConfig.nuspec");
+
+            var configDir = Path.Combine(testInstance.Path, "bin", configuration);
+            Directory.CreateDirectory(configDir);
+            File.WriteAllText(Path.Combine(configDir, "libraryclass.cs"), "// dummy source file for test");
+
+            var result = new DotnetPackCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(nuspecPath, "--configuration", configuration);
+            result.Should().Pass();
+
+            var outputPackage = new FileInfo(Path.Combine(testInstance.Path, "TestPackWithConfig.1.0.0.nupkg"));
+            outputPackage.Should().Exist();
+
+            using (var stream = outputPackage.OpenRead())
+            using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
+            {
+                var expectedPdbPath = "lib/net40/libraryclass.cs";
+                archive.Entries.Should().Contain(e => e.FullName == expectedPdbPath);
+            }
+        }
+
+        [Fact]
+        public void DotnetPack_AcceptsOutputOption()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
+                .WithSource();
+            string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
+            string outputDirPath = Path.Combine(testInstance.Path, "output");
+
+            var result = new DotnetPackCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(nuspecPath, "--property", "id=PackNoCsproj",
+                "--property", "authors=CustomAuthor", "--output", outputDirPath);
+            result.Should().Pass();
+            var outputDir = new DirectoryInfo(outputDirPath);
+            outputDir.Should().Exist()
+                .And.HaveFile("PackNoCsproj.1.0.0.nupkg");
+
+            var nupkgPath = Path.Combine(outputDirPath, "PackNoCsproj.1.0.0.nupkg");
+            File.Exists(nupkgPath).Should().BeTrue("The package should be created in the specified output directory.");
+            using var zip = ZipFile.OpenRead(nupkgPath);
+            var nuspecEntry = zip.Entries.FirstOrDefault(e => e.FullName.EndsWith(".nuspec"));
+            nuspecEntry.Should().NotBeNull("The .nuspec file should exist in the package.");
+        }
+
+        [Fact]
+        public void DotnetPack_FailsForNonExistentNuspec()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
+                .WithSource();
+            string nuspecPath = Path.Combine(testInstance.Path, "NonExistent.nuspec");
+
+            var result = new DotnetPackCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(nuspecPath);
+
+            result.Should().Fail();            
         }
     }
 }

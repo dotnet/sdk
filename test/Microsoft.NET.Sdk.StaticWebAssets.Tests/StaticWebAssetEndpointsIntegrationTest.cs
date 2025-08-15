@@ -217,12 +217,12 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         uncompressedAppJsEndpoint.Should().HaveCount(1);
         uncompressedAppJsEndpoint.Single().ResponseHeaders.Select(h => h.Name).Should().BeEquivalentTo(
             [
-                "Accept-Ranges",
                 "Cache-Control",
                 "Content-Length",
                 "Content-Type",
                 "ETag",
-                "Last-Modified"
+                "Last-Modified",
+                "Vary",
             ]
         );
 
@@ -232,7 +232,6 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         gzipCompressedAppJsEndpoint.Should().HaveCount(1);
         gzipCompressedAppJsEndpoint.Single().ResponseHeaders.Select(h => h.Name).Should().BeEquivalentTo(
             [
-                "Accept-Ranges",
                 "Cache-Control",
                 "Content-Length",
                 "Content-Type",
@@ -251,7 +250,6 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         brotliCompressedAppJsEndpoint.Should().HaveCount(1);
         brotliCompressedAppJsEndpoint.Single().ResponseHeaders.Select(h => h.Name).Should().BeEquivalentTo(
             [
-                "Accept-Ranges",
                 "Cache-Control",
                 "Content-Length",
                 "Content-Type",
