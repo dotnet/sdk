@@ -223,7 +223,6 @@ public class ApplyCompressionNegotiationTest
                 Name = "ETag",
                 Value = "\u0022compressed-brotli\u0022"
             },
-
             new ()
             {
                 Name = "Last-Modified",
