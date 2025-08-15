@@ -213,6 +213,10 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>520c71b5277fc1f72dbec14da03ca55205d6c8e5</Sha>
     </Dependency>
+    <Dependency Name="System.ComponentModel.Composition" Version="10.0.0-preview.7.25377.103">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>87e4c823cc62a13a3e8afbddc78bf718971f376c</Sha>
+    </Dependency>
     <Dependency Name="System.Formats.Asn1" Version="10.0.0-rc.1.25411.109">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>520c71b5277fc1f72dbec14da03ca55205d6c8e5</Sha>
@@ -380,10 +384,6 @@
       <Sha>520c71b5277fc1f72dbec14da03ca55205d6c8e5</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Web.Xdt" Version="3.2.0-preview.25411.109">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>520c71b5277fc1f72dbec14da03ca55205d6c8e5</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.0-preview.25411.109">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>520c71b5277fc1f72dbec14da03ca55205d6c8e5</Sha>
     </Dependency>
