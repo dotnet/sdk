@@ -59,7 +59,8 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             }
 
             var builder = new ConfigurationBuilder();
-            builder.AddIniFile(dotnetConfigFilePath);
+            using var stream = fileSystem.OpenRead(dotnetConfigFilePath);
+            builder.AddIniStream(stream);
             IConfigurationRoot config = builder.Build();
             var section = config.GetSection(sectionName);
 
