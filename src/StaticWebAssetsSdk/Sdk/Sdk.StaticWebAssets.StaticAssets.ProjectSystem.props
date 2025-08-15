@@ -23,6 +23,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefaultItemExcludes>$(DefaultItemExcludes);**\jspm_packages\**;jspm_packages\**</DefaultItemExcludes>
     <DefaultItemExcludes>$(DefaultItemExcludes);**\bower_components\**;bower_components\**</DefaultItemExcludes>
     <DefaultItemExcludes>$(DefaultItemExcludes);**\packages.lock.json</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);**\http-client.env.json</DefaultItemExcludes>
     <DefaultWebContentItemExcludes>$(DefaultWebContentItemExcludes);wwwroot\**</DefaultWebContentItemExcludes>
   </PropertyGroup>
 
