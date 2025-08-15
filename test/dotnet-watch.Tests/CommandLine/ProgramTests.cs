@@ -15,6 +15,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var console = new TestConsole(Logger);
             var reporter = new TestReporter(Logger);
+            var loggerFactory = new LoggerFactory(reporter);
 
             var watching = reporter.RegisterSemaphore(MessageDescriptor.WatchingWithHotReload);
             var shutdownRequested = reporter.RegisterSemaphore(MessageDescriptor.ShutdownRequested);
@@ -23,7 +24,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 TestOptions.GetCommandLineOptions(["--verbose"]),
                 console,
                 TestOptions.GetEnvironmentOptions(workingDirectory: testAsset.Path, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset),
-                reporter,
+                loggerFactory,
                 reporter,
                 out var errorCode);
 
@@ -343,7 +344,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.AssertOutputLineStartsWith("dotnet watch ⌚ Fix the error to continue or press Ctrl+C to exit.");
 
-            App.AssertOutputContains(@"dotnet watch ⌚ Failed to load project graph.");
+            App.AssertOutputContains(@"dotnet watch 🔨 Failed to load project graph.");
             App.AssertOutputContains($"dotnet watch ❌ The project file could not be loaded. Could not find a part of the path '{Path.Combine(testAsset.Path, "AppWithDeps", "NonExistentDirectory", "X.csproj")}'");
         }
 

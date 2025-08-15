@@ -51,16 +51,15 @@ namespace Microsoft.DotNet.Watch.UnitTests
             _actions[eventId] = existing;
         }
 
-        public void Report(MessageDescriptor descriptor, string prefix, object?[] args)
+        public void Report(EventId id, Emoji emoji, MessageSeverity severity, string message)
         {
-            if (descriptor.Severity != MessageSeverity.None)
+            if (severity != MessageSeverity.None)
             {
-                var message = descriptor.GetMessage(prefix, args);
-                Messages.Add((descriptor.Severity, message));
-                WriteTestOutput($"{ToString(descriptor.Severity)} {descriptor.Emoji.ToDisplay()} {message}");
+                Messages.Add((severity, message));
+                WriteTestOutput($"{ToString(severity)} {emoji.ToDisplay()} {message}");
             }
 
-            if (_actions.TryGetValue(descriptor.Id, out var action))
+            if (_actions.TryGetValue(id, out var action))
             {
                 action();
             }

@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 internal static class TestOptions
@@ -21,7 +23,7 @@ internal static class TestOptions
     }
 
     public static CommandLineOptions GetCommandLineOptions(string[] args)
-        => CommandLineOptions.Parse(args, NullReporter.Singleton, TextWriter.Null, out _) ?? throw new InvalidOperationException();
+        => CommandLineOptions.Parse(args, NullLogger.Instance, TextWriter.Null, out _) ?? throw new InvalidOperationException();
 
     public static ProjectOptions GetProjectOptions(string[]? args = null)
     {

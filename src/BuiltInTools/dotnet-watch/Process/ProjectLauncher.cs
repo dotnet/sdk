@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -16,8 +17,11 @@ internal sealed class ProjectLauncher(
 {
     public int Iteration = iteration;
 
-    public IReporter Reporter
-        => context.Reporter;
+    public ILogger Logger
+        => context.Logger;
+
+    public ILoggerFactory LoggerFactory
+        => context.LoggerFactory;
 
     public EnvironmentOptions EnvironmentOptions
         => context.EnvironmentOptions;
@@ -38,11 +42,11 @@ internal sealed class ProjectLauncher(
 
         if (!projectNode.IsNetCoreApp(Versions.Version6_0))
         {
-            Reporter.Error($"Hot Reload based watching is only supported in .NET 6.0 or newer apps. Use --no-hot-reload switch or update the project's launchSettings.json to disable this feature.");
+            Logger.LogError($"Hot Reload based watching is only supported in .NET 6.0 or newer apps. Use --no-hot-reload switch or update the project's launchSettings.json to disable this feature.");
             return null;
         }
 
-        var appModel = HotReloadAppModel.InferFromProject(projectNode, Reporter);
+        var appModel = HotReloadAppModel.InferFromProject(projectNode, Logger);
 
         var processSpec = new ProcessSpec
         {
@@ -50,6 +54,15 @@ internal sealed class ProjectLauncher(
             IsUserApplication = true,
             WorkingDirectory = projectOptions.WorkingDirectory,
             OnOutput = onOutput,
+        };
+
+        // If output isn't already redirected (build invocation) we redirect it to the reporter.
+        // The reporter synchronizes the output of the process with the reporter output,
+        // so that the printed lines don't interleave.
+        var projectDisplayName = projectNode.GetDisplayName();
+        processSpec.OnOutput ??= line =>
+        {
+            context.ProcessOutputReporter.ReportOutput(context.ProcessOutputReporter.PrefixProcessOutput ? line with { Content = $"[{projectDisplayName}] {line.Content}" } : line);
         };
 
         var environmentBuilder = EnvironmentVariablesBuilder.FromCurrentEnvironment();
@@ -109,8 +122,6 @@ internal sealed class ProjectLauncher(
 
         processSpec.Arguments = arguments;
 
-        var processReporter = new ProjectSpecificReporter(projectNode, Reporter, context.LoggerFactory);
-
         return await compilationHandler.TrackRunningProjectAsync(
             projectNode,
             projectOptions,
@@ -119,8 +130,6 @@ internal sealed class ProjectLauncher(
             browserRefreshServer,
             processSpec,
             restartOperation,
-            processReporter,
-            context.ProcessOutputReporter,
             processTerminationSource,
             cancellationToken);
     }

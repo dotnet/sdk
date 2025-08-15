@@ -15,8 +15,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             return new()
             {
-                Reporter = NullReporter.Singleton,
-                ProcessOutputReporter = NullReporter.Singleton,
+                ProcessOutputReporter = new TestProcessOutputReporter(),
                 LoggerFactory = NullLoggerFactory.Instance,
                 Logger = NullLogger.Instance,
                 BuildLogger = NullLogger.Instance,

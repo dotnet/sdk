@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.DotNet.Watch
 {
     /// <summary>
@@ -48,30 +50,30 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        public void Report(MessageDescriptor descriptor, string prefix, object?[] args)
+        public void Report(EventId id, Emoji emoji, MessageSeverity severity, string message)
         {
-            switch (descriptor.Severity)
+            switch (severity)
             {
                 case MessageSeverity.Error:
                     // Use stdout for error messages to preserve ordering with respect to other output.
-                    WriteLine(console.Out, descriptor.GetMessage(prefix, args), ConsoleColor.Red, descriptor.Emoji);
+                    WriteLine(console.Out, message, ConsoleColor.Red, emoji);
                     break;
 
                 case MessageSeverity.Warning:
-                    WriteLine(console.Out, descriptor.GetMessage(prefix, args), ConsoleColor.Yellow, descriptor.Emoji);
+                    WriteLine(console.Out, message, ConsoleColor.Yellow, emoji);
                     break;
 
                 case MessageSeverity.Output:
                     if (!IsQuiet)
                     {
-                        WriteLine(console.Out, descriptor.GetMessage(prefix, args), color: null, descriptor.Emoji);
+                        WriteLine(console.Out, message, color: null, emoji);
                     }
                     break;
 
                 case MessageSeverity.Verbose:
                     if (IsVerbose)
                     {
-                        WriteLine(console.Out, descriptor.GetMessage(prefix, args), ConsoleColor.DarkGray, descriptor.Emoji);
+                        WriteLine(console.Out, message, ConsoleColor.DarkGray, emoji);
                     }
                     break;
             }

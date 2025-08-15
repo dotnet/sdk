@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+public class CompilationHandlerTests(ITestOutputHelper output) : DotNetWatchTestBase(output)
 {
     [Fact]
     public async Task ReferenceOutputAssembly_False()
@@ -21,9 +21,11 @@ public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTest
 
         var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout);
 
-        var logger = new TestLogger(Logger);
+        var reporter = new TestReporter(Logger);
+        var loggerFactory = new LoggerFactory(reporter);
+        var logger = loggerFactory.CreateLogger("Test");
         var projectGraph = ProjectGraphUtilities.TryLoadProjectGraph(options.ProjectPath, globalOptions: [], logger, projectGraphRequired: false, CancellationToken.None);
-        var handler = new CompilationHandler(logger, processRunner);
+        var handler = new CompilationHandler(loggerFactory, logger, processRunner);
 
         await handler.Workspace.UpdateProjectConeAsync(hostProject, CancellationToken.None);
 
