@@ -193,6 +193,14 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             if (runDotnetTest)
             {
+                if (testRunner == "Microsoft.Testing.Platform")
+                {
+                    File.WriteAllText(Path.Combine(outputDirectory, "dotnet.config"), """
+                        [dotnet.test.runner]
+                        name = "Microsoft.Testing.Platform"
+                        """);
+                }
+
                 var result = new DotnetTestCommand(_log, false)
                 .WithWorkingDirectory(outputDirectory)
                 .Execute(outputDirectory);
