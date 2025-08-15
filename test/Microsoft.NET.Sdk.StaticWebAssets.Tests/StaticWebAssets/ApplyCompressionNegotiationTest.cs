@@ -223,11 +223,7 @@ public class ApplyCompressionNegotiationTest
                 Name = "ETag",
                 Value = "\u0022compressed-brotli\u0022"
             },
-            new ()
-            {
-                Name = "ETag",
-                Value = "W/\u0022original\u0022"
-            },
+
             new ()
             {
                 Name = "Last-Modified",
@@ -293,11 +289,6 @@ public class ApplyCompressionNegotiationTest
                 {
                     Name = "ETag",
                     Value = "\u0022compressed-gzip\u0022"
-                },
-                new ()
-                {
-                    Name = "ETag",
-                    Value = "W/\u0022original\u0022"
                 },
                 new ()
                 {
@@ -536,11 +527,6 @@ public class ApplyCompressionNegotiationTest
                 },
                 new ()
                 {
-                    Name = "ETag",
-                    Value = "W/\u0022original\u0022"
-                },
-                new ()
-                {
                     Name = "Last-Modified",
                     Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
                 },
@@ -594,11 +580,6 @@ public class ApplyCompressionNegotiationTest
                 {
                     Name = "ETag",
                     Value = "\u0022compressed-gzip\u0022"
-                },
-                new ()
-                {
-                    Name = "ETag",
-                    Value = "W/\u0022original\u0022"
                 },
                 new ()
                 {
