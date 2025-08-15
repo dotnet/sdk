@@ -4,7 +4,6 @@
 using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using System.Configuration;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -14,7 +13,6 @@ using Microsoft.DotNet.Cli.Utils;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
@@ -89,7 +87,7 @@ public class PackCommand(
 
     public static int RunPackCommand(ParseResult parseResult)
     {
-        var args = parseResult.GetValue(PackCommandParser.SlnOrProjectArgument)?.ToList() ?? new List<string>();
+        var args = parseResult.GetValue(PackCommandParser.SlnOrProjectOrFileArgument)?.ToList() ?? new List<string>();
 
         if (args.Count != 1)
         {
@@ -134,7 +132,7 @@ public class PackCommand(
         parseResult.HandleDebugSwitch();
         parseResult.ShowHelpOrErrorIfAppropriate();
 
-        var args = parseResult.GetValue(PackCommandParser.SlnOrProjectArgument)?.ToList() ?? new List<string>();
+        var args = parseResult.GetValue(PackCommandParser.SlnOrProjectOrFileArgument)?.ToList() ?? new List<string>();
 
         if (args.Count > 0 && Path.GetExtension(args[0]).Equals(".nuspec", StringComparison.OrdinalIgnoreCase))
         {
