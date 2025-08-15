@@ -169,4 +169,12 @@
   <data name="WorkloadManifestInstallationConfiguration" xml:space="preserve">
     <value>Configured to use {0} when installing new manifests.</value>
   </data>
+  <data name="WorkloadSetFromGlobalJsonNotInstalled" xml:space="preserve">
+    <value>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</value>
+    <comment>{Locked="dotnet workload restore"}</comment>
+  </data>
+  <data name="ShouldInstallAWorkloadSet" xml:space="preserve">
+    <value>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</value>
+    <comment>{Locked="dotnet workload restore"}</comment>
+  </data>
 </root>

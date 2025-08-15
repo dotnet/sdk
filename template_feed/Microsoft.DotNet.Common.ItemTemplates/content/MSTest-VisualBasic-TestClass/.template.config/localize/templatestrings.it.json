@@ -1,0 +1,16 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Classe test MSTest",
+  "description": "Crea una nuova classe di test MSTest",
+  "symbols/Fixture/description": "Selezionare i tipi di fixture da includere nel progetto.",
+  "symbols/Fixture/displayName": "Fixture",
+  "symbols/Fixture/choices/None/description": "Nessun metodo di fixture",
+  "symbols/Fixture/choices/None/displayName": "Nessuno",
+  "symbols/Fixture/choices/AssemblyInitialize/description": "Metodo fixture AssemblyInitialize",
+  "symbols/Fixture/choices/AssemblyCleanup/description": "Metodo fixture AssemblyCleanup",
+  "symbols/Fixture/choices/ClassInitialize/description": "Metodo fixture ClassInitialize",
+  "symbols/Fixture/choices/ClassCleanup/description": "Metodo fixture ClassCleanup",
+  "symbols/Fixture/choices/TestInitialize/description": "Metodo fixture TestInitialize",
+  "symbols/Fixture/choices/TestCleanup/description": "Metodo fixture TestCleanup",
+  "postActions/openInEditor/description": "Apre Test1.vb nell'editor."
+}
