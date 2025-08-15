@@ -127,7 +127,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public bool NoCache { get; init; }
 
     public bool NoBuild { get; init; }
-    public BuildLevel LastBuildLevel { get; private set; } = BuildLevel.None;
+
+    /// <summary>
+    /// Filled during <see cref="Execute"/>.
+    /// </summary>
+    public (BuildLevel Level, CacheInfo? Cache) LastBuild { get; private set; }
 
     /// <summary>
     /// If <see langword="true"/>, no build markers are written
@@ -156,7 +160,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public override int Execute()
     {
-        Debug.Assert(!(NoRestore && NoBuild));
         var verbosity = MSBuildArgs.Verbosity ?? MSBuildForwardingAppWithoutLogging.DefaultVerbosity;
         var consoleLogger = TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]);
         var binaryLogger = GetBinaryLogger(MSBuildArgs.OtherMSBuildArgs);
@@ -168,12 +171,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             if (NoCache)
             {
                 cache = ComputeCacheEntry();
-                LastBuildLevel = BuildLevel.All;
+                cache.CurrentEntry.BuildLevel = BuildLevel.All;
+                LastBuild = (BuildLevel.All, cache);
             }
             else
             {
                 var buildLevel = GetBuildLevel(out cache);
-                LastBuildLevel = buildLevel;
+                cache.CurrentEntry.BuildLevel = buildLevel;
+                LastBuild = (buildLevel, cache);
 
                 if (buildLevel is BuildLevel.None)
                 {
@@ -181,6 +186,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     {
                         Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseUpToDate.Yellow());
                     }
+
+                    // No rebuild, can reuse run properties.
+                    cache.CurrentEntry.Run = cache.PreviousEntry?.Run;
 
                     MarkArtifactsFolderUsed();
                     return 0;
@@ -200,8 +208,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     {
                         EntryPointFileFullPath = EntryPointFileFullPath,
                         ArtifactsPath = ArtifactsPath,
-                        // We can reuse auxiliary files if we previously built using csc.
-                        CanReuseAuxiliaryFiles = cache.CanReuseAuxiliaryFiles && cache.PreviousEntry?.BuildLevel is BuildLevel.Csc,
+                        CanReuseAuxiliaryFiles = cache.DetermineFinalCanReuseAuxiliaryFiles(),
                     }
                     .Execute(out bool fallbackToNormalBuild);
 
@@ -217,13 +224,19 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                     Debug.Assert(result != 0);
                 }
+
+                Debug.Assert(buildLevel is BuildLevel.All or BuildLevel.Csc);
             }
 
             MarkBuildStart();
         }
-        else
+        else // if (NoBuild)
         {
-            LastBuildLevel = BuildLevel.None;
+            // This is reached only during `restore`, not `run --no-build`
+            // (in the latter case, this virtual building command is not executed at all).
+            Debug.Assert(!NoRestore);
+
+            LastBuild = (BuildLevel.None, Cache: null);
 
             if (!NoWriteBuildMarkers)
             {
@@ -294,6 +307,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 }
 
                 Debug.Assert(cache != null);
+                Debug.Assert(buildRequest.ProjectInstance != null);
+
+                // Cache run info (to avoid re-evaluating the project instance).
+                cache.CurrentEntry.Run = RunProperties.FromProject(buildRequest.ProjectInstance);
+
                 MarkBuildSuccess(cache);
             }
 
@@ -372,16 +390,44 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// <summary>
     /// Common info needed by <see cref="ComputeCacheEntry"/> but also later stages.
     /// </summary>
-    private sealed class CacheInfo
+    public sealed class CacheInfo
     {
         public required FileInfo EntryPointFile { get; init; }
         public RunFileBuildCacheEntry? PreviousEntry { get; set; }
         public required RunFileBuildCacheEntry CurrentEntry { get; init; }
 
         /// <summary>
+        /// The first of <see cref="CurrentEntry"/>'s <see cref="RunFileBuildCacheEntry.ImplicitBuildFiles"/>
+        /// which is from the set of MSBuild <see cref="s_implicitBuildFiles"/>.
+        /// </summary>
+        public string? ExampleMSBuildFile { get; set; }
+
+        /// <summary>
         /// We cannot reuse auxiliary files like <c>csc.rsp</c> for example when SDK version changes.
         /// </summary>
-        public bool CanReuseAuxiliaryFiles { get; set; } = true;
+        /// <remarks>
+        /// Only set during <see cref="NeedsToBuild"/>.
+        /// </remarks>
+        public bool InitialCanReuseAuxiliaryFiles { get; set; } = true;
+
+        public bool DetermineFinalCanReuseAuxiliaryFiles()
+        {
+            if (!InitialCanReuseAuxiliaryFiles)
+            {
+                Reporter.Verbose.WriteLine("CSC auxiliary files can NOT be reused due to the same reason build is needed.");
+                return false;
+            }
+
+            if (PreviousEntry?.BuildLevel != BuildLevel.Csc)
+            {
+                Reporter.Verbose.WriteLine($"CSC auxiliary files can NOT be reused because previous build level was not CSC " +
+                    $"(it was {PreviousEntry?.BuildLevel.ToString() ?? "N/A"}).");
+                return false;
+            }
+
+            Reporter.Verbose.WriteLine("CSC auxiliary files can be reused.");
+            return true;
+        }
     }
 
     /// <summary>
@@ -404,12 +450,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         // Collect current implicit build files.
         CollectImplicitBuildFiles(entryPointFile.Directory, cacheEntry.ImplicitBuildFiles, out var exampleMSBuildFile);
-        cacheEntry.ExampleMSBuildFile = exampleMSBuildFile;
 
         return new CacheInfo
         {
             EntryPointFile = entryPointFile,
             CurrentEntry = cacheEntry,
+            ExampleMSBuildFile = exampleMSBuildFile,
         };
     }
 
@@ -466,10 +512,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return true;
         }
 
-        var previousCacheEntry = DeserializeCacheEntry(successCacheFile);
+        var previousCacheEntry = DeserializeCacheEntry(successCacheFile.FullName);
         if (previousCacheEntry is null)
         {
-            cache.CanReuseAuxiliaryFiles = false;
+            cache.InitialCanReuseAuxiliaryFiles = false;
             Reporter.Verbose.WriteLine("Building because previous cache entry could not be deserialized: " + successCacheFile.FullName);
             return true;
         }
@@ -481,7 +527,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         if (previousCacheEntry.SdkVersion != cacheEntry.SdkVersion)
         {
-            cache.CanReuseAuxiliaryFiles = false;
+            cache.InitialCanReuseAuxiliaryFiles = false;
             Reporter.Verbose.WriteLine($"""
                 Building because previous SDK version ({previousCacheEntry.SdkVersion}) does not match current ({cacheEntry.SdkVersion}): {successCacheFile.FullName}
                 """);
@@ -490,7 +536,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         if (previousCacheEntry.RuntimeVersion != cacheEntry.RuntimeVersion)
         {
-            cache.CanReuseAuxiliaryFiles = false;
+            cache.InitialCanReuseAuxiliaryFiles = false;
             Reporter.Verbose.WriteLine($"""
                 Building because previous runtime version ({previousCacheEntry.RuntimeVersion}) does not match current ({cacheEntry.RuntimeVersion}): {successCacheFile.FullName}
                 """);
@@ -557,26 +603,32 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
 
         return false;
+    }
 
-        static RunFileBuildCacheEntry? DeserializeCacheEntry(FileInfo cacheFile)
+    private static RunFileBuildCacheEntry? DeserializeCacheEntry(string path)
+    {
+        try
         {
-            try
-            {
-                using var stream = File.Open(cacheFile.FullName, FileMode.Open, FileAccess.Read, FileShare.Read);
-                return JsonSerializer.Deserialize(stream, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
-            }
-            catch (Exception e)
-            {
-                Reporter.Verbose.WriteLine($"Failed to deserialize cache entry ({cacheFile.FullName}): {e.GetType().FullName}: {e.Message}");
-                return null;
-            }
+            using var stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            return JsonSerializer.Deserialize(stream, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
         }
+        catch (Exception e)
+        {
+            Reporter.Verbose.WriteLine($"Failed to deserialize cache entry ({path}): {e.GetType().FullName}: {e.Message}");
+            return null;
+        }
+    }
+
+    public RunFileBuildCacheEntry? GetPreviousCacheEntry()
+    {
+        return DeserializeCacheEntry(Path.Join(ArtifactsPath, BuildSuccessCacheFileName));
     }
 
     private BuildLevel GetBuildLevel(out CacheInfo cache)
     {
         if (!NeedsToBuild(out cache))
         {
+            Reporter.Verbose.WriteLine("No need to build, the output is up to date.");
             return BuildLevel.None;
         }
 
@@ -589,15 +641,17 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return BuildLevel.All;
         }
 
-        if (cacheEntry.GlobalProperties.Keys.Except(s_ignorableProperties, cacheEntry.GlobalProperties.Comparer).Any())
+        var globalProperties = cacheEntry.GlobalProperties.Keys.Except(s_ignorableProperties, cacheEntry.GlobalProperties.Comparer);
+        if (globalProperties.FirstOrDefault() is { } exampleKey)
         {
-            var example = cacheEntry.GlobalProperties.First();
-            Reporter.Verbose.WriteLine($"Using MSBuild because there are global properties, for example '{example.Key}={example.Value}'.");
+            var exampleValue = cacheEntry.GlobalProperties[exampleKey];
+            Reporter.Verbose.WriteLine($"Using MSBuild because there are global properties, for example '{exampleKey}={exampleValue}'.");
             return BuildLevel.All;
         }
 
-        if (cacheEntry.ExampleMSBuildFile is { } exampleMSBuildFile)
+        if (cache.ExampleMSBuildFile is { } exampleMSBuildFile)
         {
+            Debug.Assert(cacheEntry.ImplicitBuildFiles.Count != 0);
             Reporter.Verbose.WriteLine($"Using MSBuild because there are implicit build files, for example '{exampleMSBuildFile}'.");
             return BuildLevel.All;
         }
@@ -659,9 +713,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             return;
         }
-
-        Debug.Assert(LastBuildLevel != BuildLevel.None);
-        cache.CurrentEntry.BuildLevel = LastBuildLevel;
 
         string successCacheFile = Path.Join(ArtifactsPath, BuildSuccessCacheFileName);
         using var stream = File.Open(successCacheFile, FileMode.Create, FileAccess.Write, FileShare.None);
@@ -1630,8 +1681,7 @@ internal sealed class RunFileBuildCacheEntry
 
     public string? RuntimeVersion { get; set; } // should be required and init-only but https://github.com/dotnet/runtime/issues/92877
 
-    [JsonIgnore]
-    public string? ExampleMSBuildFile { get; set; }
+    public RunProperties? Run { get; set; }
 
     [JsonConstructor]
     public RunFileBuildCacheEntry()

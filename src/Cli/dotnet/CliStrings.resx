@@ -823,4 +823,7 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
   <data name="SDKSchemaCommandDefinition" xml:space="preserve">
     <value>Display the command schema as JSON.</value>
   </data>
+  <data name="PackCmd_OneNuspecAllowed" xml:space="preserve">
+    <value>Only one .nuspec file can be packed at a time</value>
+  </data>
 </root>
