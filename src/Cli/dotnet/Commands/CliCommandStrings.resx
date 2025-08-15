@@ -1214,6 +1214,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   </data>
   <data name="NoWorkloadsToRepair" xml:space="preserve">
     <value>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</value>
+    <comment>{Locked="dotnet workload search"}</comment>
   </data>
   <data name="NoWorkloadsToUpdate" xml:space="preserve">
     <value>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</value>
