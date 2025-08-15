@@ -2829,7 +2829,7 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
         <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
-        <target state="needs-review-translation">Obciążenia są skonfigurowane do instalowania i aktualizowania przy użyciu wersji obciążeń, ale żadnych nie znaleziono. Uruchom polecenie „dotnet workload restore”, aby zainstalować wersję obciążenia.</target>
+        <target state="new">No workload sets are installed. Run "dotnet workload restore" to install a workload set.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">
