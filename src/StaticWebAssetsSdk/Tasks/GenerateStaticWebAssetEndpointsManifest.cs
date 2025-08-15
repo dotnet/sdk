@@ -160,7 +160,11 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
         if (!File.Exists(ExclusionPatternsCacheFilePath) ||
             !string.Equals(existingPatternString, patternString, StringComparison.Ordinal))
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(ExclusionPatternsCacheFilePath));
+            var directoryName = Path.GetDirectoryName(ExclusionPatternsCacheFilePath);
+            if (directoryName != null)
+            {
+                Directory.CreateDirectory(directoryName);
+            }
             File.WriteAllText(ExclusionPatternsCacheFilePath, patternString);
             // We need to touch the file because otherwise we will keep thinking that is out of date in the future.
             // This file might not be rewritten if the results are unchanged.
