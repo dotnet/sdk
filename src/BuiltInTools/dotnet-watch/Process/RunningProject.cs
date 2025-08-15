@@ -4,6 +4,8 @@
 
 using System.Collections.Immutable;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.HotReload;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -12,8 +14,8 @@ namespace Microsoft.DotNet.Watch
     internal sealed class RunningProject(
         ProjectGraphNode projectNode,
         ProjectOptions options,
-        DeltaApplier deltaApplier,
-        IReporter reporter,
+        HotReloadClients clients,
+        ILogger logger,
         BrowserRefreshServer? browserRefreshServer,
         Task<int> runningProcess,
         int processId,
@@ -26,9 +28,9 @@ namespace Microsoft.DotNet.Watch
         public readonly ProjectGraphNode ProjectNode = projectNode;
         public readonly ProjectOptions Options = options;
         public readonly BrowserRefreshServer? BrowserRefreshServer = browserRefreshServer;
-        public readonly DeltaApplier DeltaApplier = deltaApplier;
+        public readonly HotReloadClients Clients = clients;
         public readonly ImmutableArray<string> Capabilities = capabilities;
-        public readonly IReporter Reporter = reporter;
+        public readonly ILogger Logger = logger;
         public readonly Task<int> RunningProcess = runningProcess;
         public readonly int ProcessId = processId;
         public readonly RestartOperation RestartOperation = restartOperation;
@@ -50,7 +52,7 @@ namespace Microsoft.DotNet.Watch
 
         public void Dispose()
         {
-            DeltaApplier.Dispose();
+            Clients.Dispose();
             ProcessTerminationSource.Dispose();
             ProcessExitedSource.Dispose();
 
@@ -66,7 +68,7 @@ namespace Microsoft.DotNet.Watch
         /// </summary>
         public async ValueTask WaitForProcessRunningAsync(CancellationToken cancellationToken)
         {
-            await DeltaApplier.WaitForProcessRunningAsync(cancellationToken);
+            await Clients.WaitForConnectionEstablishedAsync(cancellationToken);
         }
 
         public async ValueTask<int> TerminateAsync()

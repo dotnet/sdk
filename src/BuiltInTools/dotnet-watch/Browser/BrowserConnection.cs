@@ -4,26 +4,34 @@
 
 using System.Buffers;
 using System.Net.WebSockets;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
 internal readonly struct BrowserConnection : IAsyncDisposable
 {
+    public const string ServerLogComponentName = $"{nameof(BrowserConnection)}:Server";
+    public const string AgentLogComponentName = $"{nameof(BrowserConnection)}:Agent";
+
     private static int s_lastId;
 
     public WebSocket ClientSocket { get; }
     public string? SharedSecret { get; }
     public int Id { get; }
-    public IReporter Reporter { get; }
+    public ILogger ServerLogger { get; }
+    public ILogger AgentLogger { get; }
 
-    public BrowserConnection(WebSocket clientSocket, string? sharedSecret, IReporter reporter)
+    public BrowserConnection(WebSocket clientSocket, string? sharedSecret, ILoggerFactory loggerFactory)
     {
         ClientSocket = clientSocket;
         SharedSecret = sharedSecret;
         Id = Interlocked.Increment(ref s_lastId);
-        Reporter = new BrowserSpecificReporter(Id, reporter);
 
-        Reporter.Verbose($"Connected to referesh server.");
+        var displayName = $"Browser #{Id}";
+        ServerLogger = loggerFactory.CreateLogger(ServerLogComponentName, displayName);
+        AgentLogger = loggerFactory.CreateLogger(AgentLogComponentName, displayName);
+
+        ServerLogger.LogDebug("Connected to referesh server.");
     }
 
     public async ValueTask DisposeAsync()
@@ -31,7 +39,7 @@ internal readonly struct BrowserConnection : IAsyncDisposable
         await ClientSocket.CloseOutputAsync(WebSocketCloseStatus.Empty, null, default);
         ClientSocket.Dispose();
 
-        Reporter.Verbose($"Disconnected.");
+        ServerLogger.LogDebug("Disconnected.");
     }
 
     internal async ValueTask<bool> TrySendMessageAsync(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
@@ -42,14 +50,14 @@ internal readonly struct BrowserConnection : IAsyncDisposable
         }
         catch (Exception e) when (e is not OperationCanceledException)
         {
-            Reporter.Verbose($"Failed to send message: {e.Message}");
+            ServerLogger.LogDebug("Failed to send message: {Message}", e.Message);
             return false;
         }
 
         return true;
     }
 
-    internal async ValueTask<bool> TryReceiveMessageAsync(Action<ReadOnlySpan<byte>, IReporter> receiver, CancellationToken cancellationToken)
+    internal async ValueTask<bool> TryReceiveMessageAsync(Action<ReadOnlySpan<byte>, ILogger> receiver, CancellationToken cancellationToken)
     {
         var writer = new ArrayBufferWriter<byte>(initialCapacity: 1024);
 
@@ -62,7 +70,7 @@ internal readonly struct BrowserConnection : IAsyncDisposable
             }
             catch (Exception e) when (e is not OperationCanceledException)
             {
-                Reporter.Verbose($"Failed to receive response: {e.Message}");
+                ServerLogger.LogDebug("Failed to receive response: {Message}", e.Message);
                 return false;
             }
 
@@ -78,7 +86,7 @@ internal readonly struct BrowserConnection : IAsyncDisposable
             }
         }
 
-        receiver(writer.WrittenSpan, Reporter);
+        receiver(writer.WrittenSpan, AgentLogger);
         return true;
     }
 }

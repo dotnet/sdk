@@ -1,12 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Watch;
+#nullable enable
 
-internal readonly struct StaticAssetUpdate(string relativePath, string assemblyName, byte[] content, bool isApplicationProject)
+using System.Collections.Immutable;
+
+namespace Microsoft.DotNet.HotReload;
+
+internal readonly struct HotReloadStaticAssetUpdate(string assemblyName, string relativePath, ImmutableArray<byte> content, bool isApplicationProject)
 {
     public string RelativePath { get; } = relativePath;
     public string AssemblyName { get; } = assemblyName;
-    public byte[] Content { get; } = content;
+    public ImmutableArray<byte> Content { get; } = content;
     public bool IsApplicationProject { get; } = isApplicationProject;
 }

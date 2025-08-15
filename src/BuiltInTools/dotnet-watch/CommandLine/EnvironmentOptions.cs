@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Watch
     internal sealed record EnvironmentOptions(
         string WorkingDirectory,
         string MuxerPath,
-        TimeSpan ProcessCleanupTimeout,
+        TimeSpan? ProcessCleanupTimeout,
         bool IsPollingEnabled = false,
         bool SuppressHandlingStaticContentFiles = false,
         bool SuppressMSBuildIncrementalism = false,
@@ -51,6 +51,11 @@ namespace Microsoft.DotNet.Watch
             TestFlags: EnvironmentVariables.TestFlags,
             TestOutput: EnvironmentVariables.TestOutputDir
         );
+
+        public TimeSpan GetProcessCleanupTimeout(bool isHotReloadEnabled)
+            // If Hot Reload mode is disabled the process is restarted on every file change.
+            // Waiting for graceful termination would slow down the turn around.
+            => ProcessCleanupTimeout ?? (isHotReloadEnabled ? TimeSpan.FromSeconds(5) : TimeSpan.FromSeconds(0));
 
         private int _uniqueLogId;
 

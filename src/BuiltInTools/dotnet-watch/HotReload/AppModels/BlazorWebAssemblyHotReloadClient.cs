@@ -4,12 +4,13 @@
 using System.Buffers;
 using System.Collections.Immutable;
 using Microsoft.Build.Graph;
-using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
 using Microsoft.DotNet.HotReload;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class BlazorWebAssemblyDeltaApplier(IReporter reporter, BrowserRefreshServer browserRefreshServer, ProjectGraphNode project) : SingleProcessDeltaApplier(reporter)
+    internal sealed class BlazorWebAssemblyHotReloadClient(ILogger logger, ILogger agentLogger, BrowserRefreshServer browserRefreshServer, ProjectGraphNode project)
+        : HotReloadClient(logger, agentLogger)
     {
         private static readonly ImmutableArray<string> s_defaultCapabilities60 =
             ["Baseline"];
@@ -26,21 +27,26 @@ namespace Microsoft.DotNet.Watch
 
         private int _updateId;
 
+        /// <summary>
+        /// Updates that were sent over to the agent while the process has been suspended.
+        /// </summary>
+        private readonly Queue<int> _pendingUpdates = [];
+
         public override void Dispose()
         {
             // Do nothing.
         }
 
-        public override void CreateConnection(string namedPipeName, CancellationToken cancellationToken)
+        public override void InitiateConnection(string namedPipeName, CancellationToken cancellationToken)
         {
         }
 
-        public override async Task WaitForProcessRunningAsync(CancellationToken cancellationToken)
+        public override async Task WaitForConnectionEstablishedAsync(CancellationToken cancellationToken)
             // Wait for the browser connection to be established as an indication that the process has started.
             // Alternatively, we could inject agent into blazor-devserver.dll and establish a connection on the named pipe.
             => await browserRefreshServer.WaitForClientConnectionAsync(cancellationToken);
 
-        public override Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)
+        public override Task<ImmutableArray<string>> GetUpdateCapabilitiesAsync(CancellationToken cancellationToken)
         {
             var capabilities = project.GetWebAssemblyCapabilities().ToImmutableArray();
 
@@ -48,7 +54,7 @@ namespace Microsoft.DotNet.Watch
             {
                 var targetFramework = project.GetTargetFrameworkVersion();
 
-                Reporter.Verbose($"Using capabilities based on project '{project.GetDisplayName()}' target framework: '{targetFramework}'.");
+                Logger.LogDebug("Using capabilities based on project target framework: '{TargetFramework}'.", targetFramework);
 
                 capabilities = targetFramework?.Major switch
                 {
@@ -61,13 +67,13 @@ namespace Microsoft.DotNet.Watch
             }
             else
             {
-                Reporter.Verbose($"Project '{project.GetDisplayName()}' specifies capabilities: '{string.Join(' ', capabilities)}'");
+                Logger.LogDebug("Project specifies capabilities: '{Capabilities}'", string.Join(' ', capabilities));
             }
 
             return Task.FromResult(capabilities);
         }
 
-        public override async Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
+        public override async Task<ApplyStatus> ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
         {
             var applicableUpdates = await FilterApplicableUpdatesAsync(updates, cancellationToken);
             if (applicableUpdates.Count == 0)
@@ -81,22 +87,29 @@ namespace Microsoft.DotNet.Watch
                 return ApplyStatus.AllChangesApplied;
             }
 
+            if (!isProcessSuspended)
+            {
+                await ProcessPendingUpdatesAsync(cancellationToken);
+            }
+
             var anySuccess = false;
             var anyFailure = false;
 
             // Make sure to send the same update to all browsers, the only difference is the shared secret.
 
             var updateId = _updateId++;
-            var deltas = updates.Select(update => new JsonDelta
+            Logger.LogDebug("Sending update #{UpdateId}", updateId);
+
+            var deltas = updates.Select(static update => new JsonDelta
             {
                 ModuleId = update.ModuleId,
-                MetadataDelta = [.. update.MetadataDelta],
-                ILDelta = [.. update.ILDelta],
-                PdbDelta = [.. update.PdbDelta],
-                UpdatedTypes = [.. update.UpdatedTypes],
+                MetadataDelta = ImmutableCollectionsMarshal.AsArray(update.MetadataDelta)!,
+                ILDelta = ImmutableCollectionsMarshal.AsArray(update.ILDelta)!,
+                PdbDelta = ImmutableCollectionsMarshal.AsArray(update.PdbDelta)!,
+                UpdatedTypes = ImmutableCollectionsMarshal.AsArray(update.UpdatedTypes)!,
             }).ToArray();
 
-            var loggingLevel = Reporter.IsVerbose ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
+            var loggingLevel = Logger.IsEnabled(LogLevel.Debug) ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
 
             await browserRefreshServer.SendAndReceiveAsync(
                 request: sharedSecret => new JsonApplyHotReloadDeltasRequest
@@ -106,11 +119,9 @@ namespace Microsoft.DotNet.Watch
                     Deltas = deltas,
                     ResponseLoggingLevel = (int)loggingLevel
                 },
-                response: (value, reporter) =>
+                response: isProcessSuspended ? null : (value, logger) =>
                 {
-                    var data = BrowserRefreshServer.DeserializeJson<JsonApplyDeltasResponse>(value);
-
-                    if (data.Success)
+                    if (ProcessUpdateResponse(value, logger))
                     {
                         anySuccess = true;
                     }
@@ -118,13 +129,14 @@ namespace Microsoft.DotNet.Watch
                     {
                         anyFailure = true;
                     }
-
-                    foreach (var entry in data.Log)
-                    {
-                        ReportLogEntry(reporter, entry.Message, (AgentMessageSeverity)entry.Severity);
-                    }
                 },
                 cancellationToken);
+
+            if (isProcessSuspended)
+            {
+                Logger.LogDebug("Update #{UpdateId} will be completed after app resumes.", updateId);
+                _pendingUpdates.Enqueue(updateId);
+            }
 
             // If no browser is connected we assume the changes have been applied.
             // If at least one browser suceeds we consider the changes successfully applied.
@@ -135,11 +147,46 @@ namespace Microsoft.DotNet.Watch
             return (!anySuccess && anyFailure) ? ApplyStatus.Failed : (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
         }
 
-        public override Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<StaticAssetUpdate> updates, CancellationToken cancellationToken)
+        public override Task<ApplyStatus> ApplyStaticAssetUpdatesAsync(ImmutableArray<HotReloadStaticAssetUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
             // static asset updates are handled by browser refresh server:
             => Task.FromResult(ApplyStatus.NoChangesApplied);
 
-        public override Task InitialUpdatesApplied(CancellationToken cancellationToken)
+        private async ValueTask ProcessPendingUpdatesAsync(CancellationToken cancellationToken)
+        {
+            while (_pendingUpdates.Count > 0)
+            {
+                var updateId = _pendingUpdates.Dequeue();
+                var success = false;
+
+                await browserRefreshServer.SendAndReceiveAsync<object?>(
+                    request: null,
+                    response: (value, logger) => success = ProcessUpdateResponse(value, logger),
+                    cancellationToken);
+
+                if (success)
+                {
+                    Logger.LogDebug("Update #{UpdateId} completed.", updateId);
+                }
+                else
+                {
+                    Logger.LogDebug("Update #{UpdateId} failed.", updateId);
+                }
+            }
+        }
+
+        private static bool ProcessUpdateResponse(ReadOnlySpan<byte> value, ILogger logger)
+        {
+            var data = BrowserRefreshServer.DeserializeJson<JsonApplyDeltasResponse>(value);
+
+            foreach (var entry in data.Log)
+            {
+                ReportLogEntry(logger, entry.Message, (AgentMessageSeverity)entry.Severity);
+            }
+
+            return data.Success;
+        }
+
+        public override Task InitialUpdatesAppliedAsync(CancellationToken cancellationToken)
             => Task.CompletedTask;
 
         private readonly struct JsonApplyHotReloadDeltasRequest

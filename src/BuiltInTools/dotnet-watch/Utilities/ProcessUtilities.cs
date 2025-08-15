@@ -38,7 +38,7 @@ internal static class ProcessUtilities
         static extern bool SetConsoleCtrlHandler(Delegate? handler, bool add);
     }
     
-    public static void SendWindowsCtrlCEvent(int processId, Action<string> log)
+    public static string? SendWindowsCtrlCEvent(int processId)
     {
         const uint CTRL_C_EVENT = 0;
 
@@ -51,25 +51,16 @@ internal static class ProcessUtilities
         // nor do its descendants.
         //
         // If this parameter is zero, the signal is generated in all processes that share the console of the calling process."
-        if (GenerateConsoleCtrlEvent(CTRL_C_EVENT, (uint)processId))
-        {
-            return;
-        }
-
-        log($"Failed to send Ctrl+C to process {processId}: {GetLastPInvokeErrorMessage()}");
+        return GenerateConsoleCtrlEvent(CTRL_C_EVENT, (uint)processId) ? null : GetLastPInvokeErrorMessage();
 
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool GenerateConsoleCtrlEvent(uint dwCtrlEvent, uint dwProcessGroupId);
     }
 
-    public static void SendPosixSignal(int processId, int signal, Action<string> log)
+    public static string? SendPosixSignal(int processId, int signal)
     {
-        var result = sys_kill(processId, signal);
-        if (result != 0)
-        {
-            log($"Error while sending SIGTERM to process {processId}: {GetLastPInvokeErrorMessage()}.");
-        }
+        return sys_kill(processId, signal) == 0 ? null : GetLastPInvokeErrorMessage();
 
         [DllImport("libc", SetLastError = true, EntryPoint = "kill")]
         static extern int sys_kill(int pid, int sig);
