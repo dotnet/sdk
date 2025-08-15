@@ -29,7 +29,7 @@ internal static class SdkCommandParser
         //command.Subcommands.Add(SdkInstallCommandParser.GetSdkInstallCommand());
         command.Subcommands.Add(SdkUpdateCommandParser.GetSdkUpdateCommand());
 
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
+        //command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
         return command;
     }

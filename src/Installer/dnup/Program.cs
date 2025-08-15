@@ -1,2 +1,6 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿
+using Microsoft.DotNet.Tools.Bootstrapper;
+
+var parseResult = Parser.Parse(args);
+
+return Parser.Invoke(parseResult);
