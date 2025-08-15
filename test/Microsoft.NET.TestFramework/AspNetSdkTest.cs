@@ -49,6 +49,7 @@ namespace Microsoft.NET.TestFramework
                     {
                         targetFramework.Value = overrideTfm ?? DefaultTfm ?? string.Empty;
                         targetFramework.AddAfterSelf(new XElement("StaticWebAssetsFingerprintContent", "false"));
+                        targetFramework.AddAfterSelf(new XElement("AttachWeakETagToCompressedAssetsDuringDevelopment", "false"))
                     }
                     var targetFrameworks = project.Descendants()
                         .SingleOrDefault(e => e.Name.LocalName == "TargetFrameworks");
@@ -56,6 +57,7 @@ namespace Microsoft.NET.TestFramework
                     {
                         targetFrameworks.Value = targetFrameworks.Value.Replace("$(AspNetTestTfm)", overrideTfm ?? DefaultTfm);
                         targetFrameworks.AddAfterSelf(new XElement("StaticWebAssetsFingerprintContent", "false"));
+                        targetFrameworks.AddAfterSelf(new XElement("AttachWeakETagToCompressedAssetsDuringDevelopment", "false"))
                     }
                 });
 
