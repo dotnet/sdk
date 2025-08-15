@@ -126,7 +126,7 @@
   </PropertyGroup>
   <PropertyGroup Label="Manually updated">
     <!-- Dependencies from https://github.com/microsoft/MSBuildLocator -->
-    <MicrosoftBuildLocatorPackageVersion>1.6.10</MicrosoftBuildLocatorPackageVersion>
+    <MicrosoftBuildLocatorPackageVersion>1.8.1</MicrosoftBuildLocatorPackageVersion>
     <MicrosoftCodeAnalysisCSharpAnalyzerPinnedVersionPackageVersion>4.0.1</MicrosoftCodeAnalysisCSharpAnalyzerPinnedVersionPackageVersion>
   </PropertyGroup>
   <!-- Get .NET Framework reference assemblies from NuGet packages -->
