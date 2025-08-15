@@ -47,7 +47,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
             }
             else
             {
-                Log.LogMessage(MessageImportance.Low, "Generating manifest file '{0}' because exclusion patterns have '{1}', '{2}'.", ManifestPath,
+                Log.LogMessage(MessageImportance.Low, "Generating manifest file '{0}' because exclusion patterns changed from '{1}' to '{2}'.", ManifestPath,
                     existingPatternString ?? "no patterns",
                     patternString ?? "no patterns");
             }
