@@ -168,6 +168,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CompressDiscoveredAssetsDuringBuild Condition="$(CompressDiscoveredAssetsDuringBuild) == ''">true</CompressDiscoveredAssetsDuringBuild>
     <!-- Support passing in a custom compression level to brotli and respect the old internal flag for blazor -->
     <BrotliCompressionLevel Condition="'$(_BlazorBrotliCompressionLevel)' != ''">$(_BlazorBrotliCompressionLevel)</BrotliCompressionLevel>
+
+    <!-- Attach weak ETag to compressed assets -->
+    <AttachWeakETagToCompressedAssetsDuringDevelopment Condition="'$(AttachWeakETagToCompressedAssetsDuringDevelopment)' == '' and '$(Configuration)' == 'Debug'">true</AttachWeakETagToCompressedAssetsDuringDevelopment>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -374,6 +377,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ApplyCompressionNegotiation
       CandidateEndpoints="@(StaticWebAssetEndpoint)"
       CandidateAssets="@(_CompressionCurrentProjectPublishAssets)"
+      AttachWeakETagToCompressedAssets="$(AttachWeakETagToCompressedAssetsDuringDevelopment)"
     >
       <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedCompressionPublishEndpoints" />
     </ApplyCompressionNegotiation>

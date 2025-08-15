@@ -16,6 +16,8 @@ public class ApplyCompressionNegotiation : Task
     [Required]
     public ITaskItem[] CandidateAssets { get; set; }
 
+    public bool AttachWeakETagToCompressedAssets { get; set; }
+
     [Output]
     public ITaskItem[] UpdatedEndpoints { get; set; }
 
@@ -371,7 +373,22 @@ public class ApplyCompressionNegotiation : Task
                 Log.LogMessage(MessageImportance.Low, "  Adding header '{0}' to related endpoint '{1}'", header.Name, relatedEndpointCandidate.Route);
                 headers.Add(header);
             }
-            else if (string.Equals(header.Name, "Content-Type", StringComparison.Ordinal))
+            else if (AttachWeakETagToCompressedAssets && string.Equals(header.Name, "ETag", StringComparison.Ordinal))
+            {
+                // A resource can have multiple ETags. Since the uncompressed resource has an ETag,
+                // and we are serving the compressed resource from the same URL, we need to update
+                // the ETag on the compressed resource to indicate that is dependent on the representation
+                // For example, a compressed resource has two ETags: W/"original-resource-etag" and
+                // "compressed-resource-etag".
+                // The browser will send both ETags in the If-None-Match header, and having the strong ETag
+                // allows the server to support conditional range requests.
+                Log.LogMessage(MessageImportance.Low, "  Updating ETag header for related endpoint '{0}'", relatedEndpointCandidate.Route);
+                headers.Add(new StaticWebAssetEndpointResponseHeader
+                {
+                    Name = "ETag",
+                    Value = $"W/{header.Value}"
+                });
+            }else if (string.Equals(header.Name, "Content-Type", StringComparison.Ordinal))
             {
                 Log.LogMessage(MessageImportance.Low, "Adding Content-Type '{1}' header to related endpoint '{0}'", relatedEndpointCandidate.Route, header.Value);
                 // Add the Content-Type to make sure it matches the original asset.
