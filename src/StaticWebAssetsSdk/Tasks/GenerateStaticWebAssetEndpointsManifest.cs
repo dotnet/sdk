@@ -33,20 +33,31 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
     public override bool Execute()
     {
         var (patternString, parsedPatterns) = ParseAndSortPatterns(ExclusionPatterns);
+        var existingPatternString = !string.IsNullOrEmpty(ExclusionPatternsCacheFilePath) && File.Exists(ExclusionPatternsCacheFilePath)
+            ? File.ReadAllText(ExclusionPatternsCacheFilePath)
+            : null;
         if (!string.IsNullOrEmpty(CacheFilePath) && File.Exists(ManifestPath) && File.GetLastWriteTimeUtc(ManifestPath) > File.GetLastWriteTimeUtc(CacheFilePath))
         {
             // Check if exclusion patterns cache is also up to date
-            if (!HasExclusionPatternsChanged(patternString))
+            if (string.Equals(patternString, existingPatternString, StringComparison.Ordinal))
             {
                 Log.LogMessage(MessageImportance.Low, "Skipping manifest generation because manifest file '{0}' is up to date.", ManifestPath);
                 return true;
             }
+            else
+            {
+                Log.LogMessage(MessageImportance.Low, "Generating manifest file '{0}' because exclusion patterns have changed.", ManifestPath);
+            }
+        }
+        else
+        {
+            Log.LogMessage(MessageImportance.Low, "Generating manifest file '{0}' because manifest file is missing or out of date.", ManifestPath);
         }
 
         try
         {
             // Update exclusion patterns cache if needed
-            UpdateExclusionPatternsCache(patternString);
+            UpdateExclusionPatternsCache(existingPatternString, patternString);
 
             // Get the list of the asset that need to be part of the manifest (this is similar to GenerateStaticWebAssetsDevelopmentManifest)
             var assets = StaticWebAsset.FromTaskItemGroup(Assets);
@@ -135,22 +146,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
         return (string.Join(Environment.NewLine, parsed), parsed);
     }
 
-    private bool HasExclusionPatternsChanged(string patternString)
-    {
-        if (string.IsNullOrEmpty(ExclusionPatternsCacheFilePath))
-        {
-            return !string.IsNullOrEmpty(ExclusionPatterns);
-        }
-
-        if (!File.Exists(ExclusionPatternsCacheFilePath))
-        {
-            return true;
-        }
-
-        return !string.Equals(patternString, File.ReadAllText(ExclusionPatternsCacheFilePath), StringComparison.Ordinal);
-    }
-
-    private void UpdateExclusionPatternsCache(string patternString)
+    private void UpdateExclusionPatternsCache(string existingPatternString, string patternString)
     {
         if (string.IsNullOrEmpty(ExclusionPatternsCacheFilePath))
         {
@@ -158,7 +154,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
         }
 
         if (!File.Exists(ExclusionPatternsCacheFilePath) ||
-            !string.Equals(File.ReadAllText(ExclusionPatternsCacheFilePath), patternString, StringComparison.Ordinal))
+            !string.Equals(existingPatternString, patternString, StringComparison.Ordinal))
         {
             Directory.CreateDirectory(Path.GetDirectoryName(ExclusionPatternsCacheFilePath));
             File.WriteAllText(ExclusionPatternsCacheFilePath, patternString);
