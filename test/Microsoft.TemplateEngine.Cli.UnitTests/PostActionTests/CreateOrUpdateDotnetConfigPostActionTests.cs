@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.PostActionProcessors;
@@ -26,7 +27,7 @@ public class CreateOrUpdateDotnetConfigPostActionTests : IClassFixture<Environme
     [InlineData("value")]
     public void MissingArgumentShouldFail(string missingArgumentName)
     {
-        string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+        string targetBasePath = GetTargetPath();
 
         var dictionary = new Dictionary<string, string>
         {
@@ -66,7 +67,7 @@ public class CreateOrUpdateDotnetConfigPostActionTests : IClassFixture<Environme
     [Fact]
     public void CreatesDotnetConfigWhenDoesNotExist()
     {
-        string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+        string targetBasePath = GetTargetPath();
 
         IPostAction postAction = CreatePostActionForMTP();
 
@@ -103,7 +104,7 @@ public class CreateOrUpdateDotnetConfigPostActionTests : IClassFixture<Environme
     [Fact]
     public void CreatesNewSectionWhenFileExistsButSectionDoesNot()
     {
-        string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+        string targetBasePath = GetTargetPath();
 
         IPostAction postAction = CreatePostActionForMTP();
         CreateDotnetConfig(targetBasePath, "mysection", "mykey", "myvalue");
@@ -148,7 +149,7 @@ public class CreateOrUpdateDotnetConfigPostActionTests : IClassFixture<Environme
     [Fact]
     public void DoesNothingIfNoUpdatesNeedToHappen()
     {
-        string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+        string targetBasePath = GetTargetPath();
 
         IPostAction postAction = CreatePostActionForMTP();
         CreateDotnetConfig(targetBasePath, "dotnet.test.runner", "name", "Microsoft.Testing.Platform");
@@ -205,4 +206,11 @@ public class CreateOrUpdateDotnetConfigPostActionTests : IClassFixture<Environme
             {key} = "{value}"
 
             """);
+
+    private string GetTargetPath([CallerMemberName] string testName = "")
+    {
+        string targetBasePath = Path.Combine(_engineEnvironmentSettings.GetTempVirtualizedPath(), testName);
+        _engineEnvironmentSettings.Host.FileSystem.CreateDirectory(targetBasePath);
+        return targetBasePath;
+    }
 }
