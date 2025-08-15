@@ -259,6 +259,8 @@ This file should be imported by eng/Versions.props
     <NuGetVersioningVersion>$(NuGetVersioningPackageVersion)</NuGetVersioningVersion>
     <SystemCodeDomVersion>$(SystemCodeDomPackageVersion)</SystemCodeDomVersion>
     <SystemCommandLineVersion>$(SystemCommandLinePackageVersion)</SystemCommandLineVersion>
+    <SystemComponentModelCompositionVersion>$(SystemComponentModelCompositionPackageVersion)</SystemComponentModelCompositionVersion>
+    <SystemComponentModelCompositionVersion>$(SystemComponentModelCompositionPackageVersion)</SystemComponentModelCompositionVersion>
     <SystemCompositionAttributedModelVersion>$(SystemCompositionAttributedModelPackageVersion)</SystemCompositionAttributedModelVersion>
     <SystemCompositionConventionVersion>$(SystemCompositionConventionPackageVersion)</SystemCompositionConventionVersion>
     <SystemCompositionHostingVersion>$(SystemCompositionHostingPackageVersion)</SystemCompositionHostingVersion>
