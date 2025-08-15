@@ -479,6 +479,130 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [WindowsOnlyFact]
+        public void ItWarnsWhenBuildingAProjectTargetingCsWinRT3_0()
+        {
+            TestProject testProject = new()
+            {
+                Name = "A",
+                ProjectSdk = "Microsoft.NET.Sdk",
+                TargetFrameworks = "net10.0-windows10.0.22621.1"
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Pass()
+                .And
+                .NotHaveStdOutContaining("NETSDK1229");
+        }
+
+        [WindowsOnlyFact]
+        public void ItImplicitlyDefinesCSWINRT3_0WhenBuildingAProjectTargetingCsWinRT3_0()
+        {
+            TestProject testProject = new()
+            {
+                Name = "A",
+                ProjectSdk = "Microsoft.NET.Sdk",
+                TargetFrameworks = "net10.0-windows10.0.22621.1",
+                SourceFiles =
+                {
+                    ["Program.cs"] = """
+                    #if !CSWINRT3_0
+                    #error CSWINRT3_0 is not defined
+                    #endif
+                    """
+                }
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+        }
+
+        [WindowsOnlyFact]
+        public void ItDoesNotImplicitlyDefineCSWINRT3_0WhenBuildingAProjectNotTargetingCsWinRT3_0()
+        {
+            TestProject testProject = new()
+            {
+                Name = "A",
+                ProjectSdk = "Microsoft.NET.Sdk",
+                TargetFrameworks = "net10.0-windows10.0.22621.0",
+                SourceFiles =
+                {
+                    ["Program.cs"] = """
+                    #if CSWINRT3_0
+                    #error CSWINRT3_0 is defined
+                    #endif
+                    """
+                }
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+        }
+
+        [WindowsOnlyFact]
+        public void ItNormalizesWindowsSDKImplicitDefinesWhenBuildingAProjectTargetingCsWinRT3_0()
+        {
+            TestProject testProject = new()
+            {
+                Name = "A",
+                ProjectSdk = "Microsoft.NET.Sdk",
+                TargetFrameworks = "net10.0-windows10.0.22621.1",
+                SourceFiles =
+                {
+                    ["Program.cs"] = """
+                    #if !WINDOWS10_0_22621_0 || !WINDOWS10_0_22621_0_OR_GREATER || WINDOWS10_0_22621_1 || WINDOWS10_0_22621_1_OR_GREATER
+                    #error Incorrect Windows SDK implicit defines
+                    #endif
+                    """
+                }
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+        }
+
+        [WindowsOnlyFact]
+        public void ItHasExpectedWindowsSDKImplicitDefinesWhenBuildingAProjectTargetingCsWinRT2_0()
+        {
+            TestProject testProject = new()
+            {
+                Name = "A",
+                ProjectSdk = "Microsoft.NET.Sdk",
+                TargetFrameworks = "net10.0-windows10.0.22621.0",
+                SourceFiles =
+                {
+                    ["Program.cs"] = """
+                    #if !WINDOWS10_0_22621_0 || !WINDOWS10_0_22621_0_OR_GREATER || WINDOWS10_0_22621_1 || WINDOWS10_0_22621_1_OR_GREATER
+                    #error Incorrect Windows SDK implicit defines
+                    #endif
+                    """
+                }
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+        }
+
+        [WindowsOnlyFact]
         public void ItErrorsWhenTargetingBelowNet6WithUseUwpProperty()
         {
             TestProject testProject = new()
