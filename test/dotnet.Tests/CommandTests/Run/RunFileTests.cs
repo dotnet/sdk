@@ -248,7 +248,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 Hello from Program
                 Release config
                 """);
-        
+                
         new DotnetCommand(Log, "Program.cs", "arg1", "arg2")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
