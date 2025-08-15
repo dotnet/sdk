@@ -29,7 +29,7 @@
     <PackageReference Include="Microsoft.Build.NuGetSdkResolver" />
     <PackageReference Include="Microsoft.TestPlatform.CLI" ExcludeAssets="All" />
     <PackageReference Include="Microsoft.TestPlatform.Build" />
-    <PackageReference Include="NuGet.Localization" />
+    <PackageReference Condition=" '$(DotNetBuildSourceOnly)' != 'true' " Include="NuGet.Localization" />
     <PackageReference Include="NuGet.ProjectModel" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" ExcludeAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" ExcludeAssets="All" GeneratePathProperty="true" />
