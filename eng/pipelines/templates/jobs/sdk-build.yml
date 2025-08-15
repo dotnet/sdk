@@ -108,6 +108,7 @@ jobs:
         displayName: Build
         env:
           BuildConfig: $(buildConfiguration)
+          OPENSSL_ENABLE_SHA1_SIGNATURES: 1
 
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
