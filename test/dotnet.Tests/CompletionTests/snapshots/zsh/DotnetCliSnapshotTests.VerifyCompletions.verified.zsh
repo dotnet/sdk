@@ -558,7 +558,7 @@ _testhost() {
                         '-r=[The target runtime to build for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
-                        '*::PROJECT | SOLUTION -- The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.: ' \
+                        '*::PROJECT | SOLUTION | FILE -- The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.: ' \
                         && ret=0
                         case $state in
                             (dotnet_dynamic_complete)

@@ -37,8 +37,6 @@ public class PublishCommand : RestoringCommand
         CommonOptions.ValidateSelfContainedOptions(parseResult.HasOption(PublishCommandParser.SelfContainedOption),
             parseResult.HasOption(PublishCommandParser.NoSelfContainedOption));
 
-        var forwardedOptions = parseResult.OptionValuesToBeForwarded(PublishCommandParser.GetCommand());
-
         bool noBuild = parseResult.HasOption(PublishCommandParser.NoBuildOption);
 
         bool noRestore = noBuild || parseResult.HasOption(PublishCommandParser.NoRestoreOption);
