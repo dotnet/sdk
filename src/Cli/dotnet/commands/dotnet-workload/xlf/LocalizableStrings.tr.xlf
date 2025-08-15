@@ -57,7 +57,7 @@
         <target state="translated">İş yükleri doğrulanırken bir sorunla karşılaşıldı. Daha fazla bilgi için "dotnet workload update" komutunu çalıştırın.</target>
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
-      <trans-unit id="WorkloadManfiestVersionColumn">
+      <trans-unit id="WorkloadManifestVersionColumn">
         <source>Manifest Version</source>
         <target state="translated">Bildirim Sürümü</target>
         <note />
@@ -80,6 +80,11 @@
       <trans-unit id="WriteCLIRecordForVisualStudioWorkloadMessage">
         <source>Writing install records for Visual Studio workloads: '{0}'</source>
         <target state="translated">Visual Studio iş yükleri için yükleme yazma: '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfiguration">
+        <source>Configured to use {0} when installing new manifests.</source>
+        <target state="translated">Yeni bildirimler yüklenirken {0} kullanılacak şekilde yapılandırıldı.</target>
         <note />
       </trans-unit>
     </body>
