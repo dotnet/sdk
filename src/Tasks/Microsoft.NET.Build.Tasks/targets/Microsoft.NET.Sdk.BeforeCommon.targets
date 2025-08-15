@@ -211,6 +211,15 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_ImplicitDefineConstant Include="$(_PlatformIdentifierForImplicitDefine)" />
       <_ImplicitDefineConstant Include="$(_PlatformIdentifierForImplicitDefine)$(_PlatformVersionForImplicitDefine)" />
     </ItemGroup>
+
+    <!--
+      We support multi-targeting CsWinRT 3.0, which has several breaking changes that consuming projects might require
+      using 'ifdef'-s for, to handle the differences between CsWinRT 2.x and 3.0. So when that is used, we also define
+      a constant. Common scenarios are 'TypedEventHandler<,>' not existing anymore, and interop code being different.
+    -->
+    <ItemGroup Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true' and '$(_TargetPlatformVersionUsesCsWinRT3)' == 'true' ">
+      <_ImplicitDefineConstant Include="CSWINRT3_0" />
+    </ItemGroup>
   </Target>
 
   <!-- Add OR_GREATER compilation symbols for target frameworks with .NET Framework, .NET Standard, .NET Core, and .NET -->

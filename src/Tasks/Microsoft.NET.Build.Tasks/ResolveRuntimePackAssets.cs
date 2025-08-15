@@ -92,6 +92,16 @@ namespace Microsoft.NET.Build.Tasks
                     {
                         profiles.Add("Xaml");
                     }
+
+                    if (FrameworkReferences?.Any(fxReference => fxReference.ItemSpec == "Microsoft.Windows.SDK.NET.Ref.Windows2") == true)
+                    {
+                        profiles.Add("Windows2");
+                    }
+                    
+                    if (FrameworkReferences?.Any(fxReference => fxReference.ItemSpec == "Microsoft.Windows.SDK.NET.Ref.Xaml2") == true)
+                    {
+                        profiles.Add("Xaml2");
+                    }
                 }
 
                 //  If we have a runtime framework with an empty profile, it means that we should use all of the contents of the runtime pack,
