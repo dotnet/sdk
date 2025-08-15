@@ -2433,8 +2433,8 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
       </trans-unit>
       <trans-unit id="PropertyDirectiveMissingParts">
         <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
-        <target state="translated">La direttiva di proprietà deve avere due parti separate da '=', come '#:property PropertyName=PropertyValue': {0}</target>
-        <note>{0} is the file path and line number.</note>
+        <target state="needs-review-translation">La direttiva di proprietà deve avere due parti separate da '=', come '#:property PropertyName=PropertyValue': {0}</target>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
@@ -2971,6 +2971,11 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <source>Standard output</source>
         <target state="translated">Output standard</target>
         <note />
+      </trans-unit>
+      <trans-unit id="StaticGraphRestoreNotSupported">
+        <source>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</source>
+        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</target>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>

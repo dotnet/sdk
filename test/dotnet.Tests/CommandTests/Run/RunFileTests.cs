@@ -1281,8 +1281,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            // error MSB4025: The project file could not be loaded. Could not find file 'Program.csproj'.
-            .And.HaveStdOutContaining("MSB4025");
+            .And.HaveStdErr(string.Format(CliCommandStrings.StaticGraphRestoreNotSupported, $"{programFile}:1"));
     }
 
     [Fact]
