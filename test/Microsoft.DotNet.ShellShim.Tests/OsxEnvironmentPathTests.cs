@@ -12,8 +12,10 @@ namespace Microsoft.DotNet.ShellShim.Tests
 {
     public class OsxEnvironmentPathTests
     {
-        [UnixOnlyFact]
-        public void GivenPathNotSetItPrintsManualInstructions()
+        [UnixOnlyTheory]
+        [InlineData("/bin/bash")]
+        [InlineData("/bin/zsh")]
+        public void GivenPathNotSetItPrintsManualInstructions(string shell)
         {
             var reporter = new BufferedReporter();
             var toolsPath = new BashPathUnderHomeDirectory("/home/user", ".dotnet/tools");
@@ -24,7 +26,11 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 .Setup(p => p.GetEnvironmentVariable("PATH"))
                 .Returns(pathValue);
 
-            var environmentPath = new OsxBashEnvironmentPath(
+            provider
+                .Setup(p => p.GetEnvironmentVariable("SHELL"))
+                .Returns(shell);
+
+            var environmentPath = new MacOSEnvironmentPath(
                 toolsPath,
                 reporter,
                 provider.Object,
@@ -32,14 +38,27 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             environmentPath.PrintAddPathInstructionIfPathDoesNotExist();
 
-            reporter.Lines.Should().Equal(
-                string.Format(
-                    CommonLocalizableStrings.EnvironmentPathOSXBashManualInstructions,
-                    toolsPath.Path));
+            if (shell == "/bin/zsh")
+            {
+                reporter.Lines.Should().Equal(
+                    string.Format(
+                        CommonLocalizableStrings.EnvironmentPathOSXZshManualInstructions,
+                        toolsPath.Path));
+            }
+            else
+            {
+                reporter.Lines.Should().Equal(
+                    string.Format(
+                        CommonLocalizableStrings.EnvironmentPathOSXBashManualInstructions,
+                        toolsPath.Path));
+            }
+
         }
 
-        [UnixOnlyFact]
-        public void GivenPathNotSetAndProfileExistsItPrintsReopenMessage()
+        [UnixOnlyTheory]
+        [InlineData("/bin/bash")]
+        [InlineData("/bin/zsh")]
+        public void GivenPathNotSetAndProfileExistsItPrintsReopenMessage(string shell)
         {
             var reporter = new BufferedReporter();
             var toolsPath = new BashPathUnderHomeDirectory("/home/user", ".dotnet/tools");
@@ -50,12 +69,16 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 .Setup(p => p.GetEnvironmentVariable("PATH"))
                 .Returns(pathValue);
 
-            var environmentPath = new OsxBashEnvironmentPath(
+            provider
+                .Setup(p => p.GetEnvironmentVariable("SHELL"))
+                .Returns(shell);
+
+            var environmentPath = new MacOSEnvironmentPath(
                 toolsPath,
                 reporter,
                 provider.Object,
                 new FileSystemMockBuilder()
-                    .AddFile(OsxBashEnvironmentPath.DotnetCliToolsPathsDPath, "")
+                    .AddFile(MacOSEnvironmentPath.DotnetCliToolsPathsDPath, "")
                     .Build()
                     .File);
 
@@ -65,9 +88,11 @@ namespace Microsoft.DotNet.ShellShim.Tests
         }
 
         [UnixOnlyTheory]
-        [InlineData("/home/user/.dotnet/tools")]
-        [InlineData("~/.dotnet/tools")]
-        public void GivenPathSetItPrintsNothing(string toolsDirectoryOnPath)
+        [InlineData("/home/user/.dotnet/tools", "/bin/bash")]
+        [InlineData("~/.dotnet/tools", "/bin/bash")]
+        [InlineData("/home/user/.dotnet/tools", "/bin/zsh")]
+        [InlineData("~/.dotnet/tools", "/bin/zsh")]
+        public void GivenPathSetItPrintsNothing(string toolsDirectoryOnPath, string shell)
         {
             var reporter = new BufferedReporter();
             var toolsPath = new BashPathUnderHomeDirectory("/home/user", ".dotnet/tools");
@@ -78,7 +103,11 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 .Setup(p => p.GetEnvironmentVariable("PATH"))
                 .Returns(pathValue + ":" + toolsDirectoryOnPath);
 
-            var environmentPath = new OsxBashEnvironmentPath(
+            provider
+                .Setup(p => p.GetEnvironmentVariable("SHELL"))
+                .Returns(shell);
+
+            var environmentPath = new MacOSEnvironmentPath(
                 toolsPath,
                 reporter,
                 provider.Object,
@@ -89,8 +118,10 @@ namespace Microsoft.DotNet.ShellShim.Tests
             reporter.Lines.Should().BeEmpty();
         }
 
-        [UnixOnlyFact]
-        public void GivenPathSetItDoesNotAddPathToEnvironment()
+        [UnixOnlyTheory]
+        [InlineData("/bin/bash")]
+        [InlineData("/bin/zsh")]
+        public void GivenPathSetItDoesNotAddPathToEnvironment(string shell)
         {
             var reporter = new BufferedReporter();
             var toolsPath = new BashPathUnderHomeDirectory("/home/user", ".dotnet/tools");
@@ -102,7 +133,11 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 .Setup(p => p.GetEnvironmentVariable("PATH"))
                 .Returns(pathValue + ":" + toolsPath.Path);
 
-            var environmentPath = new OsxBashEnvironmentPath(
+            provider
+                .Setup(p => p.GetEnvironmentVariable("SHELL"))
+                .Returns(shell);
+
+            var environmentPath = new MacOSEnvironmentPath(
                 toolsPath,
                 reporter,
                 provider.Object,
@@ -113,13 +148,15 @@ namespace Microsoft.DotNet.ShellShim.Tests
             reporter.Lines.Should().BeEmpty();
 
             fileSystem
-                .Exists(OsxBashEnvironmentPath.DotnetCliToolsPathsDPath)
+                .Exists(MacOSEnvironmentPath.DotnetCliToolsPathsDPath)
                 .Should()
                 .Be(false);
         }
 
-        [UnixOnlyFact]
-        public void GivenPathNotSetItAddsToEnvironment()
+        [UnixOnlyTheory]
+        [InlineData("/bin/bash")]
+        [InlineData("/bin/zsh")]
+        public void GivenPathNotSetItAddsToEnvironment(string shell)
         {
             var reporter = new BufferedReporter();
             var toolsPath = new BashPathUnderHomeDirectory("/home/user", ".dotnet/tools");
@@ -132,7 +169,11 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 .Setup(p => p.GetEnvironmentVariable("PATH"))
                 .Returns(pathValue);
 
-            var environmentPath = new OsxBashEnvironmentPath(
+            provider
+                .Setup(p => p.GetEnvironmentVariable("SHELL"))
+                .Returns(shell);
+
+            var environmentPath = new MacOSEnvironmentPath(
                 toolsPath,
                 reporter,
                 provider.Object,
@@ -144,9 +185,9 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             fileSystem
                 .File
-                .ReadAllText(OsxBashEnvironmentPath.DotnetCliToolsPathsDPath)
+                .ReadAllText(MacOSEnvironmentPath.DotnetCliToolsPathsDPath)
                 .Should()
-                .Be(toolsPath.PathWithTilde);
+                .Be(toolsPath.Path);
         }
     }
 }
