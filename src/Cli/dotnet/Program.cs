@@ -211,6 +211,10 @@ public class Program
                     getStarOperators.Any(o =>
                     switchIndicators.Any(i => t.Value.StartsWith(i + o, StringComparison.OrdinalIgnoreCase))));
 
+                // Skip first-run experience for completion-related commands to avoid corrupting shell completion scripts
+                var isCompletionCommand = IsCompletionCommand(parseResult);
+                var skipFirstTimeUseCheck = getStarOptionPassed || isCompletionCommand;
+
                 ConfigureDotNetForFirstTimeUse(
                     firstTimeUseNoticeSentinel,
                     aspNetCertificateSentinel,
@@ -219,7 +223,7 @@ public class Program
                     dotnetFirstRunConfiguration,
                     environmentProvider,
                     performanceData,
-                    skipFirstTimeUseCheck: getStarOptionPassed);
+                    skipFirstTimeUseCheck: skipFirstTimeUseCheck);
                 PerformanceLogEventSource.Log.FirstTimeConfigurationStop();
             }
         }
@@ -418,5 +422,12 @@ public class Program
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
         UILanguageOverride.Setup();
+    }
+
+    private static bool IsCompletionCommand(ParseResult parseResult)
+    {
+        var commandName = parseResult.RootSubCommandResult();
+        return string.Equals(commandName, "complete", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(commandName, "completions", StringComparison.OrdinalIgnoreCase);
     }
 }
