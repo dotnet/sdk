@@ -118,6 +118,7 @@ This file should be imported by eng/Versions.props
     <NuGetVersioningPackageVersion>7.0.0-preview.1.609</NuGetVersioningPackageVersion>
     <SystemCodeDomPackageVersion>10.0.0-rc.1.25411.109</SystemCodeDomPackageVersion>
     <SystemCommandLinePackageVersion>2.0.0-rc.1.25411.109</SystemCommandLinePackageVersion>
+    <SystemComponentModelCompositionPackageVersion>10.0.0-preview.7.25377.103</SystemComponentModelCompositionPackageVersion>
     <SystemCompositionAttributedModelPackageVersion>10.0.0-rc.1.25411.109</SystemCompositionAttributedModelPackageVersion>
     <SystemCompositionConventionPackageVersion>10.0.0-rc.1.25411.109</SystemCompositionConventionPackageVersion>
     <SystemCompositionHostingPackageVersion>10.0.0-rc.1.25411.109</SystemCompositionHostingPackageVersion>
@@ -142,8 +143,8 @@ This file should be imported by eng/Versions.props
     <!-- nuget/nuget.client dependencies -->
     <NuGetLocalizationPackageVersion>7.0.0-preview.1.100</NuGetLocalizationPackageVersion>
     <!-- microsoft/testfx dependencies -->
-    <MicrosoftTestingPlatformPackageVersion>1.9.0-preview.25413.5</MicrosoftTestingPlatformPackageVersion>
-    <MSTestPackageVersion>3.11.0-preview.25413.5</MSTestPackageVersion>
+    <MicrosoftTestingPlatformPackageVersion>1.9.0-preview.25414.4</MicrosoftTestingPlatformPackageVersion>
+    <MSTestPackageVersion>3.11.0-preview.25414.4</MSTestPackageVersion>
   </PropertyGroup>
   <!--Property group for alternate package version names-->
   <PropertyGroup>
@@ -259,6 +260,8 @@ This file should be imported by eng/Versions.props
     <NuGetVersioningVersion>$(NuGetVersioningPackageVersion)</NuGetVersioningVersion>
     <SystemCodeDomVersion>$(SystemCodeDomPackageVersion)</SystemCodeDomVersion>
     <SystemCommandLineVersion>$(SystemCommandLinePackageVersion)</SystemCommandLineVersion>
+    <SystemComponentModelCompositionVersion>$(SystemComponentModelCompositionPackageVersion)</SystemComponentModelCompositionVersion>
+    <SystemComponentModelCompositionVersion>$(SystemComponentModelCompositionPackageVersion)</SystemComponentModelCompositionVersion>
     <SystemCompositionAttributedModelVersion>$(SystemCompositionAttributedModelPackageVersion)</SystemCompositionAttributedModelVersion>
     <SystemCompositionConventionVersion>$(SystemCompositionConventionPackageVersion)</SystemCompositionConventionVersion>
     <SystemCompositionHostingVersion>$(SystemCompositionHostingPackageVersion)</SystemCompositionHostingVersion>

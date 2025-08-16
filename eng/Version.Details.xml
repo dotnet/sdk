@@ -213,6 +213,10 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>520c71b5277fc1f72dbec14da03ca55205d6c8e5</Sha>
     </Dependency>
+    <Dependency Name="System.ComponentModel.Composition" Version="10.0.0-preview.7.25377.103">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>87e4c823cc62a13a3e8afbddc78bf718971f376c</Sha>
+    </Dependency>
     <Dependency Name="System.Formats.Asn1" Version="10.0.0-rc.1.25411.109">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>520c71b5277fc1f72dbec14da03ca55205d6c8e5</Sha>
@@ -383,10 +387,6 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>520c71b5277fc1f72dbec14da03ca55205d6c8e5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.0-preview.25411.109">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>520c71b5277fc1f72dbec14da03ca55205d6c8e5</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="5.0.0-2.25411.109">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>520c71b5277fc1f72dbec14da03ca55205d6c8e5</Sha>
@@ -553,13 +553,13 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>520c71b5277fc1f72dbec14da03ca55205d6c8e5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="1.9.0-preview.25413.5">
+    <Dependency Name="Microsoft.Testing.Platform" Version="1.9.0-preview.25414.4">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>26b1f1b86bbaa1c524e4b91c6bbd838687ea23cc</Sha>
+      <Sha>26e9583afe1c21c3d4fb89ca3628f80a298e8f30</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="3.11.0-preview.25413.5">
+    <Dependency Name="MSTest" Version="3.11.0-preview.25414.4">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>26b1f1b86bbaa1c524e4b91c6bbd838687ea23cc</Sha>
+      <Sha>26e9583afe1c21c3d4fb89ca3628f80a298e8f30</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="10.0.0-rc.1.25411.109">
       <Uri>https://github.com/dotnet/dotnet</Uri>
