@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-nuget-locals" "1" "2025-06-13" "" ".NET Documentation"
+.TH "dotnet-nuget-locals" "1" "2025-08-15" "" ".NET Documentation"
 .hy
 .SH dotnet nuget locals
 .PP
@@ -42,7 +42,7 @@ The \f[V]dotnet nuget locals\f[R] command clears or lists local NuGet resources 
 The cache location to list or clear.
 It accepts one of the following values:
 .IP \[bu] 2
-\f[V]all\f[R] - Indicates that the specified operation is applied to all cache types: http-request cache, global packages cache, and the temporary cache.
+\f[V]all\f[R] - Indicates that the specified operation is applied to all cache types: http-request cache, global packages cache, temporary cache, and plugins cache.
 .IP \[bu] 2
 \f[V]http-cache\f[R] - Indicates that the specified operation is applied only to the http-request cache.
 The other cache locations aren\[cq]t affected.
@@ -51,6 +51,9 @@ The other cache locations aren\[cq]t affected.
 The other cache locations aren\[cq]t affected.
 .IP \[bu] 2
 \f[V]temp\f[R] - Indicates that the specified operation is applied only to the temporary cache.
+The other cache locations aren\[cq]t affected.
+.IP \[bu] 2
+\f[V]plugins-cache\f[R] - Indicates that the specified operation is applied only to the plugins cache.
 The other cache locations aren\[cq]t affected.
 .RE
 .SH OPTIONS
@@ -83,7 +86,7 @@ The list option is used to display the location of the specified cache type.
 .RE
 .SH EXAMPLES
 .IP \[bu] 2
-Displays the paths of all the local cache directories (http-cache directory, global-packages cache directory, and temporary cache directory):
+Displays the paths of all the local cache directories (http-cache directory, global-packages cache directory, temporary cache directory, and plugins cache directory):
 .RS 2
 .IP
 .nf
@@ -103,7 +106,17 @@ dotnet nuget locals http-cache --list
 .fi
 .RE
 .IP \[bu] 2
-Clears all files from all local cache directories (http-cache directory, global-packages cache directory, and temporary cache directory):
+Displays the path for the local plugins cache directory:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet nuget locals plugins-cache --list
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Clears all files from all local cache directories (http-cache directory, global-packages cache directory, temporary cache directory, and plugins cache directory):
 .RS 2
 .IP
 .nf
@@ -129,6 +142,16 @@ Clears all files in local temporary cache directory:
 .nf
 \f[C]
 dotnet nuget locals temp -c
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Clears all files in local plugins cache directory:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet nuget locals plugins-cache -c
 \f[R]
 .fi
 .RE
