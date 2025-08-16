@@ -58,7 +58,6 @@ public sealed class MSBuildArgs
     /// processing of the SDK and returns a structured set of MSBuild arguments grouped by purpose.
     /// </summary>
     /// <param name="forwardedAndUserFacingArgs">the complete set of forwarded MSBuild arguments and un-parsed, potentially MSBuild-relevant arguments</param>
-    /// <returns></returns>
     public static MSBuildArgs AnalyzeMSBuildArguments(IEnumerable<string> forwardedAndUserFacingArgs, params Option[] options)
     {
         var fakeCommand = new System.CommandLine.Command("dotnet");
@@ -66,7 +65,7 @@ public sealed class MSBuildArgs
         {
             fakeCommand.Options.Add(option);
         }
-;
+
         var parseResult = fakeCommand.Parse([.. forwardedAndUserFacingArgs], _analysisParsingConfiguration);
         var globalProperties = parseResult.GetResult("--property") is OptionResult propResult ? propResult.GetValueOrDefault<ReadOnlyDictionary<string, string>?>() : null;
         var restoreProperties = parseResult.GetResult("--restoreProperty") is OptionResult restoreResult ? restoreResult.GetValueOrDefault<ReadOnlyDictionary<string, string>?>() : null;
