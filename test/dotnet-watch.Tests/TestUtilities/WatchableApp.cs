@@ -5,8 +5,6 @@
 
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using Castle.Components.DictionaryAdapter;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {

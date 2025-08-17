@@ -70,7 +70,7 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
 
         var anyFailure = false;
         var anyChangeApplied = false;
-        var allChanagesApplied = false;
+        var allChangesApplied = false;
 
         var index = 0;
         foreach (var status in results)
@@ -85,24 +85,24 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
 
                 case ApplyStatus.AllChangesApplied:
                     anyChangeApplied = true;
-                    allChanagesApplied = true;
+                    allChangesApplied = true;
                     break;
 
                 case ApplyStatus.SomeChangesApplied:
                     anyChangeApplied = true;
-                    allChanagesApplied = false;
+                    allChangesApplied = false;
                     client.Logger.LogWarning("Some changes not applied to {Name} because they are not supported by the runtime.", name);
                     break;
 
                 case ApplyStatus.NoChangesApplied:
-                    allChanagesApplied = false;
+                    allChangesApplied = false;
                     client.Logger.LogWarning("No changes applied to {Name} because they are not supported by the runtime.", name);
                     break;
             }
         }
 
         return anyFailure ? ApplyStatus.Failed
-            : allChanagesApplied ? ApplyStatus.AllChangesApplied
+            : allChangesApplied ? ApplyStatus.AllChangesApplied
             : anyChangeApplied ? ApplyStatus.SomeChangesApplied
             : ApplyStatus.NoChangesApplied;
     }
