@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Config
         private string? _updateMode;
         private readonly IWorkloadResolverFactory _workloadResolverFactory;
 
-        private string? _dotnetPath;
+        private string _dotnetPath;
         private string _userProfileDir;
         private readonly IWorkloadResolver _workloadResolver;
         private readonly ReleaseVersion _sdkVersion;
