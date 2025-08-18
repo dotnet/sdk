@@ -21,10 +21,7 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            using (StringWriter writer = new StringWriter())
-            {
-                GenerateDocument(EntryPointRelativePath, CommandName).Save(ToolsSettingsFilePath);
-            }
+            GenerateDocument(EntryPointRelativePath, CommandName).Save(ToolsSettingsFilePath);
         }
 
         internal static XDocument GenerateDocument(string entryPointRelativePath, string commandName)

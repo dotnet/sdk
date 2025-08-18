@@ -254,8 +254,8 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Theory]
-        [InlineData("netcoreapp2.0")]
-        [InlineData("netcoreapp2.1")]
+        [InlineData("net6.0")]
+        [InlineData("net7.0")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_runs_the_app_from_the_output_folder(string targetFramework)
         {
@@ -263,41 +263,34 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Theory]
-        [InlineData("netcoreapp2.1")]
+        [InlineData("net6.0")]
+        [InlineData("net7.0")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_runs_a_rid_specific_app_from_the_output_folder(string targetFramework)
-        {
+        {         
             RunAppFromOutputFolder("RunFromOutputFolderWithRID_" + targetFramework, true, false, targetFramework);
         }
 
         [Theory]
-        [InlineData("netcoreapp2.0")]
+        [InlineData("net6.0")]
+        [InlineData("net7.0")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_runs_the_app_with_conflicts_from_the_output_folder(string targetFramework)
         {
-            if (!EnvironmentInfo.SupportsTargetFramework(targetFramework))
-            {
-                return;
-            }
-
             RunAppFromOutputFolder("RunFromOutputFolderConflicts_" + targetFramework, false, true, targetFramework);
         }
 
         [Theory]
-        [InlineData("netcoreapp2.0")]
+        [InlineData("net6.0")]
+        [InlineData("net7.0")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_runs_a_rid_specific_app_with_conflicts_from_the_output_folder(string targetFramework)
         {
-            if (!EnvironmentInfo.SupportsTargetFramework(targetFramework))
-            {
-                return;
-            }
-
             RunAppFromOutputFolder("RunFromOutputFolderWithRIDConflicts_" + targetFramework, true, true, targetFramework);
         }
 
         private void RunAppFromOutputFolder(string testName, bool useRid, bool includeConflicts,
-            string targetFramework = "netcoreapp2.0")
+            string targetFramework = ToolsetInfo.CurrentTargetFramework)
         {
             var runtimeIdentifier = useRid ? EnvironmentInfo.GetCompatibleRid(targetFramework) : null;
 
