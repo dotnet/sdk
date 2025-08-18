@@ -120,11 +120,11 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
             builder.AppendSwitchIfNotNull("--appcommandinstruction ", AppCommandInstruction);
         }
 
-        AppendSwitchIfNotNullSantized(builder, "--entrypoint ", nameof(Entrypoint), Entrypoint);
-        AppendSwitchIfNotNullSantized(builder, "--entrypointargs ", nameof(EntrypointArgs), EntrypointArgs);
-        AppendSwitchIfNotNullSantized(builder, "--defaultargs ", nameof(DefaultArgs), DefaultArgs);
-        AppendSwitchIfNotNullSantized(builder, "--appcommand ", nameof(AppCommand), AppCommand);
-        AppendSwitchIfNotNullSantized(builder, "--appcommandargs ", nameof(AppCommandArgs), AppCommandArgs);
+        AppendSwitchIfNotNullSanitized(builder, "--entrypoint ", nameof(Entrypoint), Entrypoint);
+        AppendSwitchIfNotNullSanitized(builder, "--entrypointargs ", nameof(EntrypointArgs), EntrypointArgs);
+        AppendSwitchIfNotNullSanitized(builder, "--defaultargs ", nameof(DefaultArgs), DefaultArgs);
+        AppendSwitchIfNotNullSanitized(builder, "--appcommand ", nameof(AppCommand), AppCommand);
+        AppendSwitchIfNotNullSanitized(builder, "--appcommandargs ", nameof(AppCommandArgs), AppCommandArgs);
 
         if (Labels.Any(e => string.IsNullOrWhiteSpace(e.ItemSpec)))
         {
@@ -187,9 +187,24 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
             builder.AppendSwitchIfNotNull("--container-user ", ContainerUser);
         }
 
+        if (!string.IsNullOrWhiteSpace(ArchiveOutputPath))
+        {
+            builder.AppendSwitchIfNotNull("--archiveoutputpath ", ArchiveOutputPath);
+        }
+
+        if (GenerateLabels)
+        {
+            builder.AppendSwitch("--generate-labels");
+        }
+
+        if (GenerateDigestLabel)
+        {
+            builder.AppendSwitch("--generate-digest-label");
+        }
+
         return builder.ToString();
 
-        void AppendSwitchIfNotNullSantized(CommandLineBuilder builder, string commandArgName, string propertyName, ITaskItem[] value)
+        void AppendSwitchIfNotNullSanitized(CommandLineBuilder builder, string commandArgName, string propertyName, ITaskItem[] value)
         {
             ITaskItem[] santized = value.Where(e => !string.IsNullOrWhiteSpace(e.ItemSpec)).ToArray();
             if (santized.Length != value.Length)
