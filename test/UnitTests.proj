@@ -139,6 +139,7 @@
       <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "Get-ChildItem -Recurse -File -Filter '*hangdump.dmp' | Copy-Item -Destination $env:HELIX_WORKITEM_UPLOAD_ROOT";$(HelixPostCommands)</HelixPostCommands>
       <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "Get-ChildItem -Path $env:HELIX_WORKITEM_PAYLOAD -Recurse -File -Filter 'msbuildsdkresolver.binlog' | Copy-Item -Destination $env:HELIX_WORKITEM_UPLOAD_ROOT";$(HelixPostCommands)</HelixPostCommands>
       <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "Get-ChildItem -Path ../../../. -Recurse -File -Filter 'msbuildsdkresolver.binlog' | Copy-Item -Destination $env:HELIX_WORKITEM_UPLOAD_ROOT";$(HelixPostCommands)</HelixPostCommands>
+      <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "Get-ChildItem -Path $env:DOTNET_SDK_TEST_MSBUILD_PATH -Recurse -File -Filter 'msbuild.exe.config' | Copy-Item -Destination $env:HELIX_WORKITEM_UPLOAD_ROOT";$(HelixPostCommands)</HelixPostCommands>
       <HelixPostCommands Condition="$(IsPosixShell)">find "$HELIX_WORKITEM_UPLOAD_ROOT/../../.." -name '*hangdump.dmp' -exec cp {} "$HELIX_WORKITEM_UPLOAD_ROOT" \%3B;$(HelixPostCommands)</HelixPostCommands>
       <TestDotnetVersion>$(Version)</TestDotnetVersion>
       <MSBuildSdkResolverDir>$(RepoRoot)artifacts\bin\Microsoft.DotNet.MSBuildSdkResolver</MSBuildSdkResolverDir>
