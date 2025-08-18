@@ -749,6 +749,24 @@ namespace Microsoft.NET.Build.Tests
             buildCommand.GetOutputDirectory().Should().HaveFile("PresentationFramework.dll");
         }
 
+        [WindowsOnlyFact]
+        public void ItCanMultiTargetCSWinRT2And3()
+        {
+            TestProject testProject = new()
+            {
+                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.22000.0;{ToolsetInfo.CurrentTargetFramework}-windows10.0.22000.1",
+                IsExe = true,
+                SelfContained = "true",
+                RuntimeIdentifier = "win-x64"
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+
+        }
+
         private string GetReferencedWindowsSdkVersion(TestAsset testAsset)
         {
             var getValueCommand = new GetValuesCommand(testAsset, "PackageDownload", GetValuesCommand.ValueType.Item)
