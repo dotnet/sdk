@@ -4158,7 +4158,7 @@ class TestType
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-        [Fact, WorkItem(7633, "https://github.com/dotnet/roslyn-analyzers/issues/7633")]
+        [Fact, WorkItem(50337, "https://github.com/dotnet/sdk/issues/50337")]
         public async Task SuppressedMacCatalystWithinChildAttributesShouldAlsoAppliedToParentAttributesOnMerge()
         {
             var source = @"
