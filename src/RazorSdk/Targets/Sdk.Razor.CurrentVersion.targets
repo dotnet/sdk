@@ -30,7 +30,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Paths to tools, tasks, and extensions are calculated relative to the RazorSdkDirectoryRoot. This can be modified to test a local build. -->
     <RazorSdkDirectoryRoot Condition="'$(RazorSdkDirectoryRoot)'==''">$(MSBuildThisFileDirectory)..\</RazorSdkDirectoryRoot>
     <RazorSdkBuildTasksDirectoryRoot Condition="'$(RazorSdkBuildTasksDirectoryRoot)'==''">$(RazorSdkDirectoryRoot)tasks\</RazorSdkBuildTasksDirectoryRoot>
-    <_RazorSdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net9.0</_RazorSdkTasksTFM>
+    <_RazorSdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net10.0</_RazorSdkTasksTFM>
     <_RazorSdkTasksTFM Condition=" '$(_RazorSdkTasksTFM)' == ''">net472</_RazorSdkTasksTFM>
     <RazorSdkBuildTasksAssembly>$(RazorSdkBuildTasksDirectoryRoot)$(_RazorSdkTasksTFM)\Microsoft.NET.Sdk.Razor.Tasks.dll</RazorSdkBuildTasksAssembly>
     <_RazorSdkToolAssembly>$(RazorSdkDirectoryRoot)tools\rzc.dll</_RazorSdkToolAssembly>
@@ -44,6 +44,21 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Resolve the TFM-specific attributes conditionally. -->
   <Choose>
+    <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0')) ">
+      <PropertyGroup>
+        <_TargetingNETCoreApp30OrLater>true</_TargetingNETCoreApp30OrLater>
+        <_TargetingNET50OrLater>true</_TargetingNET50OrLater>
+        <_TargetingNET60OrLater>true</_TargetingNET60OrLater>
+        <_TargetingNET70OrLater>true</_TargetingNET70OrLater>
+        <_TargetingNET80OrLater>true</_TargetingNET80OrLater>
+        <_TargetingNET90OrLater>true</_TargetingNET90OrLater>
+        <_TargetingNET100OrLater>true</_TargetingNET100OrLater>
+        <UseRazorSourceGenerator Condition="'$(Language)' == 'C#' AND '$(UseRazorSourceGenerator)' == '' ">true</UseRazorSourceGenerator>
+        <RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">9.0</RazorLangVersion>
+        <_RazorUseRoslynTokenizer Condition="'$(_RazorUseRoslynTokenizer)'==''">true</_RazorUseRoslynTokenizer>
+        <Features Condition="'$(_RazorUseRoslynTokenizer)'=='true'">use-roslyn-tokenizer=true;$(Features)</Features>
+      </PropertyGroup>
+    </When>
     <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '9.0')) ">
       <PropertyGroup>
         <_TargetingNETCoreApp30OrLater>true</_TargetingNETCoreApp30OrLater>
@@ -569,6 +584,84 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <Content Condition="'%(Content.Extension)'=='.razor'" CopyToPublishDirectory="Never" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    Target to detect presence of .razor files and set related properties for embedded ValidatableTypeAttribute support
+    This target runs after component items are resolved to ensure accurate detection
+  -->
+  <Target Name="_AddEmbeddedValidationAttribute" BeforeTargets="GenerateGlobalUsings" DependsOnTargets="ResolveRazorComponentInputs;ResolveRazorGenerateInputs">
+    <PropertyGroup Condition="'$(_TargetingNET100OrLater)' == 'true'">
+      <_HasRazorFiles Condition="'@(RazorComponent)' != '' OR '@(RazorGenerate->WithMetadataValue('Extension', '.razor'))' != '' OR '@(Content->WithMetadataValue('Extension', '.razor'))' != ''">true</_HasRazorFiles>
+      
+      <!-- Set embedded attribute generation property based on .razor file detection -->
+      <GenerateEmbeddedValidatableTypeAttribute Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == '' AND '$(_HasRazorFiles)' == 'true'">true</GenerateEmbeddedValidatableTypeAttribute>
+      <GenerateEmbeddedValidatableTypeAttribute Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == ''">false</GenerateEmbeddedValidatableTypeAttribute>
+      
+      <!-- Set global using property based on attribute generation -->
+      <IncludeEmbeddedValidationGlobalUsing Condition="'$(IncludeEmbeddedValidationGlobalUsing)' == '' AND '$(GenerateEmbeddedValidatableTypeAttribute)' == 'true'">true</IncludeEmbeddedValidationGlobalUsing>
+      <IncludeEmbeddedValidationGlobalUsing Condition="'$(IncludeEmbeddedValidationGlobalUsing)' == ''">false</IncludeEmbeddedValidationGlobalUsing>
+    </PropertyGroup>
+    
+    <PropertyGroup Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'">
+      <_EmbeddedAttributeFile>$(IntermediateOutputPath)EmbeddedAttribute.cs</_EmbeddedAttributeFile>
+      <_ValidatableTypeAttributeFile>$(IntermediateOutputPath)ValidatableTypeAttribute.cs</_ValidatableTypeAttributeFile>
+    </PropertyGroup>
+
+    <!-- Generate EmbeddedAttribute source file -->
+    <ItemGroup Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'">
+      <_EmbeddedAttributeLines Include="// &lt;auto-generated/&gt;" />
+      <_EmbeddedAttributeLines Include="namespace Microsoft.CodeAnalysis" />
+      <_EmbeddedAttributeLines Include="{" />
+      <_EmbeddedAttributeLines Include="    internal sealed partial class EmbeddedAttribute : global::System.Attribute" />
+      <_EmbeddedAttributeLines Include="    {" />
+      <_EmbeddedAttributeLines Include="    }" />
+      <_EmbeddedAttributeLines Include="}" />
+    </ItemGroup>
+    
+    <WriteLinesToFile 
+      Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'"
+      File="$(_EmbeddedAttributeFile)"
+      Lines="@(_EmbeddedAttributeLines)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+
+    <!-- Generate ValidatableTypeAttribute source file -->
+    <ItemGroup Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'">
+      <_ValidatableTypeAttributeLines Include="// &lt;auto-generated/&gt;" />
+      <_ValidatableTypeAttributeLines Include="namespace Microsoft.Extensions.Validation.Embedded" />
+      <_ValidatableTypeAttributeLines Include="{" />
+      <_ValidatableTypeAttributeLines Include="    [global::Microsoft.CodeAnalysis.EmbeddedAttribute]" />
+      <_ValidatableTypeAttributeLines Include="    [global::System.AttributeUsage(global::System.AttributeTargets.Class)]" />
+      <_ValidatableTypeAttributeLines Include="    internal sealed class ValidatableTypeAttribute : global::System.Attribute" />
+      <_ValidatableTypeAttributeLines Include="    {" />
+      <_ValidatableTypeAttributeLines Include="    }" />
+      <_ValidatableTypeAttributeLines Include="}" />
+    </ItemGroup>
+    
+    <WriteLinesToFile 
+      Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'"
+      File="$(_ValidatableTypeAttributeFile)"
+      Lines="@(_ValidatableTypeAttributeLines)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+    
+    <!--
+      Conditional inclusion of embedded ValidatableTypeAttribute source files for .NET 10.0+
+    -->
+    <ItemGroup Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'">
+      <Compile Include="$(_EmbeddedAttributeFile)" />
+      <Compile Include="$(_ValidatableTypeAttributeFile)" />
+      <FileWrites Include="$(_EmbeddedAttributeFile)" />
+      <FileWrites Include="$(_ValidatableTypeAttributeFile)" />
+    </ItemGroup>
+
+    <!--
+      Conditional global using for embedded validation namespace
+    -->
+    <ItemGroup Condition="'$(IncludeEmbeddedValidationGlobalUsing)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'">
+      <Using Include="Microsoft.Extensions.Validation.Embedded" />
     </ItemGroup>
   </Target>
 

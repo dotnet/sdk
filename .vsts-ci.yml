@@ -5,7 +5,7 @@ trigger:
   branches:
     include:
     - main
-    - release/9.0.3xx
+    - release/10.0.1xx-*
     - internal/release/*
     - exp/*
 
@@ -21,7 +21,7 @@ parameters:
 - name: runTestBuild
   displayName: Run A Test Build
   type: boolean
-  default: false
+  default: true
 - name: enableArm64Job
   displayName: Enables the ARM64 job
   type: boolean
@@ -67,25 +67,20 @@ extends:
     template: v1/1ES.Unofficial.PipelineTemplate.yml@1esPipelines
   parameters:
     containers:
-      alpine319WithNode:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
-      cblMariner20Fpm:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-fpm
-      centosStream9:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
-      debian12Amd64:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc14-amd64
-      fedora39:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
-      mariner20CrossArm:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-arm
-      ubuntu2204DebPkg:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-debpkg
+      azureLinux30Amd64:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-build-amd64
+
     sdl:
       sourceAnalysisPool:
         name: $(DncEngInternalBuildPool)
         image: 1es-windows-2022
         os: windows
+      policheck:
+        enabled: true
+      tsa:
+        enabled: true
+      binskim:
+        enabled: true
       ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
         componentgovernance:
           # Refdoc: https://docs.opensource.microsoft.com/tools/cg/component-detection/variables/
@@ -107,64 +102,45 @@ extends:
           oneESCompat:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
-          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           locBranch: main
+          # WORKAROUND: BinSkim requires the folder exist prior to scanning.
+          preSteps:
+          - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
+            displayName: Create artifacts/bin directory
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
-            timeoutInMinutes: 90
+            timeoutInMinutes: 180
             windowsJobParameterSets:
             ### OFFICIAL ###
             - categoryName: Official
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
-              officialBuildProperties: $(_officialBuildProperties)
+              officialBuildProperties: $(_officialBuildProperties) /p:BuildWorkloads=true
               enableDefaultArtifacts: true
               runTests: false
               publishRetryConfig: true
               variables:
                 _SignType: real
             - categoryName: Official
-              buildArchitecture: x86
+              targetArchitecture: x86
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties)
               runTests: false
               variables:
                 _SignType: real
+              dependsOn: Official_windows_x64
+              downloadManifestMsiPackages: true
             - categoryName: Official
-              buildArchitecture: arm64
+              targetArchitecture: arm64
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties)
               runTests: false
               variables:
                 _SignType: real
-            ### PGO ###
-            - categoryName: PGO
-              pgoInstrument: true
-              publishArgument: $(_publishArgument)
-              signArgument: $(_signArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              runTests: false
-              variables:
-                _SignType: real
-            - categoryName: PGO
-              pgoInstrument: true
-              buildArchitecture: x86
-              publishArgument: $(_publishArgument)
-              signArgument: $(_signArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              runTests: false
-              variables:
-                _SignType: real
-            - categoryName: PGO
-              pgoInstrument: true
-              buildArchitecture: arm64
-              publishArgument: $(_publishArgument)
-              signArgument: $(_signArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              runTests: false
-              variables:
-                _SignType: real
+              dependsOn: Official_windows_x64
+              downloadManifestMsiPackages: true
 
       ############### LINUX ###############
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
@@ -177,58 +153,49 @@ extends:
           oneESCompat:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
-          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
             timeoutInMinutes: 90
             linuxJobParameterSets:
             ### OFFICIAL ###
-            # Note: These builds are also portable like the Portable category, but that category uses containers, and doesn't publish zips and tarballs.
+            # Note: These builds are also glibc like the glibc category, but that category uses containers, and doesn't publish zips and tarballs.
             - categoryName: Official
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties)
+              osProperties: $(linuxOsglibcProperties)
               runTests: false
             - categoryName: Official
-              buildArchitecture: arm
+              targetArchitecture: arm
               runtimeIdentifier: linux-arm
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties)
+              osProperties: $(linuxOsglibcProperties)
               runTests: false
             - categoryName: Official
-              buildArchitecture: arm64
+              targetArchitecture: arm64
               runtimeIdentifier: linux-arm64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties)
+              osProperties: $(linuxOsglibcProperties)
               runTests: false
-            ### PORTABLE ###
-            - categoryName: Portable
-              container: ubuntu2204DebPkg
+            ### glibc ###
+            - categoryName: glibc
               # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties) /p:BuildSdkDeb=true
+              osProperties: $(linuxOsglibcProperties) /p:BuildSdkDeb=true
               runTests: false
-            - categoryName: Portable
-              container: cblMariner20Fpm
-              # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
-              publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
-              officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties) /p:IsRPMBasedDistro=true
-              runTests: false
-            - categoryName: Portable
-              container: cblMariner20Fpm
-              buildArchitecture: arm64
+            - categoryName: glibc
+              targetArchitecture: arm64
               runtimeIdentifier: linux-arm64
               # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
-              publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false /p:CLIBUILD_SKIP_TESTS=true
+              publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties) /p:IsRPMBasedDistro=true
+              osProperties: $(linuxOsglibcProperties) /p:BuildSdkDeb=true
               runTests: false
-            ### MUSL ###
-            - categoryName: Musl
-              container: alpine319WithNode
+            ### musl ###
+            - categoryName: musl
+              container: azureLinux30Amd64
               runtimeIdentifier: linux-musl-x64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
@@ -237,35 +204,24 @@ extends:
               # SBOM generation is not supported for alpine.
               enableSbom: false
               runTests: false
-            - categoryName: Musl
-              container: mariner20CrossArm
-              buildArchitecture: arm
+              # Helix is hanging on this job using the container. See: https://github.com/dotnet/dnceng/issues/6000
+              disableJob: true
+            - categoryName: musl
+              container: azureLinux30Amd64
+              targetArchitecture: arm
               runtimeIdentifier: linux-musl-arm
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: /p:OSName=linux-musl
               runTests: false
-            - categoryName: Musl
-              buildArchitecture: arm64
+              # Helix is hanging on this job using the container. See: https://github.com/dotnet/dnceng/issues/6000
+              disableJob: true
+            - categoryName: musl
+              targetArchitecture: arm64
               runtimeIdentifier: linux-musl-arm64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: /p:OSName=linux-musl
-              runTests: false
-            ### PGO ###
-            - categoryName: PGO
-              pgoInstrument: true
-              publishArgument: $(_publishArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties)
-              runTests: false
-            - categoryName: PGO
-              pgoInstrument: true
-              buildArchitecture: arm64
-              runtimeIdentifier: linux-arm64
-              publishArgument: $(_publishArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties)
               runTests: false
 
       ############### MACOS ###############
@@ -279,7 +235,7 @@ extends:
           oneESCompat:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
-          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
             timeoutInMinutes: 90
             macOSJobParameterSets:
@@ -290,7 +246,7 @@ extends:
               officialBuildProperties: $(_officialBuildProperties)
               runTests: false
             - categoryName: Official
-              buildArchitecture: arm64
+              targetArchitecture: arm64
               runtimeIdentifier: osx-arm64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
@@ -306,10 +262,8 @@ extends:
             helixTargetQueue: osx.13.arm64
             macOSJobParameterSets:
             - categoryName: TestBuild
-              buildArchitecture: arm64
+              targetArchitecture: arm64
               runtimeIdentifier: osx-arm64
-
-# Remove the source build leg as we don't ship that outside of 1xx feature bands
 
       ############### DOTNET-FORMAT ###############
       - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
@@ -317,42 +271,20 @@ extends:
           parameters:
             oneESCompat:
               publishTaskPrefix: 1ES.
-            runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+            runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
 
     ############### PUBLISH STAGE ###############
-    - ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+    - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
       - stage: publish
         displayName: Publish
-        dependsOn: build
+        dependsOn: []
         jobs:
         - template: /eng/common/templates-official/job/publish-build-assets.yml@self
           parameters:
             publishUsingPipelines: true
             publishAssetsImmediately: true
+            isAssetlessBuild: true
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022
               os: windows
-
-      ############### POST-BUILD STAGE ###############
-      - template: /eng/common/templates-official/post-build/post-build.yml@self
-        parameters:
-          publishingInfraVersion: 3
-          enableSymbolValidation: false
-          enableSigningValidation: false
-          enableNugetValidation: false
-          enableSourceLinkValidation: false
-          publishInstallersAndChecksums: true
-          publishAssetsImmediately: true
-          SDLValidationParameters:
-            enable: false
-            params: ' -SourceToolsList @("policheck","credscan")
-            -TsaInstanceURL $(_TsaInstanceURL)
-            -TsaProjectName $(_TsaProjectName)
-            -TsaNotificationEmail $(_TsaNotificationEmail)
-            -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
-            -TsaBugAreaPath $(_TsaBugAreaPath)
-            -TsaIterationPath $(_TsaIterationPath)
-            -TsaRepositoryName "dotnet-sdk"
-            -TsaCodebaseName "dotnet-sdk"
-            -TsaPublish $True'

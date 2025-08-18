@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -17,6 +19,7 @@ namespace Microsoft.NET.Build.Tasks
         public ITaskItem[] ImplementationAssemblyReferences { get; set; }
         public ITaskItem[] ReadyToRunCompositeBuildReferences { get; set; }
         public ITaskItem[] ReadyToRunCompositeBuildInput { get; set; }
+        public ITaskItem[] ReadyToRunCompositeUnrootedBuildInput { get; set; }
         public bool ShowCompilerWarnings { get; set; }
         public bool UseCrossgen2 { get; set; }
         public string Crossgen2ExtraCommandLineArgs { get; set; }
@@ -364,6 +367,14 @@ namespace Microsoft.NET.Build.Tasks
                 foreach (var reference in ReadyToRunCompositeBuildInput)
                 {
                     result.AppendLine(reference.ItemSpec);
+                }
+
+                if (ReadyToRunCompositeUnrootedBuildInput != null)
+                {
+                    foreach (var unrooted in ReadyToRunCompositeUnrootedBuildInput)
+                    {
+                        result.AppendLine($"-u:\"{unrooted.ItemSpec}\"");
+                    }
                 }
             }
             else

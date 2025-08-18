@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 {
                     if (_dotnetModifiableAssemblies != null)
                     {
-                        context.Response.Headers.Add("DOTNET-MODIFIABLE-ASSEMBLIES", _dotnetModifiableAssemblies);
+                        context.Response.Headers.Append("DOTNET-MODIFIABLE-ASSEMBLIES", _dotnetModifiableAssemblies);
                     }
                     else
                     {
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 {
                     if (_aspnetcoreBrowserTools != null)
                     {
-                        context.Response.Headers.Add("ASPNETCORE-BROWSER-TOOLS", _aspnetcoreBrowserTools);
+                        context.Response.Headers.Append("ASPNETCORE-BROWSER-TOOLS", _aspnetcoreBrowserTools);
                     }
                     else
                     {

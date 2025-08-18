@@ -161,11 +161,16 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <PropertyGroup>
-    <BuildCompressionFormats>$(BuildCompressionFormats);gzip</BuildCompressionFormats>
-    <PublishCompressionFormats>$(PublishCompressionFormats);gzip;brotli</PublishCompressionFormats>
+    <EnableDefaultCompressionFormats Condition="'$(EnableDefaultCompressionFormats)' == ''">true</EnableDefaultCompressionFormats>
+    <BuildCompressionFormats Condition="'$(EnableDefaultCompressionFormats)' == 'true'">$(BuildCompressionFormats);gzip</BuildCompressionFormats>
+    <PublishCompressionFormats Condition="'$(EnableDefaultCompressionFormats)' == 'true'">$(PublishCompressionFormats);gzip;brotli</PublishCompressionFormats>
     <DisableBuildCompression Condition="'$(DisableBuildCompression)' == ''">false</DisableBuildCompression>
-    <CompressionIncludePatterns>$(CompressionIncludePatterns)</CompressionIncludePatterns>
-    <CompressionExcludePatterns>$(CompressionExcludePatterns)</CompressionExcludePatterns>
+    <CompressDiscoveredAssetsDuringBuild Condition="$(CompressDiscoveredAssetsDuringBuild) == ''">true</CompressDiscoveredAssetsDuringBuild>
+    <!-- Support passing in a custom compression level to brotli and respect the old internal flag for blazor -->
+    <BrotliCompressionLevel Condition="'$(_BlazorBrotliCompressionLevel)' != ''">$(_BlazorBrotliCompressionLevel)</BrotliCompressionLevel>
+
+    <!-- Attach weak ETag to compressed assets -->
+    <AttachWeakETagToCompressedAssetsDuringDevelopment Condition="'$(AttachWeakETagToCompressedAssetsDuringDevelopment)' == '' and '$(Configuration)' == 'Debug'">true</AttachWeakETagToCompressedAssetsDuringDevelopment>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -195,7 +200,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           GeneratePublishCompressedStaticWebAssets
             ResolvePublishCompressedStaticWebAssetsConfiguration
      -->
-    <ResolvePublishRelatedStaticWebAssetsDependsOn Condition="'$(DisableBuildCompression)' != 'true'">
+    <ResolvePublishRelatedStaticWebAssetsDependsOn>
       ResolvePublishCompressedStaticWebAssets;
       $(ResolvePublishRelatedStaticWebAssetsDependsOn)
     </ResolvePublishRelatedStaticWebAssetsDependsOn>
@@ -248,6 +253,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ApplyCompressionNegotiation
       CandidateEndpoints="@(StaticWebAssetEndpoint)"
       CandidateAssets="@(_CompressionCurrentProjectBuildAssets)"
+      AttachWeakETagToCompressedAssets="$(AttachWeakETagToCompressedAssetsDuringDevelopment)"
     >
       <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedCompressionBuildEndpoints" />
     </ApplyCompressionNegotiation>
@@ -271,7 +277,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <BrotliCompress Condition="'@(_BrotliCompressedStaticWebAssets)' != ''"
       FilesToCompress="@(_BrotliCompressedStaticWebAssets)"
-      CompressionLevel="$(_BlazorBrotliCompressionLevel)"
+      CompressionLevel="$(BrotliCompressionLevel)"
       ToolAssembly="$(_StaticWebAssetsSdkToolAssembly)"
       ToolExe="$(_DotNetHostFileName)"
       ToolPath="$(_DotNetHostDirectory)" />
@@ -305,8 +311,29 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAsset Include="@(_PrecompressedStaticWebAssets)" />
     </ItemGroup>
 
+    <PropertyGroup>
+      <StaticWebAssetBuildCompressAllAssets Condition="'$(StaticWebAssetBuildCompressAllAssets)' == '' and '$(StaticWebAssetProjectMode)' == 'Root'">true</StaticWebAssetBuildCompressAllAssets>
+      <StaticWebAssetBuildCompressAllAssets Condition="'$(StaticWebAssetBuildCompressAllAssets)' == ''">false</StaticWebAssetBuildCompressAllAssets>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(StaticWebAssetBuildCompressAllAssets)' == 'true'">
+      <_CandidateAssetsForBuild Include="@(StaticWebAsset)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(StaticWebAssetBuildCompressAllAssets)' != 'true'">
+      <_CandidateAssetsForBuild
+        Include="@(StaticWebAsset)"
+        Condition="'%(SourceType)' == 'Discovered' or '%(SourceType)' == 'Computed'" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(CompressDiscoveredAssetsDuringBuild)' != 'true'">
+      <_CandidateAssetsForBuild
+        Remove="@(_CandidateAssetsForBuild)"
+        Condition="'%(SourceType)' == 'Discovered'" />
+    </ItemGroup>
+
     <ResolveCompressedAssets
-      CandidateAssets="@(StaticWebAsset)"
+      CandidateAssets="@(_CandidateAssetsForBuild)"
       Formats="$(BuildCompressionFormats)"
       IncludePatterns="$(CompressionIncludePatterns)"
       ExcludePatterns="$(CompressionExcludePatterns)"
@@ -350,8 +377,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ApplyCompressionNegotiation
       CandidateEndpoints="@(StaticWebAssetEndpoint)"
-      CandidateAssets="@(_CompressionCurrentProjectPublishAssets)"
-    >
+      CandidateAssets="@(_CompressionCurrentProjectPublishAssets)">
       <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedCompressionPublishEndpoints" />
     </ApplyCompressionNegotiation>
 
@@ -387,10 +413,21 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="ResolvePublishCompressedStaticWebAssetsConfiguration" DependsOnTargets="ResolvePublishStaticWebAssets;$(ResolveCompressedFilesForPublishDependsOn)">
 
-    <ItemGroup>
+    <PropertyGroup>
+      <StaticWebAssetPublishCompressAllAssets Condition="'$(StaticWebAssetPublishCompressAllAssets)' == '' and '$(StaticWebAssetProjectMode)' == 'Root'">true</StaticWebAssetPublishCompressAllAssets>
+      <StaticWebAssetPublishCompressAllAssets Condition="'$(StaticWebAssetPublishCompressAllAssets)' == ''">false</StaticWebAssetPublishCompressAllAssets>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(StaticWebAssetPublishCompressAllAssets)' == 'true'">
       <_CandidateAssetsForPublish
         Include="@(StaticWebAsset)"
         Condition="'%(AssetKind)' != 'Build'" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(StaticWebAssetPublishCompressAllAssets)' != 'true'">
+      <_CandidateAssetsForPublish
+        Include="@(StaticWebAsset)"
+        Condition="'%(AssetKind)' != 'Build' and ('%(SourceType)' == 'Discovered' or '%(SourceType)' == 'Computed')" />
     </ItemGroup>
 
     <ResolveCompressedAssets

@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.IO.Pipes;
 #if NETFRAMEWORK
 using System.Security.AccessControl;
@@ -169,9 +171,9 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                     try
                     {
                         ServerLogger.Log($"Before poking pipe {Identifier}.");
-#pragma warning disable CA2022 // Avoid inexact read
-                        await Stream.ReadAsync(Array.Empty<byte>(), 0, 0, cancellationToken);
-#pragma warning restore CA2022
+                        // Stream.ReadExactlyAsync with a zero-length buffer will not update the state of the pipe.
+                        // We need to trigger a state update without actually reading the data.
+                        _ = await Stream.ReadAsync(Array.Empty<byte>(), 0, 0, cancellationToken);
                         ServerLogger.Log($"After poking pipe {Identifier}.");
                     }
                     catch (OperationCanceledException)
