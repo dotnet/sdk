@@ -1910,12 +1910,12 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="PackCmdVersion">
         <source>VERSION</source>
-        <target state="new">VERSION</target>
+        <target state="translated">VERSION</target>
         <note />
       </trans-unit>
       <trans-unit id="PackCmdVersionDescription">
         <source>The version of the package to create</source>
-        <target state="new">The version of the package to create</target>
+        <target state="translated">생성할 패키지의 버전</target>
         <note />
       </trans-unit>
       <trans-unit id="PackConfigurationOptionDescription">
@@ -3882,7 +3882,7 @@ To display a value, specify the corresponding command-line option without provid
       </trans-unit>
       <trans-unit id="WorkloadManifestInstallationConfigurationWorkloadSets">
         <source>Configured to use workload sets when installing new manifests.</source>
-        <target state="new">Configured to use workload sets when installing new manifests.</target>
+        <target state="translated">새 매니페스트를 설치할 때 use workload sets 사용하도록 구성됩니다.</target>
         <note>{Locked="workload sets"}</note>
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">

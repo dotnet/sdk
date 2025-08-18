@@ -69,17 +69,17 @@
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingDescription">
         <source>In many situations, logging is disabled or set to a log level that results in an unnecessary evaluation for this argument.</source>
-        <target state="new">In many situations, logging is disabled or set to a log level that results in an unnecessary evaluation for this argument.</target>
+        <target state="translated">Birçok durumda günlüğe kaydetme devre dışı bırakılır ya da bu bağımsız değişken için gereksiz bir değerlendirmeye yol açacak düzeyde sonuçları günlüğe kaydedecek şekilde ayarlanır.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingMessage">
         <source>Evaluation of this argument may be expensive and unnecessary if logging is disabled</source>
-        <target state="new">Evaluation of this argument may be expensive and unnecessary if logging is disabled</target>
+        <target state="translated">Günlüğe kaydetme devre dışı bırakılırsa bu bağımsız değişkenin değerlendirmesi pahalı ve gereksiz olabilir</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingTitle">
         <source>Avoid potentially expensive logging</source>
-        <target state="new">Avoid potentially expensive logging</target>
+        <target state="translated">Pahalı olabilecek günlüğe kaydetme işlemlerinden kaçının</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsDescription">
@@ -1105,17 +1105,17 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
       </trans-unit>
       <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsDescription">
         <source>The property 'StreamReader.EndOfStream' can cause unintended synchronous blocking when no data is buffered. Instead, use 'StreamReader.ReadLineAsync' directly, which returns 'null' when reaching the end of the stream.</source>
-        <target state="new">The property 'StreamReader.EndOfStream' can cause unintended synchronous blocking when no data is buffered. Instead, use 'StreamReader.ReadLineAsync' directly, which returns 'null' when reaching the end of the stream.</target>
+        <target state="translated">"StreamReader.EndOfStream" özelliği, ara belleğe hiç veri alınmadığında zaman uyumlu istenmeyen engellemeye yol açabilir. Bunun yerine akış sonuna ulaşıldığında "null" döndüren "StreamReader.ReadLineAsync" işlevini doğrudan kullanın.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsMessage">
         <source>Do not use '{0}' in an async method</source>
-        <target state="new">Do not use '{0}' in an async method</target>
+        <target state="translated">Zaman uyumsuz yöntemlerde "{0}" kullanmayın</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsTitle">
         <source>Do not use 'StreamReader.EndOfStream' in async methods</source>
-        <target state="new">Do not use 'StreamReader.EndOfStream' in async methods</target>
+        <target state="translated">Zaman uyumsuz yöntemlerde "StreamReader.EndOfStream" kullanmayın</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyDescription">
@@ -3165,42 +3165,42 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
       </trans-unit>
       <trans-unit id="UseRegexCountDescription">
         <source>'Regex.Count' is simpler and faster than 'Regex.Matches(...).Count'.</source>
-        <target state="new">'Regex.Count' is simpler and faster than 'Regex.Matches(...).Count'.</target>
+        <target state="translated">"Regex.Count", "Regex.Matches(...).Count"a kıyasla daha basit ve hızlıdır.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexCountFix">
         <source>Use 'Regex.Count'</source>
-        <target state="new">Use 'Regex.Count'</target>
+        <target state="translated">"Regex.Count" kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexCountMessage">
         <source>Use 'Regex.Count' instead of 'Regex.Matches(...).Count'</source>
-        <target state="new">Use 'Regex.Count' instead of 'Regex.Matches(...).Count'</target>
+        <target state="translated">"Regex.Matches(...).Count" yerine "Regex.Count" kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexCountTitle">
         <source>Use 'Regex.Count'</source>
-        <target state="new">Use 'Regex.Count'</target>
+        <target state="translated">"Regex.Count" kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchDescription">
         <source>'Regex.IsMatch' is simpler and faster than 'Regex.Match(...).Success'.</source>
-        <target state="new">'Regex.IsMatch' is simpler and faster than 'Regex.Match(...).Success'.</target>
+        <target state="translated">"Regex.IsMatch", "Regex.Match(...).Success"e kıyasla daha basit ve hızlıdır.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchFix">
         <source>Use 'Regex.IsMatch'</source>
-        <target state="new">Use 'Regex.IsMatch'</target>
+        <target state="translated">"Regex.IsMatch" kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchMessage">
         <source>Use 'Regex.IsMatch' instead of 'Regex.Match(...).Success'</source>
-        <target state="new">Use 'Regex.IsMatch' instead of 'Regex.Match(...).Success'</target>
+        <target state="translated">"Regex.Match(...).Success" yerine "Regex.IsMatch" kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchTitle">
         <source>Use 'Regex.IsMatch'</source>
-        <target state="new">Use 'Regex.IsMatch'</target>
+        <target state="translated">"Regex.IsMatch" kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSearchValuesCodeFixTitle">

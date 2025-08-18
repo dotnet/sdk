@@ -69,17 +69,17 @@
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingDescription">
         <source>In many situations, logging is disabled or set to a log level that results in an unnecessary evaluation for this argument.</source>
-        <target state="new">In many situations, logging is disabled or set to a log level that results in an unnecessary evaluation for this argument.</target>
+        <target state="translated">多くの場合、ログは無効化されているか、この引数に対して不要な評価を引き起こすログ レベルに設定されています。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingMessage">
         <source>Evaluation of this argument may be expensive and unnecessary if logging is disabled</source>
-        <target state="new">Evaluation of this argument may be expensive and unnecessary if logging is disabled</target>
+        <target state="translated">ログが無効になっている場合、この引数の評価は高価で不要である可能性があります</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingTitle">
         <source>Avoid potentially expensive logging</source>
-        <target state="new">Avoid potentially expensive logging</target>
+        <target state="translated">潜在的に高価なログを避ける</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsDescription">
@@ -627,7 +627,7 @@
 The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.  
 The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
 Widening and user defined conversions are not supported with generic types.</source>
-        <target state="translated">Enumerable.Cast&lt;T&gt;と Enumerable.OfType&lt;T&gt; が正常に機能するには、互換性のある型が必要です。 
+        <target state="translated">Enumerable.Cast&lt;T&gt; と Enumerable.OfType&lt;T&gt; が正常に機能するには、互換性のある型が必要です。 
 Enumerable.Cast&lt;T&gt; によって返されるシーケンスによって使用されるジェネリック キャスト (IL 'unbox.any') は、指定された型の要素で実行時に InvalidCastException をスローします。 
 Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (C# 'is' operator/IL 'isinst') は、指定された型の要素では成功しないため、空のシーケンスになります。 
 拡大およびユーザー定義の変換は、ジェネリック型ではサポートされていません。</target>
@@ -1105,17 +1105,17 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
       </trans-unit>
       <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsDescription">
         <source>The property 'StreamReader.EndOfStream' can cause unintended synchronous blocking when no data is buffered. Instead, use 'StreamReader.ReadLineAsync' directly, which returns 'null' when reaching the end of the stream.</source>
-        <target state="new">The property 'StreamReader.EndOfStream' can cause unintended synchronous blocking when no data is buffered. Instead, use 'StreamReader.ReadLineAsync' directly, which returns 'null' when reaching the end of the stream.</target>
+        <target state="translated">プロパティ 'StreamReader.EndOfStream' は、データがバッファーに格納されていない場合に、意図しない同期ブロックを引き起こす可能性があります。代わりに、ストリームの末尾に達した際に 'null' を返す 'StreamReader.ReadLineAsync' を直接使用してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsMessage">
         <source>Do not use '{0}' in an async method</source>
-        <target state="new">Do not use '{0}' in an async method</target>
+        <target state="translated">非同期メソッドで '{0}' を使用しないでください</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsTitle">
         <source>Do not use 'StreamReader.EndOfStream' in async methods</source>
-        <target state="new">Do not use 'StreamReader.EndOfStream' in async methods</target>
+        <target state="translated">非同期メソッドで 'StreamReader.EndOfStream' を使用しない</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyDescription">
@@ -1640,7 +1640,7 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
       </trans-unit>
       <trans-unit id="MakeMethodDeclaredOnImplementationTypeStatic">
         <source>Convert to static method</source>
-        <target state="translated">静的メソッドに変換します</target>
+        <target state="translated">静的メソッドに変換する</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeMethodDeclaredOnImplementationTypeStaticMayProduceInvalidCode">
@@ -3165,42 +3165,42 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
       </trans-unit>
       <trans-unit id="UseRegexCountDescription">
         <source>'Regex.Count' is simpler and faster than 'Regex.Matches(...).Count'.</source>
-        <target state="new">'Regex.Count' is simpler and faster than 'Regex.Matches(...).Count'.</target>
+        <target state="translated">'Regex.Count' は 'Regex.Matches(...).Count' よりもシンプルで高速です。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexCountFix">
         <source>Use 'Regex.Count'</source>
-        <target state="new">Use 'Regex.Count'</target>
+        <target state="translated">'Regex.Count' を使用する</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexCountMessage">
         <source>Use 'Regex.Count' instead of 'Regex.Matches(...).Count'</source>
-        <target state="new">Use 'Regex.Count' instead of 'Regex.Matches(...).Count'</target>
+        <target state="translated">'Regex.Count' を 'Regex.Matches(...).Count' の代わりに使用してください</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexCountTitle">
         <source>Use 'Regex.Count'</source>
-        <target state="new">Use 'Regex.Count'</target>
+        <target state="translated">'Regex.Count' を使用する</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchDescription">
         <source>'Regex.IsMatch' is simpler and faster than 'Regex.Match(...).Success'.</source>
-        <target state="new">'Regex.IsMatch' is simpler and faster than 'Regex.Match(...).Success'.</target>
+        <target state="translated">'Regex.IsMatch' は 'Regex.Match(...).Success' よりもシンプルで高速です。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchFix">
         <source>Use 'Regex.IsMatch'</source>
-        <target state="new">Use 'Regex.IsMatch'</target>
+        <target state="translated">'Regex.IsMatch' を使用する</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchMessage">
         <source>Use 'Regex.IsMatch' instead of 'Regex.Match(...).Success'</source>
-        <target state="new">Use 'Regex.IsMatch' instead of 'Regex.Match(...).Success'</target>
+        <target state="translated">'Regex.IsMatch' を 'Regex.Match(...).Success' の代わりに使用してください</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchTitle">
         <source>Use 'Regex.IsMatch'</source>
-        <target state="new">Use 'Regex.IsMatch'</target>
+        <target state="translated">'Regex.IsMatch' を使用する</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSearchValuesCodeFixTitle">

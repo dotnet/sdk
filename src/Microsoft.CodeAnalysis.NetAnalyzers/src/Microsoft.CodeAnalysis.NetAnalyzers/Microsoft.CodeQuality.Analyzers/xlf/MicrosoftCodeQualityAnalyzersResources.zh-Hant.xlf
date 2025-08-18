@@ -209,17 +209,17 @@
       </trans-unit>
       <trans-unit id="DoNotPassDisposablesIntoUnawaitedTasksDescription">
         <source>Unawaited tasks that use 'IDisposable' instances may use those instances long after they have been disposed. Ensure tasks using those instances are completed before the instances are disposed.</source>
-        <target state="new">Unawaited tasks that use 'IDisposable' instances may use those instances long after they have been disposed. Ensure tasks using those instances are completed before the instances are disposed.</target>
+        <target state="translated">未等候的工作如果使用 'IDisposable' 執行個體，處置這些執行個體後，可能仍會使用它們。請確保在處置這些執行個體之前，已完成使用這些執行個體的工作。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassDisposablesIntoUnawaitedTasksMessage">
         <source>Ensure tasks using 'IDisposable' instances complete before the instances are disposed</source>
-        <target state="new">Ensure tasks using 'IDisposable' instances complete before the instances are disposed</target>
+        <target state="translated">確保使用 'IDisposable' 執行個體的工作在處置執行個體之前完成</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassDisposablesIntoUnawaitedTasksTitle">
         <source>Do not pass 'IDisposable' instances into unawaited tasks</source>
-        <target state="new">Do not pass 'IDisposable' instances into unawaited tasks</target>
+        <target state="translated">請勿將 'IDisposable' 執行個體傳遞至未等候的工作中</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceDescription">
@@ -329,17 +329,17 @@
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticMessageTemplateBracesMismatchDescription">
         <source>The braces present in the message template are invalid. Ensure any braces in the message template are valid opening/closing braces, or are escaped.</source>
-        <target state="new">The braces present in the message template are invalid. Ensure any braces in the message template are valid opening/closing braces, or are escaped.</target>
+        <target state="translated">顯示在訊息範本中的大括弧無效。請確保訊息範本中的任何大括弧都是有效的開啟/關閉大括弧，或已逸出。</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticMessageTemplateBracesMismatchMessage">
         <source>The braces present in the message template are invalid</source>
-        <target state="new">The braces present in the message template are invalid</target>
+        <target state="translated">顯示在訊息範本中的大括弧無效</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticMessageTemplateBracesMismatchTitle">
         <source>Invalid braces in message template</source>
-        <target state="new">Invalid braces in message template</target>
+        <target state="translated">訊息範本中的大括號無效</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringDescription">
@@ -444,72 +444,72 @@
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsDescription">
         <source>This rule detects usage of platform-specific intrinsics that can be replaced with an equivalent cross-platform intrinsic instead.</source>
-        <target state="new">This rule detects usage of platform-specific intrinsics that can be replaced with an equivalent cross-platform intrinsic instead.</target>
+        <target state="translated">此規則會偵測平台特定的內建使用情況，這些內建可以被對應的跨平台內建所取代。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opAddition">
         <source>The addition operator should be preferred</source>
-        <target state="new">The addition operator should be preferred</target>
+        <target state="translated">應優先使用加法運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opBitwiseAnd">
         <source>The bitwise-and operator should be preferred</source>
-        <target state="new">The bitwise-and operator should be preferred</target>
+        <target state="translated">應優先使用位元 AND 運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opBitwiseOr">
         <source>The bitwise-or operator should be preferred</source>
-        <target state="new">The bitwise-or operator should be preferred</target>
+        <target state="translated">應優先使用位元 OR 運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opDivison">
         <source>The division operator should be preferred</source>
-        <target state="new">The division operator should be preferred</target>
+        <target state="translated">應優先使用除法運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opExclusiveOr">
         <source>The exclusive-or operator should be preferred</source>
-        <target state="new">The exclusive-or operator should be preferred</target>
+        <target state="translated">應優先使用排除 OR 運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opLeftShift">
         <source>The left-shift operator should be preferred</source>
-        <target state="new">The left-shift operator should be preferred</target>
+        <target state="translated">應優先使用左移運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opMultiply">
         <source>The multiply operator should be preferred</source>
-        <target state="new">The multiply operator should be preferred</target>
+        <target state="translated">應優先使用乘法運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opOnesComplement">
         <source>The ones-complement operator should be preferred</source>
-        <target state="new">The ones-complement operator should be preferred</target>
+        <target state="translated">應優先使用一補位運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opRightShift">
         <source>The right-shift operator should be preferred</source>
-        <target state="new">The right-shift operator should be preferred</target>
+        <target state="translated">應優先使用右移運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opSubtraction">
         <source>The subtraction operator should be preferred</source>
-        <target state="new">The subtraction operator should be preferred</target>
+        <target state="translated">應優先使用減法運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opUnaryNegation">
         <source>The unary-negation operator should be preferred</source>
-        <target state="new">The unary-negation operator should be preferred</target>
+        <target state="translated">應優先使用一元否定運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opUnsignedRightShift">
         <source>The unsigned right-shift operator should be preferred</source>
-        <target state="new">The unsigned right-shift operator should be preferred</target>
+        <target state="translated">應優先使用未簽署右移運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsTitle">
         <source>Use cross-platform intrinsics</source>
-        <target state="new">Use cross-platform intrinsics</target>
+        <target state="translated">使用跨平台的內建項目</target>
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesTitle">

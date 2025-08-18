@@ -69,17 +69,17 @@
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingDescription">
         <source>In many situations, logging is disabled or set to a log level that results in an unnecessary evaluation for this argument.</source>
-        <target state="new">In many situations, logging is disabled or set to a log level that results in an unnecessary evaluation for this argument.</target>
+        <target state="translated">Em muitas situações, o registro em log é desabilitado ou configurado para um nível de log que resulta em uma avaliação desnecessária para este argumento.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingMessage">
         <source>Evaluation of this argument may be expensive and unnecessary if logging is disabled</source>
-        <target state="new">Evaluation of this argument may be expensive and unnecessary if logging is disabled</target>
+        <target state="translated">A avaliação deste argumento pode ser cara e desnecessária se o registro em log estiver desabilitado</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingTitle">
         <source>Avoid potentially expensive logging</source>
-        <target state="new">Avoid potentially expensive logging</target>
+        <target state="translated">Evitar registros em log que possam ser caros</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsDescription">
@@ -628,9 +628,9 @@ The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Ca
 The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
 Widening and user defined conversions are not supported with generic types.</source>
         <target state="translated">Enumerable.Cast&lt;T&gt; e Enumerable.OfType&lt;T&gt; requerem tipos compatíveis para funcionar corretamente.  
-A conversão genérica (IL 'unbox.any') usada pela sequência retornada por Enumerable.Cast&lt;T&gt; lançará InvalidCastException em tempo de execução em elementos dos tipos especificados.  
-A verificação de tipo genérico (C# 'is' operator/IL 'isinst') usada por Enumerable.OfType&lt;T&gt; nunca terá êxito com elementos de tipos especificados, resultando em uma sequência vazia.  
-Ampliação e conversões definidas pelo usuário não são compatíveis com tipos genéricos.</target>
+A conversão genérica (IL ''unbox.any'') usada pela sequência retornada por Enumerable.Cast&lt;T&gt; lançará InvalidCastException em runtime em elementos dos tipos especificados.  
+A verificação do tipo genérico (C# ''is'' operator/IL ''isinst'') usada por Enumerable.OfType&lt;T&gt; nunca será bem-sucedido com OS elementos de tipos especificados, resultando em uma sequência vazia.  
+As ampliação e conversões definidas pelo usuário não são compatíveis com tipos genéricos.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesMessageCast">
@@ -660,27 +660,27 @@ Ampliação e conversões definidas pelo usuário não são compatíveis com tip
       </trans-unit>
       <trans-unit id="DoNotCompareSpanToDefaultMessage">
         <source>Comparing a span to 'default' might not do what you intended, make the code more explicit by checking 'IsEmpty'</source>
-        <target state="translated">Comparar um intervalo com 'default' pode não fazer o que você pretendia, torne o código mais explícito verificando 'IsEmpty'</target>
+        <target state="translated">Comparar um intervalo ao "default" pode não fazer o que você pretendia. Torne o código mais explícito verificando "IsEmpty"</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCompareSpanToNullIsEmptyCodeFixTitle">
         <source>Use 'IsEmpty'</source>
-        <target state="translated">Usar 'IsEmpty'</target>
+        <target state="translated">Use "IsEmpty"</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCompareSpanToNullMessage">
         <source>Comparing a span to 'null' might be redundant, the 'null' literal will be implicitly converted to a 'Span&lt;T&gt;.Empty'</source>
-        <target state="translated">Comparar um intervalo com 'null' pode ser redundante, o literal 'null' será convertido implicitamente em um 'Span&lt;T&gt;.Empty'</target>
+        <target state="translated">Comparar um intervalo com "null" pode ser redundante, o literal "null" será convertido implicitamente em um "Span&lt;T&gt;.Empty"</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCompareSpanToNullOrDefaultDescription">
         <source>Comparing a span to 'null' or 'default' might not do what you intended. 'default' and the 'null' literal are implicitly converted to 'Span&lt;T&gt;.Empty'. Remove the redundant comparison or make the code more explicit by using 'IsEmpty'.</source>
-        <target state="translated">Comparar um intervalo com 'null' ou 'default' pode não fazer o que você pretendia. 'default' e o literal 'null' são convertidos implicitamente em 'Span&lt;T&gt;.Empty'. Remova a comparação redundante ou torne o código mais explícito usando 'IsEmpty'.</target>
+        <target state="translated">Comparar um intervalo com "null" ou "default" pode não fazer o que você pretendia. "default" e o literal "null" são convertidos implicitamente em "Span&lt;T&gt;.Empty". Remova a comparação redundante ou torne o código mais explícito usando "IsEmpty".</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCompareSpanToNullOrDefaultTitle">
         <source>Do not compare Span&lt;T&gt; to 'null' or 'default'</source>
-        <target state="translated">Não compare Span&lt;T&gt; a 'null' ou 'default'</target>
+        <target state="translated">Não compare Span&lt;T&gt; a "null" ou "default"</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
@@ -920,42 +920,42 @@ Ampliação e conversões definidas pelo usuário não são compatíveis com tip
       </trans-unit>
       <trans-unit id="DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullCodeFixTitle">
         <source>Remove superfluous 'ArgumentNullException.ThrowIfNull' call</source>
-        <target state="translated">Remova a chamada 'ArgumentNullException.ThrowIfNull' supérflua</target>
+        <target state="translated">Remova a chamada "ArgumentNullException.ThrowIfNull" supérflua</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullDescription">
         <source>'ArgumentNullException.ThrowIfNull' throws when the passed argument is 'null'. Certain constructs like non-nullable structs, 'nameof()' and 'new' expressions are known to never be null, so 'ArgumentNullException.ThrowIfNull' will never throw.</source>
-        <target state="translated">'ArgumentNullException.ThrowIfNull' é lançado quando o argumento passado é 'null'. Certas construções, como structs não anuláveis, expressões 'nameof()' e 'new', nunca são nulas, portanto, 'ArgumentNullException.ThrowIfNull' nunca será lançada.</target>
+        <target state="translated">"ArgumentNullException.ThrowIfNull" é gerado quando o argumento repassado é "null". Certos constructos, como structs não anuláveis, expressões "nameof()" e "new", nunca são nulos e, portanto, "ArgumentNullException.ThrowIfNull" nunca será gerado.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullMessage">
         <source>Calling 'ArgumentNullException.ThrowIfNull' and passing a non-nullable value is a no-op</source>
-        <target state="translated">Chamar 'ArgumentNullException.ThrowIfNull' e passar um valor que não permite valor nulo é uma operação não operacional</target>
+        <target state="translated">Chamar "ArgumentNullException.ThrowIfNull" e repassar um valor não anulável é uma operação nula</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullTitle">
         <source>Do not pass a non-nullable value to 'ArgumentNullException.ThrowIfNull'</source>
-        <target state="translated">Não passe um valor não anulável para 'ArgumentNullException.ThrowIfNull'</target>
+        <target state="translated">Não repasse um valor não anulável para "ArgumentNullException.ThrowIfNull"</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNullableStructToArgumentNullExceptionThrowIfNullCodeFixTitle">
         <source>Replace the 'ArgumentNullException.ThrowIfNull' call with a conditional</source>
-        <target state="translated">Substitua a chamada 'ArgumentNullException.ThrowIfNull' por uma condicional</target>
+        <target state="translated">Substitua a chamada "ArgumentNullException.ThrowIfNull" por uma condicional</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNullableStructToArgumentNullExceptionThrowIfNullDescription">
         <source>'ArgumentNullException.ThrowIfNull' accepts an 'object', so passing a nullable struct may cause the value to be boxed.</source>
-        <target state="translated">'ArgumentNullException.ThrowIfNull' aceita um 'objeto', portanto, passar struct anulável pode fazer com que o valor fique em caixa.</target>
+        <target state="translated">"ArgumentNullException.ThrowIfNull" aceita um "objeto" e, portanto, repassar um struct anulável pode fazer com que o valor passe por conversão boxing.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNullableStructToArgumentNullExceptionThrowIfNullMessage">
         <source>Passing a nullable struct to 'ArgumentNullException.ThrowIfNull' may cause boxing</source>
-        <target state="translated">Passe um struct anulável para 'ArgumentNullException.ThrowIfNull' pode causar conversão boxing</target>
+        <target state="translated">Passar um struct anulável para "ArgumentNullException.ThrowIfNull" pode causar boxing</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNullableStructToArgumentNullExceptionThrowIfNullTitle">
         <source>Do not pass a nullable struct to 'ArgumentNullException.ThrowIfNull'</source>
-        <target state="translated">Não passe um struct anulável para 'ArgumentNullException.ThrowIfNull'</target>
+        <target state="translated">Não repasse um struct anulável para "ArgumentNullException.ThrowIfNull"</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesDescription">
@@ -1105,17 +1105,17 @@ Ampliação e conversões definidas pelo usuário não são compatíveis com tip
       </trans-unit>
       <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsDescription">
         <source>The property 'StreamReader.EndOfStream' can cause unintended synchronous blocking when no data is buffered. Instead, use 'StreamReader.ReadLineAsync' directly, which returns 'null' when reaching the end of the stream.</source>
-        <target state="new">The property 'StreamReader.EndOfStream' can cause unintended synchronous blocking when no data is buffered. Instead, use 'StreamReader.ReadLineAsync' directly, which returns 'null' when reaching the end of the stream.</target>
+        <target state="translated">A propriedade ''StreamReader.EndOfStream'' pode causar um bloqueio síncrono indesejado quando nenhum dado está em buffer. Use ''StreamReader.ReadLineAsync'' diretamente, que retorna ''null'' ao atingir o final do fluxo.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsMessage">
         <source>Do not use '{0}' in an async method</source>
-        <target state="new">Do not use '{0}' in an async method</target>
+        <target state="translated">Não use ''{0}'' em um método assíncrono</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsTitle">
         <source>Do not use 'StreamReader.EndOfStream' in async methods</source>
-        <target state="new">Do not use 'StreamReader.EndOfStream' in async methods</target>
+        <target state="translated">Não use ''StreamReader.EndOfStream'' em métodos assíncronos</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyDescription">
@@ -1640,7 +1640,7 @@ Ampliação e conversões definidas pelo usuário não são compatíveis com tip
       </trans-unit>
       <trans-unit id="MakeMethodDeclaredOnImplementationTypeStatic">
         <source>Convert to static method</source>
-        <target state="translated">Converter para o método estático</target>
+        <target state="translated">Converta para o método estático</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeMethodDeclaredOnImplementationTypeStaticMayProduceInvalidCode">
@@ -2175,22 +2175,22 @@ Ampliação e conversões definidas pelo usuário não são compatíveis com tip
       </trans-unit>
       <trans-unit id="PreferGenericOverloadsCodeFixTitle">
         <source>Use generic overload</source>
-        <target state="translated">Usar sobrecarga genérica</target>
+        <target state="translated">Use a sobrecarga genérica</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferGenericOverloadsDescription">
         <source>Using a generic overload is preferable to the 'System.Type' overload when the type is known, promoting cleaner and more type-safe code with improved compile-time checks.</source>
-        <target state="translated">O uso de uma sobrecarga genérica é preferível à sobrecarga 'System.Type' quando o tipo é conhecido, promovendo um código mais limpo e mais seguro para tipos com verificações aprimoradas de tempo de compilação.</target>
+        <target state="translated">O uso de uma sobrecarga genérica é preferível à sobrecarga "System.Type" quando o tipo é conhecido, promovendo um código mais limpo e mais fortemente tipado para os tipos com verificações aprimoradas do tempo de compilação.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferGenericOverloadsMessage">
         <source>Prefer the generic overload '{0}' instead of '{1}'</source>
-        <target state="translated">Preferir a sobrecarga genérica '{0}' em vez de '{1}'</target>
+        <target state="translated">Prefira a sobrecarga genérica "{0}" em vez de "{1}"</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferGenericOverloadsTitle">
         <source>Prefer generic overload when type is known</source>
-        <target state="translated">Preferir sobrecarga genérica quando o tipo for conhecido</target>
+        <target state="translated">Prefira a sobrecarga genérica quando o tipo for conhecido</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferHashDataCodefixTitle">
@@ -2380,7 +2380,7 @@ Ampliação e conversões definidas pelo usuário não são compatíveis com tip
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyMessage">
         <source>Make sure the value '{0}' is correct. This value is measured in kilobytes, not bytes.</source>
-        <target state="translated">Verifique se o valor '{0}' está correto. Esse valor é medido em quilobytes e não em bytes.</target>
+        <target state="translated">Verifique se o valor "{0}" está correto. Esse valor é medido em quilobytes e não em bytes.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyTitle">
@@ -3165,42 +3165,42 @@ Ampliação e conversões definidas pelo usuário não são compatíveis com tip
       </trans-unit>
       <trans-unit id="UseRegexCountDescription">
         <source>'Regex.Count' is simpler and faster than 'Regex.Matches(...).Count'.</source>
-        <target state="new">'Regex.Count' is simpler and faster than 'Regex.Matches(...).Count'.</target>
+        <target state="translated">''Regex.Count'' é mais simples e mais rápido do que ''Regex.Matches(...).Count''.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexCountFix">
         <source>Use 'Regex.Count'</source>
-        <target state="new">Use 'Regex.Count'</target>
+        <target state="translated">Use ''Regex.Count''</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexCountMessage">
         <source>Use 'Regex.Count' instead of 'Regex.Matches(...).Count'</source>
-        <target state="new">Use 'Regex.Count' instead of 'Regex.Matches(...).Count'</target>
+        <target state="translated">Use ''Regex.Count'' em vez de ''Regex.Matches(...).Count''</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexCountTitle">
         <source>Use 'Regex.Count'</source>
-        <target state="new">Use 'Regex.Count'</target>
+        <target state="translated">Use ''Regex.Count''</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchDescription">
         <source>'Regex.IsMatch' is simpler and faster than 'Regex.Match(...).Success'.</source>
-        <target state="new">'Regex.IsMatch' is simpler and faster than 'Regex.Match(...).Success'.</target>
+        <target state="translated">''Regex.IsMatch'' é mais simples e mais rápido do que ''Regex.Match(...).Success''.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchFix">
         <source>Use 'Regex.IsMatch'</source>
-        <target state="new">Use 'Regex.IsMatch'</target>
+        <target state="translated">Use ''Regex.IsMatch''</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchMessage">
         <source>Use 'Regex.IsMatch' instead of 'Regex.Match(...).Success'</source>
-        <target state="new">Use 'Regex.IsMatch' instead of 'Regex.Match(...).Success'</target>
+        <target state="translated">Use ''Regex.IsMatch'' em vez de ''Regex.Match(...).Sucsess''</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchTitle">
         <source>Use 'Regex.IsMatch'</source>
-        <target state="new">Use 'Regex.IsMatch'</target>
+        <target state="translated">Use ''Regex.IsMatch''</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSearchValuesCodeFixTitle">
