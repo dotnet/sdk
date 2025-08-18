@@ -749,9 +749,21 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             InitializeManifests();
             if (_manifests.TryGetValue(manifestId, out var value))
             {
-                return value.manifest.Version;
+                return value.info.Version;
             }
-            throw new Exception($"Manifest with id {manifestId} does not exist.");
+            
+            throw new Exception(string.Format(Strings.ManifestDoesNotExist, manifestId));
+        }
+
+        public string GetManifestFeatureBand(string manifestId)
+        {
+            InitializeManifests();
+            if (_manifests.TryGetValue(manifestId, out var value))
+            {
+                return value.info.ManifestFeatureBand;
+            }
+
+            throw new Exception(string.Format(Strings.ManifestDoesNotExist, manifestId));
         }
             
         public IEnumerable<WorkloadManifestInfo> GetInstalledManifests()

@@ -53,9 +53,16 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
 
+            PackageId? packageId = null;
+            if (parseResult.GetValue(ToolUpdateCommandParser.PackageIdArgument) is string s)
+            {
+                packageId = new PackageId(s);
+            }
+
             _toolInstallLocalCommand = new Lazy<ToolInstallLocalCommand>(
                 () => new ToolInstallLocalCommand(
                     parseResult,
+                    packageId,
                     _toolPackageDownloader,
                     _toolManifestFinder,
                     _toolManifestEditor,
