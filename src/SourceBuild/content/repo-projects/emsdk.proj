@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <!-- Use the repo root build script -->
+    <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
+
+    <BuildArgs>$(BuildArgs) /p:PackageRid=$(TargetRid)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:AssetManifestOS=$(TargetOS)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:PlatformName=$(TargetArchitecture)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:ForceBuildManifestOnly=true</BuildArgs>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <RepositoryReference Include="source-build-reference-packages" />
+  </ItemGroup>
+
+</Project>

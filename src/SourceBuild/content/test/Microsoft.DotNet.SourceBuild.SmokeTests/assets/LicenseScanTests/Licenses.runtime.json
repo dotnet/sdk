@@ -1,0 +1,20 @@
+{
+  "files": [
+    {
+      "path": "src/tests/GC/Scenarios/GCBench/THIRD-PARTY-NOTICES",
+      "detected_license_expression": "unknown-license-reference"
+    },
+    {
+      "path": "src/tests/JIT/Performance/CodeQuality/Benchstones/BenchF/LLoops/THIRD-PARTY-NOTICES",
+      "detected_license_expression": "unknown-license-reference"
+    },
+    {
+      "path": "src/tests/JIT/Performance/CodeQuality/Benchstones/MDBenchF/MDLLoops/THIRD-PARTY-NOTICES",
+      "detected_license_expression": "unknown-license-reference"
+    },
+    {
+      "path": "src/tests/JIT/Performance/CodeQuality/V8/Richards/THIRD-PARTY-NOTICES",
+      "detected_license_expression": "unknown-license-reference"
+    }
+  ]
+}
