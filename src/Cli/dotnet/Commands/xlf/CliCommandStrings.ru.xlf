@@ -2829,7 +2829,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
         <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
-        <target state="new">No workload sets are installed. Run "dotnet workload restore" to install a workload set.</target>
+        <target state="translated">Наборы рабочих нагрузок не установлены. Запустите команду "dotnet workload restore", чтобы установить набор рабочей нагрузки.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">
@@ -3878,12 +3878,12 @@ To display a value, specify the corresponding command-line option without provid
       </trans-unit>
       <trans-unit id="WorkloadManifestInstallationConfigurationLooseManifests">
         <source>Configured to use loose manifests when installing new manifests.</source>
-        <target state="new">Configured to use loose manifests when installing new manifests.</target>
+        <target state="translated">Настроено на использование отдельных манифестов при установке новых манифестов.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadManifestInstallationConfigurationWorkloadSets">
         <source>Configured to use workload sets when installing new manifests.</source>
-        <target state="new">Configured to use workload sets when installing new manifests.</target>
+        <target state="translated">Настроено на использование workload sets при установке новых манифестов.</target>
         <note>{Locked="workload sets"}</note>
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">
