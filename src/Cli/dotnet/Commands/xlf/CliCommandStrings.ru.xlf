@@ -2443,7 +2443,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="PropertyDirectiveMissingParts">
         <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
-        <target state="needs-review-translation">Директива свойства должна иметь две части, разделенные символом "=", например "#:property PropertyName=PropertyValue": {0}</target>
+        <target state="translated">Директива свойства должна иметь две части, разделенные символом "=", например "#:property PropertyName=PropertyValue": {0}</target>
         <note>{0} is the file path and line number.{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
