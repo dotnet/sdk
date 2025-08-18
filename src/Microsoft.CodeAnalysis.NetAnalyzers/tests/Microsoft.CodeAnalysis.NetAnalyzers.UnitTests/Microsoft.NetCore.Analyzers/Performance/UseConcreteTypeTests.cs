@@ -663,7 +663,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [Fact]
-        [WorkItem(7093, "https://github.com/dotnet/roslyn-analyzers/issues/7093")]
+        [WorkItem(50328, "https://github.com/dotnet/sdk/issues/50328")]
         public static async Task ShouldNotTrigger6()
         {
             const string Source = @"
