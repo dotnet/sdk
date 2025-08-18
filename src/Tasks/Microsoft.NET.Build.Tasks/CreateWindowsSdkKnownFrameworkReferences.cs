@@ -116,7 +116,7 @@ namespace Microsoft.NET.Build.Tasks
             //   - No profile: with the entire Windows SDK (including Windows.UI.Xaml.* types), only used by downlevel .NET SDKs
             //   - "Windows": just the Windows SDK, without anything in Windows.UI.Xaml.* .dll
             //   - "Xaml": just the Windows.UI.Xaml types
-            //   - "Windows2" and "Xaml2": these profiles use the CSWinRT projections
+            //   - "CsWinRT3.Windows" and "CsWinRT3.Xaml": these profiles use the CSWinRT projections
             //
             // Note: we still need to return the item with no profile even if unused, so that the filtering logic for profiles will work correctly.
             return
@@ -124,8 +124,8 @@ namespace Microsoft.NET.Build.Tasks
                 CreateKnownFrameworkReference(windowsSdkPackageVersion, targetFrameworkVersion, targetPlatformVersion, profile: null),
                 CreateKnownFrameworkReference(windowsSdkPackageVersion, targetFrameworkVersion, targetPlatformVersion, profile: "Windows"),
                 CreateKnownFrameworkReference(windowsSdkPackageVersion, targetFrameworkVersion, targetPlatformVersion, profile: "Xaml"),
-                CreateKnownFrameworkReference(windowsSdkPackageVersion, targetFrameworkVersion, targetPlatformVersion, profile: "Windows2"),
-                CreateKnownFrameworkReference(windowsSdkPackageVersion, targetFrameworkVersion, targetPlatformVersion, profile: "Xaml2"),
+                CreateKnownFrameworkReference(windowsSdkPackageVersion, targetFrameworkVersion, targetPlatformVersion, profile: "CsWinRT3.Windows"),
+                CreateKnownFrameworkReference(windowsSdkPackageVersion, targetFrameworkVersion, targetPlatformVersion, profile: "CsWinRT3.Xaml"),
             ];
         }
 
