@@ -205,8 +205,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         Condition=" '$(DisableImplicitFrameworkDefines)' != 'true' and '$(TargetPlatformIdentifier)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) " >
     <PropertyGroup>
       <_PlatformIdentifierForImplicitDefine>$(TargetPlatformIdentifier.ToUpperInvariant())</_PlatformIdentifierForImplicitDefine>
-      <_PlatformVersionForImplicitDefine Condition="'$(EffectiveTargetPlatformVersion)' != ''">$(EffectiveTargetPlatformVersion.Replace('.', '_'))</_PlatformVersionForImplicitDefine>
-      <_PlatformVersionForImplicitDefine Condition="'$(EffectiveTargetPlatformVersion)' == ''">$(TargetPlatformVersion.Replace('.', '_'))</_PlatformVersionForImplicitDefine>
+      <_PlatformVersionForImplicitDefine>$(EffectiveTargetPlatformVersion.Replace('.', '_'))</_PlatformVersionForImplicitDefine>
     </PropertyGroup>
     <ItemGroup>
       <_ImplicitDefineConstant Include="$(_PlatformIdentifierForImplicitDefine)" />

@@ -1493,14 +1493,14 @@ Copyright (c) .NET Foundation. All rights reserved.
          weren't included in the TargetPlatformMoniker for restore, obscuring the errors about unknown platforms or missing
          workloads. -->
     <TargetPlatformVersion Condition="'$(TargetPlatformVersion)' == ''">0.0</TargetPlatformVersion>
+    <EffectiveTargetPlatformVersion>$(TargetPlatformVersion)</EffectiveTargetPlatformVersion>
     <TargetPlatformMoniker>$(TargetPlatformIdentifier),Version=$(TargetPlatformVersion)</TargetPlatformMoniker>
     <TargetPlatformDisplayName>$([Microsoft.Build.Utilities.ToolLocationHelper]::GetPlatformSDKDisplayName($(TargetPlatformIdentifier), $(TargetPlatformVersion)))</TargetPlatformDisplayName>
   </PropertyGroup>
 
   <!-- Default SupportedOSPlatformVersion to TargetPlatformVersion -->
   <PropertyGroup Condition="'$(SupportedOSPlatformVersion)' == ''">
-    <SupportedOSPlatformVersion Condition="'$(EffectiveTargetPlatformVersion)' != ''">$(EffectiveTargetPlatformVersion)</SupportedOSPlatformVersion>
-    <SupportedOSPlatformVersion Condition="'$(EffectiveTargetPlatformVersion)' == ''">$(TargetPlatformVersion)</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion>$(EffectiveTargetPlatformVersion)</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <Import Project="$(AfterMicrosoftNETSdkTargets)" Condition="'$(AfterMicrosoftNETSdkTargets)' != ''"/>
