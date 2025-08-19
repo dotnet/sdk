@@ -249,6 +249,10 @@ internal static class SolutionAndProjectUtility
 
         // TODO: Support --launch-profile and pass it here.
         var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath)!, Path.GetFileNameWithoutExtension(projectFullPath), project.GetPropertyValue(ProjectProperties.AppDesignerFolder), noLaunchProfile, profileName: null);
+        if (launchSettings is not null && launchSettings.CommandLineArgs is not null)
+        {
+            launchSettings.CommandLineArgs = project.ExpandString(launchSettings.CommandLineArgs);
+        }
 
         return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, isTestProject, launchSettings, project.GetPropertyValue(ProjectProperties.TargetPath));
 

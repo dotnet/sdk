@@ -22,7 +22,7 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
-public partial class RunCommand
+public class RunCommand
 {
     public bool NoBuild { get; }
 
@@ -201,35 +201,7 @@ public partial class RunCommand
     /// This method expands those placeholders with properties from the evaluated project (if one exists).
     /// For parity with VS/DevKit this also expands current environment variables (again, as MSBuild does by default).
     /// </summary>
-    private string ExpandPropertiesInCommandArgs(string commandLineArgs, ProjectInstance? project)
-    {
-        return MSBuildPropertyUsagePattern().Replace(commandLineArgs, match =>
-        {
-            string propertyName = match.Groups["token"].Value;
-
-            // user-passed env vars have precedence
-            if (EnvironmentVariables is not null && EnvironmentVariables.TryGetValue(propertyName, out string? commandEnvVarValue))
-            {
-                // If the environment variable is defined, use it instead of the project property value
-                return commandEnvVarValue;
-            }
-            
-            // then project properties
-            if (project is not null && project.GetPropertyValue(propertyName) is string projectPropertyValue && !string.IsNullOrEmpty(projectPropertyValue))
-            {
-                // If the property is defined in the project, use it
-                return projectPropertyValue;
-            }
-
-            // finally ambient environment
-            if (Environment.GetEnvironmentVariable(propertyName) is string ambientEnvVarValue)
-            {
-                return ambientEnvVarValue;
-            }
-
-            return match.Value;
-        });
-    }
+    private string ExpandPropertiesInCommandArgs(string commandLineArgs, ProjectInstance? project) => project?.ExpandString(commandLineArgs) ?? commandLineArgs;
 
     internal bool TryGetLaunchProfileSettingsIfNeeded(out ProjectLaunchSettingsModel? launchSettingsModel)
     {
@@ -786,7 +758,4 @@ public partial class RunCommand
         var newParseResult = Parser.Parse(tokensToParse);
         return newParseResult;
     }
-
-    [GeneratedRegex(@"\$\((?<token>[^\)]+)\)", RegexOptions.IgnoreCase, "en-US")]
-    private static partial Regex MSBuildPropertyUsagePattern();
 }
