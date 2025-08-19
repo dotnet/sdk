@@ -294,7 +294,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 AddBinaryOperatorMethods(methodSymbols, "MultiplyLow", x86Sse41TypeSymbol, RuleKind.op_Multiply);
             }
 
-            if (methodSymbols.Any())
+            if (methodSymbols.Count != 0)
             {
                 context.RegisterOperationAction((context) => AnalyzeInvocation(context, methodSymbols), OperationKind.Invocation);
             }

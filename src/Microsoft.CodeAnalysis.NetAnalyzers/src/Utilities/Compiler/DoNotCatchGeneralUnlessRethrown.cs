@@ -96,7 +96,7 @@ namespace Analyzer.Utilities
             return compilation.GetOrCreateTypeByMetadataName(_enablingMethodAttributeFullyQualifiedName);
         }
 
-        private static IReadOnlyCollection<INamedTypeSymbol> GetDisallowedCatchTypes(Compilation compilation)
+        private static ImmutableHashSet<INamedTypeSymbol> GetDisallowedCatchTypes(Compilation compilation)
         {
             return ImmutableHashSet.CreateRange(
                 new[] {
@@ -115,7 +115,7 @@ namespace Analyzer.Utilities
             private readonly bool _checkAnonymousFunctions;
             private readonly Stack<bool> _seenRethrowInCatchClauses = new();
 
-            public ISet<ICatchClauseOperation> CatchClausesForDisallowedTypesWithoutRethrow { get; } = new HashSet<ICatchClauseOperation>();
+            public HashSet<ICatchClauseOperation> CatchClausesForDisallowedTypesWithoutRethrow { get; } = new HashSet<ICatchClauseOperation>();
 
             public DisallowGeneralCatchUnlessRethrowWalker(Func<INamedTypeSymbol, bool> isDisallowedCatchType, bool checkAnonymousFunctions)
             {

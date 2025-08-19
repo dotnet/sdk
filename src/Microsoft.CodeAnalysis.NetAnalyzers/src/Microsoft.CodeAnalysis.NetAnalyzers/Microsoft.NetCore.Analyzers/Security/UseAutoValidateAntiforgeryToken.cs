@@ -327,12 +327,12 @@ namespace Microsoft.NetCore.Analyzers.Security
                 compilationStartAnalysisContext.RegisterCompilationEndAction(
                 (CompilationAnalysisContext compilationAnalysisContext) =>
                 {
-                    if (usingValidateAntiForgeryAttribute && !hasGlobalAntiForgeryFilter && (actionMethodSymbols.Any() || actionMethodNeedAddingHttpVerbAttributeSymbols.Any()))
+                    if (usingValidateAntiForgeryAttribute && !hasGlobalAntiForgeryFilter && (!actionMethodSymbols.IsEmpty || !actionMethodNeedAddingHttpVerbAttributeSymbols.IsEmpty))
                     {
                         var visited = new HashSet<ISymbol>();
                         var results = new Dictionary<ISymbol, HashSet<ISymbol>>();
 
-                        if (onAuthorizationMethodSymbols.Any())
+                        if (!onAuthorizationMethodSymbols.IsEmpty)
                         {
                             foreach (var calleeMethod in inverseGraph.Keys)
                             {
@@ -342,7 +342,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 {
                                     FindAllTheSpecifiedCalleeMethods(calleeMethod, visited, results);
 
-                                    if (results.Values.Any(s => s.Any()))
+                                    if (results.Values.Any(s => s.Count != 0))
                                     {
                                         return;
                                     }

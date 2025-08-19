@@ -46,6 +46,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(EnumsShouldHaveZeroValueTitle));
         private static readonly LocalizableString s_localizableDescription = CreateLocalizableResourceString(nameof(EnumsShouldHaveZeroValueDescription));
 
+        private static readonly char[] s_optionValuesSeparator = ['|'];
+
         internal static readonly DiagnosticDescriptor RuleRename = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
@@ -142,7 +144,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                             context.Options.GetStringOptionValue(
                                 EditorConfigOptionNames.AdditionalEnumNoneNames, RuleRename,
                                 namedType.Locations[0].SourceTree!, context.Compilation)
-                            .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Split(s_optionValuesSeparator, StringSplitOptions.RemoveEmptyEntries)
                             .ToImmutableArray();
 
                         if (!additionalEnumNoneNames.Any(name => string.Equals(name, zeroValuedFields[0].Name, StringComparison.OrdinalIgnoreCase)))

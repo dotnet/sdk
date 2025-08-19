@@ -93,15 +93,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly ImmutableDictionary<string, ImmutableArray<string>> s_suffixToBaseTypeNamesDictionary = ImmutableDictionary.CreateRange(
             new Dictionary<string, ImmutableArray<string>>
             {
-                [AttributeSuffix] = ImmutableArray.CreateRange(new[] { "System.Attribute" }),
-                [CollectionSuffix] = ImmutableArray.CreateRange(new[] { "System.Collections.IEnumerable" }),
-                [DictionarySuffix] = ImmutableArray.CreateRange(new[] { "System.Collections.IDictionary", "System.Collections.Generic.IDictionary`2", "System.Collections.Generic.IReadOnlyDictionary`2" }),
-                [EventArgsSuffix] = ImmutableArray.CreateRange(new[] { "System.EventArgs" }),
-                [ExceptionSuffix] = ImmutableArray.CreateRange(new[] { "System.Exception" }),
-                [PermissionSuffix] = ImmutableArray.CreateRange(new[] { "System.Security.IPermission" }),
-                [StreamSuffix] = ImmutableArray.CreateRange(new[] { "System.IO.Stream" }),
-                [QueueSuffix] = ImmutableArray.CreateRange(new[] { "System.Collections.Queue", "System.Collections.Generic.Queue`1" }),
-                [StackSuffix] = ImmutableArray.CreateRange(new[] { "System.Collections.Stack", "System.Collections.Generic.Stack`1" })
+                [AttributeSuffix] = ImmutableArray.Create("System.Attribute"),
+                [CollectionSuffix] = ImmutableArray.Create("System.Collections.IEnumerable"),
+                [DictionarySuffix] = ImmutableArray.Create("System.Collections.IDictionary", "System.Collections.Generic.IDictionary`2", "System.Collections.Generic.IReadOnlyDictionary`2"),
+                [EventArgsSuffix] = ImmutableArray.Create("System.EventArgs"),
+                [ExceptionSuffix] = ImmutableArray.Create("System.Exception"),
+                [PermissionSuffix] = ImmutableArray.Create("System.Security.IPermission"),
+                [StreamSuffix] = ImmutableArray.Create("System.IO.Stream"),
+                [QueueSuffix] = ImmutableArray.Create("System.Collections.Queue", "System.Collections.Generic.Queue`1"),
+                [StackSuffix] = ImmutableArray.Create("System.Collections.Stack", "System.Collections.Generic.Stack`1")
             });
 
         // Dictionary from type name suffix to an array containing the only types that are
@@ -109,9 +109,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly ImmutableDictionary<string, ImmutableArray<string>> s_suffixToAllowedTypesDictionary = ImmutableDictionary.CreateRange(
             new Dictionary<string, ImmutableArray<string>>
             {
-                [DelegateSuffix] = ImmutableArray.CreateRange(new[] { "System.Delegate", "System.MulticastDelegate" }),
-                [EventHandlerSuffix] = ImmutableArray.CreateRange(new[] { "System.EventHandler" }),
-                [EnumSuffix] = ImmutableArray.CreateRange(new[] { "System.Enum" })
+                [DelegateSuffix] = ImmutableArray.Create("System.Delegate", "System.MulticastDelegate"),
+                [EventHandlerSuffix] = ImmutableArray.Create("System.EventHandler"),
+                [EnumSuffix] = ImmutableArray.Create("System.Enum")
             });
 
         public override void Initialize(AnalysisContext context)

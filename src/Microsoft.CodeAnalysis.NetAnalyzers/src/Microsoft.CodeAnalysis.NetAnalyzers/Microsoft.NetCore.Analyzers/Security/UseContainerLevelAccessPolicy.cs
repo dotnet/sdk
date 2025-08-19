@@ -85,7 +85,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                     namespaceTypeSymbolAndPolicyIdentifierNamePairs.Add(nspaceTypeSymbol, policyIdentifierName);
                 }
 
-                if (!namespaceTypeSymbolAndPolicyIdentifierNamePairs.Any())
+                if (namespaceTypeSymbolAndPolicyIdentifierNamePairs.Count == 0)
                 {
                     return;
                 }
