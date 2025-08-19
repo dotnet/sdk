@@ -36,7 +36,6 @@ internal class GlobalJsonWorkloadSetsFile(SdkFeatureBand sdkFeatureBand, string 
             }
             globalJsonWorkloadSetVersions[globalJsonPath] = workloadSetVersion;
             fileStream.SetLength(0);
-            fileStream.Seek(0, SeekOrigin.Begin);
             JsonSerializer.Serialize(fileStream, globalJsonWorkloadSetVersions, _jsonSerializerOptions);
         }
     }
@@ -87,7 +86,6 @@ internal class GlobalJsonWorkloadSetsFile(SdkFeatureBand sdkFeatureBand, string 
             if (updated)
             {
                 fileStream.SetLength(0);
-                fileStream.Seek(0, SeekOrigin.Begin);
                 JsonSerializer.Serialize(fileStream, globalJsonWorkloadSetVersions, _jsonSerializerOptions);
             }
 
