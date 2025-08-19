@@ -249,7 +249,8 @@
       <_DotNetMsiPackages Include="$(DownloadsFolder)$(DownloadedHostFxrInstallerFileName);
                                    $(DownloadsFolder)$(DownloadedSharedHostInstallerFileName);
                                    $(DownloadsFolder)$(DownloadedSharedFrameworkInstallerFileName);
-                                   $(DownloadsFolder)$(DownloadedNetCoreAppHostPackInstallerFileName)"/>
+                                   $(DownloadsFolder)$(DownloadedNetCoreAppHostPackInstallerFileName);
+                                   $(DownloadsFolder)$(DownloadedNetCoreAppTargetingPackInstallerFileName)"/>
 
       <!-- ASP.NET Core Runtime -->
       <_DotNetMsiPackages Include="$(DownloadsFolder)$(DownloadedAspNetCoreSharedFxInstallerFileName);
