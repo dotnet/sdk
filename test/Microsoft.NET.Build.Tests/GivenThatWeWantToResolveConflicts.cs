@@ -331,7 +331,9 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("net451", false)]
         [InlineData("net462")]
         [InlineData("net481")]
-        public void PrunePackageDataSucceeds(string targetFramework, bool shouldPrune = true)
+        [InlineData("net9.0", true, "")]
+        [InlineData("netstandard2.1", true, "")]
+        public void PrunePackageDataSucceeds(string targetFramework, bool shouldPrune = true, string enablePackagePruning = "True")
         {
             var nugetFramework = NuGetFramework.Parse(targetFramework);
 
@@ -342,7 +344,7 @@ namespace Microsoft.NET.Build.Tests
                     TargetFrameworks = targetFramework
                 };
 
-                testProject.AdditionalProperties["RestoreEnablePackagePruning"] = "True";
+                testProject.AdditionalProperties["RestoreEnablePackagePruning"] = enablePackagePruning;
 
                 if (!string.IsNullOrEmpty(frameworkReference))
                 {
@@ -442,6 +444,49 @@ namespace Microsoft.NET.Build.Tests
 
             items2.Should().BeEquivalentTo(items1);
 
+        }
+
+        [CoreMSBuildOnlyTheory]
+        [InlineData("net10.0;net9.0", true)]
+        [InlineData("net10.0;net8.0", true)]
+        [InlineData("net6.0;net7.0", false)]
+        public void WithMultitargetedProjects_PruningsDefaultsAreApplies(string frameworks, bool prunePackages)
+        {
+            var referencedProject = new TestProject("ReferencedProject")
+            {
+                TargetFrameworks = frameworks,
+                IsExe = false
+            };
+            referencedProject.PackageReferences.Add(new TestPackageReference("System.Text.Json", "6.0.0"));
+            referencedProject.AdditionalProperties["RestoreEnablePackagePruning"] = "false";
+
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = frameworks,
+            };
+
+            testProject.ReferencedProjects.Add(referencedProject);
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: prunePackages.ToString());
+
+            var buildCommand = new BuildCommand(testAsset);
+
+            buildCommand.Execute().Should().Pass();
+
+            var assetsFilePath = Path.Combine(buildCommand.GetBaseIntermediateDirectory().FullName, "project.assets.json");
+            var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, new NullLogger());
+
+            foreach(var lockFileTarget in lockFile.Targets)
+            {
+                if (prunePackages)
+                {
+                    lockFileTarget.Libraries.Should().NotContain(library => library.Name.Equals("System.Text.Json", StringComparison.OrdinalIgnoreCase));
+                }
+                else
+                {
+                    lockFileTarget.Libraries.Should().Contain(library => library.Name.Equals("System.Text.Json", StringComparison.OrdinalIgnoreCase));
+                }
+            }
         }
 
         static List<KeyValuePair<string, string>> ParsePrunePackageReferenceJson(string json)
