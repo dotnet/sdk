@@ -8,7 +8,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.ShellShim
 {
-    internal class OsxBashEnvironmentPath : IEnvironmentPath
+    internal class MacOSEnvironmentPath : IEnvironmentPath
     {
         private const string PathName = "PATH";
         private readonly BashPathUnderHomeDirectory _packageExecutablePath;
@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.ShellShim
             = Environment.GetEnvironmentVariable("DOTNET_CLI_TEST_OSX_PATHSD_PATH")
               ?? @"/etc/paths.d/dotnet-cli-tools";
 
-        public OsxBashEnvironmentPath(
+        public MacOSEnvironmentPath(
             BashPathUnderHomeDirectory executablePath,
             IReporter reporter,
             IEnvironmentProvider environmentProvider,
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.ShellShim
                 return;
             }
 
-            _fileSystem.WriteAllText(DotnetCliToolsPathsDPath, _packageExecutablePath.PathWithTilde);
+            _fileSystem.WriteAllText(DotnetCliToolsPathsDPath, _packageExecutablePath.Path);
         }
 
         private bool PackageExecutablePathExists()
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.ShellShim
 
             return value
                 .Split(':')
-                .Any(p => p == _packageExecutablePath.Path || p == _packageExecutablePath.PathWithTilde);
+                .Any(p => p.Equals(_packageExecutablePath.Path, StringComparison.OrdinalIgnoreCase));
         }
 
         public void PrintAddPathInstructionIfPathDoesNotExist()
@@ -71,9 +71,13 @@ namespace Microsoft.DotNet.ShellShim
                 {
                     // similar to https://code.visualstudio.com/docs/setup/mac
                     _reporter.WriteLine(
-                        string.Format(
-                            CommonLocalizableStrings.EnvironmentPathOSXBashManualInstructions,
-                            _packageExecutablePath.Path));
+                        ZshDetector.IsZshTheUsersShell(_environmentProvider)
+                            ? string.Format(
+                                CommonLocalizableStrings.EnvironmentPathOSXZshManualInstructions,
+                                _packageExecutablePath.Path)
+                            : string.Format(
+                                CommonLocalizableStrings.EnvironmentPathOSXBashManualInstructions,
+                                _packageExecutablePath.Path));
                 }
             }
         }
