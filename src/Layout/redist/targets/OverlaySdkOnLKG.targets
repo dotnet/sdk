@@ -5,7 +5,6 @@
       <_DotNetHiveRoot>$(DOTNET_INSTALL_DIR)</_DotNetHiveRoot>
       <_DotNetHiveRoot Condition="'$(_DotNetHiveRoot)' == ''">$(RepoRoot).dotnet/</_DotNetHiveRoot>
       <_DotNetHiveRoot Condition="!HasTrailingSlash('$(_DotNetHiveRoot)')">$(_DotNetHiveRoot)/</_DotNetHiveRoot>
-      <SdkOutputDirectory>$(RedistLayoutPath)sdk\$(Version)</SdkOutputDirectory>
     </PropertyGroup>
 
     <!-- Get stage 0 SDK version without having to duplicate the LKG SDK property between the global.json
@@ -35,7 +34,7 @@
       Stage0MicrosoftNETCoreAppRefPackageVersionPath="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/Microsoft.NETCoreSdk.BundledVersions.props"
       MicrosoftNETCoreAppRefPackageVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
       NewSDKVersion="$(Version)"
-      OutputPath="$(TestHostDotNetRoot)/sdk/$(Version)/Microsoft.NETCoreSdk.BundledVersions.props"/>
+      OutputPath="$(RedistInstallerLayoutPath)/sdk/$(Version)/Microsoft.NETCoreSdk.BundledVersions.props"/>
 
     <!-- Copy artifacts to the testhost folder. -->
     <Copy DestinationFiles="@(InstallerOutputFile)"
