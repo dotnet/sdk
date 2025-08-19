@@ -14,7 +14,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <ItemGroup Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true' ">
     <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref.Windows" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All"
                         Condition="'$(_TargetPlatformVersionUsesCsWinRT3)' != 'true'"/>
-    <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref.Windows2" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All"
+    <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref.CsWinRT3.Windows" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All"
                         Condition="'$(_TargetPlatformVersionUsesCsWinRT3)' == 'true'"/>
   </ItemGroup>
 

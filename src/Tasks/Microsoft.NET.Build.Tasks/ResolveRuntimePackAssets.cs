@@ -93,14 +93,14 @@ namespace Microsoft.NET.Build.Tasks
                         profiles.Add("Xaml");
                     }
 
-                    if (FrameworkReferences?.Any(fxReference => fxReference.ItemSpec == "Microsoft.Windows.SDK.NET.Ref.Windows2") == true)
+                    if (FrameworkReferences?.Any(fxReference => fxReference.ItemSpec == "Microsoft.Windows.SDK.NET.Ref.CsWinRT3.Windows") == true)
                     {
-                        profiles.Add("Windows2");
+                        profiles.Add("CsWinRT3.Windows");
                     }
                     
-                    if (FrameworkReferences?.Any(fxReference => fxReference.ItemSpec == "Microsoft.Windows.SDK.NET.Ref.Xaml2") == true)
+                    if (FrameworkReferences?.Any(fxReference => fxReference.ItemSpec == "Microsoft.Windows.SDK.NET.Ref.CsWinRT3.Xaml") == true)
                     {
-                        profiles.Add("Xaml2");
+                        profiles.Add("CsWinRT3.Xaml");
                     }
                 }
 

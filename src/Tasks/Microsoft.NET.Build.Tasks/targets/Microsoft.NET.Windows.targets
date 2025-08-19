@@ -71,7 +71,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <FrameworkReference Condition="'$(_TargetPlatformVersionUsesCsWinRT3)' != 'true'"
                         Include="Microsoft.Windows.SDK.NET.Ref.Xaml" />
     <FrameworkReference Condition="'$(_TargetPlatformVersionUsesCsWinRT3)' == 'true'"
-                        Include="Microsoft.Windows.SDK.NET.Ref.Xaml2" />
+                        Include="Microsoft.Windows.SDK.NET.Ref.CsWinRT3.Xaml" />
   </ItemGroup>
 
   <!-- If WindowsSdkPackageVersion is specified and it is an older version before profile support was added, 
