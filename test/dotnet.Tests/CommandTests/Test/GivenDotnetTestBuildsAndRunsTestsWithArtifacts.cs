@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute("--coverage", TestingPlatformOptions.ConfigurationOption.Name, configuration, "-bl:" + Path.Combine(TestContext.Current.TestExecutionDirectory, "msbuildsdkresolver.binlog"));
+                                    .Execute("--coverage", TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
