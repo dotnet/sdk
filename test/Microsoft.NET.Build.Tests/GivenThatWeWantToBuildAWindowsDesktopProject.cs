@@ -487,6 +487,8 @@ namespace Microsoft.NET.Build.Tests
                 ProjectSdk = "Microsoft.NET.Sdk",
                 TargetFrameworks = "net10.0-windows10.0.22621.1"
             };
+            // Disabling until CsWinRTGen is available.
+            testProject.AdditionalProperties["CsWinRTGenerateInteropAssembly"] = "false";
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -495,7 +497,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass()
                 .And
-                .NotHaveStdOutContaining("NETSDK1229");
+                .HaveStdOutContaining("NETSDK1229");
         }
 
         [WindowsOnlyFact]
@@ -515,6 +517,8 @@ namespace Microsoft.NET.Build.Tests
                     """
                 }
             };
+            // Disabling until CsWinRTGen is available.
+            testProject.AdditionalProperties["CsWinRTGenerateInteropAssembly"] = "false";
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -567,6 +571,9 @@ namespace Microsoft.NET.Build.Tests
                     """
                 }
             };
+            // Disabling until CsWinRTGen is available.
+            testProject.AdditionalProperties["CsWinRTGenerateInteropAssembly"] = "false";
+
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -759,6 +766,8 @@ namespace Microsoft.NET.Build.Tests
                 SelfContained = "true",
                 RuntimeIdentifier = "win-x64"
             };
+            // Disabling until CsWinRTGen is available.
+            testProject.AdditionalProperties["CsWinRTGenerateInteropAssembly"] = "false";
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 

@@ -205,9 +205,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         Condition=" '$(DisableImplicitFrameworkDefines)' != 'true' and '$(TargetPlatformIdentifier)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) " >
     <PropertyGroup>
       <_PlatformIdentifierForImplicitDefine>$(TargetPlatformIdentifier.ToUpperInvariant())</_PlatformIdentifierForImplicitDefine>
-      <_PlatformVersionForImplicitDefine>$(TargetPlatformVersion.Replace('.', '_'))</_PlatformVersionForImplicitDefine>
-      <!-- Normalize the last part of target platform version to .0 when ending with .1 as that indicates the use of the CsWinRT 3.0 verison. -->
-      <_PlatformVersionForImplicitDefine Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true' and '$(_TargetPlatformVersionUsesCsWinRT3)' == 'true' ">$([System.Text.RegularExpressions.Regex]::Replace($(_PlatformVersionForImplicitDefine), '_1$', '_0'))</_PlatformVersionForImplicitDefine>
+      <_PlatformVersionForImplicitDefine Condition="'$(EffectiveTargetPlatformVersion)' != ''">$(EffectiveTargetPlatformVersion.Replace('.', '_'))</_PlatformVersionForImplicitDefine>
+      <_PlatformVersionForImplicitDefine Condition="'$(EffectiveTargetPlatformVersion)' == ''">$(TargetPlatformVersion.Replace('.', '_'))</_PlatformVersionForImplicitDefine>
     </PropertyGroup>
     <ItemGroup>
       <_ImplicitDefineConstant Include="$(_PlatformIdentifierForImplicitDefine)" />

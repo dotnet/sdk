@@ -1499,7 +1499,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Default SupportedOSPlatformVersion to TargetPlatformVersion -->
   <PropertyGroup Condition="'$(SupportedOSPlatformVersion)' == ''">
-    <SupportedOSPlatformVersion>$(TargetPlatformVersion)</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="'$(EffectiveTargetPlatformVersion)' != ''">$(EffectiveTargetPlatformVersion)</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="'$(EffectiveTargetPlatformVersion)' == ''">$(TargetPlatformVersion)</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <Import Project="$(AfterMicrosoftNETSdkTargets)" Condition="'$(AfterMicrosoftNETSdkTargets)' != ''"/>

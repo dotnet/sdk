@@ -73,7 +73,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       immediately reset the revision number back to '.0' so that the rest of the tooling continues to see the same version as before.
     -->
     <_TargetPlatformVersionUsesCsWinRT3>false</_TargetPlatformVersionUsesCsWinRT3>
-    <_TargetPlatformVersionUsesCsWinRT3 Condition="'$(TargetPlatformIdentifier)' == 'Windows' and $([System.Version]::Parse('$(TargetPlatformVersion)').Revision) == 1">true</_TargetPlatformVersionUsesCsWinRT3>
+    <_TargetPlatformVersionUsesCsWinRT3 Condition="'$(TargetPlatformIdentifier)' == 'Windows' and '$(TargetPlatformVersion)' != '' and $([System.Version]::Parse('$(TargetPlatformVersion)').Revision) == 1">true</_TargetPlatformVersionUsesCsWinRT3>
+    <EffectiveTargetPlatformVersion Condition="'$(TargetPlatformIdentifier)' == 'Windows' and '$(TargetPlatformVersion)' != ''">$([System.Version]::Parse('$(TargetPlatformVersion)').Major).$([System.Version]::Parse('$(TargetPlatformVersion)').Minor).$([System.Version]::Parse('$(TargetPlatformVersion)').Build).0</EffectiveTargetPlatformVersion>
 
     <TargetPlatformVersion Condition="'$(TargetPlatformVersion)' == '' or ('$(TargetPlatformIdentifier)' == 'Windows' and !$([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), 10.0)))" >$([MSBuild]::GetTargetPlatformVersion('$(TargetFramework)', 2))</TargetPlatformVersion>
     <TargetPlatformVersion Condition="$([MSBuild]::VersionEquals($(TargetPlatformVersion), 0.0))" ></TargetPlatformVersion>

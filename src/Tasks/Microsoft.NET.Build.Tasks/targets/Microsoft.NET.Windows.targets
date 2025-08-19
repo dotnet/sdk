@@ -40,6 +40,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <SupportedOSPlatformVersion Condition="'$(SupportedOSPlatformVersion)' == ''">$(TargetPlatformMinVersion)</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == ''">$(SupportedOSPlatformVersion)</TargetPlatformMinVersion>
 
+    <!-- If neither were set, then use the EffectiveTargetPlatformVersion value for both if set. -->
+    <SupportedOSPlatformVersion Condition="'$(SupportedOSPlatformVersion)' == ''">$(EffectiveTargetPlatformVersion)</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == ''">$(EffectiveTargetPlatformVersion)</TargetPlatformMinVersion>
+
     <!-- If neither were set, then use the TargetPlatformVersion value for both -->
     <SupportedOSPlatformVersion Condition="'$(SupportedOSPlatformVersion)' == ''">$(TargetPlatformVersion)</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == ''">$(TargetPlatformVersion)</TargetPlatformMinVersion>
