@@ -25,5 +25,9 @@
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="Spectre.Console" />
   </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Strings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Tools.Bootstrapper"/>
+  </ItemGroup>
   
 </Project>

@@ -12,7 +12,7 @@ internal class CommonOptions
 {
     public static Option<bool> InteractiveOption = new("--interactive")
     {
-        Description = "Allows the command to stop and wait for user input or action (for example to complete authentication).",
+        Description = Strings.CommandInteractiveOptionDescription,
         Arity = ArgumentArity.ZeroOrOne,
         DefaultValueFactory = _ => !IsCIEnvironmentOrRedirected()
     };
