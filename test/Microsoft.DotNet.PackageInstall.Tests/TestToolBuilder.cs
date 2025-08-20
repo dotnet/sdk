@@ -130,6 +130,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             }
 
             testProject.SourceFiles.Add("Program.cs", "Console.WriteLine(\"Hello Tool!\");");
+            testProject.PackageReferences.Add(new("Microsoft.Data.Sqlite", version: "9.0.8"));
 
             var testAssetManager = new TestAssetsManager(log);
             var testAsset = testAssetManager.CreateTestProject(testProject, identifier: toolSettings.GetIdentifier());
