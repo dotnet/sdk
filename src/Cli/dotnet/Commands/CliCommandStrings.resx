@@ -1780,6 +1780,12 @@ Ensure you have a runnable project type and ensure '{0}' supports this project.
 A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
 The current {1} is '{2}'.</value>
   </data>
+  <data name="TestCommandExceptionUnableToRun" xml:space="preserve">
+    <value>Unable to proceed with project '{0}'.
+Ensure you have a runnable project type and ensure '{1}' supports this project.
+A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
+The current {2} is '{3}'.</value>
+  </data>
   <data name="RunCommandExceptionUnableToRunSpecifyFramework" xml:space="preserve">
     <value>Unable to run your project
 Your project targets multiple frameworks. Specify which framework to run using '{0}'.</value>

@@ -3047,6 +3047,17 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestCommandExceptionUnableToRun">
+        <source>Unable to proceed with project '{0}'.
+Ensure you have a runnable project type and ensure '{1}' supports this project.
+A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
+The current {2} is '{3}'.</source>
+        <target state="new">Unable to proceed with project '{0}'.
+Ensure you have a runnable project type and ensure '{1}' supports this project.
+A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
+The current {2} is '{3}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TestCommandUseDirectory">
         <source>Specifying a directory for 'dotnet test' should be via '--directory'.</source>
         <target state="translated">La specifica di una directory per 'dotnet test' deve avvenire tramite '--directory'.</target>

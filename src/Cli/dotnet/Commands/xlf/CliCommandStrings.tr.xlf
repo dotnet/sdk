@@ -3047,6 +3047,17 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
         <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestCommandExceptionUnableToRun">
+        <source>Unable to proceed with project '{0}'.
+Ensure you have a runnable project type and ensure '{1}' supports this project.
+A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
+The current {2} is '{3}'.</source>
+        <target state="new">Unable to proceed with project '{0}'.
+Ensure you have a runnable project type and ensure '{1}' supports this project.
+A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
+The current {2} is '{3}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TestCommandUseDirectory">
         <source>Specifying a directory for 'dotnet test' should be via '--directory'.</source>
         <target state="translated">‘dotnet test’ için bir dizin belirtmek ‘--directory’ ile yapılmalıdır.</target>
