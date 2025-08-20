@@ -92,7 +92,8 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections
                     }
 
                     if (invocation.GetReceiverType(operationContext.Compilation, beforeConversion: true, cancellationToken: operationContext.CancellationToken) is INamedTypeSymbol receiverType
-                        && receiverType.DerivesFromOrImplementsAnyConstructionOf(immutableCollectionType))
+                        && receiverType.DerivesFromOrImplementsAnyConstructionOf(immutableCollectionType)
+                        && ((INamedTypeSymbol)invocation.Type!).TypeArguments[0].Equals(receiverType.TypeArguments[0]))
                     {
                         operationContext.ReportDiagnostic(
                             invocation.CreateDiagnostic(

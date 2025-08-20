@@ -32,7 +32,9 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections.UnitTests
 
         #region No Diagnostic Tests
 
-        [Theory, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [Theory]
+        [WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [WorkItem(7374, "https://github.com/dotnet/roslyn-analyzers/issues/7374")]
         [MemberData(nameof(CollectionNames_Arity1))]
         public async Task NoDiagnosticCases_Arity1Async(string collectionName)
         {
@@ -54,18 +56,28 @@ static class Extensions
      }}
 }}
 
+interface IValue
+{{
+}}
+
+class Value : IValue
+{{
+}}
+
 class C
 {{
-    public void M(IEnumerable<int> p1, List<int> p2, {collectionName}<int> p3, IEqualityComparer<int> comparer)
+    public void M(IEnumerable<int> p1, List<int> p2, {collectionName}<int> p3, {collectionName}<Value> p4, IEqualityComparer<int> comparer)
     {{
         // Allowed
         p1.To{collectionName}();
         p2.To{collectionName}();
         p3.To{collectionName}(comparer); // Potentially modifies the collection
+        p4.To{collectionName}<IValue>(); // Changes the generic type
 
         Extensions.To{collectionName}(p1);
         Extensions.To{collectionName}(p2);
         Extensions.To{collectionName}(p3, comparer); // Potentially modifies the collection
+        Extensions.To{collectionName}(p4); // Changes the generic type
 
         // No dataflow
         IEnumerable<int> l1 = p3;
