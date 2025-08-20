@@ -87,11 +87,14 @@ namespace Microsoft.DotNet.Build.Tasks
                         element.ToString(), element.Value, originalBundledNETCoreAppPackageVersion));
                 }
 
+                Log.LogMessage(MessageImportance.High,
+                    $"Replacing element {element.Name} value '{element.Value}' with '{newBundledPackageVersion}'");
                 element.Value = newBundledPackageVersion;
             }
 
             void CheckAndReplaceAttribute(XAttribute attribute)
             {
+
                 if (attribute.Value != originalBundledNETCoreAppPackageVersion)
                 {
                     throw new InvalidOperationException(string.Format(
@@ -100,6 +103,8 @@ namespace Microsoft.DotNet.Build.Tasks
                         originalBundledNETCoreAppPackageVersion));
                 }
 
+                Log.LogMessage(MessageImportance.High,
+                    $"Replacing attribute {attribute.Name} value '{attribute.Value}' with '{newBundledPackageVersion}' in element {attribute.Parent.Name}");
                 attribute.Value = newBundledPackageVersion;
             }
 
