@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.DotNet.Cli;
@@ -120,7 +122,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             GetWorkloadVersion().Should().Be(versionToInstall);
 
             //  Installing a workload shouldn't update workload version
-            InstallWorkload("aspire", skipManifestUpdate: false);
+            InstallWorkload("wasm-tools", skipManifestUpdate: false);
 
             GetWorkloadVersion().Should().Be(versionToInstall);
 
@@ -222,7 +224,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                     VM.CreateRunCommand("cmd", "/c", "move", @"c:\SdkTesting\DisabledWorkloadSets\*.nupkg", @"c:\SdkTesting\WorkloadSets"))
                 .Execute().Should().PassWithoutWarning();
 
-            InstallWorkload("aspire", skipManifestUpdate: false);
+            InstallWorkload("wasm-tools", skipManifestUpdate: false);
 
             GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
         }

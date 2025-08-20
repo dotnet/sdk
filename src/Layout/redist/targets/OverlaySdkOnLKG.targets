@@ -1,10 +1,6 @@
 <Project>
 
-  <PropertyGroup>
-    <TestHostFolder>$(ArtifactsBinDir)redist\$(Configuration)\dotnet\</TestHostFolder>
-  </PropertyGroup>
-
-  <Target Name="OverlaySdkOnLKG" AfterTargets="Build" DependsOnTargets="GenerateInstallerLayout">
+  <Target Name="OverlaySdkOnLKG" AfterTargets="AfterBuild" DependsOnTargets="GenerateInstallerLayout">
     <PropertyGroup>
       <_DotNetHiveRoot>$(DOTNET_INSTALL_DIR)</_DotNetHiveRoot>
       <_DotNetHiveRoot Condition="'$(_DotNetHiveRoot)' == ''">$(RepoRoot).dotnet/</_DotNetHiveRoot>
@@ -18,12 +14,12 @@
                        Exclude="$(_DotNetHiveRoot)sdk\**\*;
                                 $(_DotNetHiveRoot)templates\**\*;
                                 $(_DotNetHiveRoot)host\**\*"/>
-      <OverlaySDKFile Include="@(_OverlaySDKFile->'$(TestHostFolder)%(RecursiveDir)%(Filename)%(Extension)')" Source="%(Identity)" />
+      <OverlaySDKFile Include="@(_OverlaySDKFile->'$(TestHostDotNetRoot)%(RecursiveDir)%(Filename)%(Extension)')" Source="%(Identity)" />
     </ItemGroup>
 
     <ItemGroup>
       <_InstallerOutputFile Include="$(RedistInstallerLayoutPath)**\*" />
-      <InstallerOutputFile Include="@(_InstallerOutputFile->'$(TestHostFolder)%(RecursiveDir)%(Filename)%(Extension)')" Source="%(Identity)" />
+      <InstallerOutputFile Include="@(_InstallerOutputFile->'$(TestHostDotNetRoot)%(RecursiveDir)%(Filename)%(Extension)')" Source="%(Identity)" />
       <!-- Use available live built artifacts instead of stage0 files. -->
       <InstallerOutputFile Include="@(OverlaySDKFile)" Exclude="@(InstallerOutputFile)" />
     </ItemGroup>
@@ -53,10 +49,10 @@
     </ItemGroup>
 
     <Copy SourceFiles="@(WorkloadManifestContent)"
-          DestinationFiles="@(WorkloadManifestContent->'$(TestHostFolder)sdk-manifests\$(VersionBand)\%(RecursiveDir)%(Filename)%(Extension)')" />
+          DestinationFiles="@(WorkloadManifestContent->'$(TestHostDotNetRoot)sdk-manifests\$(VersionBand)\%(RecursiveDir)%(Filename)%(Extension)')" />
 
     <Copy SourceFiles="@(WorkloadPackContent)"
-          DestinationFiles="@(WorkloadPackContent->'$(TestHostFolder)packs\%(RecursiveDir)%(Filename)%(Extension)')" />
+          DestinationFiles="@(WorkloadPackContent->'$(TestHostDotNetRoot)packs\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
 </Project>

@@ -195,7 +195,7 @@ internal class MSBuildEvaluator : IIdentifiedComponent
                 targetFrameworksString = Sha256Hasher.HashWithNormalizedCasing(targetFramework);
             }
 
-            Dictionary<string, string> properties = new()
+            Dictionary<string, string?> properties = new()
             {
                 { "ProjectPath",  Sha256Hasher.HashWithNormalizedCasing(projectPath)},
                 { "SdkStyleProject", IsSdkStyleProject.ToString() },

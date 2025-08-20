@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using Microsoft.DotNet.Cli.Commands;
+using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.Cli.Sln.Add.Tests
 {
@@ -27,16 +28,17 @@ namespace Microsoft.DotNet.Cli.Sln.Add.Tests
   Add one or more projects to a solution file.
 
 Usage:
-  dotnet solution <SLN_FILE> add [<PROJECT_PATH>...] [options]
+  dotnet solution [<SLN_FILE>] add [<PROJECT_PATH>...] [options]
 
 Arguments:
-  <SLN_FILE>        The solution file to operate on. If not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
-  <PROJECT_PATH>    The paths to the projects to add to the solution.
+  <SLN_FILE>      The solution file to operate on. If not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+  <PROJECT_PATH>  The paths to the projects to add to the solution.
 
 Options:
-  --in-root                                  Place project in root of the solution, rather than creating a solution folder.
-  -s, --solution-folder <solution-folder>    The destination solution folder path to add the projects to.
-  -?, -h, --help                             Show command line help";
+  --in-root                                Place project in root of the solution, rather than creating a solution folder. [default: False]
+  -s, --solution-folder <solution-folder>  The destination solution folder path to add the projects to.
+  --include-references                     Recursively add projects' ReferencedProjects to solution [default: True]
+  -?, -h, --help                           Show command line help";
 
         public GivenDotnetSlnAdd(ITestOutputHelper log) : base(log)
         {
@@ -1154,6 +1156,40 @@ Options:
             solution.SolutionFolders.Count.Should().Be(0);
         }
 
+        [Theory]
+        [InlineData("sln", ".sln", "--include-references=true")]
+        [InlineData("solution", ".sln", "--include-references=true")]
+        [InlineData("sln", ".slnx", "--include-references=true")]
+        [InlineData("solution", ".slnx", "--include-references=true")]
+        [InlineData("sln", ".sln", "--include-references=false")]
+        [InlineData("solution", ".sln", "--include-references=false")]
+        [InlineData("sln", ".slnx", "--include-references=false")]
+        [InlineData("solution", ".slnx", "--include-references=false")]
+        public async Task WhenSolutionIsPassedAProjectWithReferenceItAddsOtherProjectUnlessSpecified(string solutionCommand, string solutionExtension, string option)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("SlnFileWithReferencedProjects", identifier: $"GivenDotnetSlnAdd-{solutionCommand}")
+                .WithSource()
+                .Path;
+            var projectToAdd = Path.Combine("A", "A.csproj");
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(Path.Join(projectDirectory))
+                .Execute(solutionCommand, $"App{solutionExtension}", "add", projectToAdd, option);
+            cmd.Should().Pass();
+            // Should have two projects
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(Path.Join(projectDirectory, $"App{solutionExtension}"));
+            SolutionModel solution = await serializer.OpenAsync(Path.Join(projectDirectory, $"App{solutionExtension}"), CancellationToken.None);
+
+            if (option.Equals("--include-references=false")) // Option is true by default
+            {
+                solution.SolutionProjects.Count.Should().Be(1);
+            }
+            else
+            {
+                solution.SolutionProjects.Count.Should().Be(2);
+            }
+        }
+
         private string GetExpectedSlnContents(
             string slnPath,
             string slnTemplateName,
@@ -1237,6 +1273,8 @@ Options:
         {
             VerifySuggestionAndUsage(solutionCommand, "--solution-folder", solutionExtension);
         }
+
+
         private void VerifySuggestionAndUsage(string solutionCommand, string arguments, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager

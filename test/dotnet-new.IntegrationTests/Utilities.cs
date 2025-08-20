@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         /// <summary>
         /// Creates a temp folder in location dedicated for dotnet-new.IntegrationTests.
-        /// Format: artifacts\tmp\Debug\dotnet-new.IntegrationTests\<paramref name="caller"/>\<paramref name="customName"/>\date-time-utc-now[optional counter].
+        /// Format: artifacts\tmp\Debug\testing\dotnet-new.IntegrationTests\<paramref name="caller"/>\<paramref name="customName"/>\date-time-utc-now[optional counter].
         /// </summary>
         internal static string CreateTemporaryFolder([CallerMemberName] string caller = "Unnamed", string customName = "")
         {

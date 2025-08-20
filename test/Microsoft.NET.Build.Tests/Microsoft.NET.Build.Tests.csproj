@@ -21,13 +21,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Basic.CompilerLog.Util" />
     <PackageReference Include="Microsoft.Build" />
+    <PackageReference Include="MSBuild.StructuredLogger" />
     <PackageReference Include="NuGet.ProjectModel" />
     <PackageReference Include="NuGet.LibraryModel" />
     <PackageReference Include="NuGet.Versioning" />
     <PackageReference Include="NuGet.Configuration" />
     <PackageReference Include="NuGet.Frameworks" />
     <PackageReference Include="NuGet.Common" />
+    <PackageReference Include="Xunit.Combinatorial" />
   </ItemGroup>
 
   <ItemGroup>

@@ -14,7 +14,7 @@
     <FullNugetVersion Condition="'$(VersionSuffixDateStamp)' != '' and '$(VersionSuffixBuildOfTheDay)' != ''">$(FullNugetVersion).$(VersionSuffixDateStamp).$(VersionSuffixBuildOfTheDay)</FullNugetVersion>
 
     <PgoTerm Condition="'$(PgoInstrument)' == 'true'">-pgo</PgoTerm>
-    <ArtifactNameWithVersionSdk>dotnet-sdk-internal$(PgoTerm)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionSdk>
+    <ArtifactNameWithVersionSdk>dotnet-sdk-internal$(PgoTerm)-$(FullNugetVersion)-$(ProductMonikerRid)</ArtifactNameWithVersionSdk>
     <ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>dotnet-sdk$(PgoTerm)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
 
     <SdkMSIInstallerFileName>$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFileName>

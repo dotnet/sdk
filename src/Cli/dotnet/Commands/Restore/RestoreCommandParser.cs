@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
+using NuGet.Packaging;
 
 namespace Microsoft.DotNet.Cli.Commands.Restore;
 
@@ -10,9 +11,9 @@ internal static class RestoreCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-restore";
 
-    public static readonly Argument<IEnumerable<string>> SlnOrProjectArgument = new(CliStrings.SolutionOrProjectArgumentName)
+    public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
     {
-        Description = CliStrings.SolutionOrProjectArgumentDescription,
+        Description = CliStrings.SolutionOrProjectOrFileArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
@@ -23,10 +24,13 @@ internal static class RestoreCommandParser
     }.ForwardAsSingle(o => $"-property:RestoreSources={string.Join("%3B", o)}")
     .AllowSingleArgPerToken();
 
+    public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Restore");
+    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.minimal);
+
     private static IEnumerable<Option> FullRestoreOptions() =>
         ImplicitRestoreOptions(true, true, true, true).Concat(
             [
-                CommonOptions.VerbosityOption,
+                VerbosityOption,
                 CommonOptions.InteractiveMsBuildForwardOption,
                 CommonOptions.ArtifactsPathOption,
                 new ForwardedOption<bool>("--use-lock-file")
@@ -49,6 +53,7 @@ internal static class RestoreCommandParser
                     Description = CliCommandStrings.CmdReevaluateOptionDescription,
                     Arity = ArgumentArity.Zero
                 }.ForwardAs("-property:RestoreForceEvaluate=true"),
+                TargetOption
             ]);
 
     private static readonly Command Command = ConstructCommand();
@@ -62,15 +67,13 @@ internal static class RestoreCommandParser
     {
         var command = new DocumentedCommand("restore", DocsLink, CliCommandStrings.RestoreAppFullName);
 
-        command.Arguments.Add(SlnOrProjectArgument);
+        command.Arguments.Add(SlnOrProjectOrFileArgument);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
 
-        foreach (var option in FullRestoreOptions())
-        {
-            command.Options.Add(option);
-        }
+        command.Options.AddRange(FullRestoreOptions());
 
         command.Options.Add(CommonOptions.ArchitectureOption);
+        command.Options.Add(CommonOptions.OperatingSystemOption);
         command.SetAction(RestoreCommand.Run);
 
         return command;
@@ -183,6 +186,7 @@ internal static class RestoreCommandParser
         yield return forceOption;
 
         yield return CommonOptions.PropertiesOption;
+        yield return CommonOptions.RestorePropertiesOption;
 
         if (includeRuntimeOption)
         {

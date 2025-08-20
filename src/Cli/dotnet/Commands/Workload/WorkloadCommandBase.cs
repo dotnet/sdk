@@ -85,18 +85,18 @@ internal abstract class WorkloadCommandBase : CommandBase
     /// <param name="nugetPackageDownloader">The package downloader to use for acquiring NuGet packages.</param>
     public WorkloadCommandBase(
         ParseResult parseResult,
-        Option<VerbosityOptions> verbosityOptions = null,
+        Option<VerbosityOptions>? verbosityOptions = null,
         IReporter? reporter = null,
-        string tempDirPath = null,
-        INuGetPackageDownloader nugetPackageDownloader = null) : base(parseResult)
+        string? tempDirPath = null,
+        INuGetPackageDownloader? nugetPackageDownloader = null) : base(parseResult)
     {
         VerifySignatures = ShouldVerifySignatures(parseResult);
 
         RestoreActionConfiguration = _parseResult.ToRestoreActionConfig();
 
         Verbosity = verbosityOptions == null
-            ? parseResult.GetValue(CommonOptions.VerbosityOption)
-            : parseResult.GetValue(verbosityOptions);
+            ? parseResult.GetValue(CommonOptions.VerbosityOption(VerbosityOptions.normal))
+            : parseResult.GetValue(verbosityOptions) ;
 
         ILogger nugetLogger = Verbosity.IsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger();
 
@@ -105,24 +105,33 @@ internal abstract class WorkloadCommandBase : CommandBase
         TempDirectoryPath = !string.IsNullOrWhiteSpace(tempDirPath)
             ? tempDirPath
             : !string.IsNullOrWhiteSpace(parseResult.GetValue(WorkloadInstallCommandParser.TempDirOption))
-                ? parseResult.GetValue(WorkloadInstallCommandParser.TempDirOption)
+                ? parseResult.GetValue(WorkloadInstallCommandParser.TempDirOption)!
                 : PathUtilities.CreateTempSubdirectory();
 
         TempPackagesDirectory = new DirectoryPath(Path.Combine(TempDirectoryPath, "dotnet-sdk-advertising-temp"));
 
-        IsPackageDownloaderProvided = nugetPackageDownloader != null;
-        PackageDownloader = IsPackageDownloaderProvided ? nugetPackageDownloader : new NuGetPackageDownloader.NuGetPackageDownloader(TempPackagesDirectory,
-            filePermissionSetter: null,
-            new FirstPartyNuGetPackageSigningVerifier(),
-            nugetLogger,
-            Reporter,
-            restoreActionConfig: RestoreActionConfiguration,
-            verifySignatures: VerifySignatures,
-            shouldUsePackageSourceMapping: true);
+        if (nugetPackageDownloader is not null)
+        {
+            IsPackageDownloaderProvided = true;
+            PackageDownloader = nugetPackageDownloader;
+        }
+        else
+        {
+            IsPackageDownloaderProvided = false;
+            PackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
+                TempPackagesDirectory,
+                filePermissionSetter: null,
+                new FirstPartyNuGetPackageSigningVerifier(),
+                nugetLogger,
+                Reporter,
+                restoreActionConfig: RestoreActionConfiguration,
+                verifySignatures: VerifySignatures,
+                shouldUsePackageSourceMapping: true);
+        }
     }
 
     /// <summary>
-    /// Determines whether workload packs and installer signatures should be verified based on whether 
+    /// Determines whether workload packs and installer signatures should be verified based on whether
     /// dotnet is signed, the skip option was specified, and whether a global policy enforcing verification
     /// was set.
     /// </summary>

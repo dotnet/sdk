@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -39,10 +41,7 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
 
         if (!findAnyManifest)
         {
-            throw new ToolManifestCannotBeFoundException(
-                CliStrings.CannotFindAManifestFile,
-                string.Format(CliStrings.ListOfSearched,
-                    string.Join(Environment.NewLine, allPossibleManifests.Select(f => "\t" + f.manifestfile.Value))));
+            throw new ToolManifestCannotBeFoundException(string.Format(CliStrings.CannotFindAManifestFile, string.Join(Environment.NewLine, allPossibleManifests.Select(f => "\t" + f.manifestfile.Value))));
         }
 
         return [.. toolManifestPackageAndSource.Select(t => t.toolManifestPackage)];
@@ -130,6 +129,34 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
         return false;
     }
 
+    public bool TryFindPackageId(PackageId packageId, out ToolManifestPackage toolManifestPackage)
+    {
+        toolManifestPackage = default;
+        foreach ((FilePath possibleManifest, DirectoryPath correspondingDirectory) in
+            EnumerateDefaultAllPossibleManifests())
+        {
+            if (!_fileSystem.File.Exists(possibleManifest.Value))
+            {
+                continue;
+            }
+            (List<ToolManifestPackage> manifestPackages, bool isRoot) =
+                _toolManifestEditor.Read(possibleManifest, correspondingDirectory);
+            foreach (var package in manifestPackages)
+            {
+                if (package.PackageId.Equals(packageId))
+                {
+                    toolManifestPackage = package;
+                    return true;
+                }
+            }
+            if (isRoot)
+            {
+                return false;
+            }
+        }
+        return false;
+    }
+
     private IEnumerable<(FilePath manifestfile, DirectoryPath manifestFileFirstEffectDirectory)>
         EnumerateDefaultAllPossibleManifests()
     {
@@ -180,16 +207,12 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
                 return new FilePath(WriteManifestFile(manifestInsertFolder));
             }
         }
-        throw new ToolManifestCannotBeFoundException(
-                CliStrings.CannotFindAManifestFile,
-                string.Format(CliStrings.ListOfSearched,
-                    string.Join(Environment.NewLine,
-                        EnumerateDefaultAllPossibleManifests().Select(f => "\t" + f.manifestfile.Value))));
+        throw new ToolManifestCannotBeFoundException(string.Format(CliStrings.CannotFindAManifestFile, string.Join(Environment.NewLine, EnumerateDefaultAllPossibleManifests().Select(f => "\t" + f.manifestfile.Value))));
     }
 
     /*
     The --create-manifest-if-needed will use the following priority to choose the folder where the tool manifest goes:
-        1. Walk up the directory tree searching for one that has a.git subfolder
+        1. Walk up the directory tree searching for one that has a .git subfolder
         2. Walk up the directory tree searching for one that has a .sln(x)/git file in it
         3. Use the current working directory
     */
@@ -227,8 +250,7 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
               "tools": {}
             }
             """;
-        _fileSystem.Directory.CreateDirectory(Path.Combine(folderPath.Value, Constants.DotConfigDirectoryName));
-        string manifestFileLocation = Path.Combine(folderPath.Value, Constants.DotConfigDirectoryName, Constants.ToolManifestFileName);
+        string manifestFileLocation = Path.Combine(folderPath.Value, Constants.ToolManifestFileName);
         _fileSystem.File.WriteAllText(manifestFileLocation, manifestFileContent);
 
         return manifestFileLocation;
@@ -272,11 +294,7 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
 
         if (!findAnyManifest)
         {
-            throw new ToolManifestCannotBeFoundException(
-                CliStrings.CannotFindAManifestFile,
-                string.Format(CliStrings.ListOfSearched,
-                    string.Join(Environment.NewLine,
-                        EnumerateDefaultAllPossibleManifests().Select(f => "\t" + f.manifestfile.Value))));
+            throw new ToolManifestCannotBeFoundException(string.Format(CliStrings.CannotFindAManifestFile, string.Join(Environment.NewLine, EnumerateDefaultAllPossibleManifests().Select(f => "\t" + f.manifestfile.Value))));
         }
 
         return result;

@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
@@ -45,25 +47,25 @@ internal static class ValidationUtility
                 parseResult.HasOption(TestingPlatformOptions.ConfigurationOption) ||
                 parseResult.HasOption(TestingPlatformOptions.FrameworkOption) ||
                 parseResult.HasOption(CommonOptions.OperatingSystemOption) ||
-                parseResult.HasOption(CommonOptions.RuntimeOption)
-                )
+                parseResult.HasOption(CommonOptions.RuntimeOptionName))
             {
                 throw new GracefulException(CliCommandStrings.CmdOptionCannotBeUsedWithTestModulesDescription);
             }
         }
     }
+
     public static bool ValidateBuildPathOptions(BuildOptions buildPathOptions, TerminalTestReporter output)
     {
         PathOptions pathOptions = buildPathOptions.PathOptions;
 
         if (!string.IsNullOrEmpty(pathOptions.ProjectPath))
         {
-            return ValidateFilePath(pathOptions.ProjectPath, CliConstants.ProjectExtensions, CliCommandStrings.CmdInvalidProjectFileExtensionErrorDescription, output);
+            return ValidateProjectFilePath(pathOptions.ProjectPath, output);
         }
 
         if (!string.IsNullOrEmpty(pathOptions.SolutionPath))
         {
-            return ValidateFilePath(pathOptions.SolutionPath, CliConstants.SolutionExtensions, CliCommandStrings.CmdInvalidSolutionFileExtensionErrorDescription, output);
+            return ValidateSolutionFilePath(pathOptions.SolutionPath, output);
         }
 
         if (!string.IsNullOrEmpty(pathOptions.DirectoryPath) && !Directory.Exists(pathOptions.DirectoryPath))
@@ -75,14 +77,71 @@ internal static class ValidationUtility
         return true;
     }
 
-    private static bool ValidateFilePath(string filePath, string[] validExtensions, string errorMessage, TerminalTestReporter output)
+    /// <summary>
+    /// Validates that arguments requiring specific command-line switches are used correctly for Microsoft.Testing.Platform.
+    /// Provides helpful error messages when users provide file/directory arguments without proper switches.
+    /// </summary>
+    public static void ValidateSolutionOrProjectOrDirectoryOrModulesArePassedCorrectly(ParseResult parseResult)
     {
-        if (!validExtensions.Contains(Path.GetExtension(filePath)))
+        if (Environment.GetEnvironmentVariable("DOTNET_TEST_DISABLE_SWITCH_VALIDATION") is "true" or "1")
         {
-            output.WriteMessage(string.Format(errorMessage, filePath));
+            // In case there is a valid case, users can opt-out.
+            // Note that the validation here is added to have a "better" error message for scenarios that will already fail.
+            // So, disabling validation is okay if the user scenario is valid.
+            return;
+        }
+
+        foreach (string token in parseResult.UnmatchedTokens)
+        {
+            // Check for .sln files
+            if ((token.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) ||
+                token.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase)) && File.Exists(token))
+            {
+                throw new GracefulException(CliCommandStrings.TestCommandUseSolution);
+            }
+            else if ((token.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
+                     token.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase) ||
+                     token.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase)) && File.Exists(token))
+            {
+                throw new GracefulException(CliCommandStrings.TestCommandUseProject);
+            }
+            else if (Directory.Exists(token))
+            {
+                throw new GracefulException(CliCommandStrings.TestCommandUseDirectory);
+            }
+            else if ((token.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
+                      token.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) &&
+                     File.Exists(token))
+            {
+                throw new GracefulException(CliCommandStrings.TestCommandUseTestModules);
+            }
+        }
+    }
+
+    private static bool ValidateSolutionFilePath(string filePath, TerminalTestReporter output)
+    {
+        if (!CliConstants.SolutionExtensions.Contains(Path.GetExtension(filePath)))
+        {
+            output.WriteMessage(string.Format(CliCommandStrings.CmdInvalidSolutionFileExtensionErrorDescription, filePath));
             return false;
         }
 
+        return ValidateFilePathExists(filePath, output);
+    }
+
+    private static bool ValidateProjectFilePath(string filePath, TerminalTestReporter output)
+    {
+        if (!Path.GetExtension(filePath).EndsWith("proj", StringComparison.OrdinalIgnoreCase))
+        {
+            output.WriteMessage(string.Format(CliCommandStrings.CmdInvalidProjectFileExtensionErrorDescription, filePath));
+            return false;
+        }
+
+        return ValidateFilePathExists(filePath, output);
+    }
+
+    private static bool ValidateFilePathExists(string filePath, TerminalTestReporter output)
+    {
         if (!File.Exists(filePath))
         {
             output.WriteMessage(string.Format(CliCommandStrings.CmdNonExistentFileErrorDescription, Path.GetFullPath(filePath)));

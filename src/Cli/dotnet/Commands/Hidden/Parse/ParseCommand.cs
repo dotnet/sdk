@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
@@ -13,7 +15,7 @@ public class ParseCommand
         result.HandleDebugSwitch();
 
         var tokens = result.Tokens.Skip(1).Select(t => t.Value).ToArray();
-        var reparsed = Parser.Instance.Parse(tokens);
+        var reparsed = Parser.Parse(tokens);
         Console.WriteLine(reparsed.ToString());
 
 

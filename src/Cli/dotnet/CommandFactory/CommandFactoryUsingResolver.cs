@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Utils;
@@ -72,6 +74,12 @@ public static class CommandFactoryUsingResolver
             applicationName: applicationName,
             currentWorkingDirectory: currentWorkingDirectory);
 
+        return CreateOrThrow(commandName, commandSpec);
+    }
+
+#nullable enable
+    public static Command CreateOrThrow(string commandName, CommandSpec? commandSpec)
+    {
         if (commandSpec == null)
         {
             if (_knownCommandsAvailableAsDotNetTool.Contains(commandName, StringComparer.OrdinalIgnoreCase))
@@ -88,6 +96,7 @@ public static class CommandFactoryUsingResolver
 
         return command;
     }
+#nullable disable
 
     public static Command Create(CommandSpec commandSpec)
     {
@@ -111,6 +120,6 @@ public static class CommandFactoryUsingResolver
             StartInfo = psi
         };
 
-        return new Command(_process);
+        return new Command(_process, customEnvironmentVariables: commandSpec.EnvironmentVariables);
     }
 }

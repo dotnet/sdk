@@ -282,6 +282,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = false
             };
             referencedProject.PackageReferences.Add(new TestPackageReference("System.Text.Json", "8.0.0"));
+            referencedProject.AdditionalProperties["RestoreEnablePackagePruning"] = prunePackages.ToString();
 
             var testProject = new TestProject()
             {
@@ -319,8 +320,8 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("net6.0")]
         [InlineData("netcoreapp3.1")]
         [InlineData("netcoreapp3.0")]
-        [InlineData("netcoreapp2.1")]
-        [InlineData("netcoreapp2.0")]
+        [InlineData("netcoreapp2.1", false)] //TODO: https://github.com/dotnet/sdk/issues/49917
+        [InlineData("netcoreapp2.0", false)] //TODO: https://github.com/dotnet/sdk/issues/49917
         [InlineData("netcoreapp1.1", false)]
         [InlineData("netcoreapp1.0", false)]
         [InlineData("netstandard2.1")]

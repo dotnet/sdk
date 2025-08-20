@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 #if !NETFRAMEWORK
 using System.Formats.Tar;
 #endif
@@ -184,7 +186,7 @@ namespace Microsoft.DotNet.Build.Tasks
         {
             string fullDirectoryPath = Path.GetFullPath(directory);
 
-            if (!fullDirectoryPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            if (!fullDirectoryPath.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.OrdinalIgnoreCase))
             {
                 fullDirectoryPath = string.Concat(fullDirectoryPath, Path.DirectorySeparatorChar);
             }

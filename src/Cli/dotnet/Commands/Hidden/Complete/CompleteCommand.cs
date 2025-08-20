@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using System.CommandLine.Completions;
 using Microsoft.DotNet.Cli.Extensions;
@@ -17,8 +19,7 @@ public class CompleteCommand
 
     public static int RunWithReporter(string[] args, IReporter reporter)
     {
-        var parser = Parser.Instance;
-        var result = parser.ParseFrom("dotnet complete", args);
+        var result = Parser.Parse(["dotnet", "complete", ..args]);
         return RunWithReporter(result, reporter);
     }
 
@@ -59,7 +60,7 @@ public class CompleteCommand
             input += " ";
         }
 
-        var result = Parser.Instance.Parse(input);
+        var result = Parser.Parse(input);
 
         return [.. result.GetCompletions(position).Distinct()];
     }

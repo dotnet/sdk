@@ -2,8 +2,8 @@
   "Version": 1,
   "Hash": "__hash__",
   "Source": "BlazorWasmHosted60.Server",
-  "BasePath": "_content/BlazorWasmHosted60.Server",
-  "Mode": "Default",
+  "BasePath": "/",
+  "Mode": "Root",
   "ManifestType": "Publish",
   "ReferencedProjectsConfiguration": [
     {
@@ -12,10 +12,10 @@
       "Source": "BlazorWasmHosted60.Client",
       "GetPublishAssetsTargets": "ComputeFilesToPublish;GetCurrentProjectPublishStaticWebAssetItems",
       "AdditionalPublishProperties": "_PublishingBlazorWasmProject=true;BuildProjectReferences=false;ResolveAssemblyReferencesFindRelatedSatellites=true",
-      "AdditionalPublishPropertiesToRemove": "NoBuild;RuntimeIdentifier;WebPublishProfileFile;TargetFramework",
+      "AdditionalPublishPropertiesToRemove": "NoBuild;RuntimeIdentifier;WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained",
       "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
       "AdditionalBuildProperties": "",
-      "AdditionalBuildPropertiesToRemove": "RuntimeIdentifier;SelfContained;WebPublishProfileFile;TargetFramework"
+      "AdditionalBuildPropertiesToRemove": "RuntimeIdentifier;SelfContained;WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"
     }
   ],
   "DiscoveryPatterns": [
@@ -2589,10 +2589,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2625,10 +2621,6 @@
       "AssetFile": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -2663,10 +2655,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2699,10 +2687,6 @@
       "AssetFile": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.wasm",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -2737,10 +2721,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2773,10 +2753,6 @@
       "AssetFile": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_EFIGS.dat",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -2811,10 +2787,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2848,10 +2820,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2877,7 +2845,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2899,10 +2867,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2932,7 +2896,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2948,10 +2912,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2977,7 +2937,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2999,10 +2959,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3032,7 +2988,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3047,10 +3003,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -3077,7 +3029,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3099,10 +3051,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3132,7 +3080,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3148,10 +3096,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3177,7 +3121,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3199,10 +3143,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3232,7 +3172,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3247,10 +3187,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\BlazorWasmHosted60.Client.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -3277,7 +3213,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3299,10 +3235,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3332,7 +3264,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3348,10 +3280,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3377,7 +3305,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3399,10 +3327,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3432,7 +3356,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3447,10 +3371,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\BlazorWasmHosted60.Shared.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -3477,7 +3397,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3499,10 +3419,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3532,7 +3448,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3548,10 +3464,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3577,7 +3489,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3599,10 +3511,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3632,7 +3540,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3647,10 +3555,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.Web.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -3677,7 +3581,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3699,10 +3603,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3732,7 +3632,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3748,10 +3648,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3777,7 +3673,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3799,10 +3695,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3832,7 +3724,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3847,10 +3739,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.WebAssembly.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -3877,7 +3765,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3899,10 +3787,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3932,7 +3816,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3948,10 +3832,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -3977,7 +3857,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -3999,10 +3879,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -4032,7 +3908,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -4047,10 +3923,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -4077,7 +3949,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -4099,10 +3971,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -4132,7 +4000,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -4148,10 +4016,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -4177,7 +4041,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -4199,10 +4063,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -4232,7 +4092,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -4247,10 +4107,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Abstractions.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -4277,7 +4133,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -4299,10 +4155,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -4332,7 +4184,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -4348,10 +4200,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -4377,7 +4225,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -4399,10 +4247,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -4432,7 +4276,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -4447,10 +4291,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Json.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -4477,7 +4317,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -4499,10 +4339,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -4532,7 +4368,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -4548,10 +4384,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -4577,7 +4409,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -4599,10 +4431,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -4632,7 +4460,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -4647,10 +4475,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -4677,7 +4501,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -4699,10 +4523,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -4732,7 +4552,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -4748,10 +4568,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -4777,7 +4593,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -4799,10 +4615,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -4832,7 +4644,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -4847,10 +4659,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -4877,7 +4685,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -4899,10 +4707,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -4932,7 +4736,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -4948,10 +4752,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -4977,7 +4777,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -4999,10 +4799,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -5032,7 +4828,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -5047,10 +4843,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -5077,7 +4869,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -5099,10 +4891,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -5132,7 +4920,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -5148,10 +4936,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -5177,7 +4961,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -5199,10 +4983,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -5232,7 +5012,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -5247,10 +5027,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.Abstractions.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -5277,7 +5053,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -5299,10 +5075,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -5332,7 +5104,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -5348,10 +5120,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -5377,7 +5145,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -5399,10 +5167,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -5432,7 +5196,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -5447,10 +5211,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -5477,7 +5237,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -5499,10 +5259,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -5532,7 +5288,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -5548,10 +5304,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -5577,7 +5329,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -5599,10 +5351,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -5632,7 +5380,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -5647,10 +5395,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Options.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -5677,7 +5421,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -5699,10 +5443,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -5732,7 +5472,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -5748,10 +5488,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -5777,7 +5513,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -5799,10 +5535,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -5832,7 +5564,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -5847,10 +5579,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Primitives.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -5877,7 +5605,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -5899,10 +5627,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -5932,7 +5656,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -5948,10 +5672,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -5977,7 +5697,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -5999,10 +5719,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -6032,7 +5748,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -6047,10 +5763,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.WebAssembly.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -6077,7 +5789,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -6099,10 +5811,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -6132,7 +5840,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -6148,10 +5856,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -6177,7 +5881,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -6199,10 +5903,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -6232,7 +5932,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -6247,10 +5947,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -6277,7 +5973,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -6299,10 +5995,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -6332,7 +6024,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -6348,10 +6040,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -6377,7 +6065,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -6399,10 +6087,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -6432,7 +6116,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -6447,10 +6131,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.Concurrent.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -6477,7 +6157,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -6499,10 +6179,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -6532,7 +6208,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -6548,10 +6224,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -6577,7 +6249,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -6599,10 +6271,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -6632,7 +6300,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -6647,10 +6315,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -6677,7 +6341,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -6699,10 +6363,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -6732,7 +6392,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -6748,10 +6408,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -6777,7 +6433,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -6799,10 +6455,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -6832,7 +6484,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -6847,10 +6499,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -6877,7 +6525,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -6899,10 +6547,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -6932,7 +6576,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -6948,10 +6592,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -6977,7 +6617,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -6999,10 +6639,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -7032,7 +6668,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -7047,10 +6683,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Linq.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -7077,7 +6709,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -7099,10 +6731,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -7132,7 +6760,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -7148,10 +6776,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -7177,7 +6801,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -7199,10 +6823,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -7232,7 +6852,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -7247,10 +6867,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Memory.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -7277,7 +6893,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -7299,10 +6915,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -7332,7 +6944,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -7348,10 +6960,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -7377,7 +6985,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -7399,10 +7007,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -7432,7 +7036,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -7447,10 +7051,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.CoreLib.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -7477,7 +7077,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -7499,10 +7099,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -7532,7 +7128,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -7548,10 +7144,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -7577,7 +7169,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -7599,10 +7191,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -7632,7 +7220,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -7647,10 +7235,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.Runtime.InteropServices.JavaScript.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -7677,7 +7261,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -7699,10 +7283,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -7732,7 +7312,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -7748,10 +7328,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -7777,7 +7353,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -7799,10 +7375,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -7832,7 +7404,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -7847,10 +7419,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.Uri.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -7877,7 +7445,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -7899,10 +7467,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -7932,7 +7496,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -7948,10 +7512,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -7977,7 +7537,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -7999,10 +7559,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -8032,7 +7588,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -8047,10 +7603,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.CompilerServices.Unsafe.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -8077,7 +7629,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -8099,10 +7651,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -8132,7 +7680,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -8148,10 +7696,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -8177,7 +7721,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -8199,10 +7743,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -8232,7 +7772,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -8247,10 +7787,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -8277,7 +7813,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -8299,10 +7835,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -8332,7 +7864,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -8348,10 +7880,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -8377,7 +7905,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -8399,10 +7927,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -8432,7 +7956,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -8447,10 +7971,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Encodings.Web.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -8477,7 +7997,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -8499,10 +8019,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -8532,7 +8048,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -8548,10 +8064,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -8577,7 +8089,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -8599,10 +8111,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -8632,7 +8140,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -8647,10 +8155,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Json.dll.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -8677,7 +8181,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -8699,10 +8203,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -8732,7 +8232,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -8747,10 +8247,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.boot.json.br",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -8777,7 +8273,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -8799,10 +8295,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -8832,10 +8324,34 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
+        {
+          "Name": "PreloadAs",
+          "Value": "script"
+        },
+        {
+          "Name": "PreloadCrossorigin",
+          "Value": "anonymous"
+        },
+        {
+          "Name": "PreloadGroup",
+          "Value": "webassembly"
+        },
+        {
+          "Name": "PreloadOrder",
+          "Value": "1"
+        },
+        {
+          "Name": "PreloadPriority",
+          "Value": "high"
+        },
+        {
+          "Name": "PreloadRel",
+          "Value": "preload"
+        },
         {
           "Name": "integrity",
           "Value": "__integrity__"
@@ -8847,10 +8363,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.boot.json.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -8877,7 +8389,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -8899,10 +8411,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -8932,10 +8440,34 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
+        {
+          "Name": "PreloadAs",
+          "Value": "script"
+        },
+        {
+          "Name": "PreloadCrossorigin",
+          "Value": "anonymous"
+        },
+        {
+          "Name": "PreloadGroup",
+          "Value": "webassembly"
+        },
+        {
+          "Name": "PreloadOrder",
+          "Value": "1"
+        },
+        {
+          "Name": "PreloadPriority",
+          "Value": "high"
+        },
+        {
+          "Name": "PreloadRel",
+          "Value": "preload"
+        },
         {
           "Name": "integrity",
           "Value": "__integrity__"
@@ -8947,10 +8479,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.webassembly.js.br",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -8977,7 +8505,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -8999,10 +8527,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -9032,7 +8556,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -9048,10 +8572,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -9077,7 +8597,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -9099,10 +8619,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -9132,7 +8648,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -9147,10 +8663,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.timezones.blat.br",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -9177,7 +8689,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -9199,10 +8711,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -9232,7 +8740,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -9247,10 +8755,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.timezones.blat.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -9277,7 +8781,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -9299,10 +8803,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -9332,7 +8832,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -9347,10 +8847,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -9377,7 +8873,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -9399,10 +8895,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -9432,7 +8924,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -9448,10 +8940,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -9477,7 +8965,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -9499,10 +8987,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -9532,7 +9016,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -9547,10 +9031,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_CJK.dat.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -9577,7 +9057,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -9599,10 +9079,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -9632,7 +9108,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -9648,10 +9124,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -9677,7 +9149,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -9699,10 +9171,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -9732,7 +9200,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -9747,10 +9215,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_EFIGS.dat.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -9777,7 +9241,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -9799,10 +9263,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -9832,7 +9292,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -9847,10 +9307,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_no_CJK.dat.br",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -9877,7 +9333,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -9899,10 +9355,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -9932,7 +9384,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -9947,10 +9399,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_no_CJK.dat.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -9977,7 +9425,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -9999,10 +9447,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -10032,7 +9476,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -10047,10 +9491,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\BlazorWasmHosted60.Client.dll",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -10085,10 +9525,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -10121,10 +9557,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.AspNetCore.Components.Web.dll",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -10159,10 +9591,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -10195,10 +9623,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.AspNetCore.Components.dll",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -10233,10 +9657,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -10269,10 +9689,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Configuration.Json.dll",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -10307,10 +9723,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -10343,10 +9755,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.DependencyInjection.Abstractions.dll",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -10381,10 +9789,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -10417,10 +9821,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Logging.Abstractions.dll",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -10455,10 +9855,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -10491,10 +9887,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Options.dll",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -10529,10 +9921,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -10565,10 +9953,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.JSInterop.WebAssembly.dll",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -10603,10 +9987,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -10639,10 +10019,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Collections.Concurrent.dll",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -10677,10 +10053,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -10713,10 +10085,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.ComponentModel.dll",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -10751,10 +10119,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -10787,10 +10151,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Memory.dll",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -10825,10 +10185,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -10861,10 +10217,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Private.Runtime.InteropServices.JavaScript.dll",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -10899,10 +10251,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -10935,10 +10283,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Runtime.CompilerServices.Unsafe.dll",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -10973,10 +10317,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -11009,10 +10349,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Text.Encodings.Web.dll",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -11047,10 +10383,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -11084,10 +10416,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -11110,6 +10438,30 @@
       ],
       "EndpointProperties": [
         {
+          "Name": "PreloadAs",
+          "Value": "script"
+        },
+        {
+          "Name": "PreloadCrossorigin",
+          "Value": "anonymous"
+        },
+        {
+          "Name": "PreloadGroup",
+          "Value": "webassembly"
+        },
+        {
+          "Name": "PreloadOrder",
+          "Value": "1"
+        },
+        {
+          "Name": "PreloadPriority",
+          "Value": "high"
+        },
+        {
+          "Name": "PreloadRel",
+          "Value": "preload"
+        },
+        {
           "Name": "integrity",
           "Value": "__integrity__"
         }
@@ -11120,10 +10472,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\BlazorWasmHosted60.Client.styles.css",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -11157,10 +10505,6 @@
       "AssetFile": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\BlazorWasmHosted60.Client.styles.css",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"
@@ -11203,10 +10547,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -11239,10 +10579,6 @@
       "AssetFile": "${ProjectPath}\\Client\\wwwroot\\css\\app.css",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"
@@ -11285,10 +10621,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -11321,10 +10653,6 @@
       "AssetFile": "${ProjectPath}\\Client\\wwwroot\\index.html",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"

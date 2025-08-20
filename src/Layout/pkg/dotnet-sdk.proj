@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.Build.NoTargets">
+﻿<Project Sdk="Microsoft.Build.NoTargets">
 
   <PropertyGroup>
     <BuildSdkRpm Condition="'$(BuildSdkRpm)' == '' and '$(IsRPMBasedDistro)' == 'true'">true</BuildSdkRpm>
@@ -26,10 +26,22 @@
     -->
     <InstallerRuntimeIdentifiers>linux-$(TargetArchitecture)</InstallerRuntimeIdentifiers>
     <IsShippingPackage>true</IsShippingPackage>
+    <!-- The PublishToDisk target which depends on ResolveProjectReferences is invoked with OutputPath as an global property
+         which would flow to redist.csproj or sdk-tasks.csproj. -->
+    <_GlobalPropertiesToRemoveFromProjectReferences>$(_GlobalPropertiesToRemoveFromProjectReferences);OutputPath</_GlobalPropertiesToRemoveFromProjectReferences>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\redist\redist.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <!-- These P2Ps ensure that package references for WiX extensions are correctly restored. The MSBuildRestoreSessionId condition makes sure that these
+       projects are only restored. They get built later when computed properties are available. These properties do not exist when projects are evaluated. -->
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT' and '$(MSBuildRestoreSessionId)' != ''">
+    <ProjectReference Include="windows\msis\placeholder\placeholder.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="windows\msis\templates\templates.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="windows\msis\toolset\toolset.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="windows\bundles\sdk\bundle.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,7 +54,7 @@
     <ManpagesDirectory>$(RepoRoot)documentation/manpages/sdk</ManpagesDirectory>
   </PropertyGroup>
 
-  <Target Name="PublishToDisk">
+  <Target Name="PublishToDisk" DependsOnTargets="ResolveProjectReferences">
     <Error Condition="'$(OutputPath)' == ''" Text="Publishing to disk requires the OutputPath to be set to the root of the path to write to." />
 
     <ItemGroup>
@@ -52,6 +64,7 @@
     </ItemGroup>
 
     <!-- Create layout: Binaries -->
+    <Error Condition="'@(CLISdkFiles)' == ''" Text="The 'CLISdkFiles' items are empty. This shouldn't happen!" />
     <Copy
       DestinationFiles="@(CLISdkFiles->'$(OutputPath)/sdk/%(RecursiveDir)%(Filename)%(Extension)')"
       SourceFiles="@(CLISdkFiles)"
@@ -60,6 +73,7 @@
       UseHardlinksIfPossible="False" />
 
     <!-- Create layout: Templates -->
+    <Error Condition="'@(TemplatesFiles)' == ''" Text="The 'TemplatesFiles' items are empty. This shouldn't happen!" />
     <Copy
       DestinationFiles="@(TemplatesFiles->'$(OutputPath)/templates/%(RecursiveDir)%(Filename)%(Extension)')"
       SourceFiles="@(TemplatesFiles)"
@@ -68,6 +82,7 @@
       UseHardlinksIfPossible="False" />
 
     <!-- Create layout: Workload Manifests -->
+    <Error Condition="'@(ManifestFiles)' == ''" Text="The 'ManifestFiles' items are empty. This shouldn't happen!" />
     <Copy
       DestinationFiles="@(ManifestFiles->'$(OutputPath)/sdk-manifests/%(RecursiveDir)%(Filename)%(Extension)')"
       SourceFiles="@(ManifestFiles)"

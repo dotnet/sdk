@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Collections.Concurrent;
 using System.CommandLine;
-using System.CommandLine.Help;
+using Microsoft.TemplateEngine.Cli.Help;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -141,6 +143,13 @@ internal partial class TestingPlatformCommand
                 value.Add(option.Value);
             }
         }
+
+        // Sort options alphabetically by name
+        foreach (var optionsList in builtInToOptions.Values)
+        {
+            optionsList.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase));
+        }
+
         return builtInToOptions;
     }
 

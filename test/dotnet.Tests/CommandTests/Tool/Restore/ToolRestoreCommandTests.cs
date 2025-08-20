@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _toolPackageDownloaderMock = new ToolPackageDownloaderMock(
                 _toolPackageStore,
-                _fileSystem,    
+                _fileSystem,
                 _reporter,
                 new List<MockFeed>
                 {
@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 },
                 downloadCallback: () => _installCalledCount++);
 
-            _parseResult = Parser.Instance.Parse("dotnet tool restore");
+            _parseResult = Parser.Parse("dotnet tool restore");
 
             _localToolsResolverCache
                 = new LocalToolsResolverCache(
@@ -140,7 +140,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         _packageVersionA,
                         NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                         Constants.AnyRid,
-                        _toolCommandNameA), out RestoredCommand restoredCommand)
+                        _toolCommandNameA), out ToolCommand restoredCommand)
                 .Should().BeTrue();
 
             _fileSystem.File.Exists(restoredCommand.Executable.Value)
@@ -452,7 +452,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _reporter.Lines.Should()
                 .Contain(l =>
-                    l.Contains(CliStrings.CannotFindAManifestFile));
+                    l.Contains(string.Format(CliStrings.CannotFindAManifestFile, "")));
         }
 
         [Fact]

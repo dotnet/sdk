@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using NuGet.Versioning;
@@ -13,9 +15,13 @@ internal interface IToolPackage
 
     NuGetVersion Version { get; }
 
+    public PackageId ResolvedPackageId { get; }
+
+    public NuGetVersion ResolvedPackageVersion { get; }
+
     DirectoryPath PackageDirectory { get; }
 
-    RestoredCommand Command { get; }
+    ToolCommand Command { get; }
 
     IEnumerable<string> Warnings { get; }
 

@@ -8,13 +8,13 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
-public class MSBuildForwardingApp
+public class MSBuildForwardingApp : CommandBase
 {
     internal const string TelemetrySessionIdEnvironmentVariableName = "DOTNET_CLI_TELEMETRY_SESSIONID";
 
     private readonly MSBuildForwardingAppWithoutLogging _forwardingAppWithoutLogging;
 
-    private static IEnumerable<string> ConcatTelemetryLogger(IEnumerable<string> argsToForward)
+    private static MSBuildArgs ConcatTelemetryLogger(MSBuildArgs msbuildArgs)
     {
         if (Telemetry.Telemetry.CurrentSessionId != null)
         {
@@ -23,21 +23,30 @@ public class MSBuildForwardingApp
                 Type loggerType = typeof(MSBuildLogger);
                 Type forwardingLoggerType = typeof(MSBuildForwardingLogger);
 
-                return argsToForward
-                    .Concat([$"-distributedlogger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}*{forwardingLoggerType.FullName},{forwardingLoggerType.GetTypeInfo().Assembly.Location}"]);
+                msbuildArgs.OtherMSBuildArgs.Add($"-distributedlogger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}*{forwardingLoggerType.FullName},{forwardingLoggerType.GetTypeInfo().Assembly.Location}");
+                return msbuildArgs;
             }
             catch (Exception)
             {
                 // Exceptions during telemetry shouldn't cause anything else to fail
             }
         }
-        return argsToForward;
+        return msbuildArgs;
     }
 
-    public MSBuildForwardingApp(IEnumerable<string> argsToForward, string msbuildPath = null, bool includeLogo = false)
+    /// <summary>
+    /// Mostly intended for quick/one-shot usage - most 'core' SDK commands should do more hands-on parsing.
+    /// </summary>
+    public MSBuildForwardingApp(IEnumerable<string> rawMSBuildArgs, string? msbuildPath = null) : this(
+        MSBuildArgs.AnalyzeMSBuildArguments(rawMSBuildArgs.ToArray(), CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.VerbosityOption()),
+        msbuildPath)
+    {
+    }
+
+    public MSBuildForwardingApp(MSBuildArgs msBuildArgs, string? msbuildPath = null, bool includeLogo = false)
     {
         _forwardingAppWithoutLogging = new MSBuildForwardingAppWithoutLogging(
-            ConcatTelemetryLogger(argsToForward),
+            ConcatTelemetryLogger(msBuildArgs),
             msbuildPath: msbuildPath,
             includeLogo: includeLogo);
 
@@ -50,7 +59,7 @@ public class MSBuildForwardingApp
 
     public IEnumerable<string> MSBuildArguments { get { return _forwardingAppWithoutLogging.GetAllArguments(); } }
 
-    public void EnvironmentVariable(string name, string value)
+    public void EnvironmentVariable(string name, string? value)
     {
         _forwardingAppWithoutLogging.EnvironmentVariable(name, value);
     }
@@ -74,7 +83,7 @@ public class MSBuildForwardingApp
 
     internal string[] GetArgumentTokensToMSBuild() => _forwardingAppWithoutLogging.GetAllArguments();
 
-    public virtual int Execute()
+    public override int Execute()
     {
         // Ignore Ctrl-C for the remainder of the command's execution
         // Forwarding commands will just spawn the child process and exit

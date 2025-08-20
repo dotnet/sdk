@@ -9,8 +9,8 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.Uninstall;
 internal static class WorkloadUninstallCommandParser
 {
     public static readonly Argument<IEnumerable<string>> WorkloadIdArgument = WorkloadInstallCommandParser.WorkloadIdArgument;
-
     public static readonly Option<string> VersionOption = InstallingWorkloadCommandParser.VersionOption;
+    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal);
 
     private static readonly Command Command = ConstructCommand();
 
@@ -24,7 +24,7 @@ internal static class WorkloadUninstallCommandParser
         Command command = new("uninstall", CliCommandStrings.WorkloadUninstallCommandDescription);
         command.Arguments.Add(WorkloadIdArgument);
         command.Options.Add(WorkloadInstallCommandParser.SkipSignCheckOption);
-        command.Options.Add(CommonOptions.VerbosityOption);
+        command.Options.Add(VerbosityOption);
 
         command.SetAction((parseResult) => new WorkloadUninstallCommand(parseResult).Execute());
 

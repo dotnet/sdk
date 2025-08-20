@@ -59,6 +59,7 @@
 
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\Polyfills.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
   </ItemGroup>
@@ -126,9 +127,11 @@
     </PropertyGroup>
 
     <Error Text="$(AssemblyName) is expected to depend on %(ExpectedDependencies.Identity). $(DependencyMismatchErrorText)"
-           Condition="!($([System.String]::Copy('$(ResolvedDependenciesList)').Contains('%(ExpectedDependencies.Identity)')))" />
+           Condition="!($([System.String]::Copy('$(ResolvedDependenciesList)').Contains('%(ExpectedDependencies.Identity)')))"
+           ContinueOnError="true" />
     <Error Text="$(AssemblyName) is not expected to depend on %(ResolvedDependencies.FusionName). $(DependencyMismatchErrorText)"
-           Condition="!($([System.String]::Copy('$(ExpectedDependenciesList)').Contains('%(ResolvedDependencies.FusionName)')))" />
+           Condition="!($([System.String]::Copy('$(ExpectedDependenciesList)').Contains('%(ResolvedDependencies.FusionName)')))"
+           ContinueOnError="true" />
   </Target>
 
 </Project>

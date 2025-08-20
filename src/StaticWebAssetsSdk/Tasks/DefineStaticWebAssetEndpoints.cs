@@ -24,9 +24,9 @@ public class DefineStaticWebAssetEndpoints : Task
     public override bool Execute()
     {
         var existingEndpointsByAssetFile = CreateEndpointsByAssetFile();
-        var contentTypeMappings = ContentTypeMappings.Select(ContentTypeMapping.FromTaskItem).OrderByDescending(m => m.Priority).ToArray();
+        var contentTypeMappings = CreateAdditionalContentTypeMappings();
         var contentTypeProvider = new ContentTypeProvider(contentTypeMappings);
-        var endpoints = new List<StaticWebAssetEndpoint>();
+        var endpoints = new List<StaticWebAssetEndpoint>(CandidateAssets.Length);
 
         Parallel.For(
             0,
@@ -44,6 +44,22 @@ public class DefineStaticWebAssetEndpoints : Task
         Endpoints = StaticWebAssetEndpoint.ToTaskItems(endpoints);
 
         return !Log.HasLoggedErrors;
+    }
+
+    private ContentTypeMapping[] CreateAdditionalContentTypeMappings()
+    {
+        if (ContentTypeMappings == null || ContentTypeMappings.Length == 0)
+        {
+            return [];
+        }
+        var result = new ContentTypeMapping[ContentTypeMappings.Length];
+        for (var i = 0; i < ContentTypeMappings.Length; i++)
+        {
+            var contentTypeMapping = ContentTypeMappings[i];
+            result[i] = ContentTypeMapping.FromTaskItem(contentTypeMapping);
+        }
+        Array.Sort(result, (x, y) => x.Priority.CompareTo(y.Priority));
+        return result;
     }
 
     private Dictionary<string, HashSet<string>> CreateEndpointsByAssetFile()
@@ -109,13 +125,8 @@ public class DefineStaticWebAssetEndpoints : Task
             foreach (var (label, route, values) in _resolvedRoutes)
             {
                 var (mimeType, cacheSetting) = ResolveContentType(asset, ContentTypeProvider, matchContext, Log);
-                var headers = new StaticWebAssetEndpointResponseHeader[6]
+                var headers = new StaticWebAssetEndpointResponseHeader[5]
                 {
-                    new()
-                    {
-                        Name = "Accept-Ranges",
-                        Value = "bytes"
-                    },
                     new()
                     {
                         Name = "Content-Length",
@@ -143,14 +154,14 @@ public class DefineStaticWebAssetEndpoints : Task
                 {
                     // max-age=31536000 is one year in seconds. immutable means that the asset will never change.
                     // max-age is for browsers that do not support immutable.
-                    headers[5] = new() { Name = "Cache-Control", Value = "max-age=31536000, immutable" };
+                    headers[4] = new() { Name = "Cache-Control", Value = "max-age=31536000, immutable" };
                 }
                 else
                 {
                     // Force revalidation on non-fingerprinted assets. We can be more granular here and have rules based on the content type.
                     // These values can later be changed at runtime by modifying the endpoint. For example, it might be safer to cache images
                     // for a longer period of time than scripts or stylesheets.
-                    headers[5] = new() { Name = "Cache-Control", Value = !string.IsNullOrEmpty(cacheSetting) ? cacheSetting : "no-cache" };
+                    headers[4] = new() { Name = "Cache-Control", Value = !string.IsNullOrEmpty(cacheSetting) ? cacheSetting : "no-cache" };
                 }
 
                 var properties = new StaticWebAssetEndpointProperty[values.Count + (values.Count > 0 ? 2 : 1)];
@@ -173,7 +184,7 @@ public class DefineStaticWebAssetEndpoints : Task
                 // If in the future we change it to sha384 or sha512, the runtime will not need to be updated.
                 properties[i++] = new StaticWebAssetEndpointProperty { Name = "integrity", Value = $"sha256-{asset.Integrity}" };
 
-                var finalRoute = asset.IsProject() || asset.IsPackage() ? StaticWebAsset.Normalize(Path.Combine(asset.BasePath, route)) : route;
+                    var finalRoute = asset.IsProject() || asset.IsPackage() ? StaticWebAsset.Normalize(Path.Combine(asset.BasePath, route)) : route;
 
                 var endpoint = new StaticWebAssetEndpoint()
                 {

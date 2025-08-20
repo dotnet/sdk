@@ -29,7 +29,7 @@ internal static class MSBuildUtility
         }
 
         string rootDirectory = solutionFilePath.HasExtension(".slnf") ?
-                Path.GetDirectoryName(solutionModel.Description) :
+                Path.GetDirectoryName(solutionModel.Description)! :
                 SolutionAndProjectUtility.GetRootDirectory(solutionFilePath);
 
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
@@ -53,7 +53,7 @@ internal static class MSBuildUtility
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
         var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.MSBuildArgs]), logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
 
-        IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, buildOptions.NoLaunchProfile);
+        IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, buildOptions);
         logger?.ReallyShutdown();
 
         return (projects, isBuiltOrRestored);
@@ -61,34 +61,42 @@ internal static class MSBuildUtility
 
     public static BuildOptions GetBuildOptions(ParseResult parseResult, int degreeOfParallelism)
     {
-        var binLogArgs = new List<string>();
-        var otherArgs = new List<string>();
-
-        foreach (var arg in parseResult.UnmatchedTokens)
-        {
-            if (LoggerUtility.IsBinLogArgument(arg))
-            {
-                binLogArgs.Add(arg);
-            }
-            else
-            {
-                otherArgs.Add(arg);
-            }
-        }
+        LoggerUtility.SeparateBinLogArguments(parseResult.UnmatchedTokens, out var binLogArgs, out var otherArgs);
 
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
             .Concat(binLogArgs);
 
-        PathOptions pathOptions = new(parseResult.GetValue(
-            TestingPlatformOptions.ProjectOption),
+        string? resultsDirectory = parseResult.GetValue(TestingPlatformOptions.ResultsDirectoryOption);
+        if (resultsDirectory is not null)
+        {
+            resultsDirectory = Path.GetFullPath(resultsDirectory);
+        }
+
+        string? configFile = parseResult.GetValue(TestingPlatformOptions.ConfigFileOption);
+        if (configFile is not null)
+        {
+            configFile = Path.GetFullPath(configFile);
+        }
+
+        string? diagnosticOutputDirectory = parseResult.GetValue(TestingPlatformOptions.DiagnosticOutputDirectoryOption);
+        if (diagnosticOutputDirectory is not null)
+        {
+            diagnosticOutputDirectory = Path.GetFullPath(diagnosticOutputDirectory);
+        }
+
+        PathOptions pathOptions = new(
+            parseResult.GetValue(TestingPlatformOptions.ProjectOption),
             parseResult.GetValue(TestingPlatformOptions.SolutionOption),
-            parseResult.GetValue(TestingPlatformOptions.DirectoryOption));
+            parseResult.GetValue(TestingPlatformOptions.DirectoryOption),
+            resultsDirectory,
+            configFile,
+            diagnosticOutputDirectory);
 
         return new BuildOptions(
             pathOptions,
             parseResult.GetValue(CommonOptions.NoRestoreOption),
             parseResult.GetValue(TestingPlatformOptions.NoBuildOption),
-            parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
+            parseResult.HasOption(TestCommandParser.VerbosityOption) ? parseResult.GetValue(TestCommandParser.VerbosityOption) : null,
             parseResult.GetValue(TestingPlatformOptions.NoLaunchProfileOption),
             parseResult.GetValue(TestingPlatformOptions.NoLaunchProfileArgumentsOption),
             degreeOfParallelism,
@@ -102,18 +110,16 @@ internal static class MSBuildUtility
         {
             return true;
         }
-
-        List<string> msbuildArgs = [.. buildOptions.MSBuildArgs];
+        List<string> msbuildArgs = [.. buildOptions.MSBuildArgs, filePath];
 
         if (buildOptions.Verbosity is null)
         {
             msbuildArgs.Add($"-verbosity:quiet");
         }
 
-        msbuildArgs.Add(filePath);
-        msbuildArgs.Add($"-target:{CliConstants.MTPTarget}");
+        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, TestCommandParser.MTPTargetOption, TestCommandParser.VerbosityOption);
 
-        int result = new RestoringCommand(msbuildArgs, buildOptions.HasNoRestore).Execute();
+        int result = new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
 
         return result == (int)BuildResultCode.Success;
     }
@@ -127,7 +133,7 @@ internal static class MSBuildUtility
             new ParallelOptions { MaxDegreeOfParallelism = buildOptions.DegreeOfParallelism },
             (project) =>
             {
-                IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, projectCollection, buildOptions.NoLaunchProfile);
+                IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, projectCollection, buildOptions);
                 foreach (var projectMetadata in projectsMetadata)
                 {
                     allProjects.Add(projectMetadata);

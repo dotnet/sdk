@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class CliConstants
@@ -15,7 +17,6 @@ internal static class CliConstants
     public const string VSTest = "VSTest";
     public const string MicrosoftTestingPlatform = "Microsoft.Testing.Platform";
 
-    public static readonly string[] ProjectExtensions = [".proj", ".csproj", ".vbproj", ".fsproj"];
     public static readonly string[] SolutionExtensions = [".sln", ".slnx", ".slnf"];
 
     public const string ProjectExtensionPattern = "*.*proj";

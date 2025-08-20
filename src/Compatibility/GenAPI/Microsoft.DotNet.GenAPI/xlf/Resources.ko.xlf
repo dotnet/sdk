@@ -12,6 +12,11 @@
         <target state="translated">형식 전달을 통해 '{1}' 어셈블리 형식을 포함하는 '{0}' 형식을 해결할 수 없습니다. 어셈블리가 참조로 제공되고 해당 형식을 포함하는지 확인하세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SyntaxNodeNotFound">
+        <source>Syntax node not found.</source>
+        <target state="translated">구문 노드를 찾을 수 없습니다.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

@@ -100,14 +100,6 @@ namespace Microsoft.CodeAnalysis.Tools
             {
                 var runtimeVersion = GetRuntimeVersion();
                 logger.LogDebug(Resources.The_dotnet_runtime_version_is_0, runtimeVersion);
-
-                if (!TryLoadMSBuild(out var msBuildPath))
-                {
-                    logger.LogError(Resources.Unable_to_locate_MSBuild_Ensure_the_NET_SDK_was_installed_with_the_official_installer);
-                    return UnableToLocateMSBuildExitCode;
-                }
-
-                logger.LogTrace(Resources.Using_msbuildexe_located_in_0, msBuildPath);
             }
 
             var formatResult = await CodeFormatter.FormatWorkspaceAsync(
@@ -172,18 +164,18 @@ namespace Microsoft.CodeAnalysis.Tools
 
         public static FormatOptions ParseCommonOptions(this ParseResult parseResult, FormatOptions formatOptions, ILogger logger)
         {
-            if (parseResult.GetResult(NoRestoreOption) is not null)
+            if (parseResult.GetValue(NoRestoreOption))
             {
                 formatOptions = formatOptions with { NoRestore = true };
             }
 
-            if (parseResult.GetResult(VerifyNoChanges) is not null)
+            if (parseResult.GetValue(VerifyNoChanges))
             {
                 formatOptions = formatOptions with { ChangesAreErrors = true };
                 formatOptions = formatOptions with { SaveFormattedFiles = false };
             }
 
-            if (parseResult.GetResult(IncludeGeneratedOption) is not null)
+            if (parseResult.GetValue(IncludeGeneratedOption))
             {
                 formatOptions = formatOptions with { IncludeGeneratedFiles = true };
             }
@@ -308,7 +300,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
             if (parseResult.GetValue<string>(SlnOrProjectArgument) is string { Length: > 0 } slnOrProject)
             {
-                if (parseResult.GetResult(FolderOption) is not null)
+                if (parseResult.GetValue(FolderOption))
                 {
                     formatOptions = formatOptions with { WorkspaceFilePath = slnOrProject };
                     formatOptions = formatOptions with { WorkspaceType = WorkspaceType.Folder };
@@ -343,34 +335,6 @@ namespace Microsoft.CodeAnalysis.Tools
             return Assembly.GetExecutingAssembly()
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
                 ?.InformationalVersion;
-        }
-
-        internal static bool TryLoadMSBuild([NotNullWhen(returnValue: true)] out string? msBuildPath)
-        {
-            try
-            {
-                // Get the global.json pinned SDK or latest instance.
-                var msBuildInstance = Build.Locator.MSBuildLocator.QueryVisualStudioInstances()
-                    .Where(instance => instance.Version.Major >= 6)
-                    .FirstOrDefault();
-                if (msBuildInstance is null)
-                {
-                    msBuildPath = null;
-                    return false;
-                }
-
-                msBuildPath = Path.EndsInDirectorySeparator(msBuildInstance.MSBuildPath)
-                    ? msBuildInstance.MSBuildPath
-                    : msBuildInstance.MSBuildPath + Path.DirectorySeparatorChar;
-
-                Build.Locator.MSBuildLocator.RegisterMSBuildPath(msBuildPath);
-                return true;
-            }
-            catch
-            {
-                msBuildPath = null;
-                return false;
-            }
         }
 
         internal static string GetRuntimeVersion()

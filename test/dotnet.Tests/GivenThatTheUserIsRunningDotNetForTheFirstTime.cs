@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.Tests
                 .StartWith(firstTimeNonVerbUseMessage);
         }
 
-        [WindowsOnlyFact(Skip="https://github.com/dotnet/sdk/issues/43328")]
+        [WindowsOnlyFact]
         public void ItShowsTheAppropriateMessageToTheUser()
         {
 
@@ -151,7 +151,7 @@ namespace Microsoft.DotNet.Tests
             homeFolder.Should().NotExist();
         }
 
-        [WindowsOnlyFact(Skip="https://github.com/dotnet/sdk/issues/43328")]
+        [WindowsOnlyFact]
         public void ItShowsTheTelemetryNoticeWhenInvokingACommandAfterInternalReportInstallSuccessHasBeenInvoked()
         {
             var dotnetFirstTime = new DotNetFirstTime();

@@ -22,7 +22,7 @@
     <FileSignInfo Include="PackageWithFakeNativeDep.dll" CertificateName="None" />
     <FileSignInfo Include="dotnet-tool-with-output-name.dll" CertificateName="None" />
 
-    <!-- Third party DLLs used by tests -->
+    <!-- Third party DLLs used by tests-->
     <FileSignInfo Include="Castle.Core.dll" CertificateName="None" />
     <FileSignInfo Include="Moq.dll" CertificateName="None" />
 
@@ -71,6 +71,17 @@
     <FileSignInfo Include="@(MacOSPkg->'%(Filename)%(Extension)')" CertificateName="MacDeveloperWithNotarization" />
   </ItemGroup>
 
+  <!-- Third party DLLs used in src projects that are not participating in source-build -->
+  <ItemGroup>
+    <FileSignInfo Include="Argon.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="DiffEngine.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="DiffPlex.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="EmptyFiles.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="SimpleInfoName.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="Verify.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="Verify.DiffPlex.dll" CertificateName="$(ExternalCertificateId)" />
+  </ItemGroup>
+  
   <ItemGroup>
     <FileSignInfo Include="StreamJsonRpc.dll" CertificateName="MicrosoftSHA2" />
   </ItemGroup>

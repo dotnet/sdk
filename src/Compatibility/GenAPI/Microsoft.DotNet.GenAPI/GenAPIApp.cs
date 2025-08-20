@@ -35,6 +35,7 @@ namespace Microsoft.DotNet.GenAPI
                 log,
                 assembliesPaths,
                 assemblyReferencesPaths,
+                assembliesToExclude: [],
                 respectInternals: respectInternals);
 
             Run(log,

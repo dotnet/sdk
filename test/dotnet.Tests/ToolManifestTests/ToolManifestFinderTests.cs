@@ -148,7 +148,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolManifest.Find();
 
             a.Should().Throw<ToolManifestCannotBeFoundException>().And.Message.Should()
-                .Contain(CliStrings.CannotFindAManifestFile);
+                .Contain(string.Format(CliStrings.CannotFindAManifestFile, ""));
         }
 
         [PlatformSpecificFact(TestPlatforms.Windows)]
@@ -254,11 +254,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => toolManifest.Find(new FilePath(Path.Combine(_testDirectoryRoot, "non-exists")));
             a.Should().Throw<ToolManifestCannotBeFoundException>().And.Message.Should()
-                .Contain(CliStrings.CannotFindAManifestFile);
-
-            a.Should().Throw<ToolManifestCannotBeFoundException>().And.VerboseMessage.Should()
-                .Contain(string.Format(CliStrings.ListOfSearched, ""))
-                .And.Contain(
+                .Contain(string.Format(CliStrings.CannotFindAManifestFile, "")).And.Contain(
                     Path.Combine(_testDirectoryRoot, "non-exists"),
                     "the specificied manifest file name is in the 'searched list'");
         }
@@ -274,10 +270,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => toolManifest.Find();
             a.Should().Throw<ToolManifestCannotBeFoundException>().And.Message.Should()
-                 .Contain(CliStrings.CannotFindAManifestFile);
-
-            a.Should().Throw<ToolManifestCannotBeFoundException>().And.VerboseMessage.Should()
-                .Contain(string.Format(CliStrings.ListOfSearched, ""));
+                 .Contain(string.Format(CliStrings.CannotFindAManifestFile, ""));
         }
 
         [Fact]
@@ -444,10 +437,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolManifest.FindByPackageId(new PackageId("t-rex"));
 
             a.Should().Throw<ToolManifestCannotBeFoundException>().And.Message.Should()
-                .Contain(CliStrings.CannotFindAManifestFile);
-
-            a.Should().Throw<ToolManifestCannotBeFoundException>().And.VerboseMessage.Should()
-                .Contain(string.Format(CliStrings.ListOfSearched, ""));
+                .Contain(string.Format(CliStrings.CannotFindAManifestFile, ""));
         }
 
         [Fact]
@@ -740,10 +730,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolManifest.FindFirst();
 
             a.Should().Throw<ToolManifestCannotBeFoundException>().And.Message.Should()
-                .Contain(CliStrings.CannotFindAManifestFile);
-
-            a.Should().Throw<ToolManifestCannotBeFoundException>().And.VerboseMessage.Should()
-                .Contain(string.Format(CliStrings.ListOfSearched, ""));
+                    .Contain(string.Format(CliStrings.CannotFindAManifestFile, ""));
         }
 
         [Fact]
@@ -775,6 +762,22 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolManifest = new ToolManifestFinder(new DirectoryPath(testRoot), _fileSystem);
             Action a = () => toolManifest.Inspect();
             a.Should().NotThrow();
+        }
+
+        [Fact]
+        public void GivenNoManifestFileWhenCreatingNewManifestItShouldCreateInDirectFolder()
+        {
+            var toolManifest =
+                new ToolManifestFinder(
+                    new DirectoryPath(_testDirectoryRoot),
+                    _fileSystem,
+                    new FakeDangerousFileDetector());
+
+            FilePath createdManifest = toolManifest.FindFirst(createIfNotFound: true);
+
+            createdManifest.Value.Should().Be(Path.Combine(_testDirectoryRoot, "dotnet-tools.json"));
+            _fileSystem.File.Exists(Path.Combine(_testDirectoryRoot, "dotnet-tools.json")).Should().BeTrue();
+            _fileSystem.Directory.Exists(Path.Combine(_testDirectoryRoot, ".config")).Should().BeFalse("New manifests should not create .config directories");
         }
 
         private string _jsonContent =

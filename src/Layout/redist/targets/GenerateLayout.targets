@@ -50,6 +50,8 @@
       <RoslynFrameworkAssembly Include="$(RoslynPackagePath)System.*.dll;
                                         $(RoslynPackagePath)runtimes\**\System.*.dll"
                                Exclude="$(RoslynPackagePath)runtimes\**\System.IO.Pipes.AccessControl.dll"/>
+      <!-- binfx folder contains full framework dlls that are needed only on Windows -->
+      <RoslynFrameworkAssembly Include="$(RoslynPackagePath)binfx\**\*" Condition="'$(OS)' != 'Windows_NT'"/>
       <RoslynFile Include="$(RoslynPackagePath)**\*" Exclude="@(RoslynFrameworkAssembly)" />
     </ItemGroup>
 
@@ -60,10 +62,32 @@
   </Target>
 
   <Target Name="PublishNETAnalyzers">
+    <!-- Microsoft.CodeAnalysis.NetAnalyzers -->
     <PropertyGroup>
       <AnalyzerAssembliesDirectory>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk\analyzers</AnalyzerAssembliesDirectory>
       <AnalyzerTargetsDirectory>$(AnalyzerAssembliesDirectory)\build</AnalyzerTargetsDirectory>
       <AnalyzerConfigDirectory>$(AnalyzerTargetsDirectory)\config</AnalyzerConfigDirectory>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <AnalyzerAssemblies Include="$(ArtifactsBinDir)Microsoft.CodeAnalysis.CSharp.NetAnalyzers\$(Configuration)\netstandard2.0\**\*.dll;
+                                   $(ArtifactsBinDir)Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers\$(Configuration)\netstandard2.0\Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll" />
+      <AnalyzerTargets Include="$(ArtifactsBinDir)Microsoft.CodeAnalysis.NetAnalyzers.Package\Build\Microsoft.CodeAnalysis.NetAnalyzers.props;
+                                $(ArtifactsBinDir)Microsoft.CodeAnalysis.NetAnalyzers.Package\Build\Microsoft.CodeAnalysis.NetAnalyzers.targets" />
+      <AnalyzerConfig Include="$(ArtifactsBinDir)Microsoft.CodeAnalysis.NetAnalyzers.Package\GlobalAnalyzerConfigs\**\*" />
+    </ItemGroup>
+
+    <Error Condition="'@(AnalyzerAssemblies)' == ''" Text="Something moved around in Analyzer package, adjust code here accordingly. TFM change?" />
+    <Copy SourceFiles="@(AnalyzerAssemblies)" DestinationFiles="@(AnalyzerAssemblies->'$(AnalyzerAssembliesDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
+
+    <Error Condition="'@(AnalyzerTargets)' == ''" Text="Something moved around in Analyzer package, adjust code here accordingly. TFM change?" />
+    <Copy SourceFiles="@(AnalyzerTargets)" DestinationFiles="@(AnalyzerTargets->'$(AnalyzerTargetsDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
+
+    <Error Condition="'@(AnalyzerConfig)' == ''" Text="Something moved around in Analyzer package, adjust code here accordingly. TFM change?" />
+    <Copy SourceFiles="@(AnalyzerConfig)" DestinationFiles="@(AnalyzerConfig->'$(AnalyzerConfigDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
+
+    <!-- Microsoft.CodeAnalysis.*.CodeStyle -->
+    <PropertyGroup>
       <CodeStyleAssembliesCSharpDirectory>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk\codestyle\cs</CodeStyleAssembliesCSharpDirectory>
       <CodeStyleAssembliesVisualBasicDirectory>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk\codestyle\vb</CodeStyleAssembliesVisualBasicDirectory>
       <CodeStyleCSharpTargetsDirectory>$(CodeStyleAssembliesCSharpDirectory)\build</CodeStyleCSharpTargetsDirectory>
@@ -73,12 +97,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <AnalyzerAssemblies Include="$(PkgMicrosoft_CodeAnalysis_NetAnalyzers)/analyzers/dotnet/cs/**/*.dll" />
-      <AnalyzerAssemblies Include="$(PkgMicrosoft_CodeAnalysis_NetAnalyzers)/analyzers/dotnet/vb/Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll" />
-      <AnalyzerTargets Include="$(PkgMicrosoft_CodeAnalysis_NetAnalyzers)/buildTransitive/Microsoft.CodeAnalysis.NetAnalyzers.props" />
-      <AnalyzerTargets Include="$(PkgMicrosoft_CodeAnalysis_NetAnalyzers)/buildTransitive/Microsoft.CodeAnalysis.NetAnalyzers.targets" />
-      <AnalyzerConfig Include="$(PkgMicrosoft_CodeAnalysis_NetAnalyzers)/buildTransitive/config/**/*" />
-
       <CodeStyleCSharpAssemblies Include="$(PkgMicrosoft_CodeAnalysis_CSharp_CodeStyle)/analyzers/dotnet/cs/**/*.dll" />
       <CodeStyleVisualBasicAssemblies Include="$(PkgMicrosoft_CodeAnalysis_VisualBasic_CodeStyle)/analyzers/dotnet/vb/**/*.dll" />
       <!-- The props files from these packages explicitly say they should never be included in the SDK -->
@@ -89,27 +107,23 @@
       <CodeStyleVisualBasicConfig Include="$(PkgMicrosoft_CodeAnalysis_VisualBasic_CodeStyle)/build/config/**/*" />
     </ItemGroup>
 
-    <Error Condition="'@(AnalyzerAssemblies)' == ''" Text="Something moved around in Analyzer package, adjust code here accordingly. TFM change?" />
-    <Error Condition="'@(AnalyzerTargets)' == ''" Text="Something moved around in Analyzer package, adjust code here accordingly. TFM change?" />
-    <Error Condition="'@(AnalyzerConfig)' == ''" Text="Something moved around in Analyzer package, adjust code here accordingly. TFM change?" />
     <Error Condition="'@(CodeStyleCSharpAssemblies)' == ''" Text="Something moved around in the C# Code style package, could not find assembles. Adjust code here accordingly. TFM change?" />
-    <Error Condition="'@(CodeStyleVisualBasicAssemblies)' == ''" Text="Something moved around in the VB Code style package, could not find assembles. Adjust code here accordingly. TFM change?" />
-    <Error Condition="'@(CodeStyleCSharpTargets)' == ''" Text="Something moved around in Code style packeges, could not find targets/props. Adjust code here accordingly. TFM change?" />
-    <Error Condition="'@(CodeStyleVisualBasicTargets)' == ''" Text="Something moved around in Code style packeges, could not find targets/props. Adjust code here accordingly. TFM change?" />
-    <Error Condition="'@(CodeStyleCSharpConfig)' == ''" Text="Something moved around in Code style packeges, could not find globalconfig files. Adjust code here accordingly. TFM change?" />
-    <Error Condition="'@(CodeStyleVisualBasicConfig)' == ''" Text="Something moved around in Code style packeges, could not find globalconfig files. Adjust code here accordingly. TFM change?" />
-
-    <Copy SourceFiles="@(AnalyzerAssemblies)" DestinationFiles="@(AnalyzerAssemblies->'$(AnalyzerAssembliesDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
-    <Copy SourceFiles="@(AnalyzerTargets)" DestinationFiles="@(AnalyzerTargets->'$(AnalyzerTargetsDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
-    <Copy SourceFiles="@(AnalyzerConfig)" DestinationFiles="@(AnalyzerConfig->'$(AnalyzerConfigDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
     <Copy SourceFiles="@(CodeStyleCSharpAssemblies)" DestinationFiles="@(CodeStyleCSharpAssemblies->'$(CodeStyleAssembliesCSharpDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
+
+    <Error Condition="'@(CodeStyleVisualBasicAssemblies)' == ''" Text="Something moved around in the VB Code style package, could not find assembles. Adjust code here accordingly. TFM change?" />
     <Copy SourceFiles="@(CodeStyleVisualBasicAssemblies)" DestinationFiles="@(CodeStyleVisualBasicAssemblies->'$(CodeStyleAssembliesVisualBasicDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
+
+    <Error Condition="'@(CodeStyleCSharpTargets)' == ''" Text="Something moved around in Code style packeges, could not find targets/props. Adjust code here accordingly. TFM change?" />
     <Copy SourceFiles="@(CodeStyleCSharpTargets)" DestinationFiles="@(CodeStyleCSharpTargets->'$(CodeStyleCSharpTargetsDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
+
+    <Error Condition="'@(CodeStyleVisualBasicTargets)' == ''" Text="Something moved around in Code style packeges, could not find targets/props. Adjust code here accordingly. TFM change?" />
     <Copy SourceFiles="@(CodeStyleVisualBasicTargets)" DestinationFiles="@(CodeStyleVisualBasicTargets->'$(CodeStyleVisualBasicTargetsDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
+
+    <Error Condition="'@(CodeStyleCSharpConfig)' == ''" Text="Something moved around in Code style packeges, could not find globalconfig files. Adjust code here accordingly. TFM change?" />
     <Copy SourceFiles="@(CodeStyleCSharpConfig)" DestinationFiles="@(CodeStyleCSharpConfig->'$(CodeStyleCSharpConfigDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
+
+    <Error Condition="'@(CodeStyleVisualBasicConfig)' == ''" Text="Something moved around in Code style packeges, could not find globalconfig files. Adjust code here accordingly. TFM change?" />
     <Copy SourceFiles="@(CodeStyleVisualBasicConfig)" DestinationFiles="@(CodeStyleVisualBasicConfig->'$(CodeStyleVisualBasicConfigDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
-    <Copy SourceFiles="@(ILLinkAnalyzersTargets)" DestinationFiles="@(ILLinkAnalyzersTargets->'$(AnalyzerTargetsDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
-    <Copy SourceFiles="@(ILLinkAnalyzersAssemblies)" DestinationFiles="@(ILLinkAnalyzersAssemblies->'$(AnalyzerAssembliesDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true"/>
   </Target>
 
   <Target Name="PublishDotnetFormat">
@@ -197,8 +211,8 @@
   <Target Name="PublishTestCli">
     <PropertyGroup>
       <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' != 'true'" >net9.0</TestCliNuGetDirectoryTargetFramework>
-      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildOrchestrator)' == 'true'" >$(NetCurrent)</TestCliNuGetDirectoryTargetFramework>
-      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildOrchestrator)' != 'true'" >net9.0</TestCliNuGetDirectoryTargetFramework>
+      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildFromVMR)' == 'true'" >$(NetCurrent)</TestCliNuGetDirectoryTargetFramework>
+      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildFromVMR)' != 'true'" >net9.0</TestCliNuGetDirectoryTargetFramework>
       <TestCliNuGetDirectory>$(NuGetPackageRoot)microsoft.testplatform.cli/$(MicrosoftTestPlatformCLIPackageVersion)/contentFiles/any/$(TestCliNuGetDirectoryTargetFramework)/</TestCliNuGetDirectory>
     </PropertyGroup>
 
@@ -275,9 +289,6 @@
     <Copy SourceFiles="$(OutputPath)/$(TargetName).runtimeconfig.json"
           DestinationFiles="$(OutputPath)/%(BundledTools.Identity).runtimeconfig.json"
           SkipUnchangedFiles="true" />
-
-    <Delete Files="$(OutputPath)/$(TargetName).deps.json;
-                   $(OutputPath)/$(TargetName).runtimeconfig.json" />
 
     <Delete Files="$(OutputPath)/%(BundledToolProjects.Identity).dll;
                    $(OutputPath)/%(BundledToolProjects.Identity).pdb" />
@@ -544,6 +555,6 @@
                             RetargetTools;
                             RemoveResourcesFromDotnetDeps;
                             ChmodPublishDir"
-          AfterTargets="Build" />
+          AfterTargets="AfterBuild" />
 
 </Project>

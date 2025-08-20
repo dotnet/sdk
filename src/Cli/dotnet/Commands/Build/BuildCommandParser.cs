@@ -11,9 +11,9 @@ internal static class BuildCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-build";
 
-    public static readonly Argument<IEnumerable<string>> SlnOrProjectArgument = new(CliStrings.SolutionOrProjectArgumentName)
+    public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
     {
-        Description = CliStrings.SolutionOrProjectArgumentDescription,
+        Description = CliStrings.SolutionOrProjectOrFileArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
@@ -23,17 +23,17 @@ internal static class BuildCommandParser
         HelpName = CliCommandStrings.OutputOptionName
     }.ForwardAsOutputPath("OutputPath");
 
-    public static readonly Option<bool> NoIncrementalOption = new("--no-incremental")
+    public static readonly Option<bool> NoIncrementalOption = new ForwardedOption<bool>("--no-incremental")
     {
         Description = CliCommandStrings.NoIncrementalOptionDescription,
         Arity = ArgumentArity.Zero
-    };
+    }.ForwardAs("--target:Rebuild");
 
     public static readonly Option<bool> NoDependenciesOption = new ForwardedOption<bool>("--no-dependencies")
     {
         Description = CliCommandStrings.NoDependenciesOptionDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:BuildProjectReferences=false");
+    }.ForwardAs("--property:BuildProjectReferences=false");
 
     public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
     {
@@ -47,11 +47,18 @@ internal static class BuildCommandParser
 
     public static readonly Option<bool> NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
 
-    public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption;
+    public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption(CliCommandStrings.BuildRuntimeOptionDescription);
 
     public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.BuildFrameworkOptionDescription);
 
-    public static readonly Option<string> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.BuildConfigurationOptionDescription);
+    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.BuildConfigurationOptionDescription);
+
+    /// <summary>
+    /// Build actually means 'run the default Target' generally in MSBuild
+    /// </summary>
+    public static readonly Option<string[]?> TargetOption = CommonOptions.MSBuildTargetOption();
+
+    public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.VerbosityOption();
 
     private static readonly Command Command = ConstructCommand();
 
@@ -64,15 +71,15 @@ internal static class BuildCommandParser
     {
         DocumentedCommand command = new("build", DocsLink, CliCommandStrings.BuildAppFullName);
 
-        command.Arguments.Add(SlnOrProjectArgument);
+        command.Arguments.Add(SlnOrProjectOrFileArgument);
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: false);
         command.Options.Add(FrameworkOption);
         command.Options.Add(ConfigurationOption);
-        command.Options.Add(RuntimeOption.WithHelpDescription(command, CliCommandStrings.BuildRuntimeOptionDescription));
+        command.Options.Add(RuntimeOption);
         command.Options.Add(CommonOptions.VersionSuffixOption);
         command.Options.Add(NoRestoreOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
-        command.Options.Add(CommonOptions.VerbosityOption);
+        command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.DebugOption);
         command.Options.Add(OutputOption);
         command.Options.Add(CommonOptions.ArtifactsPathOption);
@@ -84,6 +91,7 @@ internal static class BuildCommandParser
         command.Options.Add(CommonOptions.ArchitectureOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.Options.Add(TargetOption);
 
         command.SetAction(BuildCommand.Run);
 

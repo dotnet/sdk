@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
+using System.Collections.Frozen;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using RuntimeEnvironment = Microsoft.DotNet.Cli.Utils.RuntimeEnvironment;
@@ -50,7 +53,7 @@ internal class TelemetryCommonProperties(
     private const string MachineIdCacheKey = "MachineId";
     private const string IsDockerContainerCacheKey = "IsDockerContainer";
 
-    public Dictionary<string, string> GetTelemetryCommonProperties()
+    public FrozenDictionary<string, string> GetTelemetryCommonProperties()
     {
         return new Dictionary<string, string>
         {
@@ -80,7 +83,7 @@ internal class TelemetryCommonProperties(
             {ProductType, ExternalTelemetryProperties.GetProductType()},
             {LibcRelease, ExternalTelemetryProperties.GetLibcRelease()},
             {LibcVersion, ExternalTelemetryProperties.GetLibcVersion()}
-        };
+        }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
     }
 
     private string GetMachineId()

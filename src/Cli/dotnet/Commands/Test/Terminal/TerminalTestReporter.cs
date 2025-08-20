@@ -1,11 +1,11 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Concurrent;
-using System.CommandLine.Help;
+using Microsoft.TemplateEngine.Cli.Help;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
+using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
@@ -45,6 +45,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private readonly TestProgressStateAwareTerminal _terminalWithProgress;
 
+    private int _handshakeFailuresCount;
+
     private readonly uint? _originalConsoleMode;
     private bool _isDiscovery;
     private bool _isHelp;
@@ -58,6 +60,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
     private bool _wasCancelled;
 
     private bool? _shouldShowPassedTests;
+
+    public bool HasHandshakeFailure => _handshakeFailuresCount > 0;
 
 #if NET7_0_OR_GREATER
     // Specifying no timeout, the regex is linear. And the timeout does not measure the regex only, but measures also any
@@ -139,12 +143,21 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
         else
         {
-            // Autodetect.
-            (bool consoleAcceptsAnsiCodes, bool _, uint? originalConsoleMode) = NativeMethods.QueryIsScreenAndTryEnableAnsiColorCodes();
-            _originalConsoleMode = originalConsoleMode;
-            terminalWithProgress = consoleAcceptsAnsiCodes || _options.ForceAnsi is true
-                ? new TestProgressStateAwareTerminal(new AnsiTerminal(console, _options.BaseDirectory), showProgress, writeProgressImmediatelyAfterOutput: true, updateEvery: ansiUpdateCadenceInMs)
-                : new TestProgressStateAwareTerminal(new NonAnsiTerminal(console), showProgress, writeProgressImmediatelyAfterOutput: false, updateEvery: nonAnsiUpdateCadenceInMs);
+            if (_options.UseCIAnsi)
+            {
+                // We are told externally that we are in CI, use simplified ANSI mode.
+                terminalWithProgress = new TestProgressStateAwareTerminal(new SimpleAnsiTerminal(console), showProgress, writeProgressImmediatelyAfterOutput: true, updateEvery: nonAnsiUpdateCadenceInMs);
+            }
+            else
+            {
+                // We are not in CI, or in CI non-compatible with simple ANSI, autodetect terminal capabilities
+                // Autodetect.
+                (bool consoleAcceptsAnsiCodes, bool _, uint? originalConsoleMode) = NativeMethods.QueryIsScreenAndTryEnableAnsiColorCodes();
+                _originalConsoleMode = originalConsoleMode;
+                terminalWithProgress = consoleAcceptsAnsiCodes || _options.ForceAnsi is true
+                    ? new TestProgressStateAwareTerminal(new AnsiTerminal(console, _options.BaseDirectory), showProgress, writeProgressImmediatelyAfterOutput: true, updateEvery: ansiUpdateCadenceInMs)
+                    : new TestProgressStateAwareTerminal(new NonAnsiTerminal(console), showProgress, writeProgressImmediatelyAfterOutput: false, updateEvery: nonAnsiUpdateCadenceInMs);
+            }
         }
 
         _terminalWithProgress = terminalWithProgress;
@@ -159,30 +172,15 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress.StartShowingProgress(workerCount);
     }
 
-    public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string? executionId, string? instanceId)
+    public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string executionId, string instanceId)
     {
         var assemblyRun = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
-        assemblyRun.Tries.Add(instanceId);
+        assemblyRun.NotifyHandshake(instanceId);
 
         // If we fail to parse out the parameter correctly this will enable retry on re-run of the assembly within the same execution.
         // Not good enough for general use, because we want to show (try 1) even on the first try, but this will at
         // least show (try 2) etc. So user is still aware there is retry going on, and counts of tests won't break.
-        _isRetry |= assemblyRun.Tries.Count > 1;
-
-        if (_isRetry)
-        {
-            // When we are retrying the new assembly run should ignore all previously failed tests and
-            // clear all errors. We restarted the run and will retry all failed tests.
-            //
-            // In case of folded dynamic data tests we do not know how many tests we will get in each run,
-            // if more or less, or the same amount as before,and we also will rerun tests that passed previously
-            // because we are unable to run just a single test from that dynamic data source.
-            // This will cause the total number of tests to differ between runs, and there is nothing we can do about it.
-            assemblyRun.TotalTests -= assemblyRun.FailedTests;
-            assemblyRun.RetriedFailedTests += assemblyRun.FailedTests;
-            assemblyRun.FailedTests = 0;
-            assemblyRun.ClearAllMessages();
-        }
+        _isRetry |= assemblyRun.TryCount > 1;
 
         if (_options.ShowAssembly && _options.ShowAssemblyStartAndComplete)
         {
@@ -191,7 +189,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 if (_isRetry)
                 {
                     terminal.SetColor(TerminalColor.DarkGray);
-                    terminal.Append($"({string.Format(CliCommandStrings.Try, assemblyRun.Tries.Count)}) ");
+                    terminal.Append($"({string.Format(CliCommandStrings.Try, assemblyRun.TryCount)}) ");
                     terminal.ResetColor();
                 }
 
@@ -203,10 +201,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
     }
 
-    private TestProgressState GetOrAddAssemblyRun(string assembly, string? targetFramework, string? architecture, string? executionId)
+    private TestProgressState GetOrAddAssemblyRun(string assembly, string? targetFramework, string? architecture, string executionId)
     {
-        string key = $"{assembly}|{targetFramework}|{architecture}|{executionId}";
-        return _assemblies.GetOrAdd(key, _ =>
+        return _assemblies.GetOrAdd(executionId, _ =>
         {
             IStopwatch sw = CreateStopwatch();
             var assemblyRun = new TestProgressState(Interlocked.Increment(ref _counter), assembly, targetFramework, architecture, sw);
@@ -286,9 +283,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
         bool notEnoughTests = totalTests < _options.MinimumExpectedTests;
         bool allTestsWereSkipped = totalTests == 0 || totalTests == totalSkippedTests;
         bool anyTestFailed = totalFailedTests > 0;
-        bool anyAssemblyFailed = _assemblies.Values.Any(a => !a.Success);
+        bool anyAssemblyFailed = _assemblies.Values.Any(a => !a.Success) || HasHandshakeFailure;
         bool runFailed = anyAssemblyFailed || anyTestFailed || notEnoughTests || allTestsWereSkipped || _wasCancelled;
-        terminal.SetColor(runFailed ? TerminalColor.Red : TerminalColor.Green);
+        terminal.SetColor(runFailed ? TerminalColor.DarkRed : TerminalColor.DarkGreen);
 
         terminal.Append(CliCommandStrings.TestRunSummary);
         terminal.Append(' ');
@@ -341,7 +338,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         int passed = _assemblies.Values.Sum(t => t.PassedTests);
         int skipped = _assemblies.Values.Sum(t => t.SkippedTests);
         int retried = _assemblies.Values.Sum(t => t.RetriedFailedTests);
-        int error = _assemblies.Values.Sum(t => !t.Success && (t.TotalTests == 0 || t.FailedTests == 0) ? 1 : 0);
+        int error = _assemblies.Values.Sum(t => !t.Success && (t.TotalTests == 0 || t.FailedTests == 0) ? 1 : 0) + _handshakeFailuresCount;
         TimeSpan runDuration = _testExecutionStartTime != null && _testExecutionEndTime != null ? (_testExecutionEndTime - _testExecutionStartTime).Value : TimeSpan.Zero;
 
         bool colorizeFailed = failed > 0;
@@ -359,7 +356,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         if (error > 0)
         {
-            terminal.SetColor(TerminalColor.Red);
+            terminal.SetColor(TerminalColor.DarkRed);
             terminal.AppendLine(errorText);
             terminal.ResetColor();
             terminal.AppendLine();
@@ -377,7 +374,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         if (colorizeFailed)
         {
-            terminal.SetColor(TerminalColor.Red);
+            terminal.SetColor(TerminalColor.DarkRed);
         }
 
         terminal.AppendLine(failedText);
@@ -389,7 +386,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         if (colorizePassed)
         {
-            terminal.SetColor(TerminalColor.Green);
+            terminal.SetColor(TerminalColor.DarkGreen);
         }
 
         terminal.AppendLine(passedText);
@@ -401,7 +398,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         if (colorizeSkipped)
         {
-            terminal.SetColor(TerminalColor.Yellow);
+            terminal.SetColor(TerminalColor.DarkYellow);
         }
 
         terminal.AppendLine(skippedText);
@@ -433,31 +430,24 @@ internal sealed partial class TerminalTestReporter : IDisposable
     /// <summary>
     /// Print a build result summary to the output.
     /// </summary>
-    private static void AppendAssemblyResult(ITerminal terminal, bool succeeded, int countErrors, int countWarnings)
+    private static void AppendAssemblyResult(ITerminal terminal, TestProgressState state)
     {
-        if (!succeeded)
+        if (!state.Success)
         {
-            terminal.SetColor(TerminalColor.Red);
+            terminal.SetColor(TerminalColor.DarkRed);
             // If the build failed, we print one of three red strings.
-            string text = (countErrors > 0, countWarnings > 0) switch
+            string text = (state.FailedTests > 0, state.TotalTests == 0) switch
             {
-                (true, true) => string.Format(CultureInfo.CurrentCulture, CliCommandStrings.FailedWithErrorsAndWarnings, countErrors, countWarnings),
-                (true, _) => string.Format(CultureInfo.CurrentCulture, CliCommandStrings.FailedWithErrors, countErrors),
-                (false, true) => string.Format(CultureInfo.CurrentCulture, CliCommandStrings.FailedWithWarnings, countWarnings),
-                _ => CliCommandStrings.FailedLowercase,
+                (true, _) => string.Format(CultureInfo.CurrentCulture, CliCommandStrings.FailedWithErrors, state.FailedTests),
+                (false, true) => CliCommandStrings.ZeroTestsRan,
+                (false, false) => CliCommandStrings.FailedLowercase,
             };
             terminal.Append(text);
             terminal.ResetColor();
         }
-        else if (countWarnings > 0)
-        {
-            terminal.SetColor(TerminalColor.Yellow);
-            terminal.Append($"succeeded with {countWarnings} warning(s)");
-            terminal.ResetColor();
-        }
         else
         {
-            terminal.SetColor(TerminalColor.Green);
+            terminal.SetColor(TerminalColor.DarkGreen);
             terminal.Append(CliCommandStrings.PassedLowercase);
             terminal.ResetColor();
         }
@@ -467,10 +457,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string assembly,
         string? targetFramework,
         string? architecture,
-        string? executionId,
+        string executionId,
         string instanceId,
         string testNodeUid,
         string displayName,
+        string? informativeMessage,
         TestOutcome outcome,
         TimeSpan duration,
         FlatException[] exceptions,
@@ -479,8 +470,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? standardOutput,
         string? errorOutput)
     {
-        TestProgressState asm = _assemblies[$"{assembly}|{targetFramework}|{architecture}|{executionId}"];
-        var attempt = asm.Tries.Count;
+        TestProgressState asm = _assemblies[executionId];
+        var attempt = asm.TryCount;
 
         if (_options.ShowActiveTests)
         {
@@ -493,27 +484,16 @@ internal sealed partial class TerminalTestReporter : IDisposable
             case TestOutcome.Timeout:
             case TestOutcome.Canceled:
             case TestOutcome.Fail:
-                asm.FailedTests++;
-                asm.TotalTests++;
+                asm.ReportFailedTest(testNodeUid, instanceId);
                 break;
             case TestOutcome.Passed:
-                asm.PassedTests++;
-                asm.TotalTests++;
+                asm.ReportPassingTest(testNodeUid, instanceId);
                 break;
             case TestOutcome.Skipped:
-                asm.SkippedTests++;
-                asm.TotalTests++;
+                asm.ReportSkippedTest(testNodeUid, instanceId);
                 break;
         }
 
-        if (_isRetry && asm.Tries.Count > 1 && outcome == TestOutcome.Passed)
-        {
-            // This is a retry of a test, and the test succeeded, so these tests are potentially flaky.
-            // Tests that come from dynamic data sources and previously succeeded will also run on the second attempt,
-            // and most likely will succeed as well, so we will get them here, even though they are probably not flaky.
-            asm.FlakyTests.Add(testNodeUid);
-            
-        }
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
         if (outcome != TestOutcome.Passed || GetShowPassedTests())
         {
@@ -524,6 +504,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 targetFramework,
                 architecture,
                 displayName,
+                informativeMessage,
                 outcome,
                 duration,
                 exceptions,
@@ -547,6 +528,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? targetFramework,
         string? architecture,
         string displayName,
+        string? informativeMessage,
         TestOutcome outcome,
         TimeSpan duration,
         FlatException[] flatExceptions,
@@ -562,9 +544,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         TerminalColor color = outcome switch
         {
-            TestOutcome.Error or TestOutcome.Fail or TestOutcome.Canceled or TestOutcome.Timeout => TerminalColor.Red,
-            TestOutcome.Skipped => TerminalColor.Yellow,
-            TestOutcome.Passed => TerminalColor.Green,
+            TestOutcome.Error or TestOutcome.Fail or TestOutcome.Canceled or TestOutcome.Timeout => TerminalColor.DarkRed,
+            TestOutcome.Skipped => TerminalColor.DarkYellow,
+            TestOutcome.Passed => TerminalColor.DarkGreen,
             _ => throw new NotSupportedException(),
         };
         string outcomeText = outcome switch
@@ -589,6 +571,14 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.SetColor(TerminalColor.DarkGray);
         terminal.Append(' ');
         AppendLongDuration(terminal, duration);
+
+        if (!string.IsNullOrEmpty(informativeMessage))
+        {
+            terminal.AppendLine();
+            terminal.Append(SingleIndentation);
+            terminal.Append(informativeMessage);
+        }
+
         if (_options.ShowAssembly)
         {
             terminal.AppendLine();
@@ -616,7 +606,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         for (int i = 1; i < exceptions.Length; i++)
         {
-            terminal.SetColor(TerminalColor.Red);
+            terminal.SetColor(TerminalColor.DarkRed);
             terminal.Append(SingleIndentation);
             terminal.Append("--->");
             FormatErrorMessage(terminal, exceptions, TestOutcome.Error, i);
@@ -634,7 +624,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             return;
         }
 
-        terminal.SetColor(TerminalColor.Red);
+        terminal.SetColor(TerminalColor.DarkRed);
 
         if (firstStackTrace is null)
         {
@@ -663,7 +653,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             return;
         }
 
-        terminal.SetColor(TerminalColor.Red);
+        terminal.SetColor(TerminalColor.DarkRed);
         terminal.Append(SingleIndentation);
         terminal.AppendLine(CliCommandStrings.Expected);
         AppendIndentedLine(terminal, expected, DoubleIndentation);
@@ -802,13 +792,12 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
     }
 
-    internal void AssemblyRunCompleted(string assembly, string? targetFramework, string? architecture, string? executionId,
+    internal void AssemblyRunCompleted(string executionId,
         // These parameters are useful only for "remote" runs in dotnet test, where we are reporting on multiple processes.
         // In single process run, like with testing platform .exe we report these via messages, and run exit.
-        int? exitCode, string? outputData, string? errorData)
+        int exitCode, string? outputData, string? errorData)
     {
-        TestProgressState assemblyRun = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
-        assemblyRun.ExitCode = exitCode;
+        TestProgressState assemblyRun = _assemblies[executionId];
         assemblyRun.Success = exitCode == 0 && assemblyRun.FailedTests == 0;
         assemblyRun.Stopwatch.Stop();
 
@@ -819,7 +808,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             _terminalWithProgress.WriteToTerminal(terminal => AppendAssemblySummary(assemblyRun, terminal));
         }
 
-        if (exitCode is null or 0)
+        if (exitCode == 0)
         {
             // Report nothing, we don't want to report on success, because then we will also report on test-discovery etc.
             return;
@@ -827,6 +816,22 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         _terminalWithProgress.WriteToTerminal(terminal =>
         {
+            AppendExecutableSummary(terminal, exitCode, outputData, errorData);
+        });
+    }
+
+    internal void HandshakeFailure(string assemblyPath, string targetFramework, int exitCode, string outputData, string errorData)
+    {
+        Interlocked.Increment(ref _handshakeFailuresCount);
+        _terminalWithProgress.WriteToTerminal(terminal =>
+        {
+            terminal.ResetColor();
+            AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assemblyPath, targetFramework, architecture: null);
+            terminal.Append(' ');
+            terminal.SetColor(TerminalColor.DarkRed);
+            terminal.Append(CliCommandStrings.ZeroTestsRan);
+            terminal.ResetColor();
+            terminal.AppendLine();
             AppendExecutableSummary(terminal, exitCode, outputData, errorData);
         });
     }
@@ -856,12 +861,10 @@ internal sealed partial class TerminalTestReporter : IDisposable
     private static void AppendAssemblySummary(TestProgressState assemblyRun, ITerminal terminal)
     {
         terminal.ResetColor();
-        int failedTests = assemblyRun.FailedTests;
-        int warnings = 0;
-
+        
         AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assemblyRun.Assembly, assemblyRun.TargetFramework, assemblyRun.Architecture);
         terminal.Append(' ');
-        AppendAssemblyResult(terminal, assemblyRun.Success, failedTests, warnings);
+        AppendAssemblyResult(terminal, assemblyRun);
         terminal.Append(' ');
         AppendLongDuration(terminal, assemblyRun.Stopwatch.Elapsed);
         terminal.AppendLine();
@@ -904,50 +907,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
         });
     }
 
-    internal void WriteErrorMessage(string assembly, string? targetFramework, string? architecture, string? executionId, string text, int? padding)
-    {
-        TestProgressState asm = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
-        asm.AddError(text);
-
-        _terminalWithProgress.WriteToTerminal(terminal =>
-        {
-            terminal.SetColor(TerminalColor.Red);
-            if (padding == null)
-            {
-                terminal.AppendLine(text);
-            }
-            else
-            {
-                AppendIndentedLine(terminal, text, new string(' ', padding.Value));
-            }
-
-            terminal.ResetColor();
-        });
-    }
-
-    internal void WriteWarningMessage(string assembly, string? targetFramework, string? architecture, string? executionId, string text, int? padding)
-    {
-        TestProgressState asm = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
-        asm.AddWarning(text);
-        _terminalWithProgress.WriteToTerminal(terminal =>
-        {
-            terminal.SetColor(TerminalColor.Yellow);
-            if (padding == null)
-            {
-                terminal.AppendLine(text);
-            }
-            else
-            {
-                AppendIndentedLine(terminal, text, new string(' ', padding.Value));
-            }
-
-            terminal.ResetColor();
-        });
-    }
-
-    internal void WriteErrorMessage(string assembly, string? targetFramework, string? architecture, string? executionId, Exception exception)
-        => WriteErrorMessage(assembly, targetFramework, architecture, executionId, exception.ToString(), padding: null);
-
     public void WriteMessage(string text, SystemConsoleColor? color = null, int? padding = null)
     {
         if (color != null)
@@ -987,16 +946,22 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string assembly,
         string? targetFramework,
         string? architecture,
-        string? executionId,
+        string executionId,
         string? displayName,
         string? uid)
     {
-        TestProgressState asm = _assemblies[$"{assembly}|{targetFramework}|{architecture}|{executionId}"];
+        if (!_isDiscovery)
+        {
+            // Don't count discovered tests if we are not in discovery mode.
+            // NOTE: DiscoverTest call increments PassedTests, so it must not be called when we get discovery message in run mode.
+            // Also, don't bother adding discovered tests to the DiscoveredTests list when the list is only used in discovery mode.
+            return;
+        }
+
+        TestProgressState asm = _assemblies[executionId];
 
         // TODO: add mode for discovered tests to the progress bar - jajares
-        asm.PassedTests++;
-        asm.TotalTests++;
-        asm.DiscoveredTests.Add(new(displayName, uid));
+        asm.DiscoverTest(displayName, uid);
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
     }
 
@@ -1027,7 +992,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             terminal.AppendLine();
         }
 
-        terminal.SetColor(runFailed ? TerminalColor.Red : TerminalColor.Green);
+        terminal.SetColor(runFailed ? TerminalColor.DarkRed : TerminalColor.DarkGreen);
         if (assemblies.Count <= 1)
         {
             terminal.AppendLine(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.TestDiscoverySummarySingular, totalTests));
@@ -1081,9 +1046,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string testNodeUid,
         string instanceId,
         string displayName,
-        string? executionId)
+        string executionId)
     {
-        TestProgressState asm = _assemblies[$"{assembly}|{targetFramework}|{architecture}|{executionId}"];
+        TestProgressState asm = _assemblies[executionId];
 
         if (_options.ShowActiveTests)
         {

@@ -18,7 +18,7 @@
 
     <!-- Use layout folder for the output folder, to support in-process tests which expect to be running
          on a valid layout. -->
-    <OutputPath>$(ArtifactsBinDir)redist\$(Configuration)</OutputPath>
+    <OutputPath>$(TestHostFolder)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
@@ -76,6 +76,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Basic.CompilerLog.Util" />
     <PackageReference Include="Moq" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" />
     <PackageReference Include="Microsoft.TemplateEngine.Mocks" />
@@ -99,7 +100,7 @@
 
   <Target Name="CompareCliSnapshots">
     <ItemGroup>
-      <SnapshotFiles Include="$(ArtifactsBinDir)redist\$(Configuration)\snapshots\**\*.received.*" />
+      <SnapshotFiles Include="$(TestHostFolder)snapshots\**\*.received.*" />
     </ItemGroup>
     <Copy SourceFiles="@(SnapshotFiles)" DestinationFolder="$(MSBuildThisFileDirectory)CompletionTests\snapshots\%(RecursiveDir)" SkipUnchangedFiles="true" />
   </Target>

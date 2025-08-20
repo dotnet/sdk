@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
@@ -86,8 +88,9 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
         INuGetPackageDownloader nugetPackageDownloader,
         IWorkloadManifestUpdater workloadManifestUpdater,
         string tempDirPath,
+        Option<VerbosityOptions> verbosityOptions = null,
         bool? shouldUseWorkloadSetsFromGlobalJson = null)
-        : base(parseResult, reporter: reporter, tempDirPath: tempDirPath, nugetPackageDownloader: nugetPackageDownloader)
+        : base(parseResult, reporter: reporter, tempDirPath: tempDirPath, nugetPackageDownloader: nugetPackageDownloader, verbosityOptions: verbosityOptions)
     {
         _arguments = parseResult.GetArguments();
         _printDownloadLinkOnly = parseResult.GetValue(InstallingWorkloadCommandParser.PrintDownloadLinkOnlyOption);

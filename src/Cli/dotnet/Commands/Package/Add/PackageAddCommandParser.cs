@@ -3,54 +3,23 @@
 
 using System.CommandLine;
 using System.CommandLine.Completions;
+using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
-using Microsoft.DotNet.Cli.Extensions;
-using System.CommandLine.Parsing;
-using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
-internal static class PackageAddCommandParser
+public static class PackageAddCommandParser
 {
-    public static PackageIdentity ParsePackageIdentity(ArgumentResult packageArgResult)
+    public static readonly Option<bool> PrereleaseOption = new ForwardedOption<bool>("--prerelease")
     {
-        // per the Arity of the CmdPackageArgument's Arity, we should have exactly one token - 
-        // this is a safety net for if we change the Arity in the future and forget to update this parser.
-        if (packageArgResult.Tokens.Count != 1)
-        {
-            throw new ArgumentException($"Expected exactly one token, but got {packageArgResult.Tokens.Count}.");
-        }
-        var token = packageArgResult.Tokens[0].Value;
-        var indexOfAt = token.IndexOf('@');
-        if (indexOfAt == -1)
-        {
-            // no version specified, so we just return the package id
-            return new PackageIdentity(token, null);
-        }
-        // we have a version specified, so we need to split the token into id and version
-        else
-        {
-            var id = token[0..indexOfAt];
-            var versionString = token[(indexOfAt + 1)..];
-            if (SemanticVersion.TryParse(versionString, out var version))
-            {
-                return new PackageIdentity(id, new NuGetVersion(version.Major, version.Minor, version.Patch, version.ReleaseLabels, version.Metadata));
-            }
-            else
-            {
-                throw new ArgumentException(string.Format(CliCommandStrings.InvalidSemVerVersionString, versionString));
-            }
-        };
-    }
+        Description = CliStrings.CommandPrereleaseOptionDescription,
+        Arity = ArgumentArity.Zero
+    }.ForwardAs("--prerelease");
 
-    public static readonly Argument<PackageIdentity> CmdPackageArgument = new DynamicArgument<PackageIdentity>(CliCommandStrings.CmdPackage)
-    {
-        Description = CliCommandStrings.CmdPackageDescription,
-        Arity = ArgumentArity.ExactlyOne,
-        CustomParser = ParsePackageIdentity,
-
-    }.AddCompletions((context) =>
+    public static readonly Argument<PackageIdentityWithRange> CmdPackageArgument = CommonArguments.RequiredPackageIdentityArgument()
+    .AddCompletions((context) =>
     {
         // we should take --prerelease flags into account for version completion
         var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption);
@@ -65,7 +34,7 @@ internal static class PackageAddCommandParser
         .AddCompletions((context) =>
         {
             // we can only do version completion if we have a package id
-            if (context.ParseResult.GetValue(CmdPackageArgument) is PackageIdentity packageId && !packageId.HasVersion)
+            if (context.ParseResult.GetValue(CmdPackageArgument) is { HasVersion: false } packageId)
             {
                 // we should take --prerelease flags into account for version completion
                 var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption);
@@ -105,12 +74,6 @@ internal static class PackageAddCommandParser
 
     public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
 
-    public static readonly Option<bool> PrereleaseOption = new ForwardedOption<bool>("--prerelease")
-    {
-        Description = CliStrings.CommandPrereleaseOptionDescription,
-        Arity = ArgumentArity.Zero
-    }.ForwardAs("--prerelease");
-
     private static readonly Command Command = ConstructCommand();
 
     public static Command GetCommand()
@@ -132,15 +95,16 @@ internal static class PackageAddCommandParser
         command.Options.Add(InteractiveOption);
         command.Options.Add(PrereleaseOption);
         command.Options.Add(PackageCommandParser.ProjectOption);
+        command.Options.Add(PackageCommandParser.FileOption);
 
-        command.SetAction((parseResult) => new PackageAddCommand(parseResult, parseResult.GetValue(PackageCommandParser.ProjectOption)).Execute());
+        command.SetAction((parseResult) => new PackageAddCommand(parseResult).Execute());
 
         return command;
     }
 
     private static void DisallowVersionIfPackageIdentityHasVersionValidator(OptionResult result)
     {
-        if (result.Parent.GetValue(CmdPackageArgument) is PackageIdentity identity && identity.HasVersion)
+        if (result.Parent?.GetValue(CmdPackageArgument).HasVersion == true)
         {
             result.AddError(CliCommandStrings.ValidationFailedDuplicateVersion);
         }

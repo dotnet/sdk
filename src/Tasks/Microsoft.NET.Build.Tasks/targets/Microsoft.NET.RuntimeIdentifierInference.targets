@@ -77,6 +77,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishSelfContained>true</PublishSelfContained>
   </PropertyGroup>
 
+  <!-- Packing a tool runs the publish targets, so in that case set _IsPublishing to true -->
+  <PropertyGroup Condition="'$(PackAsTool)' == 'true' And '$(_IsPacking)' == 'true'">
+    <_IsPublishing>true</_IsPublishing>
+  </PropertyGroup>
 
   <!-- Edit SelfContained to match the value of PublishSelfContained if we are publishing.
        This Won't affect t:/Publish (because of _IsPublishing), and also won't override a global SelfContained property.-->
@@ -91,12 +95,17 @@ Copyright (c) .NET Foundation. All rights reserved.
   The other publish properties are specifically labelled Publish* and don't 'NEED' their RID unless we are doing a publish, so the RID inference
   ... for these properties is limited to publishing only scenarios.
 
-  Finally, library projects and non-executable projects have awkward interactions here so they are excluded.-->
+  .NET Tools that build RID-specific packages will also need a primary package without a RuntimeIdentifier, so we disable RID inference for them
+  in order to build the primary package
+
+  Finally, library projects and non-executable projects have awkward interactions here so they are excluded.
+  -->
   <PropertyGroup Condition="'$(UseCurrentRuntimeIdentifier)' == ''">
     <UseCurrentRuntimeIdentifier Condition="
                  '$(RuntimeIdentifier)' == '' and
-                 '$(_IsExecutable)' == 'true' and '$(IsTestProject)' != 'true' and
+                 '$(_IsExecutable)' == 'true' and
                  '$(IsRidAgnostic)' != 'true' and
+                 '$(PackAsTool)' != true and
                  (
                    '$(SelfContained)' == 'true' or
                    ('$(_IsPublishing)' == 'true' and
@@ -166,16 +175,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_SelfContainedWasSpecified Condition="'$(SelfContained)' != ''">true</_SelfContainedWasSpecified>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(HasRuntimeOutput)' == 'true'">
-    
+
     <!-- Breaking change in .NET 8: Projects with 8.0+ TFMS will no longer have RuntimeIdentifier imply SelfContained. Note that PublishReadyToRun will imply SelfContained in these versions. -->
     <SelfContained Condition="'$(SelfContained)' == '' and
                               '$(RuntimeIdentifier)' != '' and
                               '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and
                               '$(_TargetFrameworkVersionWithoutV)' != '' and
                               $([MSBuild]::VersionLessThan($(_TargetFrameworkVersionWithoutV), '8.0'))">true</SelfContained>
-    
+
     <SelfContained Condition="'$(SelfContained)' == ''">false</SelfContained>
-    <_RuntimeIdentifierUsesAppHost Condition="$(RuntimeIdentifier.StartsWith('ios')) or $(RuntimeIdentifier.StartsWith('tvos')) or $(RuntimeIdentifier.StartsWith('maccatalyst')) or $(RuntimeIdentifier.StartsWith('android')) or $(RuntimeIdentifier.StartsWith('browser')) or $(RuntimeIdentifier.StartsWith('wasi'))">false</_RuntimeIdentifierUsesAppHost>
+    <_RuntimeIdentifierUsesAppHost Condition="$(RuntimeIdentifier.StartsWith('ios')) or $(RuntimeIdentifier.StartsWith('tvos')) or $(RuntimeIdentifier.StartsWith('maccatalyst')) or $(RuntimeIdentifier.StartsWith('android')) or $(RuntimeIdentifier.StartsWith('browser')) or $(RuntimeIdentifier.StartsWith('wasi')) or $(RuntimeIdentifier) == 'any'">false</_RuntimeIdentifierUsesAppHost>
     <_RuntimeIdentifierUsesAppHost Condition="'$(_IsPublishing)' == 'true' and '$(PublishAot)' == 'true'">false</_RuntimeIdentifierUsesAppHost>
     <_RuntimeIdentifierUsesAppHost Condition="'$(_RuntimeIdentifierUsesAppHost)' == ''">true</_RuntimeIdentifierUsesAppHost>
     <UseAppHost Condition="'$(UseAppHost)' == '' and
@@ -216,11 +225,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                  ResourceName="ImplicitRuntimeIdentifierResolutionForPublishPropertyFailed"
                  FormatArguments="SelfContained"/>
 
-    <NETSdkError Condition="'$(PublishReadyToRun)' == 'true' and '$(RuntimeIdentifier)' == '' and '$(_IsPublishing)' == 'true'"
+    <NETSdkError Condition="'$(PublishReadyToRun)' == 'true' and '$(RuntimeIdentifier)' == '' and '$(_IsPublishing)' == 'true' and '$(AllowReadyToRunWithoutRuntimeIdentifier)' != 'true'"
                  ResourceName="ImplicitRuntimeIdentifierResolutionForPublishPropertyFailed"
                  FormatArguments="PublishReadyToRun"/>
 
-    <NETSdkError Condition="'$(PublishSingleFile)' == 'true' and '$(RuntimeIdentifier)' == '' and '$(_IsPublishing)' == 'true'"
+    <NETSdkError Condition="'$(PublishSingleFile)' == 'true' and '$(RuntimeIdentifier)' == '' and '$(_IsPublishing)' == 'true' and '$(AllowPublishSingleFileWithoutRuntimeIdentifier)' != 'true'"
                 ResourceName="ImplicitRuntimeIdentifierResolutionForPublishPropertyFailed"
                 FormatArguments="PublishSingleFile"/>
 
@@ -320,6 +329,16 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
+  <PropertyGroup>
+    <!-- Suppress the .NET Core SDK preview message if the users has tried to express their intent to do so.
+         MSBuild doesn't allow Messages to be suppressed by NoWarn, but we've trained users to reach for this,
+         so let's bridge their intent a bit. -->
+    <SuppressNETCoreSdkPreviewMessage
+      Condition="'$(_NETCoreSdkIsPreview)' == 'true'
+                  AND '$(SuppressNETCoreSdkPreviewMessage)' == ''
+                  AND '$(NoWarn)' != ''
+                  AND $(NoWarn.Contains('NETSDK1057'))">true</SuppressNETCoreSdkPreviewMessage>
+  </PropertyGroup>
   <Target Name="_CheckForNETCoreSdkIsPreview"
           BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
           Condition=" '$(_NETCoreSdkIsPreview)' == 'true' AND '$(SuppressNETCoreSdkPreviewMessage)' != 'true' ">

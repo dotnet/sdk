@@ -764,13 +764,6 @@ public class TestReference
         [InlineData(true)]
         [InlineData(false)]
         [InlineData(null)]
-        public void Build_WithStartupMemoryCache(bool? value)
-            => BuildWasmMinimalAndValidateBootConfig(new[] { ("BlazorWebAssemblyStartupMemoryCache", value?.ToString()) }, b => b.startupMemoryCache.Should().Be(value));
-
-        [RequiresMSBuildVersionTheory("17.12", Reason = "Needs System.Text.Json 8.0.5")]
-        [InlineData(true)]
-        [InlineData(false)]
-        [InlineData(null)]
         public void Build_WithJiterpreter(bool? value)
             => BuildWasmMinimalAndValidateBootConfig(new[] { ("BlazorWebAssemblyJiterpreter", value?.ToString()) }, b =>
             {

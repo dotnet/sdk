@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
@@ -28,7 +30,7 @@ internal class WorkloadRepairCommand : WorkloadCommandBase
         IWorkloadResolverFactory workloadResolverFactory = null,
         IInstaller workloadInstaller = null,
         INuGetPackageDownloader nugetPackageDownloader = null)
-        : base(parseResult, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader)
+        : base(parseResult, verbosityOptions: WorkloadRepairCommandParser.VerbosityOption, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader)
     {
         var configOption = parseResult.GetValue(WorkloadRepairCommandParser.ConfigOption);
         var sourceOption = parseResult.GetValue(WorkloadRepairCommandParser.SourceOption);

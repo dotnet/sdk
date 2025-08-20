@@ -678,9 +678,6 @@ Greeter.Greeter() -> void";
             }
 
             var logger = new TestLogger();
-            var msBuildPath = MSBuildRegistrar.RegisterInstance();
-
-            logger.LogTrace(Resources.Using_msbuildexe_located_in_0, msBuildPath);
 
             var fileMatcher = SourceFileMatcher.CreateMatcher(include, exclude);
             var formatOptions = new FormatOptions(

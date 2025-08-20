@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.DotNet.Cli;
@@ -785,7 +787,7 @@ namespace Microsoft.NET.Build.Tasks
                 packVersion = RuntimeFrameworkVersion;
             }
 
-            TaskItem? runtimePackToDownload = null;
+            TaskItem runtimePackToDownload = null;
 
             // Crossgen and ILCompiler have RID-specific bits.
             if (toolPackType is ToolPackType.Crossgen2 or ToolPackType.ILCompiler)
@@ -845,13 +847,36 @@ namespace Microsoft.NET.Build.Tasks
                             {
                                 return ToolPackSupport.UnsupportedForTargetRuntimeIdentifier;
                             }
-                            if (!hostRuntimeIdentifier.Equals(targetRuntimeIdentifier))
+
+                            // If there's an available runtime pack, use it instead of the ILCompiler package for target-specific bits.
+                            bool useRuntimePackForAllTargets = false;
+                            string targetPackNamePattern = packNamePattern;
+                            if (knownPack.GetMetadata("ILCompilerRuntimePackNamePattern") is string runtimePackNamePattern && runtimePackNamePattern != string.Empty)
                             {
-                                var targetIlcPackName = packNamePattern.Replace("**RID**", targetRuntimeIdentifier);
+                                targetPackNamePattern = runtimePackNamePattern;
+                                useRuntimePackForAllTargets = true;
+                            }
+
+                            if (useRuntimePackForAllTargets || !hostRuntimeIdentifier.Equals(targetRuntimeIdentifier))
+                            {
+                                var targetIlcPackName = targetPackNamePattern.Replace("**RID**", targetRuntimeIdentifier);
                                 var targetIlcPack = new TaskItem(targetIlcPackName);
                                 targetIlcPack.SetMetadata(MetadataKeys.NuGetPackageId, targetIlcPackName);
                                 targetIlcPack.SetMetadata(MetadataKeys.NuGetPackageVersion, packVersion);
                                 TargetILCompilerPacks = new[] { targetIlcPack };
+
+                                string targetILCompilerPackPath = GetPackPath(targetIlcPackName, packVersion);
+                                if (targetILCompilerPackPath != null)
+                                {
+                                    targetIlcPack.SetMetadata(MetadataKeys.PackageDirectory, targetILCompilerPackPath);
+                                }
+                                else if (EnableRuntimePackDownload)
+                                {
+                                    // We need to download the runtime pack
+                                    var targetIlcPackToDownload = new TaskItem(targetIlcPackName);
+                                    targetIlcPackToDownload.SetMetadata(MetadataKeys.Version, packVersion);
+                                    packagesToDownload.Add(targetIlcPackToDownload);
+                                }
                             }
                         }
 

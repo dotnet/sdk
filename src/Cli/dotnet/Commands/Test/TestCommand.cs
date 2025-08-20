@@ -1,7 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Frozen;
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Commands.Restore;
@@ -12,9 +14,9 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
 public class TestCommand(
-    IEnumerable<string> msbuildArgs,
+    MSBuildArgs msbuildArgs,
     bool noRestore,
-    string msbuildPath = null) : RestoringCommand(msbuildArgs, noRestore, msbuildPath)
+    string? msbuildPath = null) : RestoringCommand(msbuildArgs, noRestore, msbuildPath)
 {
     public static int Run(ParseResult parseResult)
     {
@@ -31,7 +33,7 @@ public class TestCommand(
         if (VSTestTrace.TraceEnabled)
         {
             string commandLineParameters = "";
-            if (args?.Length > 0)
+            if (args.Length > 0)
             {
                 commandLineParameters = args.Aggregate((a, b) => $"{a} | {b}");
             }
@@ -57,7 +59,7 @@ public class TestCommand(
     {
         // Workaround for https://github.com/Microsoft/vstest/issues/1503
         const string NodeWindowEnvironmentName = "MSBUILDENSURESTDOUTFORTASKPROCESSES";
-        string previousNodeWindowSetting = Environment.GetEnvironmentVariable(NodeWindowEnvironmentName);
+        string? previousNodeWindowSetting = Environment.GetEnvironmentVariable(NodeWindowEnvironmentName);
         try
         {
             var forceLegacyOutput = previousNodeWindowSetting == "1";
@@ -83,8 +85,8 @@ public class TestCommand(
                 additionalBuildProperties = SetLegacyVSTestWorkarounds(NodeWindowEnvironmentName);
             }
             else if (hasUserMSBuildOutputProperty)
-            {                   
-                if (propertyValue.ToLowerInvariant() == "false")
+            {
+                if (propertyValue!.ToLowerInvariant() == "false") // known safe because of boolean check
                 {
                     additionalBuildProperties = SetLegacyVSTestWorkarounds(NodeWindowEnvironmentName);
                 }
@@ -150,10 +152,9 @@ public class TestCommand(
         return exitCode;
     }
 
-    public static TestCommand FromArgs(string[] args, string testSessionCorrelationId = null, string msbuildPath = null)
+    public static TestCommand FromArgs(string[] args, string? testSessionCorrelationId = null, string? msbuildPath = null)
     {
-        var parser = Parser.Instance;
-        var parseResult = parser.ParseFrom("dotnet test", args);
+        var parseResult = Parser.Parse(["dotnet", "test", ..args]);
 
         // settings parameters are after -- (including --), these should not be considered by the parser
         string[] settings = [.. args.SkipWhile(a => a != "--")];
@@ -165,7 +166,7 @@ public class TestCommand(
         return FromParseResult(parseResult, settings, testSessionCorrelationId, [], msbuildPath);
     }
 
-    private static TestCommand FromParseResult(ParseResult result, string[] settings, string testSessionCorrelationId, string[] additionalBuildProperties, string msbuildPath = null)
+    private static TestCommand FromParseResult(ParseResult result, string[] settings, string testSessionCorrelationId, string[] additionalBuildProperties, string? msbuildPath = null)
     {
         result.ShowHelpOrErrorIfAppropriate();
 
@@ -185,7 +186,6 @@ public class TestCommand(
 
         var msbuildArgs = new List<string>(additionalBuildProperties)
         {
-            "-target:VSTest",
             "-nologo",
         };
 
@@ -200,7 +200,7 @@ public class TestCommand(
             msbuildArgs.Add($"-property:VSTestCLIRunSettings=\"{runSettingsArg}\"");
         }
 
-        string verbosityArg = result.ForwardedOptionValues<IReadOnlyCollection<string>>(TestCommandParser.GetCommand(), "--verbosity")?.SingleOrDefault() ?? null;
+        string? verbosityArg = result.ForwardedOptionValues<IReadOnlyCollection<string>>(TestCommandParser.GetCommand(), "--verbosity")?.SingleOrDefault() ?? null;
         if (verbosityArg != null)
         {
             string[] verbosity = verbosityArg.Split(':', 2);
@@ -217,10 +217,17 @@ public class TestCommand(
             msbuildArgs.Add($"-property:VSTestSessionCorrelationId={testSessionCorrelationId}");
         }
 
-        bool noRestore = (result.GetResult(TestCommandParser.NoRestoreOption) ?? result.GetResult(TestCommandParser.NoBuildOption)) is not null;
+        bool noRestore = result.GetValue(TestCommandParser.NoRestoreOption) || result.GetValue(TestCommandParser.NoBuildOption);
+
+        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
+            msbuildArgs,
+            CommonOptions.PropertiesOption,
+            CommonOptions.RestorePropertiesOption,
+            TestCommandParser.VsTestTargetOption,
+            TestCommandParser.VerbosityOption);
 
         TestCommand testCommand = new(
-            msbuildArgs,
+            parsedMSBuildArgs,
             noRestore,
             msbuildPath);
 
@@ -233,11 +240,9 @@ public class TestCommand(
             }
         }
 
-        // Set DOTNET_PATH if it isn't already set in the environment as it is required
-        // by the testhost which uses the apphost feature (Windows only).
-        (bool hasRootVariable, string rootVariableName, string rootValue) = VSTestForwardingApp.GetRootVariable();
-        if (!hasRootVariable)
-        {
+        
+        Dictionary<string, string> variables = VSTestForwardingApp.GetVSTestRootVariables();
+        foreach (var (rootVariableName, rootValue) in variables) {
             testCommand.EnvironmentVariable(rootVariableName, rootValue);
             VSTestTrace.SafeWriteTrace(() => $"Root variable set {rootVariableName}:{rootValue}");
         }
@@ -342,7 +347,7 @@ public class TerminalLoggerDetector
 {
     public static TerminalLoggerMode ProcessTerminalLoggerConfiguration(ParseResult parseResult)
     {
-        string terminalLoggerArg;
+        string? terminalLoggerArg;
         if (!TryFromCommandLine(parseResult.UnmatchedTokens, out terminalLoggerArg) && !TryFromEnvironmentVariables(out terminalLoggerArg))
         {
             terminalLoggerArg = FindDefaultValue(parseResult.UnmatchedTokens) ?? "auto";
@@ -401,11 +406,11 @@ public class TerminalLoggerDetector
             return true;
         }
 
-        string FindDefaultValue(IReadOnlyList<string> unmatchedTokens)
+        string? FindDefaultValue(IReadOnlyList<string> unmatchedTokens)
         {
             // Find default configuration so it is part of telemetry even when default is not used.
             // Default can be stored in /tlp:default=true|false|on|off|auto
-            Switch terminalLoggerDefault = Find(unmatchedTokens, "tlp", "terminalloggerparameters");
+            Switch? terminalLoggerDefault = TryFind(unmatchedTokens, "tlp", "terminalloggerparameters");
             if (terminalLoggerDefault == null)
             {
                 return null;
@@ -433,9 +438,9 @@ public class TerminalLoggerDetector
             return null;
         }
 
-        bool TryFromCommandLine(IReadOnlyList<string> unmatchedTokens, out string value)
+        bool TryFromCommandLine(IReadOnlyList<string> unmatchedTokens, [NotNullWhen(true)] out string? value)
         {
-            Switch terminalLogger = Find(unmatchedTokens, ["tl", "terminalLogger", "ll", "livelogger"]);
+            Switch? terminalLogger = TryFind(unmatchedTokens, ["tl", "terminalLogger", "ll", "livelogger"]);
             if (terminalLogger == null)
             {
                 value = null;
@@ -453,10 +458,10 @@ public class TerminalLoggerDetector
             return true;
         }
 
-        bool TryFromEnvironmentVariables(out string terminalLoggerArg)
+        bool TryFromEnvironmentVariables([NotNullWhen(true)] out string? terminalLoggerArg)
         {
             // Keep MSBUILDLIVELOGGER supporting existing use. But MSBUILDTERMINALLOGGER takes precedence.
-            string liveLoggerArg = Environment.GetEnvironmentVariable("MSBUILDLIVELOGGER");
+            string? liveLoggerArg = Environment.GetEnvironmentVariable("MSBUILDLIVELOGGER");
             terminalLoggerArg = Environment.GetEnvironmentVariable("MSBUILDTERMINALLOGGER");
             if (!string.IsNullOrEmpty(terminalLoggerArg))
             {
@@ -489,7 +494,7 @@ public class TerminalLoggerDetector
         }
     }
 
-    private static Switch Find(IReadOnlyList<string> unmatchedTokens, params string[] names)
+    private static Switch? TryFind(IReadOnlyList<string> unmatchedTokens, params string[] names)
     {
         foreach (string prefix in new string[] { "-", "--", "/" })
         {
@@ -656,11 +661,11 @@ public class TerminalLoggerDetector
             new("alacritty"), // Alacritty
         ];
 
-        public static bool IsAnsiSupported(string termType)
+        public static bool IsAnsiSupported(string? termType)
             => !string.IsNullOrEmpty(termType) && TerminalsRegexes.Any(regex => regex.IsMatch(termType));
     }
 
-    private record class Switch(string Name, string Value);
+    private record class Switch(string Name, string? Value);
 }
 
 public enum TerminalLoggerMode

@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <Nullable>enable</Nullable>
     <PublishAot Condition="$(NETCoreSdkPortableRuntimeIdentifier.StartsWith('win-'))">true</PublishAot>
     <ControlFlowGuard>Guard</ControlFlowGuard>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>

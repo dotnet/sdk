@@ -12,18 +12,16 @@
 
     <!-- Blob storage directories are not stabilized, so these must refer to a package that does not stabilize -->
     <!-- In unified build, the layout does match, so use the runtime package versions rather than the VS redist versions -->
-    <AspNetCoreBlobVersion>$(MicrosoftAspNetCoreAppRuntimePackageVersion)</AspNetCoreBlobVersion>
+    <AspNetCoreBlobVersion>$(MicrosoftAspNetCoreAppRefInternalPackageVersion)</AspNetCoreBlobVersion>
     <NetRuntimeBlobVersion>$(MicrosoftNETCorePlatformsPackageVersion)</NetRuntimeBlobVersion>
-    <WindowsDesktopBlobVersion>$(VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion)</WindowsDesktopBlobVersion>
-    <WindowsDesktopBlobVersion Condition="'$(DotNetBuildOrchestrator)' == 'true'">$(MicrosoftWindowsDesktopAppRuntimePackageVersion)</WindowsDesktopBlobVersion>
+    <WindowsDesktopBlobVersion>$(MicrosoftWindowsDesktopAppInternalPackageVersion)</WindowsDesktopBlobVersion>
     <NETStandardTargetingPackBlobVersion>3.0.0</NETStandardTargetingPackBlobVersion>
 
     <AlternateArchitecture Condition="'$(TargetArchitecture)' == 'x86'">x64</AlternateArchitecture>
     <AlternateArchitecture Condition="'$(TargetArchitecture)' == 'x64'">x86</AlternateArchitecture>
     <DownloadedSharedHostInstallerFileName Condition="'$(InstallerExtension)' != ''">dotnet-host$(InstallerStartSuffix)-$(SharedHostVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedHostInstallerFileName>
     <DownloadedHostFxrInstallerFileName Condition="'$(InstallerExtension)' != ''">dotnet-hostfxr$(InstallerStartSuffix)-$(HostFxrVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedHostFxrInstallerFileName>
-    <DownloadedSharedFrameworkInstallerFileName Condition="'$(InstallerExtension)' != '' and '$(PgoInstrument)' != 'true'">dotnet-runtime$(InstallerStartSuffix)-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedFrameworkInstallerFileName>
-    <DownloadedSharedFrameworkInstallerFileName Condition="'$(InstallerExtension)' != '' and '$(PgoInstrument)' == 'true'">dotnet-runtime$(InstallerStartSuffix)$(PgoTerm)-$(VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedFrameworkInstallerFileName>
+    <DownloadedSharedFrameworkInstallerFileName Condition="'$(InstallerExtension)' != ''">dotnet-runtime$(InstallerStartSuffix)-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedFrameworkInstallerFileName>
     <DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != ''">windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName>
     <DownloadedNetCoreAppTargetingPackInstallerFileName Condition="'$(InstallerExtension)' != ''">dotnet-targeting-pack-$(MicrosoftNETCoreAppRefPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetCoreAppTargetingPackInstallerFileName>
     <DownloadedNetCoreAppHostPackInstallerFileName Condition="'$(InstallerExtension)' != ''">dotnet-apphost-pack-$(MicrosoftNETCoreAppHostPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetCoreAppHostPackInstallerFileName>
@@ -39,8 +37,7 @@
     <SdkMSIInstallerFileName>$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFileName>
     <SdkTemplatesMSIInstallerFileName>dotnet-$(VersionMajor)$(VersionMinor)templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</SdkTemplatesMSIInstallerFileName>
 
-    <CombinedFrameworkHostArchiveFileName Condition="'$(PgoInstrument)' != 'true'">dotnet-runtime-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
-    <CombinedFrameworkHostArchiveFileName Condition="'$(PgoInstrument)' == 'true'">dotnet-runtime$(PgoTerm)-$(VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
+    <CombinedFrameworkHostArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
     <WinFormsAndWpfSharedFxArchiveFileName>windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
 
     <AspNetCoreInstallerRid Condition="'$(AspNetCoreInstallerRid)' == ''">$(SharedFrameworkRid)</AspNetCoreInstallerRid>
@@ -49,9 +46,11 @@
     <AspNetCoreInstallerRid Condition="'$(InstallerExtension)' == '.rpm' AND '$(TargetArchitecture)' == 'arm64'">aarch64</AspNetCoreInstallerRid>
 
     <DownloadedAspNetCoreSharedFxInstallerFileName Condition="'$(InstallerExtension)' != '' AND !$([MSBuild]::IsOSPlatform('OSX'))">aspnetcore-runtime-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
-    <DownloadedAspNetCoreSharedFxInstallerFileName Condition="'$(InstallerExtension)' == '.msi'">aspnetcore-runtime-$(VSRedistCommonAspNetCoreSharedFrameworkx64100PackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
+    <!-- This should be using MicrosoftAspNetCoreAppRefInternalPackageVersion, https://github.com/dotnet/aspnetcore/issues/61951 -->
+    <DownloadedAspNetCoreSharedFxInstallerFileName Condition="'$(InstallerExtension)' == '.msi'">aspnetcore-runtime-$(MicrosoftAspNetCoreAppRefPackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
     <DownloadedAspNetTargetingPackInstallerFileName Condition="'$(InstallerExtension)' != ''">aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefPackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
-    <DownloadedAspNetTargetingPackInstallerFileName Condition="'$(InstallerExtension)' == '.msi'">aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefInternalPackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
+    <!-- This should be using MicrosoftAspNetCoreAppRefInternalPackageVersion, https://github.com/dotnet/aspnetcore/issues/61951 -->
+    <DownloadedAspNetTargetingPackInstallerFileName Condition="'$(InstallerExtension)' == '.msi'">aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefPackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
     <AspNetTargetingPackArchiveFileName>aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefPackageVersion)-$(AspNetCoreArchiveRid)$(ArchiveExtension)</AspNetTargetingPackArchiveFileName>
     <AspNetCoreSharedFxArchiveFileName>aspnetcore-runtime-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreArchiveRid)$(ArchiveExtension)</AspNetCoreSharedFxArchiveFileName>
 
@@ -115,9 +114,21 @@
       PackageVersion="$(MicrosoftWindowsDesktopAppRefPackageVersion)"
       RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
 
+    <BundledLayoutPackage Include="Microsoft.NETCore.App.Crossgen2.$(SharedFrameworkRid)"
+      Condition="'$(BundleCrossgen2)' == 'true'"
+      PackageName="Microsoft.NETCore.App.Crossgen2.$(SharedFrameworkRid)"
+      PackageVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+      RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
+
     <BundledLayoutPackage Include="runtime.$(SharedFrameworkRid).Microsoft.DotNet.ILCompiler"
       Condition="'$(BundleNativeAotCompiler)' == 'true'"
       PackageName="runtime.$(SharedFrameworkRid).Microsoft.DotNet.ILCompiler"
+      PackageVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+      RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
+
+    <BundledLayoutPackage Include="Microsoft.NETCore.App.Runtime.NativeAOT.$(SharedFrameworkRid)"
+      Condition="'$(BundleNativeAotCompiler)' == 'true'"
+      PackageName="Microsoft.NETCore.App.Runtime.NativeAOT.$(SharedFrameworkRid)"
       PackageVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
       RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
 
@@ -299,12 +310,13 @@
       </UrisToDownload>
     </ItemGroup>
 
-    <!-- If building in product source build mode, there is no need to attempt the external URIs. These are not desired,
-            and won't work anyway because the source build file URI doesn't use the same structure as the storage accounts.
-            For example, the dotnetbuilds uri for 'file:///vmr/dotnet2/artifacts/obj/x64/Release/blob-feed/assets//aspnetcore_base_runtime.version'
-            would end up 'https://ci.dot.net/public//dotnet-runtime-8.0.0-rc.1.23381.3-centos.8-x64.tar.gz'. This is
-            missing the runtime version number directory. -->
-    <ItemGroup Condition="'$(DotNetBuildOrchestrator)' != 'true'">
+    <!--
+      Only access external URIs if building the repo outside the context of the VMR or if building a non-1xx feature band.
+      For VMR builds in the 1xx feature band, we want to use the locally built artifacts produced by repos built earlier in the build.
+      But in later feature bands, we need to download the artifacts since the current build did not produce them. They were only produced
+      by builds of the 1xx feature band and are being shared with other feature bands through this download workflow.
+    -->
+    <ItemGroup Condition="'$(DotNetBuildFromVMR)' != 'true' or '$(VersionSDKMinor)' != '1'">
       <UrisToDownload Include="$([System.String]::Copy('%(ComponentToDownload.BaseUrl)').Replace($(PublicBaseURL), 'https://ci.dot.net/public/'))/%(ComponentToDownload.DownloadFileName)"
                       Condition="'%(ComponentToDownload.ShouldDownload)' == 'true'">
         <ShouldDownload>%(ComponentToDownload.ShouldDownload)</ShouldDownload>

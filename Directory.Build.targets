@@ -9,7 +9,7 @@
       We still check $(TargetFrameworks) for empty though, because for single-targeted builds we want to
       allow nullable warnings regardless of target framework.
     -->
-    <NoWarn Condition="'$(DisableNullableWarnings)' == '' AND  '$(TargetFrameworks)' != '' AND '$(TargetFramework)' != '' AND '$(TargetFrameworkIdentifier)' != '.NETCoreApp'">$(NoWarn);Nullable</NoWarn>
+    <NoWarn Condition="'$(TargetFrameworks)' != '' AND '$(TargetFramework)' != '' AND '$(TargetFrameworkIdentifier)' != '.NETCoreApp'">$(NoWarn);Nullable</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -54,10 +54,11 @@
           Condition="'$(RunTestsAsTool)' == 'true' And '$(CanRunTestAsTool)' == 'true'"/>
 
   <!-- Update KnownFrameworkReferences to target the right version of the runtime -->
-  <!-- We cannot use live shims when building tool packs in VMR - only package for current arch is available. -->
+  <!-- Don't use live shims when building tool packs in .NET product build mode as only packages for the current arch are available. -->
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'
                           and $(MicrosoftNETCoreAppRefPackageVersion.StartsWith('$(_TargetFrameworkVersionWithoutV)'))
                           and '$(MSBuildProjectName)' != 'sdk-tasks'
+                          and '$(MSBuildProjectName)' != 'GenerateDocumentationAndConfigFiles'
                           and ('$(DotNetBuild)' != 'true' or '$(PackAsToolShimRuntimeIdentifiers)' == '')">
     <FrameworkReference
         Update="Microsoft.NETCore.App"
@@ -77,5 +78,34 @@
       <DefaultRuntimeFrameworkVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</DefaultRuntimeFrameworkVersion>
     </KnownFrameworkReference>
   </ItemGroup>
+
+  <!--
+    Common content for all SDK source packages.
+  -->
+
+  <PropertyGroup Condition="'$(IsSourcePackage)' == 'true'">
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddEditorConfigToSourcePackage;_AddLinkedCompileItemsToSourcePackage</TargetsForTfmSpecificContentInPackage>
+    <PackageDescription>
+      $(PackageDescription)
+
+      The source code included in this package is subject to arbitrary changes in future versions. 
+      Updating a reference to this package to a newer version of the package may require changes in the referencing project.
+      No compatibility guarantees are provided.
+    </PackageDescription>
+  </PropertyGroup>
+
+  <!-- Include SourcePackage.editorconfig in all source packages. -->
+  <Target Name="_AddEditorConfigToSourcePackage">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(MSBuildThisFileDirectory)eng\SourcePackage.editorconfig" PackagePath="contentFiles/cs/$(TargetFramework)/.editorconfig" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Include linked files. Arcade SDK only includes files in the project directory. -->
+  <Target Name="_AddLinkedCompileItemsToSourcePackage">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="@(Compile)" Condition="'%(Compile.Link)' != ''" PackagePath="contentFiles/cs/$(TargetFramework)/%(Compile.Link)" BuildAction="Compile"/>
+    </ItemGroup>
+  </Target>
 
 </Project>

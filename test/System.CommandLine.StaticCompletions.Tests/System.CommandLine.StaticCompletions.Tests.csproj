@@ -2,7 +2,6 @@
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
     <OutputType>Exe</OutputType>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>

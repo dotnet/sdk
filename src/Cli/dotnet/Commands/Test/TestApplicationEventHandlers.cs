@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Collections.Concurrent;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
@@ -8,19 +10,29 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output) : IDisposable
 {
-    private readonly ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId, string InstanceId)> _executions = new();
+    private readonly ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions = new();
     private readonly TerminalTestReporter _output = output;
+
+    public bool HasHandshakeFailure => _output.HasHandshakeFailure;
 
     public void OnHandshakeReceived(object sender, HandshakeArgs args)
     {
-        var testApplication = (TestApplication)sender;
-        var executionId = args.Handshake.Properties[HandshakeMessagePropertyNames.ExecutionId];
-        var instanceId = args.Handshake.Properties[HandshakeMessagePropertyNames.InstanceId];
-        var arch = args.Handshake.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
-        var tfm = TargetFrameworkParser.GetShortTargetFramework(args.Handshake.Properties[HandshakeMessagePropertyNames.Framework]);
-        (string ModulePath, string TargetFramework, string Architecture, string ExecutionId, string InstanceId) appInfo = new(testApplication.Module.RunProperties.RunCommand, tfm, arch, executionId, instanceId);
-        _executions[testApplication] = appInfo;
-        _output.AssemblyRunStarted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId, appInfo.InstanceId);
+        var hostType = args.Handshake.Properties[HandshakeMessagePropertyNames.HostType];
+        // https://github.com/microsoft/testfx/blob/2a9a353ec2bb4ce403f72e8ba1f29e01e7cf1fd4/src/Platform/Microsoft.Testing.Platform/Hosts/CommonTestHost.cs#L87-L97
+        if (hostType == "TestHost")
+        {
+            // AssemblyRunStarted counts "retry count", and writes to terminal "(Try <number-of-try>) Running tests from <assembly>"
+            // So, we want to call it only for test host, and not for test host controller (or orchestrator, if in future it will handshake as well)
+            // Calling it for both test host and test host controllers means we will count retries incorrectly, and will messages twice.
+            var testApplication = (TestApplication)sender;
+            var executionId = args.Handshake.Properties[HandshakeMessagePropertyNames.ExecutionId];
+            var instanceId = args.Handshake.Properties[HandshakeMessagePropertyNames.InstanceId];
+            var arch = args.Handshake.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
+            var tfm = TargetFrameworkParser.GetShortTargetFramework(args.Handshake.Properties[HandshakeMessagePropertyNames.Framework]);
+            (string ModulePath, string TargetFramework, string Architecture, string ExecutionId) appInfo = new(testApplication.Module.TargetPath, tfm, arch, executionId);
+            _executions[testApplication] = appInfo;
+            _output.AssemblyRunStarted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId, instanceId);
+        }
 
         LogHandshake(args);
     }
@@ -66,6 +78,7 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
                 args.InstanceId,
                 testResult.Uid,
                 testResult.DisplayName,
+                testResult.Reason,
                 ToOutcome(testResult.State),
                 TimeSpan.FromTicks(testResult.Duration ?? 0),
                 exceptions: null,
@@ -80,6 +93,7 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
             _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId, args.InstanceId,
                 testResult.Uid,
                 testResult.DisplayName,
+                testResult.Reason,
                 ToOutcome(testResult.State),
                 TimeSpan.FromTicks(testResult.Duration ?? 0),
                 exceptions: [.. testResult.Exceptions.Select(fe => new Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace))],
@@ -129,11 +143,11 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
 
         if (_executions.TryGetValue(testApplication, out var appInfo))
         {
-            _output.AssemblyRunCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
+            _output.AssemblyRunCompleted(appInfo.ExecutionId, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
         }
         else
         {
-            _output.AssemblyRunCompleted(testApplication.Module.RunProperties.RunCommand ?? testApplication.Module.ProjectFullPath, testApplication.Module.TargetFramework, architecture: null, null, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
+            _output.HandshakeFailure(testApplication.Module.TargetPath ?? testApplication.Module.ProjectFullPath, testApplication.Module.TargetFramework, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
         }
 
         LogTestProcessExit(args);

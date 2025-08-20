@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 #pragma warning disable IDE0240 // Remove redundant nullable directive
 #nullable disable
 #pragma warning restore IDE0240 // Remove redundant nullable directive
@@ -51,11 +53,11 @@ internal sealed class NamedPipeServer : NamedPipeBase, IServer
     }
 
     public NamedPipeServer(
-    PipeNameDescription pipeNameDescription,
-    Func<IRequest, Task<IResponse>> callback,
-    int maxNumberOfServerInstances,
-    CancellationToken cancellationToken,
-    bool skipUnknownMessages)
+        PipeNameDescription pipeNameDescription,
+        Func<IRequest, Task<IResponse>> callback,
+        int maxNumberOfServerInstances,
+        CancellationToken cancellationToken,
+        bool skipUnknownMessages)
     {
         _namedPipeServerStream = new((PipeName = pipeNameDescription).Name, PipeDirection.InOut, maxNumberOfServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
         _callback = callback;
@@ -250,7 +252,7 @@ internal sealed class NamedPipeServer : NamedPipeBase, IServer
             return new PipeNameDescription($"testingplatform.pipe.{name.Replace('\\', '.')}", false);
         }
 
-        string directoryId = Path.Combine(Path.GetTempPath(), name);
+        string directoryId = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), name);
         Directory.CreateDirectory(directoryId);
         return new PipeNameDescription(
             !Directory.Exists(directoryId)

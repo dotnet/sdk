@@ -1,7 +1,6 @@
 <Project>
 
   <Target Name="GenerateBundledVersions"
-          Condition="'$(PgoInstrument)' != 'true'"
           DependsOnTargets="GenerateBundledVersionsProps;GenerateBundledCliToolsProps;GenerateBundledMSBuildProps" >
     <WriteLinesToFile
       File="$(ArtifactsShippingPackagesDir)productVersion.txt"
@@ -15,10 +14,12 @@
       Overwrite="true"
       Encoding="ASCII" />
 
+    <!-- The Version.Details file doesn't contain live information when building
+         inside the VMR. Therefore don't read from it in that mode. -->
     <GetDependencyInfo
       VersionDetailsXmlFile="$(RepositoryEngineeringDir)Version.Details.xml"
       DependencyName="Microsoft.NETCore.App.Ref"
-      Condition="'$(DotNetBuild)' != 'true'">
+      Condition="'$(DotNetBuildFromVMR)' != 'true'">
        <Output TaskParameter="DependencyVersion" PropertyName="DepRuntimeVersion" />
        <Output TaskParameter="DependencyCommit" PropertyName="DepRuntimeCommit" />
     </GetDependencyInfo>
@@ -26,23 +27,19 @@
     <GetDependencyInfo
       VersionDetailsXmlFile="$(RepositoryEngineeringDir)Version.Details.xml"
       DependencyName="Microsoft.AspNetCore.App.Ref"
-      Condition="'$(DotNetBuild)' != 'true'">
+      Condition="'$(DotNetBuildFromVMR)' != 'true'">
        <Output TaskParameter="DependencyVersion" PropertyName="DepAspNetCoreVersion" />
        <Output TaskParameter="DependencyCommit" PropertyName="DepAspNetCoreCommit" />
-    </GetDependencyInfo>
-
-    <GetDependencyInfo
-      VersionDetailsXmlFile="$(RepositoryEngineeringDir)Version.Details.xml"
-      DependencyName="Microsoft.WindowsDesktop.App.Ref"
-      Condition="'$(DotNetBuild)' != 'true'">
-       <Output TaskParameter="DependencyVersion" PropertyName="DepWindowsDesktopVersion" />
-       <Output TaskParameter="DependencyCommit" PropertyName="DepWindowsDesktopCommit" />
     </GetDependencyInfo>
 
     <ItemGroup Label="Version info">
       <Line Include="runtime" Version="$(MicrosoftNETCoreAppRefPackageVersion)" Commit="$([MSBuild]::ValueOrDefault('$(DepRuntimeCommit)', '$(BUILD_SOURCEVERSION)'))" />
       <Line Include="aspnetcore" Version="$(MicrosoftAspNetCoreAppRefPackageVersion)" Commit="$([MSBuild]::ValueOrDefault('$(DepAspNetCoreCommit)', '$(BUILD_SOURCEVERSION)'))" />
-      <Line Include="windowsdesktop" Version="$(MicrosoftWindowsDesktopAppRefPackageVersion)" Commit="$([MSBuild]::ValueOrDefault('$(DepWindowsDesktopCommit)', '$(BUILD_SOURCEVERSION)'))" />
+      <!-- For the WindowsDesktop commit, use the Microsoft.NETCore.App.Ref commit.
+           These will always be the same and the Microsoft.WindowsDesktop.App.Ref dependency has been eliminated from Version.Details.xml
+           so the info cannot be used since in VMR builds Linux/Mac do not build WindowsDesktop, even though
+           info about WindowsDesktop **does** leak into those SDKs. -->
+      <Line Include="windowsdesktop" Version="$(MicrosoftWindowsDesktopAppRefPackageVersion)" Commit="$([MSBuild]::ValueOrDefault('$(DepRuntimeCommit)', '$(BUILD_SOURCEVERSION)'))" />
       <Line Include="sdk" Version="$(PackageVersion)" Commit="$(BUILD_SOURCEVERSION)" />
     </ItemGroup>
 
@@ -275,6 +272,10 @@
         Condition="'$(BundleNativeAotCompiler)' == 'true'"
         Include="$(ProductMonikerRid)" />
 
+      <Crossgen2SupportedRids
+        Condition="'$(BundleCrossgen2)' == 'true'"
+        Include="$(ProductMonikerRid)" />
+
       <Net60MonoRuntimePackRids Include="
         @(Net60RuntimePackRids);
         browser-wasm;
@@ -393,7 +394,7 @@
         win-x86;
         " />
 
-      <!-- ILCompiler target RIDs that are officially supported, plus the architecture we are building the product for (OutputRID). See:
+      <!-- ILCompiler target RIDs that are officially supported, plus the architecture we are building the product for (TargetRid). See:
            https://github.com/dotnet/runtime/blob/main/src/installer/pkg/projects/Microsoft.DotNet.ILCompiler/ILCompilerRIDs.props -->
       <ILCompilerSupportedRids Include="
         @(Net90ILCompilerSupportedRids);
@@ -440,6 +441,8 @@
         @(Net90NativeAOTRuntimePackRids);
         linux-riscv64;
         linux-musl-riscv64;
+        android-arm64;
+        android-x64;
         "/>
 
       <AspNetCore31RuntimePackRids Include="@(AspNetCore30RuntimePackRids)" />
@@ -583,6 +586,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownILCompilerPack Include="Microsoft.DotNet.ILCompiler"
                          TargetFramework="net10.0"
                          ILCompilerPackNamePattern="runtime.**RID**.Microsoft.DotNet.ILCompiler"
+                         ILCompilerRuntimePackNamePattern="Microsoft.NETCore.App.Runtime.NativeAOT.**RID**"
                          ILCompilerPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
                          ILCompilerRuntimeIdentifiers="@(ILCompilerSupportedRids, '%3B')"
                          />

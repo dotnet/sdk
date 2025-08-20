@@ -332,6 +332,43 @@ namespace MyNamespace
             Assert.Equal("MyNamespace.MyClass", types.FirstOrDefault().ToDisplayString());
         }
 
+        [Fact]
+        public void TestCreateFromFiles()
+        {
+            var assetInfo = GetSimpleTestAsset();
+            TestLog log = new();
+            (AssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> symbols) = AssemblySymbolLoader.CreateFromFiles(
+                log,
+                assembliesPaths: [assetInfo.OutputDirectory],
+                assemblyReferencesPaths: [],
+                assembliesToExclude: [assetInfo.TestAsset.TestProject.Name + ".dll"]);
+
+            Assert.Single(symbols);
+
+            IEnumerable<ITypeSymbol> types = symbols.FirstOrDefault().Value
+                .GlobalNamespace
+                .GetNamespaceMembers()
+                .FirstOrDefault((n) => n.Name == "MyNamespace")
+                .GetTypeMembers();
+
+            Assert.Single(types);
+            Assert.Equal("MyNamespace.MyClass", types.FirstOrDefault().ToDisplayString());
+        }
+
+        [Fact]
+        public void TestCreateFromFilesExcludeAssembly()
+        {
+            var assetInfo = GetSimpleTestAsset();
+            TestLog log = new();
+            (AssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> symbols) = AssemblySymbolLoader.CreateFromFiles(
+                log,
+                assembliesPaths: [assetInfo.OutputDirectory],
+                assemblyReferencesPaths: [],
+                assembliesToExclude: [assetInfo.TestAsset.TestProject.Name]);
+
+            Assert.Empty(symbols);
+        }
+
         private static CommandResult BuildTestAsset(TestAsset testAsset, out string outputDirectory)
         {
             BuildCommand buildCommand = new(testAsset);

@@ -1,10 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+using Microsoft.DotNet.Cli.Commands.Tool.Install;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolManifest;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
@@ -16,27 +21,31 @@ internal class ToolRunCommand(
     ToolManifestFinder toolManifest = null) : CommandBase(result)
 {
     private readonly string _toolCommandName = result.GetValue(ToolRunCommandParser.CommandNameArgument);
-    private readonly LocalToolsCommandResolver _localToolsCommandResolver = localToolsCommandResolver ?? new LocalToolsCommandResolver();
     private readonly IEnumerable<string> _forwardArgument = result.GetValue(ToolRunCommandParser.CommandArgument);
+
+    private readonly LocalToolsCommandResolver _localToolsCommandResolver = localToolsCommandResolver ?? new LocalToolsCommandResolver(toolManifest);
     public bool _allowRollForward = result.GetValue(ToolRunCommandParser.RollForwardOption);
-    private readonly ToolManifestFinder _toolManifest = toolManifest ?? new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
 
     public override int Execute()
     {
-        CommandSpec commandspec = _localToolsCommandResolver.ResolveStrict(new CommandResolverArguments()
+        return ExecuteCommand(_localToolsCommandResolver, _toolCommandName, _forwardArgument, _allowRollForward);
+    }
+    public static int ExecuteCommand(LocalToolsCommandResolver commandResolver, string toolCommandName, IEnumerable<string> argumentsToForward, bool allowRollForward)
+    {
+        CommandSpec commandSpec = commandResolver.ResolveStrict(new CommandResolverArguments()
         {
             // since LocalToolsCommandResolver is a resolver, and all resolver input have dotnet-
-            CommandName = $"dotnet-{_toolCommandName}",
-            CommandArguments = _forwardArgument,
+            CommandName = $"dotnet-{toolCommandName}",
+            CommandArguments = argumentsToForward,
 
-        }, _allowRollForward);
+        }, allowRollForward);
 
-        if (commandspec == null)
+        if (commandSpec == null)
         {
-            throw new GracefulException([string.Format(CliCommandStrings.CannotFindCommandName, _toolCommandName)], isUserError: false);
+            throw new GracefulException([string.Format(CliCommandStrings.CannotFindCommandName, toolCommandName)], isUserError: false);
         }
 
-        var result = CommandFactoryUsingResolver.Create(commandspec).Execute();
+        var result = CommandFactoryUsingResolver.Create(commandSpec).Execute();
         return result.ExitCode;
     }
 }

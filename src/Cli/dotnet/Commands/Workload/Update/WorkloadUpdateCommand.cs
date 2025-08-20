@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
@@ -35,7 +37,7 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
         bool? shouldUseWorkloadSetsFromGlobalJson = null)
         : base(parseResult, reporter: reporter, workloadResolverFactory: workloadResolverFactory, workloadInstaller: workloadInstaller,
               nugetPackageDownloader: nugetPackageDownloader, workloadManifestUpdater: workloadManifestUpdater,
-              tempDirPath: tempDirPath, shouldUseWorkloadSetsFromGlobalJson: shouldUseWorkloadSetsFromGlobalJson)
+              tempDirPath: tempDirPath, shouldUseWorkloadSetsFromGlobalJson: shouldUseWorkloadSetsFromGlobalJson, verbosityOptions: WorkloadUpdateCommandParser.VerbosityOption)
 
     {
         _fromPreviousSdk = parseResult.GetValue(WorkloadUpdateCommandParser.FromPreviousSdkOption);

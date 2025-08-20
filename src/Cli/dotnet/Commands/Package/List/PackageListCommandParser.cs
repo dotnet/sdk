@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
@@ -78,7 +80,7 @@ internal static class PackageListCommandParser
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option VerbosityOption = new ForwardedOption<VerbosityOptions>("--verbosity", "-v")
+    public static readonly Option VerbosityOption = new ForwardedOption<Utils.VerbosityOptions>("--verbosity", "-v")
     {
         Description = CliStrings.VerbosityOptionDescription,
         HelpName = CliStrings.LevelArgumentName

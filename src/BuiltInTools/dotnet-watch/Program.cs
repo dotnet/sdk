@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.Loader;
 using Microsoft.Build.Locator;
 
@@ -76,14 +78,8 @@ namespace Microsoft.DotNet.Watch
                 reporter.Verbose($"Test flags: {environmentOptions.TestFlags}");
             }
 
-            string projectPath;
-            try
+            if (!TryFindProject(workingDirectory, options, reporter, out var projectPath))
             {
-                projectPath = MsBuildProjectFinder.FindMsBuildProject(workingDirectory, options.ProjectPath);
-            }
-            catch (FileNotFoundException ex)
-            {
-                reporter.Error(ex.Message);
                 errorCode = 1;
                 return null;
             }
@@ -93,12 +89,58 @@ namespace Microsoft.DotNet.Watch
             return new Program(console, reporter, rootProjectOptions, options, environmentOptions);
         }
 
+        /// <summary>
+        /// Finds a compatible MSBuild project.
+        /// <param name="searchBase">The base directory to search</param>
+        /// <param name="project">The filename of the project. Can be null.</param>
+        /// </summary>
+        private static bool TryFindProject(string searchBase, CommandLineOptions options, IReporter reporter, [NotNullWhen(true)] out string? projectPath)
+        {
+            projectPath = options.ProjectPath ?? searchBase;
+
+            if (!Path.IsPathRooted(projectPath))
+            {
+                projectPath = Path.Combine(searchBase, projectPath);
+            }
+
+            if (Directory.Exists(projectPath))
+            {
+                var projects = Directory.EnumerateFileSystemEntries(projectPath, "*.*proj", SearchOption.TopDirectoryOnly)
+                    .Where(f => !".xproj".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                if (projects.Count > 1)
+                {
+                    reporter.Error(string.Format(CultureInfo.CurrentCulture, Resources.Error_MultipleProjectsFound, projectPath));
+                    return false;
+                }
+
+                if (projects.Count == 0)
+                {
+                    reporter.Error(string.Format(CultureInfo.CurrentCulture, Resources.Error_NoProjectsFound, projectPath));
+                    return false;
+                }
+
+                projectPath = projects[0];
+                return true;
+            }
+
+            if (!File.Exists(projectPath))
+            {
+                reporter.Error(string.Format(CultureInfo.CurrentCulture, Resources.Error_ProjectPath_NotFound, projectPath));
+                    return false;
+            }
+
+            return true;
+        }
+
         // internal for testing
         internal async Task<int> RunAsync()
         {
             var shutdownCancellationSourceDisposed = false;
             var shutdownCancellationSource = new CancellationTokenSource();
             var shutdownCancellationToken = shutdownCancellationSource.Token;
+            var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout);
 
             console.KeyPressed += key =>
             {
@@ -128,11 +170,26 @@ namespace Microsoft.DotNet.Watch
 
                 if (options.List)
                 {
-                    return await ListFilesAsync(shutdownCancellationToken);
+                    return await ListFilesAsync(processRunner, shutdownCancellationToken);
                 }
 
-                var watcher = CreateWatcher(runtimeProcessLauncherFactory: null);
-                await watcher.WatchAsync(shutdownCancellationToken);
+                if (environmentOptions.IsPollingEnabled)
+                {
+                    reporter.Output("Polling file watcher is enabled");
+                }
+
+                var context = CreateContext(processRunner);
+
+                if (IsHotReloadEnabled())
+                {
+                    var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: null);
+                    await watcher.WatchAsync(shutdownCancellationToken);
+                }
+                else
+                {
+                    await DotNetWatcher.WatchAsync(context, shutdownCancellationToken);
+                }
+
                 return 0;
             }
             catch (OperationCanceledException) when (shutdownCancellationToken.IsCancellationRequested)
@@ -154,56 +211,41 @@ namespace Microsoft.DotNet.Watch
         }
 
         // internal for testing
-        internal Watcher CreateWatcher(IRuntimeProcessLauncherFactory? runtimeProcessLauncherFactory)
-        {
-            if (environmentOptions.IsPollingEnabled)
-            {
-                reporter.Output("Polling file watcher is enabled");
-            }
-
-            var fileSetFactory = new MSBuildFileSetFactory(
-                rootProjectOptions.ProjectPath,
-                rootProjectOptions.BuildArguments,
-                environmentOptions,
-                reporter);
-
-            bool enableHotReload;
-            if (rootProjectOptions.Command != "run")
-            {
-                reporter.Verbose($"Command '{rootProjectOptions.Command}' does not support Hot Reload.");
-                enableHotReload = false;
-            }
-            else if (options.GlobalOptions.NoHotReload)
-            {
-                reporter.Verbose("Hot Reload disabled by command line switch.");
-                enableHotReload = false;
-            }
-            else
-            {
-                reporter.Report(MessageDescriptor.WatchingWithHotReload);
-                enableHotReload = true;
-            }
-
-            var context = new DotNetWatchContext
+        internal DotNetWatchContext CreateContext(ProcessRunner processRunner)
+            => new()
             {
                 Reporter = reporter,
+                ProcessRunner = processRunner,
                 Options = options.GlobalOptions,
                 EnvironmentOptions = environmentOptions,
                 RootProjectOptions = rootProjectOptions,
             };
 
-            return enableHotReload
-                ? new HotReloadDotNetWatcher(context, console, fileSetFactory, runtimeProcessLauncherFactory)
-                : new DotNetWatcher(context, fileSetFactory);
+        private bool IsHotReloadEnabled()
+        {
+            if (rootProjectOptions.Command != "run")
+            {
+                reporter.Verbose($"Command '{rootProjectOptions.Command}' does not support Hot Reload.");
+                return false;
+            }
+
+            if (options.GlobalOptions.NoHotReload)
+            {
+                reporter.Verbose("Hot Reload disabled by command line switch.");
+                return false;
+            }
+
+            reporter.Report(MessageDescriptor.WatchingWithHotReload);
+            return true;
         }
 
-        private async Task<int> ListFilesAsync(CancellationToken cancellationToken)
+        private async Task<int> ListFilesAsync(ProcessRunner processRunner, CancellationToken cancellationToken)
         {
             var fileSetFactory = new MSBuildFileSetFactory(
                 rootProjectOptions.ProjectPath,
                 rootProjectOptions.BuildArguments,
-                environmentOptions,
-                reporter);
+                processRunner,
+                new BuildReporter(reporter, options.GlobalOptions, environmentOptions));
 
             if (await fileSetFactory.TryCreateAsync(requireProjectGraph: null, cancellationToken) is not { } evaluationResult)
             {

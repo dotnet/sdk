@@ -41,6 +41,8 @@
       <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</ContainerRuntimeIdentifier>
       <ContainerRuntimeIdentifiers Condition="'$(BuildingInsideVisualStudio)' != 'true' and '$(ContainerRuntimeIdentifiers)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifiers)</ContainerRuntimeIdentifiers>
       <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(ContainerRuntimeIdentifiers)' == ''">linux-$(NETCoreSdkPortableRuntimeIdentifier.Split('-')[1])</ContainerRuntimeIdentifier>
+      <!-- We want to save customer provided ContainerBaseImage to later set ContainerUser. -->
+      <_InitialContainerBaseImage>$(ContainerBaseImage)</_InitialContainerBaseImage>
     </PropertyGroup>
 
     <ItemGroup>
@@ -67,7 +69,9 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="ComputeContainerConfig" DependsOnTargets="ComputeContainerBaseImage">
+  <!-- This Target is called early on in the chain for both single-RID and multi-RID containers - but for single-RID it's important
+       that we ensure all of the data necessary to create a single-RID container is computed after we exit this target. -->
+  <Target Name="ComputeContainerConfig" DependsOnTargets="ComputeContainerBaseImage;_ContainerEstablishRIDNess;_ComputeContainerExecutionArgs">
     <PropertyGroup Label="VS defaults">
       <!-- RegistryUrl is used by existing VS targets for Docker builds - this lets us fill that void -->
       <ContainerRegistry Condition="'$(RegistryUrl)' != ''">$(RegistryUrl)</ContainerRegistry>
@@ -178,25 +182,25 @@
     <PublishContainerDependsOn>
       _ContainerVerifySDKVersion;
       ComputeContainerConfig;
-      _CheckContainersPackage
+      _CheckContainersPackage;
     </PublishContainerDependsOn>
   </PropertyGroup>
 
   <!-- These args are relevant to container execution and are per-RID by nature. Therefore they're a direct dependency of the _PublishSingleContainer
-       target and not computed at the outer layer. -->
-  <Target Name="_ComputeContainerExecutionArgs">
+       target and not computed at the outer, multi-RID build layer. -->
+  <Target Name="_ComputeContainerExecutionArgs" DependsOnTargets="_ContainerEstablishRIDNess" Condition="'$(_IsSingleRIDBuild)' == 'true'">
     <PropertyGroup>
       <!-- The Container RID should default to the RID used for the entire build (to ensure things run on the platform they are built for), but the user knows best and so should be able to set it explicitly.
            For builds that have a RID, we default to that RID. Otherwise, we default to the Linux RID matching the architecture of the currently-executing SDK. -->
       <_ContainerIsTargetingWindows>false</_ContainerIsTargetingWindows>
       <_ContainerIsTargetingWindows Condition="$(ContainerRuntimeIdentifier.StartsWith('win'))">true</_ContainerIsTargetingWindows>
-    
+
       <!-- Set the WorkingDirectory depending on the RID -->
       <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and !$(_ContainerIsTargetingWindows)">/app/</ContainerWorkingDirectory>
       <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and $(_ContainerIsTargetingWindows)">C:\app\</ContainerWorkingDirectory>
-      
-      <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(ContainerBaseImage)' == ''">true</_ContainerIsUsingMicrosoftDefaultImages>
-      <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(ContainerBaseImage)' != ''">false</_ContainerIsUsingMicrosoftDefaultImages>
+
+      <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(_InitialContainerBaseImage)' == ''">true</_ContainerIsUsingMicrosoftDefaultImages>
+      <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(_InitialContainerBaseImage)' != ''">false</_ContainerIsUsingMicrosoftDefaultImages>
     </PropertyGroup>
 
       <!-- We only set a default user when the base image is Microsoft-authored, and we're targeting a version of those images that supports a nonroot user -->
@@ -245,7 +249,9 @@
       Text="The $(_ContainersPackageIdentity) NuGet package is explicitly referenced but the current SDK can natively publish the project as a container. Consider removing the package reference to $(_ContainersPackageIdentity) because it is no longer needed." />
   </Target>
 
-  <Target Name="_PublishSingleContainer" DependsOnTargets="_ComputeContainerExecutionArgs" Returns="@(GeneratedContainer)">
+  <!-- There is an implicit dependency here in that both of ComputeContainerConfig and _ComputeContainerExecutionArgs must have been run, but because we call this Target
+       in a few different ways we can't express that dependency directly here. -->
+  <Target Name="_PublishSingleContainer" Returns="@(GeneratedContainer)">
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
       <DotNetHostDirectory>$(NetCoreRoot)</DotNetHostDirectory>
       <DotNetHostFileName>dotnet</DotNetHostFileName>
@@ -342,14 +348,17 @@
           ContainerGenerateLabels=$(ContainerGenerateLabels);
           ContainerGenerateLabelsImageBaseDigest=$(ContainerGenerateLabelsImageBaseDigest);
           _SkipContainerPublishing=$(_SkipContainerPublishing);
-          ContainerImageFormat=$(_SingleImageContainerFormat)
+          ContainerImageFormat=$(_SingleImageContainerFormat);
+          _IsMultiRIDBuild=false;
+          _IsSingleRIDBuild=true;
+          _InitialContainerBaseImage=$(_InitialContainerBaseImage)
         "/>
       <_rids Remove ="$(_rids)" />
     </ItemGroup>
 
     <MSBuild
         Projects="@(_InnerBuild)"
-        Targets="Publish;_ParseItemsForPublishingSingleContainer;_PublishSingleContainer"
+        Targets="Publish;_ParseItemsForPublishingSingleContainer;_ComputeContainerExecutionArgs;_PublishSingleContainer"
         BuildInParallel="$([MSBuild]::ValueOrDefault('$(ContainerPublishInParallel)', 'true'))">
         <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainer" />
     </MSBuild>
@@ -401,11 +410,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="PublishContainer"
-  DependsOnTargets="$(PublishContainerDependsOn)"
-  Condition="'$(IsPublishable)' == 'true' AND '$(EnableSdkContainerSupport)' == 'true'"
-  Returns="@(GeneratedContainer)"
-  >
+  <Target Name="_ContainerEstablishRIDNess">
     <PropertyGroup>
       <_IsMultiTFMBuild Condition="'$(TargetFrameworks)' != '' and '$(TargetFramework)' == ''">true</_IsMultiTFMBuild>
       <!-- we are multi-RID if:
@@ -415,10 +420,17 @@
       <_HasCRIDsAndNoCRID Condition="'$(ContainerRuntimeIdentifiers)' != '' and '$(ContainerRuntimeIdentifier)' == ''">true</_HasCRIDsAndNoCRID>
       <_HasRIDs Condition="'$(RuntimeIdentifiers)' != ''">true</_HasRIDs>
       <_NoCRIDsOrCRIDorRID Condition="'$(ContainerRuntimeIdentifiers)' == '' and '$(ContainerRuntimeIdentifier)' == '' and '$(RuntimeIdentifier)' == ''">true</_NoCRIDsOrCRIDorRID>
+      <!-- these two are load-bearing for other comparisons - see _ComputeContainerExecutionArgs -->
       <_IsMultiRIDBuild Condition="'$(BuildingInsideVisualStudio)' != 'true' and ('$(_HasCRIDsAndNoCRID)' == true or ('$(_HasRIDs)' == 'true' and '$(_NoCRIDsOrCRIDorRID)' == 'true'))">true</_IsMultiRIDBuild>
       <_IsSingleRIDBuild Condition="'$(_IsMultiRIDBuild)' == ''">true</_IsSingleRIDBuild>
     </PropertyGroup>
+  </Target>
 
+  <Target Name="PublishContainer"
+  DependsOnTargets="$(PublishContainerDependsOn)"
+  Condition="'$(IsPublishable)' == 'true' AND '$(EnableSdkContainerSupport)' == 'true'"
+  Returns="@(GeneratedContainer)"
+  >
     <!-- Call _PublishMultiArchContainers if we are in a multi-rid build, and call _PublishSingleContainer if we are in a single-RID build -->
     <CallTarget Condition="'$(_IsMultiRIDBuild)' == 'true' " Targets="_PublishMultiArchContainers">
       <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainer" />

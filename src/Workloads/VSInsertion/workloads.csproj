@@ -27,8 +27,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- in the VMR build in the second build pass we don't need to build the manifests since they're already downloaded from another vertical -->
-    <ProjectReference Include="$(RepoRoot)\src\Workloads\Manifests\manifest-packages.proj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuild)' != 'true'" />
+    <!-- In .NET product build mode in the second build pass, there's no need to build the manifests since they're already downloaded from another vertical -->
+    <ProjectReference Include="$(RepoRoot)\src\Workloads\Manifests\manifest-packages.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuild)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(BuildWorkloads)' == 'true'">
@@ -95,14 +95,15 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(BuildWorkloads)' == 'true'">
+    <!-- we use MicrosoftNETCoreAppRuntimePackageVersion for both runtime and emsdk packages since they're aligned in VMR builds -->
     <PackageDownload Include="@(RuntimeWorkloadPacksToDownload)" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
-    <PackageDownload Include="@(EmsdkWorkloadPacksToDownload)" Version="[$(MicrosoftNETRuntimeEmscriptenSdkInternalVersion)]" />
+    <PackageDownload Include="@(EmsdkWorkloadPacksToDownload)" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
   </ItemGroup>
 
   <Target Name="_CollectDownloadedWorkloadPacks">
     <ItemGroup>
       <DownloadedWorkloadPacks Include="$(NuGetPackageRoot)\%(RuntimeWorkloadPacksToDownload.Identity)\$(MicrosoftNETCoreAppRuntimePackageVersion)\*.nupkg" />
-      <DownloadedWorkloadPacks Include="$(NuGetPackageRoot)\%(EmsdkWorkloadPacksToDownload.Identity)\$(MicrosoftNETRuntimeEmscriptenSdkInternalVersion)\*.nupkg" />
+      <DownloadedWorkloadPacks Include="$(NuGetPackageRoot)\%(EmsdkWorkloadPacksToDownload.Identity)\$(MicrosoftNETCoreAppRuntimePackageVersion)\*.nupkg" />
     </ItemGroup>
 
     <Copy SourceFiles="@(DownloadedWorkloadPacks)"

@@ -1,36 +1,41 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Utils;
-using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli
 {
     internal class CommonArguments
     {
-        #region PackageIdentityArgument
-        public static Argument<PackageIdentity?> PackageIdentityArgument(bool requireArgument = true) =>
+        public static DynamicArgument<PackageIdentityWithRange?> OptionalPackageIdentityArgument() =>
             new("packageId")
             {
-                HelpName = "PACKAGE_ID",
                 Description = CliStrings.PackageIdentityArgumentDescription,
-                CustomParser = ParsePackageIdentity,
-                Arity = requireArgument ? ArgumentArity.ExactlyOne : ArgumentArity.ZeroOrOne,
+                CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value),
+                Arity = ArgumentArity.ZeroOrOne,
             };
 
-        private static PackageIdentity? ParsePackageIdentity(ArgumentResult argumentResult)
+        public static DynamicArgument<PackageIdentityWithRange> RequiredPackageIdentityArgument() =>
+            new("packageId")
+            {
+                Description = CliStrings.PackageIdentityArgumentDescription,
+                CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value)!.Value,
+                Arity = ArgumentArity.ExactlyOne,
+            };
+
+        private static PackageIdentityWithRange? ParsePackageIdentityWithVersionSeparator(string? packageIdentity, char versionSeparator = '@')
         {
-            if (argumentResult.Tokens.Count == 0)
+            if (string.IsNullOrEmpty(packageIdentity))
             {
                 return null;
             }
 
-            string[] splitToken = argumentResult.Tokens[0].Value.Split('@');
-            var (packageId, versionString) = (splitToken.ElementAtOrDefault(0), splitToken.ElementAtOrDefault(1));
+            string[] splitPackageIdentity = packageIdentity.Split(versionSeparator);
+            var (packageId, versionString) = (splitPackageIdentity.ElementAtOrDefault(0), splitPackageIdentity.ElementAtOrDefault(1));
 
             if (string.IsNullOrEmpty(packageId))
             {
@@ -39,16 +44,21 @@ namespace Microsoft.DotNet.Cli
 
             if (string.IsNullOrEmpty(versionString))
             {
-                return new PackageIdentity(packageId, null);
+                return new PackageIdentityWithRange(packageId, null);
             }
 
-            if (!NuGetVersion.TryParse(versionString, out var version))
+            if (!VersionRange.TryParse(versionString, out var versionRange))
             {
                 throw new GracefulException(string.Format(CliStrings.InvalidVersion, versionString));
             }
 
-            return new PackageIdentity(packageId, new NuGetVersion(version));
+            return new PackageIdentityWithRange(packageId, versionRange);
         }
-        #endregion
+    }
+
+    public readonly record struct PackageIdentityWithRange(string Id, VersionRange? VersionRange)
+    {
+        [MemberNotNullWhen(returnValue: true, nameof(VersionRange))]
+        public bool HasVersion => VersionRange != null;
     }
 }

@@ -13,7 +13,8 @@
 
        These packages have already been signed by the FSharp build so we don't need to re-include them for signing. -->
   <PropertyGroup Condition="'$(EnableDefaultArtifacts)' == 'true'">
-    <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' != 'release'">Shipping</FSharpCorePath>
+    <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' == ''">Shipping</FSharpCorePath>
+    <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' == 'prerelease'">PreRelease</FSharpCorePath>
     <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' == 'release'">Release</FSharpCorePath>
 
     <!--
@@ -35,7 +36,7 @@
     <Artifact Update="$(ArtifactsShippingPackagesDir)dotnet-sdk-pgo-*" Visibility="External" />
   </ItemGroup>
 
-  <!-- temporarily remove the .Msi workload pack nugets in the SDK official build until we switch to the VMR, but keep the manifest .Msi packages -->
+  <!-- Temporarily remove the .Msi workload pack nugets in non .NET product build mode (until the repo official build gets removed), but keep the manifest .Msi packages. -->
   <ItemGroup Condition="'$(DotNetBuild)' != 'true'">
     <MsiPackages Include="$(ArtifactsShippingPackagesDir)*.Msi.*.nupkg" />
     <MsiPackages Remove="$(ArtifactsShippingPackagesDir)*.Manifest-*.Msi.*.nupkg" />

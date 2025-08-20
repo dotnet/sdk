@@ -1,11 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
+[Collection(nameof(InProcBuildTestCollection))]
 public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {
     public enum TriggerEvent
@@ -94,14 +94,13 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
     {
         var console = new TestConsole(Logger);
         var reporter = new TestReporter(Logger);
+        var environmentOptions = TestOptions.GetEnvironmentOptions(workingDirectory, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset);
+        var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout);
 
         var program = Program.TryCreate(
            TestOptions.GetCommandLineOptions(["--verbose", ..args, "--project", projectPath]),
            console,
-           TestOptions.GetEnvironmentOptions(workingDirectory, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset) with
-           {
-               ProcessCleanupTimeout = TimeSpan.FromSeconds(0),
-           },
+           environmentOptions,
            reporter,
            out var errorCode);
 
@@ -114,7 +113,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             serviceHolder.Value = s;
         });
 
-        var watcher = Assert.IsType<HotReloadDotNetWatcher>(program.CreateWatcher(factory));
+        var watcher = new HotReloadDotNetWatcher(program.CreateContext(processRunner), console, runtimeProcessLauncherFactory: factory);
 
         var shutdownSource = new CancellationTokenSource();
         var watchTask = Task.Run(async () =>
@@ -188,7 +187,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
         var sessionStarted = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadSessionStarted);
-        var projectBaselinesUpdated = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectBaselinesUpdated);
+        var projectBaselinesUpdated = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectsRebuilt);
         await launchCompletionA.Task;
         await launchCompletionB.Task;
 
@@ -503,6 +502,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
         var sessionStarted = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadSessionStarted);
+        var applyUpdateVerbose = w.Reporter.RegisterSemaphore(MessageDescriptor.ApplyUpdate_Verbose);
 
         // let the host process start:
         Log("Waiting for changes...");
@@ -516,6 +516,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await sessionStarted.WaitAsync(w.ShutdownSource.Token);
 
         // Terminate the process:
+        Log($"Terminating process {runningProject.ProjectNode.GetDisplayName()} ...");
         await w.Service.ProjectLauncher.TerminateProcessAsync(runningProject, CancellationToken.None);
 
         // rude edit in A (changing assembly level attribute):
@@ -526,8 +527,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Log("Waiting for change handled ...");
         await changeHandled.WaitAsync(w.ShutdownSource.Token);
 
-        w.Reporter.ProcessOutput.Contains("verbose ⌚ Rude edits detected but do not affect any running process");
-        w.Reporter.ProcessOutput.Contains($"verbose ❌ {serviceSourceA2}(1,12): error ENC0003: Updating 'attribute' requires restarting the application.");
+        Log("Waiting for verbose rude edit reported ...");
+        await applyUpdateVerbose.WaitAsync(w.ShutdownSource.Token);
     }
 
     public enum DirectoryKind
@@ -592,8 +593,9 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
         var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
         var ignoringChangeInHiddenDirectory = w.Reporter.RegisterSemaphore(MessageDescriptor.IgnoringChangeInHiddenDirectory);
-        var ignoringChangeInOutputDirectory = w.Reporter.RegisterSemaphore(MessageDescriptor.IgnoringChangeInOutputDirectory);
+        var ignoringChangeInExcludedFile = w.Reporter.RegisterSemaphore(MessageDescriptor.IgnoringChangeInExcludedFile);
         var fileAdditionTriggeredReEvaluation = w.Reporter.RegisterSemaphore(MessageDescriptor.FileAdditionTriggeredReEvaluation);
+        var reEvaluationCompleted = w.Reporter.RegisterSemaphore(MessageDescriptor.ReEvaluationCompleted);
         var noHotReloadChangesToApply = w.Reporter.RegisterSemaphore(MessageDescriptor.NoCSharpChangesToApply);
 
         Log("Waiting for changes...");
@@ -616,6 +618,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             case (isExisting: false, isIncluded: _, directoryKind: DirectoryKind.Ordinary):
                 Log("Waiting for file addition re-evalutation ...");
                 await fileAdditionTriggeredReEvaluation.WaitAsync(w.ShutdownSource.Token);
+                Log("Waiting for re-evalutation to complete ...");
+                await reEvaluationCompleted.WaitAsync(w.ShutdownSource.Token);
                 break;
 
             case (isExisting: _, isIncluded: _, directoryKind: DirectoryKind.Hidden):
@@ -625,11 +629,57 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
             case (isExisting: _, isIncluded: _, directoryKind: DirectoryKind.Bin or DirectoryKind.Obj):
                 Log("Waiting for ignored change in output dir ...");
-                await ignoringChangeInOutputDirectory.WaitAsync(w.ShutdownSource.Token);
+                await ignoringChangeInExcludedFile.WaitAsync(w.ShutdownSource.Token);
                 break;
 
             default:
                 throw new InvalidOperationException();
         }
+    }
+
+    [Fact]
+    public async Task ProjectAndSourceFileChange()
+    {
+        var testAsset = CopyTestAsset("WatchHotReloadApp");
+
+        var workingDirectory = testAsset.Path;
+        var projectPath = Path.Combine(testAsset.Path, "WatchHotReloadApp.csproj");
+        var programPath = Path.Combine(testAsset.Path, "Program.cs");
+
+        await using var w = StartWatcher(testAsset, [], workingDirectory, projectPath);
+
+        var fileChangesCompleted = w.CreateCompletionSource();
+        w.Watcher.Test_FileChangesCompletedTask = fileChangesCompleted.Task;
+
+        var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
+
+        var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
+
+        var hasUpdatedOutput = w.CreateCompletionSource();
+        w.Reporter.OnProcessOutput += line =>
+        {
+            if (line.Content.Contains("System.Xml.Linq.XDocument"))
+            {
+                hasUpdatedOutput.TrySetResult();
+            }
+        };
+
+        // let the host process start:
+        Log("Waiting for changes...");
+        await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
+
+        // change the project and source files at the same time:
+
+        UpdateSourceFile(programPath, src => src.Replace("""Console.WriteLine(".");""", """Console.WriteLine(typeof(XDocument));"""));
+        UpdateSourceFile(projectPath, src => src.Replace("<!-- items placeholder -->", """<Using Include="System.Xml.Linq"/>"""));
+
+        // done updating files:
+        fileChangesCompleted.TrySetResult();
+
+        Log("Waiting for change handled ...");
+        await changeHandled.WaitAsync(w.ShutdownSource.Token);
+
+        Log("Waiting for output 'System.Xml.Linq.XDocument'...");
+        await hasUpdatedOutput.Task;
     }
 }

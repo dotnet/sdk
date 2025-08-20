@@ -1,7 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using Microsoft.DotNet.Cli.Commands.Workload.Clean;
 using Microsoft.DotNet.Cli.Commands.Workload.Config;
 using Microsoft.DotNet.Cli.Commands.Workload.Elevate;
@@ -25,27 +28,26 @@ namespace Microsoft.DotNet.Cli.Commands.Workload;
 internal static class WorkloadCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-workload";
-
-    private static readonly Command Command = ConstructCommand();
-
     public static readonly Option<bool> InfoOption = new("--info")
     {
         Description = CliCommandStrings.WorkloadInfoDescription,
-        Arity = ArgumentArity.Zero
+        Arity = ArgumentArity.Zero,
+        Action = new ShowWorkloadsInfoAction()
     };
 
     public static readonly Option<bool> VersionOption = new("--version")
     {
         Description = CliCommandStrings.WorkloadVersionDescription,
-        Arity = ArgumentArity.Zero
+        Arity = ArgumentArity.Zero,
+        Action = new ShowWorkloadsVersionOption()
     };
 
     public static Command GetCommand()
     {
-        Command.Options.Add(InfoOption);
-        Command.Options.Add(VersionOption);
         return Command;
     }
+
+    private static readonly Command Command = ConstructCommand();
 
     internal static string GetWorkloadsVersion(WorkloadInfoHelper workloadInfoHelper = null)
     {
@@ -66,8 +68,10 @@ internal static class WorkloadCommandParser
         void WriteUpdateModeAndAnyError(string indent = "")
         {
             var useWorkloadSets = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(workloadInfoHelper._currentSdkFeatureBand, workloadInfoHelper.UserLocalPath), "default.json")).ShouldUseWorkloadSets();
-            var workloadSetsString = useWorkloadSets ? "workload sets" : "loose manifests";
-            reporter.WriteLine(indent + string.Format(CliCommandStrings.WorkloadManifestInstallationConfiguration, workloadSetsString));
+            var configurationMessage = useWorkloadSets
+                ? CliCommandStrings.WorkloadManifestInstallationConfigurationWorkloadSets
+                : CliCommandStrings.WorkloadManifestInstallationConfigurationLooseManifests;
+            reporter.WriteLine(indent + configurationMessage);
 
             if (!versionInfo.IsInstalled)
             {
@@ -78,11 +82,11 @@ internal static class WorkloadCommandParser
                 reporter.WriteLine(indent + CliCommandStrings.ShouldInstallAWorkloadSet);
             }
         }
-        
+
         if (showVersion)
         {
             reporter.WriteLine($" Workload version: {GetWorkloadsVersion()}");
-            
+
             WriteUpdateModeAndAnyError(indent: " ");
             reporter.WriteLine();
         }
@@ -134,22 +138,7 @@ internal static class WorkloadCommandParser
         }
     }
 
-    private static int ProcessArgs(ParseResult parseResult)
-    {
-        if (parseResult.HasOption(InfoOption) && parseResult.RootSubCommandResult() == "workload")
-        {
-            ShowWorkloadsInfo(parseResult);
-            Reporter.Output.WriteLine(string.Empty);
-            return 0;
-        }
-        else if (parseResult.HasOption(VersionOption) && parseResult.RootSubCommandResult() == "workload")
-        {
-            Reporter.Output.WriteLine(GetWorkloadsVersion());
-            Reporter.Output.WriteLine(string.Empty);
-            return 0;
-        }
-        return parseResult.HandleMissingCommand();
-    }
+    private static int ProcessArgs(ParseResult parseResult) => parseResult.HandleMissingCommand();
 
     private static Command ConstructCommand()
     {
@@ -167,9 +156,12 @@ internal static class WorkloadCommandParser
         command.Subcommands.Add(WorkloadConfigCommandParser.GetCommand());
         command.Subcommands.Add(WorkloadHistoryCommandParser.GetCommand());
 
+        command.Options.Add(InfoOption);
+        command.Options.Add(VersionOption);
+
         command.Validators.Add(commandResult =>
         {
-            if (commandResult.GetResult(InfoOption) is null && commandResult.GetResult(VersionOption) is null && !commandResult.Children.Any(child => child is System.CommandLine.Parsing.CommandResult))
+            if (commandResult.HasOption(InfoOption) && commandResult.HasOption(VersionOption) && !commandResult.Children.Any(child => child is System.CommandLine.Parsing.CommandResult))
             {
                 commandResult.AddError(CliStrings.RequiredCommandNotPassed);
             }
@@ -178,5 +170,35 @@ internal static class WorkloadCommandParser
         command.SetAction(ProcessArgs);
 
         return command;
+    }
+
+    private class ShowWorkloadsInfoAction : SynchronousCommandLineAction
+    {
+        public ShowWorkloadsInfoAction()
+        {
+            Terminating = true;
+        }
+
+        public override int Invoke(ParseResult parseResult)
+        {
+            ShowWorkloadsInfo(parseResult);
+            Reporter.Output.WriteLine(string.Empty);
+            return 0;
+        }
+    }
+
+    private class ShowWorkloadsVersionOption : SynchronousCommandLineAction
+    {
+        public ShowWorkloadsVersionOption()
+        {
+            Terminating = true;
+        }
+
+        public override int Invoke(ParseResult parseResult)
+        {
+            Reporter.Output.WriteLine(GetWorkloadsVersion());
+            Reporter.Output.WriteLine(string.Empty);
+            return 0;
+        }
     }
 }

@@ -3,26 +3,25 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
-public class MSBuildCommand(IEnumerable<string> msbuildArgs,
-    string msbuildPath = null
-        ) : MSBuildForwardingApp(msbuildArgs, msbuildPath, includeLogo: true)
+public class MSBuildCommand(
+    IEnumerable<string> msbuildArgs,
+    string? msbuildPath = null
+) : MSBuildForwardingApp(MSBuildArgs.AnalyzeMSBuildArguments([..msbuildArgs], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, MSBuildCommandParser.TargetOption, CommonOptions.VerbosityOption()), msbuildPath, includeLogo: true)
 {
-    public static MSBuildCommand FromArgs(string[] args, string msbuildPath = null)
+    public static MSBuildCommand FromArgs(string[] args, string? msbuildPath = null)
     {
-        var parser = Parser.Instance;
-        var result = parser.ParseFrom("dotnet msbuild", args);
+        var result = Parser.Parse(["dotnet", "msbuild", ..args]);
         return FromParseResult(result, msbuildPath);
     }
 
-    public static MSBuildCommand FromParseResult(ParseResult parseResult, string msbuildPath = null)
+    public static MSBuildCommand FromParseResult(ParseResult parseResult, string? msbuildPath = null)
     {
         var msbuildArgs = new List<string>();
-
-        msbuildArgs.AddRange(parseResult.GetValue(MSBuildCommandParser.Arguments));
-
+        msbuildArgs.AddRange(parseResult.GetValue(MSBuildCommandParser.Arguments) ?? []);
         msbuildArgs.AddRange(parseResult.OptionValuesToBeForwarded(MSBuildCommandParser.GetCommand()));
 
         MSBuildCommand command = new(

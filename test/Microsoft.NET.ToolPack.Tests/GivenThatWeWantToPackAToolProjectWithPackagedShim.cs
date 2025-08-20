@@ -155,9 +155,7 @@ namespace Microsoft.NET.ToolPack.Tests
 
             _testRoot = helloWorldAsset.TestRoot;
 
-            var packCommand = new PackCommand(Log, helloWorldAsset.TestRoot);
-
-            packCommand.Execute().Should().Pass();
+            new PackCommand(Log, helloWorldAsset.TestRoot).Execute().Should().Pass();
 
             string windowShimPath = Path.Combine(shimoutputPath, $"shims/{targetFramework}/win-x64/{_customToolCommandName}.exe");
             File.Exists(windowShimPath).Should().BeTrue($"Shim {windowShimPath} should exist");

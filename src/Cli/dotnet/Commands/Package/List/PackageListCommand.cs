@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Hidden.List;
 using Microsoft.DotNet.Cli.Commands.NuGet;
@@ -59,7 +61,7 @@ internal class PackageListCommand(
 
         args.Add($"-interactive:{interactive.ToString().ToLower()}");
 
-        MSBuildForwardingApp restoringCommand = new MSBuildForwardingApp(argsToForward: args);
+        MSBuildForwardingApp restoringCommand = new MSBuildForwardingApp(rawMSBuildArgs: args);
 
         int exitCode = 0;
 

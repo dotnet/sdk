@@ -18,6 +18,7 @@ internal class IncrementalMSBuildWorkspace : Workspace
     public IncrementalMSBuildWorkspace(IReporter reporter)
         : base(MSBuildMefHostServices.DefaultServices, WorkspaceKind.MSBuild)
     {
+#pragma warning disable CS0618 // https://github.com/dotnet/sdk/issues/49725
         WorkspaceFailed += (_sender, diag) =>
         {
             // Report both Warning and Failure as warnings.
@@ -26,6 +27,7 @@ internal class IncrementalMSBuildWorkspace : Workspace
             // https://github.com/dotnet/roslyn/issues/75170
             reporter.Warn($"msbuild: {diag.Diagnostic}", "⚠");
         };
+#pragma warning restore CS0618
 
         _reporter = reporter;
     }
@@ -145,13 +147,16 @@ internal class IncrementalMSBuildWorkspace : Workspace
                 var project = updatedSolution.GetProject(documentId.ProjectId);
                 Debug.Assert(project?.FilePath != null);
 
-                var sourceText = await GetSourceTextAsync(changedFile.FilePath, cancellationToken);
+                var oldText = await textDocument.GetTextAsync(cancellationToken);
+                Debug.Assert(oldText.Encoding != null);
+
+                var newText = await GetSourceTextAsync(changedFile.FilePath, oldText.Encoding, oldText.ChecksumAlgorithm, cancellationToken);
 
                 updatedSolution = textDocument switch
                 {
-                    Document document => document.WithText(sourceText).Project.Solution,
-                    AdditionalDocument ad => updatedSolution.WithAdditionalDocumentText(textDocument.Id, sourceText, PreservationMode.PreserveValue),
-                    AnalyzerConfigDocument acd => updatedSolution.WithAnalyzerConfigDocumentText(textDocument.Id, sourceText, PreservationMode.PreserveValue),
+                    Document document => document.WithText(newText).Project.Solution,
+                    AdditionalDocument ad => updatedSolution.WithAdditionalDocumentText(textDocument.Id, newText, PreservationMode.PreserveValue),
+                    AnalyzerConfigDocument acd => updatedSolution.WithAnalyzerConfigDocumentText(textDocument.Id, newText, PreservationMode.PreserveValue),
                     _ => throw new InvalidOperationException()
                 };
             }
@@ -164,11 +169,11 @@ internal class IncrementalMSBuildWorkspace : Workspace
 
     private static Solution RemoveDocuments(Solution solution, IEnumerable<DocumentId> ids)
         => solution
-        .RemoveDocuments(ids.Where(id => solution.GetDocument(id) != null).ToImmutableArray())
-        .RemoveAdditionalDocuments(ids.Where(id => solution.GetAdditionalDocument(id) != null).ToImmutableArray())
-        .RemoveAnalyzerConfigDocuments(ids.Where(id => solution.GetAnalyzerConfigDocument(id) != null).ToImmutableArray());
+        .RemoveDocuments([.. ids.Where(id => solution.GetDocument(id) != null)])
+        .RemoveAdditionalDocuments([.. ids.Where(id => solution.GetAdditionalDocument(id) != null)])
+        .RemoveAnalyzerConfigDocuments([.. ids.Where(id => solution.GetAnalyzerConfigDocument(id) != null)]);
 
-    private static async ValueTask<SourceText> GetSourceTextAsync(string filePath, CancellationToken cancellationToken)
+    private static async ValueTask<SourceText> GetSourceTextAsync(string filePath, Encoding encoding, SourceHashAlgorithm checksumAlgorithm, CancellationToken cancellationToken)
     {
         var zeroLengthRetryPerformed = false;
         for (var attemptIndex = 0; attemptIndex < 6; attemptIndex++)
@@ -180,7 +185,7 @@ internal class IncrementalMSBuildWorkspace : Workspace
                 SourceText sourceText;
                 using (var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
-                    sourceText = SourceText.From(stream, Encoding.UTF8);
+                    sourceText = SourceText.From(stream, encoding, checksumAlgorithm);
                 }
 
                 if (!zeroLengthRetryPerformed && sourceText.Length == 0)
@@ -195,7 +200,7 @@ internal class IncrementalMSBuildWorkspace : Workspace
                     await Task.Delay(20, cancellationToken);
 
                     using var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                    sourceText = SourceText.From(stream, Encoding.UTF8);
+                    sourceText = SourceText.From(stream, encoding, checksumAlgorithm);
                 }
 
                 return sourceText;

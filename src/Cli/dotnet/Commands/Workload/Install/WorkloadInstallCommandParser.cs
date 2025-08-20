@@ -32,6 +32,8 @@ internal static class WorkloadInstallCommandParser
         Description = CliCommandStrings.TempDirOptionDescription
     };
 
+    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal);
+
     private static readonly Command Command = ConstructCommand();
 
     public static Command GetCommand()
@@ -58,7 +60,7 @@ internal static class WorkloadInstallCommandParser
         command.Options.Add(SkipManifestUpdateOption);
         command.Options.Add(TempDirOption);
         command.AddWorkloadCommandNuGetRestoreActionConfigOptions();
-        command.Options.Add(CommonOptions.VerbosityOption);
+        command.Options.Add(VerbosityOption);
         command.Options.Add(SkipSignCheckOption);
         command.Options.Add(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
     }

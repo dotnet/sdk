@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Telemetry;
@@ -23,8 +25,7 @@ public class InternalReportInstallSuccessCommand
 
     public static void ProcessInputAndSendTelemetry(string[] args, ITelemetry telemetry)
     {
-        var parser = Parser.Instance;
-        var result = parser.ParseFrom("dotnet internal-reportinstallsuccess", args);
+        var result = Parser.Parse(["dotnet", "internal-reportinstallsuccess", ..args]);
         ProcessInputAndSendTelemetry(result, telemetry);
     }
 

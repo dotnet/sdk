@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
+using System;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence;
@@ -11,6 +14,9 @@ namespace Microsoft.DotNet.Cli;
 
 public static class SlnFileFactory
 {
+    public static readonly string[] DefaultPlatforms = new[] { "Any CPU", "x64", "x86" };
+    public static readonly string[] DefaultBuildTypes = new[] { "Debug", "Release" };
+
     public static string GetSolutionFileFullPath(string slnFileOrDirectory, bool includeSolutionFilterFiles = false, bool includeSolutionXmlFiles = true)
     {
         // Throw error if slnFileOrDirectory is an invalid path
@@ -63,11 +69,17 @@ public static class SlnFileFactory
         {
             return CreateFromFilteredSolutionFile(solutionPath);
         }
-        ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new GracefulException(
-                CliStrings.CouldNotFindSolutionOrDirectory,
-                solutionPath);
-
-        return serializer.OpenAsync(solutionPath, CancellationToken.None).Result;
+        try
+        {
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath)!;
+            return serializer.OpenAsync(solutionPath, CancellationToken.None).Result;
+        }
+        catch (Exception ex)
+        {
+            throw new GracefulException(
+                CliStrings.InvalidSolutionFormatString,
+                solutionPath, ex.Message);
+        }
     }
 
     public static SolutionModel CreateFromFilteredSolutionFile(string filteredSolutionPath)

@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using NuGet.Frameworks;
@@ -21,7 +23,7 @@ public class ProjectToolsCommandResolver(
 
     private readonly IEnvironmentProvider _environment = environment;
 
-    public CommandSpec Resolve(CommandResolverArguments commandResolverArguments)
+    public CommandSpec? Resolve(CommandResolverArguments commandResolverArguments)
     {
         if (commandResolverArguments.CommandName == null
             || commandResolverArguments.ProjectDirectory == null)
@@ -36,7 +38,7 @@ public class ProjectToolsCommandResolver(
         return ResolveFromProjectTools(commandResolverArguments);
     }
 
-    private CommandSpec ResolveFromProjectTools(CommandResolverArguments commandResolverArguments)
+    private CommandSpec? ResolveFromProjectTools(CommandResolverArguments commandResolverArguments)
     {
         var projectFactory = new ProjectFactory(_environment);
 
@@ -64,7 +66,7 @@ public class ProjectToolsCommandResolver(
             project);
     }
 
-    private CommandSpec ResolveCommandSpecFromAllToolLibraries(
+    private CommandSpec? ResolveCommandSpecFromAllToolLibraries(
         IEnumerable<SingleProjectInfo> toolsLibraries,
         string commandName,
         IEnumerable<string> args,
@@ -96,7 +98,7 @@ public class ProjectToolsCommandResolver(
         return null;
     }
 
-    private CommandSpec ResolveCommandSpecFromToolLibrary(
+    private CommandSpec? ResolveCommandSpecFromToolLibrary(
         SingleProjectInfo toolLibraryRange,
         string commandName,
         IEnumerable<string> args,
@@ -115,7 +117,7 @@ public class ProjectToolsCommandResolver(
 
         List<NuGetFramework> toolFrameworksToCheck = [project.DotnetCliToolTargetFramework];
 
-        //  NuGet restore in Visual Studio may restore for netcoreapp1.0.  So if that happens, fall back to
+        //  NuGet restore in Visual Studio may restore for netcoreapp1.0. So if that happens, fall back to
         //  looking for a netcoreapp1.0 or netcoreapp1.1 tool restore.
         if (project.DotnetCliToolTargetFramework.Framework == FrameworkConstants.FrameworkIdentifiers.NetCoreApp &&
             project.DotnetCliToolTargetFramework.Version >= new Version(2, 0, 0))
@@ -124,9 +126,8 @@ public class ProjectToolsCommandResolver(
             toolFrameworksToCheck.Add(NuGetFramework.Parse("netcoreapp1.0"));
         }
 
-
-        LockFile toolLockFile = null;
-        NuGetFramework toolTargetFramework = null; ;
+        LockFile? toolLockFile = null;
+        NuGetFramework? toolTargetFramework = null;
 
         foreach (var toolFramework in toolFrameworksToCheck)
         {
@@ -165,11 +166,11 @@ public class ProjectToolsCommandResolver(
             return null;
         }
 
-        var depsFileRoot = Path.GetDirectoryName(toolLockFile.Path);
+        var depsFileRoot = Path.GetDirectoryName(toolLockFile.Path)!;
 
         var depsFilePath = GetToolDepsFilePath(
             toolLibraryRange,
-            toolTargetFramework,
+            toolTargetFramework!, // should be safe now because we found the toolLockFile
             toolLockFile,
             depsFileRoot,
             project.ToolDepsJsonGeneratorProject);
@@ -209,14 +210,14 @@ public class ProjectToolsCommandResolver(
         return [];
     }
 
-    private LockFile GetToolLockFile(
+    private LockFile? GetToolLockFile(
         SingleProjectInfo toolLibrary,
         NuGetFramework framework,
         IEnumerable<string> possibleNugetPackagesRoot)
     {
         foreach (var packagesRoot in possibleNugetPackagesRoot)
         {
-            if (TryGetToolLockFile(toolLibrary, framework, packagesRoot, out LockFile lockFile))
+            if (TryGetToolLockFile(toolLibrary, framework, packagesRoot, out var lockFile))
             {
                 return lockFile;
             }
@@ -238,7 +239,7 @@ public class ProjectToolsCommandResolver(
         SingleProjectInfo toolLibrary,
         NuGetFramework framework,
         string nugetPackagesRoot,
-        out LockFile lockFile)
+        [NotNullWhen(true)] out LockFile? lockFile)
     {
         lockFile = null;
         var lockFilePath = GetToolLockFilePath(toolLibrary, framework, nugetPackagesRoot);
@@ -348,14 +349,14 @@ public class ProjectToolsCommandResolver(
 
         if (platformLibrary != null)
         {
-            string buildRelativePath = platformLibrary.Build.FirstOrDefault()?.Path;
+            string? buildRelativePath = platformLibrary.Build.FirstOrDefault()?.Path;
 
             var platformLibraryPath = toolLockFile.GetPackageDirectory(platformLibrary);
 
             if (platformLibraryPath != null && buildRelativePath != null)
             {
                 //  Get rid of "_._" filename
-                buildRelativePath = Path.GetDirectoryName(buildRelativePath);
+                buildRelativePath = Path.GetDirectoryName(buildRelativePath)!;
 
                 string platformLibraryBuildFolderPath = Path.Combine(platformLibraryPath, buildRelativePath);
                 var platformLibraryPropsFile = Directory.GetFiles(platformLibraryBuildFolderPath, "*.props").FirstOrDefault();
@@ -381,10 +382,11 @@ public class ProjectToolsCommandResolver(
             ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args)));
 
         int result;
-        string stdOut;
-        string stdErr;
+        string? stdOut;
+        string? stdErr;
 
-        var forwardingAppWithoutLogging = new MSBuildForwardingAppWithoutLogging(args, msBuildExePath);
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([..args], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, BuildCommandParser.TargetOption, BuildCommandParser.VerbosityOption);
+        var forwardingAppWithoutLogging = new MSBuildForwardingAppWithoutLogging(msbuildArgs, msBuildExePath);
         if (forwardingAppWithoutLogging.ExecuteMSBuildOutOfProc)
         {
             result = forwardingAppWithoutLogging

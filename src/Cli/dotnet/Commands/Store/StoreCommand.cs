@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Extensions;
@@ -17,14 +19,13 @@ public class StoreCommand : MSBuildForwardingApp
 
     public static StoreCommand FromArgs(string[] args, string msbuildPath = null)
     {
-        var parser = Parser.Instance;
-        var result = parser.ParseFrom("dotnet store", args);
+        var result = Parser.Parse(["dotnet", "store", ..args]);
         return FromParseResult(result, msbuildPath);
     }
 
     public static StoreCommand FromParseResult(ParseResult result, string msbuildPath = null)
     {
-        var msbuildArgs = new List<string>();
+        List<string> msbuildArgs = ["--target:ComposeStore"];
 
         result.ShowHelpOrErrorIfAppropriate();
 
@@ -32,8 +33,6 @@ public class StoreCommand : MSBuildForwardingApp
         {
             throw new GracefulException(CliCommandStrings.SpecifyManifests);
         }
-
-        msbuildArgs.Add("-target:ComposeStore");
 
         msbuildArgs.AddRange(result.OptionValuesToBeForwarded(StoreCommandParser.GetCommand()));
 

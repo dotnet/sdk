@@ -124,7 +124,7 @@
       </trans-unit>
       <trans-unit id="CannotRemoveVirtualOrAbstractFromMember">
         <source>Cannot remove '{0}' keyword from member '{1}'.</source>
-        <target state="new">Cannot remove '{0}' keyword from member '{1}'.</target>
+        <target state="translated">구성원 '{0}'에서 키워드 '{1}'을(를) 제거할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ElementShouldNotBeNullAtIndex">

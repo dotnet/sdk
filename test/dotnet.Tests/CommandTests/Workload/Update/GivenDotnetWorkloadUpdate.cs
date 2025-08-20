@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         {
             _reporter = new BufferedReporter();
             _manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
-            _parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update" });
+            _parseResult = Parser.Parse(new string[] { "dotnet", "workload", "update" });
         }
 
         [Fact]
@@ -49,36 +49,31 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
               ""ErrorMessage"": null,
               ""StateBeforeCommand"": {
                 ""ManifestVersions"": {
-                  ""microsoft.net.sdk.android"": ""34.0.0-rc.1.432/8.0.100-rc.1"",
-                  ""microsoft.net.sdk.aspire"": ""8.0.0-alpha.23471.13/8.0.100-rc.1""
+                  ""microsoft.net.sdk.android"": ""34.0.0-rc.1.432/8.0.100-rc.1""
                 },
                 ""InstalledWorkloads"": []
               },
               ""StateAfterCommand"": {
                 ""ManifestVersions"": {
-                  ""microsoft.net.sdk.android"": ""34.0.0-rc.1.432/8.0.100-rc.1"",
-                  ""microsoft.net.sdk.aspire"": ""8.0.0-alpha.23471.13/8.0.100-rc.1""
+                  ""microsoft.net.sdk.android"": ""34.0.0-rc.1.432/8.0.100-rc.1""
                 },
-                ""InstalledWorkloads"": [""maui-android"", ""aspire""]
+                ""InstalledWorkloads"": [""maui-android""]
               }
             }";
 
             var mauiAndroidPack = new PackInfo(new WorkloadPackId("maui-android-pack"), "34.0", WorkloadPackKind.Sdk, "androidDir", "maui-android-pack");
             var mauiIosPack = new PackInfo(new WorkloadPackId("maui-ios-pack"), "16.4", WorkloadPackKind.Framework, "iosDir", "maui-ios-pack");
-            var aspirePack = new PackInfo(new WorkloadPackId("aspire-pack"), "8.0", WorkloadPackKind.Library, "aspireDir", "aspire-pack");
 
             IEnumerable<WorkloadManifestInfo> installedManifests = new List<WorkloadManifestInfo>() {
                                                 new WorkloadManifestInfo("microsoft.net.sdk.android", "34.0.0-rc.1", "androidDirectory", "8.0.100-rc.1"),
                                                 new WorkloadManifestInfo("microsoft.net.sdk.ios", "16.4.8825", "iosDirectory", "8.0.100-rc.1") };
 
             var workloadResolver = new MockWorkloadResolver(
-                                        new string[] { "maui-android", "maui-ios", "aspire" }.Select(s => new WorkloadInfo(new WorkloadId(s), null)),
+                                        new string[] { "maui-android", "maui-ios" }.Select(s => new WorkloadInfo(new WorkloadId(s), null)),
                                         installedManifests,
                                         id => new List<WorkloadPackId>() { new WorkloadPackId(id.ToString() + "-pack") },
                                         id => id.ToString().Contains("android") ? mauiAndroidPack :
-                                              id.ToString().Contains("ios") ? mauiIosPack :
-                                              id.ToString().Contains("aspire") ? aspirePack :
-                                              null);
+                                              id.ToString().Contains("ios") ? mauiIosPack : null);
 
             IWorkloadResolverFactory mockResolverFactory = new MockWorkloadResolverFactory(
                     Path.Combine(Path.GetTempPath(), "dotnetTestPath"),
@@ -97,7 +92,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             IWorkloadManifestUpdater mockUpdater = new MockWorkloadManifestUpdater(resolver: workloadResolver);
 
             WorkloadUpdateCommand update = new(
-                Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--from-history", "2" }),
+                Parser.Parse(new string[] { "dotnet", "workload", "update", "--from-history", "2" }),
                 Reporter.Output,
                 mockResolverFactory,
                 mockInstaller,
@@ -107,9 +102,9 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             mockInstaller.InstallationRecordRepository.InstalledWorkloads.Should().BeEquivalentTo(new List<WorkloadId>() { new WorkloadId("maui-android"), new WorkloadId("maui-ios") });
             mockInstaller.GarbageCollectionCalled.Should().BeFalse();
             update.Execute();
-            mockInstaller.InstallationRecordRepository.InstalledWorkloads.Should().BeEquivalentTo(new List<WorkloadId>() { new WorkloadId("maui-android"), new WorkloadId("aspire") });
+            mockInstaller.InstallationRecordRepository.InstalledWorkloads.Should().BeEquivalentTo(new List<WorkloadId>() { new WorkloadId("maui-android") });
             mockInstaller.GarbageCollectionCalled.Should().BeTrue();
-            mockInstaller.InstalledManifests.Select(m => m.manifestUpdate.ManifestId.ToString()).Should().BeEquivalentTo(new List<string>() { "microsoft.net.sdk.android", "microsoft.net.sdk.aspire" });
+            mockInstaller.InstalledManifests.Select(m => m.manifestUpdate.ManifestId.ToString()).Should().BeEquivalentTo(new List<string>() { "microsoft.net.sdk.android" });
         }
 
         [Theory]
@@ -135,7 +130,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
 
             // Install a workload
-            var installParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", installingWorkload });
+            var installParseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", installingWorkload });
             var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: nugetDownloader,
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
             installCommand.Execute();
@@ -169,7 +164,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 dotnetRoot, userLocal, userProfileDir);
 
             // Update workload
-            var updateParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update" });
+            var updateParseResult = Parser.Parse(new string[] { "dotnet", "workload", "update" });
             var updateCommand = new WorkloadUpdateCommand(updateParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: nugetDownloader,
             workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
             updateCommand.Execute();
@@ -245,8 +240,8 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             File.Create(Path.Combine(installRoot, "metadata", "workloads", sdkFeatureVersion, "InstalledWorkloads", installingWorkload)).Close();
 
             // Update workload (without installing any workloads to this feature band)
-            new WorkloadConfigCommand(Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]), workloadResolverFactory: workloadResolverFactory).Execute().Should().Be(0);
-            var updateParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--from-previous-sdk" });
+            new WorkloadConfigCommand(Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]), workloadResolverFactory: workloadResolverFactory).Execute().Should().Be(0);
+            var updateParseResult = Parser.Parse(new string[] { "dotnet", "workload", "update", "--from-previous-sdk" });
             var updateCommand = new WorkloadUpdateCommand(updateParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: nugetDownloader,
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
             var installStatePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(new SdkFeatureBand(sdkFeatureVersion), installRoot), "default.json");
@@ -257,7 +252,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             };
             Directory.CreateDirectory(Path.GetDirectoryName(installStatePath));
             File.WriteAllText(installStatePath, oldInstallState.ToString());
-            new WorkloadConfigCommand(Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"])).Execute().Should().Be(0);
+            new WorkloadConfigCommand(Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]), workloadResolverFactory: workloadResolverFactory).Execute().Should().Be(0);
             updateCommand.Execute();
             var newInstallState = InstallStateContents.FromPath(installStatePath);
             newInstallState.Manifests.Should().BeNull();
@@ -280,7 +275,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         public void GivenWorkloadUpdateItUpdatesOutOfDatePacks()
         {
             var mockWorkloadIds = new WorkloadId[] { new WorkloadId("xamarin-android") };
-            (_, var command, var installer, _, _, _) = GetTestInstallers(_parseResult, installedWorkloads: mockWorkloadIds, installedFeatureBand: "6.0.100");
+            (_, var command, var installer, _, _, _, _) = GetTestInstallers(_parseResult, installedWorkloads: mockWorkloadIds, installedFeatureBand: "6.0.100");
 
             command.Execute();
 
@@ -324,7 +319,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 ],
                 fromWorkloadSet: true, workloadSetVersion: workloadSetVersion);
             var resolverFactory = new MockWorkloadResolverFactory(dotnetDir, sdkVersion, workloadResolver, userProfileDir);
-            var updateCommand = new WorkloadUpdateCommand(Parser.Instance.Parse("dotnet workload update"), Reporter.Output, resolverFactory, workloadInstaller, nugetPackageDownloader, workloadManifestUpdater, shouldUseWorkloadSetsFromGlobalJson: globalJsonValue);
+            var updateCommand = new WorkloadUpdateCommand(Parser.Parse("dotnet workload update"), Reporter.Output, resolverFactory, workloadInstaller, nugetPackageDownloader, workloadManifestUpdater, shouldUseWorkloadSetsFromGlobalJson: globalJsonValue);
 
             var installStatePath = Path.Combine(dotnetDir, "metadata", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), sdkVersion, "InstallState", "default.json");
             var contents = new InstallStateContents();
@@ -374,7 +369,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 { "9.0.103", workloadSet4 }
             };
 
-            var parseResult = Parser.Instance.Parse("dotnet workload update --version ios@17.5.9 macos@14.5.92");
+            var parseResult = Parser.Parse("dotnet workload update --version ios@17.5.9 macos@14.5.92");
             MockPackWorkloadInstaller installer = new(workloadSetContents: workloadSets);
             var testDirectory = _testAssetsManager.CreateTestDirectory(testName: "GivenWorkloadUpdateItFindsGreatestWorkloadSetWithSpecifiedComponents").Path;
             WorkloadManifest iosManifest = WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.iOS");
@@ -405,7 +400,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         public void GivenWorkloadUpdateItRollsBackOnFailedUpdate()
         {
             var mockWorkloadIds = new WorkloadId[] { new WorkloadId("xamarin-android"), new WorkloadId("xamarin-android-build") };
-            (_, var command, var installer, var workloadResolver, _, _) = GetTestInstallers(_parseResult, installedWorkloads: mockWorkloadIds, failingPack: "Xamarin.Android.Framework", installedFeatureBand: "6.0.100");
+            (_, var command, var installer, var workloadResolver, _, _, _) = GetTestInstallers(_parseResult, installedWorkloads: mockWorkloadIds, failingPack: "Xamarin.Android.Framework", installedFeatureBand: "6.0.100");
 
 
             var exceptionThrown = Assert.Throws<GracefulException>(() => command.Execute());
@@ -424,8 +419,8 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         {
             var mockWorkloadIds = new WorkloadId[] { new WorkloadId("xamarin-android") };
             var cachePath = Path.Combine(_testAssetsManager.CreateTestDirectory(identifier: "cachePath").Path, "mockCachePath");
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--download-to-cache", cachePath });
-            (_, var command, _, _, var manifestUpdater, var packageDownloader) = GetTestInstallers(parseResult, installedWorkloads: mockWorkloadIds, includeInstalledPacks: true, installedFeatureBand: "6.0.100");
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "update", "--download-to-cache", cachePath });
+            (_, var command, _, _, var manifestUpdater, var packageDownloader, _) = GetTestInstallers(parseResult, installedWorkloads: mockWorkloadIds, includeInstalledPacks: true, installedFeatureBand: "6.0.100");
 
             command.Execute();
 
@@ -445,8 +440,8 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         {
             var mockWorkloadIds = new WorkloadId[] { new WorkloadId("xamarin-android") };
             var cachePath = "mockCachePath";
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--from-cache", cachePath });
-            (_, var command, var installer, _, _, var nugetDownloader) = GetTestInstallers(parseResult, installedWorkloads: mockWorkloadIds, installedFeatureBand: "6.0.100");
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "update", "--from-cache", cachePath });
+            (_, var command, var installer, _, _, var nugetDownloader, _) = GetTestInstallers(parseResult, installedWorkloads: mockWorkloadIds, installedFeatureBand: "6.0.100");
 
             command.Execute();
 
@@ -461,8 +456,8 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         public void GivenWorkloadUpdateItPrintsDownloadUrls()
         {
             var mockWorkloadIds = new WorkloadId[] { new WorkloadId("xamarin-android") };
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--print-download-link-only" });
-            (_, var command, _, _, _, _) = GetTestInstallers(parseResult, installedWorkloads: mockWorkloadIds, includeInstalledPacks: true, installedFeatureBand: "6.0.100");
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "update", "--print-download-link-only" });
+            (_, var command, _, _, _, _, _) = GetTestInstallers(parseResult, installedWorkloads: mockWorkloadIds, includeInstalledPacks: true, installedFeatureBand: "6.0.100");
 
             command.Execute();
 
@@ -475,8 +470,8 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         public void GivenWorkloadUpdateItPrintsDownloadUrlsForNewFeatureBand()
         {
             var mockWorkloadIds = new WorkloadId[] { new WorkloadId("xamarin-android") };
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--print-download-link-only", "--sdk-version", "7.0.100" });
-            (_, var command, _, _, _, _) = GetTestInstallers(parseResult, installedWorkloads: mockWorkloadIds, includeInstalledPacks: true, sdkVersion: "6.0.400");
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "update", "--print-download-link-only", "--sdk-version", "7.0.100" });
+            (_, var command, _, _, _, _, _) = GetTestInstallers(parseResult, installedWorkloads: mockWorkloadIds, includeInstalledPacks: true, sdkVersion: "6.0.400");
 
             command.Execute();
 
@@ -492,7 +487,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             var sdkFeatureVersion = "7.0.100";
-            var updateParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--sdk-version", sdkFeatureVersion });
+            var updateParseResult = Parser.Parse(new string[] { "dotnet", "workload", "update", "--sdk-version", sdkFeatureVersion });
 
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver: null, userProfileDir);
 
@@ -503,8 +498,8 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         [Fact]
         public void GivenOnlyUpdateAdManifestItSucceeds()
         {
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--advertising-manifests-only" });
-            (_, var command, _, _, var manifestUpdater, _) = GetTestInstallers(parseResult, installedFeatureBand: "6.0.100");
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "update", "--advertising-manifests-only" });
+            (_, var command, _, _, var manifestUpdater, _, _) = GetTestInstallers(parseResult, installedFeatureBand: "6.0.100");
 
             command.Execute();
             manifestUpdater.UpdateAdvertisingManifestsCallCount.Should().Be(1);
@@ -513,8 +508,8 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         [Fact]
         public void GivenPrintRollbackDefinitionItIncludesAllInstalledManifests()
         {
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--print-rollback" });
-            (_, var updateCommand, _, _, _, _) = GetTestInstallers(parseResult, installedFeatureBand: "6.0.100");
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "update", "--print-rollback" });
+            (_, var updateCommand, _, _, _, _, _) = GetTestInstallers(parseResult, installedFeatureBand: "6.0.100");
 
 
             updateCommand.Execute();
@@ -532,17 +527,17 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         [InlineData("6.0.300", "5.0.100")]
         public void ApplyRollbackAcrossFeatureBand(string existingSdkFeatureBand, string newSdkFeatureBand)
         {
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--from-rollback-file", "rollback.json" });
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "update", "--from-rollback-file", "rollback.json" });
 
             var manifestsToUpdate =
                 new ManifestUpdateWithWorkloads[]
                     {
                         new(new ManifestVersionUpdate(new ManifestId("mock-manifest"), new ManifestVersion("2.0.0"), newSdkFeatureBand), null),
                     };
-            (var dotnetPath, var updateCommand, var packInstaller, _, _, _) = GetTestInstallers(parseResult, manifestUpdates: manifestsToUpdate, sdkVersion: "6.0.300", identifier: existingSdkFeatureBand + newSdkFeatureBand, installedFeatureBand: existingSdkFeatureBand);
+            (var dotnetPath, var updateCommand, var packInstaller, _, _, _, var resolverFactory) = GetTestInstallers(parseResult, manifestUpdates: manifestsToUpdate, sdkVersion: "6.0.300", identifier: existingSdkFeatureBand + newSdkFeatureBand, installedFeatureBand: existingSdkFeatureBand);
 
-            parseResult = Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]);
-            WorkloadConfigCommand configCommand = new(parseResult);
+            parseResult = Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]);
+            WorkloadConfigCommand configCommand = new(parseResult, workloadResolverFactory: resolverFactory);
             configCommand.Execute().Should().Be(0);
             updateCommand.Execute()
                 .Should().Be(0);
@@ -562,7 +557,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         [Fact]
         public void ApplyRollbackWithMultipleManifestsAcrossFeatureBand()
         {
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--from-rollback-file", "rollback.json" });
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "update", "--from-rollback-file", "rollback.json" });
 
             var manifestsToUpdate =
                 new ManifestUpdateWithWorkloads[]
@@ -571,7 +566,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                         new(new ManifestVersionUpdate(new ManifestId("mock-manifest-2"), new ManifestVersion("2.0.0"), "6.0.300"), null),
                         new(new ManifestVersionUpdate(new ManifestId("mock-manifest-3"), new ManifestVersion("2.0.0"), "6.0.100"), null),
                     };
-            (_, var updateCommand, var packInstaller, _, _, _) = GetTestInstallers(parseResult, manifestUpdates: manifestsToUpdate, sdkVersion: "6.0.300", installedFeatureBand: "6.0.300");
+            (_, var updateCommand, var packInstaller, _, _, _, _) = GetTestInstallers(parseResult, manifestUpdates: manifestsToUpdate, sdkVersion: "6.0.300", installedFeatureBand: "6.0.300");
 
             updateCommand.Execute()
                 .Should().Be(0);
@@ -598,7 +593,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var rollbackFilePath = Path.Combine(testDirectory, "rollback.json");
             File.WriteAllText(rollbackFilePath, mockRollbackFileContent);
 
-            var updateParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--from-rollback-file", rollbackFilePath });
+            var updateParseResult = Parser.Parse(new string[] { "dotnet", "workload", "update", "--from-rollback-file", rollbackFilePath });
 
             string sdkVersion = "6.0.100";
 
@@ -614,7 +609,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             exception.InnerException.Message.Should().Contain(string.Format(CliCommandStrings.InvalidVersionForWorkload, "mock.workload", "6.0.0.15"));
         }
 
-        internal (string, WorkloadUpdateCommand, MockPackWorkloadInstaller, IWorkloadResolver, MockWorkloadManifestUpdater, MockNuGetPackageDownloader) GetTestInstallers(
+        internal (string, WorkloadUpdateCommand, MockPackWorkloadInstaller, IWorkloadResolver, MockWorkloadManifestUpdater, MockNuGetPackageDownloader, IWorkloadResolverFactory) GetTestInstallers(
             ParseResult parseResult,
             [CallerMemberName] string testName = "",
             string failingWorkload = null,
@@ -657,7 +652,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 nugetPackageDownloader: nugetDownloader,
                 workloadManifestUpdater: manifestUpdater);
 
-            return (dotnetRoot, installManager, installer, workloadResolver, manifestUpdater, nugetDownloader);
+            return (dotnetRoot, installManager, installer, workloadResolver, manifestUpdater, nugetDownloader, workloadResolverFactory);
         }
     }
 }

@@ -1611,7 +1611,7 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to instatiate template &apos;{0}&apos;, the following constraints are not met:.
+        ///   Looks up a localized string similar to Failed to instantiate template &apos;{0}&apos;, the following constraints are not met:.
         /// </summary>
         internal static string TemplateCommand_DisplayConstraintResults_Error {
             get {

@@ -1,10 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
@@ -45,9 +48,17 @@ internal sealed class TestModulesFilterHandler(TestApplicationActionQueue action
             return false;
         }
 
+        var muxerPath = new Muxer().MuxerPath;
         foreach (string testModule in testModulePaths)
         {
-            var testApp = new ParallelizableTestModuleGroupWithSequentialInnerModules(new TestModule(new RunProperties(testModule, null, null), null, null, true, true, null));
+            // We want to produce the right RunCommand and RunArguments for TestApplication implementation to consume directly.
+            // We don't want TestApplication class to be concerned about whether it's running dll via test module or not.
+            // If we are given dll, we use dotnet exec. Otherwise, we run the executable directly.
+            RunProperties runProperties = testModule.HasExtension(CliConstants.DLLExtension)
+                ? new RunProperties(muxerPath, $@"exec ""{testModule}""", null)
+                : new RunProperties(testModule, null, null);
+
+            var testApp = new ParallelizableTestModuleGroupWithSequentialInnerModules(new TestModule(runProperties, null, null, true, true, null, testModule, DotnetRootArchVariableName: null));
             // Write the test application to the channel
             _actionQueue.Enqueue(testApp);
         }
