@@ -57,7 +57,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   
   <PropertyGroup>
     <_TargetFrameworkVersionWithoutV>$(TargetFrameworkVersion.TrimStart('vV'))</_TargetFrameworkVersionWithoutV>
-    <EffectiveTargetPlatformVersion>$(TargetPlatformVersion)</EffectiveTargetPlatformVersion>
   </PropertyGroup>
 
   <!--
@@ -80,7 +79,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <TargetPlatformVersion Condition="'$(TargetPlatformVersion)' == '' or ('$(TargetPlatformIdentifier)' == 'Windows' and !$([MSBuild]::VersionGreaterThanOrEquals($(TargetPlatformVersion), 10.0)))" >$([MSBuild]::GetTargetPlatformVersion('$(TargetFramework)', 2))</TargetPlatformVersion>
     <TargetPlatformVersion Condition="$([MSBuild]::VersionEquals($(TargetPlatformVersion), 0.0))" ></TargetPlatformVersion>
-    <EffectiveTargetPlatformVersion Condition="'$(_TargetPlatformVersionUsesCsWinRT3)' == 'false'">$(TargetPlatformVersion)</EffectiveTargetPlatformVersion>
+    <EffectiveTargetPlatformVersion Condition="'$(_TargetPlatformVersionUsesCsWinRT3)' != 'true'">$(TargetPlatformVersion)</EffectiveTargetPlatformVersion>
     <!-- Normalize casing of windows to Windows -->
     <TargetPlatformIdentifier Condition="'$(TargetPlatformIdentifier)' == 'Windows'">Windows</TargetPlatformIdentifier>
   </PropertyGroup>

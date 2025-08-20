@@ -29,6 +29,21 @@ Copyright (c) .NET Foundation. All rights reserved.
     <TargetPlatformVersionSupported>true</TargetPlatformVersionSupported>
   </PropertyGroup>
 
+  <!-- If EffectiveTargetPlatformVersion isn't set, then someone may have manually set TargetPlatformVersion in their Directory.Build.targets
+       which wasn't processed before. -->
+  <PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'windows' and '$(TargetPlatformVersion)' != '' and '$(EffectiveTargetPlatformVersion)' == ''" >
+    <!--
+      In order to support multi-targeting between CsWinRT 2.x and CsWinRT 3.0, we use the revision number of the Windows SDK to indicate the CsWinRT version.
+      Specifically, '.0' indicates CsWinRT 2.x, and '.1' indicates CsWinRT 3.0. Because we want the rest of the tooling to still always see the '.0' version
+      for the Windows SDK (as the '.1' only has meaning for the .NET SDK and TFM in NuGet), here we check if we're using CsWinRT 3.0, and if so we have a version
+      of the target platform version with the revision number reset back to '.0' as EffectiveTargetPlatformVersion which we use in other places.
+      EffectiveTargetPlatformVersion is set to TargetPlatformVersion in other scenarios.
+    -->
+    <_TargetPlatformVersionUsesCsWinRT3 Condition="$([System.Version]::Parse('$(TargetPlatformVersion)').Revision) == 1">true</_TargetPlatformVersionUsesCsWinRT3>
+    <EffectiveTargetPlatformVersion Condition="'$(_TargetPlatformVersionUsesCsWinRT3)' == 'true'">$([System.Version]::Parse('$(TargetPlatformVersion)').Major).$([System.Version]::Parse('$(TargetPlatformVersion)').Minor).$([System.Version]::Parse('$(TargetPlatformVersion)').Build).0</EffectiveTargetPlatformVersion>
+    <EffectiveTargetPlatformVersion Condition="'$(_TargetPlatformVersionUsesCsWinRT3)' != 'true'">$(TargetPlatformVersion)</EffectiveTargetPlatformVersion>
+  </PropertyGroup>
+
   <!-- Set 7.0 as the TargetPlatformVersion for windows. -->
   <PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'windows' and '$(TargetPlatformVersion)' == ''" >
     <TargetPlatformVersion>7.0</TargetPlatformVersion>
