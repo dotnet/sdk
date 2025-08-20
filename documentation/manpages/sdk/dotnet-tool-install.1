@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-tool-install" "1" "2025-07-30" "" ".NET Documentation"
+.TH "dotnet-tool-install" "1" "2025-08-15" "" ".NET Documentation"
 .hy
 .SH dotnet tool install
 .PP
@@ -65,6 +65,11 @@ To install a global tool in the default location, use the \f[V]--global\f[R] opt
 To install a global tool in a custom location, use the \f[V]--tool-path\f[R] option.
 .IP \[bu] 2
 To install a local tool, omit the \f[V]--global\f[R] and \f[V]--tool-path\f[R] options.
+.RS
+.PP
+[!WARNING] Make sure the directory you specify with the \f[V]--tool-path\f[R] option is secure.
+Tools installed in this location can be executed directly, so using an untrusted or shared path might introduce security risks.
+.RE
 .SS Installation locations
 .SS Global tools
 .PP
@@ -187,6 +192,14 @@ If one is found, create the manifest in that directory.
 If neither of the previous two steps finds a directory, create the manifest in the current working directory.
 .PP
 For more information on how manifests are located, see Install a local tool.
+.PP
+Starting in .NET 10, this flag is applied automatically if no tools manifest is found.
+.RS
+.PP
+[!WARNING] Don\[cq]t run tool commands from the \f[B]Downloads\f[R] folder or any shared location.
+The CLI walks up the directory tree to find a tool manifest, which might cause it to use a manifest you don\[cq]t expect.
+Always run tool commands from a trusted, project-specific directory.
+.RE
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--disable-parallel\f[B]\f[R]
