@@ -60,15 +60,15 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             // We should get correct RunProperties right away.
             // For the case of dotnet test --test-modules path/to/dll, the TestModulesFilterHandler is responsible
             // for providing the dotnet muxer as RunCommand, and `exec "path/to/dll"` as RunArguments.
-            FileName = Module.RunProperties.RunCommand,
+            FileName = Module.RunProperties.Command,
             Arguments = GetArguments(testOptions),
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
 
-        if (!string.IsNullOrEmpty(Module.RunProperties.RunWorkingDirectory))
+        if (!string.IsNullOrEmpty(Module.RunProperties.WorkingDirectory))
         {
-            processStartInfo.WorkingDirectory = Module.RunProperties.RunWorkingDirectory;
+            processStartInfo.WorkingDirectory = Module.RunProperties.WorkingDirectory;
         }
 
         if (Module.LaunchSettings is not null)
@@ -103,7 +103,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         // RunArguments is intentionally not escaped. It can contain multiple arguments and spaces there shouldn't cause the whole
         // value to be wrapped in double quotes. This matches dotnet run behavior.
         // In short, it's expected to already be escaped properly.
-        StringBuilder builder = new(Module.RunProperties.RunArguments);
+        StringBuilder builder = new(Module.RunProperties.Arguments);
 
         if (testOptions.IsHelp)
         {
@@ -298,9 +298,9 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
 
     private bool ModulePathExists()
     {
-        if (!File.Exists(Module.RunProperties.RunCommand))
+        if (!File.Exists(Module.RunProperties.Command))
         {
-            ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{Module.RunProperties.RunCommand}' not found. Build the test application before or run 'dotnet test'." });
+            ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{Module.RunProperties.Command}' not found. Build the test application before or run 'dotnet test'." });
             return false;
         }
         return true;
@@ -356,19 +356,19 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
     {
         StringBuilder builder = new();
 
-        if (!string.IsNullOrEmpty(Module.RunProperties.RunCommand))
+        if (!string.IsNullOrEmpty(Module.RunProperties.Command))
         {
-            builder.Append($"{ProjectProperties.RunCommand}: {Module.RunProperties.RunCommand}");
+            builder.Append($"{ProjectProperties.RunCommand}: {Module.RunProperties.Command}");
         }
 
-        if (!string.IsNullOrEmpty(Module.RunProperties.RunArguments))
+        if (!string.IsNullOrEmpty(Module.RunProperties.Arguments))
         {
-            builder.Append($"{ProjectProperties.RunArguments}: {Module.RunProperties.RunArguments}");
+            builder.Append($"{ProjectProperties.RunArguments}: {Module.RunProperties.Arguments}");
         }
 
-        if (!string.IsNullOrEmpty(Module.RunProperties.RunWorkingDirectory))
+        if (!string.IsNullOrEmpty(Module.RunProperties.WorkingDirectory))
         {
-            builder.Append($"{ProjectProperties.RunWorkingDirectory}: {Module.RunProperties.RunWorkingDirectory}");
+            builder.Append($"{ProjectProperties.RunWorkingDirectory}: {Module.RunProperties.WorkingDirectory}");
         }
 
         if (!string.IsNullOrEmpty(Module.ProjectFullPath))
