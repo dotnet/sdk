@@ -728,7 +728,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
-                .Execute()
+                .Execute("/bl:helixfailure.binlog")
                 .Should().Pass()
                 .And.HaveStdOutContaining("warning IL3050")
                 .And.HaveStdOutContaining("warning IL3056")
