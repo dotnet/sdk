@@ -1845,8 +1845,8 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">No hay cargas de trabajo instaladas, no hay nada que reparar. Ejecute "dotnet workload search" para buscar las cargas de trabajo que se van a instalar.</target>
-        <note />
+        <target state="needs-review-translation">No hay cargas de trabajo instaladas, no hay nada que reparar. Ejecute "dotnet workload search" para buscar las cargas de trabajo que se van a instalar.</target>
+        <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
@@ -1910,12 +1910,12 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="PackCmdVersion">
         <source>VERSION</source>
-        <target state="new">VERSION</target>
+        <target state="translated">VERSIÓN</target>
         <note />
       </trans-unit>
       <trans-unit id="PackCmdVersionDescription">
         <source>The version of the package to create</source>
-        <target state="new">The version of the package to create</target>
+        <target state="translated">La versión del paquete para crear</target>
         <note />
       </trans-unit>
       <trans-unit id="PackConfigurationOptionDescription">
@@ -2444,7 +2444,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       <trans-unit id="PropertyDirectiveMissingParts">
         <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
         <target state="translated">La directiva de propiedad debe tener dos partes separadas por "=", como "like '#:property PropertyName=PropertyValue": {0}</target>
-        <note>{0} is the file path and line number.</note>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
@@ -2981,6 +2981,11 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <source>Standard output</source>
         <target state="translated">Salida estándar</target>
         <note />
+      </trans-unit>
+      <trans-unit id="StaticGraphRestoreNotSupported">
+        <source>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</source>
+        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</target>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
@@ -3882,7 +3887,7 @@ Para mostrar un valor, especifique la opción de línea de comandos correspondie
       </trans-unit>
       <trans-unit id="WorkloadManifestInstallationConfigurationWorkloadSets">
         <source>Configured to use workload sets when installing new manifests.</source>
-        <target state="new">Configured to use workload sets when installing new manifests.</target>
+        <target state="translated">Configurado para usar workload sets al instalar nuevos manifiestos.</target>
         <note>{Locked="workload sets"}</note>
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">
