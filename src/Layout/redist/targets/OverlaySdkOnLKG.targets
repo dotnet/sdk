@@ -1,5 +1,6 @@
 <Project>
 
+
   <Target Name="OverlaySdkOnLKG" AfterTargets="AfterBuild" DependsOnTargets="GenerateInstallerLayout">
     <PropertyGroup>
       <_DotNetHiveRoot>$(DOTNET_INSTALL_DIR)</_DotNetHiveRoot>
