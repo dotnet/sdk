@@ -68,6 +68,7 @@ public class CreateOrUpdateDotnetConfigPostActionTests : IClassFixture<Environme
     public void CreatesDotnetConfigWhenDoesNotExist()
     {
         string targetBasePath = GetTargetPath();
+        string dotnetConfigPath = Path.Combine(targetBasePath, "dotnet.config");
 
         IPostAction postAction = CreatePostActionForMTP();
 
@@ -80,7 +81,7 @@ public class CreateOrUpdateDotnetConfigPostActionTests : IClassFixture<Environme
 
         CreateOrUpdateDotnetConfigPostActionProcessor processor = new();
 
-        _engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(targetBasePath, "dotnet.config")).Should().BeFalse();
+        _engineEnvironmentSettings.Host.FileSystem.FileExists(dotnetConfigPath).Should().BeFalse();
 
         bool result = processor.Process(
             _engineEnvironmentSettings,
@@ -91,8 +92,8 @@ public class CreateOrUpdateDotnetConfigPostActionTests : IClassFixture<Environme
 
         Assert.True(result);
 
-        _engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(targetBasePath, "dotnet.config")).Should().BeTrue();
-        _engineEnvironmentSettings.Host.FileSystem.ReadAllText(Path.Combine(targetBasePath, "dotnet.config")).Should().Be("""
+        _engineEnvironmentSettings.Host.FileSystem.FileExists(dotnetConfigPath).Should().BeTrue();
+        _engineEnvironmentSettings.Host.FileSystem.ReadAllText(dotnetConfigPath).Should().Be("""
             [dotnet.test.runner]
             name = "Microsoft.Testing.Platform"
 
@@ -105,9 +106,10 @@ public class CreateOrUpdateDotnetConfigPostActionTests : IClassFixture<Environme
     public void CreatesNewSectionWhenFileExistsButSectionDoesNot()
     {
         string targetBasePath = GetTargetPath();
+        string dotnetConfigPath = Path.Combine(targetBasePath, "dotnet.config");
 
         IPostAction postAction = CreatePostActionForMTP();
-        CreateDotnetConfig(targetBasePath, "mysection", "mykey", "myvalue");
+        CreateDotnetConfig(dotnetConfigPath, "mysection", "mykey", "myvalue");
         Mock<IReporter> mockReporter = new();
 
         mockReporter.Setup(r => r.WriteLine(It.IsAny<string>()))
@@ -117,8 +119,8 @@ public class CreateOrUpdateDotnetConfigPostActionTests : IClassFixture<Environme
 
         CreateOrUpdateDotnetConfigPostActionProcessor processor = new();
 
-        _engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(targetBasePath, "dotnet.config")).Should().BeTrue();
-        _engineEnvironmentSettings.Host.FileSystem.ReadAllText(Path.Combine(targetBasePath, "dotnet.config")).Should().Be("""
+        _engineEnvironmentSettings.Host.FileSystem.FileExists(dotnetConfigPath).Should().BeTrue();
+        _engineEnvironmentSettings.Host.FileSystem.ReadAllText(dotnetConfigPath).Should().Be("""
             [mysection]
             mykey = "myvalue"
 
@@ -133,10 +135,11 @@ public class CreateOrUpdateDotnetConfigPostActionTests : IClassFixture<Environme
 
         Assert.True(result);
 
-        _engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(targetBasePath, "dotnet.config")).Should().BeTrue();
-        _engineEnvironmentSettings.Host.FileSystem.ReadAllText(Path.Combine(targetBasePath, "dotnet.config")).Should().Be("""
+        _engineEnvironmentSettings.Host.FileSystem.FileExists(dotnetConfigPath).Should().BeTrue();
+        _engineEnvironmentSettings.Host.FileSystem.ReadAllText(dotnetConfigPath).Should().Be("""
             [mysection]
             mykey = "myvalue"
+
 
             [dotnet.test.runner]
             name = "Microsoft.Testing.Platform"
@@ -150,9 +153,10 @@ public class CreateOrUpdateDotnetConfigPostActionTests : IClassFixture<Environme
     public void DoesNothingIfNoUpdatesNeedToHappen()
     {
         string targetBasePath = GetTargetPath();
+        string dotnetConfigPath = Path.Combine(targetBasePath, "dotnet.config");
 
         IPostAction postAction = CreatePostActionForMTP();
-        CreateDotnetConfig(targetBasePath, "dotnet.test.runner", "name", "Microsoft.Testing.Platform");
+        CreateDotnetConfig(dotnetConfigPath, "dotnet.test.runner", "name", "Microsoft.Testing.Platform");
         Mock<IReporter> mockReporter = new();
 
         mockReporter.Setup(r => r.WriteLine(It.IsAny<string>()))
@@ -162,8 +166,8 @@ public class CreateOrUpdateDotnetConfigPostActionTests : IClassFixture<Environme
 
         CreateOrUpdateDotnetConfigPostActionProcessor processor = new();
 
-        _engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(targetBasePath, "dotnet.config")).Should().BeTrue();
-        _engineEnvironmentSettings.Host.FileSystem.ReadAllText(Path.Combine(targetBasePath, "dotnet.config")).Should().Be("""
+        _engineEnvironmentSettings.Host.FileSystem.FileExists(dotnetConfigPath).Should().BeTrue();
+        _engineEnvironmentSettings.Host.FileSystem.ReadAllText(dotnetConfigPath).Should().Be("""
             [dotnet.test.runner]
             name = "Microsoft.Testing.Platform"
 
@@ -178,8 +182,8 @@ public class CreateOrUpdateDotnetConfigPostActionTests : IClassFixture<Environme
 
         Assert.True(result);
 
-        _engineEnvironmentSettings.Host.FileSystem.FileExists(Path.Combine(targetBasePath, "dotnet.config")).Should().BeTrue();
-        _engineEnvironmentSettings.Host.FileSystem.ReadAllText(Path.Combine(targetBasePath, "dotnet.config")).Should().Be("""
+        _engineEnvironmentSettings.Host.FileSystem.FileExists(dotnetConfigPath).Should().BeTrue();
+        _engineEnvironmentSettings.Host.FileSystem.ReadAllText(dotnetConfigPath).Should().Be("""
             [dotnet.test.runner]
             name = "Microsoft.Testing.Platform"
 
@@ -200,8 +204,8 @@ public class CreateOrUpdateDotnetConfigPostActionTests : IClassFixture<Environme
             },
         };
 
-    private void CreateDotnetConfig(string targetBasePath, string section, string key, string value)
-        => _engineEnvironmentSettings.Host.FileSystem.WriteAllText(Path.Combine(targetBasePath, "dotnet.config"), $"""
+    private void CreateDotnetConfig(string dotnetConfigPath, string section, string key, string value)
+        => _engineEnvironmentSettings.Host.FileSystem.WriteAllText(dotnetConfigPath, $"""
             [{section}]
             {key} = "{value}"
 
@@ -211,6 +215,9 @@ public class CreateOrUpdateDotnetConfigPostActionTests : IClassFixture<Environme
     {
         string targetBasePath = Path.Combine(_engineEnvironmentSettings.GetTempVirtualizedPath(), testName);
         _engineEnvironmentSettings.Host.FileSystem.CreateDirectory(targetBasePath);
+
+        // This is done to not let the preprocessor logic go above our base path directory.
+        _engineEnvironmentSettings.Host.FileSystem.CreateDirectory(Path.Combine(targetBasePath, ".git"));
         return targetBasePath;
     }
 }
