@@ -836,8 +836,8 @@ The header is followed by the list of parameters and their errors (might be seve
         <note />
       </trans-unit>
       <trans-unit id="PostAction_CreateDotnetConfig_ManuallyUpdate">
-        <source>Updating existing in 'dotnet.config' is not yet supported. Please, manually update 'dotnet.config' to have '{0}' under section '{1}'.</source>
-        <target state="new">Updating existing in 'dotnet.config' is not yet supported. Please, manually update 'dotnet.config' to have '{0}' under section '{1}'.</target>
+        <source>Updating existing values in 'dotnet.config' is not yet supported. Please, manually update 'dotnet.config' to have '{0}' under section '{1}'.</source>
+        <target state="new">Updating existing values in 'dotnet.config' is not yet supported. Please, manually update 'dotnet.config' to have '{0}' under section '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PostAction_CreateDotnetConfig_Succeeded">

@@ -1413,7 +1413,7 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Updating existing in &apos;dotnet.config&apos; is not yet supported. Please, manually update &apos;dotnet.config&apos; to have &apos;{0}&apos; under section &apos;{1}&apos;..
+        ///   Looks up a localized string similar to Updating existing values in &apos;dotnet.config&apos; is not yet supported. Please, manually update &apos;dotnet.config&apos; to have &apos;{0}&apos; under section &apos;{1}&apos;..
         /// </summary>
         internal static string PostAction_CreateDotnetConfig_ManuallyUpdate {
             get {

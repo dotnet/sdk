@@ -83,7 +83,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             if (string.IsNullOrEmpty(existingValue))
             {
                 // The section exists, but the key/value pair does not.
-                Reporter.Output.WriteStdErr(string.Format(LocalizableStrings.PostAction_CreateDotnetConfig_ManuallyUpdate, $"{key} = \"{value}\"", $"[{sectionName}]"));
+                Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_CreateDotnetConfig_ManuallyUpdate, $"{key} = \"{value}\"", $"[{sectionName}]"));
                 return false;
             }
 
@@ -94,7 +94,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 return true;
             }
 
-            Reporter.Output.WriteStdErr(string.Format(LocalizableStrings.PostAction_CreateDotnetConfig_ManuallyUpdate, $"{key} = \"{value}\"", $"[{sectionName}]"));
+            Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_CreateDotnetConfig_ManuallyUpdate, $"{key} = \"{value}\"", $"[{sectionName}]"));
             return false;
         }
 
