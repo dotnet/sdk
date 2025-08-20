@@ -56,11 +56,11 @@ internal sealed class ProjectLauncher(
             OnOutput = onOutput,
         };
 
-        // If output isn't already redirected (build invocation) we redirect it to the reporter.
-        // The reporter synchronizes the output of the process with the reporter output,
+        // Stream output lines to the process output reporter.
+        // The reporter synchronizes the output of the process with the logger output,
         // so that the printed lines don't interleave.
         var projectDisplayName = projectNode.GetDisplayName();
-        processSpec.OnOutput ??= line =>
+        processSpec.OnOutput += line =>
         {
             context.ProcessOutputReporter.ReportOutput(context.ProcessOutputReporter.PrefixProcessOutput ? line with { Content = $"[{projectDisplayName}] {line.Content}" } : line);
         };
