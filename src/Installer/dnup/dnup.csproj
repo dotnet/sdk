@@ -16,8 +16,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Cli\dotnet\Telemetry\CIEnvironmentDetectorForTelemetry.cs" />
-    <Compile Include="..\..\Cli\dotnet\Telemetry\ICIEnvironmentDetector.cs" />
+    <Compile Include="..\..\Cli\dotnet\Telemetry\CIEnvironmentDetectorForTelemetry.cs" LinkBase="Shared" />
+    <Compile Include="..\..\Cli\dotnet\Telemetry\ICIEnvironmentDetector.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
