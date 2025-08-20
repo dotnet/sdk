@@ -135,7 +135,7 @@
     <MicrosoftBuildMinimumVersion Condition="'$(DotNetBuildFromSource)' != 'true'">17.8.27</MicrosoftBuildMinimumVersion>
     <MicrosoftBuildFrameworkPackageVersion>$(MicrosoftBuildMinimumVersion)</MicrosoftBuildFrameworkPackageVersion>
     <MicrosoftBuildRuntimePackageVersion>$(MicrosoftBuildMinimumVersion)</MicrosoftBuildRuntimePackageVersion>
-    <MicrosoftBuildLocalizationPackageVersion>17.11.41-servicing-25412-05</MicrosoftBuildLocalizationPackageVersion>
+    <MicrosoftBuildLocalizationPackageVersion>17.11.41-servicing-25419-01</MicrosoftBuildLocalizationPackageVersion>
     <MicrosoftBuildUtilitiesCorePackageVersion>$(MicrosoftBuildMinimumVersion)</MicrosoftBuildUtilitiesCorePackageVersion>
     <MicrosoftBuildTasksCorePackageVersion>$(MicrosoftBuildMinimumVersion)</MicrosoftBuildTasksCorePackageVersion>
     <MicrosoftBuildTasksCoreVersion>$(MicrosoftBuildTasksCorePackageVersion)</MicrosoftBuildTasksCoreVersion>
