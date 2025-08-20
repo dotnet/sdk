@@ -19,7 +19,8 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
     private readonly bool? _updateGlobalJson = result.GetValue(SdkInstallCommandParser.UpdateGlobalJsonOption);
     private readonly bool _interactive = result.GetValue(SdkInstallCommandParser.InteractiveOption);
 
-
+    private readonly IDotnetInstaller _dotnetInstaller = new EnvironmentVariableMockDotnetInstaller();
+    private readonly IReleaseInfoProvider _releaseInfoProvider = new EnvironmentVariableMockReleaseInfoProvider();
 
     public override int Execute()
     {
@@ -33,17 +34,17 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         //Reporter.Output.WriteLine($"Update global.json: {_updateGlobalJson}");
 
-        string? globalJsonPath = FindGlobalJson();
+        var globalJsonInfo = _dotnetInstaller.GetGlobalJsonInfo(Environment.CurrentDirectory);
 
         string? currentInstallPath;
-        DefaultInstall defaultInstallState = GetDefaultInstallState(out currentInstallPath);
+        SdkInstallType defaultInstallState =  _dotnetInstaller.GetConfiguredInstallType(out currentInstallPath);
 
         string? resolvedInstallPath = null;
 
         string? installPathFromGlobalJson = null;
-        if (globalJsonPath != null)
+        if (globalJsonInfo?.GlobalJsonPath != null)
         {
-            installPathFromGlobalJson = ResolveInstallPathFromGlobalJson(globalJsonPath);
+            installPathFromGlobalJson = globalJsonInfo.SdkPath;
 
             if (installPathFromGlobalJson != null && _installPath != null &&
                 //  TODO: Is there a better way to compare paths that takes into account whether the file system is case-sensitive?
@@ -62,7 +63,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             resolvedInstallPath = _installPath;
         }
 
-        if (resolvedInstallPath == null && defaultInstallState == DefaultInstall.User)
+        if (resolvedInstallPath == null && defaultInstallState == SdkInstallType.User)
         {
             //  If a user installation is already set up, we don't need to prompt for the install path
             resolvedInstallPath = currentInstallPath;
@@ -74,19 +75,19 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             {
                 resolvedInstallPath = SpectreAnsiConsole.Prompt(
                     new TextPrompt<string>("Where should we install the .NET SDK to?)")
-                        .DefaultValue(GetDefaultInstallPath()));
+                        .DefaultValue(_dotnetInstaller.GetDefaultDotnetInstallPath()));
             }
             else
             {
                 //  If no install path is specified, use the default install path
-                resolvedInstallPath = GetDefaultInstallPath();
+                resolvedInstallPath = _dotnetInstaller.GetDefaultDotnetInstallPath();
             }
         }
 
         string? channelFromGlobalJson = null;
-        if (globalJsonPath != null)
+        if (globalJsonInfo?.GlobalJsonPath != null)
         {
-            channelFromGlobalJson = ResolveChannelFromGlobalJson(globalJsonPath);
+            channelFromGlobalJson = ResolveChannelFromGlobalJson(globalJsonInfo.GlobalJsonPath);
         }
 
         bool? resolvedUpdateGlobalJson = null;
@@ -107,7 +108,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         if (channelFromGlobalJson != null)
         {
-            SpectreAnsiConsole.WriteLine($".NET SDK {channelFromGlobalJson} will be installed since {globalJsonPath} specifies that version.");
+            SpectreAnsiConsole.WriteLine($".NET SDK {channelFromGlobalJson} will be installed since {globalJsonInfo?.GlobalJsonPath} specifies that version.");
 
             resolvedChannel = channelFromGlobalJson;
         }
@@ -120,7 +121,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             if (_interactive)
             {
 
-                SpectreAnsiConsole.WriteLine("Available supported channels: " + string.Join(' ', GetAvailableChannels()));
+                SpectreAnsiConsole.WriteLine("Available supported channels: " + string.Join(' ', _releaseInfoProvider.GetAvailableChannels()));
                 SpectreAnsiConsole.WriteLine("You can also specify a specific version (for example 9.0.304).");
 
                 resolvedChannel = SpectreAnsiConsole.Prompt(
@@ -140,13 +141,13 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             //  If global.json specified an install path, we don't prompt for setting the default install path (since you probably don't want to do that for a repo-local path)
             if (_interactive && installPathFromGlobalJson == null)
             {
-                if (defaultInstallState == DefaultInstall.None)
+                if (defaultInstallState == SdkInstallType.None)
                 {
                     resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
                         $"Do you want to set the install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
                         defaultValue: true);
                 }
-                else if (defaultInstallState == DefaultInstall.User)
+                else if (defaultInstallState == SdkInstallType.User)
                 {
                     //  Another case where we need to compare paths and the comparison may or may not need to be case-sensitive
                     if (resolvedInstallPath.Equals(currentInstallPath, StringComparison.OrdinalIgnoreCase))
@@ -160,7 +161,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                             defaultValue: false);
                     }
                 }
-                else if (defaultInstallState == DefaultInstall.Admin)
+                else if (defaultInstallState == SdkInstallType.Admin)
                 {
                     SpectreAnsiConsole.WriteLine($"You have an existing admin install of .NET in {currentInstallPath}. We can configure your system to use the new install of .NET " +
                         $"in {resolvedInstallPath} instead. This would mean that the admin install of .NET would no longer be accessible from the PATH or from Visual Studio.");
@@ -169,7 +170,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                         $"Do you want to set the user install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
                         defaultValue: true);
                 }
-                else if (defaultInstallState == DefaultInstall.Inconsistent)
+                else if (defaultInstallState == SdkInstallType.Inconsistent)
                 {
                     //  TODO: Figure out what to do here
                     resolvedSetDefaultInstall = false;
@@ -183,14 +184,14 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         List<string> additionalVersionsToInstall = new();
 
-        var resolvedChannelVersion = ResolveChannelVersion(resolvedChannel);
+        var resolvedChannelVersion = _releaseInfoProvider.GetLatestVersion(resolvedChannel);
 
-        if (resolvedSetDefaultInstall == true && defaultInstallState == DefaultInstall.Admin)
+        if (resolvedSetDefaultInstall == true && defaultInstallState == SdkInstallType.Admin)
         {
             if (_interactive)
             {
-                var latestAdminVersion = GetLatestInstalledAdminVersion();
-                if (new ReleaseVersion(resolvedChannelVersion) < new ReleaseVersion(latestAdminVersion))
+                var latestAdminVersion = _dotnetInstaller.GetLatestInstalledAdminVersion();
+                if (latestAdminVersion != null && new ReleaseVersion(resolvedChannelVersion) < new ReleaseVersion(latestAdminVersion))
                 {
                     SpectreAnsiConsole.WriteLine($"Since the admin installs of the .NET SDK will no longer be accessible, we recommend installing the latest admin installed " +
                         $"version ({latestAdminVersion}) to the new user install location.  This will make sure this version of the .NET SDK continues to be used for projects that don't specify a .NET SDK version in global.json.");
@@ -208,7 +209,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             }
         }
 
-        
+
 
         SpectreAnsiConsole.MarkupInterpolated($"Installing .NET SDK [blue]{resolvedChannelVersion}[/] to [blue]{resolvedInstallPath}[/]...");
 
@@ -225,12 +226,12 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                     List<Action> additionalDownloads = additionalVersionsToInstall.Select(version =>
                     {
                         var additionalTask = ctx.AddTask($"Downloading .NET SDK {version}");
-                        return (Action) (() =>
+                        return (Action)(() =>
                         {
                             Download(downloadLink, httpClient, additionalTask);
                         });
                     }).ToList();
-                        
+
                     Download(downloadLink, httpClient, task);
 
 
@@ -272,24 +273,12 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         //    }
         //}
 
-        for (int i=0; i < 100; i++)
+        for (int i = 0; i < 100; i++)
         {
             task.Increment(1);
             Thread.Sleep(20); // Simulate some work
         }
         task.Value = 100;
-    }
-
-
-    string? FindGlobalJson()
-    {
-        //return null;
-        return @"d:\git\dotnet-sdk\global.json";
-    }
-
-    string? ResolveInstallPathFromGlobalJson(string globalJsonPath)
-    {
-        return Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_SDK_INSTALL_PATH");
     }
 
     string? ResolveChannelFromGlobalJson(string globalJsonPath)
@@ -299,80 +288,93 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         return Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_SDK_CHANNEL");
     }
 
-    string GetDefaultInstallPath()
-    {
-        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "dotnet");
-    }
-
-    List<string> GetAvailableChannels()
-    {
-        return ["latest", "preview", "10", "10.0.1xx", "10.0.2xx", "9", "9.0.3xx", "9.0.2xx", "9.0.1xx"];
-    }
-
-    string ResolveChannelVersion(string channel)
-    {
-        if (channel == "preview")
-        {
-            return "11.0.100-preview.1.42424";
-        }
-        else if (channel == "latest" || channel == "10" || channel == "10.0.2xx")
-        {
-            return "10.0.203";
-        }
-        else if (channel == "10.0.1xx")
-        {
-            return "10.0.106";
-        }
-        else if (channel == "9" || channel == "9.0.3xx")
-        {
-            return "9.0.309";
-        }
-        else if (channel == "9.0.2xx")
-        {
-            return "9.0.212";
-        }
-        else if (channel == "9.0.1xx")
-        {
-            return "9.0.115";
-        }
-
-        return channel;
-        
-    }
-
-    enum DefaultInstall
-    {
-        None,
-        //  Inconsistent would be when the dotnet on the path doesn't match what DOTNET_ROOT is set to
-        Inconsistent,
-        Admin,
-        User
-    }
-
-    DefaultInstall GetDefaultInstallState(out string? currentInstallPath)
-    {
-        var testHookDefaultInstall = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_INSTALL");
-        DefaultInstall returnValue = DefaultInstall.None;
-        if (!Enum.TryParse<DefaultInstall>(testHookDefaultInstall, out returnValue))
-        {
-            returnValue = DefaultInstall.None;
-        }
-        currentInstallPath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_CURRENT_INSTALL_PATH");
-        return returnValue;
-    }
-
-    string GetLatestInstalledAdminVersion()
-    {
-        var latestAdminVersion = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_LATEST_ADMIN_VERSION");
-        if (string.IsNullOrEmpty(latestAdminVersion))
-        {
-            latestAdminVersion = "10.0.203";
-        }
-        return latestAdminVersion;
-    }
-
     bool IsElevated()
     {
         return false;
+    }
+
+    class EnvironmentVariableMockDotnetInstaller : IDotnetInstaller
+    {
+        public GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory)
+        {
+            return new GlobalJsonInfo
+            {
+                GlobalJsonPath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_PATH"),
+                SdkVersion = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_SDK_VERSION"),
+                AllowPrerelease = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_ALLOW_PRERELEASE"),
+                RollForward = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_ROLLFORWARD"),
+                SdkPath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_SDK_INSTALL_PATH")
+            };
+        }
+
+        public string GetDefaultDotnetInstallPath()
+        {
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "dotnet");
+        }
+
+        public SdkInstallType GetConfiguredInstallType(out string? currentInstallPath)
+        {
+            var testHookDefaultInstall = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_INSTALL");
+            SdkInstallType returnValue = SdkInstallType.None;
+            if (!Enum.TryParse<SdkInstallType>(testHookDefaultInstall, out returnValue))
+            {
+                returnValue = SdkInstallType.None;
+            }
+            currentInstallPath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_CURRENT_INSTALL_PATH");
+            return returnValue;
+        }
+
+
+        public string? GetLatestInstalledAdminVersion()
+        {
+            var latestAdminVersion = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_LATEST_ADMIN_VERSION");
+            if (string.IsNullOrEmpty(latestAdminVersion))
+            {
+                latestAdminVersion = "10.0.203";
+            }
+            return latestAdminVersion;
+        }
+    }
+
+    class EnvironmentVariableMockReleaseInfoProvider : IReleaseInfoProvider
+    {
+        public List<string> GetAvailableChannels()
+        {
+            var channels = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_AVAILABLE_CHANNELS");
+            if (string.IsNullOrEmpty(channels))
+            {
+                return ["latest", "preview", "10", "10.0.1xx", "10.0.2xx", "9", "9.0.3xx", "9.0.2xx", "9.0.1xx"];
+            }
+            return channels.Split(',').ToList();
+        }
+        public string GetLatestVersion(string channel)
+        {
+            if (channel == "preview")
+            {
+                return "11.0.100-preview.1.42424";
+            }
+            else if (channel == "latest" || channel == "10" || channel == "10.0.2xx")
+            {
+                return "10.0.203";
+            }
+            else if (channel == "10.0.1xx")
+            {
+                return "10.0.106";
+            }
+            else if (channel == "9" || channel == "9.0.3xx")
+            {
+                return "9.0.309";
+            }
+            else if (channel == "9.0.2xx")
+            {
+                return "9.0.212";
+            }
+            else if (channel == "9.0.1xx")
+            {
+                return "9.0.115";
+            }
+
+            return channel;
+        }
     }
 }
