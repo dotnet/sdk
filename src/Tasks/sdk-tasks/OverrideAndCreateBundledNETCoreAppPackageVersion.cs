@@ -128,6 +128,10 @@ namespace Microsoft.DotNet.Build.Tasks
                 .Elements(ns + "KnownILCompilerPack").First().Attribute("ILCompilerPackVersion"));
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownILLinkPack").First().Attribute("ILLinkPackVersion"));
+            CheckAndReplaceAttribute(itemGroup
+                .Elements(ns + "KnownWebAssemblySdkPack").First().Attribute("WebAssemblySdkPackVersion"));
+            CheckAndReplaceAttribute(itemGroup
+                .Elements(ns + "KnownAspNetCorePack").First().Attribute("AspNetCorePackVersion"));
 
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownRuntimePack").First().Attribute("LatestRuntimeFrameworkVersion"));
