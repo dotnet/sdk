@@ -444,5 +444,27 @@ public class MyCollection {
 
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
+
+        [Fact]
+        public Task TestDerivedTypeWithCountPropertyAsync()
+        {
+            var code = """
+                using System.Collections.Generic;
+                using System.Linq;
+
+                public class CustomList<T> : List<int> { }
+
+                public class Test
+                {
+                    public void M()
+                    {
+                        var list = new CustomList<int>();
+                        _ = {|#0:list.Any()|};
+                    }
+                }
+                """;
+
+            return VerifyCS.VerifyAnalyzerAsync(code, ExpectedDiagnostic);
+        }
     }
 }

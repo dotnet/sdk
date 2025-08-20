@@ -465,5 +465,28 @@ public class MyCollection {
 
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
+
+        [Fact]
+        public Task TestDerivedTypeWithIsEmptyPropertyAsync()
+        {
+            var code = """
+                using System.Collections.Concurrent;
+                using System.Collections.Generic;
+                using System.Linq;
+
+                public class CustomConcurrentStack<T> : ConcurrentStack<T> { }
+
+                public class Test
+                {
+                    public void M()
+                    {
+                        var stack = new CustomConcurrentStack<int>();
+                        _ = {|#0:stack.Any()|};
+                    }
+                }
+                """;
+
+            return VerifyCS.VerifyAnalyzerAsync(code, ExpectedDiagnostic);
+        }
     }
 }

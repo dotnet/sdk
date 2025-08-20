@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections;
 using System.Collections.Immutable;
-using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -74,28 +72,24 @@ namespace Microsoft.NetCore.Analyzers.Performance
             context.RegisterCompilationStartAction(ctx =>
             {
                 var typeProvider = WellKnownTypeProvider.GetOrCreate(ctx.Compilation);
-                var iEnumerable = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsIEnumerable);
-                var iEnumerableOfT = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerable1);
                 var linqExpressionType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
+
                 var anyMethod = typeProvider
                     .GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqEnumerable)
                     ?.GetMembers(AnyText)
                     .OfType<IMethodSymbol>()
                     .FirstOrDefault(m => m.IsExtensionMethod && m.Parameters.Length == 1);
-                if (iEnumerable is not null && iEnumerableOfT is not null && anyMethod is not null)
+
+                if (anyMethod is not null)
                 {
-                    ctx.RegisterOperationAction(c => OnInvocationAnalysis(c, iEnumerable, iEnumerableOfT, anyMethod, linqExpressionType), OperationKind.Invocation);
+                    ctx.RegisterOperationAction(c => OnInvocationAnalysis(c, anyMethod, linqExpressionType), OperationKind.Invocation);
                 }
             });
         }
 
-        private static void OnInvocationAnalysis(OperationAnalysisContext context, INamedTypeSymbol iEnumerable, INamedTypeSymbol iEnumerableOfT, IMethodSymbol anyMethod, INamedTypeSymbol? linqExpressionType)
+        private static void OnInvocationAnalysis(OperationAnalysisContext context, IMethodSymbol anyMethod, INamedTypeSymbol? linqExpressionType)
         {
             var invocation = (IInvocationOperation)context.Operation;
-            if (invocation.IsWithinExpressionTree(linqExpressionType))
-            {
-                return;
-            }
 
             var originalMethod = invocation.TargetMethod.OriginalDefinition;
             if (originalMethod.MethodKind == MethodKind.ReducedExtension)
@@ -103,60 +97,66 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 originalMethod = originalMethod.ReducedFrom!;
             }
 
-            if (originalMethod.Equals(anyMethod, SymbolEqualityComparer.Default))
+            if (!originalMethod.Equals(anyMethod, SymbolEqualityComparer.Default) ||
+                invocation.IsWithinExpressionTree(linqExpressionType))
             {
-                var type = invocation.GetReceiverType(context.Compilation, beforeConversion: true, context.CancellationToken);
-                if (type is null || (!type.AllInterfaces.Contains(iEnumerable, SymbolEqualityComparer.Default) && !type.AllInterfaces.Contains(iEnumerableOfT)))
-                {
-                    return;
-                }
+                return;
+            }
 
+            var type = invocation.GetReceiverType(context.Compilation, beforeConversion: true, context.CancellationToken);
+
+            for(; type != null; type = type.BaseType)
+            {
                 if (HasEligibleIsEmptyProperty(type))
                 {
-                    var properties = ImmutableDictionary.CreateBuilder<string, string?>();
-                    properties.Add(DiagnosticPropertyKey, IsEmptyText);
-                    context.ReportDiagnostic(invocation.CreateDiagnostic(IsEmptyDescriptor, properties: properties.ToImmutable()));
+                    ReportDiagnostic(invocation, IsEmptyDescriptor, IsEmptyText, context);
                 }
-                else if (HasEligibleLengthProperty(type))
+                else if (HasEligibleSizeProperty(type, CountText))
                 {
-                    var properties = ImmutableDictionary.CreateBuilder<string, string?>();
-                    properties.Add(DiagnosticPropertyKey, LengthText);
-                    context.ReportDiagnostic(invocation.CreateDiagnostic(LengthDescriptor, properties: properties.ToImmutable()));
+                    ReportDiagnostic(invocation, CountDescriptor, CountText, context);
                 }
-
-                else if (HasEligibleCountProperty(type))
+                else if (HasEligibleSizeProperty(type, LengthText))
                 {
-                    var properties = ImmutableDictionary.CreateBuilder<string, string?>();
-                    properties.Add(DiagnosticPropertyKey, CountText);
-                    context.ReportDiagnostic(invocation.CreateDiagnostic(CountDescriptor, properties: properties.ToImmutable()));
+                    ReportDiagnostic(invocation, LengthDescriptor, LengthText, context);
                 }
             }
         }
 
-        private static bool HasEligibleIsEmptyProperty(ITypeSymbol typeSymbol)
+        private static bool IsGenericEnumerable(ITypeSymbol type, ITypeSymbol enumerableOfT)
         {
-            return typeSymbol.GetMembers(IsEmptyText)
-                .OfType<IPropertySymbol>()
-                .Any(property => property.Type.SpecialType == SpecialType.System_Boolean);
-        }
-
-        private static bool HasEligibleLengthProperty(ITypeSymbol typeSymbol)
-        {
-            if (typeSymbol is IArrayTypeSymbol)
+            foreach (var interfaceType in type.AllInterfaces)
             {
-                return true;
+                if (interfaceType.ConstructedFrom == enumerableOfT)
+                {
+                    return true;
+                }
             }
 
-            return typeSymbol.GetMembers(LengthText)
-                .OfType<IPropertySymbol>()
-                .Any(property => property.Type.SpecialType is SpecialType.System_Int32 or SpecialType.System_UInt32);
+            return false;
         }
 
-        private static bool HasEligibleCountProperty(ITypeSymbol typeSymbol)
+        private static bool HasEligibleIsEmptyProperty(ITypeSymbol type)
         {
-            return typeSymbol.GetMembers(CountText)
-                .OfType<IPropertySymbol>()
-                .Any(property => property.Type.SpecialType is SpecialType.System_Int32 or SpecialType.System_UInt32);
+            var members = type.GetMembers(IsEmptyText);
+
+            return !members.IsEmpty &&
+                    members[0] is IPropertySymbol property &&
+                    property.Type.SpecialType == SpecialType.System_Boolean;
+        }
+
+        private static bool HasEligibleSizeProperty(ITypeSymbol type, string propertyName)
+        {
+            var members = type.GetMembers(propertyName);
+
+            return !members.IsEmpty &&
+                    members[0] is IPropertySymbol property &&
+                    property.Type.SpecialType is SpecialType.System_Int32 or SpecialType.System_UInt32;
+        }
+
+        private static void ReportDiagnostic(IInvocationOperation invocation, DiagnosticDescriptor descriptor, string propertyName, OperationAnalysisContext context)
+        {
+            var properties = ImmutableDictionary<string, string?>.Empty.Add(DiagnosticPropertyKey, propertyName);
+            context.ReportDiagnostic(invocation.CreateDiagnostic(descriptor, properties));
         }
     }
 }
