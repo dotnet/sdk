@@ -110,7 +110,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                     return currentDirectory;
                 }
 
-                // DirectoryExists here should always be in practice, but for the way tests are mocking the file system, it's not.
+                // DirectoryExists here should always be true in practice, but for the way tests are mocking the file system, it's not.
                 // The check was added to prevent test failures similar to:
                 // System.IO.DirectoryNotFoundException : Could not find a part of the path '/Users/runner/work/1/s/artifacts/bin/Microsoft.TemplateEngine.Cli.UnitTests/Release/sandbox'.
                 // at System.IO.Enumeration.FileSystemEnumerator`1.CreateDirectoryHandle(String path, Boolean ignoreNotFound)
