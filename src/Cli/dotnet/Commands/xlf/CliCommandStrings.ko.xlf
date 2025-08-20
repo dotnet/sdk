@@ -1845,8 +1845,8 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">워크로드가 설치되어 있지 않고 복구할 것도 없습니다. ‘dotnet 워크로드 검색’을 실행하여 설치할 워크로드를 찾으세요.</target>
-        <note />
+        <target state="needs-review-translation">워크로드가 설치되어 있지 않고 복구할 것도 없습니다. ‘dotnet 워크로드 검색’을 실행하여 설치할 워크로드를 찾으세요.</target>
+        <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
