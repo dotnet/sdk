@@ -22,6 +22,8 @@ internal sealed class MSBuildForwardingAppWithoutLogging
 
     private const string SdksDirectoryName = "Sdks";
 
+    internal const VerbosityOptions DefaultVerbosity = VerbosityOptions.m;
+
     // Null if we're running MSBuild in-proc.
     private ForwardingAppImplementation? _forwardingApp;
 
@@ -41,8 +43,6 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     private readonly Dictionary<string, string?> _msbuildRequiredEnvironmentVariables = GetMSBuildRequiredEnvironmentVariables();
 
     private readonly List<string> _msbuildRequiredParameters = ["-maxcpucount", $"--verbosity:{DefaultVerbosity}"];
-
-    internal const VerbosityOptions DefaultVerbosity = VerbosityOptions.m;
 
     public MSBuildForwardingAppWithoutLogging(MSBuildArgs msbuildArgs, string? msbuildPath = null, bool includeLogo = false, bool isRestoring = true)
     {

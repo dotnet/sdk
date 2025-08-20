@@ -1177,6 +1177,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Pass()
             // no additional build messages
             .And.HaveStdOut("Hello from Program")
+            .And.NotHaveStdOutContaining("Program.dll")
             .And.NotHaveStdErr();
     }
 
