@@ -1874,7 +1874,8 @@ Your project targets multiple frameworks. Specify which framework to run using '
     <value>Shutting down {0} (process {1})...</value>
   </data>
   <data name="ShuttingDownUnifiedBuildServers" xml:space="preserve">
-    <value>Shutting down unified build servers via named pipe ({0})...</value>
+    <value>Shutting down unified build servers for SDK '{0}' via named pipe '{1}'...</value>
+    <comment>{0} is full path to SDK directory. {1} is pipe name.</comment>
   </data>
   <data name="NamedPipeFolderNotFound" xml:space="preserve">
     <value>Named pipe folder not found: {0}</value>

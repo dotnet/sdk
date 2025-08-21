@@ -19,7 +19,7 @@ internal sealed class UnifiedBuildServer : IBuildServer
         var hostServerPath = MSBuildForwardingAppWithoutLogging.GetHostServerPath(createDirectory: false);
         var pipeFolder = BuildServerUtility.GetPipeFolder(hostServerPath);
         Debug.Assert(pipeFolder != null);
-        Reporter.Output.WriteLine(CliCommandStrings.ShuttingDownUnifiedBuildServers, pipeFolder);
+        Reporter.Output.WriteLine(CliCommandStrings.ShuttingDownUnifiedBuildServers, AppContext.BaseDirectory, pipeFolder);
 
         return Task.WhenAll(EnumeratePipes(pipeFolder).Select(async file =>
         {

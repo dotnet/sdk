@@ -2846,9 +2846,9 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
         <note />
       </trans-unit>
       <trans-unit id="ShuttingDownUnifiedBuildServers">
-        <source>Shutting down unified build servers via named pipe ({0})...</source>
-        <target state="new">Shutting down unified build servers via named pipe ({0})...</target>
-        <note />
+        <source>Shutting down unified build servers for SDK '{0}' via named pipe '{1}'...</source>
+        <target state="new">Shutting down unified build servers for SDK '{0}' via named pipe '{1}'...</target>
+        <note>{0} is full path to SDK directory. {1} is pipe name.</note>
       </trans-unit>
       <trans-unit id="SkipManifestUpdateOptionDescription">
         <source>Skip updating the workload manifests.</source>
