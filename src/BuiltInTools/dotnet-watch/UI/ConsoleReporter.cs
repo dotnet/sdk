@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Watch
             lock (_writeLock)
             {
                 console.ForegroundColor = ConsoleColor.DarkGray;
-                writer.Write($"dotnet watch {(SuppressEmojis ? ":" : emoji.ToDisplay())} ");
+                writer.Write(LoggingUtilities.GetPrefix(SuppressEmojis ? Emoji.Default : emoji));
                 console.ResetColor();
 
                 if (color.HasValue)

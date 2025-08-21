@@ -14,4 +14,7 @@ internal static class LoggingUtilities
         => categoryName.IndexOf('|') is int index && index > 0
             ? (categoryName[..index], categoryName[(index + 1)..])
             : (categoryName, null);
+
+    public static string GetPrefix(Emoji emoji)
+        => $"dotnet watch {emoji.ToDisplay()} ";
 }

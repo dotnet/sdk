@@ -42,6 +42,7 @@ namespace Microsoft.DotNet.Watch
         public static string ToDisplay(this Emoji emoji)
             => emoji switch
             {
+                Emoji.Default => ":",
                 Emoji.Warning => "⚠",
                 Emoji.Error => "❌",
                 Emoji.HotReload => "🔥",

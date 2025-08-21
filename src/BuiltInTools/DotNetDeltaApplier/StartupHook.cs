@@ -13,7 +13,7 @@ using Microsoft.DotNet.Watch;
 /// </summary>
 internal sealed class StartupHook
 {
-    private static readonly bool s_logToStandardOutput = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.HotReloadDeltaClientLogMessages) == "1";
+    private static readonly string? s_standardOutputLogPrefix = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.HotReloadDeltaClientLogMessages);
     private static readonly string? s_namedPipeName = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName);
 
 #if NET10_0_OR_GREATER
@@ -31,8 +31,6 @@ internal sealed class StartupHook
         Log($"Loaded into process: {processPath} ({typeof(StartupHook).Assembly.Location})");
 
         HotReloadAgent.ClearHotReloadEnvironmentVariables(typeof(StartupHook));
-
-        Log($"Connecting to hot-reload server");
 
         if (s_namedPipeName == null)
         {
@@ -87,10 +85,11 @@ internal sealed class StartupHook
 
     private static void Log(string message)
     {
-        if (s_logToStandardOutput)
+        var prefix = s_standardOutputLogPrefix;
+        if (prefix != null)
         {
             Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.WriteLine($"dotnet watch 🕵️ [{s_namedPipeName}] {message}");
+            Console.WriteLine($"{prefix} {message}");
             Console.ResetColor();
         }
     }

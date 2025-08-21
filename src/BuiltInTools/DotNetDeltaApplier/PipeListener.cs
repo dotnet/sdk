@@ -17,7 +17,9 @@ internal sealed class PipeListener(string pipeName, IHotReloadAgent agent, Actio
         // set up a race between this code connecting to the server, and the breakpoint being hit. If the breakpoint
         // hits first, applying changes will throw an error that the client is not connected.
         //
-        // Updates made before the process is launched need to be applied before loading the affected modules. 
+        // Updates made before the process is launched need to be applied before loading the affected modules.
+
+        log($"Connecting to hot-reload server via pipe {pipeName}");
 
         var pipeClient = new NamedPipeClientStream(serverName: ".", pipeName, PipeDirection.InOut, PipeOptions.CurrentUserOnly | PipeOptions.Asynchronous);
         try

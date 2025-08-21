@@ -100,7 +100,9 @@ internal sealed class ProjectLauncher(
 
             if (context.Options.Verbose)
             {
-                environmentBuilder.SetVariable(EnvironmentVariables.Names.HotReloadDeltaClientLogMessages, "1");
+                environmentBuilder.SetVariable(
+                    EnvironmentVariables.Names.HotReloadDeltaClientLogMessages,
+                    LoggingUtilities.GetPrefix(EnvironmentOptions.SuppressEmojis ? Emoji.Default : Emoji.Agent) + $"[{projectDisplayName}]");
             }
         }
 
