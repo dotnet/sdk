@@ -252,8 +252,8 @@ internal static class SolutionAndProjectUtility
         var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath)!, Path.GetFileNameWithoutExtension(projectFullPath), project.GetPropertyValue(ProjectProperties.AppDesignerFolder), buildOptions, profileName: null);
 
         var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootArchVariableName(
-            project.GetPropertyValue("RuntimeIdentifier"),
-            project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"));
+            runProperties.RuntimeIdentifier,
+            runProperties.DefaultAppHostRuntimeIdentifier);
 
         if (rootVariableName is not null && Environment.GetEnvironmentVariable(rootVariableName) != null)
         {
