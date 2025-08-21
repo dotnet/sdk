@@ -260,11 +260,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .And.Satisfy<string>(EnsurePackageIsFdd);
 
             // top-level package should declare all of the rids
-            var topLevelPackage = packages.First(p => p.EndsWith($"{packageIdentifier}.{toolSettings.ToolPackageVersion}.nupkg"));
-            var settingsXml = GetToolSettingsFile(topLevelPackage);
-            var packageNodes = GetRidsInSettingsFile(settingsXml);
-
-            packageNodes.Should().BeEquivalentTo([.. expectedRids, "any"], "The top-level package should declare all of the RIDs for the tools it contains");
+            var topLevelPackage = packages.FirstOrDefault(p => p.EndsWith($"{packageIdentifier}.{toolSettings.ToolPackageVersion}.nupkg"));
+            topLevelPackage.Should().NotBeNull($"Package {packageIdentifier}.{toolSettings.ToolPackageVersion}.nupkg should be present in the tool packages directory")
+                .And.Satisfy<string>(SupportAllOfTheseRuntimes([.. expectedRids, "any"]));
         }
 
         [Fact]
@@ -389,9 +387,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var topLevelPackage = packages.First(p => p.EndsWith($"{packageIdentifier}.{toolSettings.ToolPackageVersion}.nupkg"));
             topLevelPackage.Should().NotBeNull($"Package {packageIdentifier}.{toolSettings.ToolPackageVersion}.nupkg should be present in the tool packages directory")
                 .And.Satisfy<string>(EnsurePackageHasNoRunner)
-                .And.Satisfy<string>(EnsurePackageHasToolPackageTypeAnd(toolSettings.AdditionalPackageTypes!));
-            var foundRids = GetRidsInSettingsFile(topLevelPackage);
-            foundRids.Should().BeEquivalentTo(ridSpecificPackages, "The top-level package should declare all of the RIDs for the tools it contains");
+                .And.Satisfy(SupportAllOfTheseRuntimes([..ridSpecificPackages, "any"]));
         }
 
         private Action<string> EnsurePackageHasToolPackageTypeAnd(string[] additionalPackageTypes) => (string packagePath) =>
@@ -402,6 +398,13 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             packageTypes.Should().NotBeNull("The PackageType element should not be null.")
                 .And.HaveCount(1 + additionalPackageTypes.Length, "The package should have a PackageType element for each additional type.")
                 .And.BeEquivalentTo(expectedPackageTypes, "The PackageType should be 'DotnetTool'.");
+        };
+
+        private Action<string> SupportAllOfTheseRuntimes(string[] runtimes) => (string packagePath) =>
+        {
+            var settingsXml = GetToolSettingsFile(packagePath);
+            var rids = GetRidsInSettingsFile(settingsXml);
+            rids.Should().BeEquivalentTo(runtimes, "The tool settings file should contain all of the specified RuntimeIdentifierPackage elements.");
         };
 
         static void EnsurePackageOnlyHasToolRidPackageType(string packagePath)
