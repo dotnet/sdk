@@ -375,7 +375,7 @@ namespace Microsoft.NET.Build.Tasks
 
                         if (runtimeIdentifier == "any")
                         {
-                            // the `any` RID represents a platform-agnostic target. As such, it has no
+                            // The `any` RID represents a platform-agnostic target. As such, it has no
                             // platform-specific runtime pack associated with it.
                             continue;
                         }
