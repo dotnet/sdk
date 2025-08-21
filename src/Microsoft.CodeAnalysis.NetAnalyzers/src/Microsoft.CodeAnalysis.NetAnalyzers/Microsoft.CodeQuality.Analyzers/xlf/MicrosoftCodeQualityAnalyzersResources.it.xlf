@@ -209,17 +209,17 @@
       </trans-unit>
       <trans-unit id="DoNotPassDisposablesIntoUnawaitedTasksDescription">
         <source>Unawaited tasks that use 'IDisposable' instances may use those instances long after they have been disposed. Ensure tasks using those instances are completed before the instances are disposed.</source>
-        <target state="new">Unawaited tasks that use 'IDisposable' instances may use those instances long after they have been disposed. Ensure tasks using those instances are completed before the instances are disposed.</target>
+        <target state="translated">Le attività non previste che usano istanze 'IDisposable' possono usare tali istanze molto tempo dopo l'eliminazione. Assicurati che le attività che utilizzano queste istanze vengano completate prima che le istanze vengano eliminate.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassDisposablesIntoUnawaitedTasksMessage">
         <source>Ensure tasks using 'IDisposable' instances complete before the instances are disposed</source>
-        <target state="new">Ensure tasks using 'IDisposable' instances complete before the instances are disposed</target>
+        <target state="translated">Assicurati che le attività che utilizzano le istanze di 'IDisposable' siano completate prima che le istanze vengano eliminate</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassDisposablesIntoUnawaitedTasksTitle">
         <source>Do not pass 'IDisposable' instances into unawaited tasks</source>
-        <target state="new">Do not pass 'IDisposable' instances into unawaited tasks</target>
+        <target state="translated">Non passare istanze di 'IDisposable' in attività non attese</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceDescription">
@@ -329,17 +329,17 @@
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticMessageTemplateBracesMismatchDescription">
         <source>The braces present in the message template are invalid. Ensure any braces in the message template are valid opening/closing braces, or are escaped.</source>
-        <target state="new">The braces present in the message template are invalid. Ensure any braces in the message template are valid opening/closing braces, or are escaped.</target>
+        <target state="translated">Le parentesi graffe presenti nel modello di messaggio non sono valide. Verifica che le parentesi graffe nel modello di messaggio siano parentesi graffe di apertura/chiusura valide o che siano precedute da un carattere di escape.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticMessageTemplateBracesMismatchMessage">
         <source>The braces present in the message template are invalid</source>
-        <target state="new">The braces present in the message template are invalid</target>
+        <target state="translated">Le parentesi graffe presenti nel modello di messaggio non sono valide</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticMessageTemplateBracesMismatchTitle">
         <source>Invalid braces in message template</source>
-        <target state="new">Invalid braces in message template</target>
+        <target state="translated">Parentesi graffe non valide nel modello di messaggio</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringDescription">
@@ -444,72 +444,72 @@
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsDescription">
         <source>This rule detects usage of platform-specific intrinsics that can be replaced with an equivalent cross-platform intrinsic instead.</source>
-        <target state="new">This rule detects usage of platform-specific intrinsics that can be replaced with an equivalent cross-platform intrinsic instead.</target>
+        <target state="translated">Questa regola rileva l'utilizzo di intrinseci specifici della piattaforma che possono essere sostituiti con un intrinseco equivalente multipiattaforma.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opAddition">
         <source>The addition operator should be preferred</source>
-        <target state="new">The addition operator should be preferred</target>
+        <target state="translated">È consigliabile preferire l'operatore di addizione</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opBitwiseAnd">
         <source>The bitwise-and operator should be preferred</source>
-        <target state="new">The bitwise-and operator should be preferred</target>
+        <target state="translated">È consigliabile usare l'operatore AND bit per bit</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opBitwiseOr">
         <source>The bitwise-or operator should be preferred</source>
-        <target state="new">The bitwise-or operator should be preferred</target>
+        <target state="translated">È consigliabile usare l'operatore OR bit per bit</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opDivison">
         <source>The division operator should be preferred</source>
-        <target state="new">The division operator should be preferred</target>
+        <target state="translated">È consigliabile preferire l'operatore di divisione</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opExclusiveOr">
         <source>The exclusive-or operator should be preferred</source>
-        <target state="new">The exclusive-or operator should be preferred</target>
+        <target state="translated">È consigliabile usare l'operatore OR esclusivo</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opLeftShift">
         <source>The left-shift operator should be preferred</source>
-        <target state="new">The left-shift operator should be preferred</target>
+        <target state="translated">È consigliabile utilizzare l'operatore di spostamento a sinistra</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opMultiply">
         <source>The multiply operator should be preferred</source>
-        <target state="new">The multiply operator should be preferred</target>
+        <target state="translated">È consigliabile utilizzare l'operatore di moltiplicazione</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opOnesComplement">
         <source>The ones-complement operator should be preferred</source>
-        <target state="new">The ones-complement operator should be preferred</target>
+        <target state="translated">È consigliabile preferire l'operatore di complemento a uno</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opRightShift">
         <source>The right-shift operator should be preferred</source>
-        <target state="new">The right-shift operator should be preferred</target>
+        <target state="translated">È consigliabile preferire l'operatore di spostamento a destra</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opSubtraction">
         <source>The subtraction operator should be preferred</source>
-        <target state="new">The subtraction operator should be preferred</target>
+        <target state="translated">È consigliabile utilizzare l'operatore di sottrazione</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opUnaryNegation">
         <source>The unary-negation operator should be preferred</source>
-        <target state="new">The unary-negation operator should be preferred</target>
+        <target state="translated">È consigliabile utilizzare l'operatore di negazione unario</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_opUnsignedRightShift">
         <source>The unsigned right-shift operator should be preferred</source>
-        <target state="new">The unsigned right-shift operator should be preferred</target>
+        <target state="translated">È consigliabile preferire l'operatore di spostamento a destra senza segno</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsTitle">
         <source>Use cross-platform intrinsics</source>
-        <target state="new">Use cross-platform intrinsics</target>
+        <target state="translated">Usa intrinseci multipiattaforma</target>
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesTitle">
