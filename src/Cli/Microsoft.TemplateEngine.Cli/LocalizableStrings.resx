@@ -958,14 +958,18 @@ The header is followed by the list of parameters and their errors (might be seve
   </data>
   <data name="PostAction_CreateDotnetConfig_Succeeded" xml:space="preserve">
     <value>Successfully created 'dotnet.config' file.</value>
+    <comment>{Locked="dotnet.config"}</comment>
   </data>
   <data name="PostAction_CreateDotnetConfig_CreatedNewSection" xml:space="preserve">
     <value>Created new section in 'dotnet.config' file</value>
+    <comment>{Locked="dotnet.config"}</comment>
   </data>
   <data name="PostAction_CreateDotnetConfig_ValueAlreadyExist" xml:space="preserve">
     <value>The required value in 'dotnet.config' is already set.</value>
+    <comment>{Locked="dotnet.config"}</comment>
   </data>
   <data name="PostAction_CreateDotnetConfig_ManuallyUpdate" xml:space="preserve">
     <value>Updating existing values in 'dotnet.config' is not yet supported. Please, manually update 'dotnet.config' to have '{0}' under section '{1}'.</value>
+    <comment>{Locked="dotnet.config"}</comment>
   </data>
 </root>
