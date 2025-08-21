@@ -3047,11 +3047,6 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
-      <trans-unit id="TestCommandUseDirectory">
-        <source>Specifying a directory for 'dotnet test' should be via '--directory'.</source>
-        <target state="translated">La specifica di una directory per 'dotnet test' deve avvenire tramite '--directory'.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="TestCommandUseProject">
         <source>Specifying a project for 'dotnet test' should be via '--project'.</source>
         <target state="translated">La specifica di un progetto per 'dotnet test' deve avvenire tramite '--project'.</target>

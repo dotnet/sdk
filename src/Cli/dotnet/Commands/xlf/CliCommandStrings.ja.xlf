@@ -3047,11 +3047,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
-      <trans-unit id="TestCommandUseDirectory">
-        <source>Specifying a directory for 'dotnet test' should be via '--directory'.</source>
-        <target state="translated">'dotnet test' のディレクトリを指定するには、'--directory' を使用する必要があります。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="TestCommandUseProject">
         <source>Specifying a project for 'dotnet test' should be via '--project'.</source>
         <target state="translated">'dotnet test' のプロジェクトを指定するには、'--project' を使用する必要があります。</target>

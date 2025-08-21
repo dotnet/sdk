@@ -3047,11 +3047,6 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
         <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
-      <trans-unit id="TestCommandUseDirectory">
-        <source>Specifying a directory for 'dotnet test' should be via '--directory'.</source>
-        <target state="translated">Zadání adresáře pro dotnet test by mělo být prostřednictvím --directory.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="TestCommandUseProject">
         <source>Specifying a project for 'dotnet test' should be via '--project'.</source>
         <target state="translated">Zadání projektu pro dotnet test by mělo být prostřednictvím --project.</target>

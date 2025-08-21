@@ -23,9 +23,6 @@ internal static class ValidationUtility
             if (parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption))
                 count++;
 
-            if (parseResult.HasOption(TestingPlatformOptions.DirectoryOption))
-                count++;
-
             if (parseResult.HasOption(TestingPlatformOptions.SolutionOption))
                 count++;
 
@@ -68,12 +65,6 @@ internal static class ValidationUtility
             return ValidateSolutionFilePath(pathOptions.SolutionPath, output);
         }
 
-        if (!string.IsNullOrEmpty(pathOptions.DirectoryPath) && !Directory.Exists(pathOptions.DirectoryPath))
-        {
-            output.WriteMessage(string.Format(CliCommandStrings.CmdNonExistentDirectoryErrorDescription, pathOptions.DirectoryPath));
-            return false;
-        }
-
         return true;
     }
 
@@ -104,10 +95,6 @@ internal static class ValidationUtility
                      token.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase)) && File.Exists(token))
             {
                 throw new GracefulException(CliCommandStrings.TestCommandUseProject);
-            }
-            else if (Directory.Exists(token))
-            {
-                throw new GracefulException(CliCommandStrings.TestCommandUseDirectory);
             }
             else if ((token.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
                       token.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) &&
