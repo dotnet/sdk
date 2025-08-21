@@ -42,7 +42,6 @@ This file should be imported by eng/Versions.props
     <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>5.0.0-2.25414.103</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
     <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>5.0.0-2.25414.103</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>5.0.0-2.25414.103</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
-    <MicrosoftCodeAnalysisNetAnalyzersPackageVersion>10.0.0-preview.25414.103</MicrosoftCodeAnalysisNetAnalyzersPackageVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion>5.0.0-2.25414.103</MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion>
     <MicrosoftCodeAnalysisRazorToolingInternalPackageVersion>10.0.0-preview.25414.103</MicrosoftCodeAnalysisRazorToolingInternalPackageVersion>
     <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>5.0.0-2.25414.103</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
@@ -142,8 +141,8 @@ This file should be imported by eng/Versions.props
     <!-- dotnet/core-setup dependencies -->
     <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
     <!-- microsoft/testfx dependencies -->
-    <MicrosoftTestingPlatformPackageVersion>1.9.0-preview.25415.13</MicrosoftTestingPlatformPackageVersion>
-    <MSTestPackageVersion>3.11.0-preview.25415.13</MSTestPackageVersion>
+    <MicrosoftTestingPlatformPackageVersion>1.9.0-preview.25415.14</MicrosoftTestingPlatformPackageVersion>
+    <MSTestPackageVersion>3.11.0-preview.25415.14</MSTestPackageVersion>
   </PropertyGroup>
   <!--Property group for alternate package version names-->
   <PropertyGroup>
