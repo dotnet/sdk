@@ -1910,12 +1910,12 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="PackCmdVersion">
         <source>VERSION</source>
-        <target state="new">VERSION</target>
+        <target state="translated">版本</target>
         <note />
       </trans-unit>
       <trans-unit id="PackCmdVersionDescription">
         <source>The version of the package to create</source>
-        <target state="new">The version of the package to create</target>
+        <target state="translated">要建立的套件版本</target>
         <note />
       </trans-unit>
       <trans-unit id="PackConfigurationOptionDescription">
@@ -2682,10 +2682,10 @@ The default is to publish a framework-dependent application.</source>
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="needs-review-translation">無法執行您的專案。
-請確定您有可執行的專案類型，並確定 '{0}' 支援此專案。
-可執行的專案應以可執行的 TFM (例如 net5.0) 為目標，且 OutputType 應為 'Exe'。
-目前的 {1} 為 '{2}'。</target>
+        <target state="new">Unable to proceed with project '{0}'.
+Ensure you have a runnable project type.
+A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
+The current OutputType is '{2}'.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -3882,7 +3882,7 @@ To display a value, specify the corresponding command-line option without provid
       </trans-unit>
       <trans-unit id="WorkloadManifestInstallationConfigurationWorkloadSets">
         <source>Configured to use workload sets when installing new manifests.</source>
-        <target state="new">Configured to use workload sets when installing new manifests.</target>
+        <target state="translated">設為在安裝新資訊清單時使用 workload sets。</target>
         <note>{Locked="workload sets"}</note>
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">

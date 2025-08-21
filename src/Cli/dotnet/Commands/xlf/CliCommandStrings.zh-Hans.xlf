@@ -1910,12 +1910,12 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="PackCmdVersion">
         <source>VERSION</source>
-        <target state="new">VERSION</target>
+        <target state="translated">版本</target>
         <note />
       </trans-unit>
       <trans-unit id="PackCmdVersionDescription">
         <source>The version of the package to create</source>
-        <target state="new">The version of the package to create</target>
+        <target state="translated">要创建的包版本</target>
         <note />
       </trans-unit>
       <trans-unit id="PackConfigurationOptionDescription">
@@ -2682,10 +2682,10 @@ The default is to publish a framework-dependent application.</source>
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="needs-review-translation">无法运行项目。
-请确保你具有可运行的项目类型且“{0}”支持此项目。
-可运行的项目应面向可运行的 TFM (例如 net5.0)且其 OutputType 为 "Exe"。
-当前的 {1} 为“{2}”。</target>
+        <target state="new">Unable to proceed with project '{0}'.
+Ensure you have a runnable project type.
+A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
+The current OutputType is '{2}'.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -2829,7 +2829,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
         <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
-        <target state="new">No workload sets are installed. Run "dotnet workload restore" to install a workload set.</target>
+        <target state="translated">未安装任何 workload sets。运行 “dotnet workload restore” 以安装工作负载集。</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">
@@ -3877,12 +3877,12 @@ To display a value, specify the corresponding command-line option without provid
       </trans-unit>
       <trans-unit id="WorkloadManifestInstallationConfigurationLooseManifests">
         <source>Configured to use loose manifests when installing new manifests.</source>
-        <target state="new">Configured to use loose manifests when installing new manifests.</target>
+        <target state="translated">已配置为在安装新清单时使用松散清单。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadManifestInstallationConfigurationWorkloadSets">
         <source>Configured to use workload sets when installing new manifests.</source>
-        <target state="new">Configured to use workload sets when installing new manifests.</target>
+        <target state="translated">已配置为在安装新清单时使用 workload sets。</target>
         <note>{Locked="workload sets"}</note>
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">

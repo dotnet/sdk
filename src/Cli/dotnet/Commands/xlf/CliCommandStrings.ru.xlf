@@ -1910,12 +1910,12 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="PackCmdVersion">
         <source>VERSION</source>
-        <target state="new">VERSION</target>
+        <target state="translated">VERSION</target>
         <note />
       </trans-unit>
       <trans-unit id="PackCmdVersionDescription">
         <source>The version of the package to create</source>
-        <target state="new">The version of the package to create</target>
+        <target state="translated">Версия создаваемого пакета</target>
         <note />
       </trans-unit>
       <trans-unit id="PackConfigurationOptionDescription">
@@ -2682,10 +2682,10 @@ The default is to publish a framework-dependent application.</source>
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="needs-review-translation">Не удалось запустить проект.
-Убедитесь, что тип проекта поддерживает запуск и что "{0}" поддерживает этот проект.
-Запускаемый проект должен быть предназначен для TFM с поддержкой запуска (например, net5.0) и иметь тип выходных данных "EXE".
-Текущий {1} — "{2}".</target>
+        <target state="new">Unable to proceed with project '{0}'.
+Ensure you have a runnable project type.
+A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
+The current OutputType is '{2}'.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -2829,7 +2829,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
         <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
-        <target state="new">No workload sets are installed. Run "dotnet workload restore" to install a workload set.</target>
+        <target state="translated">Наборы рабочих нагрузок не установлены. Запустите команду "dotnet workload restore", чтобы установить набор рабочей нагрузки.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">
@@ -3878,12 +3878,12 @@ To display a value, specify the corresponding command-line option without provid
       </trans-unit>
       <trans-unit id="WorkloadManifestInstallationConfigurationLooseManifests">
         <source>Configured to use loose manifests when installing new manifests.</source>
-        <target state="new">Configured to use loose manifests when installing new manifests.</target>
+        <target state="translated">Настроено на использование отдельных манифестов при установке новых манифестов.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadManifestInstallationConfigurationWorkloadSets">
         <source>Configured to use workload sets when installing new manifests.</source>
-        <target state="new">Configured to use workload sets when installing new manifests.</target>
+        <target state="translated">Настроено на использование workload sets при установке новых манифестов.</target>
         <note>{Locked="workload sets"}</note>
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">

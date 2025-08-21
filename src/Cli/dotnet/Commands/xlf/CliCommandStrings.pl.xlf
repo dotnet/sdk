@@ -1910,12 +1910,12 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
       </trans-unit>
       <trans-unit id="PackCmdVersion">
         <source>VERSION</source>
-        <target state="new">VERSION</target>
+        <target state="translated">WERSJA</target>
         <note />
       </trans-unit>
       <trans-unit id="PackCmdVersionDescription">
         <source>The version of the package to create</source>
-        <target state="new">The version of the package to create</target>
+        <target state="translated">Wersja pakietu do utworzenia</target>
         <note />
       </trans-unit>
       <trans-unit id="PackConfigurationOptionDescription">
@@ -2682,10 +2682,10 @@ Domyślnie publikowana jest aplikacja zależna od struktury.</target>
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="needs-review-translation">Nie można uruchomić projektu.
-Upewnij się, że używany typ projektu umożliwia uruchamianie oraz że element „{0}” obsługuje ten projekt.
-Projekt z możliwością uruchamiania musi mieć moniker TFM z możliwością uruchomienia (np. net5.0) i typ OutputType „Exe”.
-Bieżący element {1}: „{2}”.</target>
+        <target state="new">Unable to proceed with project '{0}'.
+Ensure you have a runnable project type.
+A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
+The current OutputType is '{2}'.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -3882,7 +3882,7 @@ Aby wyświetlić wartość, należy podać odpowiednią opcję wiersza poleceń 
       </trans-unit>
       <trans-unit id="WorkloadManifestInstallationConfigurationWorkloadSets">
         <source>Configured to use workload sets when installing new manifests.</source>
-        <target state="new">Configured to use workload sets when installing new manifests.</target>
+        <target state="translated">Skonfigurowano używanie workload sets podczas instalowania nowych manifestów.</target>
         <note>{Locked="workload sets"}</note>
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">
