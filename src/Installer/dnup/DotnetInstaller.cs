@@ -1,0 +1,102 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using Microsoft.DotNet.Cli.Utils;
+
+namespace Microsoft.DotNet.Tools.Bootstrapper;
+
+public class DotnetInstaller : IDotnetInstaller
+{
+    private readonly IEnvironmentProvider _environmentProvider;
+
+    public DotnetInstaller(IEnvironmentProvider? environmentProvider = null)
+    {
+        _environmentProvider = environmentProvider ?? new EnvironmentProvider();
+    }
+
+    public SdkInstallType GetConfiguredInstallType(out string? currentInstallPath)
+    {
+        currentInstallPath = null;
+        string? foundDotnet = _environmentProvider.GetCommandPath("dotnet");
+        if (string.IsNullOrEmpty(foundDotnet))
+        {
+            return SdkInstallType.None;
+        }
+
+        string installDir = Path.GetDirectoryName(foundDotnet)!;
+        currentInstallPath = installDir;
+
+        string? dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+        string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+        string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+        bool isAdminInstall = installDir.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase)
+            || installDir.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase);
+
+        if (isAdminInstall)
+        {
+            // Admin install: DOTNET_ROOT should not be set, or if set, should match installDir
+            if (!string.IsNullOrEmpty(dotnetRoot) && !PathsEqual(dotnetRoot, installDir) && !dotnetRoot.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase) && !dotnetRoot.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase))
+            {
+                return SdkInstallType.Inconsistent;
+            }
+            return SdkInstallType.Admin;
+        }
+        else
+        {
+            // User install: DOTNET_ROOT must be set and match installDir
+            if (string.IsNullOrEmpty(dotnetRoot) || !PathsEqual(dotnetRoot, installDir))
+            {
+                return SdkInstallType.Inconsistent;
+            }
+            return SdkInstallType.User;
+        }
+    }
+
+    private static bool PathsEqual(string a, string b)
+    {
+        return string.Equals(Path.GetFullPath(a).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+                            Path.GetFullPath(b).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+                            StringComparison.OrdinalIgnoreCase);
+    }
+
+    public string GetDefaultDotnetInstallPath()
+    {
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "dotnet");
+    }
+
+    public GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory)
+    {
+        string? directory = initialDirectory;
+        while (!string.IsNullOrEmpty(directory))
+        {
+            string globalJsonPath = Path.Combine(directory, "global.json");
+            if (File.Exists(globalJsonPath))
+            {
+                using var stream = File.OpenRead(globalJsonPath);
+                var contents = JsonSerializer.Deserialize(
+                    stream,
+                    GlobalJsonContentsJsonContext.Default.GlobalJsonContents);
+                return new GlobalJsonInfo
+                {
+                    GlobalJsonPath = globalJsonPath,
+                    GlobalJsonContents = contents
+                };
+            }
+            var parent = Directory.GetParent(directory);
+            if (parent == null)
+                break;
+            directory = parent.FullName;
+        }
+        return new GlobalJsonInfo();
+    }
+
+    public string? GetLatestInstalledAdminVersion()
+    {
+        // TODO: Implement this
+        return null;
+    }
+}
