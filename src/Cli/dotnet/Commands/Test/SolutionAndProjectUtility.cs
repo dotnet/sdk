@@ -229,7 +229,7 @@ internal static class SolutionAndProjectUtility
         }
 
         string targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
-		string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
+        string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
 
 
         // Only get run properties if IsTestingPlatformApplication is true
@@ -246,10 +246,9 @@ internal static class SolutionAndProjectUtility
             {
                 throw new GracefulException(
                     string.Format(
-                        CliCommandStrings.TestCommandExceptionUnableToRun,
-						projectFullPath,
-						"dotnet test",
-                        "OutputType",
+                        CliCommandStrings.RunCommandExceptionUnableToRun,
+                        projectFullPath,
+                        Product.TargetFrameworkVersion,
                         project.GetPropertyValue("OutputType")));
             }
         }
@@ -291,7 +290,7 @@ internal static class SolutionAndProjectUtility
                 }
             }
 
-            return RunProperties.GetPropsFromProject(project);
+            return RunProperties.FromProject(project);
         }
     }
 
