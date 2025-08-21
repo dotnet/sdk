@@ -31,14 +31,7 @@ public class GlobalJsonInfo
 {
     public string? GlobalJsonPath { get; set; }
 
-    public string? SdkVersion { get; set; }
-
-    public string? AllowPrerelease { get; set; }
-
-    public string? RollForward { get; set; }
-
-    //  The sdk.path specified in the global.json, if any
-    public string? SdkPath { get; set; }
+    public GlobalJsonContents? GlobalJsonContents { get; set; }
 
 }
 

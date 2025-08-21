@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
-public class GlobalJsonFile
+public class GlobalJsonContents
 {
     public SdkSection? Sdk { get; set; }
 
@@ -16,7 +16,7 @@ public class GlobalJsonFile
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
-[JsonSerializable(typeof(GlobalJsonFile))]
-public partial class GlobalJsonFileJsonContext : JsonSerializerContext
+[JsonSerializable(typeof(GlobalJsonContents))]
+public partial class GlobalJsonContentsJsonContext : JsonSerializerContext
 {
 }
