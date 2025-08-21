@@ -20,6 +20,7 @@ namespace Microsoft.DotNet.Build.Tasks
     /// and then update the stage 0 back.
     ///
     /// Override NETCoreSdkVersion to stage 0 sdk version like 6.0.100-dev
+    /// Override NETCoreSdkRuntimeIdentifier and NETCoreSdkPortableRuntimeIdentifier to match the target RID
     ///
     /// Use a task to override since it was generated as a string literal replace anyway.
     /// And using C# can have better error when anything goes wrong.
@@ -37,6 +38,8 @@ namespace Microsoft.DotNet.Build.Tasks
 
         [Required] public string NewSDKVersion { get; set; }
 
+        [Required] public string TargetRid { get; set; }
+
         [Required] public string OutputPath { get; set; }
 
         public override bool Execute()
@@ -46,6 +49,7 @@ namespace Microsoft.DotNet.Build.Tasks
                     File.ReadAllText(Stage0MicrosoftNETCoreAppRefPackageVersionPath),
                     MicrosoftNETCoreAppRefPackageVersion,
                     NewSDKVersion,
+                    TargetRid,
                     Log));
             return true;
         }
@@ -54,6 +58,7 @@ namespace Microsoft.DotNet.Build.Tasks
             string stage0MicrosoftNETCoreAppRefPackageVersionContent,
             string microsoftNETCoreAppRefPackageVersion,
             string newSDKVersion,
+            string targetRid,
             TaskLoggingHelper log = null)
         {
             var projectXml = XDocument.Parse(stage0MicrosoftNETCoreAppRefPackageVersionContent);
@@ -63,6 +68,8 @@ namespace Microsoft.DotNet.Build.Tasks
             var propertyGroup = projectXml.Root.Elements(ns + "PropertyGroup").First();            
 
             propertyGroup.Element(ns + "NETCoreSdkVersion").Value = newSDKVersion;
+            propertyGroup.Element(ns + "NETCoreSdkRuntimeIdentifier").Value = targetRid;
+            propertyGroup.Element(ns + "NETCoreSdkPortableRuntimeIdentifier").Value = targetRid;
 
 
             var originalBundledNETCoreAppPackageVersion = propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value;

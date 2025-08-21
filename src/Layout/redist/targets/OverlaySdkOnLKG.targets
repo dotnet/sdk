@@ -34,6 +34,7 @@
       Stage0MicrosoftNETCoreAppRefPackageVersionPath="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/Microsoft.NETCoreSdk.BundledVersions.props"
       MicrosoftNETCoreAppRefPackageVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
       NewSDKVersion="$(Version)"
+      TargetRid="$(TargetRid)"
       OutputPath="$(RedistInstallerLayoutPath)/sdk/$(Version)/Microsoft.NETCoreSdk.BundledVersions.props"/>
 
     <!-- Copy artifacts to the testhost folder. -->
