@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
+using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -99,4 +100,8 @@ public class DotnetInstaller : IDotnetInstaller
         // TODO: Implement this
         return null;
     }
+
+    public void InstallSdks(string dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions) => throw new NotImplementedException();
+    public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null, bool? allowPrerelease = null, string? rollForward = null) => throw new NotImplementedException();
+    public void ConfigureInstallType(SdkInstallType installType, string? dotnetRoot = null) => throw new NotImplementedException();
 }
