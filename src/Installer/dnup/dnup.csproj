@@ -16,8 +16,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Cli\dotnet\Telemetry\CIEnvironmentDetectorForTelemetry.cs" LinkBase="Shared" />
-    <Compile Include="..\..\Cli\dotnet\Telemetry\ICIEnvironmentDetector.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\CIEnvironmentDetectorForTelemetry.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\ICIEnvironmentDetector.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\EnvironmentProvider.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\Extensions\CollectionsExtensions.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\IEnvironmentProvider.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
