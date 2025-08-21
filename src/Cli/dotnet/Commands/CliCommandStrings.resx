@@ -1775,10 +1775,11 @@ The default is to publish a framework-dependent application.</value>
     <value>Couldn't find a project to run. Ensure a project exists in {0}, or pass the path to the project using {1}.</value>
   </data>
   <data name="RunCommandExceptionUnableToRun" xml:space="preserve">
-    <value>Unable to run your project.
-Ensure you have a runnable project type and ensure '{0}' supports this project.
-A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
-The current {1} is '{2}'.</value>
+    <value>Unable to proceed with project '{0}'.
+Ensure you have a runnable project type.
+A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
+The current OutputType is '{2}'.</value>
+    <comment>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</comment>
   </data>
   <data name="RunCommandExceptionUnableToRunSpecifyFramework" xml:space="preserve">
     <value>Unable to run your project
