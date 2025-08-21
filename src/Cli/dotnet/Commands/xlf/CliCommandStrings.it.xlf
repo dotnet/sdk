@@ -2680,7 +2680,7 @@ Per impostazione predefinita, viene generato un pacchetto dipendente dal framewo
       <trans-unit id="RunCommandExceptionUnableToRun">
         <source>Unable to proceed with project '{0}'.
 Ensure you have a runnable project type.
-A runnable project should target a runnable TFM (for instance, {1}) and have OutputType 'Exe'.
+A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
         <target state="needs-review-translation">Non è possibile eseguire il progetto.
 Assicurarsi che sia presente un tipo di progetto eseguibile e che '{0}' supporti tale progetto.

@@ -2680,7 +2680,7 @@ O padrão é publicar uma aplicação dependente de framework.</target>
       <trans-unit id="RunCommandExceptionUnableToRun">
         <source>Unable to proceed with project '{0}'.
 Ensure you have a runnable project type.
-A runnable project should target a runnable TFM (for instance, {1}) and have OutputType 'Exe'.
+A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
         <target state="needs-review-translation">Não é possível executar o projeto.
 Verifique se você tem um tipo de projeto executável e se '{0}' dá suporte a esse projeto.

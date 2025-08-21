@@ -2680,7 +2680,7 @@ El valor predeterminado es publicar una aplicación dependiente del marco.</targ
       <trans-unit id="RunCommandExceptionUnableToRun">
         <source>Unable to proceed with project '{0}'.
 Ensure you have a runnable project type.
-A runnable project should target a runnable TFM (for instance, {1}) and have OutputType 'Exe'.
+A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
         <target state="needs-review-translation">No se puede ejecutar el proyecto.
 Asegúrese de tener un tipo de proyecto ejecutable y asegúrese de que "{0}" admita este proyecto.
