@@ -4,6 +4,7 @@
 #nullable enable
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -24,12 +25,13 @@ namespace Microsoft.DotNet.HotReload
         private NamedPipeServerStream? _pipe;
         private bool _managedCodeUpdateFailedOrCancelled;
 
-        private int _updateId;
+        private int _updateBatchId;
 
         /// <summary>
         /// Updates that were sent over to the agent while the process has been suspended.
         /// </summary>
-        private readonly Queue<int> _pendingUpdates = [];
+        private readonly object _pendingUpdatesGate = new();
+        private Task _pendingUpdates = Task.CompletedTask;
 
         public override void Dispose()
         {
@@ -130,40 +132,19 @@ namespace Microsoft.DotNet.HotReload
                 return ApplyStatus.NoChangesApplied;
             }
 
-            if (!isProcessSuspended)
-            {
-                await ProcessPendingUpdatesAsync(cancellationToken);
-            }
-
             var request = new ManagedCodeUpdateRequest(ToRuntimeUpdates(applicableUpdates), ResponseLoggingLevel);
-        
+
             var success = false;
-            var canceled = false;
             try
             {
                 success = await SendAndReceiveUpdate(request, isProcessSuspended, cancellationToken);
-            }
-            catch (OperationCanceledException) when (!(canceled = true))
-            {
-                // unreachable
-            }
-            catch (Exception e) when (e is not OperationCanceledException)
-            {
-                success = false;
-                Logger.LogError("Change failed to apply (error: '{Message}'). Further changes won't be applied to this process.", e.Message);
-                Logger.LogDebug("Exception stack trace: {StackTrace}", e.StackTrace);
             }
             finally
             {
                 if (!success)
                 {
-                    if (canceled)
-                    {
-                        Logger.LogDebug("Change application cancelled. Further changes won't be applied to this process.");
-                    }
-
+                    Logger.LogWarning("Further changes won't be applied to this process.");
                     _managedCodeUpdateFailedOrCancelled = true;
-
                     DisposePipe();
                 }
             }
@@ -197,8 +178,6 @@ namespace Microsoft.DotNet.HotReload
 
             var appliedUpdateCount = 0;
 
-            var updateId = _updateId++;
-
             foreach (var update in updates)
             {
                 var request = new StaticAssetUpdateRequest(
@@ -209,59 +188,18 @@ namespace Microsoft.DotNet.HotReload
                         update.IsApplicationProject),
                     ResponseLoggingLevel);
 
-                var success = false;
-                var canceled = false;
-                try
-                {
-                    success = await SendAndReceiveUpdate(request, isProcessSuspended, cancellationToken);
-                }
-                catch (OperationCanceledException) when (!(canceled = true))
-                {
-                    // unreachable
-                }
-                catch (Exception e) when (e is not OperationCanceledException)
-                {
-                    success = false;
-                    Logger.LogError("Change failed to apply (error: '{Message}').", e.Message);
-                    Logger.LogDebug("Exception stack trace: {StackTrace}", e.StackTrace);
-                }
-                finally
-                {
-                    if (canceled)
-                    {
-                        Logger.LogDebug("Change application cancelled.");
-                    }
-                }
-
+                var success = await SendAndReceiveUpdate(request, isProcessSuspended, cancellationToken);
                 if (success)
                 {
                     appliedUpdateCount++;
                 }
             }
 
-            Logger.LogDebug("Updates applied: {AppliedCount} out of {TotalCount}.", appliedUpdateCount, updates.Length);
+            Logger.Log(LogEvents.UpdatesApplied, appliedUpdateCount, updates.Length);
 
             return
                 (appliedUpdateCount == 0) ? ApplyStatus.Failed :
                 (appliedUpdateCount < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
-        }
-
-        private async ValueTask ProcessPendingUpdatesAsync(CancellationToken cancellationToken)
-        {
-            while (_pendingUpdates.Count > 0)
-            {
-                var updateId = _pendingUpdates.Dequeue();
-                var success = await ReceiveUpdateResponse(cancellationToken);
-
-                if (success)
-                {
-                    Logger.LogDebug("Update #{UpdateId} completed.", updateId);
-                }
-                else
-                {
-                    Logger.LogDebug("Update #{UpdateId} failed.", updateId);
-                }
-            }
         }
 
         private async ValueTask<bool> SendAndReceiveUpdate<TRequest>(TRequest request, bool isProcessSuspended, CancellationToken cancellationToken)
@@ -270,21 +208,64 @@ namespace Microsoft.DotNet.HotReload
             // Should not be disposed:
             Debug.Assert(_pipe != null);
 
-            var updateId = _updateId++;
-            Logger.LogDebug("Sending update #{UpdateId}", updateId);
+            var batchId = _updateBatchId++;
 
-            await _pipe.WriteAsync((byte)request.Type, cancellationToken);
-            await request.WriteAsync(_pipe, cancellationToken);
-            await _pipe.FlushAsync(cancellationToken);
-
-            if (isProcessSuspended)
+            if (!isProcessSuspended)
             {
-                Logger.LogDebug("Update #{UpdateId} will be completed after app resumes.", updateId);
-                _pendingUpdates.Enqueue(updateId);
-                return true;
+                return await SendAndReceiveAsync(batchId, cancellationToken);
             }
 
-            return await ReceiveUpdateResponse(cancellationToken);
+            lock (_pendingUpdatesGate)
+            {
+                var previous = _pendingUpdates;
+
+                _pendingUpdates = Task.Run(async () =>
+                {
+                    await previous;
+                    await SendAndReceiveAsync(batchId, cancellationToken);
+                }, cancellationToken);
+            }
+
+            return true;
+
+            async ValueTask<bool> SendAndReceiveAsync(int batchId, CancellationToken cancellationToken)
+            {
+                Logger.LogDebug("Sending update batch #{UpdateId}", batchId);
+
+                try
+                {
+                    await WriteRequestAsync(cancellationToken);
+
+                    if (await ReceiveUpdateResponse(cancellationToken))
+                    {
+                        Logger.LogDebug("Update batch #{UpdateId} completed.", batchId);
+                        return true;
+                    }
+
+                    Logger.LogDebug("Update batch #{UpdateId} failed.", batchId);
+                }
+                catch (Exception e) when (e is not OperationCanceledException || isProcessSuspended)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        Logger.LogDebug("Update batch #{UpdateId} canceled.", batchId);
+                    }
+                    else
+                    {
+                        Logger.LogError("Update batch #{UpdateId} failed with error: {Message}", batchId, e.Message);
+                        Logger.LogDebug("Update batch #{UpdateId} exception stack trace: {StackTrace}", batchId, e.StackTrace);
+                    }
+                }
+
+                return false;
+            }
+
+            async ValueTask WriteRequestAsync(CancellationToken cancellationToken)
+            {
+                await _pipe.WriteAsync((byte)request.Type, cancellationToken);
+                await request.WriteAsync(_pipe, cancellationToken);
+                await _pipe.FlushAsync(cancellationToken);
+            }
         }
 
         private async ValueTask<bool> ReceiveUpdateResponse(CancellationToken cancellationToken)
@@ -311,8 +292,19 @@ namespace Microsoft.DotNet.HotReload
                 return;
             }
 
-            await _pipe.WriteAsync((byte)RequestType.InitialUpdatesCompleted, cancellationToken);
-            await _pipe.FlushAsync(cancellationToken);
+            try
+            {
+                await _pipe.WriteAsync((byte)RequestType.InitialUpdatesCompleted, cancellationToken);
+                await _pipe.FlushAsync(cancellationToken);
+            }
+            catch (Exception e) when (e is not OperationCanceledException)
+            {
+                // pipe might throw another exception when forcibly closed on process termination:
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    Logger.LogError("Failed to send InitialUpdatesCompleted: {Message}", e.Message);
+                }
+            }
         }
     }
 }
