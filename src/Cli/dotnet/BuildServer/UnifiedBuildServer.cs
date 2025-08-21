@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Net.BuildServerUtils;
@@ -34,7 +33,7 @@ internal sealed class UnifiedBuildServer : IBuildServer
                 Reporter.Output.WriteLine(CliCommandStrings.ShuttingDownServerWithPid, label.ToString(), pid);
 
                 // Connect to each pipe.
-                var client = new NamedPipeClientStream(BuildServerUtility.NormalizePipeNameForStream(file));
+                var client = BuildServerUtility.CreateClient(file);
                 await using var _ = client.ConfigureAwait(false);
                 await client.ConnectAsync().ConfigureAwait(false);
 

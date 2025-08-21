@@ -5,7 +5,6 @@
 
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Cli;
 using Microsoft.Net.BuildServerUtils;
 
 namespace Microsoft.DotNet.Cli.Utils;
@@ -145,14 +144,37 @@ internal class MSBuildForwardingAppWithoutLogging
         if (string.IsNullOrWhiteSpace(hostServerPath))
         {
             // Otherwise, construct a directory path under temp.
-            string baseDirectory = PathUtility.GetUserRestrictedTempDirectory();
-            hostServerPath = Path.Join(baseDirectory, "dotnet", "server", Product.TargetFrameworkVersion);
+
+            // If we're on a Unix machine then named pipes are implemented using Unix Domain Sockets.
+            // Most Unix systems have a maximum path length limit for Unix Domain Sockets, with Mac having a particularly short one.
+            // Mac also has a generated temp directory that can be quite long, leaving very little room for the actual pipe name.
+            // Fortunately, '/tmp' is mandated by POSIX to always be a valid temp directory, so we can use that instead.
+            const string dotnetServer = "dotnet-server";
+            string baseDirectory = OperatingSystem.IsWindows()
+                ? Path.Join(dotnetServer, Environment.UserName) // it's not a real path on Windows, just a name
+                : Path.Join("/tmp/", dotnetServer, Environment.UserName);
+
+            string sdkPathHashed = Sha256Hasher.HashWithNormalizedCasing(AppContext.BaseDirectory);
+
+            hostServerPath = Path.Join(baseDirectory, Product.TargetFrameworkVersion, sdkPathHashed);
+
+            const int limit = 104;
+            Debug.Assert(hostServerPath.Length < limit,
+                $"Path '{hostServerPath}' has length {hostServerPath.Length}. The limit is {limit} on Mac.");
         }
 
         // Create the directory on Linux (it's not a real directory on Windows, it's a virtual \\.\pipe\ namespace there).
         if (createDirectory && !OperatingSystem.IsWindows())
         {
-            PathUtility.CreateUserRestrictedDirectory(hostServerPath);
+            try
+            {
+                PathUtility.CreateUserRestrictedDirectory(hostServerPath);
+            }
+            catch (Exception ex)
+            {
+                string details = CommandLoggingContext.IsVerbose ? ex.ToString() : ex.Message;
+                Reporter.Error.WriteLine($"Cannot create {BuildServerUtility.DotNetHostServerPath} '{hostServerPath}': {details}");
+            }
         }
 
         return hostServerPath;
