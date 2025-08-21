@@ -170,7 +170,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BrotliCompressionLevel Condition="'$(_BlazorBrotliCompressionLevel)' != ''">$(_BlazorBrotliCompressionLevel)</BrotliCompressionLevel>
 
     <!-- Attach weak ETag to compressed assets -->
-    <AttachWeakETagToCompressedAssetsDuringDevelopment Condition="'$(AttachWeakETagToCompressedAssetsDuringDevelopment)' == '' and '$(Configuration)' == 'Debug'">true</AttachWeakETagToCompressedAssetsDuringDevelopment>
+    <AttachWeakETagToCompressedAssetsDuringDevelopment>true</AttachWeakETagToCompressedAssetsDuringDevelopment>
   </PropertyGroup>
 
   <PropertyGroup>
