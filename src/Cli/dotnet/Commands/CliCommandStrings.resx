@@ -1214,6 +1214,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   </data>
   <data name="NoWorkloadsToRepair" xml:space="preserve">
     <value>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</value>
+    <comment>{Locked="dotnet workload search"}</comment>
   </data>
   <data name="NoWorkloadsToUpdate" xml:space="preserve">
     <value>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</value>
@@ -1601,7 +1602,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   </data>
   <data name="PropertyDirectiveMissingParts" xml:space="preserve">
     <value>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</value>
-    <comment>{0} is the file path and line number.</comment>
+    <comment>{0} is the file path and line number.{Locked="#:property"}</comment>
+  </data>
+  <data name="StaticGraphRestoreNotSupported" xml:space="preserve">
+    <value>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</value>
+    <comment>{0} is the file path and line number.{Locked="#:property"}</comment>
   </data>
   <data name="InvalidDirectiveName" xml:space="preserve">
     <value>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</value>
@@ -1865,7 +1870,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
     <comment>{Locked="--sdk-version"}</comment>
   </data>
   <data name="ShouldInstallAWorkloadSet" xml:space="preserve">
-    <value>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</value>
+    <value>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</value>
     <comment>{Locked="dotnet workload restore"}</comment>
   </data>
   <data name="ShutDownFailed" xml:space="preserve">
@@ -2481,8 +2486,12 @@ To display a value, specify the corresponding command-line option without provid
   <data name="WorkloadManifestIdColumn" xml:space="preserve">
     <value>Workload manifest ID</value>
   </data>
-  <data name="WorkloadManifestInstallationConfiguration" xml:space="preserve">
-    <value>Configured to use {0} when installing new manifests.</value>
+  <data name="WorkloadManifestInstallationConfigurationWorkloadSets" xml:space="preserve">
+    <value>Configured to use workload sets when installing new manifests.</value>
+    <comment>{Locked="workload sets"}</comment>
+  </data>
+  <data name="WorkloadManifestInstallationConfigurationLooseManifests" xml:space="preserve">
+    <value>Configured to use loose manifests when installing new manifests.</value>
   </data>
   <data name="WorkloadManifestPathColumn" xml:space="preserve">
     <value>Manifest Path</value>
@@ -2629,5 +2638,11 @@ Proceed?</value>
   </data>
   <data name="TestCommandUseTestModules" xml:space="preserve">
     <value>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</value>
+  </data>
+  <data name="PackCmdVersionDescription" xml:space="preserve">
+    <value>The version of the package to create</value>
+  </data>
+  <data name="PackCmdVersion" xml:space="preserve">
+    <value>VERSION</value>
   </data>
 </root>

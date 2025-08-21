@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-nuget-push" "1" "2025-06-13" "" ".NET Documentation"
+.TH "dotnet-nuget-push" "1" "2025-08-15" "" ".NET Documentation"
 .hy
 .SH dotnet nuget push
 .PP
@@ -26,7 +26,7 @@ dotnet-nuget-push - Pushes a package to the server and publishes it.
 .IP
 .nf
 \f[C]
-dotnet nuget push [<ROOT>] [-d|--disable-buffering] [--force-english-output]
+dotnet nuget push [<ROOT>] [--allow-insecure-connections] [-d|--disable-buffering] [--force-english-output]
     [--interactive] [-k|--api-key <API_KEY>] [-n|--no-symbols]
     [--no-service-endpoint] [-s|--source <SOURCE>] [--skip-duplicate]
     [-sk|--symbol-api-key <API_KEY>] [-ss|--symbol-source <SOURCE>]
@@ -72,6 +72,12 @@ For more information, see Local feeds.
 Specifies the file path to the package to be pushed.
 .RE
 .SH OPTIONS
+.IP \[bu] 2
+\f[B]\f[VB]--allow-insecure-connections\f[B]\f[R]
+.RS 2
+.PP
+Allows pushing to HTTP sources (insecure).
+.RE
 .IP \[bu] 2
 \f[B]\f[VB]-d|--disable-buffering\f[B]\f[R]
 .RS 2

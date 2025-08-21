@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.CommandLine;
@@ -124,6 +123,7 @@ public class RunCommand
         }
 
         Func<ProjectCollection, ProjectInstance>? projectFactory = null;
+        RunProperties? cachedRunProperties = null;
         if (ShouldBuild)
         {
             if (string.Equals("true", launchSettings?.DotNetRunMessages, StringComparison.OrdinalIgnoreCase))
@@ -131,7 +131,7 @@ public class RunCommand
                 Reporter.Output.WriteLine(CliCommandStrings.RunCommandBuilding);
             }
 
-            EnsureProjectIsBuilt(out projectFactory);
+            EnsureProjectIsBuilt(out projectFactory, out cachedRunProperties);
         }
         else
         {
@@ -145,13 +145,16 @@ public class RunCommand
                 Debug.Assert(!ReadCodeFromStdin);
                 var command = CreateVirtualCommand();
                 command.MarkArtifactsFolderUsed();
-                projectFactory = command.CreateProjectInstance;
+
+                var cacheEntry = command.GetPreviousCacheEntry();
+                projectFactory = CanUseRunPropertiesForCscBuiltProgram(BuildLevel.None, cacheEntry) ? null : command.CreateProjectInstance;
+                cachedRunProperties = cacheEntry?.Run;
             }
         }
 
         try
         {
-            ICommand targetCommand = GetTargetCommand(projectFactory);
+            ICommand targetCommand = GetTargetCommand(projectFactory, cachedRunProperties);
             ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings);
 
             // Env variables specified on command line override those specified in launch profile:
@@ -294,22 +297,24 @@ public class RunCommand
         }
     }
 
-    private void EnsureProjectIsBuilt(out Func<ProjectCollection, ProjectInstance>? projectFactory)
+    private void EnsureProjectIsBuilt(out Func<ProjectCollection, ProjectInstance>? projectFactory, out RunProperties? cachedRunProperties)
     {
         int buildResult;
         if (EntryPointFileFullPath is not null)
         {
             var command = CreateVirtualCommand();
             buildResult = command.Execute();
-            projectFactory = command.LastBuildLevel is BuildLevel.Csc ? null : command.CreateProjectInstance;
+            projectFactory = CanUseRunPropertiesForCscBuiltProgram(command.LastBuild.Level, command.LastBuild.Cache?.PreviousEntry) ? null : command.CreateProjectInstance;
+            cachedRunProperties = command.LastBuild.Cache?.CurrentEntry.Run;
         }
         else
         {
             Debug.Assert(ProjectFileFullPath is not null);
 
             projectFactory = null;
+            cachedRunProperties = null;
             buildResult = new RestoringCommand(
-                MSBuildArgs.CloneWithExplicitArgs([ProjectFileFullPath, ..MSBuildArgs.OtherMSBuildArgs]),
+                MSBuildArgs.CloneWithExplicitArgs([ProjectFileFullPath, .. MSBuildArgs.OtherMSBuildArgs]),
                 NoRestore,
                 advertiseWorkloadUpdates: false
             ).Execute();
@@ -322,13 +327,23 @@ public class RunCommand
         }
     }
 
+    private static bool CanUseRunPropertiesForCscBuiltProgram(BuildLevel level, RunFileBuildCacheEntry? previousCache)
+    {
+        return level == BuildLevel.Csc ||
+            (level == BuildLevel.None && previousCache?.BuildLevel == BuildLevel.Csc);
+    }
+
     private VirtualProjectBuildingCommand CreateVirtualCommand()
     {
         Debug.Assert(EntryPointFileFullPath != null);
 
+        var args = MSBuildArgs.RequestedTargets is null or []
+            ? MSBuildArgs.CloneWithAdditionalTargets("Build", ComputeRunArgumentsTarget)
+            : MSBuildArgs.CloneWithAdditionalTargets(ComputeRunArgumentsTarget);
+
         return new(
             entryPointFileFullPath: EntryPointFileFullPath,
-            msbuildArgs: MSBuildArgs)
+            msbuildArgs: args)
         {
             NoRestore = NoRestore,
             NoCache = NoCache,
@@ -361,23 +376,33 @@ public class RunCommand
         }
     }
 
-    internal ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
+    internal ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties)
     {
         if (projectFactory is null && ProjectFileFullPath is null)
         {
             // If we are running a file-based app and projectFactory is null, it means csc was used instead of full msbuild.
             // So we can skip project evaluation to continue the optimized path.
             Debug.Assert(EntryPointFileFullPath is not null);
+            Reporter.Verbose.WriteLine("Getting target command: for csc-built program.");
             return CreateCommandForCscBuiltProgram(EntryPointFileFullPath);
         }
 
+        if (cachedRunProperties != null)
+        {
+            // We can also skip project evaluation if we already evaluated the project during virtual build
+            // or we have cached run properties in previous run (and this is a --no-build run).
+            Reporter.Verbose.WriteLine("Getting target command: from cache.");
+            return CreateCommandFromRunProperties(cachedRunProperties.WithApplicationArguments(ApplicationArgs));
+        }
+
+        Reporter.Verbose.WriteLine("Getting target command: evaluating project.");
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. MSBuildArgs.OtherMSBuildArgs], "dotnet-run");
         var project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
         ValidatePreconditions(project);
         InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs);
         logger?.ReallyShutdown();
-        var runProperties = ReadRunPropertiesFromProject(project, ApplicationArgs);
-        var command = CreateCommandFromRunProperties(project, runProperties);
+        var runProperties = RunProperties.FromProject(project).WithApplicationArguments(ApplicationArgs);
+        var command = CreateCommandFromRunProperties(runProperties);
         return command;
 
         static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, MSBuildArgs msbuildArgs, ILogger? binaryLogger)
@@ -407,29 +432,18 @@ public class RunCommand
             }
         }
 
-        static RunProperties ReadRunPropertiesFromProject(ProjectInstance project, string[] applicationArgs)
+        static ICommand CreateCommandFromRunProperties(RunProperties runProperties)
         {
-            var runProperties = RunProperties.FromProjectAndApplicationArguments(project, applicationArgs);
-            if (string.IsNullOrEmpty(runProperties.RunCommand))
-            {
-                ThrowUnableToRunError(project);
-            }
-
-            return runProperties;
-        }
-
-        static ICommand CreateCommandFromRunProperties(ProjectInstance project, RunProperties runProperties)
-        {
-            CommandSpec commandSpec = new(runProperties.RunCommand, runProperties.RunArguments);
+            CommandSpec commandSpec = new(runProperties.Command, runProperties.Arguments);
 
             var command = CommandFactoryUsingResolver.Create(commandSpec)
-                .WorkingDirectory(runProperties.RunWorkingDirectory);
+                .WorkingDirectory(runProperties.WorkingDirectory);
 
             SetRootVariableName(
                 command,
-                project.GetPropertyValue("RuntimeIdentifier"),
-                project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"),
-                project.GetPropertyValue("TargetFrameworkVersion"));
+                runtimeIdentifier: runProperties.RuntimeIdentifier,
+                defaultAppHostRuntimeIdentifier: runProperties.DefaultAppHostRuntimeIdentifier,
+                targetFrameworkVersion: runProperties.TargetFrameworkVersion);
 
             return command;
         }
@@ -482,7 +496,7 @@ public class RunCommand
 
     static readonly string ComputeRunArgumentsTarget = "ComputeRunArguments";
 
-    private static void ThrowUnableToRunError(ProjectInstance project)
+    internal static void ThrowUnableToRunError(ProjectInstance project)
     {
         string targetFrameworks = project.GetPropertyValue("TargetFrameworks");
         if (!string.IsNullOrEmpty(targetFrameworks))
@@ -585,7 +599,7 @@ public class RunCommand
 
     public static RunCommand FromArgs(string[] args)
     {
-        var parseResult = Parser.Parse(["dotnet", "run", ..args]);
+        var parseResult = Parser.Parse(["dotnet", "run", .. args]);
         return FromParseResult(parseResult);
     }
 
