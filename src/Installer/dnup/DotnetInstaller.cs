@@ -76,22 +76,15 @@ public class DotnetInstaller : IDotnetInstaller
             string globalJsonPath = Path.Combine(directory, "global.json");
             if (File.Exists(globalJsonPath))
             {
-                try
+                using var stream = File.OpenRead(globalJsonPath);
+                var contents = JsonSerializer.Deserialize(
+                    stream,
+                    GlobalJsonContentsJsonContext.Default.GlobalJsonContents);
+                return new GlobalJsonInfo
                 {
-                    using var stream = File.OpenRead(globalJsonPath);
-                    var contents = JsonSerializer.Deserialize(
-                        stream,
-                        GlobalJsonContentsJsonContext.Default.GlobalJsonContents);
-                    return new GlobalJsonInfo
-                    {
-                        GlobalJsonPath = globalJsonPath,
-                        GlobalJsonContents = contents
-                    };
-                }
-                catch
-                {
-                    // Ignore errors and continue up the directory tree
-                }
+                    GlobalJsonPath = globalJsonPath,
+                    GlobalJsonContents = contents
+                };
             }
             var parent = Directory.GetParent(directory);
             if (parent == null)
