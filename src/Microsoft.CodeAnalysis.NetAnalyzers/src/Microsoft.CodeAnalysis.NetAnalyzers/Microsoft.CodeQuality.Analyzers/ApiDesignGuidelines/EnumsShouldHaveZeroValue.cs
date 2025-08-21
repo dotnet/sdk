@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Analyzer.Utilities;
@@ -115,58 +112,49 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             Debug.Assert(context.Options.MatchesConfiguredVisibility(RuleNoZero, symbol, context.Compilation));
             Debug.Assert(context.Options.MatchesConfiguredVisibility(RuleRename, symbol, context.Compilation));
 
-            ImmutableArray<IFieldSymbol> zeroValuedFields = GetZeroValuedFields(symbol).ToImmutableArray();
+            var zeroValueField = FindZeroValueField(symbol, out var hasMultipleZeroValueFields);
 
             if (symbol.HasAnyAttribute(flagsAttribute))
             {
-                CheckFlags(symbol, zeroValuedFields, context);
+                CheckFlags(symbol, zeroValueField, hasMultipleZeroValueFields, context);
             }
             else
             {
-                CheckNonFlags(symbol, zeroValuedFields, context.ReportDiagnostic);
+                CheckNonFlags(symbol, zeroValueField, context.ReportDiagnostic);
             }
         }
 
-        private static void CheckFlags(INamedTypeSymbol namedType, ImmutableArray<IFieldSymbol> zeroValuedFields,
+        private static void CheckFlags(INamedTypeSymbol namedType, IFieldSymbol? zeroValuedField, bool hasMultipleZeroValueFields,
             SymbolAnalysisContext context)
         {
-            switch (zeroValuedFields.Length)
+            if (hasMultipleZeroValueFields)
             {
-                case 0:
-                    break;
+                // Remove all members that have the value zero from {0} except for one member that is named 'None'.
+                context.ReportDiagnostic(namedType.CreateDiagnostic(RuleMultipleZero, namedType.Name));
+            }
+            else if (zeroValuedField != null && !IsMemberNamedNone(zeroValuedField))
+            {
+                var additionalEnumNoneNames =
+                    context.Options.GetStringOptionValue(
+                        EditorConfigOptionNames.AdditionalEnumNoneNames, RuleRename,
+                        namedType.Locations[0].SourceTree!, context.Compilation).AsSpan();
 
-                case 1:
-                    if (!IsMemberNamedNone(zeroValuedFields[0]))
+                foreach (var range in additionalEnumNoneNames.Split('|'))
+                {
+                    if (additionalEnumNoneNames[range].Equals(zeroValuedField.Name, StringComparison.OrdinalIgnoreCase))
                     {
-                        var additionalEnumNoneNames =
-                            context.Options.GetStringOptionValue(
-                                EditorConfigOptionNames.AdditionalEnumNoneNames, RuleRename,
-                                namedType.Locations[0].SourceTree!, context.Compilation)
-                            .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
-                            .ToImmutableArray();
-
-                        if (!additionalEnumNoneNames.Any(name => string.Equals(name, zeroValuedFields[0].Name, StringComparison.OrdinalIgnoreCase)))
-                        {
-                            // In enum '{0}', change the name of '{1}' to 'None'.
-                            context.ReportDiagnostic(zeroValuedFields[0].CreateDiagnostic(RuleRename, namedType.Name, zeroValuedFields[0].Name));
-                        }
+                        return;
                     }
+                }
 
-                    break;
-
-                default:
-                    {
-                        // Remove all members that have the value zero from {0} except for one member that is named 'None'.
-                        context.ReportDiagnostic(namedType.CreateDiagnostic(RuleMultipleZero, namedType.Name));
-                    }
-
-                    break;
+                // In enum '{0}', change the name of '{1}' to 'None'.
+                context.ReportDiagnostic(zeroValuedField.CreateDiagnostic(RuleRename, namedType.Name, zeroValuedField.Name));
             }
         }
 
-        private static void CheckNonFlags(INamedTypeSymbol namedType, ImmutableArray<IFieldSymbol> zeroValuedFields, Action<Diagnostic> addDiagnostic)
+        private static void CheckNonFlags(INamedTypeSymbol namedType, IFieldSymbol? zeroValuedField, Action<Diagnostic> addDiagnostic)
         {
-            if (zeroValuedFields.IsEmpty)
+            if (zeroValuedField == null)
             {
                 // Add a member to {0} that has a value of zero with a suggested name of 'None'.
                 addDiagnostic(namedType.CreateDiagnostic(RuleNoZero, namedType.Name));
@@ -176,9 +164,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         internal static IEnumerable<IFieldSymbol> GetZeroValuedFields(INamedTypeSymbol enumType)
         {
             SpecialType specialType = enumType.EnumUnderlyingType!.SpecialType;
-            foreach (IFieldSymbol field in enumType.GetMembers().Where(m => m.Kind == SymbolKind.Field).Cast<IFieldSymbol>())
+
+            foreach (var member in enumType.GetMembers())
             {
-                if (field.HasConstantValue && IsZeroValueConstant(field.ConstantValue, specialType))
+                if (member is IFieldSymbol field && field.HasConstantValue && IsZeroValueConstant(field.ConstantValue, specialType))
                 {
                     yield return field;
                 }
@@ -193,6 +182,31 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         public static bool IsMemberNamedNone(ISymbol symbol)
         {
             return string.Equals(symbol.Name, "none", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static IFieldSymbol? FindZeroValueField(INamedTypeSymbol enumType, out bool hasMultipleZeroValueFields)
+        {
+            IFieldSymbol? zeroValueField = null;
+            hasMultipleZeroValueFields = false;
+            var underlyingType = enumType.EnumUnderlyingType!.SpecialType;
+
+            foreach (var member in enumType.GetMembers())
+            {
+                if (member is IFieldSymbol field && field.HasConstantValue && IsZeroValueConstant(field.ConstantValue, underlyingType))
+                {
+                    if (zeroValueField == null)
+                    {
+                        zeroValueField = field;
+                    }
+                    else
+                    {
+                        hasMultipleZeroValueFields = true;
+                        break;
+                    }
+                }
+            }
+
+            return zeroValueField;
         }
     }
 }
