@@ -30,9 +30,13 @@ public enum SdkInstallType
 public class GlobalJsonInfo
 {
     public string? GlobalJsonPath { get; set; }
-
     public GlobalJsonContents? GlobalJsonContents { get; set; }
 
+    // Convenience properties for compatibility
+    public string? SdkVersion => GlobalJsonContents?.Sdk?.Version;
+    public bool? AllowPrerelease => GlobalJsonContents?.Sdk?.AllowPrerelease;
+    public string? RollForward => GlobalJsonContents?.Sdk?.RollForward;
+    public string? SdkPath => (GlobalJsonContents?.Sdk?.Paths != null && GlobalJsonContents.Sdk.Paths.Length > 0) ? GlobalJsonContents.Sdk.Paths[0] : null;
 }
 
 public interface IReleaseInfoProvider

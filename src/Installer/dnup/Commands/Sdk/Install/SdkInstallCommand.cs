@@ -300,10 +300,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             return new GlobalJsonInfo
             {
                 GlobalJsonPath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_PATH"),
-                SdkVersion = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_SDK_VERSION"),
-                AllowPrerelease = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_ALLOW_PRERELEASE"),
-                RollForward = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_ROLLFORWARD"),
-                SdkPath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_SDK_INSTALL_PATH")
+                GlobalJsonContents = null // Set to null for test mock; update as needed for tests
             };
         }
 
@@ -323,7 +320,6 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             currentInstallPath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_CURRENT_INSTALL_PATH");
             return returnValue;
         }
-
 
         public string? GetLatestInstalledAdminVersion()
         {

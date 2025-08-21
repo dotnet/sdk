@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -66,7 +67,40 @@ public class DotnetInstaller : IDotnetInstaller
     {
         return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "dotnet");
     }
-    public GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory) => throw new NotImplementedException();
+
+    public GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory)
+    {
+        string? directory = initialDirectory;
+        while (!string.IsNullOrEmpty(directory))
+        {
+            string globalJsonPath = Path.Combine(directory, "global.json");
+            if (File.Exists(globalJsonPath))
+            {
+                try
+                {
+                    using var stream = File.OpenRead(globalJsonPath);
+                    var contents = JsonSerializer.Deserialize(
+                        stream,
+                        GlobalJsonContentsJsonContext.Default.GlobalJsonContents);
+                    return new GlobalJsonInfo
+                    {
+                        GlobalJsonPath = globalJsonPath,
+                        GlobalJsonContents = contents
+                    };
+                }
+                catch
+                {
+                    // Ignore errors and continue up the directory tree
+                }
+            }
+            var parent = Directory.GetParent(directory);
+            if (parent == null)
+                break;
+            directory = parent.FullName;
+        }
+        return new GlobalJsonInfo();
+    }
+
     public string? GetLatestInstalledAdminVersion()
     {
         // TODO: Implement this
