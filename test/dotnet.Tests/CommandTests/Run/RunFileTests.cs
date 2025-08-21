@@ -1748,8 +1748,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             #:sdk Microsoft.NET.Sdk
-            #:sdk Aspire.AppHost.Sdk@9.3.1
-            #:package Aspire.Hosting.AppHost@9.3.1
+            #:sdk Aspire.AppHost.Sdk@9.2.1
+            #:package Aspire.Hosting.AppHost@9.2.1
 
             var builder = DistributedApplication.CreateBuilder(args);
             builder.Build().Run();
