@@ -335,6 +335,7 @@ namespace Microsoft.NET.Build.Tasks
                 var runtimeRequiredByDeployment
                     = (SelfContained || ReadyToRunEnabled) &&
                       !string.IsNullOrEmpty(RuntimeIdentifier) &&
+                      RuntimeIdentifier != "any" &&
                       selectedRuntimePack != null &&
                       !string.IsNullOrEmpty(selectedRuntimePack.Value.RuntimePackNamePatterns);
 
@@ -369,6 +370,13 @@ namespace Microsoft.NET.Build.Tasks
                         if (processedPrimaryRuntimeIdentifier && runtimeIdentifier == RuntimeIdentifier)
                         {
                             //  We've already processed this RID
+                            continue;
+                        }
+
+                        if (runtimeIdentifier == "any")
+                        {
+                            // the `any` RID represents a platform-agnostic target. As such, it has no
+                            // platform-specific runtime pack associated with it.
                             continue;
                         }
 
