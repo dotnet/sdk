@@ -28,12 +28,28 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             public string ToolPackageVersion { get; set; } = "1.0.0";
             public string ToolCommandName { get; set; } = "TestTool";
             public string[]? AdditionalPackageTypes { get; set; } = null;
-
             public bool NativeAOT { get; set { field = value; this.RidSpecific = value; } } = false;
             public bool SelfContained { get; set { field = value; this.RidSpecific = value; } } = false;
             public bool Trimmed { get; set { field = value; this.RidSpecific = value; } } = false;
+
+            /// <summary>
+            /// If set, the generated tool will include the <c>any</c> RID in the list of RIDs to target.
+            /// This will cause a framework-dependent, platform-agnostic package to be created.
+            /// </summary>
             public bool IncludeAnyRid { get; set { field = value; } } = false;
+
+            /// <summary>
+            /// If set, the generated tool will target all of the RIDs specified in <see cref="ToolsetInfo.LatestRuntimeIdentifiers"/>.
+            /// Defaults to <see langword="false"/>.
+            /// </summary>
             public bool RidSpecific { get; set; } = false;
+
+            /// <summary>
+            /// If set, the generated tool will include the current executing platform's RID in the list of RIDs to target
+            /// (which is otherwise made of <see cref="ToolsetInfo.LatestRuntimeIdentifiers"/>.) If set to <see langword="false"/>,
+            /// the current RID will be stripped from that set.
+            /// Defaults to <see langword="true"/>.
+            /// </summary>
             public bool IncludeCurrentRid { get; set; } = true;
 
             public string GetIdentifier() {
