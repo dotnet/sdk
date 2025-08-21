@@ -2686,7 +2686,7 @@ The current OutputType is '{2}'.</source>
 请确保你具有可运行的项目类型且“{0}”支持此项目。
 可运行的项目应面向可运行的 TFM (例如 net5.0)且其 OutputType 为 "Exe"。
 当前的 {1} 为“{2}”。</target>
-        <note>{0} is project file path.</note>
+        <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project

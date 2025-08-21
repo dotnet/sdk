@@ -2686,7 +2686,7 @@ The current OutputType is '{2}'.</source>
 실행 가능한 프로젝트 형식이 있고 '{0}'에서 이 프로젝트를 지원하는지 확인하세요.
 실행 가능한 프로젝트는 실행 가능한 TFM(예: net5.0)을 대상으로 하고 OutputType 'Exe'가 있어야 합니다.
 현재 {1}은(는) '{2}'입니다.</target>
-        <note>{0} is project file path.</note>
+        <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
