@@ -166,6 +166,8 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
   # Disable telemetry on CI.
   if ($ci) {
     $env:DOTNET_CLI_TELEMETRY_OPTOUT=1
+    $env:MSBUILDUSESERVER=1
+    $env:DOTNET_CLI_USE_MSBUILD_SERVER=1
   }
 
   # Find the first path on %PATH% that contains the dotnet.exe

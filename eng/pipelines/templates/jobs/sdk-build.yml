@@ -104,6 +104,8 @@ jobs:
         env:
           BuildConfig: $(buildConfiguration)
           TestFullMSBuild: ${{ parameters.testFullMSBuild }}
+          MSBUILDUSESERVER: 1
+          DOTNET_CLI_USE_MSBUILD_SERVER: 1
 
       - powershell: build/RunTestTemplateTests.ps1
         displayName: 🟣 Run Test Templates Tests
@@ -131,6 +133,8 @@ jobs:
         displayName: 🟣 Build
         env:
           BuildConfig: $(buildConfiguration)
+          MSBUILDUSESERVER: 1
+          DOTNET_CLI_USE_MSBUILD_SERVER: 1
 
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
