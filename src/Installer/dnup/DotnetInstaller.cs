@@ -8,11 +8,11 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
-public class DotnetInstaler : IDotnetInstaller
+public class DotnetInstaller : IDotnetInstaller
 {
     private readonly IEnvironmentProvider _environmentProvider;
 
-    public DotnetInstaler(IEnvironmentProvider? environmentProvider = null)
+    public DotnetInstaller(IEnvironmentProvider? environmentProvider = null)
     {
         _environmentProvider = environmentProvider ?? new EnvironmentProvider();
     }
