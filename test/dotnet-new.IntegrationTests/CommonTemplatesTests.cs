@@ -37,6 +37,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("dotnet gitignore file", "gitignore", null)]
         [InlineData("dotnet gitignore file", ".gitignore", null)]
         [InlineData("Solution File", "sln", null)]
+        [InlineData("Solution File", "sln", new[] { "--format", "sln" })]
+        [InlineData("Solution File", "sln", new[] { "--format", "slnx" })]
         [InlineData("Solution File", "solution", null)]
         [InlineData("Dotnet local tool manifest file", "tool-manifest", null)]
         [InlineData("Web Config", "webconfig", null)]

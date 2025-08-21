@@ -69,17 +69,17 @@
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingDescription">
         <source>In many situations, logging is disabled or set to a log level that results in an unnecessary evaluation for this argument.</source>
-        <target state="new">In many situations, logging is disabled or set to a log level that results in an unnecessary evaluation for this argument.</target>
+        <target state="translated">W wielu sytuacjach rejestrowanie jest wyłączone lub ustawione na poziom dziennika, co powoduje niepotrzebną ocenę tego argumentu.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingMessage">
         <source>Evaluation of this argument may be expensive and unnecessary if logging is disabled</source>
-        <target state="new">Evaluation of this argument may be expensive and unnecessary if logging is disabled</target>
+        <target state="translated">Ocena tego argumentu może być kosztowna i niepotrzebna, jeśli rejestrowanie jest wyłączone</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingTitle">
         <source>Avoid potentially expensive logging</source>
-        <target state="new">Avoid potentially expensive logging</target>
+        <target state="translated">Unikaj potencjalnie kosztownego rejestrowania</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsDescription">
@@ -628,8 +628,8 @@ The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Ca
 The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
 Widening and user defined conversions are not supported with generic types.</source>
         <target state="translated">Elementy Enumerable.Cast&lt;T&gt; i Enumerable.OfType&lt;T&gt; wymagają oczekiwanych zgodnych typów.  
-Rzutowanie ogólne (IL „unbox.any”) używane przez sekwencję zwracaną przez metodę Enumerable.Cast&lt;T&gt; zgłosi wyjątek InvalidCastException w środowisku uruchomieniowym dla elementów określonych typów.  
-Sprawdzanie typu ogólnego (operator „is” języka C# /IL „isinst”) używane przez metodę Enumerable.OfType&lt;T&gt; nigdy nie powiedzie się z określonymi elementami typów, co spowoduje powstanie pustej sekwencji.  
+Rzutowanie ogólne (IL „unbox.any”) używane przez sekwencję zwracaną przez element Enumerable.Cast&lt;T&gt; zgłosi wyjątek InvalidCastException w środowisku uruchomieniowym dla elementów określonych typów.  
+Sprawdzanie typu ogólnego (operator „is” języka C# /IL „isinst”) używane przez element Enumerable.OfType&lt;T&gt; nigdy nie powiedzie się z określonymi elementami typów, co spowoduje powstanie pustej sekwencji.  
 Konwersje poszerzane i zdefiniowane przez użytkownika nie są obsługiwane w przypadku typów ogólnych.</target>
         <note />
       </trans-unit>
@@ -1105,17 +1105,17 @@ Konwersje poszerzane i zdefiniowane przez użytkownika nie są obsługiwane w pr
       </trans-unit>
       <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsDescription">
         <source>The property 'StreamReader.EndOfStream' can cause unintended synchronous blocking when no data is buffered. Instead, use 'StreamReader.ReadLineAsync' directly, which returns 'null' when reaching the end of the stream.</source>
-        <target state="new">The property 'StreamReader.EndOfStream' can cause unintended synchronous blocking when no data is buffered. Instead, use 'StreamReader.ReadLineAsync' directly, which returns 'null' when reaching the end of the stream.</target>
+        <target state="translated">Właściwość „StreamReader.EndOfStream” może powodować niezamierzone blokowanie synchroniczne, gdy żadne dane nie są buforowane. Zamiast tego użyj właściwości „StreamReader.ReadLineAsync” bezpośrednio, która zwraca wartość „null” po osiągnięciu końca strumienia.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsMessage">
         <source>Do not use '{0}' in an async method</source>
-        <target state="new">Do not use '{0}' in an async method</target>
+        <target state="translated">Nie używaj elementu „{0}” w metodzie asynchronicznej</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsTitle">
         <source>Do not use 'StreamReader.EndOfStream' in async methods</source>
-        <target state="new">Do not use 'StreamReader.EndOfStream' in async methods</target>
+        <target state="translated">Nie używaj właściwości „StreamReader.EndOfStream” w metodach asynchronicznych</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyDescription">
@@ -3165,42 +3165,42 @@ Konwersje poszerzane i zdefiniowane przez użytkownika nie są obsługiwane w pr
       </trans-unit>
       <trans-unit id="UseRegexCountDescription">
         <source>'Regex.Count' is simpler and faster than 'Regex.Matches(...).Count'.</source>
-        <target state="new">'Regex.Count' is simpler and faster than 'Regex.Matches(...).Count'.</target>
+        <target state="translated">Wyrażenie „Regex.Count” jest prostsze i szybsze niż „Regex.Matches(...).Count”.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexCountFix">
         <source>Use 'Regex.Count'</source>
-        <target state="new">Use 'Regex.Count'</target>
+        <target state="translated">Używanie wyrażenia „Regex.Count”</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexCountMessage">
         <source>Use 'Regex.Count' instead of 'Regex.Matches(...).Count'</source>
-        <target state="new">Use 'Regex.Count' instead of 'Regex.Matches(...).Count'</target>
+        <target state="translated">Użyj wyrażenia „Regex.Count” zamiast „Regex.Matches(...).Count”</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexCountTitle">
         <source>Use 'Regex.Count'</source>
-        <target state="new">Use 'Regex.Count'</target>
+        <target state="translated">Używanie wyrażenia „Regex.Count”</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchDescription">
         <source>'Regex.IsMatch' is simpler and faster than 'Regex.Match(...).Success'.</source>
-        <target state="new">'Regex.IsMatch' is simpler and faster than 'Regex.Match(...).Success'.</target>
+        <target state="translated">Wyrażenie „Regex.IsMatch” jest prostsze i szybsze niż „Regex.Match(...).Success”.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchFix">
         <source>Use 'Regex.IsMatch'</source>
-        <target state="new">Use 'Regex.IsMatch'</target>
+        <target state="translated">Użyj wyrażenia „Regex.IsMatch”</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchMessage">
         <source>Use 'Regex.IsMatch' instead of 'Regex.Match(...).Success'</source>
-        <target state="new">Use 'Regex.IsMatch' instead of 'Regex.Match(...).Success'</target>
+        <target state="translated">Użyj wyrażenia „Regex.IsMatch” zamiast „Regex.Match(...).Success”</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchTitle">
         <source>Use 'Regex.IsMatch'</source>
-        <target state="new">Use 'Regex.IsMatch'</target>
+        <target state="translated">Użyj wyrażenia „Regex.IsMatch”</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSearchValuesCodeFixTitle">
