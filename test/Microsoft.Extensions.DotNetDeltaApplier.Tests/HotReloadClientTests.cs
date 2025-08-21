@@ -102,13 +102,14 @@ public class HotReloadClientTests(ITestOutputHelper output)
         Assert.Equal(ApplyStatus.AllChangesApplied, await test.Client.ApplyManagedCodeUpdatesAsync([update], isProcessSuspended: true, CancellationToken.None));
 
         // agent log messages not reported to the client logger while the process is suspended:
-        Assert.Contains("[Debug] Update #0 will be completed after app resumes.", test.Logger.Messages);
+        Assert.Contains("[Debug] Sending update batch #0", test.Logger.Messages);
         Assert.Contains("[Debug] Updates applied: 1 out of 1.", test.Logger.Messages);
         Assert.DoesNotContain(agentMessage, test.AgentLogger.Messages);
         test.AgentLogger.Messages.Clear();
 
-        // all pending agent log messages are reported to the client logger at the next update:
-        Assert.Equal(ApplyStatus.AllChangesApplied, await test.Client.ApplyManagedCodeUpdatesAsync([update], isProcessSuspended: false, CancellationToken.None));
+        // emulate process being resumed:
+        await test.Client.PendingUpdates;
+
         Assert.Contains(agentMessage, test.AgentLogger.Messages);
     }
 

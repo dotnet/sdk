@@ -45,6 +45,10 @@ namespace Microsoft.DotNet.HotReload
             _pipe = null;
         }
 
+        // for testing
+        internal Task PendingUpdates
+            => _pendingUpdates;
+
         public override void InitiateConnection(string namedPipeName, CancellationToken cancellationToken)
         {
 #if NET
