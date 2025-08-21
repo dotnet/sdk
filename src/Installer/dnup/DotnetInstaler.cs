@@ -4,38 +4,24 @@
 using System;
 using System.IO;
 using System.Linq;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 public class DotnetInstaler : IDotnetInstaller
 {
+    private readonly IEnvironmentProvider _environmentProvider;
+
+    public DotnetInstaler(IEnvironmentProvider? environmentProvider = null)
+    {
+        _environmentProvider = environmentProvider ?? new EnvironmentProvider();
+    }
+
     public SdkInstallType GetConfiguredInstallType(out string? currentInstallPath)
     {
         currentInstallPath = null;
-        string? pathEnv = Environment.GetEnvironmentVariable("PATH");
-        if (string.IsNullOrEmpty(pathEnv))
-        {
-            return SdkInstallType.None;
-        }
-
-        string exeName = OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet";
-        string[] paths = pathEnv.Split(Path.PathSeparator);
-        string? foundDotnet = null;
-        foreach (var dir in paths)
-        {
-            try
-            {
-                string candidate = Path.Combine(dir.Trim(), exeName);
-                if (File.Exists(candidate))
-                {
-                    foundDotnet = Path.GetFullPath(candidate);
-                    break;
-                }
-            }
-            catch { }
-        }
-
-        if (foundDotnet == null)
+        string? foundDotnet = _environmentProvider.GetCommandPath("dotnet");
+        if (string.IsNullOrEmpty(foundDotnet))
         {
             return SdkInstallType.None;
         }
