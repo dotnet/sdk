@@ -2680,7 +2680,7 @@ Varsayılan durum, çerçeveye bağımlı bir uygulama yayımlamaktır.</target>
       <trans-unit id="RunCommandExceptionUnableToRun">
         <source>Unable to proceed with project '{0}'.
 Ensure you have a runnable project type.
-A runnable project should target a runnable TFM (for instance, {1}) and have OutputType 'Exe'.
+A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
         <target state="needs-review-translation">Projeniz çalıştırılamıyor.
 Çalıştırılabilir bir proje türüne sahip olduğunuzdan ve bu projenin '{0}' tarafından desteklendiğinden emin olun.
