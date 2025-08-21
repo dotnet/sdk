@@ -27,7 +27,7 @@ namespace EndToEnd.Tests
 
             new DotnetCommand(Log, "run")
                 .WithWorkingDirectory(projectDirectory)
-                .Execute("/bl:helixfailure.binlog")
+                .Execute()
                 .Should().Pass()
                     .And.HaveStdOutContaining("Hello, World!");
 
