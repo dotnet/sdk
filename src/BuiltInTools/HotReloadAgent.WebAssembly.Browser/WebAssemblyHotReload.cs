@@ -71,7 +71,7 @@ internal static partial class WebAssemblyHotReload
         {
             s_initialized = true;
 
-            var agent = new HotReloadAgent();
+            var agent = new HotReloadAgent(assemblyResolvingHandler: null);
 
             var existingAgent = Interlocked.CompareExchange(ref s_hotReloadAgent, agent, null);
             if (existingAgent != null)

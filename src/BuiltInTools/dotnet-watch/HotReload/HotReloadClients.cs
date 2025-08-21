@@ -107,7 +107,7 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
             : ApplyStatus.NoChangesApplied;
     }
 
-    public async ValueTask InitialUpdatesApplied(CancellationToken cancellationToken)
+    public async ValueTask InitialUpdatesAppliedAsync(CancellationToken cancellationToken)
     {
         if (clients is [var (singleClient, _)])
         {

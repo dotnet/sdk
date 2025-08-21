@@ -30,6 +30,7 @@ internal sealed class PipeListener(string pipeName, IHotReloadAgent agent, Actio
         catch (TimeoutException)
         {
             log($"Failed to connect in {connectionTimeoutMS}ms.");
+            pipeClient.Dispose();
             return Task.CompletedTask;
         }
 

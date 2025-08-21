@@ -203,7 +203,7 @@ namespace Microsoft.DotNet.Watch
             }
 
             // Notifies the agent that it can unblock the execution of the process:
-            await clients.InitialUpdatesApplied(cancellationToken);
+            await clients.InitialUpdatesAppliedAsync(cancellationToken);
 
             // If non-empty solution is loaded into the workspace (a Hot Reload session is active):
             if (Workspace.CurrentSolution is { ProjectIds: not [] } currentSolution)

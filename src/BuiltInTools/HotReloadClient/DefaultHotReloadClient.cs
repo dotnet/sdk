@@ -141,7 +141,7 @@ namespace Microsoft.DotNet.HotReload
             var success = false;
             try
             {
-                success = await SendAndReceiveUpdate(request, isProcessSuspended, cancellationToken);
+                success = await SendAndReceiveUpdateAsync(request, isProcessSuspended, cancellationToken);
             }
             finally
             {
@@ -192,7 +192,7 @@ namespace Microsoft.DotNet.HotReload
                         update.IsApplicationProject),
                     ResponseLoggingLevel);
 
-                var success = await SendAndReceiveUpdate(request, isProcessSuspended, cancellationToken);
+                var success = await SendAndReceiveUpdateAsync(request, isProcessSuspended, cancellationToken);
                 if (success)
                 {
                     appliedUpdateCount++;
@@ -206,7 +206,7 @@ namespace Microsoft.DotNet.HotReload
                 (appliedUpdateCount < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
         }
 
-        private async ValueTask<bool> SendAndReceiveUpdate<TRequest>(TRequest request, bool isProcessSuspended, CancellationToken cancellationToken)
+        private async ValueTask<bool> SendAndReceiveUpdateAsync<TRequest>(TRequest request, bool isProcessSuspended, CancellationToken cancellationToken)
             where TRequest : IUpdateRequest
         {
             // Should not be disposed:
@@ -240,7 +240,7 @@ namespace Microsoft.DotNet.HotReload
                 {
                     await WriteRequestAsync(cancellationToken);
 
-                    if (await ReceiveUpdateResponse(cancellationToken))
+                    if (await ReceiveUpdateResponseAsync(cancellationToken))
                     {
                         Logger.LogDebug("Update batch #{UpdateId} completed.", batchId);
                         return true;
@@ -272,7 +272,7 @@ namespace Microsoft.DotNet.HotReload
             }
         }
 
-        private async ValueTask<bool> ReceiveUpdateResponse(CancellationToken cancellationToken)
+        private async ValueTask<bool> ReceiveUpdateResponseAsync(CancellationToken cancellationToken)
         {
             // Should not be disposed:
             Debug.Assert(_pipe != null);
