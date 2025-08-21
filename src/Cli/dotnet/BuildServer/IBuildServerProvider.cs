@@ -9,10 +9,10 @@ namespace Microsoft.DotNet.Cli.BuildServer;
 internal enum ServerEnumerationFlags
 {
     None = 0,
-    MSBuild = 1,
-    VBCSCompiler = 2,
-    Razor = 4,
-    Unified = 5,
+    MSBuild = 1 << 0,
+    VBCSCompiler = 1 << 1,
+    Razor = 1 << 2,
+    Unified = 1 << 3,
     All = MSBuild | VBCSCompiler | Razor | Unified
 }
 
