@@ -2686,7 +2686,7 @@ The current OutputType is '{2}'.</source>
 Vérifiez que vous avez un type de projet exécutable et que '{0}' prend en charge ce projet.
 Un projet exécutable doit cibler un TFM exécutable (par exemple, net5.0) et avoir OutputType 'Exe'.
 Le {1} actuel est '{2}'.</target>
-        <note>{0} is project file path.</note>
+        <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project

@@ -2686,7 +2686,7 @@ The current OutputType is '{2}'.</source>
 Upewnij się, że używany typ projektu umożliwia uruchamianie oraz że element „{0}” obsługuje ten projekt.
 Projekt z możliwością uruchamiania musi mieć moniker TFM z możliwością uruchomienia (np. net5.0) i typ OutputType „Exe”.
 Bieżący element {1}: „{2}”.</target>
-        <note>{0} is project file path.</note>
+        <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project

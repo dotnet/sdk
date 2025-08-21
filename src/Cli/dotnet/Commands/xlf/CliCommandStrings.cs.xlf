@@ -2686,7 +2686,7 @@ The current OutputType is '{2}'.</source>
 Ověřte prosím, že máte spustitelný typ projektu, a zajistěte, aby tento projekt podporoval {0}.
 Cílem spustitelného projektu by mělo být TFM (například net5.0) a jeho OutputType by měl být Exe.
 Aktuální {1} je {2}.</target>
-        <note>{0} is project file path.</note>
+        <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project

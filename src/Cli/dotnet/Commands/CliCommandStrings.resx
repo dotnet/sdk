@@ -1784,11 +1784,7 @@ The default is to publish a framework-dependent application.</value>
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</value>
-    <comment>{0} is project file path.</comment>
-    <comment>{1} is dotnet framework version.</comment>
-    <comment>{2} is the project output type.</comment>
-	<comment>{Locked="OutputType"}</comment>
-	<comment>{Locked="Exe"}</comment>
+    <comment>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</comment>
   </data>
   <data name="RunCommandExceptionUnableToRunSpecifyFramework" xml:space="preserve">
     <value>Unable to run your project

@@ -2686,7 +2686,7 @@ The current OutputType is '{2}'.</source>
 Убедитесь, что тип проекта поддерживает запуск и что "{0}" поддерживает этот проект.
 Запускаемый проект должен быть предназначен для TFM с поддержкой запуска (например, net5.0) и иметь тип выходных данных "EXE".
 Текущий {1} — "{2}".</target>
-        <note>{0} is project file path.</note>
+        <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
