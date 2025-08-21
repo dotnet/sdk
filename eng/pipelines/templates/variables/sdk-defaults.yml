@@ -5,7 +5,6 @@ variables:
   helixTargetContainerPrefix: '@mcr.microsoft.com/dotnet-buildtools/prereqs:'
 
   # Use MSBuild server globally
-  MSBUILDUSESERVER: 1
   DOTNET_CLI_USE_MSBUILD_SERVER: 1
 
   ############### ARCADE ###############
