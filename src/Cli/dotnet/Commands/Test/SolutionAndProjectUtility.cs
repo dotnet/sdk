@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
@@ -230,23 +229,37 @@ internal static class SolutionAndProjectUtility
         }
 
         string targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
-        RunProperties runProperties = GetRunProperties(project, loggers);
-
-        // dotnet run throws the same if RunCommand is null or empty.
-        // In dotnet test, we are additionally checking that RunCommand is not dll.
-        // In any "default" scenario, RunCommand is never dll.
-        // If we found it to be dll, that is user explicitly setting RunCommand incorrectly.
-        if (string.IsNullOrEmpty(runProperties.Command) || runProperties.Command.HasExtension(CliConstants.DLLExtension))
-        {
-            throw new GracefulException(
-                string.Format(
-                    CliCommandStrings.RunCommandExceptionUnableToRun,
-                    "dotnet test",
-                    "OutputType",
-                    project.GetPropertyValue("OutputType")));
-        }
-
         string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
+
+
+        // Only get run properties if IsTestingPlatformApplication is true
+        RunProperties runProperties;
+        if (isTestingPlatformApplication)
+        {
+            runProperties = GetRunProperties(project, loggers);
+
+            // dotnet run throws the same if RunCommand is null or empty.
+            // In dotnet test, we are additionally checking that RunCommand is not dll.
+            // In any "default" scenario, RunCommand is never dll.
+            // If we found it to be dll, that is user explicitly setting RunCommand incorrectly.
+            if (string.IsNullOrEmpty(runProperties.Command) || runProperties.Command.HasExtension(CliConstants.DLLExtension))
+            {
+                throw new GracefulException(
+                    string.Format(
+                        CliCommandStrings.RunCommandExceptionUnableToRun,
+                        projectFullPath,
+                        Product.TargetFrameworkVersion,
+                        project.GetPropertyValue("OutputType")));
+            }
+        }
+        else
+        {
+            // For VSTest test projects, create minimal RunProperties
+            runProperties = new RunProperties(
+                project.GetPropertyValue(ProjectProperties.TargetPath),
+                null,
+                null);
+        }
 
         // TODO: Support --launch-profile and pass it here.
         var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath)!, Path.GetFileNameWithoutExtension(projectFullPath), project.GetPropertyValue(ProjectProperties.AppDesignerFolder), buildOptions, profileName: null);
