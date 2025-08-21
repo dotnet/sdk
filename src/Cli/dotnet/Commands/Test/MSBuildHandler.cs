@@ -41,7 +41,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
         }
         else
         {
-            path = PathUtility.GetFullPath(pathOptions.DirectoryPath ?? Directory.GetCurrentDirectory());
+            path = PathUtility.GetFullPath(Directory.GetCurrentDirectory());
             msBuildExitCode = RunBuild(path);
         }
 

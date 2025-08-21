@@ -141,13 +141,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             string testProjectPath = $"TestProject{Path.DirectorySeparatorChar}TestProject.csproj";
             string testSolutionPath = "MultiTestProjectSolutionWithTests.sln";
-            string testDirectoryPath = "TestProjects";
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute(TestingPlatformOptions.ProjectOption.Name, testProjectPath,
                                              TestingPlatformOptions.SolutionOption.Name, testSolutionPath,
-                                             TestingPlatformOptions.DirectoryOption.Name, testDirectoryPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             result.StdErr.Should().Contain(CliCommandStrings.CmdMultipleBuildPathOptionsErrorDescription);
@@ -216,23 +214,23 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
-        public void RunWithNonExistentDirectoryPath_ShouldReturnExitCodeGenericFailure(string configuration)
-        {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
+        //[InlineData(TestingConstants.Debug)]
+        //[InlineData(TestingConstants.Release)]
+        //[Theory]
+        //public void RunWithNonExistentDirectoryPath_ShouldReturnExitCodeGenericFailure(string configuration)
+        //{
+        //    TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
 
-            string directoryPath = "Directory";
+        //    string directoryPath = "Directory";
 
-            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
-                                    .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.DirectoryOption.Name, directoryPath,
-                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
+        //    CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+        //                            .WithWorkingDirectory(testInstance.Path)
+        //                            .Execute(TestingPlatformOptions.DirectoryOption.Name, directoryPath,
+        //                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdOut.Should().Contain(string.Format(CliCommandStrings.CmdNonExistentDirectoryErrorDescription, directoryPath));
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
-        }
+        //    result.StdOut.Should().Contain(string.Format(CliCommandStrings.CmdNonExistentDirectoryErrorDescription, directoryPath));
+        //    result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+        //}
 
         //  https://github.com/dotnet/sdk/issues/49665
         [InlineData(TestingConstants.Debug)]

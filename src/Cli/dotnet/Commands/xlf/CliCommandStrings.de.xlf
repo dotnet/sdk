@@ -3052,11 +3052,6 @@ Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches 
         <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
-      <trans-unit id="TestCommandUseDirectory">
-        <source>Specifying a directory for 'dotnet test' should be via '--directory'.</source>
-        <target state="translated">Die Angabe eines Verzeichnisses für „dotnet test“ sollte über „--directory“ erfolgen.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="TestCommandUseProject">
         <source>Specifying a project for 'dotnet test' should be via '--project'.</source>
         <target state="translated">Die Angabe eines Projekts für „dotnet test“ sollte über „--project“ erfolgen.</target>
