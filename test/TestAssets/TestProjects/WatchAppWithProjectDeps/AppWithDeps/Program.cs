@@ -19,9 +19,14 @@ namespace ConsoleApplication
 
             while (true)
             {
-                Lib.Print();
+                CallLib();
                 Thread.Sleep(1000);
             }
+        }
+
+        public static void CallLib()
+        {
+            Lib.Print();
         }
     }
 }
