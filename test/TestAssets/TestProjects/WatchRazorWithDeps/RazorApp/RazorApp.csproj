@@ -4,9 +4,11 @@
         <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <AttachWeakETagToCompressedAssetsDuringDevelopment>ResponseHeader</AttachWeakETagToCompressedAssetsDuringDevelopment>
     </PropertyGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\RazorClassLibrary\RazorClassLibrary.csproj" />
     </ItemGroup>
+    </Target>
 </Project>
