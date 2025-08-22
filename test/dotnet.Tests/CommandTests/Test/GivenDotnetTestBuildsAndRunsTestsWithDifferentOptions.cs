@@ -116,6 +116,27 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
+        public void RunWithDirectoryAsProjectOption_ShouldReturnExitCodeSuccess(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
+
+            string projectPath = $"TestProject";
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(TestingPlatformOptions.ProjectOption.Name, projectPath,
+                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            // Validate that only TestProject ran
+            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, configuration), result.StdOut);
+            Assert.DoesNotMatch(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, true, configuration), result.StdOut);
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
         public void RunWithInvalidSolutionExtension_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
@@ -135,20 +156,20 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
-        public void RunWithBothProjectAndSolutionAndDirectoryOptions_ShouldReturnExitCodeGenericFailure(string configuration)
+        public void RunWithSolutionFilterAsSolutionOption_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
 
-            string testProjectPath = $"TestProject{Path.DirectorySeparatorChar}TestProject.csproj";
-            string testSolutionPath = "MultiTestProjectSolutionWithTests.sln";
+            string solutionFilterPath = "SolutionFilter";
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ProjectOption.Name, testProjectPath,
-                                             TestingPlatformOptions.SolutionOption.Name, testSolutionPath,
+                                    .Execute(TestingPlatformOptions.SolutionOption.Name, solutionFilterPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdErr.Should().Contain(CliCommandStrings.CmdMultipleBuildPathOptionsErrorDescription);
+            // Validate that only TestProject ran because the solution filter only includes that project
+            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, configuration), result.StdOut);
+            Assert.DoesNotMatch(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, true, configuration), result.StdOut);
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
