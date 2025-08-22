@@ -39,6 +39,29 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [Fact]
+        public void TestCommandShouldValidateDirectoryArgumentAndProvideHelpfulMessage()
+        {
+            var testDir = _testAssetsManager.CreateTestDirectory();
+            var subDir = Path.Combine(testDir.Path, "test_directory");
+            Directory.CreateDirectory(subDir);
+            File.WriteAllText(Path.Combine(testDir.Path, "dotnet.config"),
+                """
+                [dotnet.test.runner]
+                name = Microsoft.Testing.Platform
+                """);
+
+            var result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testDir.Path)
+                .Execute("test_directory");
+
+            result.ExitCode.Should().NotBe(0);
+            if (!TestContext.IsLocalized())
+            {
+                result.StdErr.Should().Contain("Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.");
+            }
+        }
+
+        [Fact]
         public void TestCommandShouldValidateDllArgumentAndProvideHelpfulMessage()
         {
             var testDir = _testAssetsManager.CreateTestDirectory();
