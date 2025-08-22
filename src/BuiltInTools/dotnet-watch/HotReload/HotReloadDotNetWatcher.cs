@@ -3,9 +3,9 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
-using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
@@ -369,14 +369,14 @@ namespace Microsoft.DotNet.Watch
                             // Apply them to the workspace.
                             _ = await CaptureChangedFilesSnapshot(projectsToRebuild);
 
-                            _context.Logger.Log(MessageDescriptor.ProjectsRebuilt, projectsToRebuild.Count);
+                            _context.Logger.Log(MessageDescriptor.ProjectsRebuilt, projectsToRebuild.Length);
                         }
 
                         // Deploy dependencies after rebuilding and before restarting.
                         if (!projectsToRedeploy.IsEmpty)
                         {
                             DeployProjectDependencies(evaluationResult.ProjectGraph, projectsToRedeploy, iterationCancellationToken);
-                            _context.Reporter.Report(MessageDescriptor.ProjectDependenciesDeployed, projectsToRedeploy.Length);
+                            _context.Logger.Log(MessageDescriptor.ProjectDependenciesDeployed, projectsToRedeploy.Length);
                         }
 
                         // Apply updates only after dependencies have been deployed,
@@ -578,7 +578,7 @@ namespace Microsoft.DotNet.Watch
         private void DeployProjectDependencies(ProjectGraph graph, ImmutableArray<string> projectPaths, CancellationToken cancellationToken)
         {
             var projectPathSet = projectPaths.ToImmutableHashSet(PathUtilities.OSSpecificPathComparer);
-            var buildReporter = new BuildReporter(_context.Reporter, _context.Options, _context.EnvironmentOptions);
+            var buildReporter = new BuildReporter(_context.Logger, _context.Options, _context.EnvironmentOptions);
             var targetName = TargetNames.ReferenceCopyLocalPathsOutputGroup;
 
             foreach (var node in graph.ProjectNodes)
@@ -605,7 +605,7 @@ namespace Microsoft.DotNet.Watch
                 using var loggers = buildReporter.GetLoggers(projectPath, targetName);
                 if (!node.ProjectInstance.Build([targetName], loggers, out var targetOutputs))
                 {
-                    _context.Reporter.Verbose($"{targetName} target failed");
+                    _context.Logger.LogDebug("{TargetName} target failed", targetName);
                     loggers.ReportOutput();
                     continue;
                 }
@@ -620,7 +620,7 @@ namespace Microsoft.DotNet.Watch
                     var targetPath = Path.Combine(outputDir, item.GetMetadata(MetadataNames.TargetPath));
                     if (!File.Exists(targetPath))
                     {
-                        _context.Reporter.Verbose($"Deploying project dependency '{targetPath}' from '{sourcePath}'");
+                        _context.Logger.LogDebug("Deploying project dependency '{TargetPath}' from '{SourcePath}'", targetPath, sourcePath);
 
                         try
                         {
@@ -634,7 +634,7 @@ namespace Microsoft.DotNet.Watch
                         }
                         catch (Exception e)
                         {
-                            _context.Reporter.Verbose($"Copy failed: {e.Message}");
+                            _context.Logger.LogDebug("Copy failed: {Message}", e.Message);
                         }
                     }
                 }

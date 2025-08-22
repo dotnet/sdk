@@ -315,7 +315,7 @@ namespace Microsoft.DotNet.Watch
             lock (_runningProjectsAndUpdatesGuard)
             {
                 // Adding the updates makes sure that all new processes receive them before they are added to running processes.
-                _previousUpdates = _previousUpdates.AddRange(updates.ProjectUpdates);
+                _previousUpdates = _previousUpdates.AddRange(updates);
 
                 // Capture the set of processes that do not have the currently calculated deltas yet.
                 projectsToUpdate = _runningProjects;
@@ -329,7 +329,7 @@ namespace Microsoft.DotNet.Watch
                 try
                 {
                     using var processCommunicationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(runningProject.ProcessExitedSource.Token, cancellationToken);
-                    var applySucceded = await runningProject.Clients.ApplyManagedCodeUpdatesAsync(ToManagedCodeUpdates(updates.ProjectUpdates), isProcessSuspended: false, processCommunicationCancellationSource.Token) != ApplyStatus.Failed;
+                    var applySucceded = await runningProject.Clients.ApplyManagedCodeUpdatesAsync(ToManagedCodeUpdates(updates), isProcessSuspended: false, processCommunicationCancellationSource.Token) != ApplyStatus.Failed;
                     if (applySucceded)
                     {
                         runningProject.Logger.Log(MessageDescriptor.HotReloadSucceeded);
