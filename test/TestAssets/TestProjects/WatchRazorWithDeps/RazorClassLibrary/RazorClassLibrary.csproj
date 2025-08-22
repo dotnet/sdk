@@ -3,6 +3,7 @@
     <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <AttachWeakETagToCompressedAssetsDuringDevelopment>ResponseHeader</AttachWeakETagToCompressedAssetsDuringDevelopment>
   </PropertyGroup>
   <ItemGroup>
     <SupportedPlatform Include="browser"/>
