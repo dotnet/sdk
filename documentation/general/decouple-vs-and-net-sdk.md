@@ -139,7 +139,7 @@ and the SDK targets use `$(RoslynTasksAssembly)` to load the build task.
 The SDK also sets the following properties:
 - `RoslynTargetsPath` to the directory path of the roslyn tasks assembly. This property is used by some targets
   but it should be avoided if possible because the tasks assembly name can change as well, not just the directory path.
-- `RoslynAssemblies` to the directory path of other roslyn assemblies (like `Microsoft.CodeAnalysis.dll`).
+- `RoslynAssembliesPath` to the directory path of other roslyn assemblies (like `Microsoft.CodeAnalysis.dll`).
   In builds using .NET Framework MSBuild, the path is set to the Roslyn directory that ships with MSBuild (no .NET Framework Roslyn assemblies ship with the .NET SDK).
 
 These values are recognized for property `RoslynCompilerType`:
