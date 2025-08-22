@@ -171,7 +171,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Attach weak ETag to compressed assets -->
     <LinkAlternativeRepresentationsToOriginalResource Condition="'$(LinkAlternativeRepresentationsToOriginalResource)' == '' and '$(_TargetingNET100OrLater)' == 'true'">EndpointProperty</LinkAlternativeRepresentationsToOriginalResource>
-    <LinkAlternativeRepresentationsToOriginalResource Condition="'$(LinkAlternativeRepresentationsToOriginalResource)' == '' and '$(_TargetingNET100OrLater)' != 'true'">ResponseHeader</LinkAlternativeRepresentationsToOriginalResource>
+    <LinkAlternativeRepresentationsToOriginalResource Condition="'$(LinkAlternativeRepresentationsToOriginalResource)' == ''">ResponseHeader</LinkAlternativeRepresentationsToOriginalResource>
   </PropertyGroup>
 
   <PropertyGroup>
