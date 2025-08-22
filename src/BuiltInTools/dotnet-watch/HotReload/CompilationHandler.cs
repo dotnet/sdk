@@ -232,7 +232,11 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        public async ValueTask<(ImmutableDictionary<ProjectId, string> projectsToRebuild, ImmutableArray<RunningProject> terminatedProjects)> HandleManagedCodeChangesAsync(
+        public async ValueTask<(
+                ImmutableArray<WatchHotReloadService.Update> projectUpdates,
+                ImmutableArray<string> projectsToRebuild,
+                ImmutableArray<string> projectsToRedeploy,
+                ImmutableArray<RunningProject> terminatedProjects)> HandleManagedCodeChangesAsync(
             bool autoRestart,
             Func<IEnumerable<string>, CancellationToken, Task<bool>> restartPrompt,
             CancellationToken cancellationToken)
@@ -258,7 +262,7 @@ namespace Microsoft.DotNet.Watch
                 // changes and await the next file change.
 
                 // Note: CommitUpdate/DiscardUpdate is not expected to be called.
-                return ([], []);
+                return ([], [], [], []);
             }
 
             var projectsToPromptForRestart =
@@ -274,45 +278,7 @@ namespace Microsoft.DotNet.Watch
                 _reporter.Output("Hot reload suspended. To continue hot reload, press \"Ctrl + R\".", emoji: "🔥");
                 await Task.Delay(-1, cancellationToken);
 
-                return ([], []);
-            }
-
-            if (!updates.ProjectUpdates.IsEmpty)
-            {
-                ImmutableDictionary<string, ImmutableArray<RunningProject>> projectsToUpdate;
-                lock (_runningProjectsAndUpdatesGuard)
-                {
-                    // Adding the updates makes sure that all new processes receive them before they are added to running processes.
-                    _previousUpdates = _previousUpdates.AddRange(updates.ProjectUpdates);
-
-                    // Capture the set of processes that do not have the currently calculated deltas yet.
-                    projectsToUpdate = _runningProjects;
-                }
-
-                // Apply changes to all running projects, even if they do not have a static project dependency on any project that changed.
-                // The process may load any of the binaries using MEF or some other runtime dependency loader.
-
-                await ForEachProjectAsync(projectsToUpdate, async (runningProject, cancellationToken) =>
-                {
-                    try
-                    {
-                        using var processCommunicationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(runningProject.ProcessExitedSource.Token, cancellationToken);
-                        var applySucceded = await runningProject.DeltaApplier.ApplyManagedCodeUpdates(updates.ProjectUpdates, processCommunicationCancellationSource.Token) != ApplyStatus.Failed;
-                        if (applySucceded)
-                        {
-                            runningProject.Reporter.Report(MessageDescriptor.HotReloadSucceeded);
-                            if (runningProject.BrowserRefreshServer is { } server)
-                            {
-                                runningProject.Reporter.Verbose("Refreshing browser.");
-                                await server.RefreshBrowserAsync(cancellationToken);
-                            }
-                        }
-                    }
-                    catch (OperationCanceledException) when (runningProject.ProcessExitedSource.Token.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
-                    {
-                        runningProject.Reporter.Verbose("Hot reload canceled because the process exited.", emoji: "🔥");
-                    }
-                }, cancellationToken);
+                return ([], [], [], []);
             }
 
             // Note: Releases locked project baseline readers, so we can rebuild any projects that need rebuilding.
@@ -320,7 +286,8 @@ namespace Microsoft.DotNet.Watch
 
             DiscardPreviousUpdates(updates.ProjectsToRebuild);
 
-            var projectsToRebuild = updates.ProjectsToRebuild.ToImmutableDictionary(keySelector: id => id, elementSelector: id => currentSolution.GetProject(id)!.FilePath!);
+            var projectsToRebuild = updates.ProjectsToRebuild.Select(id => currentSolution.GetProject(id)!.FilePath!).ToImmutableArray();
+            var projectsToRedeploy = updates.ProjectsToRedeploy.Select(id => currentSolution.GetProject(id)!.FilePath!).ToImmutableArray();
 
             // Terminate all tracked processes that need to be restarted,
             // except for the root process, which will terminate later on.
@@ -328,7 +295,47 @@ namespace Microsoft.DotNet.Watch
                 ? []
                 : await TerminateNonRootProcessesAsync(updates.ProjectsToRestart.Select(e => currentSolution.GetProject(e.Key)!.FilePath!), cancellationToken);
 
-            return (projectsToRebuild, terminatedProjects);
+            return (updates.ProjectUpdates, projectsToRebuild, projectsToRedeploy, terminatedProjects);
+        }
+
+        public async ValueTask ApplyUpdatesAsync(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
+        {
+            Debug.Assert(!updates.IsEmpty);
+
+            ImmutableDictionary<string, ImmutableArray<RunningProject>> projectsToUpdate;
+            lock (_runningProjectsAndUpdatesGuard)
+            {
+                // Adding the updates makes sure that all new processes receive them before they are added to running processes.
+                _previousUpdates = _previousUpdates.AddRange(updates);
+
+                // Capture the set of processes that do not have the currently calculated deltas yet.
+                projectsToUpdate = _runningProjects;
+            }
+
+            // Apply changes to all running projects, even if they do not have a static project dependency on any project that changed.
+            // The process may load any of the binaries using MEF or some other runtime dependency loader.
+
+            await ForEachProjectAsync(projectsToUpdate, async (runningProject, cancellationToken) =>
+            {
+                try
+                {
+                    using var processCommunicationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(runningProject.ProcessExitedSource.Token, cancellationToken);
+                    var applySucceded = await runningProject.DeltaApplier.ApplyManagedCodeUpdates(updates, processCommunicationCancellationSource.Token) != ApplyStatus.Failed;
+                    if (applySucceded)
+                    {
+                        runningProject.Reporter.Report(MessageDescriptor.HotReloadSucceeded);
+                        if (runningProject.BrowserRefreshServer is { } server)
+                        {
+                            runningProject.Reporter.Verbose("Refreshing browser.");
+                            await server.RefreshBrowserAsync(cancellationToken);
+                        }
+                    }
+                }
+                catch (OperationCanceledException) when (runningProject.ProcessExitedSource.Token.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+                {
+                    runningProject.Reporter.Verbose("Hot reload canceled because the process exited.", emoji: "🔥");
+                }
+            }, cancellationToken);
         }
 
         private static RunningProject? GetCorrespondingRunningProject(Project project, ImmutableDictionary<string, ImmutableArray<RunningProject>> runningProjects)

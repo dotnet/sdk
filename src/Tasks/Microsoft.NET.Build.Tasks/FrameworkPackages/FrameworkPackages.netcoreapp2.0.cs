@@ -14,7 +14,6 @@ internal partial class FrameworkPackages
         internal static FrameworkPackages Instance { get; } = new(NetCoreApp20, FrameworkNames.NetCoreApp, NETStandard20.Instance)
         {
             { "Microsoft.CSharp", "4.4.0" },
-            { "Microsoft.NETCore.App", "2.0.0" },
             { "Microsoft.VisualBasic", "10.2.0" },
             { "Microsoft.Win32.Registry", "4.4.0" },
             { "runtime.any.System.Collections", "4.3.0" },
