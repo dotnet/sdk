@@ -55,13 +55,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var dotnetProjectConvertProjectText = File.ReadAllText(dotnetProjectConvertProject);
         var dotnetNewConsoleProjectText = File.ReadAllText(dotnetNewConsoleProject);
 
-        // There are some differences: we add PublishAot=true and PackAsTool=true.
+        // There are some differences: we add PublishAot=true.
         var patchedDotnetProjectConvertProjectText = dotnetProjectConvertProjectText
-            .Replace("""
-                    <PublishAot>true</PublishAot>
-                    <PackAsTool>true</PackAsTool>
-
-                """, string.Empty);
+            .Replace("    <PublishAot>true</PublishAot>" + Environment.NewLine, string.Empty);
 
         patchedDotnetProjectConvertProjectText.Should().Be(dotnetNewConsoleProjectText)
             .And.StartWith("""<Project Sdk="Microsoft.NET.Sdk">""");
@@ -660,7 +656,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                    <PackAsTool>true</PackAsTool>
                   </PropertyGroup>
 
                   <ItemGroup>
@@ -695,7 +690,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                    <PackAsTool>true</PackAsTool>
                     <TargetFramework>net472</TargetFramework>
                     <LangVersion>preview</LangVersion>
                   </PropertyGroup>
@@ -726,7 +720,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 #:property TargetFramework=net472
                 #:property Nullable=disable
                 #:property PublishAot=false
-                #:property PackAsTool=false
                 #:property Custom=1
                 #:property ImplicitUsings=disable
                 Console.WriteLine();
@@ -739,7 +732,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>net472</TargetFramework>
                     <Nullable>disable</Nullable>
                     <PublishAot>false</PublishAot>
-                    <PackAsTool>false</PackAsTool>
                     <Custom>1</Custom>
                     <ImplicitUsings>disable</ImplicitUsings>
                   </PropertyGroup>
@@ -769,7 +761,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                    <PackAsTool>true</PackAsTool>
                     <MyProp>MyValue</MyProp>
                   </PropertyGroup>
 
@@ -807,7 +798,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                    <PackAsTool>true</PackAsTool>
                   </PropertyGroup>
 
                   <ItemGroup>
@@ -846,7 +836,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                    <PackAsTool>true</PackAsTool>
                     <Prop1>One=a/b</Prop1>
                     <Prop2>Two/a=b</Prop2>
                   </PropertyGroup>
@@ -956,7 +945,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                    <PackAsTool>true</PackAsTool>
                     <Prop>&lt;test&quot;&gt;</Prop>
                   </PropertyGroup>
 
@@ -991,7 +979,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                    <PackAsTool>true</PackAsTool>
                     <Name>Value</Name>
                     <NugetPackageDescription>&quot;My package with spaces&quot;</NugetPackageDescription>
                   </PropertyGroup>
@@ -1018,7 +1005,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
                 <PublishAot>true</PublishAot>
-                <PackAsTool>true</PackAsTool>
               </PropertyGroup>
 
               <ItemGroup>
@@ -1084,7 +1070,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                    <PackAsTool>true</PackAsTool>
                     <Prop1>1</Prop1>
                     <Prop2>2</Prop2>
                   </PropertyGroup>
@@ -1131,7 +1116,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                    <PackAsTool>true</PackAsTool>
                     <Prop1>1</Prop1>
                     <Prop2>2</Prop2>
                   </PropertyGroup>
@@ -1175,7 +1159,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                    <PackAsTool>true</PackAsTool>
                     <Prop1>1</Prop1>
                     <Prop2>2</Prop2>
                   </PropertyGroup>
@@ -1283,7 +1266,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                    <PackAsTool>true</PackAsTool>
                   </PropertyGroup>
 
                 </Project>
