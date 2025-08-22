@@ -44,8 +44,8 @@
          referenced by the same 7.0 SDK that references the 7.0.VersionFeature70 runtime pack. -->
     <_NET70ILLinkPackVersion>7.0.100-1.23211.1</_NET70ILLinkPackVersion>
     <!-- workload-specific version information -->
-    <VersionFeature80ForWorkloads>$([MSBuild]::Add($(VersionFeature80), 1))</VersionFeature80ForWorkloads>
-    <VersionFeature90ForWorkloads>$([MSBuild]::Add($(VersionFeature90), 1))</VersionFeature90ForWorkloads>
+    <VersionFeature80ForWorkloads>$(VersionFeature80)</VersionFeature80ForWorkloads>
+    <VersionFeature90ForWorkloads>$(VersionFeature90)</VersionFeature90ForWorkloads>
   </PropertyGroup>
   <PropertyGroup Label="Restore feeds">
     <!-- In an orchestrated build, this may be overridden to other Azure feeds. -->
