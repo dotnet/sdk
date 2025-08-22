@@ -109,8 +109,9 @@ public class DotnetInstaller : IDotnetInstaller
         // Get current PATH
         var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty;
         var pathEntries = path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
-        // Remove all entries containing "dotnet" (case-insensitive)
-        pathEntries = pathEntries.Where(p => !p.Contains("dotnet", StringComparison.OrdinalIgnoreCase)).ToList();
+        string exeName = OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet";
+        // Remove only actual dotnet installation folders from PATH
+        pathEntries = pathEntries.Where(p => !File.Exists(Path.Combine(p, exeName))).ToList();
 
         switch (installType)
         {
