@@ -210,16 +210,27 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         }
 
 
+        //  TODO: Implement transaction / rollback?
+        //  TODO: Use Mutex to avoid concurrent installs?
+
 
         SpectreAnsiConsole.MarkupInterpolated($"Installing .NET SDK [blue]{resolvedChannelVersion}[/] to [blue]{resolvedInstallPath}[/]...");
-
-        // Download the file to a temp path with progress
 
         SpectreAnsiConsole.Progress()
             .Start(ctx =>
             {
                 _dotnetInstaller.InstallSdks(resolvedInstallPath, ctx, new[] { resolvedChannelVersion }.Concat(additionalVersionsToInstall));
             });
+
+        if (resolvedSetDefaultInstall == true)
+        {
+            _dotnetInstaller.ConfigureInstallType(SdkInstallType.User, resolvedInstallPath);
+        }
+
+        if (resolvedUpdateGlobalJson == true)
+        {
+            _dotnetInstaller.UpdateGlobalJson(globalJsonInfo!.GlobalJsonPath!, resolvedChannelVersion, globalJsonInfo.AllowPrerelease, globalJsonInfo.RollForward);
+        }
 
 
         SpectreAnsiConsole.WriteLine($"Complete!");
@@ -337,8 +348,14 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             task.Value = 100;
         }
 
-        public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null, bool? allowPrerelease = null, string? rollForward = null) => throw new NotImplementedException();
-        public void ConfigureInstallType(SdkInstallType installType, string? dotnetRoot = null) => throw new NotImplementedException();
+        public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null, bool? allowPrerelease = null, string? rollForward = null)
+        {
+            SpectreAnsiConsole.WriteLine($"Updating {globalJsonPath} to SDK version {sdkVersion} (AllowPrerelease={allowPrerelease}, RollForward={rollForward})");
+        }
+        public void ConfigureInstallType(SdkInstallType installType, string? dotnetRoot = null)
+        {
+            SpectreAnsiConsole.WriteLine($"Configuring install type to {installType} (dotnetRoot={dotnetRoot})");
+        }
     }
 
     class EnvironmentVariableMockReleaseInfoProvider : IReleaseInfoProvider
