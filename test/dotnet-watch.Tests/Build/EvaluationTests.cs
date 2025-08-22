@@ -466,7 +466,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                     "'F'",
                     "'G'",
                 ],
-                _logger.Messages.Where(m => m.Contains(prefix)).Select(m => m.Trim()[prefix.Length..]).Order());
+                _logger.GetAndClearMessages().Where(m => m.Contains(prefix)).Select(m => m.Trim()[prefix.Length..]).Order());
         }
 
         [Fact]
@@ -497,7 +497,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // note: msbuild prints errors to stdout, we match the pattern and report as error:
             AssertEx.Equal(
                 $"[Error] {project1Path} : error NU1201: Project Project2 is not compatible with net462 (.NETFramework,Version=v4.6.2). Project Project2 supports: netstandard2.1 (.NETStandard,Version=v2.1)",
-                _logger.Messages.Single(m => m.Contains("error NU1201")));
+                _logger.GetAndClearMessages().Single(m => m.Contains("error NU1201")));
         }
 
         private readonly struct ExpectedFile(string path, string? staticAssetUrl = null, bool targetsOnly = false, bool graphOnly = false)

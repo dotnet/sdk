@@ -369,7 +369,7 @@ namespace Microsoft.DotNet.Watch
                             // Apply them to the workspace.
                             _ = await CaptureChangedFilesSnapshot(projectsToRebuild);
 
-                            _context.Logger.Log(MessageDescriptor.ProjectsRebuilt, projectsToRebuild.Length);
+                            _context.Logger.Log(MessageDescriptor.ProjectsRebuilt, projectsToRebuild.Len);
                         }
 
                         // Deploy dependencies after rebuilding and before restarting.

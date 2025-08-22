@@ -70,8 +70,8 @@ public class HotReloadClientTests(ITestOutputHelper output)
 
         Assert.Equal(ApplyStatus.AllChangesApplied, await test.Client.ApplyManagedCodeUpdatesAsync([update], isProcessSuspended: false, CancellationToken.None));
 
-        Assert.Contains("[Debug] Writing capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType", test.AgentLogger.Messages);
-        Assert.Contains("[Debug] Updates applied: 1 out of 1.", test.Logger.Messages);
+        Assert.Contains("[Debug] Writing capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType", test.AgentLogger.GetAndClearMessages());
+        Assert.Contains("[Debug] Updates applied: 1 out of 1.", test.Logger.GetAndClearMessages());
     }
 
     [Fact]
@@ -101,16 +101,17 @@ public class HotReloadClientTests(ITestOutputHelper output)
 
         Assert.Equal(ApplyStatus.AllChangesApplied, await test.Client.ApplyManagedCodeUpdatesAsync([update], isProcessSuspended: true, CancellationToken.None));
 
-        // agent log messages not reported to the client logger while the process is suspended:
-        Assert.Contains("[Debug] Sending update batch #0", test.Logger.Messages);
-        Assert.Contains("[Debug] Updates applied: 1 out of 1.", test.Logger.Messages);
-        Assert.DoesNotContain(agentMessage, test.AgentLogger.Messages);
-        test.AgentLogger.Messages.Clear();
-
         // emulate process being resumed:
         await test.Client.PendingUpdates;
 
-        Assert.Contains(agentMessage, test.AgentLogger.Messages);
+        var clientMessages = test.Logger.GetAndClearMessages();
+        var agentMessages = test.AgentLogger.GetAndClearMessages();
+
+        // agent log messages not reported to the client logger while the process is suspended:
+        Assert.Contains("[Debug] Sending update batch #0", clientMessages);
+        Assert.Contains("[Debug] Updates applied: 1 out of 1.", clientMessages);
+        Assert.Contains("[Debug] Update batch #0 completed.", clientMessages);
+        Assert.Contains(agentMessage, agentMessages);
     }
 
     [Fact]
@@ -138,7 +139,8 @@ public class HotReloadClientTests(ITestOutputHelper output)
         Assert.Equal(ApplyStatus.Failed, await test.Client.ApplyManagedCodeUpdatesAsync([update], isProcessSuspended: false, CancellationToken.None));
 
         // agent log messages were reported to the agent logger:
-        Assert.Contains("[Error] The runtime failed to applying the change: Bug!", test.AgentLogger.Messages);
-        Assert.Contains("[Warning] Further changes won't be applied to this process.", test.AgentLogger.Messages);
+        var agentMessages = test.AgentLogger.GetAndClearMessages();
+        Assert.Contains("[Error] The runtime failed to applying the change: Bug!", agentMessages);
+        Assert.Contains("[Warning] Further changes won't be applied to this process.", agentMessages);
     }
 }

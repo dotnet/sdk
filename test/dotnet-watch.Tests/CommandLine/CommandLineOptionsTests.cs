@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var output = new StringWriter();
             var options = CommandLineOptions.Parse(args, _testLogger, output: output, errorCode: out var errorCode);
 
-            Assert.Equal(expectedMessages, _testLogger.Messages);
+            Assert.Equal(expectedMessages, _testLogger.GetAndClearMessages());
             outputValidator(output.ToString());
 
             Assert.NotNull(options);
@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var output = new StringWriter();
             var options = CommandLineOptions.Parse(args, _testLogger, output: output, errorCode: out var errorCode);
 
-            AssertEx.Equal(expectedErrors, _testLogger.Messages);
+            AssertEx.Equal(expectedErrors, _testLogger.GetAndClearMessages());
             Assert.Empty(output.ToString());
 
             Assert.Null(options);
@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Null(options);
             Assert.Equal(0, errorCode);
 
-            Assert.Empty(_testLogger.Messages);
+            Assert.Empty(_testLogger.GetAndClearMessages());
             Assert.Contains("Usage:", output.ToString());
         }
 
