@@ -19,7 +19,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ImmutableHashSetExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\PooledHashSetExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)extensions\SpanExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\SpanExtensions.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(IsTestProject)' != 'true' and '$(IsTestUtilityProject)' != 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)CodeMetrics\CodeAnalysisMetricData.AssemblyMetricData.cs" />
