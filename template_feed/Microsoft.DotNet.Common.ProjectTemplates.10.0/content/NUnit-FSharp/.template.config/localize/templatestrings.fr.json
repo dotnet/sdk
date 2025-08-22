@@ -1,6 +1,6 @@
 ﻿{
   "author": "Aleksei Kharlov alias halex2005 (codeofclimber.ru)",
-  "name": "Projet de tests NUnit 3",
+  "name": "Projet de test NUnit",
   "description": "Un projet qui contient des tests NUnit pouvant être exécutés sur .NET sous Windows, Linux et macOS.",
   "symbols/TargetFrameworkOverride/description": "Remplace l’infrastructure cible",
   "symbols/TargetFrameworkOverride/displayName": "Remplacement du cadre cible",

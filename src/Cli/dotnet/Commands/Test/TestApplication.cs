@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.CommandLine;
 using System.Diagnostics;
 using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
@@ -59,15 +60,15 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             // We should get correct RunProperties right away.
             // For the case of dotnet test --test-modules path/to/dll, the TestModulesFilterHandler is responsible
             // for providing the dotnet muxer as RunCommand, and `exec "path/to/dll"` as RunArguments.
-            FileName = Module.RunProperties.RunCommand,
+            FileName = Module.RunProperties.Command,
             Arguments = GetArguments(testOptions),
             RedirectStandardOutput = true,
-            RedirectStandardError = true
+            RedirectStandardError = true,
         };
 
-        if (!string.IsNullOrEmpty(Module.RunProperties.RunWorkingDirectory))
+        if (!string.IsNullOrEmpty(Module.RunProperties.WorkingDirectory))
         {
-            processStartInfo.WorkingDirectory = Module.RunProperties.RunWorkingDirectory;
+            processStartInfo.WorkingDirectory = Module.RunProperties.WorkingDirectory;
         }
 
         if (Module.LaunchSettings is not null)
@@ -75,7 +76,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             foreach (var entry in Module.LaunchSettings.EnvironmentVariables)
             {
                 string value = Environment.ExpandEnvironmentVariables(entry.Value);
-                processStartInfo.EnvironmentVariables[entry.Key] = value;
+                processStartInfo.Environment[entry.Key] = value;
             }
 
             if (!_buildOptions.NoLaunchProfileArguments &&
@@ -83,6 +84,11 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             {
                 processStartInfo.Arguments = $"{processStartInfo.Arguments} {Module.LaunchSettings.CommandLineArgs}";
             }
+        }
+
+        if (Module.DotnetRootArchVariableName is not null)
+        {
+            processStartInfo.Environment[Module.DotnetRootArchVariableName] = Path.GetDirectoryName(new Muxer().MuxerPath);
         }
 
         return processStartInfo;
@@ -94,17 +100,35 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         // In the case of UseAppHost=false, RunArguments is set to `exec $(TargetPath)`:
         // https://github.com/dotnet/sdk/blob/333388c31d811701e3b6be74b5434359151424dc/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Sdk.targets#L1411
         // So, we keep that first always.
-        StringBuilder builder = new(Module.RunProperties.RunArguments);
+        // RunArguments is intentionally not escaped. It can contain multiple arguments and spaces there shouldn't cause the whole
+        // value to be wrapped in double quotes. This matches dotnet run behavior.
+        // In short, it's expected to already be escaped properly.
+        StringBuilder builder = new(Module.RunProperties.Arguments);
 
         if (testOptions.IsHelp)
         {
-            builder.Append($" {TestingPlatformOptions.HelpOption.Name} ");
+            builder.Append($" {TestingPlatformOptions.HelpOption.Name}");
         }
 
-        var args = _buildOptions.UnmatchedTokens;
-        builder.Append(args.Count != 0
-            ? args.Aggregate((a, b) => $"{a} {b}")
-            : string.Empty);
+        if (_buildOptions.PathOptions.ResultsDirectoryPath is { } resultsDirectoryPath)
+        {
+            builder.Append($" {TestingPlatformOptions.ResultsDirectoryOption.Name} {ArgumentEscaper.EscapeSingleArg(resultsDirectoryPath)}");
+        }
+
+        if (_buildOptions.PathOptions.ConfigFilePath is { } configFilePath)
+        {
+            builder.Append($" {TestingPlatformOptions.ConfigFileOption.Name} {ArgumentEscaper.EscapeSingleArg(configFilePath)}");
+        }
+
+        if (_buildOptions.PathOptions.DiagnosticOutputDirectoryPath is { } diagnosticOutputDirectoryPath)
+        {
+            builder.Append($" {TestingPlatformOptions.DiagnosticOutputDirectoryOption.Name} {ArgumentEscaper.EscapeSingleArg(diagnosticOutputDirectoryPath)}");
+        }
+
+        foreach (var arg in _buildOptions.UnmatchedTokens)
+        {
+            builder.Append($" {ArgumentEscaper.EscapeSingleArg(arg)}");
+        }
 
         builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(_pipeNameDescription.Name)}");
 
@@ -274,9 +298,9 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
 
     private bool ModulePathExists()
     {
-        if (!File.Exists(Module.RunProperties.RunCommand))
+        if (!File.Exists(Module.RunProperties.Command))
         {
-            ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{Module.RunProperties.RunCommand}' not found. Build the test application before or run 'dotnet test'." });
+            ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{Module.RunProperties.Command}' not found. Build the test application before or run 'dotnet test'." });
             return false;
         }
         return true;
@@ -332,19 +356,19 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
     {
         StringBuilder builder = new();
 
-        if (!string.IsNullOrEmpty(Module.RunProperties.RunCommand))
+        if (!string.IsNullOrEmpty(Module.RunProperties.Command))
         {
-            builder.Append($"{ProjectProperties.RunCommand}: {Module.RunProperties.RunCommand}");
+            builder.Append($"{ProjectProperties.RunCommand}: {Module.RunProperties.Command}");
         }
 
-        if (!string.IsNullOrEmpty(Module.RunProperties.RunArguments))
+        if (!string.IsNullOrEmpty(Module.RunProperties.Arguments))
         {
-            builder.Append($"{ProjectProperties.RunArguments}: {Module.RunProperties.RunArguments}");
+            builder.Append($"{ProjectProperties.RunArguments}: {Module.RunProperties.Arguments}");
         }
 
-        if (!string.IsNullOrEmpty(Module.RunProperties.RunWorkingDirectory))
+        if (!string.IsNullOrEmpty(Module.RunProperties.WorkingDirectory))
         {
-            builder.Append($"{ProjectProperties.RunWorkingDirectory}: {Module.RunProperties.RunWorkingDirectory}");
+            builder.Append($"{ProjectProperties.RunWorkingDirectory}: {Module.RunProperties.WorkingDirectory}");
         }
 
         if (!string.IsNullOrEmpty(Module.ProjectFullPath))

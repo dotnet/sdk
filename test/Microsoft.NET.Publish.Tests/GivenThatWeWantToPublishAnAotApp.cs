@@ -593,7 +593,7 @@ namespace Microsoft.NET.Publish.Tests
             var assemblyPath = Path.Combine(outputDirectory, $"{projectName}.dll");
 
             // injects the IsTrimmable attribute
-            AssemblyInfo.Get(assemblyPath)["AssemblyMetadataAttribute"].Should().Be("IsTrimmable:True");
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("AssemblyMetadataAttribute", "IsTrimmable:True"));
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand

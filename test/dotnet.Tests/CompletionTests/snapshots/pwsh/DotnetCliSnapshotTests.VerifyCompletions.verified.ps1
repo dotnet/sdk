@@ -560,6 +560,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--verbosity', '/v', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
                 [CompletionResult]::new('--verbosity', '/verbosity', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
                 [CompletionResult]::new('--version-suffix', '--version-suffix', [CompletionResultType]::ParameterName, "Set the value of the `$(VersionSuffix) property to use when building the project.")
+                [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, "The version of the package to create")
                 [CompletionResult]::new('--configuration', '--configuration', [CompletionResultType]::ParameterName, "The configuration to use for building the package. The default is `'Release`'.")
                 [CompletionResult]::new('--configuration', '-c', [CompletionResultType]::ParameterName, "The configuration to use for building the package. The default is `'Release`'.")
                 [CompletionResult]::new('--disable-build-servers', '--disable-build-servers', [CompletionResultType]::ParameterName, "Force the command to ignore any persistent build servers.")
@@ -670,7 +671,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
         'testhost;package;update' {
             $staticCompletions = @(
                 [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "Path to a project or solution file, or a directory.")
-                [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allow the command to block and require manual action for operations like authentication.")
+                [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--verbosity', '--verbosity', [CompletionResultType]::ParameterName, "Set the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
                 [CompletionResult]::new('--verbosity', '-v', [CompletionResultType]::ParameterName, "Set the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")

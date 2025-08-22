@@ -175,19 +175,6 @@ public static class ParseResultExtensions
         parseResult.HasOption(CommonOptions.LongFormArchitectureOption)) &&
         parseResult.HasOption(CommonOptions.OperatingSystemOption);
 
-    internal static string? GetCommandLineRuntimeIdentifier(this ParseResult parseResult)
-    {
-        return parseResult.HasOption(CommonOptions.RuntimeOptionName) ?
-            parseResult.GetValue<string>(CommonOptions.RuntimeOptionName) :
-            parseResult.HasOption(CommonOptions.OperatingSystemOption) ||
-            parseResult.HasOption(CommonOptions.ArchitectureOption) ||
-            parseResult.HasOption(CommonOptions.LongFormArchitectureOption) ?
-            CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(
-                parseResult.GetValue(CommonOptions.OperatingSystemOption),
-                CommonOptions.ArchOptionValue(parseResult)) :
-            null;
-    }
-
     public static bool UsingRunCommandShorthandProjectOption(this ParseResult parseResult)
     {
         if (parseResult.HasOption(RunCommandParser.PropertyOption) && parseResult.GetValue(RunCommandParser.PropertyOption)!.Any())

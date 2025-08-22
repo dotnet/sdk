@@ -109,3 +109,5 @@
 # dotnet-format
 /src/BuiltInTools/dotnet-format @dotnet/roslyn-ide
 /test/dotnet-format.UnitTests @dotnet/roslyn-ide
+
+/src/Microsoft.CodeAnalysis.NetAnalyzers @dotnet/dotnet-analyzers

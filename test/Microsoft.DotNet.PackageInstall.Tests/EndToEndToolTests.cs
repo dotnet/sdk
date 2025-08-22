@@ -257,7 +257,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             // Ensure that the package with the "any" RID is present
             var anyRidPackage = packages.FirstOrDefault(p => p.EndsWith($"{packageIdentifier}.any.{toolSettings.ToolPackageVersion}.nupkg"));
             anyRidPackage.Should().NotBeNull($"Package {packageIdentifier}.any.{toolSettings.ToolPackageVersion}.nupkg should be present in the tool packages directory")
-                .And.Satisfy<string>(EnsurePackageIsFdd);
+                .And.Satisfy<string>(EnsurePackageIsFdd)
+                .And.Satisfy<string>(EnsureFddPackageHasAllRuntimeAssets);
 
             // top-level package should declare all of the rids
             var topLevelPackage = packages.First(p => p.EndsWith($"{packageIdentifier}.{toolSettings.ToolPackageVersion}.nupkg"));
@@ -385,6 +386,13 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var settingsXml = GetToolSettingsFile(packagePath);
             var runner = GetRunnerFromSettingsFile(settingsXml);
             runner.Should().Be("dotnet", "The tool should be packaged as a framework-dependent executable (FDD) with a 'dotnet' runner.");
+        }
+
+        static void EnsureFddPackageHasAllRuntimeAssets(string packagePath)
+        {
+            using var zipArchive = ZipFile.OpenRead(packagePath);
+            var runtimesEntries = zipArchive.Entries.Select(e => e.Name.Contains("/runtimes/"));
+            runtimesEntries.Should().NotBeNull("The runtimes-assets should be present in the package.");
         }
 
         static void EnsurePackageHasNoRunner(string packagePath)
