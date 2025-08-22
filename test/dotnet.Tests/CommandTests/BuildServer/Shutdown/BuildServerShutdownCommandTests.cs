@@ -217,7 +217,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             if (exceptionMessage == null)
             {
-                mock.Setup(s => s.ShutdownAsync());
+                mock.Setup(s => s.ShutdownAsync()).Returns(Task.CompletedTask);
             }
             else
             {
