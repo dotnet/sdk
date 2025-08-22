@@ -4,7 +4,7 @@
         <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <AttachWeakETagToCompressedAssetsDuringDevelopment>ResponseHeader</AttachWeakETagToCompressedAssetsDuringDevelopment>
+        <LinkAlternativeRepresentationsToOriginalResource>ResponseHeader</LinkAlternativeRepresentationsToOriginalResource>
     </PropertyGroup>
 
     <ItemGroup>
