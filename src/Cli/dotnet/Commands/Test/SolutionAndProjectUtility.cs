@@ -56,13 +56,39 @@ internal static class SolutionAndProjectUtility
         // If there is more than one project file in the current directory we may be able to figure it out
         else if (actualProjectFiles.Length > 1)
         {
-            var (found, filePath, message) = TryResolveAmbiguousProjects(actualProjectFiles);
-            if (!found)
+            // We have more than one project, it is ambiguous at the moment
+            bool isAmbiguousProject = true;
+
+            // If there are exactly two projects and one of them is a .proj use that one and ignore the other
+            if (actualProjectFiles.Length == 2)
             {
-                return (false, message ?? string.Format(CliStrings.MoreThanOneProjectInDirectory, directory));
+                string firstPotentialProjectExtension = Path.GetExtension(actualProjectFiles[0]);
+                string secondPotentialProjectExtension = Path.GetExtension(actualProjectFiles[1]);
+
+                // If the two projects have the same extension we can't decide which one to pick
+                if (!string.Equals(firstPotentialProjectExtension, secondPotentialProjectExtension, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Check to see if the first project is the proj, if it is use it
+                    if (string.Equals(firstPotentialProjectExtension, ".proj", StringComparison.OrdinalIgnoreCase))
+                    {
+                        projectOrSolutionFilePath = actualProjectFiles[0];
+                        // We have made a decision
+                        isAmbiguousProject = false;
+                    }
+                    // If the first project is not the proj check to see if the second one is the proj, if so use it
+                    else if (string.Equals(secondPotentialProjectExtension, ".proj", StringComparison.OrdinalIgnoreCase))
+                    {
+                        projectOrSolutionFilePath = actualProjectFiles[1];
+                        // We have made a decision
+                        isAmbiguousProject = false;
+                    }
+                }
             }
-            projectOrSolutionFilePath = filePath!;
-            isSolution = false;
+
+            if (isAmbiguousProject)
+            {
+                return (false, string.Format(CliStrings.MoreThanOneProjectInDirectory, directory));
+            }
         }
         // if there are no project, solution filter, or solution files in the directory, we can't build
         else if (actualProjectFiles.Length == 0 &&
@@ -110,14 +136,7 @@ internal static class SolutionAndProjectUtility
             return (true, string.Empty);
         }
 
-        // Multiple projects found - try to resolve ambiguity
-        var (found, filePath, message) = TryResolveAmbiguousProjects(actualProjectFiles);
-        if (found)
-        {
-            projectFilePath = filePath!;
-        }
-
-        return (found, message ?? string.Format(CliStrings.MoreThanOneProjectInDirectory, directory));
+        return (false, string.Format(CliStrings.MoreThanOneProjectInDirectory, directory));
     }
 
     public static (bool SolutionFileFound, string Message) TryGetSolutionFilePath(string directory, out string solutionFilePath)
@@ -145,44 +164,6 @@ internal static class SolutionAndProjectUtility
         return (true, string.Empty);
     }
 
-    /// <summary>
-    /// Helper method to resolve ambiguous projects when there are multiple project files.
-    /// Follows the same logic as MSBuild: if there are exactly two projects and one is a .proj, use that one.
-    /// </summary>
-    private static (bool Found, string? FilePath, string? Message) TryResolveAmbiguousProjects(string[] projectFiles)
-    {
-        // We have more than one project, it is ambiguous at the moment
-        bool isAmbiguousProject = true;
-        string? selectedFilePath = null;
-
-        // If there are exactly two projects and one of them is a .proj use that one and ignore the other
-        if (projectFiles.Length == 2)
-        {
-            string firstPotentialProjectExtension = Path.GetExtension(projectFiles[0]);
-            string secondPotentialProjectExtension = Path.GetExtension(projectFiles[1]);
-
-            // If the two projects have the same extension we can't decide which one to pick
-            if (!string.Equals(firstPotentialProjectExtension, secondPotentialProjectExtension, StringComparison.OrdinalIgnoreCase))
-            {
-                // Check to see if the first project is the proj, if it is use it
-                if (string.Equals(firstPotentialProjectExtension, ".proj", StringComparison.OrdinalIgnoreCase))
-                {
-                    selectedFilePath = projectFiles[0];
-                    // We have made a decision
-                    isAmbiguousProject = false;
-                }
-                // If the first project is not the proj check to see if the second one is the proj, if so use it
-                else if (string.Equals(secondPotentialProjectExtension, ".proj", StringComparison.OrdinalIgnoreCase))
-                {
-                    selectedFilePath = projectFiles[1];
-                    // We have made a decision
-                    isAmbiguousProject = false;
-                }
-            }
-        }
-
-        return (!isAmbiguousProject, selectedFilePath, null);
-    }
     private static string[] GetSolutionFilePaths(string directory) => [
             .. Directory.GetFiles(directory, CliConstants.SolutionExtensionPattern, SearchOption.TopDirectoryOnly),
             .. Directory.GetFiles(directory, CliConstants.SolutionXExtensionPattern, SearchOption.TopDirectoryOnly)
