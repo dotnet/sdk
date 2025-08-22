@@ -106,7 +106,6 @@ public static class PathUtility
         }
         else
         {
-            // NOTE: This modifies the permissions if needed, and throws if not possible.
             Directory.CreateDirectory(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
         }
     }
