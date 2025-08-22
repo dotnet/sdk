@@ -1242,8 +1242,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             Assert.Equal(
                 """
-                [dotnet.test.runner]
-                name = "Microsoft.Testing.Platform"
+                [SectionFromTemplateJson]
+                KeyFromTemplateJson = "ValueFromTemplateJson"
 
                 """,
                 File.ReadAllText(Path.Combine(outputDirectory, "dotnet.config")));
@@ -1277,8 +1277,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 [existing-section]
                 mykey = "myvalue"
 
-                [dotnet.test.runner]
-                name = "Microsoft.Testing.Platform"
+                [SectionFromTemplateJson]
+                KeyFromTemplateJson = "ValueFromTemplateJson"
 
                 """,
                 File.ReadAllText(Path.Combine(outputDirectory, "dotnet.config")));

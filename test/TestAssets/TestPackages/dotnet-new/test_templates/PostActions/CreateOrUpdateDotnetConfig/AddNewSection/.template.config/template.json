@@ -18,9 +18,9 @@
             "description": "Add dotnet.config",
             "manualInstructions": [ { "text": "Create dotnet.config manually." } ],
             "args": {
-                "section": "dotnet.test.runner",
-                "key": "name",
-                "value": "Microsoft.Testing.Platform"
+                "section": "SectionFromTemplateJson",
+                "key": "KeyFromTemplateJson",
+                "value": "ValueFromTemplateJson"
             },
             "actionId": "597E7933-0D87-452C-B094-8FA0EEF7FD97",
             "continueOnError": true
