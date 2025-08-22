@@ -170,8 +170,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BrotliCompressionLevel Condition="'$(_BlazorBrotliCompressionLevel)' != ''">$(_BlazorBrotliCompressionLevel)</BrotliCompressionLevel>
 
     <!-- Attach weak ETag to compressed assets -->
-    <AttachWeakETagToCompressedAssetsDuringDevelopment Condition="'$(AttachWeakETagToCompressedAssetsDuringDevelopment)' == '' and $(_TargetingNET100OrLater)' == 'true'">EndpointProperty</AttachWeakETagToCompressedAssetsDuringDevelopment>
-    <AttachWeakETagToCompressedAssetsDuringDevelopment Condition="'$(AttachWeakETagToCompressedAssetsDuringDevelopment)' == '' and $(_TargetingNET100OrLater)' != 'true'">ResponseHeader</AttachWeakETagToCompressedAssetsDuringDevelopment>
+    <LinkAlternativeRepresentationsToOriginalResource Condition="'$(LinkAlternativeRepresentationsToOriginalResource)' == '' and $(_TargetingNET100OrLater)' == 'true'">EndpointProperty</LinkAlternativeRepresentationsToOriginalResource>
+    <LinkAlternativeRepresentationsToOriginalResource Condition="'$(LinkAlternativeRepresentationsToOriginalResource)' == '' and $(_TargetingNET100OrLater)' != 'true'">ResponseHeader</LinkAlternativeRepresentationsToOriginalResource>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -254,7 +254,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ApplyCompressionNegotiation
       CandidateEndpoints="@(StaticWebAssetEndpoint)"
       CandidateAssets="@(_CompressionCurrentProjectBuildAssets)"
-      AttachWeakETagToCompressedAssets="$(AttachWeakETagToCompressedAssetsDuringDevelopment)"
+      AttachWeakETagToCompressedAssets="$(LinkAlternativeRepresentationsToOriginalResource)"
     >
       <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedCompressionBuildEndpoints" />
     </ApplyCompressionNegotiation>
@@ -379,7 +379,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ApplyCompressionNegotiation
       CandidateEndpoints="@(StaticWebAssetEndpoint)"
       CandidateAssets="@(_CompressionCurrentProjectPublishAssets)"
-      AttachWeakETagToCompressedAssets="$(AttachWeakETagToCompressedAssetsDuringDevelopment)">
+      AttachWeakETagToCompressedAssets="$(LinkAlternativeRepresentationsToOriginalResource)">
       <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedCompressionPublishEndpoints" />
     </ApplyCompressionNegotiation>
 
