@@ -78,6 +78,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         new("ImplicitUsings", "enable"),
         new("Nullable", "enable"),
         new("PublishAot", "true"),
+        new("PackAsTool", "true"),
     ]);
 
     /// <summary>
