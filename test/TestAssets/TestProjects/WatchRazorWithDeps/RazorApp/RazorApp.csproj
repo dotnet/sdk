@@ -10,5 +10,4 @@
     <ItemGroup>
       <ProjectReference Include="..\RazorClassLibrary\RazorClassLibrary.csproj" />
     </ItemGroup>
-    </Target>
 </Project>
