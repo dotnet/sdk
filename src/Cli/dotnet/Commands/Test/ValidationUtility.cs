@@ -102,6 +102,10 @@ internal static class ValidationUtility
             {
                 throw new GracefulException(CliCommandStrings.TestCommandUseTestModules);
             }
+            else if (Directory.Exists(token))
+            {
+                throw new GracefulException(CliCommandStrings.TestCommandUseDirectoryWithSwitch);
+            }
         }
     }
 
