@@ -149,12 +149,12 @@ internal class MSBuildForwardingAppWithoutLogging
             // Most Unix systems have a maximum path length limit for Unix Domain Sockets, with Mac having a particularly short one.
             // Mac also has a generated temp directory that can be quite long, leaving very little room for the actual pipe name.
             // Fortunately, '/tmp' is mandated by POSIX to always be a valid temp directory, so we can use that instead.
-            const string dotnetServer = "dotnet-server";
+            const string dotnet = "dotnet";
             string baseDirectory = OperatingSystem.IsWindows()
-                ? Path.Join(dotnetServer, Environment.UserName) // it's not a real path on Windows, just a name
-                : Path.Join("/tmp/", dotnetServer, Environment.UserName);
+                ? Path.Join(dotnet, Environment.UserName) // it's not a real path on Windows, just a name
+                : Path.Join("/tmp/", dotnet, Environment.UserName);
 
-            string sdkPathHashed = Sha256Hasher.HashWithNormalizedCasing(AppContext.BaseDirectory);
+            string sdkPathHashed = XxHash128Hasher.HashWithNormalizedCasing(AppContext.BaseDirectory);
 
             hostServerPath = Path.Join(baseDirectory, Product.TargetFrameworkVersion, sdkPathHashed);
 
