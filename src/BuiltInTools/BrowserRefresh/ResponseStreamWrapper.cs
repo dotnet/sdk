@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         public override void Flush()
         {
             OnWrite();
-            if(_isGzipEncoded)
+            if (_isGzipEncoded)
             {
                 WriteRemainingBytes();
             }
@@ -68,16 +68,15 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         public override void Write(ReadOnlySpan<byte> buffer)
         {
             OnWrite();
+            var data = buffer;
             if (IsHtmlResponse)
             {
-                var data = buffer;
                 if (_isGzipEncoded)
                 {
                     _bufferStream!.Write(buffer);
-                    var read = _gzipStream!.Read(_decompressBuffer);
-                    if (read > 0)
+                    if (!_bufferStream.HasEnoughBytes() || !TryRead(out data))
                     {
-                        data = _decompressBuffer.AsSpan(0, read);
+                        return;
                     }
                 }
 
@@ -91,7 +90,51 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     }
                 }
             }
-            _baseStream.Write(buffer);
+            _baseStream.Write(data);
+        }
+
+        private bool TryRead(out ReadOnlyMemory<byte> data)
+        {
+            try
+            {
+                var read = _gzipStream!.Read(_decompressBuffer);
+                if (read > 0)
+                {
+                    data = _decompressBuffer.AsMemory(0, read);
+                    return true;
+                }
+                data = Memory<byte>.Empty;
+                return false;
+            }
+            catch
+            {
+                // not enough data
+                data = Memory<byte>.Empty;
+                return false;
+            }
+        }
+
+        private bool TryRead(out ReadOnlySpan<byte> data)
+        {
+            try
+            {
+                var read = _gzipStream!.Read(_decompressBuffer);
+                if (read > 0)
+                {
+                    data = _decompressBuffer.AsSpan(0, read);
+                    return true;
+                }
+
+                data = Span<byte>.Empty;
+                return false;
+
+            }
+            catch
+            {
+                // not enough data
+                data = Span<byte>.Empty;
+                return false;
+            }
         }
 
         public override void WriteByte(byte value)
@@ -103,22 +146,21 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         public override void Write(byte[] buffer, int offset, int count)
         {
             OnWrite();
+            ReadOnlyMemory<byte> data = buffer.AsMemory(offset, count);
             if (IsHtmlResponse)
             {
-                var data = buffer.AsSpan(offset, count);
                 if (_isGzipEncoded)
                 {
                     _bufferStream!.Write(buffer);
-                    var read = _gzipStream!.Read(_decompressBuffer);
-                    if (read > 0)
+                    if (!_bufferStream.HasEnoughBytes() || !TryRead(out data))
                     {
-                        data = _decompressBuffer.AsSpan(0, read);
+                        return;
                     }
                 }
 
                 if (!ScriptInjectionPerformed)
                 {
-                    ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, data);
+                    ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, data.Span);
                     if (ScriptInjectionPerformed)
                     {
                         return;
@@ -126,22 +168,21 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 }
             }
 
-            _baseStream.Write(buffer, offset, count);
+            _baseStream.Write(data.Span);
         }
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             OnWrite();
+            ReadOnlyMemory<byte> data = buffer.AsMemory(offset, count);
             if (IsHtmlResponse)
             {
-                var data = buffer.AsMemory(offset, count);
                 if (_isGzipEncoded)
                 {
                     await _bufferStream!.WriteAsync(buffer, offset, count, cancellationToken);
-                    var read = await _gzipStream!.ReadAsync(_decompressBuffer!, 0, _decompressBuffer!.Length, cancellationToken);
-                    if (read > 0)
+                    if(!_bufferStream.HasEnoughBytes() || !TryRead(out data))
                     {
-                        data = _decompressBuffer.AsMemory(0, read);
+                        return;
                     }
                 }
                 if (!ScriptInjectionPerformed)
@@ -153,33 +194,33 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     }
                 }
             }
-            await _baseStream.WriteAsync(buffer, offset, count, cancellationToken);
+            await _baseStream.WriteAsync(data, cancellationToken);
         }
 
         public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         {
             OnWrite();
+            var data = buffer;
             if (IsHtmlResponse)
             {
-                if(_isGzipEncoded)
+                if (_isGzipEncoded)
                 {
                     await _bufferStream!.WriteAsync(buffer, cancellationToken);
-                    var read = await _gzipStream!.ReadAsync(_decompressBuffer!, 0, _decompressBuffer!.Length, cancellationToken);
-                    if (read > 0)
+                    if (!_bufferStream.HasEnoughBytes() || !TryRead(out data))
                     {
-                        buffer = _decompressBuffer.AsMemory(0, read);
+                        return;
                     }
                 }
                 if (!ScriptInjectionPerformed)
                 {
-                    ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(_baseStream, buffer, cancellationToken);
+                    ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(_baseStream, data, cancellationToken);
                     if (ScriptInjectionPerformed)
                     {
                         return;
                     }
                 }
             }
-            await _baseStream.WriteAsync(buffer, cancellationToken);
+            await _baseStream.WriteAsync(data, cancellationToken);
         }
 
         private void OnWrite()
@@ -200,7 +241,6 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             if (_isHtmlResponse.Value)
             {
                 BrowserRefreshMiddleware.Log.SetupResponseForBrowserRefresh(_logger);
-
                 // Since we're changing the markup content, reset the content-length
                 response.Headers.ContentLength = null;
 
@@ -394,6 +434,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
         public override void Flush() { }
 
-        internal bool HasPendingBytes() => _totalBytesWritten < _totalBytesRead;
+        internal bool HasPendingBytes() => _totalBytesWritten > _totalBytesRead;
+        internal bool HasEnoughBytes() => _totalBytesWritten - _totalBytesRead > 100;
     }
 }
