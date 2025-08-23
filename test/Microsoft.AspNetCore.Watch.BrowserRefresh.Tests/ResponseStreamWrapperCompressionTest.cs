@@ -44,68 +44,6 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         }
 
         [Fact]
-        public async Task WriteAsync_HandlesBrotliCompressedHtmlResponse()
-        {
-            // Arrange
-            var htmlContent = "<html><body><h1>Hello world</h1></body></html>";
-            var compressedData = CompressWithBrotli(htmlContent);
-            var outputStream = new MemoryStream();
-            
-            var context = new DefaultHttpContext
-            {
-                Response =
-                {
-                    Body = outputStream,
-                    ContentType = "text/html",
-                    StatusCode = 200,
-                    Headers = { [HeaderNames.ContentEncoding] = "br" }
-                }
-            };
-
-            var wrapper = new ResponseStreamWrapper(context, NullLogger.Instance);
-
-            // Act
-            await wrapper.WriteAsync(compressedData);
-            await wrapper.FlushAsync();
-
-            // Assert
-            var result = Encoding.UTF8.GetString(outputStream.ToArray());
-            Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
-            Assert.False(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
-        }
-
-        [Fact]
-        public async Task WriteAsync_HandlesDeflateCompressedHtmlResponse()
-        {
-            // Arrange
-            var htmlContent = "<html><body><h1>Hello world</h1></body></html>";
-            var compressedData = CompressWithDeflate(htmlContent);
-            var outputStream = new MemoryStream();
-            
-            var context = new DefaultHttpContext
-            {
-                Response =
-                {
-                    Body = outputStream,
-                    ContentType = "text/html",
-                    StatusCode = 200,
-                    Headers = { [HeaderNames.ContentEncoding] = "deflate" }
-                }
-            };
-
-            var wrapper = new ResponseStreamWrapper(context, NullLogger.Instance);
-
-            // Act
-            await wrapper.WriteAsync(compressedData);
-            await wrapper.FlushAsync();
-
-            // Assert
-            var result = Encoding.UTF8.GetString(outputStream.ToArray());
-            Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
-            Assert.False(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
-        }
-
-        [Fact]
         public async Task WriteAsync_DoesNotModifyNonHtmlCompressedResponse()
         {
             // Arrange
@@ -137,7 +75,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         }
 
         [Fact]
-        public async Task WriteAsync_HandlesUnknownCompressionGracefully()
+        public async Task WriteAsync_IgnoresNonGzipCompressionTypes()
         {
             // Arrange
             var htmlContent = "<html><body><h1>Hello world</h1></body></html>";
@@ -151,7 +89,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     Body = outputStream,
                     ContentType = "text/html",
                     StatusCode = 200,
-                    Headers = { [HeaderNames.ContentEncoding] = "unknown-compression" }
+                    Headers = { [HeaderNames.ContentEncoding] = "br" }
                 }
             };
 
@@ -163,9 +101,9 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             // Assert
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
-            // Should fall back to writing original data
-            Assert.Equal(htmlContent, result);
-            Assert.False(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
+            // Should treat as regular data since we only handle gzip
+            Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", result);
+            Assert.True(context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding));
         }
 
         [Fact]
@@ -205,28 +143,6 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             using (var gzip = new GZipStream(output, CompressionMode.Compress))
             {
                 gzip.Write(data);
-            }
-            return output.ToArray();
-        }
-
-        private static byte[] CompressWithBrotli(string content)
-        {
-            var data = Encoding.UTF8.GetBytes(content);
-            using var output = new MemoryStream();
-            using (var brotli = new BrotliStream(output, CompressionMode.Compress))
-            {
-                brotli.Write(data);
-            }
-            return output.ToArray();
-        }
-
-        private static byte[] CompressWithDeflate(string content)
-        {
-            var data = Encoding.UTF8.GetBytes(content);
-            using var output = new MemoryStream();
-            using (var deflate = new DeflateStream(output, CompressionMode.Compress))
-            {
-                deflate.Write(data);
             }
             return output.ToArray();
         }
