@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Compression;
-using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Net.Http.Headers;
@@ -34,7 +33,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             // Act
             await wrapper.WriteAsync(compressedData);
-            await wrapper.FlushAsync();
+            await wrapper.FlushAsync(CancellationToken.None);
 
             // Assert
             var result = Encoding.UTF8.GetString(outputStream.ToArray());
