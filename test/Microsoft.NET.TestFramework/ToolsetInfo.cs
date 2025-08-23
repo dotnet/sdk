@@ -163,7 +163,7 @@ namespace Microsoft.NET.TestFramework
                 //  Use stage 2 MSBuild SDK resolver
                 if (SdkResolverPath is not null)
                 {
-                    environment["MSBUILDADDITIONALSDKRESOLVERSFOLDER"] = SdkResolverPath;
+                    environment["MSBUILDADDITIONALSDKRESOLVERSFOLDER_NETFRAMEWORK"] = SdkResolverPath;
                 }
 
                 //  Avoid using stage 0 dotnet install dir
