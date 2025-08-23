@@ -3,6 +3,7 @@
 
 // Based on https://github.com/RickStrahl/Westwind.AspnetCore.LiveReload/blob/128b5f524e86954e997f2c453e7e5c1dcc3db746/Westwind.AspnetCore.LiveReload/ResponseStreamWrapper.cs
 
+using System.IO.Compression;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -20,6 +21,9 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         private readonly HttpContext _context;
         private readonly ILogger _logger;
         private bool? _isHtmlResponse;
+        private string? _contentEncoding;
+        private MemoryStream? _compressedBuffer;
+        private bool _compressionHandled;
 
         public ResponseStreamWrapper(HttpContext context, ILogger logger)
         {
@@ -40,12 +44,28 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         public override void Flush()
         {
             OnWrite();
+            
+            // Handle any pending compressed data
+            if (_compressedBuffer != null && !_compressionHandled && _compressedBuffer.Length > 0)
+            {
+                var success = TryDecompressAndInject();
+                _compressionHandled = true;
+            }
+            
             _baseStream.Flush();
         }
 
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
             OnWrite();
+            
+            // Handle any pending compressed data
+            if (_compressedBuffer != null && !_compressionHandled && _compressedBuffer.Length > 0)
+            {
+                var success = TryDecompressAndInject();
+                _compressionHandled = true;
+            }
+            
             return _baseStream.FlushAsync(cancellationToken);
         }
 
@@ -54,7 +74,16 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             OnWrite();
             if (IsHtmlResponse && !ScriptInjectionPerformed)
             {
-                ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, buffer);
+                if (!string.IsNullOrEmpty(_contentEncoding))
+                {
+                    // Convert span to array for compression handling
+                    var tempBuffer = buffer.ToArray();
+                    HandleCompressedWrite(tempBuffer, 0, tempBuffer.Length);
+                }
+                else
+                {
+                    ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, buffer);
+                }
             }
             else
             {
@@ -74,7 +103,14 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             if (IsHtmlResponse && !ScriptInjectionPerformed)
             {
-                ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, buffer.AsSpan(offset, count));
+                if (!string.IsNullOrEmpty(_contentEncoding))
+                {
+                    HandleCompressedWrite(buffer, offset, count);
+                }
+                else
+                {
+                    ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, buffer.AsSpan(offset, count));
+                }
             }
             else
             {
@@ -88,7 +124,14 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             if (IsHtmlResponse && !ScriptInjectionPerformed)
             {
-                ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(_baseStream, buffer.AsMemory(offset, count), cancellationToken);
+                if (!string.IsNullOrEmpty(_contentEncoding))
+                {
+                    await HandleCompressedWriteAsync(buffer, offset, count, cancellationToken);
+                }
+                else
+                {
+                    ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(_baseStream, buffer.AsMemory(offset, count), cancellationToken);
+                }
             }
             else
             {
@@ -102,7 +145,16 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             if (IsHtmlResponse && !ScriptInjectionPerformed)
             {
-                ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(_baseStream, buffer, cancellationToken);
+                if (!string.IsNullOrEmpty(_contentEncoding))
+                {
+                    // Convert memory to array for compression handling
+                    var tempBuffer = buffer.ToArray();
+                    await HandleCompressedWriteAsync(tempBuffer, 0, tempBuffer.Length, cancellationToken);
+                }
+                else
+                {
+                    ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(_baseStream, buffer, cancellationToken);
+                }
             }
             else
             {
@@ -131,6 +183,152 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
                 // Since we're changing the markup content, reset the content-length
                 response.Headers.ContentLength = null;
+
+                // Check if the response has a Content-Encoding header
+                if (response.Headers.TryGetValue(HeaderNames.ContentEncoding, out var contentEncodingValues))
+                {
+                    _contentEncoding = contentEncodingValues.FirstOrDefault();
+                    if (!string.IsNullOrEmpty(_contentEncoding))
+                    {
+                        // Remove the Content-Encoding header since we'll be serving uncompressed content
+                        response.Headers.Remove(HeaderNames.ContentEncoding);
+                        
+                        // Initialize buffer for collecting compressed content
+                        _compressedBuffer = new MemoryStream();
+                    }
+                }
+            }
+        }
+
+        private void HandleCompressedWrite(byte[] buffer, int offset, int count)
+        {
+            if (_compressedBuffer == null)
+            {
+                // Fallback: write directly to base stream
+                _baseStream.Write(buffer, offset, count);
+                return;
+            }
+
+            if (_compressionHandled)
+            {
+                // Already processed compression, write directly to base stream
+                _baseStream.Write(buffer, offset, count);
+                return;
+            }
+
+            // Append compressed data to buffer
+            _compressedBuffer.Write(buffer, offset, count);
+            
+            // Don't try to decompress on every write - wait for flush/dispose
+        }
+
+        private async Task HandleCompressedWriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            if (_compressedBuffer == null)
+            {
+                // Fallback: write directly to base stream
+                await _baseStream.WriteAsync(buffer, offset, count, cancellationToken);
+                return;
+            }
+
+            if (_compressionHandled)
+            {
+                // Already processed compression, write directly to base stream
+                await _baseStream.WriteAsync(buffer, offset, count, cancellationToken);
+                return;
+            }
+
+            // Append compressed data to buffer
+            await _compressedBuffer.WriteAsync(buffer, offset, count, cancellationToken);
+            
+            // Don't try to decompress on every write - wait for flush/dispose
+        }
+
+        private bool TryDecompressAndInject()
+        {
+            if (_compressedBuffer == null || string.IsNullOrEmpty(_contentEncoding))
+                return false;
+
+            try
+            {
+                var compressedData = _compressedBuffer.ToArray();
+                using var compressedStream = new MemoryStream(compressedData);
+                using var decompressedStream = new MemoryStream();
+                
+                // Create decompression stream
+                using var decompressionStream = _contentEncoding.ToLowerInvariant() switch
+                {
+                    "gzip" => new GZipStream(compressedStream, CompressionMode.Decompress) as Stream,
+                    "br" or "brotli" => new BrotliStream(compressedStream, CompressionMode.Decompress) as Stream,
+                    "deflate" => new DeflateStream(compressedStream, CompressionMode.Decompress) as Stream,
+                    _ => null
+                };
+
+                if (decompressionStream == null)
+                {
+                    // Unknown compression, write original data
+                    _baseStream.Write(compressedData);
+                    return true;
+                }
+
+                // Decompress data
+                decompressionStream.CopyTo(decompressedStream);
+                var decompressedData = decompressedStream.ToArray();
+
+                // Try to inject script into decompressed content
+                ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, decompressedData);
+                return true;
+            }
+            catch
+            {
+                // If decompression fails, write original compressed data
+                var compressedData = _compressedBuffer.ToArray();
+                _baseStream.Write(compressedData);
+                return true;
+            }
+        }
+
+        private async Task<bool> TryDecompressAndInjectAsync(CancellationToken cancellationToken)
+        {
+            if (_compressedBuffer == null || string.IsNullOrEmpty(_contentEncoding))
+                return false;
+
+            try
+            {
+                var compressedData = _compressedBuffer.ToArray();
+                using var compressedStream = new MemoryStream(compressedData);
+                using var decompressedStream = new MemoryStream();
+                
+                // Create decompression stream
+                using var decompressionStream = _contentEncoding.ToLowerInvariant() switch
+                {
+                    "gzip" => new GZipStream(compressedStream, CompressionMode.Decompress) as Stream,
+                    "br" or "brotli" => new BrotliStream(compressedStream, CompressionMode.Decompress) as Stream,
+                    "deflate" => new DeflateStream(compressedStream, CompressionMode.Decompress) as Stream,
+                    _ => null
+                };
+
+                if (decompressionStream == null)
+                {
+                    // Unknown compression, write original data
+                    await _baseStream.WriteAsync(compressedData, cancellationToken);
+                    return true;
+                }
+
+                // Decompress data
+                await decompressionStream.CopyToAsync(decompressedStream, cancellationToken);
+                var decompressedData = decompressedStream.ToArray();
+
+                // Try to inject script into decompressed content
+                ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(_baseStream, decompressedData, cancellationToken);
+                return true;
+            }
+            catch
+            {
+                // If decompression fails, write original compressed data
+                var compressedData = _compressedBuffer.ToArray();
+                await _baseStream.WriteAsync(compressedData, cancellationToken);
+                return true;
             }
         }
 
@@ -145,5 +343,20 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
              => throw new NotSupportedException();
 
         public override void SetLength(long value) => throw new NotSupportedException();
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // Handle any remaining compressed data
+                if (_compressedBuffer != null && !_compressionHandled && _compressedBuffer.Length > 0)
+                {
+                    var success = TryDecompressAndInject();
+                    _compressionHandled = true;
+                }
+                _compressedBuffer?.Dispose();
+            }
+            base.Dispose(disposing);
+        }
     }
 }
