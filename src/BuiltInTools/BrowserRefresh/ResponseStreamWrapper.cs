@@ -21,9 +21,9 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         private readonly HttpContext _context;
         private readonly ILogger _logger;
         private bool? _isHtmlResponse;
-        private string? _contentEncoding;
-        private MemoryStream? _compressedBuffer;
-        private bool _compressionHandled;
+        private bool _isGzipEncoded;
+        private MemoryStream? _gzipInputBuffer;
+        private MemoryStream? _decompressedBuffer;
 
         public ResponseStreamWrapper(HttpContext context, ILogger logger)
         {
@@ -44,28 +44,20 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         public override void Flush()
         {
             OnWrite();
-            
-            // Handle any pending compressed data
-            if (_compressedBuffer != null && !_compressionHandled && _compressedBuffer.Length > 0)
+            if (_isGzipEncoded && _gzipInputBuffer != null)
             {
-                var success = TryDecompressAndInject();
-                _compressionHandled = true;
+                ProcessGzipData(isFlush: true);
             }
-            
             _baseStream.Flush();
         }
 
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
             OnWrite();
-            
-            // Handle any pending compressed data
-            if (_compressedBuffer != null && !_compressionHandled && _compressedBuffer.Length > 0)
+            if (_isGzipEncoded && _gzipInputBuffer != null)
             {
-                var success = TryDecompressAndInject();
-                _compressionHandled = true;
+                ProcessGzipData(isFlush: true);
             }
-            
             return _baseStream.FlushAsync(cancellationToken);
         }
 
@@ -74,11 +66,9 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             OnWrite();
             if (IsHtmlResponse && !ScriptInjectionPerformed)
             {
-                if (!string.IsNullOrEmpty(_contentEncoding))
+                if (_isGzipEncoded)
                 {
-                    // Convert span to array for compression handling
-                    var tempBuffer = buffer.ToArray();
-                    HandleCompressedWrite(tempBuffer, 0, tempBuffer.Length);
+                    HandleGzipWrite(buffer.ToArray(), 0, buffer.Length);
                 }
                 else
                 {
@@ -103,9 +93,9 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             if (IsHtmlResponse && !ScriptInjectionPerformed)
             {
-                if (!string.IsNullOrEmpty(_contentEncoding))
+                if (_isGzipEncoded)
                 {
-                    HandleCompressedWrite(buffer, offset, count);
+                    HandleGzipWrite(buffer, offset, count);
                 }
                 else
                 {
@@ -124,9 +114,9 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             if (IsHtmlResponse && !ScriptInjectionPerformed)
             {
-                if (!string.IsNullOrEmpty(_contentEncoding))
+                if (_isGzipEncoded)
                 {
-                    await HandleCompressedWriteAsync(buffer, offset, count, cancellationToken);
+                    await HandleGzipWriteAsync(buffer, offset, count, cancellationToken);
                 }
                 else
                 {
@@ -145,11 +135,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             if (IsHtmlResponse && !ScriptInjectionPerformed)
             {
-                if (!string.IsNullOrEmpty(_contentEncoding))
+                if (_isGzipEncoded)
                 {
-                    // Convert memory to array for compression handling
                     var tempBuffer = buffer.ToArray();
-                    await HandleCompressedWriteAsync(tempBuffer, 0, tempBuffer.Length, cancellationToken);
+                    await HandleGzipWriteAsync(tempBuffer, 0, tempBuffer.Length, cancellationToken);
                 }
                 else
                 {
@@ -184,151 +173,136 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 // Since we're changing the markup content, reset the content-length
                 response.Headers.ContentLength = null;
 
-                // Check if the response has a Content-Encoding header
+                // Check if the response has gzip Content-Encoding
                 if (response.Headers.TryGetValue(HeaderNames.ContentEncoding, out var contentEncodingValues))
                 {
-                    _contentEncoding = contentEncodingValues.FirstOrDefault();
-                    if (!string.IsNullOrEmpty(_contentEncoding))
+                    var contentEncoding = contentEncodingValues.FirstOrDefault();
+                    if (string.Equals(contentEncoding, "gzip", StringComparison.OrdinalIgnoreCase))
                     {
+                        _isGzipEncoded = true;
                         // Remove the Content-Encoding header since we'll be serving uncompressed content
                         response.Headers.Remove(HeaderNames.ContentEncoding);
                         
-                        // Initialize buffer for collecting compressed content
-                        _compressedBuffer = new MemoryStream();
+                        // Initialize streams for gzip processing
+                        _gzipInputBuffer = new MemoryStream();
+                        _decompressedBuffer = new MemoryStream();
                     }
                 }
             }
         }
 
-        private void HandleCompressedWrite(byte[] buffer, int offset, int count)
+        private void HandleGzipWrite(byte[] buffer, int offset, int count)
         {
-            if (_compressedBuffer == null)
+            if (_gzipInputBuffer == null)
             {
                 // Fallback: write directly to base stream
                 _baseStream.Write(buffer, offset, count);
                 return;
             }
 
-            if (_compressionHandled)
-            {
-                // Already processed compression, write directly to base stream
-                _baseStream.Write(buffer, offset, count);
-                return;
-            }
-
-            // Append compressed data to buffer
-            _compressedBuffer.Write(buffer, offset, count);
+            // Add compressed data to input buffer
+            _gzipInputBuffer.Write(buffer, offset, count);
             
-            // Don't try to decompress on every write - wait for flush/dispose
+            // Try to process gzip data on every write
+            TryProcessGzipData();
         }
 
-        private async Task HandleCompressedWriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        private async Task HandleGzipWriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            if (_compressedBuffer == null)
+            if (_gzipInputBuffer == null)
             {
                 // Fallback: write directly to base stream
                 await _baseStream.WriteAsync(buffer, offset, count, cancellationToken);
                 return;
             }
 
-            if (_compressionHandled)
-            {
-                // Already processed compression, write directly to base stream
-                await _baseStream.WriteAsync(buffer, offset, count, cancellationToken);
-                return;
-            }
-
-            // Append compressed data to buffer
-            await _compressedBuffer.WriteAsync(buffer, offset, count, cancellationToken);
+            // Add compressed data to input buffer
+            await _gzipInputBuffer.WriteAsync(buffer, offset, count, cancellationToken);
             
-            // Don't try to decompress on every write - wait for flush/dispose
+            // Try to process gzip data on every write
+            TryProcessGzipData();
         }
 
-        private bool TryDecompressAndInject()
+        private void TryProcessGzipData()
         {
-            if (_compressedBuffer == null || string.IsNullOrEmpty(_contentEncoding))
-                return false;
+            if (_gzipInputBuffer == null || _decompressedBuffer == null || _gzipInputBuffer.Length == 0)
+                return;
 
             try
             {
-                var compressedData = _compressedBuffer.ToArray();
-                using var compressedStream = new MemoryStream(compressedData);
-                using var decompressedStream = new MemoryStream();
-                
-                // Create decompression stream
-                using var decompressionStream = _contentEncoding.ToLowerInvariant() switch
-                {
-                    "gzip" => new GZipStream(compressedStream, CompressionMode.Decompress) as Stream,
-                    "br" or "brotli" => new BrotliStream(compressedStream, CompressionMode.Decompress) as Stream,
-                    "deflate" => new DeflateStream(compressedStream, CompressionMode.Decompress) as Stream,
-                    _ => null
-                };
+                // Position at start for reading
+                _gzipInputBuffer.Position = 0;
 
-                if (decompressionStream == null)
+                // Try to decompress the data we have so far
+                using var gzipStream = new GZipStream(_gzipInputBuffer, CompressionMode.Decompress, leaveOpen: true);
+                
+                var buffer = new byte[4096];
+                int totalBytesRead = 0;
+                int bytesRead;
+                while ((bytesRead = gzipStream.Read(buffer, 0, buffer.Length)) > 0)
                 {
-                    // Unknown compression, write original data
-                    _baseStream.Write(compressedData);
-                    return true;
+                    _decompressedBuffer.Write(buffer, 0, bytesRead);
+                    totalBytesRead += bytesRead;
                 }
 
-                // Decompress data
-                decompressionStream.CopyTo(decompressedStream);
-                var decompressedData = decompressedStream.ToArray();
-
-                // Try to inject script into decompressed content
-                ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, decompressedData);
-                return true;
+                // If we successfully decompressed data and have the complete stream
+                if (totalBytesRead > 0)
+                {
+                    var decompressedData = _decompressedBuffer.ToArray();
+                    ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, decompressedData);
+                    
+                    // Clear the buffers since we've successfully processed the data
+                    _decompressedBuffer.SetLength(0);
+                    _gzipInputBuffer.SetLength(0);
+                }
             }
             catch
             {
-                // If decompression fails, write original compressed data
-                var compressedData = _compressedBuffer.ToArray();
-                _baseStream.Write(compressedData);
-                return true;
+                // Decompression failed, likely because we don't have complete data yet
+                // This is expected for partial writes - just continue
             }
         }
 
-        private async Task<bool> TryDecompressAndInjectAsync(CancellationToken cancellationToken)
+        private void ProcessGzipData(bool isFlush)
         {
-            if (_compressedBuffer == null || string.IsNullOrEmpty(_contentEncoding))
-                return false;
+            if (_gzipInputBuffer == null || _decompressedBuffer == null)
+                return;
 
             try
             {
-                var compressedData = _compressedBuffer.ToArray();
-                using var compressedStream = new MemoryStream(compressedData);
-                using var decompressedStream = new MemoryStream();
-                
-                // Create decompression stream
-                using var decompressionStream = _contentEncoding.ToLowerInvariant() switch
-                {
-                    "gzip" => new GZipStream(compressedStream, CompressionMode.Decompress) as Stream,
-                    "br" or "brotli" => new BrotliStream(compressedStream, CompressionMode.Decompress) as Stream,
-                    "deflate" => new DeflateStream(compressedStream, CompressionMode.Decompress) as Stream,
-                    _ => null
-                };
+                // Position at start for reading
+                _gzipInputBuffer.Position = 0;
 
-                if (decompressionStream == null)
+                // Try to decompress the data we have so far
+                using var gzipStream = new GZipStream(_gzipInputBuffer, CompressionMode.Decompress, leaveOpen: true);
+                
+                var buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = gzipStream.Read(buffer, 0, buffer.Length)) > 0)
                 {
-                    // Unknown compression, write original data
-                    await _baseStream.WriteAsync(compressedData, cancellationToken);
-                    return true;
+                    _decompressedBuffer.Write(buffer, 0, bytesRead);
                 }
 
-                // Decompress data
-                await decompressionStream.CopyToAsync(decompressedStream, cancellationToken);
-                var decompressedData = decompressedStream.ToArray();
-
-                // Try to inject script into decompressed content
-                ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(_baseStream, decompressedData, cancellationToken);
-                return true;
+                // If we have decompressed data, try script injection
+                if (_decompressedBuffer.Length > 0)
+                {
+                    var decompressedData = _decompressedBuffer.ToArray();
+                    ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, decompressedData);
+                    
+                    // Clear the buffers since we've processed the data
+                    _decompressedBuffer.SetLength(0);
+                    _gzipInputBuffer.SetLength(0);
+                }
             }
             catch
             {
-                // If decompression fails, write original compressed data
-                var compressedData = _compressedBuffer.ToArray();
-                await _baseStream.WriteAsync(compressedData, cancellationToken);
-                return true;
+                // If decompression fails and this is a flush, write original data
+                if (isFlush && _gzipInputBuffer.Length > 0)
+                {
+                    _gzipInputBuffer.Position = 0;
+                    _gzipInputBuffer.CopyTo(_baseStream);
+                    _gzipInputBuffer.SetLength(0);
+                }
             }
         }
 
@@ -348,13 +322,14 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         {
             if (disposing)
             {
-                // Handle any remaining compressed data
-                if (_compressedBuffer != null && !_compressionHandled && _compressedBuffer.Length > 0)
+                // Handle any remaining gzip data
+                if (_isGzipEncoded && _gzipInputBuffer != null && _gzipInputBuffer.Length > 0)
                 {
-                    var success = TryDecompressAndInject();
-                    _compressionHandled = true;
+                    ProcessGzipData(isFlush: true);
                 }
-                _compressedBuffer?.Dispose();
+                
+                _gzipInputBuffer?.Dispose();
+                _decompressedBuffer?.Dispose();
             }
             base.Dispose(disposing);
         }
