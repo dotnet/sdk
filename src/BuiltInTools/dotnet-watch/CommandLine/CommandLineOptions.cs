@@ -10,6 +10,7 @@ using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -44,7 +45,7 @@ internal sealed class CommandLineOptions
     // this option is referenced from inner logic and so needs to be reference-able
     public static Option<bool> NonInteractiveOption = new Option<bool>("--non-interactive") { Description = Resources.Help_NonInteractive, Arity = ArgumentArity.Zero };
 
-    public static CommandLineOptions? Parse(IReadOnlyList<string> args, IReporter reporter, TextWriter output, out int errorCode)
+    public static CommandLineOptions? Parse(IReadOnlyList<string> args, ILogger logger, TextWriter output, out int errorCode)
     {
         // dotnet watch specific options:
         var quietOption = new Option<bool>("--quiet", "-q") { Description = Resources.Help_Quiet, Arity = ArgumentArity.Zero };
@@ -109,7 +110,7 @@ internal sealed class CommandLineOptions
 
         // parse without forwarded options first:
         var parseResult = rootCommand.Parse(args, parseConfig);
-        if (ReportErrors(parseResult, reporter))
+        if (ReportErrors(parseResult, logger))
         {
             errorCode = 1;
             return null;
@@ -127,7 +128,7 @@ internal sealed class CommandLineOptions
 
         // reparse with forwarded options:
         parseResult = rootCommand.Parse(args, parseConfig);
-        if (ReportErrors(parseResult, reporter))
+        if (ReportErrors(parseResult, logger))
         {
             errorCode = 1;
             return null;
@@ -152,7 +153,7 @@ internal sealed class CommandLineOptions
             var projectShortValue = parseResult.GetValue(shortProjectOption);
             if (!string.IsNullOrEmpty(projectShortValue))
             {
-                reporter.Warn(Resources.Warning_ProjectAbbreviationDeprecated);
+                logger.LogWarning(Resources.Warning_ProjectAbbreviationDeprecated);
                 projectValue = projectShortValue;
             }
         }
@@ -334,13 +335,13 @@ internal sealed class CommandLineOptions
         return null;
     }
 
-    private static bool ReportErrors(ParseResult parseResult, IReporter reporter)
+    private static bool ReportErrors(ParseResult parseResult, ILogger logger)
     {
         if (parseResult.Errors.Any())
         {
             foreach (var error in parseResult.Errors)
             {
-                reporter.Error(error.Message);
+                logger.LogError(error.Message);
             }
 
             return true;
