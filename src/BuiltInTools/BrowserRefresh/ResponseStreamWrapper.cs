@@ -22,8 +22,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         private readonly ILogger _logger;
         private bool? _isHtmlResponse;
         private bool _isGzipEncoded;
-        private MemoryStream? _gzipInputBuffer;
-        private MemoryStream? _decompressedBuffer;
+        private MemoryStream? _compressedBuffer;
 
         public ResponseStreamWrapper(HttpContext context, ILogger logger)
         {
@@ -44,20 +43,12 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         public override void Flush()
         {
             OnWrite();
-            if (_isGzipEncoded && _gzipInputBuffer != null)
-            {
-                ProcessGzipData(isFlush: true);
-            }
             _baseStream.Flush();
         }
 
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
             OnWrite();
-            if (_isGzipEncoded && _gzipInputBuffer != null)
-            {
-                ProcessGzipData(isFlush: true);
-            }
             return _baseStream.FlushAsync(cancellationToken);
         }
 
@@ -66,13 +57,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             OnWrite();
             if (IsHtmlResponse && !ScriptInjectionPerformed)
             {
-                if (_isGzipEncoded)
+                var processedBuffer = HandleGzipIfNeeded(buffer.ToArray());
+                if (processedBuffer.Length > 0)
                 {
-                    HandleGzipWrite(buffer.ToArray(), 0, buffer.Length);
-                }
-                else
-                {
-                    ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, buffer);
+                    ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, processedBuffer);
                 }
             }
             else
@@ -93,13 +81,12 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             if (IsHtmlResponse && !ScriptInjectionPerformed)
             {
-                if (_isGzipEncoded)
+                var data = new byte[count];
+                Array.Copy(buffer, offset, data, 0, count);
+                var processedBuffer = HandleGzipIfNeeded(data);
+                if (processedBuffer.Length > 0)
                 {
-                    HandleGzipWrite(buffer, offset, count);
-                }
-                else
-                {
-                    ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, buffer.AsSpan(offset, count));
+                    ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, processedBuffer.AsSpan());
                 }
             }
             else
@@ -114,13 +101,12 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             if (IsHtmlResponse && !ScriptInjectionPerformed)
             {
-                if (_isGzipEncoded)
+                var data = new byte[count];
+                Array.Copy(buffer, offset, data, 0, count);
+                var processedBuffer = await HandleGzipIfNeededAsync(data, cancellationToken);
+                if (processedBuffer.Length > 0)
                 {
-                    await HandleGzipWriteAsync(buffer, offset, count, cancellationToken);
-                }
-                else
-                {
-                    ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(_baseStream, buffer.AsMemory(offset, count), cancellationToken);
+                    ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(_baseStream, processedBuffer.AsMemory(), cancellationToken);
                 }
             }
             else
@@ -135,14 +121,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             if (IsHtmlResponse && !ScriptInjectionPerformed)
             {
-                if (_isGzipEncoded)
+                var processedBuffer = await HandleGzipIfNeededAsync(buffer.ToArray(), cancellationToken);
+                if (processedBuffer.Length > 0)
                 {
-                    var tempBuffer = buffer.ToArray();
-                    await HandleGzipWriteAsync(tempBuffer, 0, tempBuffer.Length, cancellationToken);
-                }
-                else
-                {
-                    ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(_baseStream, buffer, cancellationToken);
+                    ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(_baseStream, processedBuffer, cancellationToken);
                 }
             }
             else
@@ -184,125 +166,86 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                         response.Headers.Remove(HeaderNames.ContentEncoding);
                         
                         // Initialize streams for gzip processing
-                        _gzipInputBuffer = new MemoryStream();
-                        _decompressedBuffer = new MemoryStream();
+                        _compressedBuffer = new MemoryStream();
                     }
                 }
             }
         }
 
-        private void HandleGzipWrite(byte[] buffer, int offset, int count)
+        private byte[] HandleGzipIfNeeded(byte[] buffer)
         {
-            if (_gzipInputBuffer == null)
+            if (!_isGzipEncoded)
             {
-                // Fallback: write directly to base stream
-                _baseStream.Write(buffer, offset, count);
-                return;
+                return buffer;
             }
 
-            // Add compressed data to input buffer
-            _gzipInputBuffer.Write(buffer, offset, count);
-            
-            // Try to process gzip data on every write
-            TryProcessGzipData();
+            return ProcessCompressedData(buffer);
         }
 
-        private async Task HandleGzipWriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        private async Task<byte[]> HandleGzipIfNeededAsync(byte[] buffer, CancellationToken cancellationToken)
         {
-            if (_gzipInputBuffer == null)
+            if (!_isGzipEncoded)
             {
-                // Fallback: write directly to base stream
-                await _baseStream.WriteAsync(buffer, offset, count, cancellationToken);
-                return;
+                return buffer;
             }
 
-            // Add compressed data to input buffer
-            await _gzipInputBuffer.WriteAsync(buffer, offset, count, cancellationToken);
-            
-            // Try to process gzip data on every write
-            TryProcessGzipData();
+            return await ProcessCompressedDataAsync(buffer, cancellationToken);
         }
 
-        private void TryProcessGzipData()
+        private byte[] ProcessCompressedData(byte[] data)
         {
-            if (_gzipInputBuffer == null || _decompressedBuffer == null || _gzipInputBuffer.Length == 0)
-                return;
+            if (_compressedBuffer == null)
+            {
+                return data;
+            }
+
+            // Write incoming compressed data to the buffer
+            _compressedBuffer.Write(data);
+
+            // Try to decompress all accumulated data
+            return TryDecompressAllData();
+        }
+
+        private async Task<byte[]> ProcessCompressedDataAsync(byte[] data, CancellationToken cancellationToken)
+        {
+            if (_compressedBuffer == null)
+            {
+                return data;
+            }
+
+            // Write incoming compressed data to the buffer
+            await _compressedBuffer.WriteAsync(data, cancellationToken);
+
+            // Try to decompress all accumulated data
+            return TryDecompressAllData();
+        }
+
+        private byte[] TryDecompressAllData()
+        {
+            if (_compressedBuffer == null || _compressedBuffer.Length == 0)
+                return Array.Empty<byte>();
 
             try
             {
-                // Position at start for reading
-                _gzipInputBuffer.Position = 0;
-
-                // Try to decompress the data we have so far
-                using var gzipStream = new GZipStream(_gzipInputBuffer, CompressionMode.Decompress, leaveOpen: true);
+                // Create a new MemoryStream with the compressed data for reading
+                var compressedData = _compressedBuffer.ToArray();
+                using var compressedStream = new MemoryStream(compressedData);
+                using var gzipStream = new GZipStream(compressedStream, CompressionMode.Decompress);
+                using var decompressedStream = new MemoryStream();
                 
-                var buffer = new byte[4096];
-                int totalBytesRead = 0;
-                int bytesRead;
-                while ((bytesRead = gzipStream.Read(buffer, 0, buffer.Length)) > 0)
-                {
-                    _decompressedBuffer.Write(buffer, 0, bytesRead);
-                    totalBytesRead += bytesRead;
-                }
-
-                // If we successfully decompressed data and have the complete stream
-                if (totalBytesRead > 0)
-                {
-                    var decompressedData = _decompressedBuffer.ToArray();
-                    ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, decompressedData);
-                    
-                    // Clear the buffers since we've successfully processed the data
-                    _decompressedBuffer.SetLength(0);
-                    _gzipInputBuffer.SetLength(0);
-                }
+                gzipStream.CopyTo(decompressedStream);
+                var result = decompressedStream.ToArray();
+                
+                // Clear the compressed buffer since we've successfully processed the data
+                _compressedBuffer.SetLength(0);
+                
+                return result;
             }
             catch
             {
                 // Decompression failed, likely because we don't have complete data yet
-                // This is expected for partial writes - just continue
-            }
-        }
-
-        private void ProcessGzipData(bool isFlush)
-        {
-            if (_gzipInputBuffer == null || _decompressedBuffer == null)
-                return;
-
-            try
-            {
-                // Position at start for reading
-                _gzipInputBuffer.Position = 0;
-
-                // Try to decompress the data we have so far
-                using var gzipStream = new GZipStream(_gzipInputBuffer, CompressionMode.Decompress, leaveOpen: true);
-                
-                var buffer = new byte[4096];
-                int bytesRead;
-                while ((bytesRead = gzipStream.Read(buffer, 0, buffer.Length)) > 0)
-                {
-                    _decompressedBuffer.Write(buffer, 0, bytesRead);
-                }
-
-                // If we have decompressed data, try script injection
-                if (_decompressedBuffer.Length > 0)
-                {
-                    var decompressedData = _decompressedBuffer.ToArray();
-                    ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, decompressedData);
-                    
-                    // Clear the buffers since we've processed the data
-                    _decompressedBuffer.SetLength(0);
-                    _gzipInputBuffer.SetLength(0);
-                }
-            }
-            catch
-            {
-                // If decompression fails and this is a flush, write original data
-                if (isFlush && _gzipInputBuffer.Length > 0)
-                {
-                    _gzipInputBuffer.Position = 0;
-                    _gzipInputBuffer.CopyTo(_baseStream);
-                    _gzipInputBuffer.SetLength(0);
-                }
+                // Return empty array to indicate no data is ready for processing yet
+                return Array.Empty<byte>();
             }
         }
 
@@ -322,14 +265,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         {
             if (disposing)
             {
-                // Handle any remaining gzip data
-                if (_isGzipEncoded && _gzipInputBuffer != null && _gzipInputBuffer.Length > 0)
-                {
-                    ProcessGzipData(isFlush: true);
-                }
-                
-                _gzipInputBuffer?.Dispose();
-                _decompressedBuffer?.Dispose();
+                _compressedBuffer?.Dispose();
             }
             base.Dispose(disposing);
         }
