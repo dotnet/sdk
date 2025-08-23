@@ -118,6 +118,30 @@ namespace Microsoft.DotNet.Tests
                 .And.NotContain("Restore completed in");
         }
 
+        [WindowsOnlyFact]
+        public void FirstRunExperienceMessagesShouldGoToStdErr()
+        {
+            // This test ensures that first-run experience messages go to stderr, 
+            // not stdout, to avoid interfering with completion commands and other
+            // tools that parse stdout. See: https://github.com/dotnet/sdk/issues/50444
+            var expectedVersion = GetDotnetVersion();
+            
+            // StdErr should contain first-run messages
+            _fixture.FirstDotnetVerbUseCommandResult.StdErr
+                .Should()
+                .ContainVisuallySameFragment(string.Format(
+                    Configurer.LocalizableStrings.FirstTimeMessageWelcome,
+                    DotnetFirstTimeUseConfigurer.ParseDotNetVersion(expectedVersion),
+                    expectedVersion))
+                .And.ContainVisuallySameFragment(Configurer.LocalizableStrings.FirstTimeMessageMoreInformation);
+                
+            // StdOut should NOT contain first-run messages (they should only be in stderr)
+            _fixture.FirstDotnetVerbUseCommandResult.StdOut
+                .Should()
+                .NotContain("Welcome to .NET")
+                .And.NotContain("Write your first app");
+        }
+
         [Fact]
         public void ItCreatesAFirstUseSentinelFileUnderTheDotDotNetFolder()
         {
@@ -164,7 +188,7 @@ namespace Microsoft.DotNet.Tests
 
             var expectedVersion = GetDotnetVersion();
 
-            result.StdOut
+            result.StdErr
                 .Should()
                 .ContainVisuallySameFragment(string.Format(
                     Configurer.LocalizableStrings.FirstTimeMessageWelcome,
