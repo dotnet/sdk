@@ -29,13 +29,13 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.Equal(solutionFileFullPath, solutionFiles[0]);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/49923
+        [Fact(DisplayName = nameof(AddProjectToSolutionPostActionFindSlnxFileAtOutputPath))]
         public void AddProjectToSolutionPostActionFindSlnxFileAtOutputPath()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
             _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
             EnsureParentDirectoriesExist(targetBasePath);
-            
+
             string solutionFileFullPath = Path.Combine(targetBasePath, "MySln.slnx");
             _engineEnvironmentSettings.Host.FileSystem.WriteAllText(solutionFileFullPath, string.Empty);
 
