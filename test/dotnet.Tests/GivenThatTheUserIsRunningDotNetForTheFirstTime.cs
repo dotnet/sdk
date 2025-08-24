@@ -108,7 +108,7 @@ namespace Microsoft.DotNet.Tests
         {
 
             var expectedVersion = GetDotnetVersion();
-            _fixture.FirstDotnetVerbUseCommandResult.StdOut
+            _fixture.FirstDotnetVerbUseCommandResult.StdErr
                 .Should()
                 .ContainVisuallySameFragment(string.Format(
                     Configurer.LocalizableStrings.FirstTimeMessageWelcome,
