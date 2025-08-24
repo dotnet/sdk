@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.Tests
                 .StartWith(firstTimeNonVerbUseMessage);
         }
 
-        [WindowsOnlyFact]
+        [Fact]
         public void ItShowsTheAppropriateMessageToTheUser()
         {
 
