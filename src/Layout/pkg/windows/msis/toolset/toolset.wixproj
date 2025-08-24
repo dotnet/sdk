@@ -1,5 +1,5 @@
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <Project Sdk="Microsoft.WixToolset.Sdk">
+
   <ItemGroup>
     <Compile Include="$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix5\product\dotnethome_x64.wxs" />
     <Compile Include="..\registrykeys.wxs" />
@@ -32,4 +32,5 @@
       <DefineConstants>$(DefineConstants);DependencyKeyName=Dotnet_CLI</DefineConstants>
     </PropertyGroup>
   </Target>
+
 </Project>

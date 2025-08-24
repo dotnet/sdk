@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <Project>
+
   <PropertyGroup>
     <!--
       Disable nullable warnings when targeting anything other than our supported .NET core version(s).
@@ -88,7 +87,7 @@
     <PackageDescription>
       $(PackageDescription)
 
-      The source code included in this package is subject to arbitrary changes in future versions. 
+      The source code included in this package is subject to arbitrary changes in future versions.
       Updating a reference to this package to a newer version of the package may require changes in the referencing project.
       No compatibility guarantees are provided.
     </PackageDescription>
