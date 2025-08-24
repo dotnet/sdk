@@ -394,11 +394,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
 
             var definedConstants = getValuesCommand.GetValues();
-            var expectedConstants = expectedDefines.Concat(["DEBUG", "TRACE"]);
-            if (addDefineFromCli)
-            {
-                expectedConstants = expectedConstants.Concat(["HELLOWORLD"]);
-            }
+            var expectedConstants = expectedDefines.Concat(addDefineFromCli ? ["HELLOWORLD"] : ["DEBUG", "TRACE"]);
 
             definedConstants.Should().BeEquivalentTo(expectedConstants.ToArray());
         }
