@@ -72,7 +72,7 @@ End Class";
         }
 
         [Fact]
-        public Task TestParameterDeclarationAsync()
+        public Task TestParameterDeclarationConcreteCollectionAsync()
         {
             const string code = @"
 using System.Collections.Generic;
@@ -92,6 +92,39 @@ public class Tests {
         return list.Count != 0;
     }
 }";
+
+            return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+        }
+
+        [Theory]
+        [InlineData("IList")]
+        [InlineData("IReadOnlyList")]
+        [InlineData("ICollection")]
+        [InlineData("IReadOnlyCollection")]
+        [InlineData("ISet")]
+        [InlineData("IImmutableSet")]
+        public Task TestParameterDeclarationAbstractCollectionAsync(string collection)
+        {
+            string code = $@"
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+
+public class Tests {{
+    public bool HasContents({collection}<int> list) {{
+        return {{|#0:list.Any()|}};
+    }}
+}}";
+            string fixedCode = $@"
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+
+public class Tests {{
+    public bool HasContents({collection}<int> list) {{
+        return list.Count != 0;
+    }}
+}}";
 
             return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
