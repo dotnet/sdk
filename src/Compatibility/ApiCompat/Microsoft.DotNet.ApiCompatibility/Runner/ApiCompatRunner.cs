@@ -65,13 +65,12 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
 
                     foreach (CompatDifference difference in differenceGroup)
                     {
-                        Suppression suppression = new(difference.DiagnosticId)
-                        {
-                            Target = difference.ReferenceId,
-                            Left = difference.Left.AssemblyId,
-                            Right = difference.Right.AssemblyId,
-                            IsBaselineSuppression = workItem.Options.IsBaselineComparison
-                        };
+                        Suppression suppression = new(difference.DiagnosticId,
+                            difference.Message,
+                            difference.ReferenceId,
+                            difference.Left.AssemblyId,
+                            difference.Right.AssemblyId,
+                            workItem.Options.IsBaselineComparison);
 
                         // If the error is suppressed, don't log anything.
                         if (suppressionEngine.IsErrorSuppressed(suppression))
@@ -87,9 +86,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
                                 workItem.Options.IsBaselineComparison ? difference.Right.FullPath : "right"));
                         }
 
-                        log.LogError(suppression,
-                            difference.DiagnosticId,
-                            difference.Message);
+                        log.LogError(suppression);
                     }
                 }
             }
