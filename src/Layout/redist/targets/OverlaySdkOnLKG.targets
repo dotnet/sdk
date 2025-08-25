@@ -35,7 +35,7 @@
       MicrosoftNETCoreAppRefPackageVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
       NewSDKVersion="$(Version)"
       TargetRid="$(TargetRid)"
-      OutputPath="$(RedistInstallerLayoutPath)/sdk/$(Version)/Microsoft.NETCoreSdk.BundledVersions.props"/>
+      OutputPath="$(TestHostDotNetRoot)/sdk/$(Version)/Microsoft.NETCoreSdk.BundledVersions.props"/>
 
     <!-- Copy artifacts to the testhost folder. -->
     <Copy DestinationFiles="@(InstallerOutputFile)"
