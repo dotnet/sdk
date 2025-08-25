@@ -2634,11 +2634,11 @@ Proceed?</value>
   <data name="TestCommandUseProject" xml:space="preserve">
     <value>Specifying a project for 'dotnet test' should be via '--project'.</value>
   </data>
-  <data name="TestCommandUseDirectory" xml:space="preserve">
-    <value>Specifying a directory for 'dotnet test' should be via '--directory'.</value>
-  </data>
   <data name="TestCommandUseTestModules" xml:space="preserve">
     <value>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</value>
+  </data>
+  <data name="TestCommandUseDirectoryWithSwitch" xml:space="preserve">
+    <value>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</value>
   </data>
   <data name="PackCmdVersionDescription" xml:space="preserve">
     <value>The version of the package to create</value>

@@ -87,7 +87,6 @@ internal static class MSBuildUtility
         PathOptions pathOptions = new(
             parseResult.GetValue(TestingPlatformOptions.ProjectOption),
             parseResult.GetValue(TestingPlatformOptions.SolutionOption),
-            parseResult.GetValue(TestingPlatformOptions.DirectoryOption),
             resultsDirectory,
             configFile,
             diagnosticOutputDirectory);

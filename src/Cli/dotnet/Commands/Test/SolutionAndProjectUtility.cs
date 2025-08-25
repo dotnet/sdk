@@ -114,6 +114,56 @@ internal static class SolutionAndProjectUtility
         return (true, string.Empty);
     }
 
+    public static (bool ProjectFileFound, string Message) TryGetProjectFilePath(string directory, out string projectFilePath)
+    {
+        projectFilePath = string.Empty;
+
+        if (!Directory.Exists(directory))
+        {
+            return (false, string.Format(CliCommandStrings.CmdNonExistentDirectoryErrorDescription, directory));
+        }
+
+        var actualProjectFiles = GetProjectFilePaths(directory);
+
+        if (actualProjectFiles.Length == 0)
+        {
+            return (false, string.Format(CliStrings.CouldNotFindAnyProjectInDirectory, directory));
+        }
+
+        if (actualProjectFiles.Length == 1)
+        {
+            projectFilePath = actualProjectFiles[0];
+            return (true, string.Empty);
+        }
+
+        return (false, string.Format(CliStrings.MoreThanOneProjectInDirectory, directory));
+    }
+
+    public static (bool SolutionFileFound, string Message) TryGetSolutionFilePath(string directory, out string solutionFilePath)
+    {
+        solutionFilePath = string.Empty;
+
+        if (!Directory.Exists(directory))
+        {
+            return (false, string.Format(CliCommandStrings.CmdNonExistentDirectoryErrorDescription, directory));
+        }
+
+        var actualSolutionFiles = GetSolutionFilePaths(directory);
+
+        if (actualSolutionFiles.Length == 0)
+        {
+            return (false, string.Format(CliStrings.SolutionDoesNotExist, directory + Path.DirectorySeparatorChar));
+        }
+
+        if (actualSolutionFiles.Length > 1)
+        {
+            return (false, string.Format(CliStrings.MoreThanOneSolutionInDirectory, directory + Path.DirectorySeparatorChar));
+        }
+
+        solutionFilePath = actualSolutionFiles[0];
+        return (true, string.Empty);
+    }
+
     private static string[] GetSolutionFilePaths(string directory) => [
             .. Directory.GetFiles(directory, CliConstants.SolutionExtensionPattern, SearchOption.TopDirectoryOnly),
             .. Directory.GetFiles(directory, CliConstants.SolutionXExtensionPattern, SearchOption.TopDirectoryOnly)
