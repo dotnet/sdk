@@ -26,11 +26,19 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
     {
         var result = new List<ApplicationInsightsEntryFormat>();
         Dictionary<string, double> measurements = null;
+        string globalJsonState = string.Empty;
         if (objectToFilter is Tuple<ParseResult, Dictionary<string, double>> parseResultWithMeasurements)
         {
             objectToFilter = parseResultWithMeasurements.Item1;
             measurements = parseResultWithMeasurements.Item2;
             measurements = RemoveZeroTimes(measurements);
+        }
+        else if (objectToFilter is Tuple<ParseResult, Dictionary<string, double>, string> parseResultWithMeasurementsAndGlobalJsonState)
+        {
+            objectToFilter = parseResultWithMeasurementsAndGlobalJsonState.Item1;
+            measurements = parseResultWithMeasurementsAndGlobalJsonState.Item2;
+            measurements = RemoveZeroTimes(measurements);
+            globalJsonState = parseResultWithMeasurementsAndGlobalJsonState.Item3;
         }
 
         if (objectToFilter is ParseResult parseResult)
@@ -38,12 +46,20 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
             var topLevelCommandName = parseResult.RootSubCommandResult();
             if (topLevelCommandName != null)
             {
+                Dictionary<string, string> properties = new()
+                {
+                    ["verb"] = topLevelCommandName
+                };
+                if (!string.IsNullOrEmpty(globalJsonState))
+                {
+                    properties["globalJson"] = globalJsonState;
+                }
+
                 result.Add(new ApplicationInsightsEntryFormat(
                     "toplevelparser/command",
-                    new Dictionary<string, string>()
-                    {{ "verb", topLevelCommandName }}
-                    , measurements
-                    ));
+                    properties,
+                    measurements
+                ));
 
                 LogVerbosityForAllTopLevelCommand(result, parseResult, topLevelCommandName, measurements);
 

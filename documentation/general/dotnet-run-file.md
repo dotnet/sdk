@@ -38,7 +38,10 @@ Additionally, the implicit project file has the following customizations:
 
   - `ArtifactsPath` is set to a [temp directory](#build-outputs).
 
-  - `RuntimeHostConfigurationOption`s are set for `EntryPointFilePath` and `EntryPointFileDirectoryPath` which can be accessed in the app via `AppContext`:
+  - `PublishDir` and `PackageOutputPath` are set to `./artifacts/` so the outputs of `dotnet publish` and `dotnet pack` are next to the file-based app.
+
+  - `RuntimeHostConfigurationOption`s are set for `EntryPointFilePath` and `EntryPointFileDirectoryPath` (except for `Publish` and `Pack` targets)
+    which can be accessed in the app via `AppContext`:
 
     ```cs
     string? filePath = AppContext.GetData("EntryPointFilePath") as string;
@@ -101,7 +104,7 @@ the compilation consists solely of the single file read from the standard input.
 
 Commands `dotnet restore file.cs` and `dotnet build file.cs` are needed for IDE support and hence work for file-based programs.
 
-Command `dotnet publish file.cs` is also supported for file-based programs.
+Commands `dotnet publish file.cs` and `dotnet pack file.cs` are also supported for file-based programs.
 Note that file-based apps have implicitly set `PublishAot=true`, so publishing uses Native AOT (and building reports AOT warnings).
 To opt out, use `#:property PublishAot=false` directive in your `.cs` file.
 
@@ -373,7 +376,7 @@ so `dotnet file.cs` instead of `dotnet run file.cs` should be used in shebangs:
 
 ### Other possible commands
 
-We can consider supporting other commands like `dotnet pack`, `dotnet watch`,
+We can consider supporting other commands like `dotnet watch`,
 however the primary scenario is `dotnet run` and we might never support additional commands.
 
 All commands supporting file-based programs should have a way to receive the target path similarly to `dotnet run`,
