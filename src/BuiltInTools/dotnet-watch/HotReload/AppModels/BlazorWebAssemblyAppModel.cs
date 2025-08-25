@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Watch;
 /// </summary>
 internal sealed class BlazorWebAssemblyAppModel(ProjectGraphNode clientProject)
     // Blazor WASM does not need agent injected as all changes are applied in the browser, the process being launched is a dev server.
-    : HotReloadAppModel(agentInjectionProject: null)
+    : WebApplicationAppModel(agentInjectionProject: null)
 {
     public override bool RequiresBrowserRefresh => true;
 

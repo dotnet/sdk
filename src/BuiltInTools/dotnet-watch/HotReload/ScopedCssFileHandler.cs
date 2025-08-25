@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Watch
 
             var buildResults = await Task.WhenAll(buildTasks).WaitAsync(cancellationToken);
 
-            var browserRefreshTasks = buildResults.Where(p => p != null)!.GetTransitivelyReferencingProjects().Select(async projectNode =>
+            var browserRefreshTasks = buildResults.Where(p => p != null)!.GetAncestorsAndSelf().Select(async projectNode =>
             {
                 if (browserConnector.TryGetRefreshServer(projectNode, out var browserRefreshServer))
                 {
