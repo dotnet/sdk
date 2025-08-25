@@ -3,6 +3,7 @@
     <File Path="eng/dogfood.cmd" />
     <File Path="eng/dogfood.sh" />
     <File Path="eng/Versions.props" />
+    <File Path="eng/Version.Details.props" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
@@ -50,8 +51,11 @@
     <Project Path="src/BuiltInTools/HotReloadAgent.Data/Microsoft.DotNet.HotReload.Agent.Data.shproj" />
     <Project Path="src/BuiltInTools/HotReloadAgent.PipeRpc/Microsoft.DotNet.HotReload.Agent.PipeRpc.Package.csproj" />
     <Project Path="src/BuiltInTools/HotReloadAgent.PipeRpc/Microsoft.DotNet.HotReload.Agent.PipeRpc.shproj" />
+    <Project Path="src/BuiltInTools/HotReloadAgent.WebAssembly.Browser/Microsoft.DotNet.HotReload.WebAssembly.Browser.csproj" />
     <Project Path="src/BuiltInTools/HotReloadAgent/Microsoft.DotNet.HotReload.Agent.Package.csproj" />
     <Project Path="src/BuiltInTools/HotReloadAgent/Microsoft.DotNet.HotReload.Agent.shproj" />
+    <Project Path="src/BuiltInTools/HotReloadClient/Microsoft.DotNet.HotReload.Client.Package.csproj" />
+    <Project Path="src/BuiltInTools/HotReloadClient/Microsoft.DotNet.HotReload.Client.shproj" Id="a78ff92a-d715-4249-9e3d-40d9997a098f" />
   </Folder>
   <Folder Name="/src/Cli/">
     <Project Path="src/Cli/dotnet/dotnet.csproj" />
@@ -97,6 +101,26 @@
     <Project Path="src/Layout/VS.Redist.Common.NetCore.SdkPlaceholder/VS.Redist.Common.NetCore.SdkPlaceholder.proj" Type="C#" />
     <Project Path="src/Layout/VS.Redist.Common.NetCore.Templates/VS.Redist.Common.NetCore.Templates.proj" Type="C#" />
     <Project Path="src/Layout/VS.Redist.Common.NetCore.Toolset/VS.Redist.Common.NetCore.Toolset.proj" Type="C#" />
+  </Folder>
+  <Folder Name="/src/NetAnalyzers/" />
+  <Folder Name="/src/NetAnalyzers/src/">
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/src/Microsoft.CodeAnalysis.CSharp.NetAnalyzers/Microsoft.CodeAnalysis.CSharp.NetAnalyzers.csproj" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/src/Microsoft.CodeAnalysis.NetAnalyzers.Package.csproj" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/src/Microsoft.CodeAnalysis.NetAnalyzers.Setup/Microsoft.CodeAnalysis.NetAnalyzers.Setup.csproj" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/src/Microsoft.CodeAnalysis.NetAnalyzers/Microsoft.CodeAnalysis.NetAnalyzers.csproj" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/src/Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers/Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.vbproj" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/src/Utilities/Compiler.CSharp/Analyzer.CSharp.Utilities.shproj" Id="be5fe32c-da73-4ec5-809e-e11b05aca398" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/src/Utilities/Compiler/Analyzer.Utilities.shproj" Id="ec946164-1e17-410b-b7d9-7de7e6268d63" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/src/Utilities/FlowAnalysis/FlowAnalysis.Utilities.shproj" Id="fcb56cba-fa35-46a8-86b7-bae5433197d9" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/src/Utilities/Workspaces/Workspaces.Utilities.shproj" Id="99f594b1-3916-471d-a761-a6731fc50e9a" />
+  </Folder>
+  <Folder Name="/src/NetAnalyzers/tests/">
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/tests/Microsoft.CodeAnalysis.NetAnalyzers.UnitTests/Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.csproj" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/tests/Test.Utilities/Test.Utilities.csproj" />
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/tests/TestReferenceAssembly/TestReferenceAssembly.csproj" />
+  </Folder>
+  <Folder Name="/src/NetAnalyzers/tools/">
+    <Project Path="src/Microsoft.CodeAnalysis.NetAnalyzers/tools/GenerateDocumentationAndConfigFiles/GenerateDocumentationAndConfigFiles.csproj" />
   </Folder>
   <Folder Name="/src/RazorSdk/" />
   <Folder Name="/src/RazorSdk/Sdk/">
@@ -271,7 +295,7 @@
   </Folder>
   <Folder Name="/src/Workloads/" />
   <Folder Name="/src/Workloads/Manifests/">
-    <Project Path="src/Workloads/Manifests/manifest-packages.proj" Type="C#" />
+    <Project Path="src/Workloads/Manifests/manifest-packages.csproj" />
   </Folder>
   <Folder Name="/src/Workloads/VSInsertion/">
     <Project Path="src/Workloads/VSInsertion/workloads.csproj" />

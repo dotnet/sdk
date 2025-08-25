@@ -273,8 +273,17 @@
   <data name="ProjectArgumentName" xml:space="preserve">
     <value>PROJECT</value>
   </data>
+  <data name="ProjectOrFileArgumentName" xml:space="preserve">
+    <value>PROJECT | FILE</value>
+  </data>
   <data name="ProjectArgumentDescription" xml:space="preserve">
     <value>The project file to operate on. If a file is not specified, the command will search the current directory for one.</value>
+  </data>
+  <data name="ProjectOrFileArgumentDescription" xml:space="preserve">
+    <value>The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file.</value>
+  </data>
+  <data name="FileArgumentDescription" xml:space="preserve">
+    <value>The file-based app to operate on.</value>
   </data>
   <data name="CommonCmdFramework" xml:space="preserve">
     <value>FRAMEWORK</value>
@@ -813,5 +822,8 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
   </data>
   <data name="SDKSchemaCommandDefinition" xml:space="preserve">
     <value>Display the command schema as JSON.</value>
+  </data>
+  <data name="PackCmd_OneNuspecAllowed" xml:space="preserve">
+    <value>Only one .nuspec file can be packed at a time</value>
   </data>
 </root>

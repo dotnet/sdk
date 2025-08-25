@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using Microsoft.Build.Graph;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -37,12 +38,13 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
     public static EvaluationResult? TryCreate(
         string rootProjectPath,
         IEnumerable<string> buildArguments,
-        IReporter reporter,
+        ILogger logger,
+        GlobalOptions options,
         EnvironmentOptions environmentOptions,
         bool restore,
         CancellationToken cancellationToken)
     {
-        var buildReporter = new BuildReporter(reporter, environmentOptions);
+        var buildReporter = new BuildReporter(logger, options, environmentOptions);
 
         // See https://github.com/dotnet/project-system/blob/main/docs/well-known-project-properties.md
 
@@ -58,7 +60,7 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
         var projectGraph = ProjectGraphUtilities.TryLoadProjectGraph(
             rootProjectPath,
             globalOptions,
-            reporter,
+            logger,
             projectGraphRequired: true,
             cancellationToken);
 
@@ -75,7 +77,7 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
             {
                 if (!rootNode.ProjectInstance.Build([TargetNames.Restore], loggers))
                 {
-                    reporter.Error($"Failed to restore project '{rootProjectPath}'.");
+                    logger.LogError("Failed to restore project '{Path}'.", rootProjectPath);
                     loggers.ReportOutput();
                     return null;
                 }
@@ -103,7 +105,7 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
             {
                 if (!projectInstance.Build([TargetNames.Compile, .. customCollectWatchItems], loggers))
                 {
-                    reporter.Error($"Failed to build project '{projectInstance.FullPath}'.");
+                    logger.LogError("Failed to build project '{Path}'.", projectInstance.FullPath);
                     loggers.ReportOutput();
                     return null;
                 }

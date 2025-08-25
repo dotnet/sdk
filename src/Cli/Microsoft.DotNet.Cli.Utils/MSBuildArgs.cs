@@ -46,11 +46,18 @@ public sealed class MSBuildArgs
     public List<string> OtherMSBuildArgs { get; }
 
     /// <summary>
+    /// Ensures that when we do our MSBuild-property re-parses we parse in the same way as the dotnet CLI's parser.
+    /// </summary>
+    private static readonly ParserConfiguration _analysisParsingConfiguration = new()
+    {
+        EnablePosixBundling = false
+    };
+
+    /// <summary>
     /// Takes all of the unstructured properties and arguments that have been accrued from the command line
     /// processing of the SDK and returns a structured set of MSBuild arguments grouped by purpose.
     /// </summary>
     /// <param name="forwardedAndUserFacingArgs">the complete set of forwarded MSBuild arguments and un-parsed, potentially MSBuild-relevant arguments</param>
-    /// <returns></returns>
     public static MSBuildArgs AnalyzeMSBuildArguments(IEnumerable<string> forwardedAndUserFacingArgs, params Option[] options)
     {
         var fakeCommand = new System.CommandLine.Command("dotnet");
@@ -59,11 +66,7 @@ public sealed class MSBuildArgs
             fakeCommand.Options.Add(option);
         }
 
-        var propertyParsingConfiguration = new CommandLineConfiguration(fakeCommand)
-        {
-            EnablePosixBundling = false
-        };
-        var parseResult = propertyParsingConfiguration.Parse([..forwardedAndUserFacingArgs]);
+        var parseResult = fakeCommand.Parse([.. forwardedAndUserFacingArgs], _analysisParsingConfiguration);
         var globalProperties = parseResult.GetResult("--property") is OptionResult propResult ? propResult.GetValueOrDefault<ReadOnlyDictionary<string, string>?>() : null;
         var restoreProperties = parseResult.GetResult("--restoreProperty") is OptionResult restoreResult ? restoreResult.GetValueOrDefault<ReadOnlyDictionary<string, string>?>() : null;
         var requestedTargets = parseResult.GetResult("--target") is OptionResult targetResult ? targetResult.GetValueOrDefault<string[]?>() : null;
@@ -163,11 +166,11 @@ public sealed class MSBuildArgs
         return new MSBuildArgs(new(newProperties), RestoreGlobalProperties, RequestedTargets, Verbosity, OtherMSBuildArgs.ToArray());
     }
 
-    public MSBuildArgs CloneWithAdditionalTarget(string additionalTarget)
+    public MSBuildArgs CloneWithAdditionalTargets(params ReadOnlySpan<string> additionalTargets)
     {
         string[] newTargets = RequestedTargets is not null
-            ? [.. RequestedTargets, additionalTarget]
-            : [ additionalTarget ];
+            ? [.. RequestedTargets, .. additionalTargets]
+            : [.. additionalTargets];
         return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, newTargets, Verbosity, OtherMSBuildArgs.ToArray());
     }
 

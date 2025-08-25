@@ -259,6 +259,46 @@ Les chemins d’accès ont recherché : « {1} », « {2} ».</target>
         <target state="translated">Nettoyez les sorties de build d'un projet .NET.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsCommandDescription">
+        <source>Removes artifacts created for file-based apps</source>
+        <target state="translated">Supprime les artefacts créés pour les applications basées sur des fichiers</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsDays">
+        <source>How many days an artifact folder needs to be unused in order to be removed</source>
+        <target state="translated">Nombre de jours pendant lesquels un dossier d’artefacts doit être inutilisé pour être supprimé</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsDirectoryNotFound">
+        <source>Warning: Artifacts directory does not exist: {0}</source>
+        <target state="translated">Avertissement – le répertoire d’artefacts n’existe pas : {0}</target>
+        <note>{0} is directory path.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsDryRun">
+        <source>Determines changes without actually modifying the file system</source>
+        <target state="translated">Détermine les modifications sans réellement modifier le système de fichiers</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsErrorRemovingFolder">
+        <source>Error removing folder '{0}': {1}</source>
+        <target state="translated">Erreur lors de la suppression du dossier « {0} » : {1}</target>
+        <note>{0} is folder path. {1} is inner error message.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsScanning">
+        <source>Scanning for folders to remove in: {0}</source>
+        <target state="translated">Recherche des dossiers à supprimer dans : {0}</target>
+        <note>{0} is directory path.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsTotalFoldersRemoved">
+        <source>Total folders removed: {0}</source>
+        <target state="translated">Nombre total de dossiers supprimés : {0}</target>
+        <note>{0} is count.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsWouldRemoveFolders">
+        <source>Would remove folders: {0}</source>
+        <target state="translated">Supprimerait les dossiers : {0}</target>
+        <note>{0} is count.</note>
+      </trans-unit>
       <trans-unit id="CleanFrameworkOptionDescription">
         <source>The target framework to clean for. The target framework must also be specified in the project file.</source>
         <target state="translated">Framework cible pour lequel le nettoyage est effectué. Le framework cible doit également être spécifié dans le fichier projet.</target>
@@ -366,6 +406,11 @@ Pour MSTest avant la version 2.2.4, le délai d’expiration est utilisé pour 
         <target state="translated">Chemin du fichier config NuGet à utiliser. Nécessite l'option '--outdated', '--deprecated' ou '--vulnerable'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdConfigFileDescription">
+        <source>Specifies a testconfig.json file.</source>
+        <target state="translated">Spécifie un fichier testconfig.json.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdConfigFileOption">
         <source>FILE</source>
         <target state="translated">FILE</target>
@@ -374,6 +419,11 @@ Pour MSTest avant la version 2.2.4, le délai d’expiration est utilisé pour 
       <trans-unit id="CmdConfigFileOptionDescription">
         <source>The NuGet configuration file to use.</source>
         <target state="translated">Fichier de configuration NuGet à utiliser.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdConfigFilePath">
+        <source>CONFIG_FILE</source>
+        <target state="translated">CONFIG_FILE</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCurrentRuntimeOptionDescription">
@@ -394,6 +444,18 @@ Pour MSTest avant la version 2.2.4, le délai d’expiration est utilisé pour 
       <trans-unit id="CmdDeprecatedDescription">
         <source>Lists packages that have been deprecated. Cannot be combined with '--vulnerable' or '--outdated' options.</source>
         <target state="translated">Liste les packages qui ont été dépréciés. Impossible à combiner avec les options '--vulnerable' ou '--outdated'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDiagnosticOutputDirectoryDescription">
+        <source>Output directory of the diagnostic logging.
+If not specified the file will be generated inside the default 'TestResults' directory.</source>
+        <target state="translated">Répertoire de sortie de la journalisation des diagnostics.
+S’il n’est pas spécifié, le fichier est généré dans le répertoire « TestResults » par défaut.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDiagnosticOutputDirectoryPath">
+        <source>DIAGNOSTIC_DIR</source>
+        <target state="translated">DIAGNOSTIC_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDirectoryDescription">
@@ -880,6 +942,16 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">COMMAND_NAME</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionFileDescription">
+        <source>The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).</source>
+        <target state="translated">Chemin de l’application basée sur des fichiers à exécuter (peut également être transmis en tant que premier argument s’il n’existe pas de projet dans le répertoire courant).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionFileHelpName">
+        <source>FILE_PATH</source>
+        <target state="translated">FILE_PATH</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionLaunchProfileDescription">
         <source>The name of the launch profile (if any) to use when launching the application.</source>
         <target state="translated">Nom du profil de lancement (le cas échéant) à utiliser au lancement de l'application.</target>
@@ -906,9 +978,9 @@ dotnet.config is a name don't translate.</note>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileDescription">
-        <source>Do not attempt to use launchSettings.json to configure the application.</source>
-        <target state="translated">N'essayez pas d'utiliser launchSettings.json pour configurer l'application.</target>
-        <note />
+        <source>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</source>
+        <target state="translated">N’essayez pas d’utiliser launchSettings.json ou [app].run.json pour configurer l’application.</target>
+        <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
       </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
         <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
@@ -1031,11 +1103,9 @@ dotnet.config is a name don't translate.</note>
         <note />
       </trans-unit>
       <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading launchSettings.json.
-{0}</source>
-        <target state="translated">Une erreur s'est produite durant la lecture de launchSettings.json.
-{0}</target>
-        <note />
+        <source>An error was encountered when reading '{0}': {1}</source>
+        <target state="translated">Une erreur est survenue pendant la lecture de « {0} » : {1}</target>
+        <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
@@ -1051,6 +1121,12 @@ dotnet.config is a name don't translate.</note>
         <source>Enables diagnostic output.</source>
         <target state="translated">Active la sortie des diagnostics.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="DirectivesRemoved">
+        <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
+        <target state="translated">Instructions « {0} » ({1}) supprimées pour « {2} » dans : {3}</target>
+        <note>{0} is a directive kind (like '#:package'). {1} is number of removed directives.
+    {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</note>
       </trans-unit>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
@@ -1451,10 +1527,10 @@ Faites en sorte que les noms de profil soient distincts.</target>
         <target state="translated">Le fichier spécifié doit exister et avoir l'extension « .cs » : « {0} »</target>
         <note>{Locked=".cs"}</note>
       </trans-unit>
-      <trans-unit id="InvalidOptionCombination">
-        <source>Cannot combine option '{0}' and '{1}'.</source>
-        <target state="translated">Impossible de combiner l’option « {0} » et « {1} ».</target>
-        <note>{0} and {1} are option names like '--no-build'.</note>
+      <trans-unit id="InvalidOptionForFileBasedApp">
+        <source>Cannot specify option '{0}' when operating on a file-based app.</source>
+        <target state="translated">Nous ne pouvons pas spécifier l’option « {0} » lors de l’utilisation d’une application basée sur des fichiers.</target>
+        <note>{0} is an option name like '--source'.</note>
       </trans-unit>
       <trans-unit id="InvalidOptionForStdin">
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
@@ -1677,9 +1753,14 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
         <target state="translated">Installation de la charge de travail {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoBinaryLogBecauseRunningJustCsc">
+        <source>Warning: Binary log option was specified but MSBuild will be skipped because running just csc is enough. Specify '--no-cache' to force full build.</source>
+        <target state="translated">Avertissement : l’option de journal binaire a été spécifiée, mais MSBuild sera ignoré, car l’exécution de csc est suffisante. Spécifiez « --no-cache » pour forcer le build complet.</target>
+        <note>{Locked="--no-cache"}{Locked="MSBuild"}{Locked="csc"}</note>
+      </trans-unit>
       <trans-unit id="NoBinaryLogBecauseUpToDate">
-        <source>Warning: Binary log option was specified but build will be skipped because output is up to date, specify '--no-cache' to force build.</source>
-        <target state="translated">Avertissement : l’option de journal binaire a été spécifiée, mais la build sera ignorée, car la sortie est à jour. Spécifiez « --no-cache » pour forcer la génération.</target>
+        <source>Warning: Binary log option was specified but build will be skipped because output is up to date. Specify '--no-cache' to force build.</source>
+        <target state="translated">Avertissement : l’option de journal binaire a été spécifiée, mais le build sera ignoré, car la sortie est à jour. Spécifiez « --no-cache » pour forcer le build.</target>
         <note>{Locked="--no-cache"}</note>
       </trans-unit>
       <trans-unit id="NoBuildOptionDescription">
@@ -1764,8 +1845,8 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">Aucune charge de travail n’est installée, rien à réparer. Exécutez « recherche de charge de travail dotnet » pour trouver les charges de travail à installer.</target>
-        <note />
+        <target state="needs-review-translation">Aucune charge de travail n’est installée, rien à réparer. Exécutez « recherche de charge de travail dotnet » pour trouver les charges de travail à installer.</target>
+        <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
@@ -1825,6 +1906,16 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
       <trans-unit id="PackCmdOutputDirDescription">
         <source>The output directory to place built packages in.</source>
         <target state="translated">Répertoire de sortie dans lequel placer les packages générés.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersion">
+        <source>VERSION</source>
+        <target state="translated">VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersionDescription">
+        <source>The version of the package to create</source>
+        <target state="translated">Version du package à créer</target>
         <note />
       </trans-unit>
       <trans-unit id="PackConfigurationOptionDescription">
@@ -2292,42 +2383,42 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory ({0}):</source>
-        <target state="new">Specify the output directory ({0}):</target>
+        <target state="translated">Spécifiez le répertoire de sortie ({0}) :</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
         <source>Determines changes without actually modifying the file system</source>
-        <target state="new">Determines changes without actually modifying the file system</target>
+        <target state="translated">Détermine les modifications sans réellement modifier le système de fichiers</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>
-        <target state="new">Dry run: would remove file-level directives from file: {0}</target>
+        <target state="translated">Test à blanc : supprimerait les directives de niveau fichier du fichier : {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldCopyFile">
         <source>Dry run: would copy file '{0}' to '{1}'.</source>
-        <target state="new">Dry run: would copy file '{0}' to '{1}'.</target>
+        <target state="translated">Test à blanc : copierait le fichier « {0} » vers « {1} ».</target>
         <note>{0} and {1} are file full paths.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldCreateDirectory">
         <source>Dry run: would create directory: {0}</source>
-        <target state="new">Dry run: would create directory: {0}</target>
+        <target state="translated">Test à blanc : création du répertoire : {0}</target>
         <note>{0} is the directory full path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldCreateFile">
         <source>Dry run: would create file: {0}</source>
-        <target state="new">Dry run: would create file: {0}</target>
+        <target state="translated">Test à blanc : création du fichier : {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldDeleteFile">
         <source>Dry run: would delete file: {0}</source>
-        <target state="new">Dry run: would delete file: {0}</target>
+        <target state="translated">Test à blanc : supprimerait le fichier : {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldMoveFile">
         <source>Dry run: would move file '{0}' to '{1}'.</source>
-        <target state="new">Dry run: would move file '{0}' to '{1}'.</target>
+        <target state="translated">Test à blanc : déplacerait le fichier « {0} » vers « {1} ».</target>
         <note>{0} and {1} are file full paths.</note>
       </trans-unit>
       <trans-unit id="ProjectManifest">
@@ -2353,7 +2444,7 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
       <trans-unit id="PropertyDirectiveMissingParts">
         <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
         <target state="translated">La directive de propriété doit avoir deux parties séparées par '=' comme '#:property PropertyName=PropertyValue' : {0}</target>
-        <note>{0} is the file path and line number.</note>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
@@ -2570,8 +2661,10 @@ La valeur par défaut est de publier une application dépendante du framework.</
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
-        <source>The specified launch profile '{0}' could not be located.</source>
-        <target state="translated">Le profil de lancement spécifié '{0}' n'a pas pu être localisé.</target>
+        <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
+{1}</source>
+        <target state="translated">Impossible d’utiliser le profil de lancement « {0} », car le fichier de paramètres de lancement est introuvable. Emplacements essayés : 
+{1}</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionMultipleProjects">
@@ -2585,15 +2678,15 @@ La valeur par défaut est de publier une application dépendante du framework.</
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRun">
-        <source>Unable to run your project.
-Ensure you have a runnable project type and ensure '{0}' supports this project.
-A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
-The current {1} is '{2}'.</source>
-        <target state="translated">Impossible d'exécuter votre projet.
+        <source>Unable to proceed with project '{0}'.
+Ensure you have a runnable project type.
+A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
+The current OutputType is '{2}'.</source>
+        <target state="needs-review-translation">Impossible d'exécuter votre projet.
 Vérifiez que vous avez un type de projet exécutable et que '{0}' prend en charge ce projet.
 Un projet exécutable doit cibler un TFM exécutable (par exemple, net5.0) et avoir OutputType 'Exe'.
 Le {1} actuel est '{2}'.</target>
-        <note />
+        <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
@@ -2611,6 +2704,11 @@ Votre projet cible plusieurs frameworks. Spécifiez le framework à exécuter à
         <source>'{0}' is not a valid project file.</source>
         <target state="translated">'{0}' n'est pas un fichier projet valide.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="RunCommandWarningRunJsonNotUsed">
+        <source>Warning: Settings from '{0}' are not used because '{1}' has precedence.</source>
+        <target state="translated">Avertissement : les paramètres de « {0} » ne sont pas utilisés, car « {1} » a la priorité.</target>
+        <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
       </trans-unit>
       <trans-unit id="RunConfigurationOptionDescription">
         <source>The configuration to run for. The default for most projects is 'Debug'.</source>
@@ -2730,8 +2828,8 @@ Votre projet cible plusieurs frameworks. Spécifiez le framework à exécuter à
         <note>{Locked="--sdk-version"}</note>
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
-        <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
-        <target state="translated">Les charges de travail sont configurées pour installer et mettre à jour à l’aide des versions de charge de travail, mais aucune n’a été trouvée. Exécutez « dotnet workload restore » pour installer une version de charge de travail.</target>
+        <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
+        <target state="translated">Aucun ensemble de charges de travail n’est installé. Exécutez « dotnet workload restore » pour installer un ensemble de charge de travail.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">
@@ -2884,6 +2982,11 @@ Votre projet cible plusieurs frameworks. Spécifiez le framework à exécuter à
         <target state="translated">Sortie standard</target>
         <note />
       </trans-unit>
+      <trans-unit id="StaticGraphRestoreNotSupported">
+        <source>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</source>
+        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</target>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
+      </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
         <target state="translated">État</target>
@@ -2947,6 +3050,26 @@ Votre projet cible plusieurs frameworks. Spécifiez le framework à exécuter à
       <trans-unit id="TestCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseDirectory">
+        <source>Specifying a directory for 'dotnet test' should be via '--directory'.</source>
+        <target state="translated">La spécification d’un répertoire pour « dotnet test » doit se faire via « --directory ».</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseProject">
+        <source>Specifying a project for 'dotnet test' should be via '--project'.</source>
+        <target state="translated">La spécification d’un projet pour « dotnet test » doit se faire via « --project ».</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseSolution">
+        <source>Specifying a solution for 'dotnet test' should be via '--solution'.</source>
+        <target state="translated">La spécification d’une solution pour « dotnet test » doit se faire via « --solution ».</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseTestModules">
+        <source>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</source>
+        <target state="translated">La spécification de DLL ou d’exécutables pour « dotnet test » doit se faire via « --test-modules ».</target>
         <note />
       </trans-unit>
       <trans-unit id="TestConfigurationOptionDescription">
@@ -3757,10 +3880,15 @@ Pour afficher une valeur, spécifiez l’option de ligne de commande corresponda
         <target state="translated">ID du manifeste de charge de travail</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadManifestInstallationConfiguration">
-        <source>Configured to use {0} when installing new manifests.</source>
-        <target state="translated">Configuré pour utiliser {0} lors de l’installation de nouveaux manifestes.</target>
+      <trans-unit id="WorkloadManifestInstallationConfigurationLooseManifests">
+        <source>Configured to use loose manifests when installing new manifests.</source>
+        <target state="translated">Configuré pour utiliser des manifestes non liés lors de l’installation de nouveaux manifestes.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfigurationWorkloadSets">
+        <source>Configured to use workload sets when installing new manifests.</source>
+        <target state="translated">Configuré pour utiliser desworkload sets lors de l’installation de nouveaux manifestes.</target>
+        <note>{Locked="workload sets"}</note>
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">
         <source>Manifest Path</source>

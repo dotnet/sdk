@@ -6,12 +6,19 @@ Coding Style and Changes:
 Testing:
 - Large changes should always include test changes.
 - The Skip parameter of the Fact attribute to point to the specific issue link.
+- To run tests in this repo:
+  - Use the repo-local dotnet instance: `./.dotnet/dotnet`
+  - For MSTest-style projects: `dotnet test path/to/project.csproj --filter "FullyQualifiedName~TestName"`
+  - For XUnit test assemblies: `dotnet exec artifacts/bin/redist/Debug/TestAssembly.dll -method "*TestMethodName*"`
+  - Examples:
+    - `dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "Name~ItShowsTheAppropriateMessageToTheUser"`
+    - `dotnet exec artifacts/bin/redist/Debug/dotnet.Tests.dll -method "*ItShowsTheAppropriateMessageToTheUser*"`
 
 Output Considerations:
 - When considering how output should look, solicit advice from baronfel.
 
 Localization:
-- Avoid modifying .xlf files and instead prompt the user to update them using the `/t:UpdateXlf` target on MSBuild.
+- Avoid modifying .xlf files and instead prompt the user to update them using the `/t:UpdateXlf` target on MSBuild. Correctly automatically modified .xlf files have elements with state `needs-review-translation` or `new`.
 - Consider localizing strings in .resx files when possible.
 
 Documentation:

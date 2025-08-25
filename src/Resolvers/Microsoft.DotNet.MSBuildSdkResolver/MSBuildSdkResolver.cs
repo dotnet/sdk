@@ -32,10 +32,45 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         private readonly Func<string, string, string?> _getMsbuildRuntime;
         private readonly NETCoreSdkResolver _netCoreSdkResolver;
 
+        private const string DOTNET_HOST = nameof(DOTNET_HOST);
         private const string DotnetHostExperimentalKey = "DOTNET_EXPERIMENTAL_HOST_PATH";
         private const string MSBuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
-
+        private const string SdkResolverHonoredGlobalJson = "SdkResolverHonoredGlobalJson";
+        private const string SdkResolverGlobalJsonPath = "SdkResolverGlobalJsonPath";
         private static CachingWorkloadResolver _staticWorkloadResolver = new();
+
+        /// <summary>
+        /// This is a workaround for MSBuild API compatibility in older VS hosts.
+        /// To allow for working with the MSBuild 17.15 APIs while not blowing up our ability to build the SdkResolver in
+        /// VS-driven CI pipelines, we probe and invoke only if the expected method is present.
+        /// Once we can update our MSBuild API dependency this can go away.
+        /// </summary>
+        private static UpdatedSdkResultFactorySuccess? _factorySuccessFunc = TryLocateNewMSBuildFactory();
+
+        /// <summary>
+        /// This represents the 'open delegate' form of the updated SdkResultFactory.IndicateSuccess method with environment variable support.
+        /// Because it is an open delegate, we can provide an object instance to be called as the first argument.
+        /// </summary>
+        public delegate SdkResult UpdatedSdkResultFactorySuccess(SdkResultFactory factory, string sdkPath, string? sdkVersion, IDictionary<string, string?>? propertiesToAdd, IDictionary<string, SdkResultItem>? itemsToAdd, List<string>? warnings, IDictionary<string, string?>? environmentVariablesToAdd);
+
+        private static UpdatedSdkResultFactorySuccess? TryLocateNewMSBuildFactory()
+        {
+            if (typeof(SdkResultFactory).GetMethod("IndicateSuccess", [
+                typeof(string), // path to sdk
+                typeof(string), // sdk version
+                typeof(IDictionary<string, string>), // properties to add
+                typeof(IDictionary<string, SdkResultItem>), // items to add
+                typeof(List<string>), // warnings
+                typeof(IDictionary<string, string>) // environment variables to add
+            ]) is MethodInfo m)
+            {
+                return Delegate.CreateDelegate(
+                    typeof(Func<SdkResultFactory, string, string?, IDictionary<string, string?>?, IDictionary<string, SdkResultItem>?, List<string>?, IDictionary<string, string?>?, SdkResult>),
+                    null,
+                    m) as UpdatedSdkResultFactorySuccess;
+            }
+            return null;
+        }
 
         private bool _shouldLog = false;
 
@@ -68,6 +103,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             public string? GlobalJsonPath;
             public IDictionary<string, string?>? PropertiesToAdd;
             public CachingWorkloadResolver? WorkloadResolver;
+            public IDictionary<string, string?>? EnvironmentVariablesToAdd;
         }
 
         public override SdkResult? Resolve(SdkReference sdkReference, SdkResolverContext context, SdkResultFactory factory)
@@ -78,6 +114,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             string? globalJsonPath = null;
             IDictionary<string, string?>? propertiesToAdd = null;
             IDictionary<string, SdkResultItem>? itemsToAdd = null;
+            IDictionary<string, string?>? environmentVariablesToAdd = null;
             List<string>? warnings = null;
             CachingWorkloadResolver? workloadResolver = null;
 
@@ -99,6 +136,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 globalJsonPath = priorResult.GlobalJsonPath;
                 propertiesToAdd = priorResult.PropertiesToAdd;
                 workloadResolver = priorResult.WorkloadResolver;
+                environmentVariablesToAdd = priorResult.EnvironmentVariablesToAdd;
 
                 logger?.LogMessage($"\tDotnet root: {dotnetRoot}");
                 logger?.LogMessage($"\tMSBuild SDKs Dir: {msbuildSdksDir}");
@@ -139,9 +177,9 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 logger?.LogMessage($"\tResolved SDK directory: {resolverResult.ResolvedSdkDirectory}");
                 logger?.LogMessage($"\tglobal.json path: {resolverResult.GlobalJsonPath}");
                 logger?.LogMessage($"\tFailed to resolve SDK from global.json: {resolverResult.FailedToResolveSDKSpecifiedInGlobalJson}");
-
-                msbuildSdksDir = Path.Combine(resolverResult.ResolvedSdkDirectory, "Sdks");
-                netcoreSdkVersion = new DirectoryInfo(resolverResult.ResolvedSdkDirectory).Name;
+                string dotnetSdkDir = resolverResult.ResolvedSdkDirectory;
+                msbuildSdksDir = Path.Combine(dotnetSdkDir, "Sdks");
+                netcoreSdkVersion = new DirectoryInfo(dotnetSdkDir).Name;
                 globalJsonPath = resolverResult.GlobalJsonPath;
 
                 // These are overrides that are used to force the resolved SDK tasks and targets to come from a given
@@ -196,21 +234,27 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                         minimumVSDefinedSDKVersion);
                 }
 
-                string? dotnetExe =
-                    TryResolveDotnetExeFromSdkResolution(resolverResult)
+                string? fullPathToMuxer =
+                    TryResolveMuxerFromSdkResolution(dotnetSdkDir)
                     ?? Path.Combine(dotnetRoot, RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Constants.DotNetExe : Constants.DotNet);
-                if (File.Exists(dotnetExe))
+                if (File.Exists(fullPathToMuxer))
                 {
+                    // keeping this in until this component no longer needs to handle 17.14.
                     propertiesToAdd ??= new Dictionary<string, string?>();
-                    propertiesToAdd.Add(DotnetHostExperimentalKey, dotnetExe);
+                    propertiesToAdd.Add(DotnetHostExperimentalKey, fullPathToMuxer);
+                    // this is the future-facing implementation.
+                    environmentVariablesToAdd ??= new Dictionary<string, string?>(1)
+                    {
+                        [DOTNET_HOST] = fullPathToMuxer
+                    };
                 }
                 else
                 {
-                    logger?.LogMessage($"Could not set '{DotnetHostExperimentalKey}' because dotnet executable '{dotnetExe}' does not exist.");
+                    logger?.LogMessage($"Could not set '{DOTNET_HOST}' environment variable because dotnet executable '{fullPathToMuxer}' does not exist.");
                 }
 
                 string? runtimeVersion = dotnetRoot != null ?
-                    _getMsbuildRuntime(resolverResult.ResolvedSdkDirectory, dotnetRoot) :
+                    _getMsbuildRuntime(dotnetSdkDir, dotnetRoot) :
                     null;
                 if (!string.IsNullOrEmpty(runtimeVersion))
                 {
@@ -224,7 +268,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
 
                 if (resolverResult.FailedToResolveSDKSpecifiedInGlobalJson)
                 {
-                    logger?.LogMessage($"Could not resolve SDK specified in '{resolverResult.GlobalJsonPath}'. Ignoring global.json for this resolution.");
+                    logger?.LogMessage($"Could not resolve SDK specified in '{globalJsonPath}'. Ignoring global.json for this resolution.");
 
                     if (warnings == null)
                     {
@@ -241,8 +285,9 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                     }
 
                     propertiesToAdd ??= new Dictionary<string, string?>();
-                    propertiesToAdd.Add("SdkResolverHonoredGlobalJson", "false");
-                    propertiesToAdd.Add("SdkResolverGlobalJsonPath", resolverResult.GlobalJsonPath);
+                    propertiesToAdd.Add(SdkResolverHonoredGlobalJson, "false");
+                    // TODO: this would ideally be reported anytime it was non-null - that may cause more imports though?
+                    propertiesToAdd.Add(SdkResolverGlobalJsonPath, globalJsonPath);
 
                     if (logger != null)
                     {
@@ -258,7 +303,8 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 NETCoreSdkVersion = netcoreSdkVersion,
                 GlobalJsonPath = globalJsonPath,
                 PropertiesToAdd = propertiesToAdd,
-                WorkloadResolver = workloadResolver
+                WorkloadResolver = workloadResolver,
+                EnvironmentVariablesToAdd = environmentVariablesToAdd
             };
 
             //  First check if requested SDK resolves to a workload SDK pack
@@ -284,26 +330,33 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                     Strings.MSBuildSDKDirectoryNotFound,
                     msbuildSdkDir);
             }
-
-            return factory.IndicateSuccess(msbuildSdkDir, netcoreSdkVersion, propertiesToAdd, itemsToAdd, warnings);
+            if (_factorySuccessFunc != null)
+            {
+                return _factorySuccessFunc(factory, msbuildSdkDir, netcoreSdkVersion, propertiesToAdd, itemsToAdd, warnings, environmentVariablesToAdd);
+            }
+            else
+            {
+                return factory.IndicateSuccess(msbuildSdkDir, netcoreSdkVersion, propertiesToAdd, itemsToAdd, warnings);
+            }
         }
 
-        /// <summary>Try to find the dotnet binary from the SDK resolution result upwards</summary>
-        private static string? TryResolveDotnetExeFromSdkResolution(SdkResolutionResult resolverResult)
+        /// <summary>
+        /// Try to find the muxer binary from the SDK resolution result.
+        /// </summary>
+        /// <remarks>
+        /// SDK layouts always have a defined relationship to the location of the muxer -
+        /// the muxer binary should be exactly two directories above the SDK directory.
+        /// </remarks>
+        private static string? TryResolveMuxerFromSdkResolution(string resolvedSdkDirectory)
         {
             var expectedFileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Constants.DotNetExe : Constants.DotNet;
-            var currentDir = resolverResult.ResolvedSdkDirectory;
-            while (currentDir != null)
+            var currentDir = resolvedSdkDirectory;
+            var expectedDotnetRoot = Path.GetDirectoryName(Path.GetDirectoryName(currentDir));
+            var expectedMuxerPath = Path.Combine(expectedDotnetRoot, expectedFileName);
+            if (File.Exists(expectedMuxerPath))
             {
-                var dotnetExe = Path.Combine(currentDir, expectedFileName);
-                if (File.Exists(dotnetExe))
-                {
-                    return dotnetExe;
-                }
-
-                currentDir = Path.GetDirectoryName(currentDir);
+                return expectedMuxerPath;
             }
-
             return null;
         }
 

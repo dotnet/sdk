@@ -93,10 +93,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -122,7 +118,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -144,10 +140,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -168,16 +160,12 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -192,10 +180,6 @@
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\test.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -222,7 +206,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -244,10 +228,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -268,16 +248,12 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -292,10 +268,6 @@
       "AssetFile": "${ProjectPath}\\wwwroot\\test.js",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -315,6 +287,10 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [

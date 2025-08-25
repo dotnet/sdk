@@ -606,10 +606,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -635,7 +631,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -657,10 +653,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -681,16 +673,12 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -714,10 +702,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -743,7 +727,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -765,10 +749,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -789,16 +769,12 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -813,10 +789,6 @@
       "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\_content\\AnotherClassLib\\js\\project-direct-dep.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -843,7 +815,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -865,10 +837,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -889,16 +857,12 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -913,10 +877,6 @@
       "AssetFile": "${ProjectPath}\\AnotherClassLib\\wwwroot\\AnotherClassLib.lib.module.build.js",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -936,6 +896,10 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -959,10 +923,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -981,6 +941,10 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -995,10 +959,6 @@
       "AssetFile": "${ProjectPath}\\AnotherClassLib\\wwwroot\\js\\project-direct-dep.js",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -1018,6 +978,10 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1032,10 +996,6 @@
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\AppWithPackageAndP2PReference#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -1062,7 +1022,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1077,10 +1037,6 @@
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\AppWithPackageAndP2PReference#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"
@@ -1107,7 +1063,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1137,10 +1093,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1161,10 +1113,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -1174,7 +1122,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1196,10 +1144,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"
         },
@@ -1220,10 +1164,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -1233,7 +1173,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1257,10 +1197,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1286,7 +1222,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1308,10 +1244,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1332,16 +1264,12 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1356,10 +1284,6 @@
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorPackageLibraryDirectDependency\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -1386,7 +1310,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1408,10 +1332,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1432,16 +1352,12 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1457,10 +1373,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1486,7 +1398,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1508,10 +1420,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1532,16 +1440,12 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1556,10 +1460,6 @@
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\RazorPackageLibraryDirectDependency\\js\\pkg-direct-dep.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -1586,7 +1486,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1608,10 +1508,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1632,16 +1528,12 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1657,10 +1549,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1686,7 +1574,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1708,10 +1596,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1732,16 +1616,12 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1756,10 +1636,6 @@
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\jsmodules\\jsmodules.build.manifest.json",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -1779,6 +1655,10 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1793,10 +1673,6 @@
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\AppWithPackageAndP2PReference.styles.css",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -1820,6 +1696,10 @@
         {
           "Name": "Link",
           "Value": "\u003C_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1834,10 +1714,6 @@
       "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\AppWithPackageAndP2PReference.styles.css",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"
@@ -1861,6 +1737,10 @@
         {
           "Name": "Link",
           "Value": "\u003C_content/ClassLibrary/ClassLibrary.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022, \u003C_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css\u003E; rel=\u0022preload\u0022; as=\u0022style\u0022"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1884,10 +1764,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -1913,7 +1789,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1928,10 +1804,6 @@
       "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\ClassLibrary#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"
@@ -1958,7 +1830,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -1988,10 +1860,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2012,16 +1880,12 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2043,10 +1907,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"
         },
@@ -2067,16 +1927,12 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2100,10 +1956,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2129,7 +1981,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2151,10 +2003,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2175,16 +2023,12 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2200,10 +2044,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2229,7 +2069,7 @@
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2251,10 +2091,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2275,16 +2111,12 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
         {
           "Name": "Vary",
-          "Value": "Content-Encoding"
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2299,10 +2131,6 @@
       "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ClassLibrary.bundle.scp.css",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -2322,6 +2150,10 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2336,10 +2168,6 @@
       "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ClassLibrary.bundle.scp.css",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"
@@ -2359,6 +2187,10 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2382,10 +2214,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2404,6 +2232,10 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2419,10 +2251,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2441,6 +2269,10 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2455,10 +2287,6 @@
       "AssetFile": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "no-cache"
@@ -2478,6 +2306,10 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2492,10 +2324,6 @@
       "AssetFile": "${RestorePath}\\razorpackagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\RazorPackageLibraryDirectDependency.__fingerprint__.bundle.scp.css",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"
@@ -2515,6 +2343,10 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2538,10 +2370,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2560,6 +2388,10 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2575,10 +2407,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2597,6 +2425,10 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [
@@ -2612,10 +2444,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -2634,6 +2462,10 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [

@@ -38,12 +38,21 @@ Additionally, the implicit project file has the following customizations:
 
   - `ArtifactsPath` is set to a [temp directory](#build-outputs).
 
-  - `RuntimeHostConfigurationOption`s are set for `EntryPointFilePath` and `EntryPointFileDirectoryPath` which can be accessed in the app via `AppContext`:
+  - `PublishDir` and `PackageOutputPath` are set to `./artifacts/` so the outputs of `dotnet publish` and `dotnet pack` are next to the file-based app.
+
+  - `RuntimeHostConfigurationOption`s are set for `EntryPointFilePath` and `EntryPointFileDirectoryPath` (except for `Publish` and `Pack` targets)
+    which can be accessed in the app via `AppContext`:
 
     ```cs
     string? filePath = AppContext.GetData("EntryPointFilePath") as string;
     string? directoryPath = AppContext.GetData("EntryPointFileDirectoryPath") as string;
     ```
+
+  - `FileBasedProgram` property is set to `true` and can be used by SDK targets to detect file-based apps.
+
+  - `DisableDefaultItemsInProjectFolder` property is set to `true` which results in `EnableDefaultItems=false` by default
+    in case there is a project or solution in the same directory as the file-based app.
+    This ensures that items from nested projects and artifacts are not included by the app.
 
 ## Grow up
 
@@ -78,6 +87,7 @@ The file-based build and run kicks in only when:
 - if the target file exists, and has the `.cs` file extension or contents that start with `#!`.
 
 Otherwise, project-based `dotnet run` fallback is used and you might get an error like "Couldn't find a project to run."
+You can explicitly use the `--file` option to avoid the fallback behavior.
 
 File-based programs are processed by `dotnet run` equivalently to project-based programs unless specified otherwise in this document.
 For example, the remaining command-line arguments after the first argument (the target path) are passed through to the target app
@@ -88,17 +98,20 @@ If a dash (`-`) is given instead of the target path (i.e., `dotnet run -`), the 
 In this case, the current working directory is not used to search for other files (launch profiles, other sources in case of multi-file apps);
 the compilation consists solely of the single file read from the standard input.
 
-`dotnet path.cs` is a shortcut for `dotnet run path.cs` provided that `path.cs` is a valid [target path](#target-path) (`dotnet -` is currently not supported).
+`dotnet path.cs` is a shortcut for `dotnet run --file path.cs` provided that `path.cs` is a valid [target path](#target-path) (`dotnet -` is currently not supported).
 
 ### Other commands
 
 Commands `dotnet restore file.cs` and `dotnet build file.cs` are needed for IDE support and hence work for file-based programs.
 
-Command `dotnet publish file.cs` is also supported for file-based programs.
+Commands `dotnet publish file.cs` and `dotnet pack file.cs` are also supported for file-based programs.
 Note that file-based apps have implicitly set `PublishAot=true`, so publishing uses Native AOT (and building reports AOT warnings).
 To opt out, use `#:property PublishAot=false` directive in your `.cs` file.
 
 Command `dotnet clean file.cs` can be used to clean build artifacts of the file-based program.
+
+Commands `dotnet package add PackageName --file app.cs` and `dotnet package remove PackageName --file app.cs`
+can be used to manipulate `#:package` directives in the C# files, similarly to what the commands do for project-based apps.
 
 ## Entry points
 
@@ -125,8 +138,8 @@ Similarly, implicit build files like `Directory.Build.props` or `Directory.Packa
 > [!CAUTION]
 > Multi-file support is postponed for .NET 11.
 > In .NET 10, only the single file passed as the command-line argument to `dotnet run` is part of the compilation.
-> Specifically, the virtual project has properties `EnableDefaultCompileItems=false` and `EnableDefaultEmbeddedResourceItems=false`
-> (which can be customized via `#:property` directives), and a `Compile` item for the entry point file.
+> Specifically, the virtual project has property `EnableDefaultCompileItems=false`
+> (which can be customized via `#:property` directive), and a `Compile` item for the entry point file.
 > During [conversion](#grow-up), any `Content`, `None`, `Compile`, and `EmbeddedResource` items that do not have metadata `ExcludeFromFileBasedAppConversion=true`
 > and that are files inside the entry point file's directory tree are copied to the converted directory.
 
@@ -184,9 +197,12 @@ The subdirectory is created by the SDK CLI with permissions restricting access t
 Note that it is possible for multiple users to run the same file-based program, however each user's run uses different build artifacts since the base directory is unique per user.
 Apart from keeping the source directory clean, such artifact isolation also avoids clashes of build outputs that are not project-scoped, like `project.assets.json`, in the case of multiple entry-point files.
 
-Artifacts are cleaned periodically by a background task that is started by `dotnet run` and
-removes current user's `dotnet run` build outputs that haven't been used in some time.
+Artifacts are cleaned periodically (every 2 days) by a background task that is started by `dotnet run` and
+removes current user's `dotnet run` build outputs that haven't been used in 30 days.
 They are not cleaned immediately because they can be re-used on subsequent runs for better performance.
+The automatic cleanup can be disabled by environment variable `DOTNET_CLI_DISABLE_FILE_BASED_APP_ARTIFACTS_AUTOMATIC_CLEANUP=true`,
+but other parameters of the automatic cleanup are currently not configurable.
+The same cleanup can be performed manually via command `dotnet clean-file-based-app-artifacts`.
 
 ## Directives for project metadata
 
@@ -303,7 +319,7 @@ would need to search for a file-based program in the current directory instead o
 
 We could add a universal option that works with both project-based and file-based programs,
 like `dotnet run --directory ./dir/`. For inspiration, `dotnet test` also has a `--directory` option.
-Furthermore, users might expect there to be a `--file` option, as well. Both could be unified as `--path`.
+We already have a `--file` option. Both could be unified as `--path`.
 
 If we want to also support [multi-entry-point scenarios](#multiple-entry-points),
 we might need an option like `dotnet run --entry ./dir/name` which would work for both `./dir/name.cs` and `./dir/name/name.csproj`.
@@ -317,7 +333,7 @@ When disabled, [grow up](#grow-up) would generate projects in subdirectories
 similarly to [multi-entry-point scenarios](#multiple-entry-points) to preserve the program's behavior.
 
 Including `.cs` files from nested folders which contain `.csproj`s might be unexpected,
-hence we could consider reporting an error in such situations.
+hence we could consider excluding items from nested project folders.
 
 Similarly, we could report an error if there are many nested directories and files,
 so for example, if someone puts a C# file into `C:/sources` and executes `dotnet run C:/sources/file.cs` or opens that in the IDE,
@@ -360,7 +376,7 @@ so `dotnet file.cs` instead of `dotnet run file.cs` should be used in shebangs:
 
 ### Other possible commands
 
-We can consider supporting other commands like `dotnet pack`, `dotnet watch`,
+We can consider supporting other commands like `dotnet watch`,
 however the primary scenario is `dotnet run` and we might never support additional commands.
 
 All commands supporting file-based programs should have a way to receive the target path similarly to `dotnet run`,
@@ -373,8 +389,7 @@ We could also add `dotnet compile` command that would be the equivalent of `dotn
 `dotnet clean` could be extended to support cleaning all file-based app outputs,
 e.g., `dotnet clean --all-file-based-apps`.
 
-Adding references via `dotnet package add`/`dotnet reference add` could be supported for file-based programs as well,
-i.e., the command would add a `#:package`/`#:project` directive to the top of a `.cs` file.
+More NuGet commands (like `dotnet nuget why` or `dotnet package list`) could be supported for file-based programs as well.
 
 ### Explicit importing
 

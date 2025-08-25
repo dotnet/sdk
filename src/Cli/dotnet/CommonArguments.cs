@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Versioning;
 
@@ -13,7 +14,6 @@ namespace Microsoft.DotNet.Cli
         public static DynamicArgument<PackageIdentityWithRange?> OptionalPackageIdentityArgument() =>
             new("packageId")
             {
-                HelpName = "PACKAGE_ID",
                 Description = CliStrings.PackageIdentityArgumentDescription,
                 CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value),
                 Arity = ArgumentArity.ZeroOrOne,
@@ -22,7 +22,6 @@ namespace Microsoft.DotNet.Cli
         public static DynamicArgument<PackageIdentityWithRange> RequiredPackageIdentityArgument() =>
             new("packageId")
             {
-                HelpName = "PACKAGE_ID",
                 Description = CliStrings.PackageIdentityArgumentDescription,
                 CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value)!.Value,
                 Arity = ArgumentArity.ExactlyOne,
@@ -59,6 +58,7 @@ namespace Microsoft.DotNet.Cli
 
     public readonly record struct PackageIdentityWithRange(string Id, VersionRange? VersionRange)
     {
+        [MemberNotNullWhen(returnValue: true, nameof(VersionRange))]
         public bool HasVersion => VersionRange != null;
     }
 }

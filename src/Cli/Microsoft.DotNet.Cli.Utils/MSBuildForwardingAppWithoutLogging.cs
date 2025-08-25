@@ -5,11 +5,10 @@
 
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Cli;
 
 namespace Microsoft.DotNet.Cli.Utils;
 
-internal class MSBuildForwardingAppWithoutLogging
+internal sealed class MSBuildForwardingAppWithoutLogging
 {
     private static readonly bool AlwaysExecuteMSBuildOutOfProc = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_RUN_MSBUILD_OUTOFPROC");
     private static readonly bool UseMSBuildServer = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_USE_MSBUILD_SERVER", false);
@@ -22,6 +21,8 @@ internal class MSBuildForwardingAppWithoutLogging
     private const string MSBuildExeName = "MSBuild.dll";
 
     private const string SdksDirectoryName = "Sdks";
+
+    internal const VerbosityOptions DefaultVerbosity = VerbosityOptions.m;
 
     // Null if we're running MSBuild in-proc.
     private ForwardingAppImplementation? _forwardingApp;
@@ -39,9 +40,9 @@ internal class MSBuildForwardingAppWithoutLogging
     // True if, given current state of the class, MSBuild would be executed in its own process.
     public bool ExecuteMSBuildOutOfProc => _forwardingApp != null;
 
-    private readonly Dictionary<string, string> _msbuildRequiredEnvironmentVariables = GetMSBuildRequiredEnvironmentVariables();
+    private readonly Dictionary<string, string?> _msbuildRequiredEnvironmentVariables = GetMSBuildRequiredEnvironmentVariables();
 
-    private readonly List<string> _msbuildRequiredParameters = [ "-maxcpucount", "--verbosity:m" ];
+    private readonly List<string> _msbuildRequiredParameters = ["-maxcpucount", $"--verbosity:{DefaultVerbosity}"];
 
     public MSBuildForwardingAppWithoutLogging(MSBuildArgs msbuildArgs, string? msbuildPath = null, bool includeLogo = false, bool isRestoring = true)
     {
@@ -93,7 +94,7 @@ internal class MSBuildForwardingAppWithoutLogging
 
     public string[] GetAllArguments()
     {
-        return [.. _msbuildRequiredParameters, ..EmitMSBuildArgs(_msbuildArgs) ];
+        return [.. _msbuildRequiredParameters, .. EmitMSBuildArgs(_msbuildArgs)];
     }
 
     private string[] EmitMSBuildArgs(MSBuildArgs msbuildArgs) => [
@@ -112,7 +113,7 @@ internal class MSBuildForwardingAppWithoutLogging
             : $"--{label}:{property.Key}={property.Value}";
     }
 
-    public void EnvironmentVariable(string name, string value)
+    public void EnvironmentVariable(string name, string? value)
     {
         if (_forwardingApp != null)
         {
@@ -153,7 +154,7 @@ internal class MSBuildForwardingAppWithoutLogging
         Dictionary<string, string?> savedEnvironmentVariables = [];
         try
         {
-            foreach (KeyValuePair<string, string> kvp in _msbuildRequiredEnvironmentVariables)
+            foreach (KeyValuePair<string, string?> kvp in _msbuildRequiredEnvironmentVariables)
             {
                 savedEnvironmentVariables[kvp.Key] = Environment.GetEnvironmentVariable(kvp.Key);
                 Environment.SetEnvironmentVariable(kvp.Key, kvp.Value);
@@ -218,7 +219,7 @@ internal class MSBuildForwardingAppWithoutLogging
         return new Muxer().MuxerPath;
     }
 
-    internal static Dictionary<string, string> GetMSBuildRequiredEnvironmentVariables()
+    internal static Dictionary<string, string?> GetMSBuildRequiredEnvironmentVariables()
     {
         return new()
         {

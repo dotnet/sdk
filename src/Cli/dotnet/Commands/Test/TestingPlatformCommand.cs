@@ -6,12 +6,13 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.Cli.Help;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal partial class TestingPlatformCommand : Command, ICustomHelp
+internal partial class TestingPlatformCommand : System.CommandLine.Command, ICustomHelp
 {
     private MSBuildHandler _msBuildHandler;
     private TerminalTestReporter _output;
@@ -45,7 +46,8 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
     private int RunInternal(ParseResult parseResult)
     {
         ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult);
-
+        ValidationUtility.ValidateSolutionOrProjectOrDirectoryOrModulesArePassedCorrectly(parseResult);
+        
         PrepareEnvironment(parseResult, out TestOptions testOptions, out int degreeOfParallelism);
 
         InitializeOutput(degreeOfParallelism, parseResult, testOptions.IsHelp);
@@ -80,7 +82,9 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
         }
 
         _actionQueue.EnqueueCompleted();
-        return _actionQueue.WaitAllActions();
+        var exitCode = _actionQueue.WaitAllActions();
+        // Don't inline exitCode variable. We want to always call WaitAllActions first.
+        return _eventHandlers.HasHandshakeFailure ? ExitCode.GenericFailure : exitCode;
     }
 
     private void PrepareEnvironment(ParseResult parseResult, out TestOptions testOptions, out int degreeOfParallelism)
@@ -92,7 +96,7 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
         bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
 
         var arguments = parseResult.GetArguments();
-        testOptions = GetTestOptions(parseResult, filterModeEnabled, isHelp: ContainsHelpOption(arguments));
+        testOptions = GetTestOptions(filterModeEnabled, isHelp: ContainsHelpOption(arguments));
 
         _isDiscovery = ContainsListTestsOption(arguments);
 
@@ -180,10 +184,8 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
         return degreeOfParallelism;
     }
 
-    private static TestOptions GetTestOptions(ParseResult parseResult, bool hasFilterMode, bool isHelp) =>
-        new(parseResult.GetValue(CommonOptions.ArchitectureOption),
-            hasFilterMode,
-            isHelp);
+    private static TestOptions GetTestOptions(bool hasFilterMode, bool isHelp) =>
+        new(hasFilterMode, isHelp);
 
     private static bool ContainsHelpOption(IEnumerable<string> args)
     {

@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -539,6 +538,40 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     }
 
     /// <summary>
+    /// Scripts in repo root should not include default items.
+    /// Part of <see href="https://github.com/dotnet/sdk/issues/49826"/>.
+    /// </summary>
+    [Theory, CombinatorialData]
+    public void DefaultItems_AlongsideProj([CombinatorialValues("sln", "slnx", "csproj", "vbproj", "shproj", "proj")] string ext)
+    {
+        bool considered = ext is "sln" or "slnx" or "csproj";
+
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine();
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "my.json"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, $"repo.{ext}"), "");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program", "Program.cs", "Resources.resx", "Util.cs", "my.json", $"repo.{ext}"]);
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(considered
+                ? ["Program.csproj", "Program.cs"]
+                : ["my.json", "Program.csproj", "Program.cs", "Resources.resx"]);
+    }
+
+    /// <summary>
     /// When processing fails due to invalid directives, no conversion should be performed
     /// (e.g., the target directory should not be created).
     /// </summary>
@@ -642,32 +675,66 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 #!/program
                 #:sdk Microsoft.NET.Sdk
                 #:sdk Aspire.Hosting.Sdk@9.1.0
-                #:property TargetFramework=net11.0
+                #:property TargetFramework=net472
                 #:package System.CommandLine@2.0.0-beta4.22272.1
                 #:property LangVersion=preview
                 Console.WriteLine();
                 """,
-            expectedProject: $"""
+            expectedProject: """
                 <Project Sdk="Microsoft.NET.Sdk">
 
                   <Sdk Name="Aspire.Hosting.Sdk" Version="9.1.0" />
 
                   <PropertyGroup>
                     <OutputType>Exe</OutputType>
-                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
-                    <TargetFramework>net11.0</TargetFramework>
+                    <TargetFramework>net472</TargetFramework>
                     <LangVersion>preview</LangVersion>
                   </PropertyGroup>
 
                   <ItemGroup>
                     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
                   </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: """
+                Console.WriteLine();
+                """);
+    }
+
+    /// <summary>
+    /// There should be only one <c>PropertyGroup</c> element when the default properties are overridden.
+    /// </summary>
+    [Fact]
+    public void Directives_AllDefaultOverridden()
+    {
+        VerifyConversion(
+            inputCSharp: """
+                #!/program
+                #:sdk Microsoft.NET.Web.Sdk
+                #:property OutputType=Exe
+                #:property TargetFramework=net472
+                #:property Nullable=disable
+                #:property PublishAot=false
+                #:property Custom=1
+                #:property ImplicitUsings=disable
+                Console.WriteLine();
+                """,
+            expectedProject: """
+                <Project Sdk="Microsoft.NET.Web.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>net472</TargetFramework>
+                    <Nullable>disable</Nullable>
+                    <PublishAot>false</PublishAot>
+                    <Custom>1</Custom>
+                    <ImplicitUsings>disable</ImplicitUsings>
+                  </PropertyGroup>
 
                 </Project>
 
@@ -694,9 +761,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <MyProp>MyValue</MyProp>
                   </PropertyGroup>
 
@@ -772,9 +836,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <Prop1>One=a/b</Prop1>
                     <Prop2>Two/a=b</Prop2>
                   </PropertyGroup>
@@ -884,9 +945,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <Prop>&lt;test&quot;&gt;</Prop>
                   </PropertyGroup>
 
@@ -921,9 +979,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <Name>Value</Name>
                     <NugetPackageDescription>&quot;My package with spaces&quot;</NugetPackageDescription>
                   </PropertyGroup>
@@ -935,6 +990,53 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                  #  !  /test
                   #!  /program   x   
                  # :property Name=Value
+                """);
+    }
+
+    [Fact]
+    public void Directives_BlankLines()
+    {
+        var expectedProject = $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <PublishAot>true</PublishAot>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="A" Version="B" />
+              </ItemGroup>
+
+            </Project>
+
+            """;
+
+        VerifyConversion(
+            inputCSharp: """
+                #:package A@B
+
+                Console.WriteLine();
+                """,
+            expectedProject: expectedProject,
+            expectedCSharp: """
+
+                Console.WriteLine();
+                """);
+
+        VerifyConversion(
+            inputCSharp: """
+
+                #:package A@B
+                Console.WriteLine();
+                """,
+            expectedProject: expectedProject,
+            expectedCSharp: """
+
+                Console.WriteLine();
                 """);
     }
 
@@ -968,9 +1070,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <Prop1>1</Prop1>
                     <Prop2>2</Prop2>
                   </PropertyGroup>
@@ -1017,9 +1116,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <Prop1>1</Prop1>
                     <Prop2>2</Prop2>
                   </PropertyGroup>
@@ -1063,9 +1159,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <Prop1>1</Prop1>
                     <Prop2>2</Prop2>
                   </PropertyGroup>
@@ -1156,10 +1249,37 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             ]);
     }
 
+    [Fact] // https://github.com/dotnet/sdk/issues/49797
+    public void Directives_VersionedSdkFirst()
+    {
+        VerifyConversion(
+            inputCSharp: """
+                #:sdk Microsoft.NET.Sdk@9.0.0
+                Console.WriteLine();
+                """,
+            expectedProject: $"""
+                <Project Sdk="Microsoft.NET.Sdk/9.0.0">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                  </PropertyGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: """
+                Console.WriteLine();
+                """);
+    }
+
     private static void Convert(string inputCSharp, out string actualProject, out string? actualCSharp, bool force, string? filePath)
     {
         var sourceFile = new SourceFile(filePath ?? "/app/Program.cs", SourceText.From(inputCSharp, Encoding.UTF8));
-        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !force, errors: null);
+        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !force, DiagnosticBag.ThrowOnFirst());
         var projectWriter = new StringWriter();
         VirtualProjectBuildingCommand.WriteProjectFile(projectWriter, directives, isVirtualProject: false);
         actualProject = projectWriter.ToString();
@@ -1185,8 +1305,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     private static void VerifyDirectiveConversionErrors(string inputCSharp, IEnumerable<string> expectedErrors)
     {
         var sourceFile = new SourceFile("/app/Program.cs", SourceText.From(inputCSharp, Encoding.UTF8));
-        var errors = ImmutableArray.CreateBuilder<SimpleDiagnostic>();
-        VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: true, errors: errors);
-        errors.Select(e => e.Message).Should().BeEquivalentTo(expectedErrors);
+        VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: true, DiagnosticBag.Collect(out var diagnostics));
+        diagnostics.Select(e => e.Message).Should().BeEquivalentTo(expectedErrors);
     }
 }

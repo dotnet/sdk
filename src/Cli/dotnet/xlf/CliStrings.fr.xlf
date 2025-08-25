@@ -451,6 +451,11 @@ setx PATH "%PATH%;{0}"
         <target state="translated">fichier</target>
         <note />
       </trans-unit>
+      <trans-unit id="FileArgumentDescription">
+        <source>The file-based app to operate on.</source>
+        <target state="translated">Application basée sur des fichiers sur laquelle effectuer des opérations.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FormatVersionIsHigher">
         <source>Format version is higher than supported. This tool may not be supported in this SDK version. Update your SDK.</source>
         <target state="translated">Version de format supérieure à la version prise en charge. Cet outil risque de ne pas être pris en charge dans cette version de SDK. Mettez à jour votre SDK.</target>
@@ -739,6 +744,11 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Projet à projet</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackCmd_OneNuspecAllowed">
+        <source>Only one .nuspec file can be packed at a time</source>
+        <target state="translated">Vous ne pouvez empaqueter qu’un seul fichier .nuspec à la fois</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Package">
         <source>Package</source>
         <target state="translated">Package</target>
@@ -844,6 +854,16 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="ProjectNotFoundInTheSolution">
         <source>Project `{0}` could not be found in the solution.</source>
         <target state="translated">Projet '{0}' introuvable dans la solution.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectOrFileArgumentDescription">
+        <source>The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file.</source>
+        <target state="translated">Application basée sur des fichiers C# ou fichier projet sur laquelle effectuer des opérations. Si aucun fichier n’est spécifié, la commande recherche un fichier projet dans le répertoire actuel.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectOrFileArgumentName">
+        <source>PROJECT | FILE</source>
+        <target state="translated">FICHIER | PROJET</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectReference">

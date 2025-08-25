@@ -68,8 +68,10 @@ internal static class WorkloadCommandParser
         void WriteUpdateModeAndAnyError(string indent = "")
         {
             var useWorkloadSets = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(workloadInfoHelper._currentSdkFeatureBand, workloadInfoHelper.UserLocalPath), "default.json")).ShouldUseWorkloadSets();
-            var workloadSetsString = useWorkloadSets ? "workload sets" : "loose manifests";
-            reporter.WriteLine(indent + string.Format(CliCommandStrings.WorkloadManifestInstallationConfiguration, workloadSetsString));
+            var configurationMessage = useWorkloadSets
+                ? CliCommandStrings.WorkloadManifestInstallationConfigurationWorkloadSets
+                : CliCommandStrings.WorkloadManifestInstallationConfigurationLooseManifests;
+            reporter.WriteLine(indent + configurationMessage);
 
             if (!versionInfo.IsInstalled)
             {
@@ -159,7 +161,7 @@ internal static class WorkloadCommandParser
 
         command.Validators.Add(commandResult =>
         {
-            if (commandResult.GetResult(InfoOption) is null && commandResult.GetResult(VersionOption) is null && !commandResult.Children.Any(child => child is System.CommandLine.Parsing.CommandResult))
+            if (commandResult.HasOption(InfoOption) && commandResult.HasOption(VersionOption) && !commandResult.Children.Any(child => child is System.CommandLine.Parsing.CommandResult))
             {
                 commandResult.AddError(CliStrings.RequiredCommandNotPassed);
             }

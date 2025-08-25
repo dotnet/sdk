@@ -129,7 +129,7 @@ public class Program
         ParseResult parseResult;
         using (new PerformanceMeasurement(performanceData, "Parse Time"))
         {
-            parseResult = Parser.Instance.Parse(args);
+            parseResult = Parser.Parse(args);
 
             // Avoid create temp directory with root permission and later prevent access in non sudo
             // This method need to be run very early before temp folder get created
@@ -230,7 +230,18 @@ public class Program
         }
         PerformanceLogEventSource.Log.TelemetrySaveIfEnabledStart();
         performanceData.Add("Startup Time", startupTime.TotalMilliseconds);
-        TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, performanceData));
+
+        string globalJsonState = string.Empty;
+        if (TelemetryClient.Enabled)
+        {
+            // Get the global.json state to report in telemetry along with this command invocation.
+            // We don't care about the actual SDK resolution, just the global.json information,
+            // so just pass empty string as executable directory for resolution.
+            NativeWrapper.SdkResolutionResult result = NativeWrapper.NETCoreSdkResolverNativeWrapper.ResolveSdk(string.Empty, Environment.CurrentDirectory);
+            globalJsonState = result.GlobalJsonState;
+        }
+
+        TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, performanceData, globalJsonState));
         PerformanceLogEventSource.Log.TelemetrySaveIfEnabledStop();
 
         int exitCode;
@@ -285,9 +296,8 @@ public class Program
         static int? TryRunFileBasedApp(ParseResult parseResult)
         {
             // If we didn't match any built-in commands, and a C# file path is the first argument,
-            // parse as `dotnet run file.cs ..rest_of_args` instead.
-            if (parseResult.CommandResult.Command is RootCommand
-                && parseResult.GetValue(Parser.DotnetSubCommand) is { } unmatchedCommandOrFile
+            // parse as `dotnet run --file file.cs ..rest_of_args` instead.
+            if (parseResult.GetValue(Parser.DotnetSubCommand) is { } unmatchedCommandOrFile
                 && VirtualProjectBuildingCommand.IsValidEntryPointPath(unmatchedCommandOrFile))
             {
                 List<string> otherTokens = new(parseResult.Tokens.Count - 1);
@@ -298,7 +308,8 @@ public class Program
                         otherTokens.Add(token.Value);
                     }
                 }
-                parseResult = Parser.Instance.Parse(["run", unmatchedCommandOrFile, .. otherTokens]);
+
+                parseResult = Parser.Parse(["run", "--file", unmatchedCommandOrFile, .. otherTokens]);
 
                 InvokeBuiltInCommand(parseResult, out var exitCode);
                 return exitCode;
@@ -315,7 +326,7 @@ public class Program
 
             try
             {
-                exitCode = parseResult.Invoke();
+                exitCode = Parser.Invoke(parseResult);
                 exitCode = AdjustExitCode(parseResult, exitCode);
             }
             catch (Exception exception)
@@ -378,7 +389,7 @@ public class Program
         var environmentPath = EnvironmentPathFactory.CreateEnvironmentPath(isDotnetBeingInvokedFromNativeInstaller, environmentProvider);
         _ = new DotNetCommandFactory(alwaysRunOutOfProc: true);
         var aspnetCertificateGenerator = new AspNetCoreCertificateGenerator();
-        var reporter = Reporter.Output;
+        var reporter = Reporter.Error;
         var dotnetConfigurer = new DotnetFirstTimeUseConfigurer(
             firstTimeUseNoticeSentinel,
             aspNetCertificateSentinel,

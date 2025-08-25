@@ -147,7 +147,7 @@ internal static class SolutionAndProjectUtility
         return string.IsNullOrEmpty(fileDirectory) ? Directory.GetCurrentDirectory() : fileDirectory;
     }
 
-    public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties(string projectFilePath, ProjectCollection projectCollection, bool noLaunchProfile)
+    public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties(string projectFilePath, ProjectCollection projectCollection, BuildOptions buildOptions)
     {
         var projects = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
         ProjectInstance projectInstance = EvaluateProject(projectCollection, projectFilePath, null);
@@ -159,7 +159,7 @@ internal static class SolutionAndProjectUtility
 
         if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
         {
-            if (GetModuleFromProject(projectInstance, projectCollection.Loggers, noLaunchProfile) is { } module)
+            if (GetModuleFromProject(projectInstance, projectCollection.Loggers, buildOptions) is { } module)
             {
                 projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
             }
@@ -187,7 +187,7 @@ internal static class SolutionAndProjectUtility
                     projectInstance = EvaluateProject(projectCollection, projectFilePath, framework);
                     Logger.LogTrace(() => $"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                    if (GetModuleFromProject(projectInstance, projectCollection.Loggers, noLaunchProfile) is { } module)
+                    if (GetModuleFromProject(projectInstance, projectCollection.Loggers, buildOptions) is { } module)
                     {
                         projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
                     }
@@ -201,7 +201,7 @@ internal static class SolutionAndProjectUtility
                     projectInstance = EvaluateProject(projectCollection, projectFilePath, framework);
                     Logger.LogTrace(() => $"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                    if (GetModuleFromProject(projectInstance, projectCollection.Loggers, noLaunchProfile) is { } module)
+                    if (GetModuleFromProject(projectInstance, projectCollection.Loggers, buildOptions) is { } module)
                     {
                         innerModules ??= new List<TestModule>();
                         innerModules.Add(module);
@@ -218,7 +218,7 @@ internal static class SolutionAndProjectUtility
         return projects;
     }
 
-    private static TestModule? GetModuleFromProject(ProjectInstance project, ICollection<ILogger>? loggers, bool noLaunchProfile)
+    private static TestModule? GetModuleFromProject(ProjectInstance project, ICollection<ILogger>? loggers, BuildOptions buildOptions)
     {
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestProject), out bool isTestProject);
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
@@ -229,28 +229,52 @@ internal static class SolutionAndProjectUtility
         }
 
         string targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
-        RunProperties runProperties = GetRunProperties(project, loggers);
-
-        // dotnet run throws the same if RunCommand is null or empty.
-        // In dotnet test, we are additionally checking that RunCommand is not dll.
-        // In any "default" scenario, RunCommand is never dll.
-        // If we found it to be dll, that is user explicitly setting RunCommand incorrectly.
-        if (string.IsNullOrEmpty(runProperties.RunCommand) || runProperties.RunCommand.HasExtension(CliConstants.DLLExtension))
-        {
-            throw new GracefulException(
-                string.Format(
-                    CliCommandStrings.RunCommandExceptionUnableToRun,
-                    "dotnet test",
-                    "OutputType",
-                    project.GetPropertyValue("OutputType")));
-        }
-
         string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
 
-        // TODO: Support --launch-profile and pass it here.
-        var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath)!, project.GetPropertyValue(ProjectProperties.AppDesignerFolder), noLaunchProfile, profileName: null);
 
-        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, isTestProject, launchSettings, project.GetPropertyValue(ProjectProperties.TargetPath));
+        // Only get run properties if IsTestingPlatformApplication is true
+        RunProperties runProperties;
+        if (isTestingPlatformApplication)
+        {
+            runProperties = GetRunProperties(project, loggers);
+
+            // dotnet run throws the same if RunCommand is null or empty.
+            // In dotnet test, we are additionally checking that RunCommand is not dll.
+            // In any "default" scenario, RunCommand is never dll.
+            // If we found it to be dll, that is user explicitly setting RunCommand incorrectly.
+            if (string.IsNullOrEmpty(runProperties.Command) || runProperties.Command.HasExtension(CliConstants.DLLExtension))
+            {
+                throw new GracefulException(
+                    string.Format(
+                        CliCommandStrings.RunCommandExceptionUnableToRun,
+                        projectFullPath,
+                        Product.TargetFrameworkVersion,
+                        project.GetPropertyValue("OutputType")));
+            }
+        }
+        else
+        {
+            // For VSTest test projects, create minimal RunProperties
+            runProperties = new RunProperties(
+                project.GetPropertyValue(ProjectProperties.TargetPath),
+                null,
+                null);
+        }
+
+        // TODO: Support --launch-profile and pass it here.
+        var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath)!, Path.GetFileNameWithoutExtension(projectFullPath), project.GetPropertyValue(ProjectProperties.AppDesignerFolder), buildOptions, profileName: null);
+
+        var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootArchVariableName(
+            runProperties.RuntimeIdentifier,
+            runProperties.DefaultAppHostRuntimeIdentifier);
+
+        if (rootVariableName is not null && Environment.GetEnvironmentVariable(rootVariableName) != null)
+        {
+            // If already set, we do not override it.
+            rootVariableName = null;
+        }
+
+        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, isTestProject, launchSettings, project.GetPropertyValue(ProjectProperties.TargetPath), rootVariableName);
 
         static RunProperties GetRunProperties(ProjectInstance project, ICollection<ILogger>? loggers)
         {
@@ -266,24 +290,46 @@ internal static class SolutionAndProjectUtility
                 }
             }
 
-            return RunProperties.FromProjectAndApplicationArguments(project, []);
+            return RunProperties.FromProject(project);
         }
     }
 
-    private static ProjectLaunchSettingsModel? TryGetLaunchProfileSettings(string projectDirectory, string appDesignerFolder, bool noLaunchProfile, string? profileName)
+    private static ProjectLaunchSettingsModel? TryGetLaunchProfileSettings(string projectDirectory, string projectNameWithoutExtension, string appDesignerFolder, BuildOptions buildOptions, string? profileName)
     {
-        if (noLaunchProfile)
+        if (buildOptions.NoLaunchProfile)
         {
             return null;
         }
 
-        var launchSettingsPath = Path.Combine(projectDirectory, appDesignerFolder, "launchSettings.json");
-        if (!File.Exists(launchSettingsPath))
+        var launchSettingsPath = CommonRunHelpers.GetPropertiesLaunchSettingsPath(projectDirectory, appDesignerFolder);
+        bool hasLaunchSettings = File.Exists(launchSettingsPath);
+
+        var runJsonPath = CommonRunHelpers.GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
+        bool hasRunJson = File.Exists(runJsonPath);
+
+        if (hasLaunchSettings)
+        {
+            if (hasRunJson)
+            {
+                Reporter.Output.WriteLine(string.Format(CliCommandStrings.RunCommandWarningRunJsonNotUsed, runJsonPath, launchSettingsPath).Yellow());
+            }
+        }
+        else if (hasRunJson)
+        {
+            launchSettingsPath = runJsonPath;
+        }
+        else
         {
             return null;
         }
 
-        var result = LaunchSettingsManager.TryApplyLaunchSettings(File.ReadAllText(launchSettingsPath), profileName);
+        // If buildOptions.Verbosity is null, we still want to print the message.
+        if (buildOptions.Verbosity != VerbosityOptions.quiet)
+        {
+            Reporter.Output.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
+        }
+
+        var result = LaunchSettingsManager.TryApplyLaunchSettings(launchSettingsPath, profileName);
         if (!result.Success)
         {
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, result.FailureReason).Bold().Red());

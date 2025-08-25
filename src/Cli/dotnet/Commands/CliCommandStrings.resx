@@ -274,6 +274,35 @@ Paths searched: '{1}', '{2}'.</value>
   <data name="CleanRuntimeOptionDescription" xml:space="preserve">
     <value>The target runtime to clean for.</value>
   </data>
+  <data name="CleanFileBasedAppArtifactsCommandDescription" xml:space="preserve">
+    <value>Removes artifacts created for file-based apps</value>
+  </data>
+  <data name="CleanFileBasedAppArtifactsDryRun" xml:space="preserve">
+    <value>Determines changes without actually modifying the file system</value>
+  </data>
+  <data name="CleanFileBasedAppArtifactsDays" xml:space="preserve">
+    <value>How many days an artifact folder needs to be unused in order to be removed</value>
+  </data>
+  <data name="CleanFileBasedAppArtifactsErrorRemovingFolder" xml:space="preserve">
+    <value>Error removing folder '{0}': {1}</value>
+    <comment>{0} is folder path. {1} is inner error message.</comment>
+  </data>
+  <data name="CleanFileBasedAppArtifactsWouldRemoveFolders" xml:space="preserve">
+    <value>Would remove folders: {0}</value>
+    <comment>{0} is count.</comment>
+  </data>
+  <data name="CleanFileBasedAppArtifactsTotalFoldersRemoved" xml:space="preserve">
+    <value>Total folders removed: {0}</value>
+    <comment>{0} is count.</comment>
+  </data>
+  <data name="CleanFileBasedAppArtifactsDirectoryNotFound" xml:space="preserve">
+    <value>Warning: Artifacts directory does not exist: {0}</value>
+    <comment>{0} is directory path.</comment>
+  </data>
+  <data name="CleanFileBasedAppArtifactsScanning" xml:space="preserve">
+    <value>Scanning for folders to remove in: {0}</value>
+    <comment>{0} is directory path.</comment>
+  </data>
   <data name="CmdBlameCrashCollectAlwaysDescription" xml:space="preserve">
     <value>Enables collecting crash dump on expected as well as unexpected testhost exit.</value>
   </data>
@@ -536,6 +565,19 @@ This is equivalent to deleting project.assets.json.</value>
     <value>The directory where the test results will be placed.
 The specified directory will be created if it does not exist.</value>
   </data>
+  <data name="CmdConfigFileDescription" xml:space="preserve">
+    <value>Specifies a testconfig.json file.</value>
+  </data>
+  <data name="CmdConfigFilePath" xml:space="preserve">
+    <value>CONFIG_FILE</value>
+  </data>
+  <data name="CmdDiagnosticOutputDirectoryDescription" xml:space="preserve">
+    <value>Output directory of the diagnostic logging.
+If not specified the file will be generated inside the default 'TestResults' directory.</value>
+  </data>
+  <data name="CmdDiagnosticOutputDirectoryPath" xml:space="preserve">
+    <value>DIAGNOSTIC_DIR</value>
+  </data>
   <data name="CmdRootPathName" xml:space="preserve">
     <value>ROOT_PATH</value>
   </data>
@@ -663,13 +705,20 @@ dotnet.config is a name don't translate.</comment>
     <value>Do not use arguments specified in launch profile to run the application.</value>
   </data>
   <data name="CommandOptionNoLaunchProfileDescription" xml:space="preserve">
-    <value>Do not attempt to use launchSettings.json to configure the application.</value>
+    <value>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</value>
+    <comment>{Locked="launchSettings.json"}{Locked=".run.json"}</comment>
   </data>
   <data name="CommandOptionProjectDescription" xml:space="preserve">
     <value>The path to the project file to run (defaults to the current directory if there is only one project).</value>
   </data>
   <data name="CommandOptionProjectHelpName" xml:space="preserve">
     <value>PROJECT_PATH</value>
+  </data>
+  <data name="CommandOptionFileDescription" xml:space="preserve">
+    <value>The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).</value>
+  </data>
+  <data name="CommandOptionFileHelpName" xml:space="preserve">
+    <value>FILE_PATH</value>
   </data>
   <data name="Commands" xml:space="preserve">
     <value>SDK commands</value>
@@ -731,8 +780,8 @@ dotnet.config is a name don't translate.</comment>
     <value>Description</value>
   </data>
   <data name="DeserializationExceptionMessage" xml:space="preserve">
-    <value>An error was encountered when reading launchSettings.json.
-{0}</value>
+    <value>An error was encountered when reading '{0}': {1}</value>
+    <comment>{0} is file path. {1} is exception message.</comment>
   </data>
   <data name="DetailDescription" xml:space="preserve">
     <value>Show detail result of the query.</value>
@@ -1165,6 +1214,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   </data>
   <data name="NoWorkloadsToRepair" xml:space="preserve">
     <value>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</value>
+    <comment>{Locked="dotnet workload search"}</comment>
   </data>
   <data name="NoWorkloadsToUpdate" xml:space="preserve">
     <value>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</value>
@@ -1250,6 +1300,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   </data>
   <data name="PackageRemoveSpecifyExactlyOnePackageReference" xml:space="preserve">
     <value>Specify only one package reference to remove.</value>
+  </data>
+  <data name="DirectivesRemoved" xml:space="preserve">
+    <value>Removed '{0}' directives ({1}) for '{2}' from: {3}</value>
+    <comment>{0} is a directive kind (like '#:package'). {1} is number of removed directives.
+    {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</comment>
   </data>
   <data name="PackagesCommandNameCollisionConclusion" xml:space="preserve">
     <value>Command names conflict. Command names are case insensitive.
@@ -1547,7 +1602,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   </data>
   <data name="PropertyDirectiveMissingParts" xml:space="preserve">
     <value>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</value>
-    <comment>{0} is the file path and line number.</comment>
+    <comment>{0} is the file path and line number.{Locked="#:property"}</comment>
+  </data>
+  <data name="StaticGraphRestoreNotSupported" xml:space="preserve">
+    <value>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</value>
+    <comment>{0} is the file path and line number.{Locked="#:property"}</comment>
   </data>
   <data name="InvalidDirectiveName" xml:space="preserve">
     <value>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</value>
@@ -1561,17 +1620,21 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <value>Duplicate directives are not supported: {0} at {1}</value>
     <comment>{0} is the directive type and name. {1} is the file path and line number.</comment>
   </data>
-  <data name="InvalidOptionCombination" xml:space="preserve">
-    <value>Cannot combine option '{0}' and '{1}'.</value>
-    <comment>{0} and {1} are option names like '--no-build'.</comment>
-  </data>
   <data name="InvalidOptionForStdin" xml:space="preserve">
     <value>Cannot specify option '{0}' when also using '-' to read the file from standard input.</value>
     <comment>{0} is an option name like '--no-build'.</comment>
   </data>
+  <data name="InvalidOptionForFileBasedApp" xml:space="preserve">
+    <value>Cannot specify option '{0}' when operating on a file-based app.</value>
+    <comment>{0} is an option name like '--source'.</comment>
+  </data>
   <data name="NoBinaryLogBecauseUpToDate" xml:space="preserve">
-    <value>Warning: Binary log option was specified but build will be skipped because output is up to date, specify '--no-cache' to force build.</value>
+    <value>Warning: Binary log option was specified but build will be skipped because output is up to date. Specify '--no-cache' to force build.</value>
     <comment>{Locked="--no-cache"}</comment>
+  </data>
+  <data name="NoBinaryLogBecauseRunningJustCsc" xml:space="preserve">
+    <value>Warning: Binary log option was specified but MSBuild will be skipped because running just csc is enough. Specify '--no-cache' to force full build.</value>
+    <comment>{Locked="--no-cache"}{Locked="MSBuild"}{Locked="csc"}</comment>
   </data>
   <data name="PublishAppDescription" xml:space="preserve">
     <value>Publisher for the .NET Platform</value>
@@ -1703,7 +1766,12 @@ The default is to publish a framework-dependent application.</value>
 {1}</value>
   </data>
   <data name="RunCommandExceptionCouldNotLocateALaunchSettingsFile" xml:space="preserve">
-    <value>The specified launch profile '{0}' could not be located.</value>
+    <value>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
+{1}</value>
+  </data>
+  <data name="RunCommandWarningRunJsonNotUsed" xml:space="preserve">
+    <value>Warning: Settings from '{0}' are not used because '{1}' has precedence.</value>
+    <comment>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</comment>
   </data>
   <data name="RunCommandExceptionMultipleProjects" xml:space="preserve">
     <value>Specify which project file to use because {0} contains more than one project file.</value>
@@ -1712,10 +1780,11 @@ The default is to publish a framework-dependent application.</value>
     <value>Couldn't find a project to run. Ensure a project exists in {0}, or pass the path to the project using {1}.</value>
   </data>
   <data name="RunCommandExceptionUnableToRun" xml:space="preserve">
-    <value>Unable to run your project.
-Ensure you have a runnable project type and ensure '{0}' supports this project.
-A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
-The current {1} is '{2}'.</value>
+    <value>Unable to proceed with project '{0}'.
+Ensure you have a runnable project type.
+A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
+The current OutputType is '{2}'.</value>
+    <comment>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</comment>
   </data>
   <data name="RunCommandExceptionUnableToRunSpecifyFramework" xml:space="preserve">
     <value>Unable to run your project
@@ -1802,7 +1871,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
     <comment>{Locked="--sdk-version"}</comment>
   </data>
   <data name="ShouldInstallAWorkloadSet" xml:space="preserve">
-    <value>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</value>
+    <value>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</value>
     <comment>{Locked="dotnet workload restore"}</comment>
   </data>
   <data name="ShutDownFailed" xml:space="preserve">
@@ -2418,8 +2487,12 @@ To display a value, specify the corresponding command-line option without provid
   <data name="WorkloadManifestIdColumn" xml:space="preserve">
     <value>Workload manifest ID</value>
   </data>
-  <data name="WorkloadManifestInstallationConfiguration" xml:space="preserve">
-    <value>Configured to use {0} when installing new manifests.</value>
+  <data name="WorkloadManifestInstallationConfigurationWorkloadSets" xml:space="preserve">
+    <value>Configured to use workload sets when installing new manifests.</value>
+    <comment>{Locked="workload sets"}</comment>
+  </data>
+  <data name="WorkloadManifestInstallationConfigurationLooseManifests" xml:space="preserve">
+    <value>Configured to use loose manifests when installing new manifests.</value>
   </data>
   <data name="WorkloadManifestPathColumn" xml:space="preserve">
     <value>Manifest Path</value>
@@ -2554,5 +2627,23 @@ Proceed?</value>
   <data name="ToolDownloadNeedsConfirmation" xml:space="preserve">
     <value>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</value>
     <comment>{Locked="--yes"}</comment>
+  </data>
+  <data name="TestCommandUseSolution" xml:space="preserve">
+    <value>Specifying a solution for 'dotnet test' should be via '--solution'.</value>
+  </data>
+  <data name="TestCommandUseProject" xml:space="preserve">
+    <value>Specifying a project for 'dotnet test' should be via '--project'.</value>
+  </data>
+  <data name="TestCommandUseDirectory" xml:space="preserve">
+    <value>Specifying a directory for 'dotnet test' should be via '--directory'.</value>
+  </data>
+  <data name="TestCommandUseTestModules" xml:space="preserve">
+    <value>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</value>
+  </data>
+  <data name="PackCmdVersionDescription" xml:space="preserve">
+    <value>The version of the package to create</value>
+  </data>
+  <data name="PackCmdVersion" xml:space="preserve">
+    <value>VERSION</value>
   </data>
 </root>

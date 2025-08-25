@@ -21,8 +21,7 @@ public class PublishCommand : RestoringCommand
 
     public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
-        var parser = Parser.Instance;
-        var parseResult = parser.ParseFrom("dotnet publish", args);
+        var parseResult = Parser.Parse(["dotnet", "publish", ..args]);
         return FromParseResult(parseResult);
     }
 
@@ -37,8 +36,6 @@ public class PublishCommand : RestoringCommand
 
         CommonOptions.ValidateSelfContainedOptions(parseResult.HasOption(PublishCommandParser.SelfContainedOption),
             parseResult.HasOption(PublishCommandParser.NoSelfContainedOption));
-
-        var forwardedOptions = parseResult.OptionValuesToBeForwarded(PublishCommandParser.GetCommand());
 
         bool noBuild = parseResult.HasOption(PublishCommandParser.NoBuildOption);
 

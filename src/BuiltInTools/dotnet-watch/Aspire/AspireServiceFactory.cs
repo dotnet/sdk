@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Threading.Channels;
 using Aspire.Tools.Service;
 using Microsoft.Build.Graph;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -31,6 +32,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
         private readonly ProjectLauncher _projectLauncher;
         private readonly AspireServerService _service;
         private readonly ProjectOptions _hostProjectOptions;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Lock to access:
@@ -47,11 +49,12 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
         {
             _projectLauncher = projectLauncher;
             _hostProjectOptions = hostProjectOptions;
+            _logger = projectLauncher.LoggerFactory.CreateLogger(AspireLogComponentName);
 
             _service = new AspireServerService(
                 this,
                 displayName: ".NET Watch Aspire Server",
-                m => projectLauncher.Reporter.Verbose(m, MessageEmoji));
+                m => _logger.LogDebug(m));
         }
 
         public async ValueTask DisposeAsync()
@@ -88,9 +91,6 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
         public IEnumerable<(string name, string value)> GetEnvironmentVariables()
             => _service.GetServerConnectionEnvironment().Select(kvp => (kvp.Key, kvp.Value));
 
-        private IReporter Reporter
-            => _projectLauncher.Reporter;
-
         /// <summary>
         /// Implements https://github.com/dotnet/aspire/blob/445d2fc8a6a0b7ce3d8cc42def4d37b02709043b/docs/specs/IDE-execution.md#create-session-request.
         /// </summary>
@@ -108,7 +108,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
         {
             ObjectDisposedException.ThrowIf(_isDisposed, this);
 
-            Reporter.Verbose($"Starting project: {projectOptions.ProjectPath}", MessageEmoji);
+            _logger.LogDebug("Starting project: {Path}", projectOptions.ProjectPath);
 
             var processTerminationSource = new CancellationTokenSource();
             var outputChannel = Channel.CreateUnbounded<OutputLine>(s_outputChannelOptions);
@@ -145,7 +145,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
                 _sessions[sessionId] = new Session(dcpId, sessionId, runningProject, outputReader);
             }
 
-            Reporter.Verbose($"Session started: #{sessionId}", MessageEmoji);
+            _logger.LogDebug("Session started: #{SessionId}", sessionId);
             return runningProject;
 
             async Task StartChannelReader(CancellationToken cancellationToken)
@@ -157,13 +157,12 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
                         await _service.NotifyLogMessageAsync(dcpId, sessionId, isStdErr: line.IsError, data: line.Content, cancellationToken);
                     }
                 }
-                catch (OperationCanceledException)
-                {
-                    // nop
-                }
                 catch (Exception e)
                 {
-                    Reporter.Error($"Unexpected error reading output of session '{sessionId}': {e}");
+                    if (e is not OperationCanceledException)
+                    {
+                        _logger.LogError("Unexpected error reading output of session '{SessionId}': {Exception}", sessionId, e);
+                    }
                 }
             }
         }
@@ -192,7 +191,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
 
         private async ValueTask TerminateSessionAsync(Session session, CancellationToken cancellationToken)
         {
-            Reporter.Verbose($"Stop session #{session.Id}", MessageEmoji);
+            _logger.LogDebug("Stop session #{SessionId}", session.Id);
 
             var exitCode = await _projectLauncher.TerminateProcessAsync(session.RunningProject, cancellationToken);
 
@@ -211,7 +210,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
             {
                 IsRootProject = false,
                 ProjectPath = projectLaunchInfo.ProjectPath,
-                WorkingDirectory = _projectLauncher.EnvironmentOptions.WorkingDirectory,
+                WorkingDirectory = Path.GetDirectoryName(projectLaunchInfo.ProjectPath) ?? throw new InvalidOperationException(),
                 BuildArguments = _hostProjectOptions.BuildArguments,
                 Command = "run",
                 CommandArguments = GetRunCommandArguments(projectLaunchInfo, hostLaunchProfile),
@@ -265,9 +264,9 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
         }
     }
 
-    public const string MessageEmoji = "⭐";
-
     public static readonly AspireServiceFactory Instance = new();
+
+    public const string AspireLogComponentName = "Aspire";
     public const string AppHostProjectCapability = "Aspire";
 
     public IRuntimeProcessLauncher? TryCreate(ProjectGraphNode projectNode, ProjectLauncher projectLauncher, ProjectOptions hostProjectOptions)

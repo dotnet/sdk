@@ -4,33 +4,37 @@
 using System.Collections;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
+using Microsoft.Extensions.Logging;
+
+using ILogger = Microsoft.Extensions.Logging.ILogger;
+using IMSBuildLogger = Microsoft.Build.Framework.ILogger;
 
 namespace Microsoft.DotNet.Watch;
 
-internal sealed class BuildReporter(IReporter reporter, EnvironmentOptions environmentOptions)
+internal sealed class BuildReporter(ILogger logger, GlobalOptions options, EnvironmentOptions environmentOptions)
 {
-    public IReporter Reporter => reporter;
+    public ILogger Logger => logger;
     public EnvironmentOptions EnvironmentOptions => environmentOptions;
 
     public Loggers GetLoggers(string projectPath, string operationName)
-        => new(reporter, environmentOptions.GetTestBinLogPath(projectPath, operationName));
+        => new(logger, environmentOptions.GetBinLogPath(projectPath, operationName, options));
 
     public void ReportWatchedFiles(Dictionary<string, FileItem> fileItems)
     {
-        reporter.Verbose($"Watching {fileItems.Count} file(s) for changes");
+        logger.Log(MessageDescriptor.WatchingFilesForChanges, fileItems.Count);
 
         if (environmentOptions.TestFlags.HasFlag(TestFlags.RunningAsTest))
         {
             foreach (var file in fileItems.Values)
             {
-                reporter.Verbose(file.StaticWebAssetPath != null
-                    ? $"> {file.FilePath}{Path.PathSeparator}{file.StaticWebAssetPath}"
-                    : $"> {file.FilePath}");
+                logger.Log(MessageDescriptor.WatchingFilesForChanges_FilePath, file.StaticWebAssetPath != null
+                    ? $"{file.FilePath}{Path.PathSeparator}{file.StaticWebAssetPath}"
+                    : $"{file.FilePath}");
             }
         }
     }
 
-    public sealed class Loggers(IReporter reporter, string? binLogPath) : IEnumerable<ILogger>, IDisposable
+    public sealed class Loggers(ILogger logger, string? binLogPath) : IEnumerable<IMSBuildLogger>, IDisposable
     {
         private readonly BinaryLogger? _binaryLogger = binLogPath != null
             ? new()
@@ -41,7 +45,7 @@ internal sealed class BuildReporter(IReporter reporter, EnvironmentOptions envir
             : null;
 
         private readonly OutputLogger _outputLogger =
-            new(reporter)
+            new(logger)
             {
                 Verbosity = LoggerVerbosity.Minimal
             };
@@ -51,7 +55,7 @@ internal sealed class BuildReporter(IReporter reporter, EnvironmentOptions envir
             _outputLogger.Clear();
         }
 
-        public IEnumerator<ILogger> GetEnumerator()
+        public IEnumerator<IMSBuildLogger> GetEnumerator()
         {
             yield return _outputLogger;
 
@@ -65,7 +69,7 @@ internal sealed class BuildReporter(IReporter reporter, EnvironmentOptions envir
         {
             if (binLogPath != null)
             {
-                reporter.Verbose($"Binary log: '{binLogPath}'");
+                logger.LogDebug("Binary log: '{BinLogPath}'", binLogPath);
             }
 
             _outputLogger.ReportOutput();
@@ -77,13 +81,13 @@ internal sealed class BuildReporter(IReporter reporter, EnvironmentOptions envir
 
     private sealed class OutputLogger : ConsoleLogger
     {
-        private readonly IReporter _reporter;
+        private readonly ILogger _logger;
         private readonly List<OutputLine> _messages = [];
 
-        public OutputLogger(IReporter reporter)
+        public OutputLogger(ILogger logger)
         {
             WriteHandler = Write;
-            _reporter = reporter;
+            _logger = logger;
         }
 
         public IReadOnlyList<OutputLine> Messages
@@ -97,8 +101,8 @@ internal sealed class BuildReporter(IReporter reporter, EnvironmentOptions envir
 
         public void ReportOutput()
         {
-            _reporter.Output($"MSBuild output:");
-            BuildOutput.ReportBuildOutput(_reporter, Messages, success: false, projectDisplay: null);
+            _logger.LogInformation("MSBuild output:");
+            BuildOutput.ReportBuildOutput(_logger, Messages, success: false, projectDisplay: null);
         }
     }
 }

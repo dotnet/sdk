@@ -259,6 +259,46 @@ Paths searched: '{1}', '{2}'.</source>
         <target state="translated">清理 .NET 项目的生成输出。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsCommandDescription">
+        <source>Removes artifacts created for file-based apps</source>
+        <target state="translated">移除为基于文件的应用创建的项目</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsDays">
+        <source>How many days an artifact folder needs to be unused in order to be removed</source>
+        <target state="translated">项目文件夹需要处于未使用状态多少天才能被移除</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsDirectoryNotFound">
+        <source>Warning: Artifacts directory does not exist: {0}</source>
+        <target state="translated">警告: 项目目录不存在: {0}</target>
+        <note>{0} is directory path.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsDryRun">
+        <source>Determines changes without actually modifying the file system</source>
+        <target state="translated">确定更改但不实际修改文件系统</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsErrorRemovingFolder">
+        <source>Error removing folder '{0}': {1}</source>
+        <target state="translated">移除文件夹 "{0}" 时出错: {1}</target>
+        <note>{0} is folder path. {1} is inner error message.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsScanning">
+        <source>Scanning for folders to remove in: {0}</source>
+        <target state="translated">正在扫描要进行移除操作的文件夹: {0}</target>
+        <note>{0} is directory path.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsTotalFoldersRemoved">
+        <source>Total folders removed: {0}</source>
+        <target state="translated">已移除的文件夹总数: {0}</target>
+        <note>{0} is count.</note>
+      </trans-unit>
+      <trans-unit id="CleanFileBasedAppArtifactsWouldRemoveFolders">
+        <source>Would remove folders: {0}</source>
+        <target state="translated">将移除文件夹: {0}</target>
+        <note>{0} is count.</note>
+      </trans-unit>
       <trans-unit id="CleanFrameworkOptionDescription">
         <source>The target framework to clean for. The target framework must also be specified in the project file.</source>
         <target state="translated">要清理的目标框架。必须在项目文件中指定目标框架。</target>
@@ -366,6 +406,11 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
         <target state="translated">要使用的 NuGet 配置文件的路径。需要 "--outdated"、"--deprecated" 或 "--vulnerable" 选项。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdConfigFileDescription">
+        <source>Specifies a testconfig.json file.</source>
+        <target state="translated">指定 testconfig.json 文件。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdConfigFileOption">
         <source>FILE</source>
         <target state="translated">FILE</target>
@@ -374,6 +419,11 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
       <trans-unit id="CmdConfigFileOptionDescription">
         <source>The NuGet configuration file to use.</source>
         <target state="translated">要使用的 NuGet 配置文件。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdConfigFilePath">
+        <source>CONFIG_FILE</source>
+        <target state="translated">CONFIG_FILE</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCurrentRuntimeOptionDescription">
@@ -394,6 +444,18 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
       <trans-unit id="CmdDeprecatedDescription">
         <source>Lists packages that have been deprecated. Cannot be combined with '--vulnerable' or '--outdated' options.</source>
         <target state="translated">列出已被弃用的包。不能与 "--vulnerable" 或 "--outdated" 选项结合使用。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDiagnosticOutputDirectoryDescription">
+        <source>Output directory of the diagnostic logging.
+If not specified the file will be generated inside the default 'TestResults' directory.</source>
+        <target state="translated">诊断日志记录的输出目录。
+如果未指定，则会在默认的 "TestResults" 目录中生成该文件。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDiagnosticOutputDirectoryPath">
+        <source>DIAGNOSTIC_DIR</source>
+        <target state="translated">DIAGNOSTIC_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDirectoryDescription">
@@ -880,6 +942,16 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">COMMAND_NAME</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionFileDescription">
+        <source>The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).</source>
+        <target state="translated">要运行的基于文件的应用的路径(如果当前目录中没有项目，也可作为第一个参数传递)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionFileHelpName">
+        <source>FILE_PATH</source>
+        <target state="translated">FILE_PATH</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionLaunchProfileDescription">
         <source>The name of the launch profile (if any) to use when launching the application.</source>
         <target state="translated">启动应用程序时使用的启动配置文件名称(如果有).</target>
@@ -906,9 +978,9 @@ dotnet.config is a name don't translate.</note>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileDescription">
-        <source>Do not attempt to use launchSettings.json to configure the application.</source>
-        <target state="translated">请勿尝试使用 launchSettings.json 配置应用程序。</target>
-        <note />
+        <source>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</source>
+        <target state="translated">请勿尝试使用 launchSettings.json 或 [app].run.json 来配置应用程序。</target>
+        <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
       </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
         <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
@@ -1031,11 +1103,9 @@ dotnet.config is a name don't translate.</note>
         <note />
       </trans-unit>
       <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading launchSettings.json.
-{0}</source>
-        <target state="translated">读取 launchSettings.json 时发生错误。
-{0}</target>
-        <note />
+        <source>An error was encountered when reading '{0}': {1}</source>
+        <target state="translated">读取 ‘{0}’ 时遇到错误: {1}</target>
+        <note>{0} is file path. {1} is exception message.</note>
       </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
@@ -1051,6 +1121,12 @@ dotnet.config is a name don't translate.</note>
         <source>Enables diagnostic output.</source>
         <target state="translated">启用诊断输出。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="DirectivesRemoved">
+        <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
+        <target state="translated">已从 {3} 移除“{2}”的“{0}”指令({1})</target>
+        <note>{0} is a directive kind (like '#:package'). {1} is number of removed directives.
+    {2} is directive key (e.g., package name). {3} is file path from which directives were removed.</note>
       </trans-unit>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
@@ -1451,10 +1527,10 @@ Make the profile names distinct.</source>
         <target state="translated">指定的文件必须存在且具有 ‘.cs’ 文件扩展名: ‘{0}’</target>
         <note>{Locked=".cs"}</note>
       </trans-unit>
-      <trans-unit id="InvalidOptionCombination">
-        <source>Cannot combine option '{0}' and '{1}'.</source>
-        <target state="translated">无法组合选项 ‘{0}’ 和 ‘{1}’。</target>
-        <note>{0} and {1} are option names like '--no-build'.</note>
+      <trans-unit id="InvalidOptionForFileBasedApp">
+        <source>Cannot specify option '{0}' when operating on a file-based app.</source>
+        <target state="translated">在基于文件的应用上操作时，无法指定选项“{0}”。</target>
+        <note>{0} is an option name like '--source'.</note>
       </trans-unit>
       <trans-unit id="InvalidOptionForStdin">
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
@@ -1677,9 +1753,14 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">正在安装工作负载版本 {0}。</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoBinaryLogBecauseRunningJustCsc">
+        <source>Warning: Binary log option was specified but MSBuild will be skipped because running just csc is enough. Specify '--no-cache' to force full build.</source>
+        <target state="translated">警告: 指定了二进制日志选项，但将跳过 MSBuild，因为仅运行 csc 已足够。指定 ‘--no-cache’ 以强制完全生成。</target>
+        <note>{Locked="--no-cache"}{Locked="MSBuild"}{Locked="csc"}</note>
+      </trans-unit>
       <trans-unit id="NoBinaryLogBecauseUpToDate">
-        <source>Warning: Binary log option was specified but build will be skipped because output is up to date, specify '--no-cache' to force build.</source>
-        <target state="translated">警告: 已指定二进制日志选项，但将跳过生成，因为输出是最新的，请指定 '--no-cache' 以强制生成。</target>
+        <source>Warning: Binary log option was specified but build will be skipped because output is up to date. Specify '--no-cache' to force build.</source>
+        <target state="translated">警告: 指定了二进制日志选项，但将跳过生成，因为输出是最新的。指定 ‘--no-cache’ 以强制生成。</target>
         <note>{Locked="--no-cache"}</note>
       </trans-unit>
       <trans-unit id="NoBuildOptionDescription">
@@ -1764,8 +1845,8 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">未安装工作负载，没有要修复的内容。请运行“dotnet 工作负载搜索”，查找要安装的工作负载。</target>
-        <note />
+        <target state="needs-review-translation">未安装工作负载，没有要修复的内容。请运行“dotnet workload search”，查找要安装的工作负载。</target>
+        <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
@@ -1825,6 +1906,16 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       <trans-unit id="PackCmdOutputDirDescription">
         <source>The output directory to place built packages in.</source>
         <target state="translated">要放置生成包的输出目录。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersion">
+        <source>VERSION</source>
+        <target state="translated">版本</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersionDescription">
+        <source>The version of the package to create</source>
+        <target state="translated">要创建的包版本</target>
         <note />
       </trans-unit>
       <trans-unit id="PackConfigurationOptionDescription">
@@ -2292,42 +2383,42 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="ProjectConvertAskForOutputDirectory">
         <source>Specify the output directory ({0}):</source>
-        <target state="new">Specify the output directory ({0}):</target>
+        <target state="translated">指定输出目录({0}):</target>
         <note>{0} is the default value</note>
       </trans-unit>
       <trans-unit id="ProjectConvertDryRun">
         <source>Determines changes without actually modifying the file system</source>
-        <target state="new">Determines changes without actually modifying the file system</target>
+        <target state="translated">确定更改但不实际修改文件系统</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectConvertWouldConvertFile">
         <source>Dry run: would remove file-level directives from file: {0}</source>
-        <target state="new">Dry run: would remove file-level directives from file: {0}</target>
+        <target state="translated">试运行: 将从文件 {0} 中移除文件级指令</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldCopyFile">
         <source>Dry run: would copy file '{0}' to '{1}'.</source>
-        <target state="new">Dry run: would copy file '{0}' to '{1}'.</target>
+        <target state="translated">试运行: 会将文件“{0}”复制到“{1}”。</target>
         <note>{0} and {1} are file full paths.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldCreateDirectory">
         <source>Dry run: would create directory: {0}</source>
-        <target state="new">Dry run: would create directory: {0}</target>
+        <target state="translated">试运行: 将创建目录: {0}</target>
         <note>{0} is the directory full path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldCreateFile">
         <source>Dry run: would create file: {0}</source>
-        <target state="new">Dry run: would create file: {0}</target>
+        <target state="translated">试运行: 将创建文件: {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldDeleteFile">
         <source>Dry run: would delete file: {0}</source>
-        <target state="new">Dry run: would delete file: {0}</target>
+        <target state="translated">试运行: 将删除文件: {0}</target>
         <note>{0} is the file full path.</note>
       </trans-unit>
       <trans-unit id="ProjectConvertWouldMoveFile">
         <source>Dry run: would move file '{0}' to '{1}'.</source>
-        <target state="new">Dry run: would move file '{0}' to '{1}'.</target>
+        <target state="translated">试运行: 会将文件“{0}”移动到“{1}”。</target>
         <note>{0} and {1} are file full paths.</note>
       </trans-unit>
       <trans-unit id="ProjectManifest">
@@ -2353,7 +2444,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       <trans-unit id="PropertyDirectiveMissingParts">
         <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
         <target state="translated">属性指令需要包含两个由 ‘=’ 分隔的部件，例如 '#:property PropertyName=PropertyValue': {0}</target>
-        <note>{0} is the file path and line number.</note>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
@@ -2570,8 +2661,10 @@ The default is to publish a framework-dependent application.</source>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
-        <source>The specified launch profile '{0}' could not be located.</source>
-        <target state="translated">找不到指定的启动配置文件“{0}”。</target>
+        <source>Cannot use launch profile '{0}' because the launch settings file could not be located. Locations tried:
+{1}</source>
+        <target state="translated">无法使用启动配置文件 ‘{0}’，因为找不到启动设置文件。已尝试的位置:
+{1}</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionMultipleProjects">
@@ -2585,15 +2678,15 @@ The default is to publish a framework-dependent application.</source>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRun">
-        <source>Unable to run your project.
-Ensure you have a runnable project type and ensure '{0}' supports this project.
-A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
-The current {1} is '{2}'.</source>
-        <target state="translated">无法运行项目。
+        <source>Unable to proceed with project '{0}'.
+Ensure you have a runnable project type.
+A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
+The current OutputType is '{2}'.</source>
+        <target state="needs-review-translation">无法运行项目。
 请确保你具有可运行的项目类型且“{0}”支持此项目。
 可运行的项目应面向可运行的 TFM (例如 net5.0)且其 OutputType 为 "Exe"。
 当前的 {1} 为“{2}”。</target>
-        <note />
+        <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
@@ -2611,6 +2704,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <source>'{0}' is not a valid project file.</source>
         <target state="translated">“{0}”不是有效的项目文件。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="RunCommandWarningRunJsonNotUsed">
+        <source>Warning: Settings from '{0}' are not used because '{1}' has precedence.</source>
+        <target state="translated">警告: 不使用 ‘{0}’ 中的设置，因为 ‘{1}’ 具有优先级。</target>
+        <note>{0} is an app.run.json file path. {1} is a launchSettings.json file path.</note>
       </trans-unit>
       <trans-unit id="RunConfigurationOptionDescription">
         <source>The configuration to run for. The default for most projects is 'Debug'.</source>
@@ -2730,8 +2828,8 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <note>{Locked="--sdk-version"}</note>
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
-        <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
-        <target state="translated">工作负载配置为使用工作负载版本进行安装和更新，但未找到任何版本。运行 "dotnet workload restore" 以安装工作负载版本。</target>
+        <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
+        <target state="translated">未安装任何 workload sets。运行 “dotnet workload restore” 以安装工作负载集。</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">
@@ -2884,6 +2982,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">标准输出</target>
         <note />
       </trans-unit>
+      <trans-unit id="StaticGraphRestoreNotSupported">
+        <source>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</source>
+        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</target>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
+      </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
         <target state="translated">状态</target>
@@ -2947,6 +3050,26 @@ Your project targets multiple frameworks. Specify which framework to run using '
       <trans-unit id="TestCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseDirectory">
+        <source>Specifying a directory for 'dotnet test' should be via '--directory'.</source>
+        <target state="translated">应通过 "--directory" 为 "dotnet test" 指定目录。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseProject">
+        <source>Specifying a project for 'dotnet test' should be via '--project'.</source>
+        <target state="translated">应通过 "--project" 为 "dotnet test" 指定项目。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseSolution">
+        <source>Specifying a solution for 'dotnet test' should be via '--solution'.</source>
+        <target state="translated">应通过 "--solution" 为 "dotnet test" 指定解决方案。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseTestModules">
+        <source>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</source>
+        <target state="translated">应通过 "--test-modules" 为 "dotnet test" 指定 dll 或可执行文件。</target>
         <note />
       </trans-unit>
       <trans-unit id="TestConfigurationOptionDescription">
@@ -3757,10 +3880,15 @@ To display a value, specify the corresponding command-line option without provid
         <target state="translated">工作负载清单 ID</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadManifestInstallationConfiguration">
-        <source>Configured to use {0} when installing new manifests.</source>
-        <target state="translated">配置为在安装新清单时使用 {0}。</target>
+      <trans-unit id="WorkloadManifestInstallationConfigurationLooseManifests">
+        <source>Configured to use loose manifests when installing new manifests.</source>
+        <target state="translated">已配置为在安装新清单时使用松散清单。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfigurationWorkloadSets">
+        <source>Configured to use workload sets when installing new manifests.</source>
+        <target state="translated">已配置为在安装新清单时使用 workload sets。</target>
+        <note>{Locked="workload sets"}</note>
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">
         <source>Manifest Path</source>

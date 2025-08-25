@@ -451,6 +451,11 @@ setx PATH "%PATH%;{0}"
         <target state="translated">파일</target>
         <note />
       </trans-unit>
+      <trans-unit id="FileArgumentDescription">
+        <source>The file-based app to operate on.</source>
+        <target state="translated">작동할 파일 기반 앱입니다.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FormatVersionIsHigher">
         <source>Format version is higher than supported. This tool may not be supported in this SDK version. Update your SDK.</source>
         <target state="translated">형식 버전이 지원되는 버전보다 높습니다. 이 SDK 버전에서 이 도구를 지원하지 않을 수 있습니다. SDK를 업데이트하세요.</target>
@@ -739,6 +744,11 @@ setx PATH "%PATH%;{0}"
         <target state="translated">프로젝트 간</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackCmd_OneNuspecAllowed">
+        <source>Only one .nuspec file can be packed at a time</source>
+        <target state="translated">한 번에 하나의 .nuspec 파일만 압축할 수 있습니다.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Package">
         <source>Package</source>
         <target state="translated">패키지</target>
@@ -844,6 +854,16 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="ProjectNotFoundInTheSolution">
         <source>Project `{0}` could not be found in the solution.</source>
         <target state="translated">솔루션에서 '{0}' 프로젝트를 찾을 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectOrFileArgumentDescription">
+        <source>The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file.</source>
+        <target state="translated">작업할 프로젝트 파일 또는 C# 파일 기반 앱입니다. 파일을 지정하지 않으면 명령이 현재 디렉터리에서 프로젝트 파일을 검색합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectOrFileArgumentName">
+        <source>PROJECT | FILE</source>
+        <target state="translated">프로젝트 | 파일</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectReference">

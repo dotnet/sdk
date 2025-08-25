@@ -451,6 +451,11 @@ setx PATH "%PATH%;{0}"
         <target state="translated">ファイル</target>
         <note />
       </trans-unit>
+      <trans-unit id="FileArgumentDescription">
+        <source>The file-based app to operate on.</source>
+        <target state="translated">操作するファイル ベースのアプリ。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FormatVersionIsHigher">
         <source>Format version is higher than supported. This tool may not be supported in this SDK version. Update your SDK.</source>
         <target state="translated">形式のバージョンがサポートされているものを超えています。このツールはこのバージョンの SDK ではサポートされていない可能性があります。SDK を更新します。</target>
@@ -739,6 +744,11 @@ setx PATH "%PATH%;{0}"
         <target state="translated">プロジェクト間</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackCmd_OneNuspecAllowed">
+        <source>Only one .nuspec file can be packed at a time</source>
+        <target state="translated">一度にパックできる .nuspec ファイルは 1 つだけです</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Package">
         <source>Package</source>
         <target state="translated">パッケージ</target>
@@ -844,6 +854,16 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="ProjectNotFoundInTheSolution">
         <source>Project `{0}` could not be found in the solution.</source>
         <target state="translated">プロジェクト `{0}` がソリューション内に見つかりませんでした。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectOrFileArgumentDescription">
+        <source>The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file.</source>
+        <target state="translated">操作するプロジェクト ファイルまたは C# ファイル ベースのアプリ。ファイルが指定されていない場合、コマンドは現在のディレクトリでプロジェクト ファイルを検索します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectOrFileArgumentName">
+        <source>PROJECT | FILE</source>
+        <target state="translated">プロジェクト | ファイル</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectReference">

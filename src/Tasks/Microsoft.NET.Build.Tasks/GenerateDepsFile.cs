@@ -31,6 +31,11 @@ namespace Microsoft.NET.Build.Tasks
 
         public string RuntimeIdentifier { get; set; }
 
+        /// <summary>
+        /// Strips the RID if it's any, because that's not reasonable
+        /// </summary>
+        private string EffectiveRuntimeIdentifier => string.IsNullOrEmpty(RuntimeIdentifier) ? null : RuntimeIdentifier == "any" ? null : RuntimeIdentifier;
+
         public string PlatformLibraryName { get; set; }
 
         public ITaskItem[] RuntimeFrameworks { get; set; }
@@ -95,7 +100,7 @@ namespace Microsoft.NET.Build.Tasks
 
         public bool IncludeProjectsNotInAssetsFile { get; set; }
 
-        // List of runtime identifer (platform part only) to validate for runtime assets
+        // List of runtime identifier (platform part only) to validate for runtime assets
         // If set, the task will warn on any RIDs that aren't in the list
         public string[] ValidRuntimeIdentifierPlatformsForAssets { get; set; }
 
@@ -137,7 +142,7 @@ namespace Microsoft.NET.Build.Tasks
                 LockFile lockFile = new LockFileCache(this).GetLockFile(AssetsFilePath);
                 projectContext = lockFile.CreateProjectContext(
                     TargetFramework,
-                    RuntimeIdentifier,
+                    EffectiveRuntimeIdentifier,
                     PlatformLibraryName,
                     RuntimeFrameworks,
                     IsSelfContained);
@@ -226,7 +231,7 @@ namespace Microsoft.NET.Build.Tasks
                     RuntimeFrameworks,
                     isSelfContained: IsSelfContained,
                     platformLibraryName: PlatformLibraryName,
-                    runtimeIdentifier: RuntimeIdentifier,
+                    runtimeIdentifier: EffectiveRuntimeIdentifier,
                     targetFramework: TargetFramework);
             }
 
@@ -254,53 +259,9 @@ namespace Microsoft.NET.Build.Tasks
             DependencyContext dependencyContext = builder.Build(UserRuntimeAssemblies);
 
             var writer = new DependencyContextWriter();
-
-            bool shouldWriteFile = true;
-            var tempDepsFilePath = depsFilePath + ".tmp";
-
-            // Generate new content
-            using (var fileStream = File.Create(tempDepsFilePath))
+            using (var fileStream = File.Create(depsFilePath))
             {
                 writer.Write(dependencyContext, fileStream);
-            }
-
-            // If file exists, check if content is different using streaming hash comparison
-            if (File.Exists(depsFilePath))
-            {
-                Log.LogMessage("File {0} already exists, checking hash.", depsFilePath);
-                using var existingFileContentStream = File.OpenRead(depsFilePath);
-                var existingContentHash = HashingUtils.ComputeXXHash64(existingFileContentStream);
-                var existingContentHashRendered = BitConverter.ToString(existingContentHash).Replace("-", "");
-                Log.LogMessage("Existing file hash: {0}", existingContentHashRendered);
-                using var newContentStream = File.OpenRead(tempDepsFilePath);
-                var newContentHash = HashingUtils.ComputeXXHash64(newContentStream);
-                var newContentHashRendered = BitConverter.ToString(newContentHash).Replace("-", "");
-                Log.LogMessage("New content hash: {0}", newContentHashRendered);
-                // If hashes are equal, content is the same - don't write
-                if (existingContentHash.SequenceEqual(newContentHash))
-                {
-                    Log.LogMessage("File {0} is unchanged, skipping write.", depsFilePath);
-                    shouldWriteFile = false;
-                }
-            }
-
-            if (shouldWriteFile)
-            {
-                Log.LogMessage("Writing file {0}.", depsFilePath);
-#if NET
-                File.Move(tempDepsFilePath, depsFilePath, overwrite: true);
-#else
-                // For .NET Framework, we can't use File.Move because it doesn't overwrite the existing file
-                // so we delete the existing file first.
-                File.Delete(depsFilePath);
-                File.Move(tempDepsFilePath, depsFilePath);
-#endif
-            }
-            else
-            {
-                // If we didn't write the file, delete the temporary file
-                Log.LogMessage("Deleting temporary file {0}.", tempDepsFilePath);
-                File.Delete(tempDepsFilePath);
             }
             _filesWritten.Add(new TaskItem(depsFilePath));
 
