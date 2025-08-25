@@ -24,7 +24,7 @@
     </SDKCustomXUnitProject>
 
     <!--containers tests end with UnitTests and IntegrationTests, therefore included manually -->
-    <SDKCustomXUnitProject Include="containerize.UnitTests\containerize.UnitTests.csproj" />
+    <SDKCustomXUnitProject Include="CreateLayerTarball.UnitTests\CreateLayerTarball.UnitTests.csproj" />
     <SDKCustomXUnitProject Include="Microsoft.NET.Build.Containers.IntegrationTests\Microsoft.NET.Build.Containers.IntegrationTests.csproj" />
 
     <SDKCustomXUnitProject Include="Microsoft.NET.Build.Containers.UnitTests\Microsoft.NET.Build.Containers.UnitTests.csproj" />
