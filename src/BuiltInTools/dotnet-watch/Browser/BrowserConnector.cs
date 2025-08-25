@@ -77,7 +77,7 @@ internal sealed partial class BrowserConnector(DotNetWatchContext context) : IAs
             hasExistingServer = _servers.TryGetValue(key, out server);
             if (!hasExistingServer)
             {
-                server = IsServerSupported(projectNode, appModel) ? new BrowserRefreshServer(context.EnvironmentOptions, context.LoggerFactory) : null;
+                server = TryCreateRefreshServer(projectNode, appModel);
                 _servers.Add(key, server);
             }
         }
@@ -101,6 +101,18 @@ internal sealed partial class BrowserConnector(DotNetWatchContext context) : IAs
         server.SetEnvironmentVariables(environmentBuilder);
 
         return server;
+    }
+
+    private BrowserRefreshServer? TryCreateRefreshServer(ProjectGraphNode projectNode, HotReloadAppModel appModel)
+    {
+        var logger = context.LoggerFactory.CreateLogger(BrowserRefreshServer.ServerLogComponentName, projectNode.GetDisplayName());
+
+        if (!IsServerSupported(projectNode, appModel))
+        {
+            return null;
+        }
+
+        return new BrowserRefreshServer(context.EnvironmentOptions, logger, context.LoggerFactory);
     }
 
     public bool TryGetRefreshServer(ProjectGraphNode projectNode, [NotNullWhen(true)] out BrowserRefreshServer? server)
@@ -162,7 +174,6 @@ internal sealed partial class BrowserConnector(DotNetWatchContext context) : IAs
             {
                 // Subsequent iterations (project has been rebuilt and relaunched).
                 // Use refresh server to reload the browser, if available.
-                context.Logger.LogDebug("Reloading browser.");
                 _ = server.SendReloadMessageAsync(cancellationToken);
             }
         }
