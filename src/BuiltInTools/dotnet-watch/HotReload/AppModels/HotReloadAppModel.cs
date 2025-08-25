@@ -38,50 +38,24 @@ internal abstract partial class HotReloadAppModel(ProjectGraphNode? agentInjecti
 
     public static HotReloadAppModel InferFromProject(ProjectGraphNode projectNode, ILogger logger)
     {
-        if (projectNode.IsWebApp())
+        var capabilities = projectNode.GetCapabilities();
+
+        if (capabilities.Contains(ProjectCapability.WebAssembly))
         {
-            var queue = new Queue<ProjectGraphNode>();
-            queue.Enqueue(projectNode);
+            logger.Log(MessageDescriptor.HotReloadProfile_BlazorWebAssembly);
+            return new BlazorWebAssemblyAppModel(clientProject: projectNode);
+        }
 
-            ProjectGraphNode? aspnetCoreProject = null;
-
-            var visited = new HashSet<ProjectGraphNode>();
-
-            while (queue.Count > 0)
+        if (capabilities.Contains(ProjectCapability.AspNetCore))
+        {
+            if (projectNode.GetDescendantsAndSelf().FirstOrDefault(static p => p.GetCapabilities().Contains(ProjectCapability.WebAssembly)) is { } clientProject)
             {
-                var currentNode = queue.Dequeue();
-                var projectCapability = currentNode.ProjectInstance.GetItems("ProjectCapability");
-
-                foreach (var item in projectCapability)
-                {
-                    if (item.EvaluatedInclude == "AspNetCore")
-                    {
-                        aspnetCoreProject = currentNode;
-                        break;
-                    }
-
-                    if (item.EvaluatedInclude == "WebAssembly")
-                    {
-                        // We saw a previous project that was AspNetCore. This must be a blazor hosted app.
-                        if (aspnetCoreProject is not null && aspnetCoreProject.ProjectInstance != currentNode.ProjectInstance)
-                        {
-                            logger.Log(MessageDescriptor.HotReloadProfile_BlazorHosted, aspnetCoreProject.ProjectInstance.FullPath, currentNode.ProjectInstance.FullPath);
-                            return new BlazorWebAssemblyHostedAppModel(clientProject: currentNode, serverProject: aspnetCoreProject);
-                        }
-
-                        logger.Log(MessageDescriptor.HotReloadProfile_BlazorWebAssembly);
-                        return new BlazorWebAssemblyAppModel(clientProject: currentNode);
-                    }
-                }
-
-                foreach (var project in currentNode.ProjectReferences)
-                {
-                    if (visited.Add(project))
-                    {
-                        queue.Enqueue(project);
-                    }
-                }
+                logger.Log(MessageDescriptor.HotReloadProfile_BlazorHosted, projectNode.ProjectInstance.FullPath, clientProject.ProjectInstance.FullPath);
+                return new BlazorWebAssemblyHostedAppModel(clientProject: clientProject, serverProject: projectNode);
             }
+
+            logger.Log(MessageDescriptor.HotReloadProfile_WebApplication);
+            return new WebServerAppModel(serverProject: projectNode);
         }
 
         logger.Log(MessageDescriptor.HotReloadProfile_Default);

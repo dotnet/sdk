@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Watch;
 /// Agent is injected into the server process. The client process is updated via WebSocketScriptInjection.js injected into the browser.
 /// </summary>
 internal sealed class BlazorWebAssemblyHostedAppModel(ProjectGraphNode clientProject, ProjectGraphNode serverProject)
-    : HotReloadAppModel(agentInjectionProject: serverProject)
+    : WebApplicationAppModel(agentInjectionProject: serverProject)
 {
     public override bool RequiresBrowserRefresh => true;
 
