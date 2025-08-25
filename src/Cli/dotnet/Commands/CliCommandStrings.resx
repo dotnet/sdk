@@ -1887,6 +1887,25 @@ Your project targets multiple frameworks. Specify which framework to run using '
   <data name="ShuttingDownServerWithPid" xml:space="preserve">
     <value>Shutting down {0} (process {1})...</value>
   </data>
+  <data name="ShuttingDownUnifiedBuildServers" xml:space="preserve">
+    <value>Shutting down unified build servers for SDK '{0}' via named pipe '{1}'...</value>
+    <comment>{0} is full path to SDK directory. {1} is pipe name.</comment>
+  </data>
+  <data name="NamedPipeFolderNotFound" xml:space="preserve">
+    <value>Named pipe folder not found: {0}</value>
+  </data>
+  <data name="NamedPipeFileBadFormat" xml:space="preserve">
+    <value>Cannot parse pipe file name: {0}</value>
+  </data>
+  <data name="NamedPipeShutdownError" xml:space="preserve">
+    <value>Error while shutting down server for pipe '{0}': {1}</value>
+  </data>
+  <data name="UnifiedBuildServer" xml:space="preserve">
+    <value>Unified build server</value>
+  </data>
+  <data name="UnifiedOptionDescription" xml:space="preserve">
+    <value>Shut down unified build servers via named pipes.</value>
+  </data>
   <data name="SkipManifestUpdateOptionDescription" xml:space="preserve">
     <value>Skip updating the workload manifests.</value>
   </data>

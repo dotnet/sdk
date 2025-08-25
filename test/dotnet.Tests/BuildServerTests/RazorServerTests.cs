@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
     public class RazorServerTests
     {
         [Fact]
-        public void GivenAFailedShutdownCommandItThrows()
+        public async Task GivenAFailedShutdownCommandItThrows()
         {
             const int ProcessId = 1234;
             const string PipeName = "some-pipe-name";
@@ -46,9 +46,9 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
                 commandFactory: CreateCommandFactoryMock(serverPath, PipeName, exitCode: 1, stdErr: ErrorMessage).Object,
                 fileSystem: fileSystemMock);
 
-            Action a = () => server.Shutdown();
+            Func<Task> a = () => server.ShutdownAsync();
 
-            a.Should().Throw<BuildServerException>().WithMessage(
+            await a.Should().ThrowAsync<BuildServerException>().WithMessage(
                 string.Format(
                     CliStrings.ShutdownCommandFailed,
                     ErrorMessage));
@@ -57,7 +57,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
         }
 
         [Fact]
-        public void GivenASuccessfulShutdownItDoesNotThrow()
+        public async Task GivenASuccessfulShutdownItDoesNotThrow()
         {
             const int ProcessId = 1234;
             const string PipeName = "some-pipe-name";
@@ -85,13 +85,13 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
                 commandFactory: CreateCommandFactoryMock(serverPath, PipeName).Object,
                 fileSystem: fileSystemMock);
 
-            server.Shutdown();
+            await server.ShutdownAsync();
 
             fileSystemMock.File.Exists(pidFilePath).Should().BeFalse();
         }
 
         [Fact]
-        public void GivenANonExistingRazorServerPathItDeletesPidFileAndDoesNotThrow()
+        public async Task GivenANonExistingRazorServerPathItDeletesPidFileAndDoesNotThrow()
         {
             const int ProcessId = 1234;
             const string PipeName = "some-pipe-name";
@@ -119,9 +119,9 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
                 commandFactory: commandFactoryMock.Object,
                 fileSystem: fileSystemMock);
 
-            Action a = () => server.Shutdown();
+            Func<Task> a = () => server.ShutdownAsync();
 
-            a.Should().NotThrow();
+            await a.Should().NotThrowAsync();
             commandFactoryMock.Verify(c => c.Create(It.IsAny<string>(), It.IsAny<IEnumerable<string>>(), It.IsAny<NuGetFramework>(), It.IsAny<string>()), Times.Never);
 
             fileSystemMock.File.Exists(pidFilePath).Should().BeFalse();

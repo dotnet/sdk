@@ -112,6 +112,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--msbuild', '--msbuild', [CompletionResultType]::ParameterName, "Shut down the MSBuild build server.")
                 [CompletionResult]::new('--vbcscompiler', '--vbcscompiler', [CompletionResultType]::ParameterName, "Shut down the VB/C# compiler build server.")
                 [CompletionResult]::new('--razor', '--razor', [CompletionResultType]::ParameterName, "Shut down the Razor build server.")
+                [CompletionResult]::new('--unified', '--unified', [CompletionResultType]::ParameterName, "Shut down unified build servers via named pipes.")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )

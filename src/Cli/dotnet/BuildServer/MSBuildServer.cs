@@ -13,8 +13,9 @@ internal class MSBuildServer : IBuildServer
 
     public string Name => CliStrings.MSBuildServer;
 
-    public void Shutdown()
+    public Task ShutdownAsync()
     {
         BuildManager.DefaultBuildManager.ShutdownAllNodes();
+        return Task.CompletedTask;
     }
 }

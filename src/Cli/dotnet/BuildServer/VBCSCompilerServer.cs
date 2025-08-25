@@ -10,7 +10,7 @@ using NuGet.Configuration;
 
 namespace Microsoft.DotNet.Cli.BuildServer;
 
-internal class VBCSCompilerServer(ICommandFactory commandFactory = null) : IBuildServer
+internal class VBCSCompilerServer : IBuildServer
 {
     private static readonly string s_toolsetPackageName = "microsoft.net.sdk.compilers.toolset";
     private static readonly string s_vbcsCompilerExeFileName = "VBCSCompiler.exe";
@@ -22,18 +22,13 @@ internal class VBCSCompilerServer(ICommandFactory commandFactory = null) : IBuil
             "bincore",
             "VBCSCompiler.dll");
 
-    private readonly ICommandFactory _commandFactory = commandFactory ?? new DotNetCommandFactory(alwaysRunOutOfProc: true);
-
     public int ProcessId => 0; // Not yet used
 
     public string Name => CliStrings.VBCSCompilerServer;
 
-    public void Shutdown()
+    public Task ShutdownAsync()
     {
         List<string> errors = null;
-
-        // Shutdown the compiler from the SDK.
-        execute(_commandFactory.Create("exec", [VBCSCompilerPath, s_shutdownArg]), ref errors);
 
         // Shutdown toolset compilers.
         Reporter.Verbose.WriteLine($"Shutting down '{s_toolsetPackageName}' compilers.");
@@ -60,6 +55,8 @@ internal class VBCSCompilerServer(ICommandFactory commandFactory = null) : IBuil
                     CliStrings.ShutdownCommandFailed,
                     string.Join(Environment.NewLine, errors)));
         }
+
+        return Task.CompletedTask;
 
         static void execute(ICommand command, ref List<string> errors)
         {

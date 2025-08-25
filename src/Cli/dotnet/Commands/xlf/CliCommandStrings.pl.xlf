@@ -1709,6 +1709,21 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
         <target state="translated">Nazwa</target>
         <note />
       </trans-unit>
+      <trans-unit id="NamedPipeFileBadFormat">
+        <source>Cannot parse pipe file name: {0}</source>
+        <target state="new">Cannot parse pipe file name: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NamedPipeFolderNotFound">
+        <source>Named pipe folder not found: {0}</source>
+        <target state="new">Named pipe folder not found: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NamedPipeShutdownError">
+        <source>Error while shutting down server for pipe '{0}': {1}</source>
+        <target state="new">Error while shutting down server for pipe '{0}': {1}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NeedNuGetInConfig">
         <source>The 'dotnet tool search' command unconditionally accesses nuget.org to find tools, but it is not present in your nuget.config. Add it to run this command.
     This can be done with this command:
@@ -2862,6 +2877,11 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
         <target state="translated">Trwa zamykanie serwera {0} (proces {1})...</target>
         <note />
       </trans-unit>
+      <trans-unit id="ShuttingDownUnifiedBuildServers">
+        <source>Shutting down unified build servers for SDK '{0}' via named pipe '{1}'...</source>
+        <target state="new">Shutting down unified build servers for SDK '{0}' via named pipe '{1}'...</target>
+        <note>{0} is full path to SDK directory. {1} is pipe name.</note>
+      </trans-unit>
       <trans-unit id="SkipManifestUpdateOptionDescription">
         <source>Skip updating the workload manifests.</source>
         <target state="translated">Pomiń aktualizowanie manifestów pakietu roboczego.</target>
@@ -3487,6 +3507,16 @@ i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleź�
         <source>try {0}</source>
         <target state="translated">wypróbuj {0}</target>
         <note>number or tries of the current test assembly when test assembly is being retried. {0} is number that starts at 1</note>
+      </trans-unit>
+      <trans-unit id="UnifiedBuildServer">
+        <source>Unified build server</source>
+        <target state="new">Unified build server</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnifiedOptionDescription">
+        <source>Shut down unified build servers via named pipes.</source>
+        <target state="new">Shut down unified build servers via named pipes.</target>
+        <note />
       </trans-unit>
       <trans-unit id="UninstallLocalToolSucceeded">
         <source>Tool '{0}' was successfully uninstalled and removed from manifest file {1}.</source>

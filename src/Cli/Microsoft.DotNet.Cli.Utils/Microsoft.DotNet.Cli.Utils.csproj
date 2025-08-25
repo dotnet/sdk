@@ -53,6 +53,7 @@
     <PackageReference Include="NuGet.ProjectModel" />
     <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Net.BuildServerUtils" />
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="System.IO.Hashing" />
   </ItemGroup>

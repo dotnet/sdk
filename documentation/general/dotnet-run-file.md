@@ -193,7 +193,7 @@ have the shared `.cs` files source-included via `<Compile Include="../Shared/**/
 
 Build outputs are placed under a subdirectory whose name is hashed file path of the entry point
 inside a temp or app data directory which should be owned by and unique to the current user per [runtime guidelines][temp-guidelines].
-The subdirectory is created by the SDK CLI with permissions restricting access to it to the current user (`0700`) and the run fails if that is not possible.
+The subdirectory is created by the SDK CLI with permissions restricting access to it to the current user (`0700`).
 Note that it is possible for multiple users to run the same file-based program, however each user's run uses different build artifacts since the base directory is unique per user.
 Apart from keeping the source directory clean, such artifact isolation also avoids clashes of build outputs that are not project-scoped, like `project.assets.json`, in the case of multiple entry-point files.
 

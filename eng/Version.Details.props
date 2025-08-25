@@ -36,16 +36,16 @@ This file should be imported by eng/Versions.props
     <MicrosoftBuildLocalizationPackageVersion>17.15.0-preview-25416-109</MicrosoftBuildLocalizationPackageVersion>
     <MicrosoftBuildNuGetSdkResolverPackageVersion>7.0.0-preview.1.41709</MicrosoftBuildNuGetSdkResolverPackageVersion>
     <MicrosoftBuildTasksGitPackageVersion>10.0.0-beta.25416.109</MicrosoftBuildTasksGitPackageVersion>
-    <MicrosoftCodeAnalysisPackageVersion>5.0.0-2.25416.109</MicrosoftCodeAnalysisPackageVersion>
-    <MicrosoftCodeAnalysisBuildClientPackageVersion>5.0.0-2.25416.109</MicrosoftCodeAnalysisBuildClientPackageVersion>
-    <MicrosoftCodeAnalysisCSharpPackageVersion>5.0.0-2.25416.109</MicrosoftCodeAnalysisCSharpPackageVersion>
-    <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>5.0.0-2.25416.109</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
-    <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>5.0.0-2.25416.109</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
-    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>5.0.0-2.25416.109</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
-    <MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion>5.0.0-2.25416.109</MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion>
+    <MicrosoftCodeAnalysisPackageVersion>5.0.0-2.25421.2</MicrosoftCodeAnalysisPackageVersion>
+    <MicrosoftCodeAnalysisBuildClientPackageVersion>5.0.0-2.25421.2</MicrosoftCodeAnalysisBuildClientPackageVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>5.0.0-2.25421.2</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>5.0.0-2.25421.2</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
+    <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>5.0.0-2.25421.2</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>5.0.0-2.25421.2</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion>5.0.0-2.25421.2</MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion>
     <MicrosoftCodeAnalysisRazorToolingInternalPackageVersion>10.0.0-preview.25416.109</MicrosoftCodeAnalysisRazorToolingInternalPackageVersion>
-    <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>5.0.0-2.25416.109</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
-    <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>5.0.0-2.25416.109</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>5.0.0-2.25421.2</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>5.0.0-2.25421.2</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
     <MicrosoftDeploymentDotNetReleasesPackageVersion>2.0.0-preview.1.25416.109</MicrosoftDeploymentDotNetReleasesPackageVersion>
     <MicrosoftDiaSymReaderPackageVersion>2.2.0-beta.25416.109</MicrosoftDiaSymReaderPackageVersion>
     <MicrosoftDotNetArcadeSdkPackageVersion>10.0.0-beta.25416.109</MicrosoftDotNetArcadeSdkPackageVersion>
@@ -69,8 +69,9 @@ This file should be imported by eng/Versions.props
     <MicrosoftExtensionsObjectPoolPackageVersion>10.0.0-rc.2.25416.109</MicrosoftExtensionsObjectPoolPackageVersion>
     <MicrosoftFSharpCompilerPackageVersion>14.0.100-rc2.25416.109</MicrosoftFSharpCompilerPackageVersion>
     <MicrosoftJSInteropPackageVersion>10.0.0-rc.2.25416.109</MicrosoftJSInteropPackageVersion>
-    <MicrosoftNetCompilersToolsetPackageVersion>5.0.0-2.25416.109</MicrosoftNetCompilersToolsetPackageVersion>
-    <MicrosoftNetCompilersToolsetFrameworkPackageVersion>5.0.0-2.25416.109</MicrosoftNetCompilersToolsetFrameworkPackageVersion>
+    <MicrosoftNetBuildServerUtilsPackageVersion>5.0.0-2.25421.2</MicrosoftNetBuildServerUtilsPackageVersion>
+    <MicrosoftNetCompilersToolsetPackageVersion>5.0.0-2.25421.2</MicrosoftNetCompilersToolsetPackageVersion>
+    <MicrosoftNetCompilersToolsetFrameworkPackageVersion>5.0.0-2.25421.2</MicrosoftNetCompilersToolsetFrameworkPackageVersion>
     <MicrosoftNETHostModelPackageVersion>10.0.0-rc.2.25416.109</MicrosoftNETHostModelPackageVersion>
     <MicrosoftNETILLinkTasksPackageVersion>10.0.0-rc.2.25416.109</MicrosoftNETILLinkTasksPackageVersion>
     <MicrosoftNETRuntimeEmscripten3156Cachewinx64PackageVersion>10.0.0-rc.2.25416.109</MicrosoftNETRuntimeEmscripten3156Cachewinx64PackageVersion>
@@ -209,6 +210,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftExtensionsObjectPoolVersion>$(MicrosoftExtensionsObjectPoolPackageVersion)</MicrosoftExtensionsObjectPoolVersion>
     <MicrosoftFSharpCompilerVersion>$(MicrosoftFSharpCompilerPackageVersion)</MicrosoftFSharpCompilerVersion>
     <MicrosoftJSInteropVersion>$(MicrosoftJSInteropPackageVersion)</MicrosoftJSInteropVersion>
+    <MicrosoftNetBuildServerUtilsVersion>$(MicrosoftNetBuildServerUtilsPackageVersion)</MicrosoftNetBuildServerUtilsVersion>
     <MicrosoftNetCompilersToolsetVersion>$(MicrosoftNetCompilersToolsetPackageVersion)</MicrosoftNetCompilersToolsetVersion>
     <MicrosoftNetCompilersToolsetFrameworkVersion>$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)</MicrosoftNetCompilersToolsetFrameworkVersion>
     <MicrosoftNETHostModelVersion>$(MicrosoftNETHostModelPackageVersion)</MicrosoftNETHostModelVersion>

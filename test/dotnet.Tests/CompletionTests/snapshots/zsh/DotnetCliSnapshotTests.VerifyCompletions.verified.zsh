@@ -99,6 +99,7 @@ _testhost() {
                                             '--msbuild[Shut down the MSBuild build server.]' \
                                             '--vbcscompiler[Shut down the VB/C# compiler build server.]' \
                                             '--razor[Shut down the Razor build server.]' \
+                                            '--unified[Shut down unified build servers via named pipes.]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             && ret=0
