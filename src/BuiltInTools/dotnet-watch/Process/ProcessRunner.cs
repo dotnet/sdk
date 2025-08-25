@@ -3,6 +3,7 @@
 
 
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -28,19 +29,14 @@ namespace Microsoft.DotNet.Watch
         /// <summary>
         /// Launches a process.
         /// </summary>
-        public async Task<int> RunAsync(ProcessSpec processSpec, IReporter reporter, ProcessLaunchResult? launchResult, CancellationToken processTerminationToken)
+        public async Task<int> RunAsync(ProcessSpec processSpec, ILogger logger, ProcessLaunchResult? launchResult, CancellationToken processTerminationToken)
         {
             var state = new ProcessState();
             var stopwatch = new Stopwatch();
 
             var onOutput = processSpec.OnOutput;
 
-            // If output isn't already redirected (build invocation) we redirect it to the reporter.
-            // The reporter synchronizes the output of the process with the reporter output,
-            // so that the printed lines don't interleave.
-            onOutput ??= line => reporter.ReportProcessOutput(line);
-
-            using var process = CreateProcess(processSpec, onOutput, state, reporter);
+            using var process = CreateProcess(processSpec, onOutput, state, logger);
 
             stopwatch.Start();
 
@@ -76,11 +72,11 @@ namespace Microsoft.DotNet.Watch
             var argsDisplay = processSpec.GetArgumentsDisplay();
             if (launchException == null)
             {
-                reporter.Report(MessageDescriptor.LaunchedProcess, processSpec.Executable, argsDisplay, state.ProcessId);
+                logger.Log(MessageDescriptor.LaunchedProcess, processSpec.Executable, argsDisplay, state.ProcessId);
             }
             else
             {
-                reporter.Error($"Failed to launch '{processSpec.Executable}' with arguments '{argsDisplay}': {launchException.Message}");
+                logger.Log(MessageDescriptor.FailedToLaunchProcess, processSpec.Executable, argsDisplay, launchException.Message);
                 return int.MinValue;
             }
 
@@ -103,14 +99,14 @@ namespace Microsoft.DotNet.Watch
                     // Either Ctrl+C was pressed or the process is being restarted.
 
                     // Non-cancellable to not leave orphaned processes around blocking resources:
-                    await TerminateProcessAsync(process, processSpec, state, reporter, CancellationToken.None);
+                    await TerminateProcessAsync(process, processSpec, state, logger, CancellationToken.None);
                 }
             }
             catch (Exception e)
             {
                 if (processSpec.IsUserApplication)
                 {
-                    reporter.Error($"Application failed: {e.Message}");
+                    logger.Log(MessageDescriptor.ApplicationFailed, e.Message);
                 }
             }
             finally
@@ -136,21 +132,21 @@ namespace Microsoft.DotNet.Watch
                     exitCode = null;
                 }
 
-                reporter.Verbose($"Process id {process.Id} ran for {stopwatch.ElapsedMilliseconds}ms and exited with exit code {exitCode}.");
+                logger.Log(MessageDescriptor.ProcessRunAndExited, process.Id, stopwatch.ElapsedMilliseconds, exitCode);
 
                 if (processSpec.IsUserApplication)
                 {
                     if (exitCode == 0)
                     {
-                        reporter.Report(MessageDescriptor.Exited);
+                        logger.Log(MessageDescriptor.Exited);
                     }
                     else if (exitCode == null)
                     {
-                        reporter.Report(MessageDescriptor.ExitedWithUnknownErrorCode);
+                        logger.Log(MessageDescriptor.ExitedWithUnknownErrorCode);
                     }
                     else
                     {
-                        reporter.Report(MessageDescriptor.ExitedWithErrorCode, exitCode);
+                        logger.Log(MessageDescriptor.ExitedWithErrorCode, exitCode);
                     }
                 }
 
@@ -163,7 +159,7 @@ namespace Microsoft.DotNet.Watch
             return exitCode ?? int.MinValue;
         }
 
-        private static Process CreateProcess(ProcessSpec processSpec, Action<OutputLine>? onOutput, ProcessState state, IReporter reporter)
+        private static Process CreateProcess(ProcessSpec processSpec, Action<OutputLine>? onOutput, ProcessState state, ILogger logger)
         {
             var process = new Process
             {
@@ -213,7 +209,7 @@ namespace Microsoft.DotNet.Watch
                     }
                     catch (Exception e)
                     {
-                        reporter.Verbose($"Error reading stdout of process {state.ProcessId}: {e}");
+                        logger.Log(MessageDescriptor.ErrorReadingProcessOutput, "stdout", state.ProcessId, e.Message);
                     }
                 };
 
@@ -228,7 +224,7 @@ namespace Microsoft.DotNet.Watch
                     }
                     catch (Exception e)
                     {
-                        reporter.Verbose($"Error reading stderr of process {state.ProcessId}: {e}");
+                        logger.Log(MessageDescriptor.ErrorReadingProcessOutput, "stderr", state.ProcessId, e.Message);
                     }
                 };
             }
@@ -236,31 +232,31 @@ namespace Microsoft.DotNet.Watch
             return process;
         }
 
-        private async ValueTask TerminateProcessAsync(Process process, ProcessSpec processSpec, ProcessState state, IReporter reporter, CancellationToken cancellationToken)
+        private async ValueTask TerminateProcessAsync(Process process, ProcessSpec processSpec, ProcessState state, ILogger logger, CancellationToken cancellationToken)
         {
             var forceOnly = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !processSpec.IsUserApplication;
 
             // Ctrl+C hasn't been sent.
-            TerminateProcess(process, state, reporter, forceOnly);
+            TerminateProcess(process, state, logger, forceOnly);
 
             if (forceOnly)
             {
-                _ = await WaitForExitAsync(process, state, timeout: null, reporter, cancellationToken);
+                _ = await WaitForExitAsync(process, state, timeout: null, logger, cancellationToken);
                 return;
             }
 
             // Ctlr+C/SIGTERM has been sent, wait for the process to exit gracefully.
             if (processCleanupTimeout.TotalMilliseconds == 0 ||
-                !await WaitForExitAsync(process, state, processCleanupTimeout, reporter, cancellationToken))
+                !await WaitForExitAsync(process, state, processCleanupTimeout, logger, cancellationToken))
             {
                 // Force termination if the process is still running after the timeout.
-                TerminateProcess(process, state, reporter, force: true);
+                TerminateProcess(process, state, logger, force: true);
 
-                _ = await WaitForExitAsync(process, state, timeout: null, reporter, cancellationToken);
+                _ = await WaitForExitAsync(process, state, timeout: null, logger, cancellationToken);
             }
         }
 
-        private static async ValueTask<bool> WaitForExitAsync(Process process, ProcessState state, TimeSpan? timeout, IReporter reporter, CancellationToken cancellationToken)
+        private static async ValueTask<bool> WaitForExitAsync(Process process, ProcessState state, TimeSpan? timeout, ILogger logger, CancellationToken cancellationToken)
         {
             // On Linux simple call WaitForExitAsync does not work reliably (it may hang).
             // As a workaround we poll for HasExited.
@@ -272,7 +268,7 @@ namespace Microsoft.DotNet.Watch
             {
                 try
                 {
-                    reporter.Verbose($"Waiting for process {state.ProcessId} to exit within {timeoutValue.TotalSeconds}s.");
+                    logger.Log(MessageDescriptor.WaitingForProcessToExitWithin, state.ProcessId, timeoutValue.TotalSeconds);
                     await task.WaitAsync(timeoutValue, cancellationToken);
                 }
                 catch (TimeoutException)
@@ -303,7 +299,7 @@ namespace Microsoft.DotNet.Watch
                     {
                     }
 
-                    reporter.Verbose($"Waiting for process {state.ProcessId} to exit ({i++}).");
+                    logger.Log(MessageDescriptor.WaitingForProcessToExit, state.ProcessId, i++);
 
                     try
                     {
@@ -319,7 +315,7 @@ namespace Microsoft.DotNet.Watch
             return true;
         }
 
-        private static void TerminateProcess(Process process, ProcessState state, IReporter reporter, bool force)
+        private static void TerminateProcess(Process process, ProcessState state, ILogger logger, bool force)
         {
             try
             {
@@ -327,47 +323,56 @@ namespace Microsoft.DotNet.Watch
                 {
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
-                        TerminateWindowsProcess(process, state, reporter, force);
+                        TerminateWindowsProcess(process, state, logger, force);
                     }
                     else
                     {
-                        TerminateUnixProcess(state, reporter, force);
+                        TerminateUnixProcess(state, logger, force);
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                reporter.Verbose($"Error while killing process {state.ProcessId}: {ex.Message}");
-#if DEBUG
-                reporter.Verbose(ex.ToString());
-#endif
+                logger.Log(MessageDescriptor.FailedToKillProcess, state.ProcessId, e.Message);
             }
         }
 
-        private static void TerminateWindowsProcess(Process process, ProcessState state, IReporter reporter, bool force)
+        private static void TerminateWindowsProcess(Process process, ProcessState state, ILogger logger, bool force)
         {
-            var processId = state.ProcessId;
-
-            reporter.Verbose($"Terminating process {processId} ({(force ? "Kill" : "Ctrl+C")}).");
+            var signalName = force ? "Kill" : "Ctrl+C";
+            logger.Log(MessageDescriptor.TerminatingProcess, state.ProcessId, signalName);
 
             if (force)
             {
-                process.Kill();
+                try
+                {
+                    process.Kill();
+                }
+                catch (Exception e)
+                {
+                    logger.Log(MessageDescriptor.FailedToSendSignalToProcess, signalName, state.ProcessId, e.Message);
+                }
             }
             else
             {
-                ProcessUtilities.SendWindowsCtrlCEvent(processId, m => reporter.Verbose(m));
+                var error = ProcessUtilities.SendWindowsCtrlCEvent(state.ProcessId);
+                if (error != null)
+                {
+                    logger.Log(MessageDescriptor.FailedToSendSignalToProcess, signalName, state.ProcessId, error);
+                }
             }
         }
 
-        private static void TerminateUnixProcess(ProcessState state, IReporter reporter, bool force)
+        private static void TerminateUnixProcess(ProcessState state, ILogger logger, bool force)
         {
-            reporter.Verbose($"Terminating process {state.ProcessId} ({(force ? "SIGKILL" : "SIGTERM")}).");
+            var signalName = force ? "SIGKILL" : "SIGTERM";
+            logger.Log(MessageDescriptor.TerminatingProcess, state.ProcessId, signalName);
 
-            ProcessUtilities.SendPosixSignal(
-                state.ProcessId,
-                signal: force ? ProcessUtilities.SIGKILL : ProcessUtilities.SIGTERM,
-                log: m => reporter.Verbose(m));
+            var error = ProcessUtilities.SendPosixSignal(state.ProcessId, signal: force ? ProcessUtilities.SIGKILL : ProcessUtilities.SIGTERM);
+            if (error != null)
+            {
+                logger.Log(MessageDescriptor.FailedToSendSignalToProcess, signalName, state.ProcessId, error);
+            }
         }
     }
 }
