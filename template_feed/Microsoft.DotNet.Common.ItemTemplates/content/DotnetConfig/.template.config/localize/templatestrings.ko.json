@@ -1,0 +1,8 @@
+{
+  "author": "Microsoft",
+  "name": "dotnet config file",
+  "description": "A file for configuring dotnet CLI behavior.",
+  "symbols/runner/description": "The test runner to use.",
+  "symbols/runner/displayName": "Test runner",
+  "postActions/open-file/description": "Opens dotnet.config in the editor"
+}
