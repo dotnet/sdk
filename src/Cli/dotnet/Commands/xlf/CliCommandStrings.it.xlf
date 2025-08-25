@@ -1845,8 +1845,8 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="needs-review-translation">Nessun carico di lavoro installato, nulla da ripristinare. Eseguire 'ricerca del carico di lavoro DotNet' per trovare i carichi di lavoro da installare.</target>
-        <note>{Locked="dotnet workload search"}</note>
+        <target state="translated">Nessun carico di lavoro installato, nulla da ripristinare. Eseguire 'ricerca del carico di lavoro DotNet' per trovare i carichi di lavoro da installare.</target>
+        <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
@@ -2678,15 +2678,15 @@ Per impostazione predefinita, viene generato un pacchetto dipendente dal framewo
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRun">
-        <source>Unable to proceed with project '{0}'.
-Ensure you have a runnable project type.
-A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
-The current OutputType is '{2}'.</source>
-        <target state="needs-review-translation">Non è possibile eseguire il progetto.
+        <source>Unable to run your project.
+Ensure you have a runnable project type and ensure '{0}' supports this project.
+A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
+The current {1} is '{2}'.</source>
+        <target state="translated">Non è possibile eseguire il progetto.
 Assicurarsi che sia presente un tipo di progetto eseguibile e che '{0}' supporti tale progetto.
 Un progetto eseguibile deve essere destinato a un TFM eseguibile, ad esempio net5.0, inoltre OutputType deve essere impostato su 'Exe'.
 Il valore corrente di {1} è '{2}'.</target>
-        <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
+        <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
