@@ -3,10 +3,15 @@
 
 using Microsoft.Win32;
 
+#if NET
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
+#endif
+
 namespace Microsoft.DotNet.Cli.Utils;
 
 #pragma warning disable CA1416
-internal class WindowsRegistryEnvironmentPathEditor : IWindowsRegistryEnvironmentPathEditor
+internal partial class WindowsRegistryEnvironmentPathEditor : IWindowsRegistryEnvironmentPathEditor
 {
     private static string Path = "PATH";
     public string? Get(SdkEnvironmentVariableTarget currentUserBeforeEvaluation)
@@ -60,8 +65,18 @@ internal class WindowsRegistryEnvironmentPathEditor : IWindowsRegistryEnvironmen
         return baseKey.OpenSubKey(keyName, writable: writable);
     }
 
-    [DllImport("user32.dll", EntryPoint = "SendMessageTimeoutW")]
-    private static extern IntPtr SendMessageTimeout(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam, int flags, int timeout, out IntPtr pdwResult);
+#if NET
+        [LibraryImport("user32.dll", EntryPoint = "SendMessageTimeoutW")]
+#else
+        [DllImport("user32.dll", EntryPoint = "SendMessageTimeoutW")]
+#endif
+        internal static
+#if NET
+        partial
+#else
+        extern
+#endif
+    IntPtr SendMessageTimeout(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam, int flags, int timeout, out IntPtr pdwResult);
 
     private const int HWND_BROADCAST = 0xffff;
     private const int WM_SETTINGCHANGE = 0x001A;
