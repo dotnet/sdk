@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Build.Graph;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -367,11 +368,14 @@ internal sealed class BrowserRefreshServer : IAsyncDisposable
     }
 
     public ValueTask RefreshBrowserAsync(CancellationToken cancellationToken)
-        => SendJsonMessageAsync(new AspNetCoreHotReloadApplied(), cancellationToken);
+    {
+        _logger.Log(MessageDescriptor.RefreshingBrowser);
+        return SendJsonMessageAsync(new AspNetCoreHotReloadApplied(), cancellationToken);
+    }
 
     public ValueTask ReportCompilationErrorsInBrowserAsync(ImmutableArray<string> compilationErrors, CancellationToken cancellationToken)
     {
-        _logger.Log(MessageDescriptor.UpdatingDiagnosticsInConnectedBrowsers);
+        _logger.Log(MessageDescriptor.UpdatingDiagnostics);
         if (compilationErrors.IsEmpty)
         {
             return SendJsonMessageAsync(new AspNetCoreHotReloadApplied(), cancellationToken);
