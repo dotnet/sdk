@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal record TestOptions(bool HasFilterMode, bool IsHelp);
 
-internal record PathOptions(string? ProjectPath, string? SolutionPath, string? DirectoryPath, string? ResultsDirectoryPath, string? ConfigFilePath, string? DiagnosticOutputDirectoryPath);
+internal record PathOptions(string? ProjectPath, string? SolutionPath, string? ResultsDirectoryPath, string? ConfigFilePath, string? DiagnosticOutputDirectoryPath);
 
 internal record BuildOptions(
     PathOptions PathOptions,
@@ -14,6 +14,6 @@ internal record BuildOptions(
     Utils.VerbosityOptions? Verbosity,
     bool NoLaunchProfile,
     bool NoLaunchProfileArguments,
-    int DegreeOfParallelism, 
+    int DegreeOfParallelism,
     List<string> UnmatchedTokens,
     IEnumerable<string> MSBuildArgs);
