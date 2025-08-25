@@ -47,12 +47,12 @@ internal sealed class BrowserRefreshServer : IAsyncDisposable
 
     public readonly EnvironmentOptions Options;
 
-    public BrowserRefreshServer(EnvironmentOptions options, ILoggerFactory loggerFactory)
+    public BrowserRefreshServer(EnvironmentOptions options, ILogger logger, ILoggerFactory loggerFactory)
     {
         _rsa = RSA.Create(2048);
         Options = options;
         _loggerFactory = loggerFactory;
-        _logger = loggerFactory.CreateLogger(ServerLogComponentName);
+        _logger = logger;
         _terminateWebSocket = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         _browserConnected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         _environmentHostName = EnvironmentVariables.AutoReloadWSHostName;
@@ -290,7 +290,10 @@ internal sealed class BrowserRefreshServer : IAsyncDisposable
         => SendAsync(SerializeJson(value), cancellationToken);
 
     public ValueTask SendReloadMessageAsync(CancellationToken cancellationToken)
-        => SendAsync(s_reloadMessage, cancellationToken);
+    {
+        _logger.Log(MessageDescriptor.ReloadingBrowser);
+        return SendAsync(s_reloadMessage, cancellationToken);
+    }
 
     public ValueTask SendWaitMessageAsync(CancellationToken cancellationToken)
         => SendAsync(s_waitMessage, cancellationToken);
@@ -304,8 +307,9 @@ internal sealed class BrowserRefreshServer : IAsyncDisposable
         CancellationToken cancellationToken)
     {
         var responded = false;
+        var openConnections = GetOpenBrowserConnections();
 
-        foreach (var connection in GetOpenBrowserConnections())
+        foreach (var connection in openConnections)
         {
             if (request != null)
             {
@@ -326,7 +330,11 @@ internal sealed class BrowserRefreshServer : IAsyncDisposable
             responded = true;
         }
 
-        if (!responded)
+        if (openConnections.Count == 0)
+        {
+            _logger.Log(MessageDescriptor.NoBrowserConnected);
+        }
+        else if (response != null && !responded)
         {
             _logger.Log(MessageDescriptor.FailedToReceiveResponseFromConnectedBrowser);
         }

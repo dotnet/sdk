@@ -201,6 +201,7 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor ApplyUpdate_FileContentDoesNotMatchBuiltSource = Create("{0} Expected if a source file is updated that is linked to project whose build is not up-to-date.", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor ConfiguredToLaunchBrowser = Create("dotnet-watch is configured to launch a browser on ASP.NET Core application startup.", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor ConfiguredToUseBrowserRefresh = Create("Configuring the app to use browser-refresh middleware", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor ReloadingBrowser = Create("Reloading browser.", Emoji.Default, MessageSeverity.Verbose);
         public static readonly MessageDescriptor IgnoringChangeInHiddenDirectory = Create("Ignoring change in hidden directory '{0}': {1} '{2}'", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor IgnoringChangeInOutputDirectory = Create("Ignoring change in output directory: {0} '{1}'", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor IgnoringChangeInExcludedFile = Create("Ignoring change in excluded file '{0}': {1}. Path matches {2} glob '{3}' set in '{4}'.", Emoji.Watch, MessageSeverity.Verbose);
@@ -230,6 +231,7 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor SendingStaticAssetUpdateRequest = Create("Sending static asset update request to connected browsers: '{0}'.", Emoji.Refresh, MessageSeverity.Verbose);
         public static readonly MessageDescriptor UpdatingDiagnosticsInConnectedBrowsers = Create("Updating diagnostics in connected browsers.", Emoji.Refresh, MessageSeverity.Verbose);
         public static readonly MessageDescriptor FailedToReceiveResponseFromConnectedBrowser = Create("Failed to receive response from a connected browser.", Emoji.Refresh, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor NoBrowserConnected = Create("No browser is connected.", Emoji.Refresh, MessageSeverity.Verbose);
         public static readonly MessageDescriptor HotReloadCapabilities = Create("Hot reload capabilities: {0}.", Emoji.HotReload, MessageSeverity.Verbose);
         public static readonly MessageDescriptor HotReloadSuspended = Create("Hot reload suspended. To continue hot reload, press \"Ctrl + R\".", Emoji.HotReload, MessageSeverity.Output);
         public static readonly MessageDescriptor UnableToApplyChanges = Create("Unable to apply changes due to compilation errors.", Emoji.HotReload, MessageSeverity.Output);
@@ -239,6 +241,7 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor HotReloadCanceledProcessExited = Create("Hot reload canceled because the process exited.", Emoji.HotReload, MessageSeverity.Verbose);
         public static readonly MessageDescriptor HotReloadProfile_BlazorHosted = Create("HotReloadProfile: BlazorHosted. '{0}' references BlazorWebAssembly project '{1}'.", Emoji.HotReload, MessageSeverity.Verbose);
         public static readonly MessageDescriptor HotReloadProfile_BlazorWebAssembly = Create("HotReloadProfile: BlazorWebAssembly.", Emoji.HotReload, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor HotReloadProfile_WebApplication = Create("HotReloadProfile: WebApplication.", Emoji.HotReload, MessageSeverity.Verbose);
         public static readonly MessageDescriptor HotReloadProfile_Default = Create("HotReloadProfile: Default.", Emoji.HotReload, MessageSeverity.Verbose);
         public static readonly MessageDescriptor WatchingFilesForChanges = Create("Watching {0} file(s) for changes", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor WatchingFilesForChanges_FilePath = Create("> {0}", Emoji.Watch, MessageSeverity.Verbose);
