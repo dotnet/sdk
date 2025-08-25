@@ -136,8 +136,11 @@ To mitigate this we will be fixing the `build-server shutdown` command to be rel
 Based on the value of the `RoslynCompilerType` property, the SDK sets property `RoslynTasksAssembly` to a full path to a [Roslyn build task DLL][roslyn-build-task],
 and the SDK targets use `$(RoslynTasksAssembly)` to load the build task.
 
-The SDK also sets `RoslynTargetsPath` to the directory path of the roslyn tasks assembly. This property is used by some targets
-but it should be avoided if possible because the tasks assembly name can change as well, not just the directory path.
+The SDK also sets the following properties:
+- `RoslynTargetsPath` to the directory path of the roslyn tasks assembly. This property is used by some targets
+  but it should be avoided if possible because the tasks assembly name can change as well, not just the directory path.
+- `RoslynAssembliesPath` to the directory path of other roslyn assemblies (like `Microsoft.CodeAnalysis.dll`).
+  In builds using .NET Framework MSBuild, the path is set to the Roslyn directory that ships with MSBuild (no .NET Framework Roslyn assemblies ship with the .NET SDK).
 
 These values are recognized for property `RoslynCompilerType`:
 - `Core`: use the compiler that comes with the .NET SDK
