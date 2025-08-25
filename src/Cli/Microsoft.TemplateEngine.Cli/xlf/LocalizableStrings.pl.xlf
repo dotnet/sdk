@@ -830,6 +830,31 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">Chcesz uruchomić tę akcję [{0}(tak)|{1}(nie)]?</target>
         <note />
       </trans-unit>
+      <trans-unit id="PostAction_CreateDotnetConfig_CreatedNewSection">
+        <source>Created new section in 'dotnet.config' file</source>
+        <target state="new">Created new section in 'dotnet.config' file</target>
+        <note>{Locked="dotnet.config"}</note>
+      </trans-unit>
+      <trans-unit id="PostAction_CreateDotnetConfig_ManuallyUpdate">
+        <source>Updating existing values in 'dotnet.config' is not yet supported. Please, manually update 'dotnet.config' to have '{0}' under section '{1}'.</source>
+        <target state="new">Updating existing values in 'dotnet.config' is not yet supported. Please, manually update 'dotnet.config' to have '{0}' under section '{1}'.</target>
+        <note>{Locked="dotnet.config"}</note>
+      </trans-unit>
+      <trans-unit id="PostAction_CreateDotnetConfig_Succeeded">
+        <source>Successfully created 'dotnet.config' file.</source>
+        <target state="new">Successfully created 'dotnet.config' file.</target>
+        <note>{Locked="dotnet.config"}</note>
+      </trans-unit>
+      <trans-unit id="PostAction_CreateDotnetConfig_ValueAlreadyExist">
+        <source>The required value in 'dotnet.config' is already set.</source>
+        <target state="new">The required value in 'dotnet.config' is already set.</target>
+        <note>{Locked="dotnet.config"}</note>
+      </trans-unit>
+      <trans-unit id="PostAction_DotnetConfig_Error_ArgumentNotConfigured">
+        <source>Post action argument '{0}' is mandatory, but not configured.</source>
+        <target state="new">Post action argument '{0}' is mandatory, but not configured.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotBoolean">
         <source>Post action argument '{0}' is not a valid boolean value.</source>
         <target state="translated">Argument akcji „{0}” nie jest prawidłową wartością logiczną.</target>
