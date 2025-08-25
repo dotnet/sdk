@@ -1845,8 +1845,8 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">Nessun carico di lavoro installato, nulla da ripristinare. Eseguire 'ricerca del carico di lavoro DotNet' per trovare i carichi di lavoro da installare.</target>
-        <note />
+        <target state="needs-review-translation">Nessun carico di lavoro installato, nulla da ripristinare. Eseguire 'ricerca del carico di lavoro DotNet' per trovare i carichi di lavoro da installare.</target>
+        <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
@@ -2444,7 +2444,7 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
       <trans-unit id="PropertyDirectiveMissingParts">
         <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
         <target state="translated">La direttiva di proprietà deve avere due parti separate da '=', come '#:property PropertyName=PropertyValue': {0}</target>
-        <note>{0} is the file path and line number.</note>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
@@ -2682,10 +2682,10 @@ Per impostazione predefinita, viene generato un pacchetto dipendente dal framewo
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="new">Unable to proceed with project '{0}'.
-Ensure you have a runnable project type.
-A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
-The current OutputType is '{2}'.</target>
+        <target state="needs-review-translation">Non è possibile eseguire il progetto.
+Assicurarsi che sia presente un tipo di progetto eseguibile e che '{0}' supporti tale progetto.
+Un progetto eseguibile deve essere destinato a un TFM eseguibile, ad esempio net5.0, inoltre OutputType deve essere impostato su 'Exe'.
+Il valore corrente di {1} è '{2}'.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -2981,6 +2981,11 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <source>Standard output</source>
         <target state="translated">Output standard</target>
         <note />
+      </trans-unit>
+      <trans-unit id="StaticGraphRestoreNotSupported">
+        <source>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</source>
+        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</target>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
