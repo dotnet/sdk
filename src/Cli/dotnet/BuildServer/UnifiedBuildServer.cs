@@ -43,7 +43,8 @@ internal sealed class UnifiedBuildServer : IBuildServer
 
                 // Wait for the process to exit.
                 using var process = Process.GetProcessById(pid);
-                await process.WaitForExitAsync().ConfigureAwait(false);
+                var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(1)).Token;
+                await process.WaitForExitAsync(timeout).ConfigureAwait(false);
             }
             catch (Exception ex) when (ex is not GracefulException)
             {
