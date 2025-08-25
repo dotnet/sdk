@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -16,6 +17,14 @@ public interface IDotnetInstaller
     SdkInstallType GetConfiguredInstallType(out string? currentInstallPath);
 
     string? GetLatestInstalledAdminVersion();
+
+    void InstallSdks(string dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions);
+
+    void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null, bool? allowPrerelease = null, string? rollForward = null);
+
+    void ConfigureInstallType(SdkInstallType installType, string? dotnetRoot = null);
+
+
 }
 
 public enum SdkInstallType

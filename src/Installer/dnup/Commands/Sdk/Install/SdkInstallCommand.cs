@@ -210,76 +210,36 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         }
 
 
+        //  TODO: Implement transaction / rollback?
+        //  TODO: Use Mutex to avoid concurrent installs?
+
 
         SpectreAnsiConsole.MarkupInterpolated($"Installing .NET SDK [blue]{resolvedChannelVersion}[/] to [blue]{resolvedInstallPath}[/]...");
 
-        string downloadLink = "https://builds.dotnet.microsoft.com/dotnet/Sdk/9.0.303/dotnet-sdk-9.0.303-win-x64.exe";
+        SpectreAnsiConsole.Progress()
+            .Start(ctx =>
+            {
+                _dotnetInstaller.InstallSdks(resolvedInstallPath, ctx, new[] { resolvedChannelVersion }.Concat(additionalVersionsToInstall));
+            });
 
-        // Download the file to a temp path with progress
-        using (var httpClient = new System.Net.Http.HttpClient())
+        if (resolvedSetDefaultInstall == true)
         {
-            SpectreAnsiConsole.Progress()
-                .Start(ctx =>
-                {
-                    var task = ctx.AddTask($"Downloading .NET SDK {resolvedChannelVersion}");
-
-                    List<Action> additionalDownloads = additionalVersionsToInstall.Select(version =>
-                    {
-                        var additionalTask = ctx.AddTask($"Downloading .NET SDK {version}");
-                        return (Action)(() =>
-                        {
-                            Download(downloadLink, httpClient, additionalTask);
-                        });
-                    }).ToList();
-
-                    Download(downloadLink, httpClient, task);
-
-
-                    foreach (var additionalDownload in additionalDownloads)
-                    {
-                        additionalDownload();
-                    }
-                });
+            _dotnetInstaller.ConfigureInstallType(SdkInstallType.User, resolvedInstallPath);
         }
+
+        if (resolvedUpdateGlobalJson == true)
+        {
+            _dotnetInstaller.UpdateGlobalJson(globalJsonInfo!.GlobalJsonPath!, resolvedChannelVersion, globalJsonInfo.AllowPrerelease, globalJsonInfo.RollForward);
+        }
+
+
         SpectreAnsiConsole.WriteLine($"Complete!");
 
 
         return 0;
     }
 
-    void Download(string url, HttpClient httpClient, ProgressTask task)
-    {
-        //string tempFilePath = Path.Combine(Path.GetTempPath(), Path.GetFileName(url));
-        //using (var response = httpClient.GetAsync(url, System.Net.Http.HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult())
-        //{
-        //    response.EnsureSuccessStatusCode();
-        //    var contentLength = response.Content.Headers.ContentLength ?? 0;
-        //    using (var stream = response.Content.ReadAsStream())
-        //    using (var fileStream = File.Create(tempFilePath))
-        //    {
-        //        var buffer = new byte[81920];
-        //        long totalRead = 0;
-        //        int read;
-        //        while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
-        //        {
-        //            fileStream.Write(buffer, 0, read);
-        //            totalRead += read;
-        //            if (contentLength > 0)
-        //            {
-        //                task.Value = (double)totalRead / contentLength * 100;
-        //            }
-        //        }
-        //        task.Value = 100;
-        //    }
-        //}
-
-        for (int i = 0; i < 100; i++)
-        {
-            task.Increment(1);
-            Thread.Sleep(20); // Simulate some work
-        }
-        task.Value = 100;
-    }
+    
 
     string? ResolveChannelFromGlobalJson(string globalJsonPath)
     {
@@ -329,6 +289,72 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                 latestAdminVersion = "10.0.203";
             }
             return latestAdminVersion;
+        }
+
+        public void InstallSdks(string dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions)
+        {
+            //var task = progressContext.AddTask($"Downloading .NET SDK {resolvedChannelVersion}");
+            using (var httpClient = new System.Net.Http.HttpClient())
+            {
+                List<Action> downloads = sdkVersions.Select(version =>
+                {
+                    string downloadLink = "https://builds.dotnet.microsoft.com/dotnet/Sdk/9.0.303/dotnet-sdk-9.0.303-win-x64.exe";
+                    var task = progressContext.AddTask($"Downloading .NET SDK {version}");
+                    return (Action)(() =>
+                    {
+                        Download(downloadLink, httpClient, task);
+                    });
+                }).ToList();
+
+
+                foreach (var download in downloads)
+                {
+                    download();
+                }
+            }
+        }
+
+        void Download(string url, HttpClient httpClient, ProgressTask task)
+        {
+            //string tempFilePath = Path.Combine(Path.GetTempPath(), Path.GetFileName(url));
+            //using (var response = httpClient.GetAsync(url, System.Net.Http.HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult())
+            //{
+            //    response.EnsureSuccessStatusCode();
+            //    var contentLength = response.Content.Headers.ContentLength ?? 0;
+            //    using (var stream = response.Content.ReadAsStream())
+            //    using (var fileStream = File.Create(tempFilePath))
+            //    {
+            //        var buffer = new byte[81920];
+            //        long totalRead = 0;
+            //        int read;
+            //        while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+            //        {
+            //            fileStream.Write(buffer, 0, read);
+            //            totalRead += read;
+            //            if (contentLength > 0)
+            //            {
+            //                task.Value = (double)totalRead / contentLength * 100;
+            //            }
+            //        }
+            //        task.Value = 100;
+            //    }
+            //}
+
+            for (int i = 0; i < 100; i++)
+            {
+                task.Increment(1);
+                Thread.Sleep(20); // Simulate some work
+            }
+            task.Value = 100;
+        }
+
+        public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null, bool? allowPrerelease = null, string? rollForward = null)
+        {
+            SpectreAnsiConsole.WriteLine($"Updating {globalJsonPath} to SDK version {sdkVersion} (AllowPrerelease={allowPrerelease}, RollForward={rollForward})");
+        }
+        public void ConfigureInstallType(SdkInstallType installType, string? dotnetRoot = null)
+        {
+            SpectreAnsiConsole.WriteLine($"Configuring install type to {installType} (dotnetRoot={dotnetRoot})");
         }
     }
 

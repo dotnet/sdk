@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
+using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -98,5 +99,47 @@ public class DotnetInstaller : IDotnetInstaller
     {
         // TODO: Implement this
         return null;
+    }
+
+    public void InstallSdks(string dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions) => throw new NotImplementedException();
+    public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null, bool? allowPrerelease = null, string? rollForward = null) => throw new NotImplementedException();
+
+    public void ConfigureInstallType(SdkInstallType installType, string? dotnetRoot = null)
+    {
+        // Get current PATH
+        var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty;
+        var pathEntries = path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
+        string exeName = OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet";
+        // Remove only actual dotnet installation folders from PATH
+        pathEntries = pathEntries.Where(p => !File.Exists(Path.Combine(p, exeName))).ToList();
+
+        switch (installType)
+        {
+            case SdkInstallType.User:
+                if (string.IsNullOrEmpty(dotnetRoot))
+                    throw new ArgumentNullException(nameof(dotnetRoot));
+                // Add dotnetRoot to PATH
+                pathEntries.Insert(0, dotnetRoot);
+                // Set DOTNET_ROOT
+                Environment.SetEnvironmentVariable("DOTNET_ROOT", dotnetRoot, EnvironmentVariableTarget.User);
+                break;
+            case SdkInstallType.Admin:
+                if (string.IsNullOrEmpty(dotnetRoot))
+                    throw new ArgumentNullException(nameof(dotnetRoot));
+                // Add dotnetRoot to PATH
+                pathEntries.Insert(0, dotnetRoot);
+                // Unset DOTNET_ROOT
+                Environment.SetEnvironmentVariable("DOTNET_ROOT", null, EnvironmentVariableTarget.User);
+                break;
+            case SdkInstallType.None:
+                // Unset DOTNET_ROOT
+                Environment.SetEnvironmentVariable("DOTNET_ROOT", null, EnvironmentVariableTarget.User);
+                break;
+            default:
+                throw new ArgumentException($"Unknown install type: {installType}", nameof(installType));
+        }
+        // Update PATH
+        var newPath = string.Join(Path.PathSeparator, pathEntries);
+        Environment.SetEnvironmentVariable("PATH", newPath, EnvironmentVariableTarget.User);
     }
 }
