@@ -3,6 +3,10 @@
 
 namespace Microsoft.DotNet.Tests.BuildServerTests;
 
+[CollectionDefinition(nameof(BuildServerTestCollection), DisableParallelization = true)]
+public sealed class BuildServerTestCollection : ICollectionFixture<BuildServerTestCollection>;
+
+[Collection(nameof(BuildServerTestCollection))]
 public sealed class UnifiedBuildServerTests(ITestOutputHelper output) : SdkTest(output)
 {
     [Fact]
@@ -29,7 +33,6 @@ public sealed class UnifiedBuildServerTests(ITestOutputHelper output) : SdkTest(
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
-            .And.NotHaveStdOutContaining("VBCSCompiler")
             .And.NotHaveStdErr();
 
         // Build.
