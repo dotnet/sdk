@@ -200,7 +200,13 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor ApplyUpdate_ChangingEntryPoint = Create("{0} Press \"Ctrl + R\" to restart.", Emoji.Warning, MessageSeverity.Warning);
         public static readonly MessageDescriptor ApplyUpdate_FileContentDoesNotMatchBuiltSource = Create("{0} Expected if a source file is updated that is linked to project whose build is not up-to-date.", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor ConfiguredToLaunchBrowser = Create("dotnet-watch is configured to launch a browser on ASP.NET Core application startup.", Emoji.Watch, MessageSeverity.Verbose);
-        public static readonly MessageDescriptor ConfiguredToUseBrowserRefresh = Create("Configuring the app to use browser-refresh middleware", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor ConfiguredToUseBrowserRefresh = Create("Using browser-refresh middleware", Emoji.Default, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor SkippingConfiguringBrowserRefresh_SuppressedViaEnvironmentVariable = Create("Skipping configuring browser-refresh middleware since its refresh server suppressed via environment variable {0}.", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor SkippingConfiguringBrowserRefresh_TargetFrameworkNotSupported = Create("Skipping configuring browser-refresh middleware since the target framework version is not supported. For more information see 'https://aka.ms/dotnet/watch/unsupported-tfm'.", Emoji.Watch, MessageSeverity.Warning);
+        public static readonly MessageDescriptor UpdatingDiagnostics = Create("Updating diagnostics.", Emoji.Default, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor FailedToReceiveResponseFromConnectedBrowser = Create("Failed to receive response from a connected browser.", Emoji.Default, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor NoBrowserConnected = Create("No browser is connected.", Emoji.Default, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor RefreshingBrowser = Create("Refreshing browser.", Emoji.Default, MessageSeverity.Verbose);
         public static readonly MessageDescriptor ReloadingBrowser = Create("Reloading browser.", Emoji.Default, MessageSeverity.Verbose);
         public static readonly MessageDescriptor IgnoringChangeInHiddenDirectory = Create("Ignoring change in hidden directory '{0}': {1} '{2}'", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor IgnoringChangeInOutputDirectory = Create("Ignoring change in output directory: {0} '{1}'", Emoji.Watch, MessageSeverity.Verbose);
@@ -212,8 +218,6 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor Exited = Create("Exited", Emoji.Watch, MessageSeverity.Output);
         public static readonly MessageDescriptor ExitedWithUnknownErrorCode = Create("Exited with unknown error code", Emoji.Error, MessageSeverity.Error);
         public static readonly MessageDescriptor ExitedWithErrorCode = Create("Exited with error code {0}", Emoji.Error, MessageSeverity.Error);
-        public static readonly MessageDescriptor SkippingConfiguringBrowserRefresh_SuppressedViaEnvironmentVariable = Create("Skipping configuring browser-refresh middleware since its refresh server suppressed via environment variable {0}.", Emoji.Watch, MessageSeverity.Verbose);
-        public static readonly MessageDescriptor SkippingConfiguringBrowserRefresh_TargetFrameworkNotSupported = Create("Skipping configuring browser-refresh middleware since the target framework version is not supported. For more information see 'https://aka.ms/dotnet/watch/unsupported-tfm'.", Emoji.Watch, MessageSeverity.Warning);
         public static readonly MessageDescriptor FailedToLaunchProcess = Create("Failed to launch '{0}' with arguments '{1}': {2}", Emoji.Error, MessageSeverity.Error);
         public static readonly MessageDescriptor ApplicationFailed = Create("Application failed: {0}", Emoji.Error, MessageSeverity.Error);
         public static readonly MessageDescriptor ProcessRunAndExited = Create("Process id {0} ran for {1}ms and exited with exit code {2}.", Emoji.Watch, MessageSeverity.Verbose);
@@ -228,9 +232,6 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor HotReloadOfScopedCssFailed = Create("Hot reload of scoped css failed.", Emoji.Error, MessageSeverity.Error);
         public static readonly MessageDescriptor HotReloadOfStaticAssetsSucceeded = Create("Hot reload of static assets succeeded.", Emoji.HotReload, MessageSeverity.Output);
         public static readonly MessageDescriptor SendingStaticAssetUpdateRequest = Create("Sending static asset update request to connected browsers: '{0}'.", Emoji.Refresh, MessageSeverity.Verbose);
-        public static readonly MessageDescriptor UpdatingDiagnosticsInConnectedBrowsers = Create("Updating diagnostics in connected browsers.", Emoji.Refresh, MessageSeverity.Verbose);
-        public static readonly MessageDescriptor FailedToReceiveResponseFromConnectedBrowser = Create("Failed to receive response from a connected browser.", Emoji.Refresh, MessageSeverity.Verbose);
-        public static readonly MessageDescriptor NoBrowserConnected = Create("No browser is connected.", Emoji.Refresh, MessageSeverity.Verbose);
         public static readonly MessageDescriptor HotReloadCapabilities = Create("Hot reload capabilities: {0}.", Emoji.HotReload, MessageSeverity.Verbose);
         public static readonly MessageDescriptor HotReloadSuspended = Create("Hot reload suspended. To continue hot reload, press \"Ctrl + R\".", Emoji.HotReload, MessageSeverity.Output);
         public static readonly MessageDescriptor UnableToApplyChanges = Create("Unable to apply changes due to compilation errors.", Emoji.HotReload, MessageSeverity.Output);
@@ -245,8 +246,9 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor WatchingFilesForChanges = Create("Watching {0} file(s) for changes", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor WatchingFilesForChanges_FilePath = Create("> {0}", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor Building = Create("Building {0} ...", Emoji.Default, MessageSeverity.Output);
-        public static readonly MessageDescriptor BuildSucceeded = Create(" Build succeeded: {0}", Emoji.Default, MessageSeverity.Output);
-        public static readonly MessageDescriptor BuildFailed = Create(" Build failed: {0}", Emoji.Default, MessageSeverity.Output);
+        public static readonly MessageDescriptor BuildSucceeded = Create("Build succeeded: {0}", Emoji.Default, MessageSeverity.Output);
+        public static readonly MessageDescriptor BuildFailed = Create("Build failed: {0}", Emoji.Default, MessageSeverity.Output);
+        
     }
 
     internal interface IProcessOutputReporter
