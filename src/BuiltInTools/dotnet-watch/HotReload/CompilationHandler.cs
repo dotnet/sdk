@@ -526,7 +526,7 @@ namespace Microsoft.DotNet.Watch
 
                     foreach (var containingProjectNode in containingProjectNodes)
                     {
-                        foreach (var referencingProjectNode in new[] { containingProjectNode }.GetTransitivelyReferencingProjects())
+                        foreach (var referencingProjectNode in containingProjectNode.GetAncestorsAndSelf())
                         {
                             if (TryGetRunningProject(referencingProjectNode.ProjectInstance.FullPath, out var runningProjects))
                             {

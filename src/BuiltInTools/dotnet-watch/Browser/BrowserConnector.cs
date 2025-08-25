@@ -14,9 +14,6 @@ internal sealed partial class BrowserConnector(DotNetWatchContext context) : IAs
 {
     private readonly record struct ProjectKey(string projectPath, string targetFramework);
 
-    // This needs to be in sync with the version BrowserRefreshMiddleware is compiled against.
-    private static readonly Version s_minimumSupportedVersion = Versions.Version6_0;
-
     private static readonly Regex s_nowListeningRegex = GetNowListeningOnRegex();
     private static readonly Regex s_aspireDashboardUrlRegex = GetAspireDashboardUrlRegex();
 
@@ -107,12 +104,12 @@ internal sealed partial class BrowserConnector(DotNetWatchContext context) : IAs
     {
         var logger = context.LoggerFactory.CreateLogger(BrowserRefreshServer.ServerLogComponentName, projectNode.GetDisplayName());
 
-        if (!IsServerSupported(projectNode, appModel))
+        if (appModel is WebApplicationAppModel webApp && webApp.IsServerSupported(projectNode, context.EnvironmentOptions, logger))
         {
-            return null;
+            return new BrowserRefreshServer(context.EnvironmentOptions, logger, context.LoggerFactory);
         }
 
-        return new BrowserRefreshServer(context.EnvironmentOptions, logger, context.LoggerFactory);
+        return null;
     }
 
     public bool TryGetRefreshServer(ProjectGraphNode projectNode, [NotNullWhen(true)] out BrowserRefreshServer? server)
@@ -266,31 +263,6 @@ internal sealed partial class BrowserConnector(DotNetWatchContext context) : IAs
         }
 
         logger.Log(MessageDescriptor.ConfiguredToLaunchBrowser);
-        return true;
-    }
-
-    public bool IsServerSupported(ProjectGraphNode projectNode, HotReloadAppModel appModel)
-    {
-        if (context.EnvironmentOptions.SuppressBrowserRefresh)
-        {
-            context.Logger.Log(MessageDescriptor.SkippingConfiguringBrowserRefresh_SuppressedViaEnvironmentVariable.WithSeverityWhen(MessageSeverity.Error, appModel.RequiresBrowserRefresh), EnvironmentVariables.Names.SuppressBrowserRefresh);
-            return false;
-        }
-
-        if (!projectNode.IsNetCoreApp(minVersion: s_minimumSupportedVersion))
-        {
-            context.Logger.Log(MessageDescriptor.SkippingConfiguringBrowserRefresh_TargetFrameworkNotSupported.WithSeverityWhen(MessageSeverity.Error, appModel.RequiresBrowserRefresh));
-            return false;
-        }
-
-        // We only want to enable browser refresh if this is a WebApp (ASP.NET Core / Blazor app).
-        if (!projectNode.IsWebApp())
-        {
-            context.Logger.Log(MessageDescriptor.SkippingConfiguringBrowserRefresh_NotWebApp.WithSeverityWhen(MessageSeverity.Error, appModel.RequiresBrowserRefresh));
-            return false;
-        }
-
-        context.Logger.Log(MessageDescriptor.ConfiguredToUseBrowserRefresh);
         return true;
     }
 
