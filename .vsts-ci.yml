@@ -284,6 +284,7 @@ extends:
             publishUsingPipelines: true
             publishAssetsImmediately: true
             isAssetlessBuild: true
+            repositoryAlias: self
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022
