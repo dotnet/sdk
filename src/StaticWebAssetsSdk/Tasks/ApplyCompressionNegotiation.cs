@@ -16,7 +16,7 @@ public class ApplyCompressionNegotiation : Task
     [Required]
     public ITaskItem[] CandidateAssets { get; set; }
 
-    public bool AttachWeakETagToCompressedAssets { get; set; }
+    public string AttachWeakETagToCompressedAssets { get; set; }
 
     [Output]
     public ITaskItem[] UpdatedEndpoints { get; set; }
@@ -248,6 +248,27 @@ public class ApplyCompressionNegotiation : Task
             Quality = quality
         };
         Log.LogMessage(MessageImportance.Low, "  Created Content-Encoding selector for compressed asset '{0}' with size '{1}' is '{2}'", encodingSelector.Value, encodingSelector.Quality, relatedEndpointCandidate.Route);
+
+        // Handle EndpointProperty case for ETag
+        var endpointProperties = relatedEndpointCandidate.EndpointProperties.ToList();
+        if (string.Equals(AttachWeakETagToCompressedAssets, "EndpointProperty", StringComparison.Ordinal))
+        {
+            // Find ETag header in the related endpoint candidate
+            foreach (var header in relatedEndpointCandidate.ResponseHeaders)
+            {
+                if (string.Equals(header.Name, "ETag", StringComparison.Ordinal))
+                {
+                    Log.LogMessage(MessageImportance.Low, "  Adding original-resource endpoint property for related endpoint '{0}'", relatedEndpointCandidate.Route);
+                    endpointProperties.Add(new StaticWebAssetEndpointProperty
+                    {
+                        Name = "original-resource",
+                        Value = header.Value
+                    });
+                    break;
+                }
+            }
+        }
+
         var endpointCopy = new StaticWebAssetEndpoint
         {
             AssetFile = compressedAsset.Identity,
@@ -256,7 +277,7 @@ public class ApplyCompressionNegotiation : Task
                 ..relatedEndpointCandidate.Selectors,
                 encodingSelector
             ],
-            EndpointProperties = relatedEndpointCandidate.EndpointProperties
+            EndpointProperties = [.. endpointProperties]
         };
         var headers = new List<StaticWebAssetEndpointResponseHeader>(7);
         ApplyCompressedEndpointHeaders(headers, compressedEndpoint, relatedEndpointCandidate.Route);
@@ -373,7 +394,7 @@ public class ApplyCompressionNegotiation : Task
                 Log.LogMessage(MessageImportance.Low, "  Adding header '{0}' to related endpoint '{1}'", header.Name, relatedEndpointCandidate.Route);
                 headers.Add(header);
             }
-            else if (AttachWeakETagToCompressedAssets && string.Equals(header.Name, "ETag", StringComparison.Ordinal))
+            else if (string.Equals(AttachWeakETagToCompressedAssets, "ResponseHeader", StringComparison.Ordinal) && string.Equals(header.Name, "ETag", StringComparison.Ordinal))
             {
                 // A resource can have multiple ETags. Since the uncompressed resource has an ETag,
                 // and we are serving the compressed resource from the same URL, we need to update
