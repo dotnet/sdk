@@ -335,7 +335,6 @@ namespace Microsoft.DotNet.Watch
                         runningProject.Logger.Log(MessageDescriptor.HotReloadSucceeded);
                         if (runningProject.BrowserRefreshServer is { } server)
                         {
-                            runningProject.Logger.LogDebug("Refreshing browser.");
                             await server.RefreshBrowserAsync(cancellationToken);
                         }
                     }
