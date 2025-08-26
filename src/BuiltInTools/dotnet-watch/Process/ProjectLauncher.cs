@@ -12,6 +12,7 @@ internal sealed class ProjectLauncher(
     DotNetWatchContext context,
     ProjectNodeMap projectMap,
     BrowserConnector browserConnector,
+    BrowserLauncher browserLauncher,
     CompilationHandler compilationHandler,
     int iteration)
 {
@@ -106,7 +107,8 @@ internal sealed class ProjectLauncher(
             }
         }
 
-        var browserRefreshServer = await browserConnector.GetOrCreateBrowserRefreshServerAsync(projectNode, processSpec, environmentBuilder, projectOptions, appModel, cancellationToken);
+        var browserRefreshServer = await browserConnector.GetOrCreateBrowserRefreshServerAsync(projectNode, appModel, cancellationToken);
+        browserRefreshServer?.SetEnvironmentVariables(environmentBuilder);
 
         var arguments = new List<string>()
         {
@@ -123,6 +125,10 @@ internal sealed class ProjectLauncher(
         arguments.AddRange(projectOptions.CommandArguments);
 
         processSpec.Arguments = arguments;
+
+        // Attach trigger to the process that detects when the web server reports to the output that it's listening.
+        // Launches browser on the URL found in the process output for root projects.
+        browserLauncher.InstallBrowserLaunchTrigger(processSpec, projectNode, projectOptions, browserRefreshServer, cancellationToken);
 
         return await compilationHandler.TrackRunningProjectAsync(
             projectNode,
