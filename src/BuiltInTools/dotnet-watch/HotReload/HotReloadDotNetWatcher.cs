@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Watch
             {
                 var consoleInput = new ConsoleInputReader(_console, context.Options.Quiet, context.EnvironmentOptions.SuppressEmojis);
 
-                var noPrompt = EnvironmentVariables.RestartOnRudeEdit;
+                var noPrompt = context.EnvironmentOptions.RestartOnRudeEdit;
                 if (noPrompt)
                 {
                     context.Logger.LogDebug("DOTNET_WATCH_RESTART_ON_RUDE_EDIT = 'true'. Will restart without prompt.");
