@@ -170,7 +170,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BrotliCompressionLevel Condition="'$(_BlazorBrotliCompressionLevel)' != ''">$(_BlazorBrotliCompressionLevel)</BrotliCompressionLevel>
 
     <!-- Attach weak ETag to compressed assets -->
-    <AttachWeakETagToCompressedAssetsDuringDevelopment Condition="'$(AttachWeakETagToCompressedAssetsDuringDevelopment)' == '' and '$(Configuration)' == 'Debug'">true</AttachWeakETagToCompressedAssetsDuringDevelopment>
+    <LinkAlternativeRepresentationsToOriginalResource Condition="'$(LinkAlternativeRepresentationsToOriginalResource)' == '' and '$(_TargetingNET100OrLater)' == 'true'">EndpointProperty</LinkAlternativeRepresentationsToOriginalResource>
+    <LinkAlternativeRepresentationsToOriginalResource Condition="'$(LinkAlternativeRepresentationsToOriginalResource)' == ''">ResponseHeader</LinkAlternativeRepresentationsToOriginalResource>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -253,7 +254,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ApplyCompressionNegotiation
       CandidateEndpoints="@(StaticWebAssetEndpoint)"
       CandidateAssets="@(_CompressionCurrentProjectBuildAssets)"
-      AttachWeakETagToCompressedAssets="$(AttachWeakETagToCompressedAssetsDuringDevelopment)"
+      AttachWeakETagToCompressedAssets="$(LinkAlternativeRepresentationsToOriginalResource)"
     >
       <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedCompressionBuildEndpoints" />
     </ApplyCompressionNegotiation>
@@ -377,7 +378,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ApplyCompressionNegotiation
       CandidateEndpoints="@(StaticWebAssetEndpoint)"
-      CandidateAssets="@(_CompressionCurrentProjectPublishAssets)">
+      CandidateAssets="@(_CompressionCurrentProjectPublishAssets)"
+      AttachWeakETagToCompressedAssets="$(LinkAlternativeRepresentationsToOriginalResource)">
       <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedCompressionPublishEndpoints" />
     </ApplyCompressionNegotiation>
 
