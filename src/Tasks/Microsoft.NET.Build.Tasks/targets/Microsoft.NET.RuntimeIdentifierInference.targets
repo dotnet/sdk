@@ -105,7 +105,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                  '$(RuntimeIdentifier)' == '' and
                  '$(_IsExecutable)' == 'true' and
                  '$(IsRidAgnostic)' != 'true' and
-                 ('$(PackAsTool)' != true or '$(_IsPacking)' != 'true') and
+                 '$(PackAsTool)' != true and
                  (
                    '$(SelfContained)' == 'true' or
                    ('$(_IsPublishing)' == 'true' and
