@@ -31,6 +31,8 @@
       TestAssets.PostActions.AddProjectToSolution....  TestAssets.PostActions.AddProjectToSolution.BasicInSolutionRoot                           Test Asset          
       TestAssets.PostActions.AddProjectToSolution....  TestAssets.PostActions.AddProjectToSolution.BasicWithFiles                                Test Asset          
       TestAssets.PostActions.AddProjectToSolution....  TestAssets.PostActions.AddProjectToSolution.BasicWithIndexes                              Test Asset          
+      TestAssets.PostActions.CreateOrUpdateDotnetC...  TestAssets.PostActions.CreateOrUpdateDotnetConfig.AddNewSection                           Test Asset          
+      TestAssets.PostActions.CreateOrUpdateDotnetC...  TestAssets.PostActions.CreateOrUpdateDotnetConfig.CreateNonExisting                       Test Asset          
       TestAssets.PostActions.Instructions.Basic        TestAssets.PostActions.Instructions.Basic                                                 Test Asset          
       TestAssets.PostActions.RestoreNuGet.Basic        TestAssets.PostActions.RestoreNuGet.Basic                                                 Test Asset          
       TestAssets.PostActions.RestoreNuGet.BasicWit...  TestAssets.PostActions.RestoreNuGet.BasicWithFiles                                        Test Asset          
