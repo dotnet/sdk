@@ -19,7 +19,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
     private readonly bool? _updateGlobalJson = result.GetValue(SdkInstallCommandParser.UpdateGlobalJsonOption);
     private readonly bool _interactive = result.GetValue(SdkInstallCommandParser.InteractiveOption);
 
-    private readonly IDotnetInstaller _dotnetInstaller = new EnvironmentVariableMockDotnetInstaller();
+    private readonly IBootstrapperController _dotnetInstaller = new EnvironmentVariableMockDotnetInstaller();
     private readonly IReleaseInfoProvider _releaseInfoProvider = new EnvironmentVariableMockReleaseInfoProvider();
 
     public override int Execute()
@@ -37,7 +37,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         var globalJsonInfo = _dotnetInstaller.GetGlobalJsonInfo(Environment.CurrentDirectory);
 
         string? currentInstallPath;
-        InstallType defaultInstallState =  _dotnetInstaller.GetConfiguredInstallType(out currentInstallPath);
+        InstallType defaultInstallState = _dotnetInstaller.GetConfiguredInstallType(out currentInstallPath);
 
         string? resolvedInstallPath = null;
 
@@ -239,7 +239,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         return 0;
     }
 
-    
+
 
     string? ResolveChannelFromGlobalJson(string globalJsonPath)
     {
@@ -253,7 +253,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         return false;
     }
 
-    class EnvironmentVariableMockDotnetInstaller : IDotnetInstaller
+    class EnvironmentVariableMockDotnetInstaller : IBootstrapperController
     {
         public GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory)
         {

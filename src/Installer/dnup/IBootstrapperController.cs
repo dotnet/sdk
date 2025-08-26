@@ -8,7 +8,7 @@ using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
-public interface IDotnetInstaller
+public interface IBootstrapperController
 {
     GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory);
 
