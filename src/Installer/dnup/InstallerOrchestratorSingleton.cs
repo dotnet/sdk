@@ -16,54 +16,60 @@ internal class InstallerOrchestratorSingleton
 
     public static InstallerOrchestratorSingleton Instance => _instance;
 
-    private ScopedMutex directoryToMutex(string directory) => new ScopedMutex("Global\\" + directory.GetHashCode());
-
-    private ScopedMutex finalizeLock() => new ScopedMutex("Global\\Finalize");
+    private ScopedMutex modifyInstallStateMutex() => new ScopedMutex("Global\\Finalize");
 
     public void Install(DotnetInstallRequest installRequest)
     {
         // Map InstallRequest to DotnetInstallObject by converting channel to fully specified version
+        DotnetInstall install = new ManifestChannelVersionResolver().Resolve(installRequest);
 
-        // Grab the mutex on the directory to operate on from installRequest
-        // Check if the install already exists, if so, return
-        // If not, release the mutex and begin the installer.prepare
-        // prepare will download the correct archive to a random user protected folder
-        // it will then verify the downloaded archive signature / hash.
-        //
+        // Check if the install already exists and we don't need to do anything
+        using (var finalizeLock = modifyInstallStateMutex())
+        {
+            if (InstallAlreadyExists(installRequest.ResolvedDirectory, install))
+            {
+                return;
+            }
+        }
 
-        // Once prepare is over, grab the finalize lock, then grab the directory lock
-        // Check once again if the install exists, if so, return.
-        // Run installer.finalize which will extract to the directory to install to.
-        // validate the install, then write to the dnup shared manifest
-        // Release
+        ArchiveDotnetInstaller installer = new ArchiveDotnetInstaller(install);
+        installer.Prepare();
 
-        // Clean up the temp folder
+        // Extract and commit the install to the directory
+        using (var finalizeLock = modifyInstallStateMutex())
+        {
+            if (InstallAlreadyExists(installRequest.ResolvedDirectory, install))
+            {
+                return;
+            }
+
+            installer.Commit();
+
+            ArchiveInstallationValidator validator = new ArchiveInstallationValidator();
+            if (validator.Validate(install))
+            {
+                var manifestManager = new DnupSharedManifest();
+                manifestManager.AddInstalledVersion(install);
+            }
+            else
+            {
+                // Handle validation failure
+            }
+        }
+
+        // return exit code or 0
     }
 
     // Add a doc string mentioning you must hold a mutex over the directory
     private IEnumerable<DotnetInstall> GetExistingInstalls(string directory)
     {
-        using (var lockScope = directoryToMutex(directory))
-        {
-            if (lockScope.HasHandle)
-            {
-                // TODO: Implement logic to get existing installs
-                return Enumerable.Empty<DotnetInstall>();
-            }
-            return Enumerable.Empty<DotnetInstall>();
-        }
+        // assert we have the finalize lock
+        return Enumerable.Empty<DotnetInstall>();
     }
 
-    private bool InstallAlreadyExists(string directory)
+    private bool InstallAlreadyExists(string directory, DotnetInstall install)
     {
-        using (var lockScope = directoryToMutex(directory))
-        {
-            if (lockScope.HasHandle)
-            {
-                // TODO: Implement logic to check if install already exists
-                return false;
-            }
-            return false;
-        }
+        // assert we have the finalize lock
+        return false;
     }
 }

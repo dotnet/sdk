@@ -101,7 +101,19 @@ public class BootstrapperController : IBootstrapperController
         return null;
     }
 
-    public void InstallSdks(string dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions) => throw new NotImplementedException();
+    public void InstallSdks(string dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions)
+    {
+        // TODO: Implement proper channel version resolution and parameter mapping
+        DotnetInstallRequest request = new DotnetInstallRequest(
+            "TODO_CHANNEL_VERSION",
+            dotnetRoot,
+            InstallType.User,
+            InstallMode.SDK,
+            InstallArchitecture.x64
+        );
+
+        InstallerOrchestratorSingleton.Instance.Install(request);
+    }
     public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null, bool? allowPrerelease = null, string? rollForward = null) => throw new NotImplementedException();
 
     public void ConfigureInstallType(InstallType installType, string? dotnetRoot = null)
