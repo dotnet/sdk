@@ -193,15 +193,6 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             if (runDotnetTest)
             {
-                var isMTP = testRunner == "Microsoft.Testing.Platform";
-                if (isMTP)
-                {
-                    File.WriteAllText(Path.Combine(outputDirectory, "dotnet.config"), """
-                        [dotnet.test.runner]
-                        name = "Microsoft.Testing.Platform"
-                        """);
-                }
-
                 var result = new DotnetTestCommand(_log, false)
                 .WithWorkingDirectory(outputDirectory)
 #pragma warning disable SA1010 // Opening square brackets should be spaced correctly - false positive. Current formatting is good.
