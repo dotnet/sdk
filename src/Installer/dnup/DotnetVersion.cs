@@ -200,6 +200,11 @@ internal readonly record struct DotnetVersion : IComparable<DotnetVersion>, ICom
         return Value.Replace($".{buildHash}", "");
     }
 
+    public bool IsValidMajorVersion()
+    {
+        return Major != 0;
+    }
+
     /// <summary>
     /// Detects whether this is an SDK or Runtime version based on the version format.
     /// SDK versions typically have 3-digit patch numbers (feature bands), Runtime versions have 1-2 digit patch numbers.

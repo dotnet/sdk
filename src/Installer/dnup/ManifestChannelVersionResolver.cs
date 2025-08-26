@@ -10,10 +10,26 @@ internal class ManifestChannelVersionResolver
 {
     public DotnetInstall Resolve(DotnetInstallRequest dotnetChannelVersion)
     {
-        // TODO: Implement logic to resolve the channel version from the manifest
-        // For now, return a placeholder
+        string fullySpecifiedVersion = dotnetChannelVersion.ChannelVersion;
+
+        DotnetVersion dotnetVersion = new DotnetVersion(fullySpecifiedVersion);
+
+        // Resolve strings or other options
+        if (!dotnetVersion.IsValidMajorVersion())
+        {
+        // TODO ping the r-manifest to handle 'lts' 'latest' etc
+        // Do this in a separate class and use dotnet release library to do so
+        // https://github.com/dotnet/deployment-tools/tree/main/src/Microsoft.Deployment.DotNet.Releases
+        }
+
+        // Make sure the version is fully specified
+        if (!dotnetVersion.IsFullySpecified)
+        {
+            // TODO ping the r-manifest to resolve latest within the specified qualities
+        }
+
         return new DotnetInstall(
-            "TODO_RESOLVED_VERSION",
+            fullySpecifiedVersion,
             dotnetChannelVersion.ResolvedDirectory,
             dotnetChannelVersion.Type,
             dotnetChannelVersion.Mode,
