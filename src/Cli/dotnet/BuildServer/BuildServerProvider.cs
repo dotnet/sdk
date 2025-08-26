@@ -22,6 +22,11 @@ internal class BuildServerProvider(
 
     public IEnumerable<IBuildServer> EnumerateBuildServers(ServerEnumerationFlags flags = ServerEnumerationFlags.All)
     {
+        if ((flags & ServerEnumerationFlags.Unified) == ServerEnumerationFlags.Unified)
+        {
+            yield return new UnifiedBuildServer();
+        }
+
         if ((flags & ServerEnumerationFlags.MSBuild) == ServerEnumerationFlags.MSBuild)
         {
             // Yield a single MSBuild server (handles server discovery itself)

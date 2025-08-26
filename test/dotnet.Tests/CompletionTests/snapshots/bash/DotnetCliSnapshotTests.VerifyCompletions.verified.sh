@@ -212,7 +212,7 @@ _testhost_build_server_shutdown() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--msbuild --vbcscompiler --razor --help" 
+    opts="--msbuild --vbcscompiler --razor --unified --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )

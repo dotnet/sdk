@@ -27,6 +27,12 @@ internal static class BuildServerShutdownCommandParser
         Arity = ArgumentArity.Zero
     };
 
+    public static readonly Option<bool> UnifiedOption = new("--unified")
+    {
+        Description = CliCommandStrings.UnifiedOptionDescription,
+        Arity = ArgumentArity.Zero
+    };
+
     private static readonly Command Command = ConstructCommand();
 
     public static Command GetCommand()
@@ -41,6 +47,7 @@ internal static class BuildServerShutdownCommandParser
         command.Options.Add(MSBuildOption);
         command.Options.Add(VbcsOption);
         command.Options.Add(RazorOption);
+        command.Options.Add(UnifiedOption);
 
         command.SetAction((parseResult) => new BuildServerShutdownCommand(parseResult).Execute());
 
