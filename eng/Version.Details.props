@@ -73,8 +73,6 @@ This file should be imported by eng/Versions.props
     <MicrosoftNetCompilersToolsetFrameworkPackageVersion>5.0.0-2.25416.109</MicrosoftNetCompilersToolsetFrameworkPackageVersion>
     <MicrosoftNETHostModelPackageVersion>10.0.0-rc.2.25416.109</MicrosoftNETHostModelPackageVersion>
     <MicrosoftNETILLinkTasksPackageVersion>10.0.0-rc.2.25416.109</MicrosoftNETILLinkTasksPackageVersion>
-    <MicrosoftNETRuntimeEmscripten3156Cachewinx64PackageVersion>10.0.0-rc.2.25416.109</MicrosoftNETRuntimeEmscripten3156Cachewinx64PackageVersion>
-    <MicrosoftNETRuntimeEmscriptenSdkInternalPackageVersion>10.0.0-preview.7.25377.103</MicrosoftNETRuntimeEmscriptenSdkInternalPackageVersion>
     <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>10.0.0-preview.25416.109</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
     <MicrosoftNETSdkWindowsDesktopPackageVersion>10.0.0-rc.2.25416.109</MicrosoftNETSdkWindowsDesktopPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>18.0.0-preview-25416-109</MicrosoftNETTestSdkPackageVersion>
@@ -213,8 +211,6 @@ This file should be imported by eng/Versions.props
     <MicrosoftNetCompilersToolsetFrameworkVersion>$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)</MicrosoftNetCompilersToolsetFrameworkVersion>
     <MicrosoftNETHostModelVersion>$(MicrosoftNETHostModelPackageVersion)</MicrosoftNETHostModelVersion>
     <MicrosoftNETILLinkTasksVersion>$(MicrosoftNETILLinkTasksPackageVersion)</MicrosoftNETILLinkTasksVersion>
-    <MicrosoftNETRuntimeEmscripten3156Cachewinx64Version>$(MicrosoftNETRuntimeEmscripten3156Cachewinx64PackageVersion)</MicrosoftNETRuntimeEmscripten3156Cachewinx64Version>
-    <MicrosoftNETRuntimeEmscriptenSdkInternalVersion>$(MicrosoftNETRuntimeEmscriptenSdkInternalPackageVersion)</MicrosoftNETRuntimeEmscriptenSdkInternalVersion>
     <MicrosoftNETSdkRazorSourceGeneratorsTransportVersion>$(MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion)</MicrosoftNETSdkRazorSourceGeneratorsTransportVersion>
     <MicrosoftNETSdkWindowsDesktopVersion>$(MicrosoftNETSdkWindowsDesktopPackageVersion)</MicrosoftNETSdkWindowsDesktopVersion>
     <MicrosoftNETTestSdkVersion>$(MicrosoftNETTestSdkPackageVersion)</MicrosoftNETTestSdkVersion>
