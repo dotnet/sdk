@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -41,7 +40,6 @@ internal sealed class BrowserRefreshServer : IAsyncDisposable
     private readonly ILogger _logger;
     private readonly TaskCompletionSource _terminateWebSocket;
     private readonly TaskCompletionSource _browserConnected;
-    private readonly string? _environmentHostName;
 
     // initialized by StartAsync
     private IHost? _lazyServer;
@@ -57,7 +55,6 @@ internal sealed class BrowserRefreshServer : IAsyncDisposable
         _logger = logger;
         _terminateWebSocket = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         _browserConnected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        _environmentHostName = EnvironmentVariables.AutoReloadWSHostName;
     }
 
     public async ValueTask DisposeAsync()
@@ -108,7 +105,7 @@ internal sealed class BrowserRefreshServer : IAsyncDisposable
         Debug.Assert(_lazyServer == null);
         Debug.Assert(_lazyServerUrls == null);
 
-        var hostName = _environmentHostName ?? "127.0.0.1";
+        var hostName = Options.AutoReloadWebSocketHostName ?? "127.0.0.1";
 
         var supportsTLS = await SupportsTlsAsync(cancellationToken);
 
@@ -149,7 +146,7 @@ internal sealed class BrowserRefreshServer : IAsyncDisposable
 
         Debug.Assert(serverUrls != null);
 
-        if (_environmentHostName is null)
+        if (Options.AutoReloadWebSocketHostName is null)
         {
             return serverUrls.Select(s =>
                 s.Replace("http://127.0.0.1", "ws://localhost", StringComparison.Ordinal)
