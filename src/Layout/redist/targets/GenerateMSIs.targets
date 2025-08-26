@@ -223,7 +223,7 @@
           Outputs="$(SdkBundleFile)">
     <!-- Choose "latest" template MSI to go in bundle. -->
     <ItemGroup>
-      <!-- While we don't have 10.0 templates available (need SDK update, choose the 10.0 templates -->
+      <!-- While we don't have 11.0 templates available (need SDK update, choose the 10.0 templates -->
       <!-- <LatestTemplateInstallerComponent Include="@(TemplatesMsi)" Condition="'%(TemplatesMajorMinorVersion)' == '$(MajorMinorVersion)'"/> -->
       <LatestTemplateInstallerComponent Include="@(TemplatesMsi)" Condition="'%(TemplatesMajorMinorVersion)' == '10.0'"/>
     </ItemGroup>

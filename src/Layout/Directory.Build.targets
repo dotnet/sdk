@@ -17,12 +17,12 @@
     <ArtifactNameWithVersionSdk>dotnet-sdk-internal$(PgoTerm)-$(FullNugetVersion)-$(ProductMonikerRid)</ArtifactNameWithVersionSdk>
     <ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>dotnet-sdk$(PgoTerm)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
 
-    <SdkMSIInstallerFileName>$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFileName>
+    <SdkMSIInstallerFileName>dotnet-sdk-internal-10.0.100-rc.1-win-x64$(InstallerExtension)</SdkMSIInstallerFileName>
     <SdkMSIInstallerFile>$(ArtifactsNonShippingPackagesDir)$(SdkMSIInstallerFileName)</SdkMSIInstallerFile>
     <!-- When building the sdk bundle only, the sdk msi is acquired via DownloadBundledComponents. -->
     <SdkMSIInstallerFile Condition="'$(GenerateSdkBundleOnly)' == 'true'">$(DownloadsFolder)$(SdkMSIInstallerFileName)</SdkMSIInstallerFile>
 
-    <SdkPlaceholderMSIInstallerFile>$(ArtifactsNonShippingPackagesDir)dotnet-sdkplaceholder-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</SdkPlaceholderMSIInstallerFile>
+    <SdkPlaceholderMSIInstallerFile>dotnet-sdkplaceholder-10.0.100-rc.1-win-x64$(InstallerExtension)</SdkPlaceholderMSIInstallerFile>
   </PropertyGroup>
 
   <PropertyGroup>
