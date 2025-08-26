@@ -1,0 +1,92 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Build.Graph;
+using Microsoft.Extensions.Logging;
+
+namespace Microsoft.DotNet.Watch;
+
+internal sealed class BrowserRefreshServerFactory(ILoggerFactory loggerFactory, EnvironmentOptions environmentOptions) : IAsyncDisposable
+{
+    private readonly Lock _serversGuard = new();
+    private readonly Dictionary<ProjectInstanceId, BrowserRefreshServer?> _servers = [];
+
+    public async ValueTask DisposeAsync()
+    {
+        BrowserRefreshServer?[] serversToDispose;
+
+        lock (_serversGuard)
+        {
+            serversToDispose = _servers.Values.ToArray();
+            _servers.Clear();
+        }
+
+        await Task.WhenAll(serversToDispose.Select(async server =>
+        {
+            if (server != null)
+            {
+                await server.DisposeAsync();
+            }
+        }));
+    }
+
+    /// <summary>
+    /// A single browser refresh server is created for each project that supports browser launching.
+    /// When the project is rebuilt we reuse the same refresh server and browser instance.
+    /// Reload message is sent to the browser in that case.
+    /// </summary>
+    public async ValueTask<BrowserRefreshServer?> GetOrCreateBrowserRefreshServerAsync(ProjectGraphNode projectNode, HotReloadAppModel appModel, CancellationToken cancellationToken)
+    {
+        BrowserRefreshServer? server;
+        bool hasExistingServer;
+
+        var key = projectNode.GetProjectInstanceId();
+
+        lock (_serversGuard)
+        {
+            hasExistingServer = _servers.TryGetValue(key, out server);
+            if (!hasExistingServer)
+            {
+                server = TryCreateRefreshServer(projectNode, appModel);
+                _servers.Add(key, server);
+            }
+        }
+
+        if (server == null)
+        {
+            // browser refresh server isn't supported
+            return null;
+        }
+
+        if (!hasExistingServer)
+        {
+            // Start the server we just created:
+            await server.StartAsync(cancellationToken);
+        }
+
+        return server;
+    }
+
+    private BrowserRefreshServer? TryCreateRefreshServer(ProjectGraphNode projectNode, HotReloadAppModel appModel)
+    {
+        var logger = loggerFactory.CreateLogger(BrowserRefreshServer.ServerLogComponentName, projectNode.GetDisplayName());
+
+        if (appModel is WebApplicationAppModel webApp && webApp.IsServerSupported(projectNode, environmentOptions, logger))
+        {
+            return new BrowserRefreshServer(environmentOptions, logger, loggerFactory);
+        }
+
+        return null;
+    }
+
+    public bool TryGetRefreshServer(ProjectGraphNode projectNode, [NotNullWhen(true)] out BrowserRefreshServer? server)
+    {
+        var key = projectNode.GetProjectInstanceId();
+
+        lock (_serversGuard)
+        {
+            return _servers.TryGetValue(key, out server) && server != null;
+        }
+    }
+}
