@@ -29,9 +29,19 @@
       <_ArcadePatchNumber>$([MSBuild]::ValueOrDefault('$(_PatchNumber)', '000000'))</_ArcadePatchNumber>
     </PropertyGroup>
 
-    <CalculateTemplateVersions
+    <!-- <CalculateTemplateVersions
       BundledTemplates="@(BundledTemplates)"
       FullNugetVersion="$(FullNugetVersion)"
+      ProductMonikerRid="$(ProductMonikerRid)"
+      InstallerExtension="$(InstallerExtension)"
+      CombinedBuildNumberAndRevision="$(_ArcadePatchNumber)">
+      <Output TaskParameter="BundledTemplatesWithInstallPaths" ItemName="BundledTemplatesWithInstallPaths" />
+      <Output TaskParameter="TemplatesComponents" ItemName="TemplatesComponents" />
+    </CalculateTemplateVersions> -->
+
+    <CalculateTemplateVersions
+      BundledTemplates="@(BundledTemplates)"
+      FullNugetVersion="10.0.100-rc.1"
       ProductMonikerRid="$(ProductMonikerRid)"
       InstallerExtension="$(InstallerExtension)"
       CombinedBuildNumberAndRevision="$(_ArcadePatchNumber)">
