@@ -46,6 +46,11 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 try
                 {
                     await _next(context);
+
+                    // We complete the wrapper stream to ensure that any intermediate buffers
+                    // get fully flushed to the response stream. This is also required to
+                    // reliably determine whether script injection was performed.
+                    await responseStreamWrapper.CompleteAsync();
                 }
                 finally
                 {

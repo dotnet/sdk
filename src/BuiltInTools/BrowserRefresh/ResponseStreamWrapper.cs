@@ -1,10 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-// Based on https://github.com/RickStrahl/Westwind.AspnetCore.LiveReload/blob/128b5f524e86954e997f2c453e7e5c1dcc3db746/Westwind.AspnetCore.LiveReload/ResponseStreamWrapper.cs
-
-using System.Buffers;
+using System.Diagnostics;
 using System.IO.Compression;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -17,15 +16,16 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
     /// </summary>
     public class ResponseStreamWrapper : Stream
     {
-        private static readonly MediaTypeHeaderValue _textHtmlMediaType = new("text/html");
-        private readonly Stream _baseStream;
+        private static readonly MediaTypeHeaderValue s_textHtmlMediaType = new("text/html");
+
         private readonly HttpContext _context;
         private readonly ILogger _logger;
         private bool? _isHtmlResponse;
-        private bool _isGzipEncoded;
-        private BufferingStream? _bufferStream;
-        private GZipStream? _gzipStream;
-        private byte[]? _decompressBuffer;
+
+        private Stream _baseStream;
+        private ScriptInjectingStream? _scriptInjectingStream;
+        private Pipe? _pipe;
+        private Task? _gzipCopyTask;
         private bool _disposed;
 
         public ResponseStreamWrapper(HttpContext context, ILogger logger)
@@ -40,101 +40,25 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         public override bool CanWrite => true;
         public override long Length { get; }
         public override long Position { get; set; }
-        public bool ScriptInjectionPerformed { get; private set; }
-
-        public bool IsHtmlResponse => _isHtmlResponse ?? false;
+        public bool ScriptInjectionPerformed => _scriptInjectingStream?.ScriptInjectionPerformed == true;
+        public bool IsHtmlResponse => _isHtmlResponse == true;
 
         public override void Flush()
         {
             OnWrite();
-            if (_isGzipEncoded)
-            {
-                WriteRemainingBytes();
-            }
             _baseStream.Flush();
         }
 
-        public async override Task FlushAsync(CancellationToken cancellationToken)
+        public override async Task FlushAsync(CancellationToken cancellationToken)
         {
             OnWrite();
-            if (_isGzipEncoded)
-            {
-                WriteRemainingBytes();
-            }
-
             await _baseStream.FlushAsync(cancellationToken);
         }
 
         public override void Write(ReadOnlySpan<byte> buffer)
         {
             OnWrite();
-            var data = buffer;
-            if (IsHtmlResponse)
-            {
-                if (_isGzipEncoded)
-                {
-                    _bufferStream!.Write(buffer);
-                    if (!_bufferStream.HasEnoughBytes() || !TryRead(out data))
-                    {
-                        return;
-                    }
-                }
-
-                // Non-gzip HTML: attempt direct injection directly on provided buffer
-                if (!ScriptInjectionPerformed)
-                {
-                    ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, data);
-                    if (ScriptInjectionPerformed)
-                    {
-                        return;
-                    }
-                }
-            }
-            _baseStream.Write(data);
-        }
-
-        private bool TryRead(out ReadOnlyMemory<byte> data)
-        {
-            try
-            {
-                var read = _gzipStream!.Read(_decompressBuffer);
-                if (read > 0)
-                {
-                    data = _decompressBuffer.AsMemory(0, read);
-                    return true;
-                }
-                data = Memory<byte>.Empty;
-                return false;
-            }
-            catch
-            {
-                // not enough data
-                data = Memory<byte>.Empty;
-                return false;
-            }
-        }
-
-        private bool TryRead(out ReadOnlySpan<byte> data)
-        {
-            try
-            {
-                var read = _gzipStream!.Read(_decompressBuffer);
-                if (read > 0)
-                {
-                    data = _decompressBuffer.AsSpan(0, read);
-                    return true;
-                }
-
-                data = Span<byte>.Empty;
-                return false;
-
-            }
-            catch
-            {
-                // not enough data
-                data = Span<byte>.Empty;
-                return false;
-            }
+            _baseStream.Write(buffer);
         }
 
         public override void WriteByte(byte value)
@@ -147,27 +71,6 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         {
             OnWrite();
             ReadOnlyMemory<byte> data = buffer.AsMemory(offset, count);
-            if (IsHtmlResponse)
-            {
-                if (_isGzipEncoded)
-                {
-                    _bufferStream!.Write(buffer);
-                    if (!_bufferStream.HasEnoughBytes() || !TryRead(out data))
-                    {
-                        return;
-                    }
-                }
-
-                if (!ScriptInjectionPerformed)
-                {
-                    ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, data.Span);
-                    if (ScriptInjectionPerformed)
-                    {
-                        return;
-                    }
-                }
-            }
-
             _baseStream.Write(data.Span);
         }
 
@@ -175,25 +78,6 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         {
             OnWrite();
             ReadOnlyMemory<byte> data = buffer.AsMemory(offset, count);
-            if (IsHtmlResponse)
-            {
-                if (_isGzipEncoded)
-                {
-                    await _bufferStream!.WriteAsync(buffer, offset, count, cancellationToken);
-                    if(!_bufferStream.HasEnoughBytes() || !TryRead(out data))
-                    {
-                        return;
-                    }
-                }
-                if (!ScriptInjectionPerformed)
-                {
-                    ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(_baseStream, data, cancellationToken);
-                    if (ScriptInjectionPerformed)
-                    {
-                        return;
-                    }
-                }
-            }
             await _baseStream.WriteAsync(data, cancellationToken);
         }
 
@@ -201,25 +85,6 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         {
             OnWrite();
             var data = buffer;
-            if (IsHtmlResponse)
-            {
-                if (_isGzipEncoded)
-                {
-                    await _bufferStream!.WriteAsync(buffer, cancellationToken);
-                    if (!_bufferStream.HasEnoughBytes() || !TryRead(out data))
-                    {
-                        return;
-                    }
-                }
-                if (!ScriptInjectionPerformed)
-                {
-                    ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(_baseStream, data, cancellationToken);
-                    if (ScriptInjectionPerformed)
-                    {
-                        return;
-                    }
-                }
-            }
             await _baseStream.WriteAsync(data, cancellationToken);
         }
 
@@ -235,7 +100,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             _isHtmlResponse =
                 (response.StatusCode == StatusCodes.Status200OK || response.StatusCode == StatusCodes.Status500InternalServerError) &&
                 MediaTypeHeaderValue.TryParse(response.ContentType, out var mediaType) &&
-                mediaType.IsSubsetOf(_textHtmlMediaType) &&
+                mediaType.IsSubsetOf(s_textHtmlMediaType) &&
                 (!mediaType.Charset.HasValue || mediaType.Charset.Equals("utf-8", StringComparison.OrdinalIgnoreCase));
 
             if (_isHtmlResponse.Value)
@@ -244,27 +109,30 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 // Since we're changing the markup content, reset the content-length
                 response.Headers.ContentLength = null;
 
+                _scriptInjectingStream = new ScriptInjectingStream(_baseStream);
+
+                // By default, write directly to the script injection stream.
+                // We may change the base stream below if we detect that the response
+                // is compressed.
+                _baseStream = _scriptInjectingStream;
+
                 // Check if the response has gzip Content-Encoding
                 if (response.Headers.TryGetValue(HeaderNames.ContentEncoding, out var contentEncodingValues))
                 {
                     var contentEncoding = contentEncodingValues.FirstOrDefault();
                     if (string.Equals(contentEncoding, "gzip", StringComparison.OrdinalIgnoreCase))
                     {
-                        _isGzipEncoded = true;
                         // Remove the Content-Encoding header since we'll be serving uncompressed content
                         response.Headers.Remove(HeaderNames.ContentEncoding);
-                        InitializeBuffers();
+
+                        _pipe = new Pipe();
+                        var gzipStream = new GZipStream(_pipe.Reader.AsStream(leaveOpen: true), CompressionMode.Decompress, leaveOpen: true);
+
+                        _gzipCopyTask = gzipStream.CopyToAsync(_scriptInjectingStream);
+                        _baseStream = _pipe.Writer.AsStream(leaveOpen: true);
                     }
                 }
             }
-        }
-
-        private void InitializeBuffers()
-        {
-            _bufferStream = new BufferingStream();
-            // Create gzip stream immediately so reads are ready once we flush 8K
-            _gzipStream = new GZipStream(_bufferStream, CompressionMode.Decompress, leaveOpen: true);
-            _decompressBuffer = ArrayPool<byte>.Shared.Rent(8192);
         }
 
         public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
@@ -281,160 +149,135 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
         protected override void Dispose(bool disposing)
         {
+            if (disposing)
+            {
+                DisposeCoreAsync().GetAwaiter().GetResult();
+            }
+        }
+
+        public ValueTask CompleteAsync() => DisposeAsync();
+
+        public override async ValueTask DisposeAsync()
+        {
+            await DisposeCoreAsync();
+        }
+
+        private async Task DisposeCoreAsync()
+        {
             if (_disposed)
             {
                 return;
             }
 
-            if (disposing)
-            {
-                Flush(); // Will not complete pipe for gzip
-                if (_isGzipEncoded)
-                {
-                    WriteRemainingBytes();
-                    _gzipStream!.Dispose();
-                    _bufferStream!.Dispose();
-                    ArrayPool<byte>.Shared.Return(_decompressBuffer!);
-                }
-            }
-
             _disposed = true;
-            base.Dispose(disposing);
-        }
 
-        private void WriteRemainingBytes()
-        {
-            while (_bufferStream!.HasPendingBytes())
+            if (_pipe is not null)
             {
-                var read = _gzipStream!.Read(_decompressBuffer!);
-                if (read > 0)
-                {
-                    var data = _decompressBuffer.AsSpan(0, read);
-                    if (!ScriptInjectionPerformed)
-                    {
-                        ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, data);
-                        if (ScriptInjectionPerformed)
-                        {
-                            continue;
-                        }
-                    }
-                    _baseStream.Write(data);
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-    }
-
-    internal class BufferingStream : Stream
-    {
-        private readonly List<byte[]> _buffers = [ArrayPool<byte>.Shared.Rent(8192)];
-        private int _currentReadBufferIndex;
-        private int _currentReadPosition;
-        private int _currentWritePosition;
-        private int _totalBytesRead;
-        private int _totalBytesWritten;
-
-        public override bool CanRead => true;
-
-        public override bool CanSeek => false;
-
-        public override bool CanWrite => true;
-
-        public override long Length => throw new NotImplementedException();
-
-        public override long Position { get => _totalBytesRead; set => throw new NotImplementedException(); }
-
-
-        public override long Seek(long offset, SeekOrigin origin) => throw new NotImplementedException();
-
-        public override void SetLength(long value) => throw new NotImplementedException();
-
-        public override int Read(byte[] buffer, int offset, int count)
-        {
-            // Determine the available bytes
-            var available = _totalBytesWritten - _totalBytesRead;
-
-            // Pick either all remaining unread bytes or the remaining buffer content
-            var currentReadBuffer = _buffers[_currentReadBufferIndex];
-            var remainingInCurrentBuffer = currentReadBuffer.Length - _currentReadPosition;
-            var readBuffer = _buffers[_currentReadBufferIndex].AsSpan(_currentReadPosition, Math.Min(available, remainingInCurrentBuffer));
-
-            var bufferSpan = buffer.AsSpan(offset, count);
-            var currentReadBytes = 0;
-            if (readBuffer.Length > bufferSpan.Length)
-            {
-                // Copy only what fits in the buffer
-                readBuffer.Slice(0, bufferSpan.Length).CopyTo(bufferSpan);
-                _currentReadPosition += bufferSpan.Length;
-                _totalBytesRead += bufferSpan.Length;
-                return bufferSpan.Length;
+                await _pipe.Writer.CompleteAsync();
             }
 
-            do
+            if (_gzipCopyTask is not null)
             {
-                // Copy the remaining contents of the current buffer or the remaining unread bytes
-                readBuffer.CopyTo(bufferSpan);
-                available -= readBuffer.Length;
-                currentReadBytes += readBuffer.Length;
-                bufferSpan = bufferSpan.Slice(readBuffer.Length);
-                _totalBytesRead += readBuffer.Length;
-                if (available == 0)
-                {
-                    return currentReadBytes;
-                }
-                _currentReadBufferIndex++;
-                _currentReadPosition = 0;
-                readBuffer = _buffers[_currentReadBufferIndex].AsSpan();
-            } while (readBuffer.Length <= bufferSpan.Length);
+                await _gzipCopyTask;
+            }
 
-            return currentReadBytes;
-        }
-
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-            var current = _buffers[^1].AsSpan(_currentWritePosition);
-            var bufferSpan = buffer.AsSpan(offset, count);
-            if (bufferSpan.Length <= current.Length)
+            if (_scriptInjectingStream is not null)
             {
-                bufferSpan.CopyTo(current);
-                _currentWritePosition += bufferSpan.Length;
-                _totalBytesWritten += bufferSpan.Length;
-                return;
+                await _scriptInjectingStream.FlushAsync();
             }
             else
             {
-                // Fill in the remaining space in the current buffer
-                bufferSpan.Slice(0, current.Length).CopyTo(current);
-                _totalBytesWritten += current.Length;
-                // "consume" the copied bytes
-                bufferSpan = bufferSpan.Slice(current.Length);
-
-                _currentWritePosition = 0;
-                while (bufferSpan.Length > 0)
-                {
-                    var newBuffer = ArrayPool<byte>.Shared.Rent(8192);
-                    _buffers.Add(newBuffer);
-                    current = newBuffer;
-                    if (bufferSpan.Length <= current.Length)
-                    {
-                        bufferSpan.CopyTo(current);
-                        _currentWritePosition += bufferSpan.Length;
-                        _totalBytesWritten += bufferSpan.Length;
-                        return;
-                    }
-                    bufferSpan.Slice(0, current.Length).CopyTo(current);
-                    _totalBytesWritten += current.Length;
-                    bufferSpan = bufferSpan.Slice(current.Length);
-                }
+                Debug.Assert(_isHtmlResponse != true);
+                await _baseStream.FlushAsync();
             }
         }
 
-        public override void Flush() { }
+        private sealed class ScriptInjectingStream : Stream
+        {
+            private readonly Stream _baseStream;
 
-        internal bool HasPendingBytes() => _totalBytesWritten > _totalBytesRead;
-        internal bool HasEnoughBytes() => _totalBytesWritten - _totalBytesRead > 100;
+            public ScriptInjectingStream(Stream baseStream)
+            {
+                _baseStream = baseStream;
+            }
+
+            public override bool CanRead => false;
+            public override bool CanSeek => false;
+            public override bool CanWrite => true;
+            public override long Length { get; }
+            public override long Position { get; set; }
+            public bool ScriptInjectionPerformed { get; private set; }
+
+            public override void Flush()
+                => _baseStream.Flush();
+
+            public override Task FlushAsync(CancellationToken cancellationToken)
+                => _baseStream.FlushAsync(cancellationToken);
+
+            public override void Write(ReadOnlySpan<byte> buffer)
+            {
+                if (!ScriptInjectionPerformed)
+                {
+                    ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, buffer);
+                }
+                else
+                {
+                    _baseStream.Write(buffer);
+                }
+            }
+
+            public override void WriteByte(byte value)
+            {
+                _baseStream.WriteByte(value);
+            }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                if (!ScriptInjectionPerformed)
+                {
+                    ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, buffer.AsSpan(offset, count));
+                }
+                else
+                {
+                    _baseStream.Write(buffer, offset, count);
+                }
+            }
+
+            public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            {
+                if (!ScriptInjectionPerformed)
+                {
+                    ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(_baseStream, buffer.AsMemory(offset, count), cancellationToken);
+                }
+                else
+                {
+                    await _baseStream.WriteAsync(buffer, offset, count, cancellationToken);
+                }
+            }
+
+            public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+            {
+                if (!ScriptInjectionPerformed)
+                {
+                    ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(_baseStream, buffer, cancellationToken);
+                }
+                else
+                {
+                    await _baseStream.WriteAsync(buffer, cancellationToken);
+                }
+            }
+
+            public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+            public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
+            public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+                 => throw new NotSupportedException();
+
+            public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+                 => throw new NotSupportedException();
+
+            public override void SetLength(long value) => throw new NotSupportedException();
+        }
     }
 }
