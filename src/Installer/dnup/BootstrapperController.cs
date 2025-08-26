@@ -10,11 +10,11 @@ using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
-public class DotnetInstaller : IDotnetInstaller
+public class BootstrapperController : IBootstrapperController
 {
     private readonly IEnvironmentProvider _environmentProvider;
 
-    public DotnetInstaller(IEnvironmentProvider? environmentProvider = null)
+    public BootstrapperController(IEnvironmentProvider? environmentProvider = null)
     {
         _environmentProvider = environmentProvider ?? new EnvironmentProvider();
     }
