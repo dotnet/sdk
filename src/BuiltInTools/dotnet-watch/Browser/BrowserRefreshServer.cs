@@ -44,8 +44,8 @@ internal sealed class BrowserRefreshServer : IAsyncDisposable
     private readonly string? _environmentHostName;
 
     // initialized by StartAsync
-    private IHost? _refreshServer;
-    private string? _serverUrls;
+    private IHost? _lazyServer;
+    private string? _lazyServerUrls;
 
     public readonly EnvironmentOptions Options;
 
@@ -77,17 +77,17 @@ internal sealed class BrowserRefreshServer : IAsyncDisposable
             await connection.DisposeAsync();
         }
 
-        _refreshServer?.Dispose();
+        _lazyServer?.Dispose();
 
         _terminateWebSocket.TrySetResult();
     }
 
     public void SetEnvironmentVariables(EnvironmentVariablesBuilder environmentBuilder)
     {
-        Debug.Assert(_refreshServer != null);
-        Debug.Assert(_serverUrls != null);
+        Debug.Assert(_lazyServer != null);
+        Debug.Assert(_lazyServerUrls != null);
 
-        environmentBuilder.SetVariable(EnvironmentVariables.Names.AspNetCoreAutoReloadWSEndPoint, _serverUrls);
+        environmentBuilder.SetVariable(EnvironmentVariables.Names.AspNetCoreAutoReloadWSEndPoint, _lazyServerUrls);
         environmentBuilder.SetVariable(EnvironmentVariables.Names.AspNetCoreAutoReloadWSKey, GetServerKey());
 
         environmentBuilder.DotNetStartupHooks.Add(Path.Combine(AppContext.BaseDirectory, "middleware", "Microsoft.AspNetCore.Watch.BrowserRefresh.dll"));
@@ -105,13 +105,14 @@ internal sealed class BrowserRefreshServer : IAsyncDisposable
 
     public async ValueTask StartAsync(CancellationToken cancellationToken)
     {
-        Debug.Assert(_refreshServer == null);
+        Debug.Assert(_lazyServer == null);
+        Debug.Assert(_lazyServerUrls == null);
 
         var hostName = _environmentHostName ?? "127.0.0.1";
 
-        var supportsTLS = await SupportsTlsAsync();
+        var supportsTLS = await SupportsTlsAsync(cancellationToken);
 
-        _refreshServer = new HostBuilder()
+        _lazyServer = new HostBuilder()
             .ConfigureWebHost(builder =>
             {
                 builder.UseKestrel();
@@ -132,11 +133,10 @@ internal sealed class BrowserRefreshServer : IAsyncDisposable
             })
             .Build();
 
-        await _refreshServer.StartAsync(cancellationToken);
+        _lazyServerUrls = string.Join(',', GetServerUrls(_lazyServer));
 
-        var serverUrls = string.Join(',', GetServerUrls(_refreshServer));
-        _logger.LogDebug("Refresh server running at {0}.", serverUrls);
-        _serverUrls = serverUrls;
+        await _lazyServer.StartAsync(cancellationToken);
+        _logger.LogDebug("Refresh server running at {Urls}.", _lazyServerUrls);
     }
 
     private IEnumerable<string> GetServerUrls(IHost server)
@@ -344,7 +344,7 @@ internal sealed class BrowserRefreshServer : IAsyncDisposable
         await DisposeClosedBrowserConnectionsAsync();
     }
 
-    private async Task<bool> SupportsTlsAsync()
+    private async Task<bool> SupportsTlsAsync(CancellationToken cancellationToken)
     {
         var result = s_lazyTlsSupported;
         if (result.HasValue)
@@ -355,7 +355,7 @@ internal sealed class BrowserRefreshServer : IAsyncDisposable
         try
         {
             using var process = Process.Start(Options.MuxerPath, "dev-certs https --check --quiet");
-            await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(10));
+            await process.WaitForExitAsync(cancellationToken).WaitAsync(TimeSpan.FromSeconds(10), cancellationToken);
             result = process.ExitCode == 0;
         }
         catch
