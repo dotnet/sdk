@@ -18,7 +18,7 @@ internal class InstallerOrchestratorSingleton
 
     private ScopedMutex modifyInstallStateMutex() => new ScopedMutex("Global\\Finalize");
 
-    public void Install(DotnetInstallRequest installRequest)
+    public int Install(DotnetInstallRequest installRequest)
     {
         // Map InstallRequest to DotnetInstallObject by converting channel to fully specified version
         DotnetInstall install = new ManifestChannelVersionResolver().Resolve(installRequest);
@@ -28,11 +28,11 @@ internal class InstallerOrchestratorSingleton
         {
             if (InstallAlreadyExists(installRequest.ResolvedDirectory, install))
             {
-                return;
+                return 0;
             }
         }
 
-        ArchiveDotnetInstaller installer = new ArchiveDotnetInstaller(install);
+        ArchiveDotnetInstaller installer = new(install);
         installer.Prepare();
 
         // Extract and commit the install to the directory
@@ -40,24 +40,25 @@ internal class InstallerOrchestratorSingleton
         {
             if (InstallAlreadyExists(installRequest.ResolvedDirectory, install))
             {
-                return;
+                return 0;
             }
 
             installer.Commit();
 
-            ArchiveInstallationValidator validator = new ArchiveInstallationValidator();
+            ArchiveInstallationValidator validator = new();
             if (validator.Validate(install))
             {
-                var manifestManager = new DnupSharedManifest();
+                DnupSharedManifest manifestManager = new();
                 manifestManager.AddInstalledVersion(install);
             }
             else
             {
-                // Handle validation failure
+                // TODO Handle validation failure better
+                return 1;
             }
         }
 
-        // return exit code or 0
+        return 0;
     }
 
     // Add a doc string mentioning you must hold a mutex over the directory
