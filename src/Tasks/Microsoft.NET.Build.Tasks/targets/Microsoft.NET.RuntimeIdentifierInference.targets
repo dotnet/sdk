@@ -96,7 +96,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   ... for these properties is limited to publishing only scenarios.
 
   .NET Tools that build RID-specific packages will also need a primary package without a RuntimeIdentifier, so we disable RID inference for them
-  in order to build the primary package
+  in order to build the primary package, but only when we are actually packing.
 
   Finally, library projects and non-executable projects have awkward interactions here so they are excluded.
   -->
@@ -105,6 +105,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                  '$(RuntimeIdentifier)' == '' and
                  '$(_IsExecutable)' == 'true' and
                  '$(IsRidAgnostic)' != 'true' and
+                 ('$(PackAsTool)' != true or '$(_IsPacking)' != 'true') and
                  (
                    '$(SelfContained)' == 'true' or
                    ('$(_IsPublishing)' == 'true' and
