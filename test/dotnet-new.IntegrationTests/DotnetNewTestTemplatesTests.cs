@@ -180,6 +180,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             string testProjectName = GenerateTestProjectName();
             string outputDirectory = CreateTemporaryFolder(folderName: "Home");
+
+            // Prevent the dotnet.config post action from walking up the directory parents up to our own solution root, which would affect other tests.
+            Directory.CreateDirectory(Path.Combine(outputDirectory, ".git"));
+
             string workingDirectory = CreateTemporaryFolder();
 
             // Create new test project: dotnet new <projectTemplate> -n <testProjectName> -f <targetFramework> -lang <language> --coverage-tool <coverageTool> --test-runner <testRunner>
@@ -194,6 +198,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             if (runDotnetTest)
             {
                 var isMTP = testRunner == "Microsoft.Testing.Platform";
+                if (isMTP)
+                {
+                    File.Exists(Path.Combine(outputDirectory, "dotnet.config")).Should().BeTrue()
+                }
+
                 var result = new DotnetTestCommand(_log, false)
                 .WithWorkingDirectory(outputDirectory)
 #pragma warning disable SA1010 // Opening square brackets should be spaced correctly - false positive. Current formatting is good.
