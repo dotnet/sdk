@@ -17,7 +17,8 @@
 
   <Target Name="GenerateLayout" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="ResolveProjectReferences">
     <ItemGroup>
-      <Content Include="$(ArtifactsNonShippingPackagesDir)dotnet-$(VersionMajor)$(VersionMinor)templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)" PackagePath="/" />
+      <!-- <Content Include="$(ArtifactsNonShippingPackagesDir)dotnet-$(VersionMajor)$(VersionMinor)templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)" PackagePath="/" /> -->
+      <Content Include="$(ArtifactsNonShippingPackagesDir)dotnet-100templates-10.0.100-rc.1-$(ProductMonikerRid)$(InstallerExtension)" PackagePath="/" />
     </ItemGroup>
   </Target>
 
