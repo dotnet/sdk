@@ -13,6 +13,9 @@ using AnalyzerInfo = (string FullPath, string ProductVersion, string PathSuffix)
 
 namespace Microsoft.Net.Sdk.AnalyzerRedirecting;
 
+/// <summary>
+/// See <c>documentation/general/analyzer-redirecting.md</c>.
+/// </summary>
 [Export(typeof(IAnalyzerAssemblyRedirector))]
 public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
 {
@@ -39,10 +42,10 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
         var builder = ImmutableDictionary.CreateBuilder<string, List<AnalyzerInfo>>(StringComparer.OrdinalIgnoreCase);
 
         // Expects layout like:
-        // VsInstallDir\SDK\RuntimeAnalyzers\WindowsDesktopAnalyzers\8.0.8\analyzers\dotnet\System.Windows.Forms.Analyzers.dll
-        //                                   ~~~~~~~~~~~~~~~~~~~~~~~                                                           = topLevelDirectory
-        //                                                           ~~~~~                                                     = versionDirectory
-        //                                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ = analyzerPath
+        // VsInstallDir\DotNetRuntimeAnalyzers\WindowsDesktopAnalyzers\8.0.8\analyzers\dotnet\System.Windows.Forms.Analyzers.dll
+        //                                     ~~~~~~~~~~~~~~~~~~~~~~~                                                           = topLevelDirectory
+        //                                                             ~~~~~                                                     = versionDirectory
+        //                                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ = analyzerPath
 
         foreach (string topLevelDirectory in Directory.EnumerateDirectories(_insertedAnalyzersDirectory))
         {
