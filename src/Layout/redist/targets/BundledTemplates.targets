@@ -51,7 +51,8 @@
 
     <ItemGroup>
       <TemplatesComponents>
-        <MSIInstallerFile>$(ArtifactsNonShippingPackagesDir)%(TemplatesComponents.TemplateBaseFilename)-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</MSIInstallerFile>
+        <!-- <MSIInstallerFile>$(ArtifactsNonShippingPackagesDir)%(TemplatesComponents.TemplateBaseFilename)-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</MSIInstallerFile> -->
+        <MSIInstallerFile>$(ArtifactsNonShippingPackagesDir)%(TemplatesComponents.TemplateBaseFilename)-10.0.100-rc.1-$(ProductMonikerRid)$(InstallerExtension)</MSIInstallerFile>
       </TemplatesComponents>
     </ItemGroup>
   </Target>
