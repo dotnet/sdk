@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class StaticFileHandler(ILogger logger, ProjectNodeMap projectMap, BrowserConnector browserConnector)
+    internal sealed class StaticFileHandler(ILogger logger, ProjectNodeMap projectMap, BrowserRefreshServerFactory browserConnector)
     {
         public async ValueTask<bool> HandleFileChangesAsync(IReadOnlyList<ChangedFile> files, CancellationToken cancellationToken)
         {

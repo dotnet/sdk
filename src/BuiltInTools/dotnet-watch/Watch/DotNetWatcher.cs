@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Watch
 
             ChangedFile? changedFile = null;
             var buildEvaluator = new BuildEvaluator(context);
-            await using var browserConnector = new BrowserConnector(context.LoggerFactory, context.EnvironmentOptions);
+            await using var browserConnector = new BrowserRefreshServerFactory(context.LoggerFactory, context.EnvironmentOptions);
             var browserLauncher = new BrowserLauncher(context.Logger, context.EnvironmentOptions);
 
             for (var iteration = 0;;iteration++)

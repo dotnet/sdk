@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class ScopedCssFileHandler(ILogger logger, ILogger buildLogger, ProjectNodeMap projectMap, BrowserConnector browserConnector, GlobalOptions options, EnvironmentOptions environmentOptions)
+    internal sealed class ScopedCssFileHandler(ILogger logger, ILogger buildLogger, ProjectNodeMap projectMap, BrowserRefreshServerFactory browserConnector, GlobalOptions options, EnvironmentOptions environmentOptions)
     {
         private const string BuildTargetName = TargetNames.GenerateComputedBuildStaticWebAssets;
 

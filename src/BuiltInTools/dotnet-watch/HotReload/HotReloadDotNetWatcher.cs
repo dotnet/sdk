@@ -66,7 +66,7 @@ namespace Microsoft.DotNet.Watch
                 _context.Logger.Log(MessageDescriptor.HotReloadEnabled with { Severity = MessageSeverity.Verbose });
             }
 
-            await using var browserConnector = new BrowserConnector(_context.LoggerFactory, _context.EnvironmentOptions);
+            await using var browserConnector = new BrowserRefreshServerFactory(_context.LoggerFactory, _context.EnvironmentOptions);
             var browserLauncher = new BrowserLauncher(_context.Logger, _context.EnvironmentOptions);
             using var fileWatcher = new FileWatcher(_context.Logger, _context.EnvironmentOptions);
 
