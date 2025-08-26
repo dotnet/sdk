@@ -389,7 +389,7 @@ public class Program
         var environmentPath = EnvironmentPathFactory.CreateEnvironmentPath(isDotnetBeingInvokedFromNativeInstaller, environmentProvider);
         _ = new DotNetCommandFactory(alwaysRunOutOfProc: true);
         var aspnetCertificateGenerator = new AspNetCoreCertificateGenerator();
-        var reporter = Reporter.Output;
+        var reporter = Reporter.Error;
         var dotnetConfigurer = new DotnetFirstTimeUseConfigurer(
             firstTimeUseNoticeSentinel,
             aspNetCertificateSentinel,
