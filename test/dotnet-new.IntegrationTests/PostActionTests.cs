@@ -3,6 +3,7 @@
 
 using System.Text.Json.Nodes;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
@@ -1214,6 +1215,73 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdErrContaining("Manual instructions: Modify the JSON file manually.");
 
             File.Delete(jsonFileLocation);
+        }
+
+        [Fact]
+        public void CreateOrUpdateDotnetConfig_CreateNonExisting()
+        {
+            string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/CreateOrUpdateDotnetConfig/CreateNonExisting", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string expectedTemplateName = "TestAssets.PostActions.CreateOrUpdateDotnetConfig.CreateNonExisting";
+            string home = CreateTemporaryFolder(folderName: "Home");
+            string workingDirectory = CreateTemporaryFolder();
+            string outputDirectory = TestUtils.CreateTemporaryFolder();
+            InstallTestTemplate(templateLocation, _log, home, workingDirectory);
+
+            var commandResult = new DotnetNewCommand(_log, expectedTemplateName, "-n", "MyProject", "-o", outputDirectory)
+                .WithCustomHive(home)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute();
+
+            commandResult
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining($"The template \"{expectedTemplateName}\" was created successfully.")
+                .And.HaveStdOutContaining("Successfully created 'dotnet.config' file.")
+                .And.NotHaveStdOutContaining("Manual instructions");
+
+            Assert.Equal(
+                """
+                [SectionFromTemplateJson]
+                KeyFromTemplateJson = "ValueFromTemplateJson"
+
+                """,
+                File.ReadAllText(Path.Combine(outputDirectory, "dotnet.config")));
+        }
+
+        [Fact]
+        public void CreateOrUpdateDotnetConfig_AddNewSection()
+        {
+            string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/CreateOrUpdateDotnetConfig/AddNewSection", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string expectedTemplateName = "TestAssets.PostActions.CreateOrUpdateDotnetConfig.AddNewSection";
+            string home = CreateTemporaryFolder(folderName: "Home");
+            string workingDirectory = CreateTemporaryFolder();
+            string outputDirectory = TestUtils.CreateTemporaryFolder();
+            InstallTestTemplate(templateLocation, _log, home, workingDirectory);
+
+            var commandResult = new DotnetNewCommand(_log, expectedTemplateName, "-n", "MyProject", "-o", outputDirectory)
+                .WithCustomHive(home)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute();
+
+            commandResult
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining($"The template \"{expectedTemplateName}\" was created successfully.")
+                .And.HaveStdOutContaining("Created new section in 'dotnet.config' file")
+                .And.NotHaveStdOutContaining("Manual instructions");
+
+            Assert.Equal(
+                """
+                [existing-section]
+                mykey = "myvalue"
+
+                [SectionFromTemplateJson]
+                KeyFromTemplateJson = "ValueFromTemplateJson"
+
+                """,
+                File.ReadAllText(Path.Combine(outputDirectory, "dotnet.config")));
         }
     }
 }
