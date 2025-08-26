@@ -16,6 +16,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="dnup.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\CIEnvironmentDetectorForTelemetry.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\dotnet\Telemetry\ICIEnvironmentDetector.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\EnvironmentProvider.cs" LinkBase="Shared" />
@@ -32,5 +36,5 @@
   <ItemGroup>
     <EmbeddedResource Update="Strings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Tools.Bootstrapper"/>
   </ItemGroup>
-  
+
 </Project>

@@ -36,10 +36,10 @@ internal readonly record struct DotnetVersion : IComparable<DotnetVersion>, ICom
     public DotnetVersionType VersionType { get; }
 
     /// <summary>Gets the major version component (e.g., "8" from "8.0.301").</summary>
-    public int Major => _releaseVersion?.Major ?? 0;
+    public int Major => _releaseVersion?.Major ?? ParseMajorDirect();
 
     /// <summary>Gets the minor version component (e.g., "0" from "8.0.301").</summary>
-    public int Minor => _releaseVersion?.Minor ?? 0;
+    public int Minor => _releaseVersion?.Minor ?? ParseMinorDirect();
 
     /// <summary>Gets the patch version component (e.g., "301" from "8.0.301").</summary>
     public int Patch => _releaseVersion?.Patch ?? 0;
@@ -47,14 +47,17 @@ internal readonly record struct DotnetVersion : IComparable<DotnetVersion>, ICom
     /// <summary>Gets the major.minor version string (e.g., "8.0" from "8.0.301").</summary>
     public string MajorMinor => $"{Major}.{Minor}";
 
-    /// <summary>Gets whether this version represents a preview version (contains '-preview').</summary>
-    public bool IsPreview => Value.Contains("-preview", StringComparison.OrdinalIgnoreCase);
+    /// <summary>Gets whether this version represents a preview version (contains preview, rc, alpha, beta, etc.).</summary>
+    public bool IsPreview => Value.Contains("-preview", StringComparison.OrdinalIgnoreCase) ||
+                             Value.Contains("-rc", StringComparison.OrdinalIgnoreCase) ||
+                             Value.Contains("-alpha", StringComparison.OrdinalIgnoreCase) ||
+                             Value.Contains("-beta", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Gets whether this version represents a prerelease (contains '-' but not just build hash).</summary>
     public bool IsPrerelease => Value.Contains('-') && !IsOnlyBuildHash();
 
     /// <summary>Gets whether this is an SDK version (has feature bands).</summary>
-    public bool IsSdkVersion => VersionType == DotnetVersionType.Sdk || 
+    public bool IsSdkVersion => VersionType == DotnetVersionType.Sdk ||
         (VersionType == DotnetVersionType.Auto && DetectVersionType() == DotnetVersionType.Sdk);
 
     /// <summary>Gets whether this is a Runtime version (no feature bands).</summary>
@@ -95,11 +98,16 @@ internal readonly record struct DotnetVersion : IComparable<DotnetVersion>, ICom
     public string? GetFeatureBand()
     {
         if (!IsSdkVersion) return null;
-        
+
         var parts = GetVersionWithoutBuildHash().Split('.');
         if (parts.Length < 3) return null;
 
         var patchPart = parts[2].Split('-')[0]; // Remove prerelease suffix
+
+        // For SDK versions, feature band is the hundreds digit
+        // Runtime versions like "8.0.7" should return null, not "7"
+        if (patchPart.Length < 3) return null;
+
         return patchPart.Length > 0 ? patchPart[0].ToString() : null;
     }
 
@@ -110,11 +118,15 @@ internal readonly record struct DotnetVersion : IComparable<DotnetVersion>, ICom
     public string? GetFeatureBandPatch()
     {
         if (!IsSdkVersion) return null;
-        
+
         var parts = GetVersionWithoutBuildHash().Split('.');
         if (parts.Length < 3) return null;
 
         var patchPart = parts[2].Split('-')[0]; // Remove prerelease suffix
+
+        // For SDK versions, patch is the last two digits
+        if (patchPart.Length < 3) return null;
+
         return patchPart.Length > 1 ? patchPart[1..] : null;
     }
 
@@ -125,11 +137,16 @@ internal readonly record struct DotnetVersion : IComparable<DotnetVersion>, ICom
     public string? GetCompleteBandAndPatch()
     {
         if (!IsSdkVersion) return null;
-        
+
         var parts = GetVersionWithoutBuildHash().Split('.');
         if (parts.Length < 3) return null;
 
-        return parts[2].Split('-')[0]; // Remove prerelease suffix if present
+        var patchPart = parts[2].Split('-')[0]; // Remove prerelease suffix
+
+        // For SDK versions, complete band is 3-digit patch
+        if (patchPart.Length < 3) return null;
+
+        return patchPart;
     }
 
     /// <summary>
@@ -158,7 +175,7 @@ internal readonly record struct DotnetVersion : IComparable<DotnetVersion>, ICom
 
         var parts = prerelease.Split('.');
         var lastPart = parts[^1];
-        
+
         // Check if last part looks like a build hash (hex string, 6+ chars)
         if (lastPart.Length >= 6 && lastPart.All(c => char.IsAsciiHexDigit(c)))
             return lastPart;
@@ -193,12 +210,12 @@ internal readonly record struct DotnetVersion : IComparable<DotnetVersion>, ICom
         if (parts.Length < 3) return DotnetVersionType.Runtime;
 
         var patchPart = parts[2];
-        
+
         // SDK versions typically have 3-digit patch numbers (e.g., 301, 201)
         // Runtime versions have 1-2 digit patch numbers (e.g., 7, 12)
         if (patchPart.Length >= 3 && patchPart.All(char.IsDigit))
             return DotnetVersionType.Sdk;
-            
+
         return DotnetVersionType.Runtime;
     }
 
@@ -211,7 +228,7 @@ internal readonly record struct DotnetVersion : IComparable<DotnetVersion>, ICom
         if (dashIndex < 0) return false;
 
         var afterDash = Value[(dashIndex + 1)..];
-        
+
         // Check if what follows the dash is just a build hash
         return afterDash.Length >= 6 && afterDash.All(c => char.IsAsciiHexDigit(c));
     }
@@ -258,6 +275,24 @@ internal readonly record struct DotnetVersion : IComparable<DotnetVersion>, ICom
 
         // Check that patch version is reasonable (1-2 digits for feature band, 1-2 for patch)
         return parts.All(p => int.TryParse(p, out _)) && parts[2].Length is >= 2 and <= 3;
+    }
+
+    /// <summary>
+    /// Parses major version directly from string for cases where ReleaseVersion parsing fails.
+    /// </summary>
+    private int ParseMajorDirect()
+    {
+        var parts = Value.Split('.');
+        return parts.Length > 0 && int.TryParse(parts[0], out var major) ? major : 0;
+    }
+
+    /// <summary>
+    /// Parses minor version directly from string for cases where ReleaseVersion parsing fails.
+    /// </summary>
+    private int ParseMinorDirect()
+    {
+        var parts = Value.Split('.');
+        return parts.Length > 1 && int.TryParse(parts[1], out var minor) ? minor : 0;
     }
 
     #region String-like behavior
@@ -309,9 +344,41 @@ internal readonly record struct DotnetVersion : IComparable<DotnetVersion>, ICom
     public static bool IsValidFormat(string? value)
     {
         if (string.IsNullOrWhiteSpace(value)) return false;
-        return new DotnetVersion(value).IsValidFullySpecifiedVersion() ||
-               new DotnetVersion(value).IsNonSpecificFeatureBand ||
-               new DotnetVersion(value).IsNonSpecificMajorMinor;
+
+        var version = new DotnetVersion(value);
+
+        // Valid formats:
+        // - Fully specified versions: "8.0.301", "7.0.201"
+        // - Non-specific feature bands: "7.0.2xx"
+        // - Major.minor versions: "8.0", "7.0"
+        // - Major only versions: "8", "7"
+        // - Exclude unreasonable versions like high patch numbers or runtime-like versions with small patch
+
+        if (version.IsFullySpecified)
+        {
+            var parts = value.Split('.');
+            if (parts.Length >= 3 && int.TryParse(parts[2], out var patch))
+            {
+                // Unreasonably high patch numbers are invalid (e.g., 7.0.1999)
+                if (patch > 999) return false;
+
+                // Small patch numbers (1-2 digits) are runtime versions and should be valid
+                // but versions like "7.1.10" are questionable since .NET 7.1 doesn't exist
+                if (patch < 100 && version.Major <= 8 && version.Minor > 0) return false;
+            }
+            return true;
+        }
+
+        if (version.IsNonSpecificFeatureBand) return true;
+
+        if (version.IsNonSpecificMajorMinor)
+        {
+            // Allow reasonable major.minor combinations
+            // Exclude things like "10.10" which don't make sense for .NET versioning
+            if (version.Major <= 20 && version.Minor <= 9) return true;
+        }
+
+        return false;
     }
 
     /// <summary>
