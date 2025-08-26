@@ -25,7 +25,8 @@ namespace Microsoft.DotNet.Watch
 
             ChangedFile? changedFile = null;
             var buildEvaluator = new BuildEvaluator(context);
-            await using var browserConnector = new BrowserConnector(context);
+            await using var browserConnector = new BrowserConnector(context.LoggerFactory, context.EnvironmentOptions);
+            var browserLauncher = new BrowserLauncher(context.Logger, context.EnvironmentOptions);
 
             for (var iteration = 0;;iteration++)
             {
@@ -64,10 +65,16 @@ namespace Microsoft.DotNet.Watch
                 };
 
                 var browserRefreshServer = (projectRootNode != null)
-                    ? await browserConnector.GetOrCreateBrowserRefreshServerAsync(projectRootNode, processSpec, environmentBuilder, context.RootProjectOptions, new DefaultAppModel(projectRootNode), shutdownCancellationToken)
+                    ? await browserConnector.GetOrCreateBrowserRefreshServerAsync(projectRootNode, new DefaultAppModel(projectRootNode), shutdownCancellationToken)
                     : null;
 
+                browserRefreshServer?.SetEnvironmentVariables(environmentBuilder);
                 environmentBuilder.SetProcessEnvironmentVariables(processSpec);
+
+                if (projectRootNode != null)
+                {
+                    browserLauncher.InstallBrowserLaunchTrigger(processSpec, projectRootNode, context.RootProjectOptions, browserRefreshServer, shutdownCancellationToken);
+                }
 
                 // Reset for next run
                 buildEvaluator.RequiresRevaluation = false;
