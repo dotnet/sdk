@@ -14,15 +14,17 @@
     <FullNugetVersion Condition="'$(VersionSuffixDateStamp)' != '' and '$(VersionSuffixBuildOfTheDay)' != ''">$(FullNugetVersion).$(VersionSuffixDateStamp).$(VersionSuffixBuildOfTheDay)</FullNugetVersion>
 
     <PgoTerm Condition="'$(PgoInstrument)' == 'true'">-pgo</PgoTerm>
-    <ArtifactNameWithVersionSdk>dotnet-sdk-internal$(PgoTerm)-$(FullNugetVersion)-$(ProductMonikerRid)</ArtifactNameWithVersionSdk>
+    <!-- <ArtifactNameWithVersionSdk>dotnet-sdk-internal$(PgoTerm)-$(FullNugetVersion)-$(ProductMonikerRid)</ArtifactNameWithVersionSdk> -->
+    <ArtifactNameWithVersionSdk>dotnet-sdk-internal$(PgoTerm)-10.0.100-rc.1-$(ProductMonikerRid)</ArtifactNameWithVersionSdk>
     <ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>dotnet-sdk$(PgoTerm)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
 
-    <SdkMSIInstallerFileName>dotnet-sdk-internal-10.0.100-rc.1-win-x64$(InstallerExtension)</SdkMSIInstallerFileName>
+    <SdkMSIInstallerFileName>$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFileName>
     <SdkMSIInstallerFile>$(ArtifactsNonShippingPackagesDir)$(SdkMSIInstallerFileName)</SdkMSIInstallerFile>
     <!-- When building the sdk bundle only, the sdk msi is acquired via DownloadBundledComponents. -->
     <SdkMSIInstallerFile Condition="'$(GenerateSdkBundleOnly)' == 'true'">$(DownloadsFolder)$(SdkMSIInstallerFileName)</SdkMSIInstallerFile>
 
-    <SdkPlaceholderMSIInstallerFile>dotnet-sdkplaceholder-10.0.100-rc.1-win-x64$(InstallerExtension)</SdkPlaceholderMSIInstallerFile>
+    <!-- <SdkPlaceholderMSIInstallerFile>$(ArtifactsNonShippingPackagesDir)dotnet-sdkplaceholder-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</SdkPlaceholderMSIInstallerFile> -->
+    <SdkPlaceholderMSIInstallerFile>$(ArtifactsNonShippingPackagesDir)dotnet-sdkplaceholder-10.0.100-rc.1-$(ProductMonikerRid)$(InstallerExtension)</SdkPlaceholderMSIInstallerFile>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -29,7 +29,8 @@
     <DownloadedWindowsDesktopTargetingPackInstallerFileName Condition="'$(InstallerExtension)' != ''">windowsdesktop-targeting-pack-$(MicrosoftWindowsDesktopAppRefPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWindowsDesktopTargetingPackInstallerFileName>
 
     <SdkMSIInstallerFileName>$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFileName>
-    <SdkTemplatesMSIInstallerFileName>dotnet-100templates-10.0.100-rc.1-win-x64$(InstallerExtension)</SdkTemplatesMSIInstallerFileName>
+    <!-- <SdkTemplatesMSIInstallerFileName>dotnet-$(VersionMajor)$(VersionMinor)templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</SdkTemplatesMSIInstallerFileName> -->
+    <SdkTemplatesMSIInstallerFileName>dotnet-100templates-10.0.100-rc.1-$(ProductMonikerRid)$(InstallerExtension)</SdkTemplatesMSIInstallerFileName>
 
     <CombinedFrameworkHostArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
     <WinFormsAndWpfSharedFxArchiveFileName>windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>

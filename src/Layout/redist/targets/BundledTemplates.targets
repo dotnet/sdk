@@ -8,7 +8,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <CurrentVersionBundledTemplates Include="@(Bundled100Templates)" TemplateFrameworkVersion="$(MajorMinorVersion)" />
+    <!-- <CurrentVersionBundledTemplates Include="@(Bundled100Templates)" TemplateFrameworkVersion="$(MajorMinorVersion)" /> -->
+    <CurrentVersionBundledTemplates Include="@(Bundled100Templates)" TemplateFrameworkVersion="10.0" />
     <BundledTemplates Include="@(CurrentVersionBundledTemplates)" />
     <BundledTemplates Update="@(BundledTemplates)">
       <NupkgPathRelativeToPackageRoot>%(Identity)/%(PackageVersion)/%(Identity).%(PackageVersion).nupkg</NupkgPathRelativeToPackageRoot>
