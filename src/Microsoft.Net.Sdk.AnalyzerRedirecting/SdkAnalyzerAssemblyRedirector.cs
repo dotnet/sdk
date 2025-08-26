@@ -19,6 +19,8 @@ namespace Microsoft.Net.Sdk.AnalyzerRedirecting;
 [Export(typeof(IAnalyzerAssemblyRedirector))]
 public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
 {
+    private readonly bool _enabled;
+
     private readonly string? _insertedAnalyzersDirectory;
 
     /// <summary>
@@ -33,12 +35,19 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
     // Internal for testing.
     internal SdkAnalyzerAssemblyRedirector(string? insertedAnalyzersDirectory)
     {
+        var enable = Environment.GetEnvironmentVariable("DOTNET_ANALYZER_REDIRECTING");
+        _enabled = !"0".Equals(enable, StringComparison.OrdinalIgnoreCase) && !"false".Equals(enable, StringComparison.OrdinalIgnoreCase);
         _insertedAnalyzersDirectory = insertedAnalyzersDirectory;
         _analyzerMap = CreateAnalyzerMap();
     }
 
     private ImmutableDictionary<string, List<AnalyzerInfo>> CreateAnalyzerMap()
     {
+        if (!_enabled)
+        {
+            return ImmutableDictionary<string, List<AnalyzerInfo>>.Empty;
+        }
+
         var builder = ImmutableDictionary.CreateBuilder<string, List<AnalyzerInfo>>(StringComparer.OrdinalIgnoreCase);
 
         // Expects layout like:
@@ -82,7 +91,7 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
 
     public string? RedirectPath(string fullPath)
     {
-        if (_analyzerMap.TryGetValue(Path.GetFileNameWithoutExtension(fullPath), out var analyzers))
+        if (_enabled && _analyzerMap.TryGetValue(Path.GetFileNameWithoutExtension(fullPath), out var analyzers))
         {
             foreach (AnalyzerInfo analyzer in analyzers)
             {
