@@ -1381,7 +1381,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.ObsoleteReferences.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Publish.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.PackStubs.targets" Condition="('$(Language)' == 'C++' and '$(_EnablePackageReferencesInVCProjects)' != 'true')"/>
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.PackTool.targets" Condition="'$(PackAsTool)' == 'true'  and '$(_IsPacking)' == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.PackTool.targets" Condition="'$(PackAsTool)' == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.PackProjectTool.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.PreserveCompilationContext.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.ConflictResolution.targets" />

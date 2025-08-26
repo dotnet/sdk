@@ -15,7 +15,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.SourceLink.targets" Condition="'$(SuppressImplicitGitSourceLink)' != 'true'"/>
   <!-- Importing the PackTool targets because tools that have TargetFrameworks set still need a couple key targets
        in order to package correctly, like the ones that add the DotnetTool PackageType. -->
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.PackTool.targets" Condition="'$(PackAsTool)' == 'true' and '$(_IsPacking)' == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.PackTool.targets" Condition="'$(PackAsTool)' == 'true'" />
 
   <!--
   ============================================================
