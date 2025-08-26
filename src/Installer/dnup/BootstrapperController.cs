@@ -103,17 +103,26 @@ public class BootstrapperController : IBootstrapperController
 
     public void InstallSdks(string dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions)
     {
-        // TODO: Implement proper channel version resolution and parameter mapping
+        foreach (var channelVersion in sdkVersions)
+        {
+            InstallSDK(dotnetRoot, progressContext, channelVersion);
+        }
+    }
+
+    private void InstallSDK(string dotnetRoot, ProgressContext progressContext, string channelVersion)
+    {
         DotnetInstallRequest request = new DotnetInstallRequest(
-            "TODO_CHANNEL_VERSION",
+            channelVersion,
             dotnetRoot,
             InstallType.User,
             InstallMode.SDK,
-            InstallArchitecture.x64
+            // Get current machine architecture and convert it to correct enum value
+            DnupUtilities.GetInstallArchitecture(System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture)
         );
 
         InstallerOrchestratorSingleton.Instance.Install(request);
     }
+
     public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null, bool? allowPrerelease = null, string? rollForward = null) => throw new NotImplementedException();
 
     public void ConfigureInstallType(InstallType installType, string? dotnetRoot = null)
