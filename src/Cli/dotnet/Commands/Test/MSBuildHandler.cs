@@ -32,16 +32,22 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
         if (!string.IsNullOrEmpty(pathOptions.ProjectPath))
         {
             path = PathUtility.GetFullPath(pathOptions.ProjectPath);
-            msBuildExitCode = RunBuild(path, isSolution: false);
+
+            msBuildExitCode = Directory.Exists(path)
+                ? RunBuild(path, expectProject: true)
+                : RunBuild(path, isSolution: false);
         }
         else if (!string.IsNullOrEmpty(pathOptions.SolutionPath))
         {
             path = PathUtility.GetFullPath(pathOptions.SolutionPath);
-            msBuildExitCode = RunBuild(path, isSolution: true);
+
+            msBuildExitCode = Directory.Exists(path)
+                ? RunBuild(path, expectSolution: true)
+                : RunBuild(path, isSolution: true);
         }
         else
         {
-            path = PathUtility.GetFullPath(pathOptions.DirectoryPath ?? Directory.GetCurrentDirectory());
+            path = PathUtility.GetFullPath(Directory.GetCurrentDirectory());
             msBuildExitCode = RunBuild(path);
         }
 
@@ -54,9 +60,27 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
         return true;
     }
 
-    private int RunBuild(string directoryPath)
+    private int RunBuild(string directoryPath, bool expectProject = false, bool expectSolution = false)
     {
-        (bool solutionOrProjectFileFound, string message) = SolutionAndProjectUtility.TryGetProjectOrSolutionFilePath(directoryPath, out string projectOrSolutionFilePath, out bool isSolution);
+        bool solutionOrProjectFileFound;
+        string message;
+        string projectOrSolutionFilePath;
+        bool isSolution;
+
+        if (expectProject)
+        {
+            (solutionOrProjectFileFound, message) = SolutionAndProjectUtility.TryGetProjectFilePath(directoryPath, out projectOrSolutionFilePath);
+            isSolution = false;
+        }
+        else if (expectSolution)
+        {
+            (solutionOrProjectFileFound, message) = SolutionAndProjectUtility.TryGetSolutionFilePath(directoryPath, out projectOrSolutionFilePath);
+            isSolution = true;
+        }
+        else
+        {
+            (solutionOrProjectFileFound, message) = SolutionAndProjectUtility.TryGetProjectOrSolutionFilePath(directoryPath, out projectOrSolutionFilePath, out isSolution);
+        }
 
         if (!solutionOrProjectFileFound)
         {
