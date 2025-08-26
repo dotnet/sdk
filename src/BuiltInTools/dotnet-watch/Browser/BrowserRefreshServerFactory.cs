@@ -7,9 +7,20 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
+/// <summary>
+/// Creates <see cref="BrowserRefreshServer"/> instances.
+///
+/// An instance is created for each project that supports browser launching.
+/// When the project is rebuilt and restarted we reuse the same refresh server and browser instance.
+/// Reload message is sent to the browser in that case.
+///
+/// The instances are also reused if the project file is updated or the project graph is reloaded.
+/// </summary>
 internal sealed class BrowserRefreshServerFactory(ILoggerFactory loggerFactory, EnvironmentOptions environmentOptions) : IAsyncDisposable
 {
     private readonly Lock _serversGuard = new();
+
+    // Null value is cached for project instances that are not web projects or do not support browser refresh for other reason.
     private readonly Dictionary<ProjectInstanceId, BrowserRefreshServer?> _servers = [];
 
     public async ValueTask DisposeAsync()
@@ -18,7 +29,7 @@ internal sealed class BrowserRefreshServerFactory(ILoggerFactory loggerFactory, 
 
         lock (_serversGuard)
         {
-            serversToDispose = _servers.Values.ToArray();
+            serversToDispose = [.. _servers.Values];
             _servers.Clear();
         }
 
@@ -31,11 +42,6 @@ internal sealed class BrowserRefreshServerFactory(ILoggerFactory loggerFactory, 
         }));
     }
 
-    /// <summary>
-    /// A single browser refresh server is created for each project that supports browser launching.
-    /// When the project is rebuilt we reuse the same refresh server and browser instance.
-    /// Reload message is sent to the browser in that case.
-    /// </summary>
     public async ValueTask<BrowserRefreshServer?> GetOrCreateBrowserRefreshServerAsync(ProjectGraphNode projectNode, HotReloadAppModel appModel, CancellationToken cancellationToken)
     {
         BrowserRefreshServer? server;
