@@ -5,10 +5,9 @@ using System.Collections.Generic;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper
 {
-    internal interface IDnupManifest
+    internal interface IDotnetInstaller
     {
-        IEnumerable<DotnetInstall> GetInstalledVersions();
-        void AddInstalledVersion(DotnetInstall version);
-        void RemoveInstalledVersion(DotnetInstall version);
+        void Prepare();
+        void Commit();
     }
 }
