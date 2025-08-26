@@ -18,10 +18,15 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
         // Create a user protected (wrx) random folder in temp
         // Download the correct archive to the temp folder
         // Verify the hash and or signature of the archive
+
+        // https://github.com/dn-vm/dnvm/blob/e656f6e0011d4d710c94cb520d00604d9058460f/src/dnvm/InstallCommand.cs#L359C47-L359C62
+        // Use the MIT license version of basically this logic.
     }
 
     public void Commit()
     {
+        // https://github.com/dn-vm/dnvm/blob/main/src/dnvm/InstallCommand.cs#L393
+        // Use the MIT license version of basically this logic.
     }
 
     public void Dispose()
