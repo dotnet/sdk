@@ -30,18 +30,18 @@
       <InstallerOutputFile Include="@(OverlaySDKFile)" Exclude="@(InstallerOutputFile)" />
     </ItemGroup>
 
+    <!-- Copy artifacts to the testhost folder. -->
+    <Copy DestinationFiles="@(InstallerOutputFile)"
+          SourceFiles="@(InstallerOutputFile->Metadata('Source'))"
+          SkipUnchangedFiles="true"
+          UseHardLinksIfPossible="true" />
+
     <OverrideAndCreateBundledNETCoreAppPackageVersion
       Stage0MicrosoftNETCoreAppRefPackageVersionPath="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/Microsoft.NETCoreSdk.BundledVersions.props"
       MicrosoftNETCoreAppRefPackageVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
       NewSDKVersion="$(Version)"
       TargetRid="$(TargetRid)"
       OutputPath="$(TestHostDotNetRoot)/sdk/$(Version)/Microsoft.NETCoreSdk.BundledVersions.props"/>
-
-    <!-- Copy artifacts to the testhost folder. -->
-    <Copy DestinationFiles="@(InstallerOutputFile)"
-          SourceFiles="@(InstallerOutputFile->Metadata('Source'))"
-          SkipUnchangedFiles="true"
-          UseHardLinksIfPossible="true" />
   </Target>
 
   <Target Name="PublishTestWorkloads"
