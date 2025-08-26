@@ -11,7 +11,7 @@ internal delegate ValueTask ProcessExitAction(int processId, int? exitCode);
 internal sealed class ProjectLauncher(
     DotNetWatchContext context,
     ProjectNodeMap projectMap,
-    BrowserConnector browserConnector,
+    BrowserRefreshServerFactory browserConnector,
     BrowserLauncher browserLauncher,
     CompilationHandler compilationHandler,
     int iteration)
