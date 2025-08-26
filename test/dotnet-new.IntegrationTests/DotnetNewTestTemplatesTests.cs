@@ -200,7 +200,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 var isMTP = testRunner == "Microsoft.Testing.Platform";
                 if (isMTP)
                 {
-                    File.Exists(Path.Combine(outputDirectory, "dotnet.config")).Should().BeTrue()
+                    File.Exists(Path.Combine(outputDirectory, "dotnet.config")).Should().BeTrue();
                 }
 
                 var result = new DotnetTestCommand(_log, false)
