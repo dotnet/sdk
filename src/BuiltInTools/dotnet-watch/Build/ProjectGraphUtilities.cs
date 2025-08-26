@@ -174,4 +174,7 @@ internal static class ProjectGraphUtilities
             }
         }
     }
+
+    public static ProjectInstanceId GetProjectInstanceId(this ProjectGraphNode projectNode)
+        => new(projectNode.ProjectInstance.FullPath, projectNode.GetTargetFramework());
 }

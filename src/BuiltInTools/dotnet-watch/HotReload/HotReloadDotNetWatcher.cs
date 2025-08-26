@@ -66,7 +66,8 @@ namespace Microsoft.DotNet.Watch
                 _context.Logger.Log(MessageDescriptor.HotReloadEnabled with { Severity = MessageSeverity.Verbose });
             }
 
-            await using var browserConnector = new BrowserConnector(_context);
+            await using var browserConnector = new BrowserConnector(_context.LoggerFactory, _context.EnvironmentOptions);
+            var browserLauncher = new BrowserLauncher(_context.Logger, _context.EnvironmentOptions);
             using var fileWatcher = new FileWatcher(_context.Logger, _context.EnvironmentOptions);
 
             for (var iteration = 0; !shutdownCancellationToken.IsCancellationRequested; iteration++)
@@ -118,7 +119,7 @@ namespace Microsoft.DotNet.Watch
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, _context.Logger);
                     compilationHandler = new CompilationHandler(_context.LoggerFactory, _context.Logger, _context.ProcessRunner);
                     var scopedCssFileHandler = new ScopedCssFileHandler(_context.Logger, _context.BuildLogger, projectMap, browserConnector, _context.Options, _context.EnvironmentOptions);
-                    var projectLauncher = new ProjectLauncher(_context, projectMap, browserConnector, compilationHandler, iteration);
+                    var projectLauncher = new ProjectLauncher(_context, projectMap, browserConnector, browserLauncher, compilationHandler, iteration);
                     evaluationResult.ItemExclusions.Report(_context.Logger);
 
                     runtimeProcessLauncher = runtimeProcessLauncherFactory?.TryCreate(rootProject, projectLauncher, rootProjectOptions);
