@@ -63,7 +63,7 @@ internal sealed class BrowserLauncher(ILogger logger, EnvironmentOptions environ
         var fileName = launchUrl;
 
         var args = string.Empty;
-        if (EnvironmentVariables.BrowserPath is { } browserPath)
+        if (environmentOptions.BrowserPath is { } browserPath)
         {
             args = fileName;
             fileName = browserPath;
