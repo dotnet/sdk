@@ -14,7 +14,7 @@ public interface IDotnetInstaller
 
     string GetDefaultDotnetInstallPath();
 
-    SdkInstallType GetConfiguredInstallType(out string? currentInstallPath);
+    InstallType GetConfiguredInstallType(out string? currentInstallPath);
 
     string? GetLatestInstalledAdminVersion();
 
@@ -22,18 +22,9 @@ public interface IDotnetInstaller
 
     void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null, bool? allowPrerelease = null, string? rollForward = null);
 
-    void ConfigureInstallType(SdkInstallType installType, string? dotnetRoot = null);
+    void ConfigureInstallType(InstallType installType, string? dotnetRoot = null);
 
 
-}
-
-public enum SdkInstallType
-{
-    None,
-    //  Inconsistent would be when the dotnet on the path doesn't match what DOTNET_ROOT is set to
-    Inconsistent,
-    Admin,
-    User
 }
 
 public class GlobalJsonInfo

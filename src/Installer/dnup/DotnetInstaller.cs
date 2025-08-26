@@ -19,13 +19,13 @@ public class DotnetInstaller : IDotnetInstaller
         _environmentProvider = environmentProvider ?? new EnvironmentProvider();
     }
 
-    public SdkInstallType GetConfiguredInstallType(out string? currentInstallPath)
+    public InstallType GetConfiguredInstallType(out string? currentInstallPath)
     {
         currentInstallPath = null;
         string? foundDotnet = _environmentProvider.GetCommandPath("dotnet");
         if (string.IsNullOrEmpty(foundDotnet))
         {
-            return SdkInstallType.None;
+            return InstallType.None;
         }
 
         string installDir = Path.GetDirectoryName(foundDotnet)!;
@@ -42,18 +42,18 @@ public class DotnetInstaller : IDotnetInstaller
             // Admin install: DOTNET_ROOT should not be set, or if set, should match installDir
             if (!string.IsNullOrEmpty(dotnetRoot) && !PathsEqual(dotnetRoot, installDir) && !dotnetRoot.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase) && !dotnetRoot.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase))
             {
-                return SdkInstallType.Inconsistent;
+                return InstallType.Inconsistent;
             }
-            return SdkInstallType.Admin;
+            return InstallType.Admin;
         }
         else
         {
             // User install: DOTNET_ROOT must be set and match installDir
             if (string.IsNullOrEmpty(dotnetRoot) || !PathsEqual(dotnetRoot, installDir))
             {
-                return SdkInstallType.Inconsistent;
+                return InstallType.Inconsistent;
             }
-            return SdkInstallType.User;
+            return InstallType.User;
         }
     }
 
@@ -104,7 +104,7 @@ public class DotnetInstaller : IDotnetInstaller
     public void InstallSdks(string dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions) => throw new NotImplementedException();
     public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null, bool? allowPrerelease = null, string? rollForward = null) => throw new NotImplementedException();
 
-    public void ConfigureInstallType(SdkInstallType installType, string? dotnetRoot = null)
+    public void ConfigureInstallType(InstallType installType, string? dotnetRoot = null)
     {
         // Get current PATH
         var path = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty;
@@ -115,7 +115,7 @@ public class DotnetInstaller : IDotnetInstaller
 
         switch (installType)
         {
-            case SdkInstallType.User:
+            case InstallType.User:
                 if (string.IsNullOrEmpty(dotnetRoot))
                     throw new ArgumentNullException(nameof(dotnetRoot));
                 // Add dotnetRoot to PATH
@@ -123,7 +123,7 @@ public class DotnetInstaller : IDotnetInstaller
                 // Set DOTNET_ROOT
                 Environment.SetEnvironmentVariable("DOTNET_ROOT", dotnetRoot, EnvironmentVariableTarget.User);
                 break;
-            case SdkInstallType.Admin:
+            case InstallType.Admin:
                 if (string.IsNullOrEmpty(dotnetRoot))
                     throw new ArgumentNullException(nameof(dotnetRoot));
                 // Add dotnetRoot to PATH
@@ -131,7 +131,7 @@ public class DotnetInstaller : IDotnetInstaller
                 // Unset DOTNET_ROOT
                 Environment.SetEnvironmentVariable("DOTNET_ROOT", null, EnvironmentVariableTarget.User);
                 break;
-            case SdkInstallType.None:
+            case InstallType.None:
                 // Unset DOTNET_ROOT
                 Environment.SetEnvironmentVariable("DOTNET_ROOT", null, EnvironmentVariableTarget.User);
                 break;

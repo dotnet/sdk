@@ -37,7 +37,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         var globalJsonInfo = _dotnetInstaller.GetGlobalJsonInfo(Environment.CurrentDirectory);
 
         string? currentInstallPath;
-        SdkInstallType defaultInstallState =  _dotnetInstaller.GetConfiguredInstallType(out currentInstallPath);
+        InstallType defaultInstallState =  _dotnetInstaller.GetConfiguredInstallType(out currentInstallPath);
 
         string? resolvedInstallPath = null;
 
@@ -63,7 +63,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             resolvedInstallPath = _installPath;
         }
 
-        if (resolvedInstallPath == null && defaultInstallState == SdkInstallType.User)
+        if (resolvedInstallPath == null && defaultInstallState == InstallType.User)
         {
             //  If a user installation is already set up, we don't need to prompt for the install path
             resolvedInstallPath = currentInstallPath;
@@ -141,13 +141,13 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             //  If global.json specified an install path, we don't prompt for setting the default install path (since you probably don't want to do that for a repo-local path)
             if (_interactive && installPathFromGlobalJson == null)
             {
-                if (defaultInstallState == SdkInstallType.None)
+                if (defaultInstallState == InstallType.None)
                 {
                     resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
                         $"Do you want to set the install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
                         defaultValue: true);
                 }
-                else if (defaultInstallState == SdkInstallType.User)
+                else if (defaultInstallState == InstallType.User)
                 {
                     //  Another case where we need to compare paths and the comparison may or may not need to be case-sensitive
                     if (resolvedInstallPath.Equals(currentInstallPath, StringComparison.OrdinalIgnoreCase))
@@ -161,7 +161,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                             defaultValue: false);
                     }
                 }
-                else if (defaultInstallState == SdkInstallType.Admin)
+                else if (defaultInstallState == InstallType.Admin)
                 {
                     SpectreAnsiConsole.WriteLine($"You have an existing admin install of .NET in {currentInstallPath}. We can configure your system to use the new install of .NET " +
                         $"in {resolvedInstallPath} instead. This would mean that the admin install of .NET would no longer be accessible from the PATH or from Visual Studio.");
@@ -170,7 +170,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                         $"Do you want to set the user install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
                         defaultValue: true);
                 }
-                else if (defaultInstallState == SdkInstallType.Inconsistent)
+                else if (defaultInstallState == InstallType.Inconsistent)
                 {
                     //  TODO: Figure out what to do here
                     resolvedSetDefaultInstall = false;
@@ -186,7 +186,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         var resolvedChannelVersion = _releaseInfoProvider.GetLatestVersion(resolvedChannel);
 
-        if (resolvedSetDefaultInstall == true && defaultInstallState == SdkInstallType.Admin)
+        if (resolvedSetDefaultInstall == true && defaultInstallState == InstallType.Admin)
         {
             if (_interactive)
             {
@@ -224,7 +224,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         if (resolvedSetDefaultInstall == true)
         {
-            _dotnetInstaller.ConfigureInstallType(SdkInstallType.User, resolvedInstallPath);
+            _dotnetInstaller.ConfigureInstallType(InstallType.User, resolvedInstallPath);
         }
 
         if (resolvedUpdateGlobalJson == true)
@@ -269,13 +269,13 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "dotnet");
         }
 
-        public SdkInstallType GetConfiguredInstallType(out string? currentInstallPath)
+        public InstallType GetConfiguredInstallType(out string? currentInstallPath)
         {
             var testHookDefaultInstall = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_INSTALL");
-            SdkInstallType returnValue = SdkInstallType.None;
-            if (!Enum.TryParse<SdkInstallType>(testHookDefaultInstall, out returnValue))
+            InstallType returnValue = InstallType.None;
+            if (!Enum.TryParse<InstallType>(testHookDefaultInstall, out returnValue))
             {
-                returnValue = SdkInstallType.None;
+                returnValue = InstallType.None;
             }
             currentInstallPath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_CURRENT_INSTALL_PATH");
             return returnValue;
@@ -352,7 +352,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         {
             SpectreAnsiConsole.WriteLine($"Updating {globalJsonPath} to SDK version {sdkVersion} (AllowPrerelease={allowPrerelease}, RollForward={rollForward})");
         }
-        public void ConfigureInstallType(SdkInstallType installType, string? dotnetRoot = null)
+        public void ConfigureInstallType(InstallType installType, string? dotnetRoot = null)
         {
             SpectreAnsiConsole.WriteLine($"Configuring install type to {installType} (dotnetRoot={dotnetRoot})");
         }

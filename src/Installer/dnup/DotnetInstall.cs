@@ -28,7 +28,7 @@ internal record DotnetInstall(
     InstallArchitecture Architecture) : DotnetInstallBase(ResolvedDirectory, Type, Mode, Architecture);
 
 /// <summary>
-/// Represents a request for a .NET installation with a channel version.
+/// Represents a request for a .NET installation with a channel version that will get resolved into a fully specified version.
 /// </summary>
 internal record DotnetInstallRequest(
     string ChannelVersion,

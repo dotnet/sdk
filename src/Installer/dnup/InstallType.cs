@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.Tools.Bootstrapper
 {
-    internal enum InstallType
+    public enum InstallType
     {
         None,
         //  Inconsistent would be when the dotnet on the path doesn't match what DOTNET_ROOT is set to
