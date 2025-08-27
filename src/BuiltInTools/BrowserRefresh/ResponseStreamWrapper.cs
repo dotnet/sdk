@@ -70,22 +70,19 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         public override void Write(byte[] buffer, int offset, int count)
         {
             OnWrite();
-            ReadOnlyMemory<byte> data = buffer.AsMemory(offset, count);
-            _baseStream.Write(data.Span);
+            _baseStream.Write(buffer.AsSpan(offset, count));
         }
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             OnWrite();
-            ReadOnlyMemory<byte> data = buffer.AsMemory(offset, count);
-            await _baseStream.WriteAsync(data, cancellationToken);
+            await _baseStream.WriteAsync(buffer.AsMemory(offset, count), cancellationToken);
         }
 
         public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         {
             OnWrite();
-            var data = buffer;
-            await _baseStream.WriteAsync(data, cancellationToken);
+            await _baseStream.WriteAsync(buffer, cancellationToken);
         }
 
         private void OnWrite()
@@ -251,7 +248,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 }
                 else
                 {
-                    await _baseStream.WriteAsync(buffer, offset, count, cancellationToken);
+                    await _baseStream.WriteAsync(buffer.AsMemory(offset, count), cancellationToken);
                 }
             }
 
