@@ -243,7 +243,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Contains("TestProperty", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
 
             App.AssertOutputContains("dotnet watch ⌚ Command 'build' does not support Hot Reload.");
-            App.AssertOutputContains("dotnet watch ⌚ Command 'build' does not support browser refresh.");
             App.AssertOutputContains("warning : The value of property is '123'");
         }
 
@@ -261,7 +260,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.DoesNotContain("TestProperty", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
 
             App.AssertOutputContains("dotnet watch ⌚ Command 'msbuild' does not support Hot Reload.");
-            App.AssertOutputContains("dotnet watch ⌚ Command 'msbuild' does not support browser refresh.");
             App.AssertOutputContains("warning : The value of property is '123'");
         }
 
@@ -281,7 +279,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Contains("-property:Configuration=Release", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
 
             App.AssertOutputContains("dotnet watch ⌚ Command 'pack' does not support Hot Reload.");
-            App.AssertOutputContains("dotnet watch ⌚ Command 'pack' does not support browser refresh.");
             App.AssertOutputContains($"Successfully created package '{packagePath}'");
         }
 
@@ -299,7 +296,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Contains("-property:Configuration=Release", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
             
             App.AssertOutputContains("dotnet watch ⌚ Command 'publish' does not support Hot Reload.");
-            App.AssertOutputContains("dotnet watch ⌚ Command 'publish' does not support browser refresh.");
 
             App.AssertOutputContains(Path.Combine("Release", ToolsetInfo.CurrentTargetFramework, "publish"));
         }
@@ -316,7 +312,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
             App.AssertOutputContains("dotnet watch ⌚ Command 'format' does not support Hot Reload.");
-            App.AssertOutputContains("dotnet watch ⌚ Command 'format' does not support browser refresh.");
 
             App.AssertOutputContains("format --verbosity detailed");
             App.AssertOutputContains("Format complete in");
