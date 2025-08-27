@@ -89,7 +89,7 @@
       <_GenerateDocumentationAndConfigFilesPath>%(_GenerateDocumentationAndConfigFilesPath.Identity)</_GenerateDocumentationAndConfigFilesPath>
     </PropertyGroup>
 
-    <Exec Command='"$(DotNetTool)" "$(_GenerateDocumentationAndConfigFilesPath)" "-validateOnly:$(ValidateOnlyFlag)" "$(GeneratedRulesetsDir)" "$(GeneratedEditorconfigsDir)" "$(GeneratedGlobalAnalyzerConfigsDir)" "$(ArtifactsBinDir)$(EscapeDirectorySuffix)" "$(Configuration)" "$(TargetFramework)" "@(AnalyzerNupkgAssembly)" "$(PackagePropsTargetsFileDir)" "$(PackagePropsFileName)" "$(PackagePropsTargetsFileDir)" "$(PackageTargetsFileName)" "$(DisableNETAnalyzersPackagePropsFileName)" "$(AnalyzerDocumentationFileDir)" "$(AnalyzerDocumentationFileName)" "$(AnalyzerSarifFileDir)" "$(AnalyzerSarifFileName)" "$(LatestVersionPrefix)" $(PackageId) $(ContainsPortedFxCopRules) $(GenerateAnalyzerRulesMissingDocumentationFile) $(ReleaseTrackingOptOut) $(_ValidateOffline)' />
+    <Exec Command='"$(DotNetTool)" "$(_GenerateDocumentationAndConfigFilesPath)" "-validateOnly:$(ValidateOnlyFlag)" "$(GeneratedRulesetsDir)" "$(GeneratedEditorconfigsDir)" "$(GeneratedGlobalAnalyzerConfigsDir)" "$(ArtifactsBinDir)$(EscapeDirectorySuffix)" "$(Configuration)" "$(TargetFramework)" "@(AnalyzerNupkgAssembly)" "$(PackagePropsTargetsFileDir)" "$(PackagePropsFileName)" "$(PackagePropsTargetsFileDir)" "$(PackageTargetsFileName)" "$(DisableNETAnalyzersPackagePropsFileName)" "$(AnalyzerDocumentationFileDir)" "$(AnalyzerDocumentationFileName)" "$(AnalyzerSarifFileDir)" "$(AnalyzerSarifFileName)" "$(PreviousVersionPrefix)" $(PackageId) $(ContainsPortedFxCopRules) $(GenerateAnalyzerRulesMissingDocumentationFile) $(ReleaseTrackingOptOut) $(_ValidateOffline)' />
   </Target>
 
 </Project>
