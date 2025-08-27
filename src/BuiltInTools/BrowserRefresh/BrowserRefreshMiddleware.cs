@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 LogLevel.Warning,
                 new EventId(3, "FailedToConfiguredForRefreshes"),
                 "Unable to configure browser refresh script injection on the response. " +
-                $"Consider manually adding '{WebSocketScriptInjection.InjectedScript}' to the body of the page.");
+                $"Consider manually adding '{ScriptInjectingStream.InjectedScript}' to the body of the page.");
 
             private static readonly Action<ILogger, StringValues, Exception?> _responseCompressionDetected = LoggerMessage.Define<StringValues>(
                 LogLevel.Warning,
