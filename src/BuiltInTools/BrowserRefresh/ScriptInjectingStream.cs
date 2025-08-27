@@ -14,7 +14,7 @@ internal sealed class ScriptInjectingStream : Stream
     private static readonly ReadOnlyMemory<byte> s_injectedScriptBytes = Encoding.UTF8.GetBytes(InjectedScript);
 
     private readonly Stream _baseStream;
-    private readonly byte[] _bodyTagBuffer;
+    private readonly Memory<byte> _bodyTagBuffer;
 
     private int _bodyTagBufferLength;
     private bool _isDisposed;
@@ -106,13 +106,13 @@ internal sealed class ScriptInjectingStream : Stream
                 // This wasn't a closing body tag. Flush what we've buffered so far and reset.
                 // We don't return here because we want to continue to process the buffer as if
                 // we weren't reading a partial body tag.
-                _baseStream.Write(_bodyTagBuffer.AsSpan()[.._bodyTagBufferLength]);
+                _baseStream.Write(_bodyTagBuffer.Span[.._bodyTagBufferLength]);
                 _bodyTagBufferLength = 0;
             }
             else
             {
                 // This may still be a closing body tag. Copy the contents to the temporary buffer.
-                buffer[..partialTagLength].CopyTo(_bodyTagBuffer.AsSpan()[_bodyTagBufferLength..]);
+                buffer[..partialTagLength].CopyTo(_bodyTagBuffer.Span[_bodyTagBufferLength..]);
                 _bodyTagBufferLength += partialTagLength;
 
                 Debug.Assert(_bodyTagBufferLength <= s_bodyTagBytes.Length);
@@ -123,7 +123,7 @@ internal sealed class ScriptInjectingStream : Stream
                     // Then just write the rest of the stream normally as we've now finished searching
                     // for the script.
                     _baseStream.Write(s_injectedScriptBytes.Span);
-                    _baseStream.Write(_bodyTagBuffer);
+                    _baseStream.Write(_bodyTagBuffer.Span);
                     _baseStream.Write(buffer[partialTagLength..]);
                     _bodyTagBufferLength = 0;
                     return true;
@@ -162,7 +162,7 @@ internal sealed class ScriptInjectingStream : Stream
                 // tag candidate and copy the remainder to the temporary buffer.
 
                 _baseStream.Write(buffer[..^partialBodyTagLength]);
-                buffer[^partialBodyTagLength..].CopyTo(_bodyTagBuffer);
+                buffer[^partialBodyTagLength..].CopyTo(_bodyTagBuffer.Span);
                 _bodyTagBufferLength = partialBodyTagLength;
                 return false;
             }
@@ -197,13 +197,13 @@ internal sealed class ScriptInjectingStream : Stream
                 // This wasn't a closing body tag. Flush what we've buffered so far and reset.
                 // We don't return here because we want to continue to process the buffer as if
                 // we weren't reading a partial body tag.
-                await _baseStream.WriteAsync(_bodyTagBuffer.AsMemory()[.._bodyTagBufferLength], cancellationToken);
+                await _baseStream.WriteAsync(_bodyTagBuffer[.._bodyTagBufferLength], cancellationToken);
                 _bodyTagBufferLength = 0;
             }
             else
             {
                 // This may still be a closing body tag. Copy the contents to the temporary buffer.
-                buffer.Span[..partialTagLength].CopyTo(_bodyTagBuffer.AsSpan()[_bodyTagBufferLength..]);
+                buffer.Span[..partialTagLength].CopyTo(_bodyTagBuffer.Span[_bodyTagBufferLength..]);
                 _bodyTagBufferLength += partialTagLength;
 
                 Debug.Assert(_bodyTagBufferLength <= s_bodyTagBytes.Length);
@@ -357,7 +357,7 @@ internal sealed class ScriptInjectingStream : Stream
             // We might have buffered some data thinking that it could represent
             // a body tag. We know at this point that there's no more data
             // on its way, so we'll write the remaining data to the buffer.
-            await _baseStream.WriteAsync(_bodyTagBuffer.AsMemory()[.._bodyTagBufferLength]);
+            await _baseStream.WriteAsync(_bodyTagBuffer[.._bodyTagBufferLength]);
             _bodyTagBufferLength = 0;
         }
 
