@@ -64,14 +64,6 @@
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>7d57652f33493fa022125b7f63aad0d70c52d810</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Runtime.Emscripten.Sdk.Internal" Version="10.0.0-preview.7.25377.103">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>6a953e76162f3f079405f80e28664fa51b136740</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.NET.Runtime.Emscripten.3.1.56.Cache.win-x64" Version="10.0.0-rc.2.25416.109">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>7f2a07b481a3d24677ebcf6a45e7e27c8ff95a4e</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.Build" Version="17.15.0-preview-25416-109">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>7f2a07b481a3d24677ebcf6a45e7e27c8ff95a4e</Sha>

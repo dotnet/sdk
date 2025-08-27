@@ -3,10 +3,11 @@
 
 
 using Microsoft.Build.Graph;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class ScopedCssFileHandler(IReporter reporter, ProjectNodeMap projectMap, BrowserConnector browserConnector, GlobalOptions options, EnvironmentOptions environmentOptions)
+    internal sealed class ScopedCssFileHandler(ILogger logger, ILogger buildLogger, ProjectNodeMap projectMap, BrowserConnector browserConnector, GlobalOptions options, EnvironmentOptions environmentOptions)
     {
         private const string BuildTargetName = TargetNames.GenerateComputedBuildStaticWebAssets;
 
@@ -26,13 +27,13 @@ namespace Microsoft.DotNet.Watch
                 }
 
                 hasApplicableFiles = true;
-                reporter.Verbose($"Handling file change event for scoped css file {file.FilePath}.");
+                logger.LogDebug("Handling file change event for scoped css file {FilePath}.", file.FilePath);
                 foreach (var containingProjectPath in file.ContainingProjectPaths)
                 {
                     if (!projectMap.Map.TryGetValue(containingProjectPath, out var projectNodes))
                     {
                         // Shouldn't happen.
-                        reporter.Warn($"Project '{containingProjectPath}' not found in the project graph.");
+                        logger.LogWarning("Project '{Path}' not found in the project graph.", containingProjectPath);
                         continue;
                     }
 
@@ -53,7 +54,7 @@ namespace Microsoft.DotNet.Watch
                 return;
             }
 
-            var buildReporter = new BuildReporter(reporter, options, environmentOptions);
+            var buildReporter = new BuildReporter(buildLogger, options, environmentOptions);
 
             var buildTasks = projectsToRefresh.Select(projectNode => Task.Run(() =>
             {
@@ -91,15 +92,15 @@ namespace Microsoft.DotNet.Watch
 
             if (successfulCount == buildResults.Length)
             {
-                reporter.Output("Hot reload of scoped css succeeded.", emoji: "🔥");
+                logger.Log(MessageDescriptor.HotReloadOfScopedCssSucceeded);
             }
             else if (successfulCount > 0)
             {
-                reporter.Output($"Hot reload of scoped css partially succeeded: {successfulCount} project(s) out of {buildResults.Length} were updated.", emoji: "🔥");
+                logger.Log(MessageDescriptor.HotReloadOfScopedCssPartiallySucceeded, successfulCount, buildResults.Length);
             }
             else
             {
-                reporter.Output("Hot reload of scoped css failed.", emoji: "🔥");
+                logger.Log(MessageDescriptor.HotReloadOfScopedCssFailed);
             }
         }
     }
