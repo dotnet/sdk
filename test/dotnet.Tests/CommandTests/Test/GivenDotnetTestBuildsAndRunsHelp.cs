@@ -86,8 +86,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             int noAnsiOptionCount = CountOptionOccurrences(helpOutput!, noAnsiOptionName);
 
             // Assert that each option appears only once
-            outputOptionCount.Should().BeLessThanOrEqualTo(1, $"Option '{outputOptionName}' should not appear more than once in help output");
-            noAnsiOptionCount.Should().BeLessThanOrEqualTo(1, $"Option '{noAnsiOptionName}' should not appear more than once in help output");
+            outputOptionCount.Should().Be(1, $"Option '{outputOptionName}' should not appear more than once in help output");
+            noAnsiOptionCount.Should().Be(1, $"Option '{noAnsiOptionName}' should not appear more than once in help output");
 
             result.ExitCode.Should().Be(ExitCodes.Success);
         }

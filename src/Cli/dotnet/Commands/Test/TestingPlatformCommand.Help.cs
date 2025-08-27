@@ -29,7 +29,7 @@ internal partial class TestingPlatformCommand
                 return;
             }
 
-            Dictionary<bool, List<CommandLineOption>> allOptions = GetAllOptions([.. context.Command.Options]);
+            Dictionary<bool, List<CommandLineOption>> allOptions = GetAllOptions(context.Command.Options);
             allOptions.TryGetValue(true, out List<CommandLineOption> builtInOptions);
             allOptions.TryGetValue(false, out List<CommandLineOption> nonBuiltInOptions);
 
@@ -128,7 +128,7 @@ internal partial class TestingPlatformCommand
            (isBuiltIn, value) => [.. value, (moduleName, nonBuiltInOptions.ToArray())]);
     }
 
-    private Dictionary<bool, List<CommandLineOption>> GetAllOptions(IReadOnlyList<Option> commandOptions)
+    private Dictionary<bool, List<CommandLineOption>> GetAllOptions(IList<Option> commandOptions)
     {
         Dictionary<bool, List<CommandLineOption>> filteredOptions = [];
 
