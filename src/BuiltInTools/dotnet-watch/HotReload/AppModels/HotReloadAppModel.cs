@@ -3,6 +3,8 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.HotReload;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -10,7 +12,7 @@ internal abstract partial class HotReloadAppModel(ProjectGraphNode? agentInjecti
 {
     public abstract bool RequiresBrowserRefresh { get; }
 
-    public abstract DeltaApplier? CreateDeltaApplier(BrowserRefreshServer? browserRefreshServer, IReporter processReporter);
+    public abstract HotReloadClients CreateClients(BrowserRefreshServer? browserRefreshServer, ILogger clientLogger, ILogger agentLogger);
 
     /// <summary>
     /// Returns true and the path to the client agent implementation binary if the application needs the agent to be injected.
@@ -34,7 +36,7 @@ internal abstract partial class HotReloadAppModel(ProjectGraphNode? agentInjecti
         return true;
     }
 
-    public static HotReloadAppModel InferFromProject(ProjectGraphNode projectNode, IReporter reporter)
+    public static HotReloadAppModel InferFromProject(ProjectGraphNode projectNode, ILogger logger)
     {
         if (projectNode.IsWebApp())
         {
@@ -63,11 +65,11 @@ internal abstract partial class HotReloadAppModel(ProjectGraphNode? agentInjecti
                         // We saw a previous project that was AspNetCore. This must be a blazor hosted app.
                         if (aspnetCoreProject is not null && aspnetCoreProject.ProjectInstance != currentNode.ProjectInstance)
                         {
-                            reporter.Verbose($"HotReloadProfile: BlazorHosted. {aspnetCoreProject.ProjectInstance.FullPath} references BlazorWebAssembly project {currentNode.ProjectInstance.FullPath}.", emoji: "🔥");
+                            logger.Log(MessageDescriptor.HotReloadProfile_BlazorHosted, aspnetCoreProject.ProjectInstance.FullPath, currentNode.ProjectInstance.FullPath);
                             return new BlazorWebAssemblyHostedAppModel(clientProject: currentNode, serverProject: aspnetCoreProject);
                         }
 
-                        reporter.Verbose("HotReloadProfile: BlazorWebAssembly.", emoji: "🔥");
+                        logger.Log(MessageDescriptor.HotReloadProfile_BlazorWebAssembly);
                         return new BlazorWebAssemblyAppModel(clientProject: currentNode);
                     }
                 }
@@ -82,7 +84,7 @@ internal abstract partial class HotReloadAppModel(ProjectGraphNode? agentInjecti
             }
         }
 
-        reporter.Verbose("HotReloadProfile: Default.", emoji: "🔥");
+        logger.Log(MessageDescriptor.HotReloadProfile_Default);
         return new DefaultAppModel(projectNode);
     }
 }
