@@ -148,18 +148,13 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         {
             if (disposing)
             {
-                DisposeCoreAsync().GetAwaiter().GetResult();
+                DisposeAsync().AsTask().GetAwaiter().GetResult();
             }
         }
 
         public ValueTask CompleteAsync() => DisposeAsync();
 
         public override async ValueTask DisposeAsync()
-        {
-            await DisposeCoreAsync();
-        }
-
-        private async Task DisposeCoreAsync()
         {
             if (_disposed)
             {
@@ -180,7 +175,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             if (_scriptInjectingStream is not null)
             {
-                await _scriptInjectingStream.FlushAsync();
+                await _scriptInjectingStream.CompleteAsync();
             }
             else
             {

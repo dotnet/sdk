@@ -17,6 +17,7 @@ internal sealed class ScriptInjectingStream : Stream
     private readonly byte[] _bodyTagBuffer;
 
     private int _bodyTagBufferLength;
+    private bool _isDisposed;
 
     public ScriptInjectingStream(Stream baseStream)
     {
@@ -332,27 +333,25 @@ internal sealed class ScriptInjectingStream : Stream
             };
     }
 
+    public ValueTask CompleteAsync() => DisposeAsync();
+
     protected override void Dispose(bool disposing)
     {
-        if (!disposing)
+        if (disposing)
         {
-            return;
+            DisposeAsync().AsTask().GetAwaiter().GetResult();
         }
-
-        if (_bodyTagBufferLength > 0)
-        {
-            // We might have buffered some data thinking that it could represent
-            // a body tag. We know at this point that there's no more data
-            // on its way, so we'll write the remaining data to the buffer.
-            _baseStream.Write(_bodyTagBuffer.AsSpan()[.._bodyTagBufferLength]);
-            _bodyTagBufferLength = 0;
-        }
-
-        Flush();
     }
 
     public override async ValueTask DisposeAsync()
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
+
         if (_bodyTagBufferLength > 0)
         {
             // We might have buffered some data thinking that it could represent
