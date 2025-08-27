@@ -212,6 +212,11 @@
         <target state="translated">NETSDK1125: Tek dosyada yayımlama yalnızca netcoreapp hedefi için desteklenir.</target>
         <note>{StrBegins="NETSDK1125: "}</note>
       </trans-unit>
+      <trans-unit id="CantSpecifyBothProperties">
+        <source>NETSDK1230: The {0} and {1} properties cannot both be specified. Remove one or the other.</source>
+        <target state="new">NETSDK1230: The {0} and {1} properties cannot both be specified. Remove one or the other.</target>
+        <note>{StrBegins="NETSDK1230: "}</note>
+      </trans-unit>
       <trans-unit id="ChoosingAssemblyVersion_Info">
         <source>Choosing '{0}' because AssemblyVersion '{1}' is greater than '{2}'.</source>
         <target state="translated">'{1}' AssemblyVersion değeri '{2}' değerinden büyük olduğundan '{0}' seçiliyor.</target>

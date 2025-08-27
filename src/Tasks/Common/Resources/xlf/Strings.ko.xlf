@@ -212,6 +212,11 @@
         <target state="translated">NETSDK1125: 단일 파일에 게시는 netcoreapp 대상에만 지원됩니다.</target>
         <note>{StrBegins="NETSDK1125: "}</note>
       </trans-unit>
+      <trans-unit id="CantSpecifyBothProperties">
+        <source>NETSDK1230: The {0} and {1} properties cannot both be specified. Remove one or the other.</source>
+        <target state="new">NETSDK1230: The {0} and {1} properties cannot both be specified. Remove one or the other.</target>
+        <note>{StrBegins="NETSDK1230: "}</note>
+      </trans-unit>
       <trans-unit id="ChoosingAssemblyVersion_Info">
         <source>Choosing '{0}' because AssemblyVersion '{1}' is greater than '{2}'.</source>
         <target state="translated">AssemblyVersion '{1}'이(가) '{2}'보다 크기 때문에 '{0}'을(를) 선택합니다.</target>

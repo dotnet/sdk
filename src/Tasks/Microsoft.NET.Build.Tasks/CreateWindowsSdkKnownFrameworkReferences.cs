@@ -38,6 +38,20 @@ namespace Microsoft.NET.Build.Tasks
         {
             List<ITaskItem> knownFrameworkReferences = new();
 
+            if (!string.IsNullOrEmpty(WindowsSdkPackageMinimumRevision))
+            {
+                if (!string.IsNullOrEmpty(WindowsSdkPackageVersion))
+                {
+                    Log.LogError(Strings.CantSpecifyBothProperties, nameof(WindowsSdkPackageVersion), nameof(WindowsSdkPackageMinimumRevision));
+                    return;
+                }
+                if (UseWindowsSDKPreview)
+                {
+                    Log.LogError(Strings.CantSpecifyBothProperties, nameof(UseWindowsSDKPreview), nameof(WindowsSdkPackageMinimumRevision));
+                    return;
+                }
+            }
+
             if (!string.IsNullOrEmpty(WindowsSdkPackageVersion))
             {
                 knownFrameworkReferences.AddRange(CreateKnownFrameworkReferences(WindowsSdkPackageVersion, TargetFrameworkVersion, TargetPlatformVersion));

@@ -773,7 +773,61 @@ namespace Microsoft.NET.Build.Tests
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute().Should().Pass();
+        }
 
+        [WindowsOnlyTheory]
+        [InlineData("57", "10.0.19041.57")]
+        [InlineData("50", "10.0.19041.55")]
+        public void MinimumWindowsSdkPackagRevisionCanBeSet(string minimumRevision, string expectedPackageVersion)
+        {
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0"
+            };
+            testProject.AdditionalProperties["WindowsSdkPackageMinimumRevision"] = minimumRevision;
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            File.WriteAllText(Path.Combine(testAsset.TestRoot, "Directory.Build.targets"), """
+<Project>
+  <ItemGroup>
+    <WindowsSdkSupportedTargetPlatformVersion Remove="*" />
+
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.26100.0" WindowsSdkPackageVersion="10.0.26100.55" MinimumNETVersion="8.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.22621.0" WindowsSdkPackageVersion="10.0.22621.55" MinimumNETVersion="8.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.22000.0" WindowsSdkPackageVersion="10.0.22000.55" MinimumNETVersion="8.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.20348.0" WindowsSdkPackageVersion="10.0.20348.55" MinimumNETVersion="8.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.19041.0" WindowsSdkPackageVersion="10.0.19041.55" MinimumNETVersion="8.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.18362.0" WindowsSdkPackageVersion="10.0.18362.55" MinimumNETVersion="8.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.17763.0" WindowsSdkPackageVersion="10.0.17763.55" MinimumNETVersion="8.0" />
+  </ItemGroup>
+</Project>
+""");
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+            string referencedWindowsSdkVersion = GetReferencedWindowsSdkVersion(testAsset);
+            referencedWindowsSdkVersion.Should().Be(expectedPackageVersion);
+        }
+
+        [WindowsOnlyFact]
+        public void WindowsSdkPackageVersionAndMinimumRevisionCannotBothBeSpecified()
+        {
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0"
+            };
+            testProject.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.19041.55";
+            testProject.AdditionalProperties["WindowsSdkPackageMinimumRevision"] = "57";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("NETSDK1230");
         }
 
         private string GetReferencedWindowsSdkVersion(TestAsset testAsset)

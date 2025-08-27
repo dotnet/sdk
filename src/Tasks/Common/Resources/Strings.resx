@@ -982,7 +982,6 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1225: Native compilation is not supported when invoking the Publish target directly. Try running dotnet publish.</value>
     <comment>{StrBegins="NETSDK1225: "}</comment>
   </data>
-  <!-- The latest message added is PrunePackageDataNotFound. Please update this value with each PR to catch parallel PRs both adding a new message -->
   <data name="PrunePackageDataNotFound" xml:space="preserve">
     <value>NETSDK1226: Prune Package data not found {0} {1} {2}.  To ignore this error, set the AllowMissingPrunePackageData to true.</value>
     <comment>{StrBegins="NETSDK1226: "}</comment>
@@ -999,4 +998,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1229: Targeting a Windows SDK version with '1' as the revision number will reference CsWinRT 3.0, which is currently in preview. The current project is targeting the Windows SDK version '{0}'. If this is not intended, change the revision number to '0' to use CsWinRT 2.x instead.</value>
     <comment>{StrBegins="NETSDK1229: "}</comment>
   </data>
+  <data name="CantSpecifyBothProperties" xml:space="preserve">
+    <value>NETSDK1230: The {0} and {1} properties cannot both be specified. Remove one or the other.</value>
+    <comment>{StrBegins="NETSDK1230: "}</comment>
+  </data>
+  <!-- The latest message added is CantSpecifyBothProperties. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>
