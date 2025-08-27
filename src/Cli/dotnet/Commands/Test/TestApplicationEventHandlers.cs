@@ -21,7 +21,7 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
         // Today, it's 1.0.0 in MTP.
         // https://github.com/microsoft/testfx/blob/516eebb3c9b7e81eb2677c00b3d0b7867d8acb33/src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/Constants.cs#L40
         var supportedProtocolVersions = args.Handshake.Properties[HandshakeMessagePropertyNames.SupportedProtocolVersions];
-        if (supportedProtocolVersions != "1.0.0" && supportedProtocolVersions.Split(';').Contains("1.0.0"))
+        if (supportedProtocolVersions != "1.0.0" && !supportedProtocolVersions.Split(';').Contains("1.0.0"))
         {
             _output.HandshakeFailure(testApplication.Module.TargetPath, string.Empty, ExitCode.GenericFailure, $"Supported protocol versions '{supportedProtocolVersions}' doesn't include '1.0.0' which is not supported by the current .NET SDK.", string.Empty);
         }
