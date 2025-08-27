@@ -96,10 +96,10 @@ internal sealed class ScriptInjectingStream : Stream
         if (_bodyTagBufferLength != 0)
         {
             // We're in the middle of parsing a potential body tag,
-            // so we'll start by parsing the rest of the tag and performing
-            // script injection if applicable.
+            // which means that the rest of the body tag must be
+            // at the start of the buffer.
 
-            var partialTagLength = FindPartialTagLengthFromStart(_bodyTagBufferLength, buffer);
+            var partialTagLength = FindPartialTagLengthFromStart(currentBodyTagLength: _bodyTagBufferLength, buffer);
             if (partialTagLength == -1)
             {
                 // This wasn't a closing body tag. Flush what we've buffered so far and reset.
@@ -127,10 +127,12 @@ internal sealed class ScriptInjectingStream : Stream
                     _bodyTagBufferLength = 0;
                     return true;
                 }
-
-                // We're still in the middle of reading the body tag,
-                // so there's nothing else to flush to the stream.
-                return false;
+                else
+                {
+                    // We're still in the middle of reading the body tag,
+                    // so there's nothing else to flush to the stream.
+                    return false;
+                }
             }
         }
 
@@ -140,7 +142,7 @@ internal sealed class ScriptInjectingStream : Stream
         var index = buffer.LastIndexOf(s_bodyTagBytes.Span);
         if (index == -1)
         {
-            // We didn't find the full closing body tag, but the end of the buffer
+            // We didn't find the full closing body tag in the buffer, but the end of the buffer
             // might contain the start of a closing body tag.
 
             var partialBodyTagLength = FindPartialTagLengthFromEnd(buffer);
@@ -185,10 +187,10 @@ internal sealed class ScriptInjectingStream : Stream
         if (_bodyTagBufferLength != 0)
         {
             // We're in the middle of parsing a potential body tag,
-            // so we'll start by parsing the rest of the tag and performing
-            // script injection if applicable.
+            // which means that the rest of the body tag must be
+            // at the start of the buffer.
 
-            var partialTagLength = FindPartialTagLengthFromStart(_bodyTagBufferLength, buffer.Span);
+            var partialTagLength = FindPartialTagLengthFromStart(currentBodyTagLength: _bodyTagBufferLength, buffer.Span);
             if (partialTagLength == -1)
             {
                 // This wasn't a closing body tag. Flush what we've buffered so far and reset.
@@ -216,10 +218,12 @@ internal sealed class ScriptInjectingStream : Stream
                     _bodyTagBufferLength = 0;
                     return true;
                 }
-
-                // We're still in the middle of reading the body tag,
-                // so there's nothing else to flush to the stream.
-                return false;
+                else
+                {
+                    // We're still in the middle of reading the body tag,
+                    // so there's nothing else to flush to the stream.
+                    return false;
+                }
             }
         }
 
@@ -229,7 +233,7 @@ internal sealed class ScriptInjectingStream : Stream
         var index = buffer.Span.LastIndexOf(s_bodyTagBytes.Span);
         if (index == -1)
         {
-            // We didn't find the full closing body tag, but the end of the buffer
+            // We didn't find the full closing body tag in the buffer, but the end of the buffer
             // might contain the start of a closing body tag.
 
             var partialBodyTagLength = FindPartialTagLengthFromEnd(buffer.Span);
@@ -286,19 +290,27 @@ internal sealed class ScriptInjectingStream : Stream
             return -1;
         }
 
+        // Since each character within "</body>" is unique, we can use the last byte
+        // in the buffer to determine the length of the partial body tag.
         var lastByte = buffer[^1];
         var bodyMarkerIndexOfLastByte = BodyTagIndexOf(lastByte);
         if (bodyMarkerIndexOfLastByte == -1)
         {
+            // The last character does not appear "</body>", so we know
+            // there's not a partial body tag.
             return -1;
         }
 
         var partialTagLength = bodyMarkerIndexOfLastByte + 1;
         if (buffer.Length < partialTagLength)
         {
+            // The buffer is shorter than the expected length of the partial
+            // body tag, so we know the buffer can't possibly contain it.
             return -1;
         }
 
+        // Finally, we need to check that the content at the end of the buffer
+        // matches the expected partial body tag.
         return buffer[^partialTagLength..].SequenceEqual(s_bodyTagBytes.Span[..partialTagLength])
             ? partialTagLength
             : -1;
@@ -329,6 +341,9 @@ internal sealed class ScriptInjectingStream : Stream
 
         if (_bodyTagBufferLength > 0)
         {
+            // We might have buffered some data thinking that it could represent
+            // a body tag. We know at this point that there's no more data
+            // on its way, so we'll write the remaining data to the buffer.
             _baseStream.Write(_bodyTagBuffer.AsSpan()[.._bodyTagBufferLength]);
             _bodyTagBufferLength = 0;
         }
@@ -340,6 +355,9 @@ internal sealed class ScriptInjectingStream : Stream
     {
         if (_bodyTagBufferLength > 0)
         {
+            // We might have buffered some data thinking that it could represent
+            // a body tag. We know at this point that there's no more data
+            // on its way, so we'll write the remaining data to the buffer.
             await _baseStream.WriteAsync(_bodyTagBuffer.AsMemory()[.._bodyTagBufferLength]);
             _bodyTagBufferLength = 0;
         }
