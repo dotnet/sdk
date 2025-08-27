@@ -60,6 +60,9 @@ namespace Microsoft.DotNet.Watch
                 _ => throw new InvalidOperationException()
             };
 
+        public static string GetLogMessagePrefix(this Emoji emoji)
+            => $"dotnet watch {emoji.ToDisplay()} ";
+
         public static void Log(this ILogger logger, MessageDescriptor descriptor, params object?[] args)
         {
             logger.Log(
