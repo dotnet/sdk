@@ -91,99 +91,26 @@ internal sealed class ScriptInjectingStream : Stream
         }
     }
 
-    // Changes to this method should be kept in sync with TryInjectScriptAsync.
     private bool TryInjectScript(ReadOnlySpan<byte> buffer)
     {
-        if (_bodyTagBufferLength != 0)
-        {
-            // We're in the middle of parsing a potential body tag,
-            // which means that the rest of the body tag must be
-            // at the start of the buffer.
-
-            var partialTagLength = FindPartialTagLengthFromStart(currentBodyTagLength: _bodyTagBufferLength, buffer);
-            if (partialTagLength == -1)
-            {
-                // This wasn't a closing body tag. Flush what we've buffered so far and reset.
-                // We don't return here because we want to continue to process the buffer as if
-                // we weren't reading a partial body tag.
-                _baseStream.Write(_bodyTagBuffer.Span[.._bodyTagBufferLength]);
-                _bodyTagBufferLength = 0;
-            }
-            else
-            {
-                // This may still be a closing body tag. Copy the contents to the temporary buffer.
-                buffer[..partialTagLength].CopyTo(_bodyTagBuffer.Span[_bodyTagBufferLength..]);
-                _bodyTagBufferLength += partialTagLength;
-
-                Debug.Assert(_bodyTagBufferLength <= s_bodyTagBytes.Length);
-
-                if (_bodyTagBufferLength == s_bodyTagBytes.Length)
-                {
-                    // We've just read a full closing body tag, so we flush it to the stream.
-                    // Then just write the rest of the stream normally as we've now finished searching
-                    // for the script.
-                    _baseStream.Write(s_injectedScriptBytes.Span);
-                    _baseStream.Write(_bodyTagBuffer.Span);
-                    _baseStream.Write(buffer[partialTagLength..]);
-                    _bodyTagBufferLength = 0;
-                    return true;
-                }
-                else
-                {
-                    // We're still in the middle of reading the body tag,
-                    // so there's nothing else to flush to the stream.
-                    return false;
-                }
-            }
-        }
-
-        // We now know we're not in the middle of processing a body tag.
-        Debug.Assert(_bodyTagBufferLength == 0);
-
-        var index = buffer.LastIndexOf(s_bodyTagBytes.Span);
-        if (index == -1)
-        {
-            // We didn't find the full closing body tag in the buffer, but the end of the buffer
-            // might contain the start of a closing body tag.
-
-            var partialBodyTagLength = FindPartialTagLengthFromEnd(buffer);
-            if (partialBodyTagLength == -1)
-            {
-                // We know that the end of the buffer definitely does not
-                // represent a closing body tag. We'll just flush the buffer
-                // to the base stream.
-                _baseStream.Write(buffer);
-                return false;
-            }
-            else
-            {
-                // We might have found a body tag at the end of the buffer.
-                // We'll write the buffer leading up to the start of the body
-                // tag candidate and copy the remainder to the temporary buffer.
-
-                _baseStream.Write(buffer[..^partialBodyTagLength]);
-                buffer[^partialBodyTagLength..].CopyTo(_bodyTagBuffer.Span);
-                _bodyTagBufferLength = partialBodyTagLength;
-                return false;
-            }
-        }
-
-        if (index > 0)
-        {
-            _baseStream.Write(buffer.Slice(0, index));
-            buffer = buffer[index..];
-        }
-
-        // Write the injected script
-        _baseStream.Write(s_injectedScriptBytes.Span);
-
-        // Write the rest of the buffer/HTML doc
-        _baseStream.Write(buffer);
-        return true;
+        var sourceBuffer = new SourceBuffer(buffer);
+        var writer = new SyncBaseStreamWriter(_baseStream);
+        return TryInjectScriptCore(ref writer, sourceBuffer);
     }
 
-    // Changes to this method should be kept in sync with TryInjectScript.
     private async ValueTask<bool> TryInjectScriptAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+    {
+        var sourceBuffer = new SourceBuffer(buffer.Span);
+        var writer = new AsyncBaseStreamWriter(_baseStream, buffer);
+        var result = TryInjectScriptCore(ref writer, sourceBuffer);
+
+        await writer.WriteToBaseStreamAsync(cancellationToken);
+
+        return result;
+    }
+
+    private bool TryInjectScriptCore<TWriter>(ref TWriter writer, SourceBuffer buffer)
+        where TWriter : struct, IBaseStreamWriter
     {
         if (_bodyTagBufferLength != 0)
         {
@@ -197,7 +124,7 @@ internal sealed class ScriptInjectingStream : Stream
                 // This wasn't a closing body tag. Flush what we've buffered so far and reset.
                 // We don't return here because we want to continue to process the buffer as if
                 // we weren't reading a partial body tag.
-                await _baseStream.WriteAsync(_bodyTagBuffer[.._bodyTagBufferLength], cancellationToken);
+                writer.Write(_bodyTagBuffer[.._bodyTagBufferLength]);
                 _bodyTagBufferLength = 0;
             }
             else
@@ -213,9 +140,9 @@ internal sealed class ScriptInjectingStream : Stream
                     // We've just read a full closing body tag, so we flush it to the stream.
                     // Then just write the rest of the stream normally as we've now finished searching
                     // for the script.
-                    await _baseStream.WriteAsync(s_injectedScriptBytes, cancellationToken);
-                    await _baseStream.WriteAsync(_bodyTagBuffer, cancellationToken);
-                    await _baseStream.WriteAsync(buffer[partialTagLength..], cancellationToken);
+                    writer.Write(s_injectedScriptBytes);
+                    writer.Write(_bodyTagBuffer);
+                    writer.Write(buffer[partialTagLength..]);
                     _bodyTagBufferLength = 0;
                     return true;
                 }
@@ -243,7 +170,7 @@ internal sealed class ScriptInjectingStream : Stream
                 // We know that the end of the buffer definitely does not
                 // represent a closing body tag. We'll just flush the buffer
                 // to the base stream.
-                await _baseStream.WriteAsync(buffer, cancellationToken);
+                writer.Write(buffer);
                 return false;
             }
             else
@@ -252,8 +179,8 @@ internal sealed class ScriptInjectingStream : Stream
                 // We'll write the buffer leading up to the start of the body
                 // tag candidate and copy the remainder to the temporary buffer.
 
-                await _baseStream.WriteAsync(buffer[..^partialBodyTagLength], cancellationToken);
-                buffer[^partialBodyTagLength..].CopyTo(_bodyTagBuffer);
+                writer.Write(buffer[..^partialBodyTagLength]);
+                buffer.Span[^partialBodyTagLength..].CopyTo(_bodyTagBuffer.Span);
                 _bodyTagBufferLength = partialBodyTagLength;
                 return false;
             }
@@ -261,15 +188,15 @@ internal sealed class ScriptInjectingStream : Stream
 
         if (index > 0)
         {
-            await _baseStream.WriteAsync(buffer.Slice(0, index), cancellationToken);
+            writer.Write(buffer[..index]);
             buffer = buffer[index..];
         }
 
         // Write the injected script
-        await _baseStream.WriteAsync(s_injectedScriptBytes, cancellationToken);
+        writer.Write(s_injectedScriptBytes);
 
         // Write the rest of the buffer/HTML doc
-        await _baseStream.WriteAsync(buffer, cancellationToken);
+        writer.Write(buffer);
         return true;
     }
 
@@ -375,4 +302,76 @@ internal sealed class ScriptInjectingStream : Stream
          => throw new NotSupportedException();
 
     public override void SetLength(long value) => throw new NotSupportedException();
+
+    // A thin wrapper over ReadOnlySpan<byte> that keeps track of the current range relative
+    // to the originally-provided buffer.
+    // This enables the sharing of logic between scenarios where only a ReadOnlySpan<byte>
+    // is available (some synchronous writes) and scenarios where ReadOnlyMemory<byte>
+    // is required (all asynchronous writes).
+    private readonly ref struct SourceBuffer
+    {
+        private readonly int _offsetFromOriginal;
+
+        public readonly ReadOnlySpan<byte> Span;
+
+        public int Length => Span.Length;
+
+        public Range RangeInOriginal => new(_offsetFromOriginal, _offsetFromOriginal + Span.Length);
+
+        public SourceBuffer(ReadOnlySpan<byte> span)
+            : this(span, offsetFromOriginal: 0)
+        {
+        }
+
+        private SourceBuffer(ReadOnlySpan<byte> span, int offsetFromOriginal)
+        {
+            Span = span;
+            _offsetFromOriginal = offsetFromOriginal;
+        }
+
+        public SourceBuffer Slice(int start, int length)
+            => new(Span.Slice(start, length), offsetFromOriginal: _offsetFromOriginal + start);
+    }
+
+    // Represents a writer to the base stream.
+    // Accepts arbitrary heap-allocated buffers and
+    // ranges of the source buffer.
+    private interface IBaseStreamWriter
+    {
+        void Write(in SourceBuffer buffer);
+        void Write(ReadOnlyMemory<byte> data);
+    }
+
+    // A base stream writer that performs synchronous writes.
+    private struct SyncBaseStreamWriter(Stream baseStream) : IBaseStreamWriter
+    {
+        public readonly void Write(ReadOnlyMemory<byte> data) => baseStream.Write(data.Span);
+        public readonly void Write(in SourceBuffer buffer) => baseStream.Write(buffer.Span);
+    }
+
+    // A base stream writer that enables buffering writes synchronously and applying
+    // them to the base stream when an async context is available.
+    private struct AsyncBaseStreamWriter(Stream baseStream, ReadOnlyMemory<byte> bufferMemory) : IBaseStreamWriter
+    {
+        private WriteBuffer _writes;
+        private int _writeCount;
+
+        public void Write(ReadOnlyMemory<byte> data) => _writes[_writeCount++] = data;
+        public void Write(in SourceBuffer buffer) => _writes[_writeCount++] = bufferMemory[buffer.RangeInOriginal];
+
+        public readonly async ValueTask WriteToBaseStreamAsync(CancellationToken cancellationToken)
+        {
+            for (var i = 0; i < _writeCount; i++)
+            {
+                await baseStream.WriteAsync(_writes[i], cancellationToken);
+            }
+        }
+
+        // We don't currently need than 4 writes, but we can bump this in the future if needed.
+        [InlineArray(4)]
+        struct WriteBuffer
+        {
+            ReadOnlyMemory<byte> _element0;
+        }
+    }
 }
