@@ -109,6 +109,8 @@ internal sealed class ScriptInjectingStream : Stream
         return result;
     }
 
+    // Implements the core script injection logic in a manner agnostic to whether writes
+    // are synchronous or asynchronous.
     private bool TryInjectScriptCore<TWriter>(ref TWriter writer, SourceBuffer buffer)
         where TWriter : struct, IBaseStreamWriter
     {
