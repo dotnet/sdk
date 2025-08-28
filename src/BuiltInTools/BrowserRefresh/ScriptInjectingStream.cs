@@ -370,10 +370,31 @@ internal sealed class ScriptInjectingStream : Stream
         }
 
         // We don't currently need than 4 writes, but we can bump this in the future if needed.
-        [InlineArray(4)]
-        struct WriteBuffer
+        // If we ever target .NET 8+, we can use the [InlineArray] feature instead.
+        private struct WriteBuffer
         {
-            ReadOnlyMemory<byte> _element0;
+            ReadOnlyMemory<byte> _write0;
+            ReadOnlyMemory<byte> _write1;
+            ReadOnlyMemory<byte> _write2;
+            ReadOnlyMemory<byte> _write3;
+
+            private static ref ReadOnlyMemory<byte> GetAt(ref WriteBuffer buffer, int index)
+            {
+                switch (index)
+                {
+                    case 0: return ref buffer._write0;
+                    case 1: return ref buffer._write1;
+                    case 2: return ref buffer._write2;
+                    case 3: return ref buffer._write3;
+                    default: throw new IndexOutOfRangeException(nameof(index));
+                }
+            }
+
+            public ReadOnlyMemory<byte> this[int index]
+            {
+                get => GetAt(ref this, index);
+                set => GetAt(ref this, index) = value;
+            }
         }
     }
 }
