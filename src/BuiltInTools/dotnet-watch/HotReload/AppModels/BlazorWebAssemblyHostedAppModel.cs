@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Watch;
 /// App has a client and server projects and deltas are applied to both processes.
 /// Agent is injected into the server process. The client process is updated via WebSocketScriptInjection.js injected into the browser.
 /// </summary>
-internal sealed class BlazorWebAssemblyHostedAppModel(ProjectGraphNode clientProject, ProjectGraphNode serverProject)
+internal sealed class BlazorWebAssemblyHostedAppModel(ProjectGraphNode clientProject, ProjectGraphNode serverProject, EnvironmentOptions environmentOptions)
     : WebApplicationAppModel(agentInjectionProject: serverProject)
 {
     public override bool RequiresBrowserRefresh => true;
@@ -28,7 +28,7 @@ internal sealed class BlazorWebAssemblyHostedAppModel(ProjectGraphNode clientPro
 
         return new(
         [
-            (new BlazorWebAssemblyHotReloadClient(clientLogger, agentLogger, browserRefreshServer, clientProject), "client"),
+            (new BlazorWebAssemblyHotReloadClient(clientLogger, agentLogger, browserRefreshServer, environmentOptions, clientProject), "client"),
             (new DefaultHotReloadClient(clientLogger, agentLogger, enableStaticAssetUpdates: false), "host")
         ]);
     }
