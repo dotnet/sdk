@@ -130,9 +130,10 @@ internal sealed class BrowserRefreshServer : IAsyncDisposable
             })
             .Build();
 
-        _lazyServerUrls = string.Join(',', GetServerUrls(_lazyServer));
-
         await _lazyServer.StartAsync(cancellationToken);
+
+        // URLs are only available after the server has started.
+        _lazyServerUrls = string.Join(',', GetServerUrls(_lazyServer));
         _logger.LogDebug("Refresh server running at {Urls}.", _lazyServerUrls);
     }
 
