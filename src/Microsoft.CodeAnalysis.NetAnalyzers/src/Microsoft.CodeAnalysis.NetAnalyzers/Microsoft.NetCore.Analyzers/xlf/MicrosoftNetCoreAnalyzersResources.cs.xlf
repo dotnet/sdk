@@ -69,17 +69,17 @@
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingDescription">
         <source>In many situations, logging is disabled or set to a log level that results in an unnecessary evaluation for this argument.</source>
-        <target state="new">In many situations, logging is disabled or set to a log level that results in an unnecessary evaluation for this argument.</target>
+        <target state="translated">V mnoha situacích je protokolování zakázáno nebo nastaveno na úroveň protokolu, která má za následek zbytečné vyhodnocení tohoto argumentu.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingMessage">
         <source>Evaluation of this argument may be expensive and unnecessary if logging is disabled</source>
-        <target state="new">Evaluation of this argument may be expensive and unnecessary if logging is disabled</target>
+        <target state="translated">Vyhodnocení tohoto argumentu může být nákladné a zbytečné, pokud je protokolování zakázané.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingTitle">
         <source>Avoid potentially expensive logging</source>
-        <target state="new">Avoid potentially expensive logging</target>
+        <target state="translated">Vyhněte se potenciálně nákladnému protokolování</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsDescription">
@@ -629,8 +629,8 @@ The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&
 Widening and user defined conversions are not supported with generic types.</source>
         <target state="translated">Metody Enumerable.Cast&lt;T&gt; a Enumerable.OfType&lt;T&gt; vyžadují k očekávané funkci kompatibilní typy.  
 Obecné přetypování (IL unbox.any) používané sekvencí vrácenou metodou Enumerable.Cast&lt;T&gt; vyvolá výjimku InvalidCastException za běhu u prvků zadaných typů.  
- Ověření obecného typu (operátor is v jazyce C# /isinst převodního jazyka IL) metodou Enumerable.OfType&lt;T&gt; nebude nikdy úspěšné s prvky zadaných typů a výsledkem bude prázdná sekvence.  
- Rozšíření a uživatelem definované převody se u obecných typů nepodporují.</target>
+Ověření obecného typu (operátor is v jazyce C# /isinst převodního jazyka IL) metodou Enumerable.OfType&lt;T&gt; nebude nikdy úspěšné s prvky zadaných typů a výsledkem bude prázdná sekvence.  
+Rozšíření a uživatelem definované převody se u obecných typů nepodporují.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesMessageCast">
@@ -1105,17 +1105,17 @@ Obecné přetypování (IL unbox.any) používané sekvencí vrácenou metodou E
       </trans-unit>
       <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsDescription">
         <source>The property 'StreamReader.EndOfStream' can cause unintended synchronous blocking when no data is buffered. Instead, use 'StreamReader.ReadLineAsync' directly, which returns 'null' when reaching the end of the stream.</source>
-        <target state="new">The property 'StreamReader.EndOfStream' can cause unintended synchronous blocking when no data is buffered. Instead, use 'StreamReader.ReadLineAsync' directly, which returns 'null' when reaching the end of the stream.</target>
+        <target state="translated">Vlastnost StreamReader.EndOfStream může způsobit nezamýšlené synchronní blokování, když nejsou žádná data ve vyrovnávací paměti. Místo toho použijte přímo StreamReader.ReadLineAsync, který při dosažení konce datového proudu vrátí hodnotu null.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsMessage">
         <source>Do not use '{0}' in an async method</source>
-        <target state="new">Do not use '{0}' in an async method</target>
+        <target state="translated">Nepoužívejte {0} v asynchronní metodě.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsTitle">
         <source>Do not use 'StreamReader.EndOfStream' in async methods</source>
-        <target state="new">Do not use 'StreamReader.EndOfStream' in async methods</target>
+        <target state="translated">Nepoužívejte StreamReader.EndOfStream v asynchronních metodách</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyDescription">
@@ -3165,42 +3165,42 @@ Obecné přetypování (IL unbox.any) používané sekvencí vrácenou metodou E
       </trans-unit>
       <trans-unit id="UseRegexCountDescription">
         <source>'Regex.Count' is simpler and faster than 'Regex.Matches(...).Count'.</source>
-        <target state="new">'Regex.Count' is simpler and faster than 'Regex.Matches(...).Count'.</target>
+        <target state="translated">Regex.Count je jednodušší a rychlejší než Regex.Matches(...).Count.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexCountFix">
         <source>Use 'Regex.Count'</source>
-        <target state="new">Use 'Regex.Count'</target>
+        <target state="translated">Použijte Regex.Count</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexCountMessage">
         <source>Use 'Regex.Count' instead of 'Regex.Matches(...).Count'</source>
-        <target state="new">Use 'Regex.Count' instead of 'Regex.Matches(...).Count'</target>
+        <target state="translated">Místo regex.Matches(...).Count použijte Regex.Count.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexCountTitle">
         <source>Use 'Regex.Count'</source>
-        <target state="new">Use 'Regex.Count'</target>
+        <target state="translated">Použijte Regex.Count</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchDescription">
         <source>'Regex.IsMatch' is simpler and faster than 'Regex.Match(...).Success'.</source>
-        <target state="new">'Regex.IsMatch' is simpler and faster than 'Regex.Match(...).Success'.</target>
+        <target state="translated">Regex.IsMatch je jednodušší a rychlejší než Regex.Match(...).Success.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchFix">
         <source>Use 'Regex.IsMatch'</source>
-        <target state="new">Use 'Regex.IsMatch'</target>
+        <target state="translated">Použijte Regex.IsMatch.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchMessage">
         <source>Use 'Regex.IsMatch' instead of 'Regex.Match(...).Success'</source>
-        <target state="new">Use 'Regex.IsMatch' instead of 'Regex.Match(...).Success'</target>
+        <target state="translated">Místo Regex.Match(...) použijte Regex.IsMatch.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchTitle">
         <source>Use 'Regex.IsMatch'</source>
-        <target state="new">Use 'Regex.IsMatch'</target>
+        <target state="translated">Použijte Regex.IsMatch.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSearchValuesCodeFixTitle">

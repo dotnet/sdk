@@ -3,6 +3,7 @@
 
 using Microsoft.Build.Graph;
 using Microsoft.Build.Globbing;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -68,24 +69,24 @@ internal readonly struct FilePathExclusions(
         return new FilePathExclusions(globs.Values, outputDirectories);
     }
 
-    public void Report(IReporter reporter)
+    public void Report(ILogger log)
     {
         foreach (var globsPerDirectory in exclusionGlobs.GroupBy(keySelector: static g => g.projectDir, elementSelector: static g => g.value))
         {
-            reporter.Verbose($"Exclusion glob: '{string.Join(";", globsPerDirectory)}' under project '{globsPerDirectory.Key}'");
+            log.LogDebug("Exclusion glob: '{Globs}' under project '{Directory}'", string.Join(";", globsPerDirectory), globsPerDirectory.Key);
         }
 
         foreach (var dir in outputDirectories)
         {
-            reporter.Verbose($"Excluded directory: '{dir}'");
+            log.LogDebug("Excluded directory: '{Directory}'", dir);
         }
     }
 
-    internal bool IsExcluded(string fullPath, ChangeKind changeKind, IReporter reporter)
+    internal bool IsExcluded(string fullPath, ChangeKind changeKind, ILogger logger)
     {
         if (PathUtilities.ContainsPath(outputDirectories, fullPath))
         {
-            reporter.Report(MessageDescriptor.IgnoringChangeInOutputDirectory, changeKind, fullPath);
+            logger.Log(MessageDescriptor.IgnoringChangeInOutputDirectory, changeKind, fullPath);
             return true;
         }
 
@@ -93,7 +94,7 @@ internal readonly struct FilePathExclusions(
         {
             if (glob.IsMatch(fullPath))
             {
-                reporter.Report(MessageDescriptor.IgnoringChangeInExcludedFile, fullPath, changeKind, "DefaultItemExcludes", globValue, projectDir);
+                logger.Log(MessageDescriptor.IgnoringChangeInExcludedFile, fullPath, changeKind, "DefaultItemExcludes", globValue, projectDir);
                 return true;
             }
         }

@@ -69,17 +69,17 @@
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingDescription">
         <source>In many situations, logging is disabled or set to a log level that results in an unnecessary evaluation for this argument.</source>
-        <target state="new">In many situations, logging is disabled or set to a log level that results in an unnecessary evaluation for this argument.</target>
+        <target state="translated">많은 상황에서 로깅이 비활성화되거나 이 인수에 대해 불필요한 평가가 발생하는 로그 수준으로 설정됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingMessage">
         <source>Evaluation of this argument may be expensive and unnecessary if logging is disabled</source>
-        <target state="new">Evaluation of this argument may be expensive and unnecessary if logging is disabled</target>
+        <target state="translated">로깅이 비활성화되면 이 인수를 평가하는 데 비용이 많이 들고 불필요할 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingTitle">
         <source>Avoid potentially expensive logging</source>
-        <target state="new">Avoid potentially expensive logging</target>
+        <target state="translated">비용이 많이 드는 로깅을 피하세요</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsDescription">
@@ -464,7 +464,7 @@
       </trans-unit>
       <trans-unit id="DerivesFromPreviewClassMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="translated">{3} '{0}'은(는) 미리 보기 클래스 '{1}'에서 파생되므로 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}를 참조하세요.</target>
+        <target state="translated">{3} '{0}'은(는) 미리 보기 클래스 '{1}'에서 파생되므로 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}(을)를 참조하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesDescription">
@@ -474,7 +474,7 @@
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesMessage">
         <source>Using '{0}' requires opting into preview features. See {1} for more information.</source>
-        <target state="translated">'{0}'을(를) 사용하려면 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {1}를 참조하세요.</target>
+        <target state="translated">'{0}'을(를) 사용하려면 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {1}(을)를 참조하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesMessageWithCustomMessagePlaceholder">
@@ -1105,17 +1105,17 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsDescription">
         <source>The property 'StreamReader.EndOfStream' can cause unintended synchronous blocking when no data is buffered. Instead, use 'StreamReader.ReadLineAsync' directly, which returns 'null' when reaching the end of the stream.</source>
-        <target state="new">The property 'StreamReader.EndOfStream' can cause unintended synchronous blocking when no data is buffered. Instead, use 'StreamReader.ReadLineAsync' directly, which returns 'null' when reaching the end of the stream.</target>
+        <target state="translated">'StreamReader.EndOfStream' 속성은 데이터가 버퍼링되지 않은 경우 의도하지 않은 동기 차단을 초래할 수 있습니다. 대신, 스트림의 끝에 도달할 때 'null'을 반환하는 'StreamReader.ReadLineAsync'를 직접 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsMessage">
         <source>Do not use '{0}' in an async method</source>
-        <target state="new">Do not use '{0}' in an async method</target>
+        <target state="translated">비동기 메서드에서 '{0}'을(를) 사용하지 마세요</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEndOfStreamInAsyncMethodsTitle">
         <source>Do not use 'StreamReader.EndOfStream' in async methods</source>
-        <target state="new">Do not use 'StreamReader.EndOfStream' in async methods</target>
+        <target state="translated">비동기 메서드에서는 'StreamReader.EndOfStream'을 사용하지 마세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyDescription">
@@ -1395,7 +1395,7 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="FieldIsPreviewTypeMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
-        <target state="translated">{3} '{0}'의 유형에 '{1}' 미리 보기 유형이 포함되어 있으며 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}를 참조하세요.</target>
+        <target state="translated">{3} '{0}'의 유형에 '{1}' 미리 보기 유형이 포함되어 있으며 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}(을)를 참조하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
@@ -1465,7 +1465,7 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="ImplementsPreviewInterfaceMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="translated">{3} '{0}'은(는) 미리 보기 인터페이스 '{1}'를 구현하므로 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}를 참조하세요.</target>
+        <target state="translated">{3} '{0}'은(는) 미리 보기 인터페이스 '{1}'을(를) 구현하므로 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}(을)를 참조하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewMethodMessage">
@@ -1475,7 +1475,7 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="ImplementsPreviewMethodMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="translated">{3} '{0}'은(는) 미리 보기 방법 '{1}'을 구현하므로 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}를 참조하세요.</target>
+        <target state="translated">{3} '{0}'은(는) 미리 보기 방법 '{1}'을 구현하므로 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}(을)를 참조하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="InitializeReferenceTypeStaticFieldsInlineDescription">
@@ -1790,7 +1790,7 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="MethodReturnsPreviewTypeMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="translated">{3} '{0}'은(는) 미리 보기 유형 '{1}'을 반환하므로 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}를 참조하세요.</target>
+        <target state="translated">{3} '{0}'은(는) 미리 보기 유형 '{1}'을 반환하므로 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}(을)를 참조하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodUsesPreviewTypeAsParameterMessage">
@@ -1800,7 +1800,7 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="MethodUsesPreviewTypeAsParameterMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</source>
-        <target state="translated">{3} '{0}'은(는) '{1}' 유형의 미리 보기 매개 변수를 사용하며 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}를 참조하세요.</target>
+        <target state="translated">{3} '{0}'은(는) '{1}' 유형의 미리 보기 매개 변수를 사용하며 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}(을)를 참조하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledDescription">
@@ -1915,7 +1915,7 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="OverridesPreviewMethodMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="translated">{3} '{0}'은(는) 미리 보기 방법 '{1}'을(를) 재정의하므로 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}를 참조하세요.</target>
+        <target state="translated">{3} '{0}'은(는) 미리 보기 방법 '{1}'을(를) 재정의하므로 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}(을)를 참조하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="PInvokesShouldNotBeVisibleDescription">
@@ -1955,7 +1955,7 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="PlatformCompatibilityFromVersionToVersion">
         <source>'{0}' from version {1} to {2}</source>
-        <target state="translated">'{0}' 버전 {1}~{2}</target>
+        <target state="translated">'{0}' 버전 {1}~007E;{2}</target>
         <note>'SupportedOnWindows1903UnsupportedOn2004()' is supported on: 'windows' from version 10.0.1903 to 10.0.2004.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityObsoletedCsAllPlatformMessage">
@@ -3165,42 +3165,42 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="UseRegexCountDescription">
         <source>'Regex.Count' is simpler and faster than 'Regex.Matches(...).Count'.</source>
-        <target state="new">'Regex.Count' is simpler and faster than 'Regex.Matches(...).Count'.</target>
+        <target state="translated">'Regex.Count'는 'Regex.Matches(...)'보다 간단하고 빠릅니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexCountFix">
         <source>Use 'Regex.Count'</source>
-        <target state="new">Use 'Regex.Count'</target>
+        <target state="translated">'Regex.Count' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexCountMessage">
         <source>Use 'Regex.Count' instead of 'Regex.Matches(...).Count'</source>
-        <target state="new">Use 'Regex.Count' instead of 'Regex.Matches(...).Count'</target>
+        <target state="translated">'Regex.Matches(...)' 대신 'Regex.Count'를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexCountTitle">
         <source>Use 'Regex.Count'</source>
-        <target state="new">Use 'Regex.Count'</target>
+        <target state="translated">'Regex.Count' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchDescription">
         <source>'Regex.IsMatch' is simpler and faster than 'Regex.Match(...).Success'.</source>
-        <target state="new">'Regex.IsMatch' is simpler and faster than 'Regex.Match(...).Success'.</target>
+        <target state="translated">'Regex.IsMatch'는 'Regex.Match(...)'보다 간단하고 빠릅니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchFix">
         <source>Use 'Regex.IsMatch'</source>
-        <target state="new">Use 'Regex.IsMatch'</target>
+        <target state="translated">'Regex.IsMatch'를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchMessage">
         <source>Use 'Regex.IsMatch' instead of 'Regex.Match(...).Success'</source>
-        <target state="new">Use 'Regex.IsMatch' instead of 'Regex.Match(...).Success'</target>
+        <target state="translated">Use 'Regex.IsMatch' instead of 'Regex.Match(...).Success'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRegexIsMatchTitle">
         <source>Use 'Regex.IsMatch'</source>
-        <target state="new">Use 'Regex.IsMatch'</target>
+        <target state="translated">'Regex.IsMatch'를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSearchValuesCodeFixTitle">
@@ -3465,7 +3465,7 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       </trans-unit>
       <trans-unit id="UsesPreviewTypeParameterMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
-        <target state="translated">{3} '{0}'은(는) 미리 보기 유형 '{1}'을(를) 사용하며 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}를 참조하세요.</target>
+        <target state="translated">{3} '{0}'은(는) 미리 보기 유형 '{1}'을(를) 사용하며 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}(을)를 참조하세요.</target>
         <note />
       </trans-unit>
     </body>
