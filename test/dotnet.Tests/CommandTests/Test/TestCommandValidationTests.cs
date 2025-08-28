@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Tools.Test.Utilities;
-
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
     public class TestCommandValidationTests : SdkTest
@@ -19,7 +17,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void TestCommandShouldValidateFileArgumentsAndProvideHelpfulMessages(string filename, string expectedErrorStart)
         {
             var testDir = _testAssetsManager.CreateTestDirectory();
-            
+
             // Create the test file
             var testFilePath = Path.Combine(testDir.Path, filename);
             File.WriteAllText(testFilePath, "dummy content");
@@ -59,7 +57,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().NotBe(0);
             if (!TestContext.IsLocalized())
             {
-                result.StdErr.Should().Contain("Specifying a directory for 'dotnet test' should be via '--directory'.");
+                result.StdErr.Should().Contain("Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.");
             }
         }
 
@@ -67,7 +65,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void TestCommandShouldValidateDllArgumentAndProvideHelpfulMessage()
         {
             var testDir = _testAssetsManager.CreateTestDirectory();
-            
+
             // Create a dummy dll file
             var dllPath = Path.Combine(testDir.Path, "test.dll");
             File.WriteAllText(dllPath, "dummy dll content");

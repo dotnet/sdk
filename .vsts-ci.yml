@@ -5,7 +5,7 @@ trigger:
   branches:
     include:
     - main
-    - release/10.0.1xx-*
+    - release/10.0.1*
     - internal/release/*
     - exp/*
 
@@ -284,6 +284,7 @@ extends:
             publishUsingPipelines: true
             publishAssetsImmediately: true
             isAssetlessBuild: true
+            repositoryAlias: self
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022

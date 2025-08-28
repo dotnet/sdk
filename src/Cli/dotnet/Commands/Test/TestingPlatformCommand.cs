@@ -6,13 +6,11 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Cli.Commands;
-using Microsoft.TemplateEngine.Cli.Help;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal partial class TestingPlatformCommand : System.CommandLine.Command, ICustomHelp
+internal partial class TestingPlatformCommand : Command, ICustomHelp
 {
     private MSBuildHandler _msBuildHandler;
     private TerminalTestReporter _output;
@@ -47,7 +45,7 @@ internal partial class TestingPlatformCommand : System.CommandLine.Command, ICus
     {
         ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult);
         ValidationUtility.ValidateSolutionOrProjectOrDirectoryOrModulesArePassedCorrectly(parseResult);
-        
+
         PrepareEnvironment(parseResult, out TestOptions testOptions, out int degreeOfParallelism);
 
         InitializeOutput(degreeOfParallelism, parseResult, testOptions.IsHelp);
