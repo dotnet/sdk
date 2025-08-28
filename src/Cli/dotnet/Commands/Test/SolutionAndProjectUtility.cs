@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
@@ -112,6 +111,56 @@ internal static class SolutionAndProjectUtility
             }
         }
 
+        return (true, string.Empty);
+    }
+
+    public static (bool ProjectFileFound, string Message) TryGetProjectFilePath(string directory, out string projectFilePath)
+    {
+        projectFilePath = string.Empty;
+
+        if (!Directory.Exists(directory))
+        {
+            return (false, string.Format(CliCommandStrings.CmdNonExistentDirectoryErrorDescription, directory));
+        }
+
+        var actualProjectFiles = GetProjectFilePaths(directory);
+
+        if (actualProjectFiles.Length == 0)
+        {
+            return (false, string.Format(CliStrings.CouldNotFindAnyProjectInDirectory, directory));
+        }
+
+        if (actualProjectFiles.Length == 1)
+        {
+            projectFilePath = actualProjectFiles[0];
+            return (true, string.Empty);
+        }
+
+        return (false, string.Format(CliStrings.MoreThanOneProjectInDirectory, directory));
+    }
+
+    public static (bool SolutionFileFound, string Message) TryGetSolutionFilePath(string directory, out string solutionFilePath)
+    {
+        solutionFilePath = string.Empty;
+
+        if (!Directory.Exists(directory))
+        {
+            return (false, string.Format(CliCommandStrings.CmdNonExistentDirectoryErrorDescription, directory));
+        }
+
+        var actualSolutionFiles = GetSolutionFilePaths(directory);
+
+        if (actualSolutionFiles.Length == 0)
+        {
+            return (false, string.Format(CliStrings.SolutionDoesNotExist, directory + Path.DirectorySeparatorChar));
+        }
+
+        if (actualSolutionFiles.Length > 1)
+        {
+            return (false, string.Format(CliStrings.MoreThanOneSolutionInDirectory, directory + Path.DirectorySeparatorChar));
+        }
+
+        solutionFilePath = actualSolutionFiles[0];
         return (true, string.Empty);
     }
 
@@ -230,23 +279,37 @@ internal static class SolutionAndProjectUtility
         }
 
         string targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
-        RunProperties runProperties = GetRunProperties(project, loggers);
-
-        // dotnet run throws the same if RunCommand is null or empty.
-        // In dotnet test, we are additionally checking that RunCommand is not dll.
-        // In any "default" scenario, RunCommand is never dll.
-        // If we found it to be dll, that is user explicitly setting RunCommand incorrectly.
-        if (string.IsNullOrEmpty(runProperties.Command) || runProperties.Command.HasExtension(CliConstants.DLLExtension))
-        {
-            throw new GracefulException(
-                string.Format(
-                    CliCommandStrings.RunCommandExceptionUnableToRun,
-                    "dotnet test",
-                    "OutputType",
-                    project.GetPropertyValue("OutputType")));
-        }
-
         string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
+
+
+        // Only get run properties if IsTestingPlatformApplication is true
+        RunProperties runProperties;
+        if (isTestingPlatformApplication)
+        {
+            runProperties = GetRunProperties(project, loggers);
+
+            // dotnet run throws the same if RunCommand is null or empty.
+            // In dotnet test, we are additionally checking that RunCommand is not dll.
+            // In any "default" scenario, RunCommand is never dll.
+            // If we found it to be dll, that is user explicitly setting RunCommand incorrectly.
+            if (string.IsNullOrEmpty(runProperties.Command) || runProperties.Command.HasExtension(CliConstants.DLLExtension))
+            {
+                throw new GracefulException(
+                    string.Format(
+                        CliCommandStrings.RunCommandExceptionUnableToRun,
+                        projectFullPath,
+                        Product.TargetFrameworkVersion,
+                        project.GetPropertyValue("OutputType")));
+            }
+        }
+        else
+        {
+            // For VSTest test projects, create minimal RunProperties
+            runProperties = new RunProperties(
+                project.GetPropertyValue(ProjectProperties.TargetPath),
+                null,
+                null);
+        }
 
         // TODO: Support --launch-profile and pass it here.
         var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath)!, Path.GetFileNameWithoutExtension(projectFullPath), project.GetPropertyValue(ProjectProperties.AppDesignerFolder), buildOptions, profileName: null);
