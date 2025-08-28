@@ -79,7 +79,6 @@ internal static class CommonOptions
         .ForwardAsMany(targets => ForwardTargetsAndAdditionalProperties(targets, additionalProperties))
         .AllowSingleArgPerToken();
 
-
     public static Option<string[]> RequiredMSBuildTargetOption(string defaultTargetName, (string key, string value)[]? additionalProperties = null) =>
         new ForwardedOption<string[]>("--target", "/target", "-target", "-t", "--t", "/t")
         {

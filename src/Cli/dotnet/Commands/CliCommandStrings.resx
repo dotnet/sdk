@@ -565,6 +565,19 @@ This is equivalent to deleting project.assets.json.</value>
     <value>The directory where the test results will be placed.
 The specified directory will be created if it does not exist.</value>
   </data>
+  <data name="CmdConfigFileDescription" xml:space="preserve">
+    <value>Specifies a testconfig.json file.</value>
+  </data>
+  <data name="CmdConfigFilePath" xml:space="preserve">
+    <value>CONFIG_FILE</value>
+  </data>
+  <data name="CmdDiagnosticOutputDirectoryDescription" xml:space="preserve">
+    <value>Output directory of the diagnostic logging.
+If not specified the file will be generated inside the default 'TestResults' directory.</value>
+  </data>
+  <data name="CmdDiagnosticOutputDirectoryPath" xml:space="preserve">
+    <value>DIAGNOSTIC_DIR</value>
+  </data>
   <data name="CmdRootPathName" xml:space="preserve">
     <value>ROOT_PATH</value>
   </data>
@@ -1201,6 +1214,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   </data>
   <data name="NoWorkloadsToRepair" xml:space="preserve">
     <value>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</value>
+    <comment>{Locked="dotnet workload search"}</comment>
   </data>
   <data name="NoWorkloadsToUpdate" xml:space="preserve">
     <value>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</value>
@@ -1588,7 +1602,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   </data>
   <data name="PropertyDirectiveMissingParts" xml:space="preserve">
     <value>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</value>
-    <comment>{0} is the file path and line number.</comment>
+    <comment>{0} is the file path and line number.{Locked="#:property"}</comment>
+  </data>
+  <data name="StaticGraphRestoreNotSupported" xml:space="preserve">
+    <value>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</value>
+    <comment>{0} is the file path and line number.{Locked="#:property"}</comment>
   </data>
   <data name="InvalidDirectiveName" xml:space="preserve">
     <value>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</value>
@@ -1762,10 +1780,11 @@ The default is to publish a framework-dependent application.</value>
     <value>Couldn't find a project to run. Ensure a project exists in {0}, or pass the path to the project using {1}.</value>
   </data>
   <data name="RunCommandExceptionUnableToRun" xml:space="preserve">
-    <value>Unable to run your project.
-Ensure you have a runnable project type and ensure '{0}' supports this project.
-A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
-The current {1} is '{2}'.</value>
+    <value>Unable to proceed with project '{0}'.
+Ensure you have a runnable project type.
+A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
+The current OutputType is '{2}'.</value>
+    <comment>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</comment>
   </data>
   <data name="RunCommandExceptionUnableToRunSpecifyFramework" xml:space="preserve">
     <value>Unable to run your project
@@ -1852,7 +1871,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
     <comment>{Locked="--sdk-version"}</comment>
   </data>
   <data name="ShouldInstallAWorkloadSet" xml:space="preserve">
-    <value>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</value>
+    <value>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</value>
     <comment>{Locked="dotnet workload restore"}</comment>
   </data>
   <data name="ShutDownFailed" xml:space="preserve">
@@ -2468,8 +2487,12 @@ To display a value, specify the corresponding command-line option without provid
   <data name="WorkloadManifestIdColumn" xml:space="preserve">
     <value>Workload manifest ID</value>
   </data>
-  <data name="WorkloadManifestInstallationConfiguration" xml:space="preserve">
-    <value>Configured to use {0} when installing new manifests.</value>
+  <data name="WorkloadManifestInstallationConfigurationWorkloadSets" xml:space="preserve">
+    <value>Configured to use workload sets when installing new manifests.</value>
+    <comment>{Locked="workload sets"}</comment>
+  </data>
+  <data name="WorkloadManifestInstallationConfigurationLooseManifests" xml:space="preserve">
+    <value>Configured to use loose manifests when installing new manifests.</value>
   </data>
   <data name="WorkloadManifestPathColumn" xml:space="preserve">
     <value>Manifest Path</value>
@@ -2604,5 +2627,23 @@ Proceed?</value>
   <data name="ToolDownloadNeedsConfirmation" xml:space="preserve">
     <value>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</value>
     <comment>{Locked="--yes"}</comment>
+  </data>
+  <data name="TestCommandUseSolution" xml:space="preserve">
+    <value>Specifying a solution for 'dotnet test' should be via '--solution'.</value>
+  </data>
+  <data name="TestCommandUseProject" xml:space="preserve">
+    <value>Specifying a project for 'dotnet test' should be via '--project'.</value>
+  </data>
+  <data name="TestCommandUseTestModules" xml:space="preserve">
+    <value>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</value>
+  </data>
+  <data name="TestCommandUseDirectoryWithSwitch" xml:space="preserve">
+    <value>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</value>
+  </data>
+  <data name="PackCmdVersionDescription" xml:space="preserve">
+    <value>The version of the package to create</value>
+  </data>
+  <data name="PackCmdVersion" xml:space="preserve">
+    <value>VERSION</value>
   </data>
 </root>

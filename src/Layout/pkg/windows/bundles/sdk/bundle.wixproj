@@ -39,7 +39,7 @@
       <DefineConstants>$(DefineConstants);MinimumVSVersion=$(MinimumVSVersion)</DefineConstants>
 
       <!-- PlatformToken is used to generate a generate a WiX variable name using a preprocessor variable so casing matters. -->
-      <DefineConstants>$(DefineConstants);PlatformToken=$(InstallerPlatform.ToUpper())</DefineConstants>
+      <DefineConstants>$(DefineConstants);PlatformToken=$(TargetArchitecture.ToUpper())</DefineConstants>
 
       <!-- Source paths for packages to chain. -->
       <DefineConstants>$(DefineConstants);FinalizerExeSourceFile=$(FinalizerExeSourceFile)</DefineConstants>

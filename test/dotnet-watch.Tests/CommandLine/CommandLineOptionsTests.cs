@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class CommandLineOptionsTests
     {
-        private readonly MockReporter _testReporter = new();
+        private readonly TestLogger _testLogger = new();
 
         private CommandLineOptions VerifyOptions(string[] args, string expectedOutput = "", string[] expectedMessages = null)
             => VerifyOptions(args, actualOutput => AssertEx.Equal(expectedOutput, actualOutput), expectedMessages ?? []);
@@ -15,9 +15,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
         private CommandLineOptions VerifyOptions(string[] args, Action<string> outputValidator, string[] expectedMessages)
         {
             var output = new StringWriter();
-            var options = CommandLineOptions.Parse(args, _testReporter, output: output, errorCode: out var errorCode);
+            var options = CommandLineOptions.Parse(args, _testLogger, output: output, errorCode: out var errorCode);
 
-            Assert.Equal(expectedMessages, _testReporter.Messages);
+            Assert.Equal(expectedMessages, _testLogger.GetAndClearMessages());
             outputValidator(output.ToString());
 
             Assert.NotNull(options);
@@ -28,9 +28,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
         private void VerifyErrors(string[] args, params string[] expectedErrors)
         {
             var output = new StringWriter();
-            var options = CommandLineOptions.Parse(args, _testReporter, output: output, errorCode: out var errorCode);
+            var options = CommandLineOptions.Parse(args, _testLogger, output: output, errorCode: out var errorCode);
 
-            AssertEx.Equal(expectedErrors, _testReporter.Messages);
+            AssertEx.Equal(expectedErrors, _testLogger.GetAndClearMessages());
             Assert.Empty(output.ToString());
 
             Assert.Null(options);
@@ -45,11 +45,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void HelpArgs(string[] args)
         {
             var output = new StringWriter();
-            var options = CommandLineOptions.Parse(args, _testReporter, output: output, errorCode: out var errorCode);
+            var options = CommandLineOptions.Parse(args, _testLogger, output: output, errorCode: out var errorCode);
             Assert.Null(options);
             Assert.Equal(0, errorCode);
 
-            Assert.Empty(_testReporter.Messages);
+            Assert.Empty(_testLogger.GetAndClearMessages());
             Assert.Contains("Usage:", output.ToString());
         }
 
@@ -118,11 +118,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         [Theory]
         [CombinatorialData]
-        public void WatchOptions_NotPassedThrough_BeforeCommand(
+        public void WatchOptions_NotPassedThrough(
             [CombinatorialValues("--quiet", "--verbose", "--no-hot-reload", "--non-interactive")] string option,
-            bool before)
+            bool beforeCommand)
         {
-            var options = VerifyOptions(before ? [option, "test"] : ["test", option]);
+            var options = VerifyOptions(beforeCommand ? [option, "test"] : ["test", option]);
             Assert.Equal("test", options.Command);
             AssertEx.SequenceEqual([], options.CommandArguments);
         }
@@ -149,7 +149,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void RunOptions_LaunchProfile_Both()
         {
             VerifyErrors(["-lp", "P1", "run", "-lp", "P2"],
-                "error ❌ Option '-lp' expects a single argument but 2 were provided.");
+                "[Error] Option '-lp' expects a single argument but 2 were provided.");
         }
 
         [Fact]
@@ -283,18 +283,55 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         [Theory]
+        [InlineData("-bl")]
+        [InlineData("/bl")]
+        [InlineData("/bl:X.binlog")]
+        [InlineData("-binaryLogger")]
+        [InlineData("/binaryLogger")]
+        [InlineData("--binaryLogger:LogFile=output.binlog;ProjectImports=None")]
+        public void BinaryLoggerOption_AfterDashDash(string option)
+        {
+            var options1 = VerifyOptions(["--", option]);
+
+            AssertEx.SequenceEqual(["--", option], options1.CommandArguments);
+            AssertEx.SequenceEqual(["--property:NuGetInteractive=false"], options1.BuildArguments);
+
+            var options2 = VerifyOptions([option, "A", "--", "-bl:XXX"]);
+
+            AssertEx.SequenceEqual([option, "A", "--", "-bl:XXX"], options2.CommandArguments);
+            AssertEx.SequenceEqual(["--property:NuGetInteractive=false", option], options2.BuildArguments);
+        }
+
+        [Theory]
+        [InlineData("-bl:")]
+        [InlineData("/bl:")]
+        [InlineData("-binaryLogger:")]
+        [InlineData("/binaryLogger:")]
+        public void BinaryLoggerOption_NoValue(string option)
+        {
+            var options = VerifyOptions([option]);
+
+            AssertEx.SequenceEqual([option], options.CommandArguments);
+            AssertEx.SequenceEqual(["--property:NuGetInteractive=false"], options.BuildArguments);
+        }
+
+        [Theory]
         [CombinatorialData]
         public void OptionsSpecifiedBeforeOrAfterRun(bool afterRun)
         {
             var args = new[] { "--project", "P", "--framework", "F", "--property", "P1=V1", "--property", "P2=V2" };
-            args = afterRun ? args.Prepend("run").ToArray() : args.Append("run").ToArray();
+            args = afterRun ? [.. args.Prepend("run")] : [.. args.Append("run")];
 
             var options = VerifyOptions(args);
 
             Assert.Equal("P", options.ProjectPath);
             Assert.Equal("F", options.TargetFramework);
+
+            // the forwarding function of --property property joins the properties with `:`:
             AssertEx.SequenceEqual(["--property:TargetFramework=F", "--property:P1=V1", "--property:P2=V2", NugetInteractiveProperty], options.BuildArguments);
-            AssertEx.SequenceEqual(["--project", "P", "--framework", "F", "--property:P1=V1", "--property:P2=V2"], options.CommandArguments);
+
+            // it's ok to keep the two arguments and not to join them with `:` since `run` command handles these options correctly
+            AssertEx.SequenceEqual(["--project", "P", "--framework", "F", "--property", "P1=V1", "--property", "P2=V2"], options.CommandArguments);
         }
 
         public enum ArgPosition
@@ -346,7 +383,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual(["--property:P1=V1", "--property:P2=V2", NugetInteractiveProperty], options.BuildArguments);
 
             // options must be repeated since --property does not support multiple args
-            AssertEx.SequenceEqual(["--property:P1=V1", "--property:P2=V2"], options.CommandArguments);
+            AssertEx.SequenceEqual(["--property", "P1=V1", "--property", "P2=V2"], options.CommandArguments);
         }
 
         [Theory]
@@ -355,7 +392,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void OptionDuplicates_NotAllowed(string option)
         {
             VerifyErrors([option, "abc", "run", option, "xyz"],
-                $"error ❌ Option '{option}' expects a single argument but 2 were provided.");
+                $"[Error] Option '{option}' expects a single argument but 2 were provided.");
         }
 
         [Theory]
@@ -377,14 +414,14 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void CannotHaveQuietAndVerbose()
         {
             VerifyErrors(["--quiet", "--verbose"],
-                $"error ❌ {Resources.Error_QuietAndVerboseSpecified}");
+                $"[Error] {Resources.Error_QuietAndVerboseSpecified}");
         }
 
         [Fact]
         public void ShortFormForProjectArgumentPrintsWarning()
         {
             var options = VerifyOptions(["-p", "MyProject.csproj"],
-                expectedMessages: [$"warning ⌚ {Resources.Warning_ProjectAbbreviationDeprecated}"]);
+                expectedMessages: [$"[Warning] {Resources.Warning_ProjectAbbreviationDeprecated}"]);
 
             Assert.Equal("MyProject.csproj", options.ProjectPath);
         }
@@ -421,6 +458,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [InlineData(new[] { "--framework", "net9.0" }, new[] { "--property:TargetFramework=net9.0", NugetInteractiveProperty })]
         [InlineData(new[] { "--runtime", "arm64" }, new[] { "--property:RuntimeIdentifier=arm64", "--property:_CommandLineDefinedRuntimeIdentifier=true", NugetInteractiveProperty })]
         [InlineData(new[] { "--property", "b=1" }, new[] { "--property:b=1", NugetInteractiveProperty })]
+        [InlineData(new[] { "/p:b=1" }, new[] { "--property:b=1", NugetInteractiveProperty }, new[] { "/p", "b=1" })] // it's ok to split the argument into two since `dotnet run` handles `/p b=1`
         [InlineData(new[] { "--interactive" }, new[] { "--property:NuGetInteractive=true" })]
         [InlineData(new[] { "--no-restore" }, new[] { NugetInteractiveProperty, "-restore:false" })]
         [InlineData(new[] { "--sc" }, new[] { NugetInteractiveProperty, "--property:SelfContained=true", "--property:_CommandLineDefinedSelfContained=true" })]
@@ -429,10 +467,30 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [InlineData(new[] { "--verbosity", "q" }, new[] { NugetInteractiveProperty, "--verbosity:q" })]
         [InlineData(new[] { "--arch", "arm", "--os", "win" }, new[] { NugetInteractiveProperty, "--property:RuntimeIdentifier=win-arm" })]
         [InlineData(new[] { "--disable-build-servers" }, new[] { NugetInteractiveProperty, "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
-        public void ForwardedBuildOptions(string[] args, string[] buildArgs)
+        [InlineData(new[] { "-bl" }, new[] { NugetInteractiveProperty, "-bl" })]
+        [InlineData(new[] { "/bl" }, new[] { NugetInteractiveProperty, "/bl" })]
+        [InlineData(new[] { "/bl:X.binlog" }, new[] { NugetInteractiveProperty, "/bl:X.binlog" })]
+        [InlineData(new[] { "-binaryLogger" }, new[] { NugetInteractiveProperty, "-binaryLogger" })]
+        [InlineData(new[] { "/binaryLogger" }, new[] { NugetInteractiveProperty, "/binaryLogger" })]
+        [InlineData(new[] { "--binaryLogger:LogFile=output.binlog;ProjectImports=None" }, new[] { NugetInteractiveProperty, "--binaryLogger:LogFile=output.binlog;ProjectImports=None" })]
+        public void ForwardedBuildOptions_Run(string[] args, string[] buildArgs, string[] commandArgs = null)
         {
-            var options = VerifyOptions(["run", .. args]);
-            AssertEx.SequenceEqual(buildArgs, options.BuildArguments);
+            var runOptions = VerifyOptions(["run", .. args]);
+            AssertEx.SequenceEqual(buildArgs, runOptions.BuildArguments);
+            AssertEx.SequenceEqual(commandArgs ?? args, runOptions.CommandArguments);
+        }
+
+        [Theory]
+        [InlineData(new[] { "--property:b=1" }, new[] { "--property:b=1" }, Skip = "https://github.com/dotnet/sdk/issues/44655")]
+        [InlineData(new[] { "--property", "b=1" }, new[] { "--property", "b=1" }, Skip = "https://github.com/dotnet/sdk/issues/44655")]
+        [InlineData(new[] { "/p:b=1" }, new[] { "/p:b=1" }, Skip = "https://github.com/dotnet/sdk/issues/44655")]
+        [InlineData(new[] { "/bl" }, new[] { "/bl" })]
+        [InlineData(new[] { "--binaryLogger:LogFile=output.binlog;ProjectImports=None" }, new[] { "--binaryLogger:LogFile=output.binlog;ProjectImports=None" })]
+        public void ForwardedBuildOptions_Test(string[] args, string[] commandArgs)
+        {
+            var runOptions = VerifyOptions(["test", .. args]);
+            AssertEx.SequenceEqual(["--property:NuGetInteractive=false", "--target:VSTest", .. commandArgs], runOptions.BuildArguments);
+            AssertEx.SequenceEqual(commandArgs, runOptions.CommandArguments);
         }
 
         [Fact]

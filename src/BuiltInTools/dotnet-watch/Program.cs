@@ -5,11 +5,21 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.Loader;
 using Microsoft.Build.Locator;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class Program(IConsole console, IReporter reporter, ProjectOptions rootProjectOptions, CommandLineOptions options, EnvironmentOptions environmentOptions)
+    internal sealed class Program(
+        IConsole console,
+        ILoggerFactory loggerFactory,
+        ILogger logger,
+        IProcessOutputReporter processOutputReporter,
+        ProjectOptions rootProjectOptions,
+        CommandLineOptions options,
+        EnvironmentOptions environmentOptions)
     {
+        public const string LogComponentName = nameof(Program);
+
         public static async Task<int> Main(string[] args)
         {
             try
@@ -56,7 +66,8 @@ namespace Microsoft.DotNet.Watch
 
         private static Program? TryCreate(IReadOnlyList<string> args, IConsole console, EnvironmentOptions environmentOptions, bool verbose, out int errorCode)
         {
-            var options = CommandLineOptions.Parse(args, new ConsoleReporter(console, verbose, quiet: false, environmentOptions.SuppressEmojis), console.Out, out errorCode);
+            var parsingLoggerFactory = new LoggerFactory(new ConsoleReporter(console, verbose, quiet: false, environmentOptions.SuppressEmojis));
+            var options = CommandLineOptions.Parse(args, parsingLoggerFactory.CreateLogger(LogComponentName), console.Out, out errorCode);
             if (options == null)
             {
                 // an error reported or help printed:
@@ -64,21 +75,24 @@ namespace Microsoft.DotNet.Watch
             }
 
             var reporter = new ConsoleReporter(console, verbose || options.GlobalOptions.Verbose, options.GlobalOptions.Quiet, environmentOptions.SuppressEmojis);
-            return TryCreate(options, console, environmentOptions, reporter, out errorCode);
+            var loggerFactory = new LoggerFactory(reporter);
+            return TryCreate(options, console, environmentOptions, loggerFactory, reporter, out errorCode);
         }
 
         // internal for testing
-        internal static Program? TryCreate(CommandLineOptions options, IConsole console, EnvironmentOptions environmentOptions, IReporter reporter, out int errorCode)
+        internal static Program? TryCreate(CommandLineOptions options, IConsole console, EnvironmentOptions environmentOptions, LoggerFactory loggerFactory, IProcessOutputReporter processOutputReporter, out int errorCode)
         {
+            var logger = loggerFactory.CreateLogger(LogComponentName);
+
             var workingDirectory = environmentOptions.WorkingDirectory;
-            reporter.Verbose($"Working directory: '{workingDirectory}'");
+            logger.LogDebug("Working directory: '{Directory}'", workingDirectory);
 
             if (environmentOptions.TestFlags != TestFlags.None)
             {
-                reporter.Verbose($"Test flags: {environmentOptions.TestFlags}");
+                logger.LogDebug("Test flags: {Flags}", environmentOptions.TestFlags);
             }
 
-            if (!TryFindProject(workingDirectory, options, reporter, out var projectPath))
+            if (!TryFindProject(workingDirectory, options, logger, out var projectPath))
             {
                 errorCode = 1;
                 return null;
@@ -86,7 +100,7 @@ namespace Microsoft.DotNet.Watch
 
             var rootProjectOptions = options.GetProjectOptions(projectPath, workingDirectory);
             errorCode = 0;
-            return new Program(console, reporter, rootProjectOptions, options, environmentOptions);
+            return new Program(console, loggerFactory, logger, processOutputReporter, rootProjectOptions, options, environmentOptions);
         }
 
         /// <summary>
@@ -94,7 +108,7 @@ namespace Microsoft.DotNet.Watch
         /// <param name="searchBase">The base directory to search</param>
         /// <param name="project">The filename of the project. Can be null.</param>
         /// </summary>
-        private static bool TryFindProject(string searchBase, CommandLineOptions options, IReporter reporter, [NotNullWhen(true)] out string? projectPath)
+        private static bool TryFindProject(string searchBase, CommandLineOptions options, ILogger logger, [NotNullWhen(true)] out string? projectPath)
         {
             projectPath = options.ProjectPath ?? searchBase;
 
@@ -111,13 +125,13 @@ namespace Microsoft.DotNet.Watch
 
                 if (projects.Count > 1)
                 {
-                    reporter.Error(string.Format(CultureInfo.CurrentCulture, Resources.Error_MultipleProjectsFound, projectPath));
+                    logger.LogError(Resources.Error_MultipleProjectsFound, projectPath);
                     return false;
                 }
 
                 if (projects.Count == 0)
                 {
-                    reporter.Error(string.Format(CultureInfo.CurrentCulture, Resources.Error_NoProjectsFound, projectPath));
+                    logger.LogError(Resources.Error_NoProjectsFound, projectPath);
                     return false;
                 }
 
@@ -127,8 +141,8 @@ namespace Microsoft.DotNet.Watch
 
             if (!File.Exists(projectPath))
             {
-                reporter.Error(string.Format(CultureInfo.CurrentCulture, Resources.Error_ProjectPath_NotFound, projectPath));
-                    return false;
+                logger.LogError(Resources.Error_ProjectPath_NotFound, projectPath);
+                return false;
             }
 
             return true;
@@ -140,7 +154,8 @@ namespace Microsoft.DotNet.Watch
             var shutdownCancellationSourceDisposed = false;
             var shutdownCancellationSource = new CancellationTokenSource();
             var shutdownCancellationToken = shutdownCancellationSource.Token;
-            var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout, shutdownCancellationToken);
+            var isHotReloadEnabled = IsHotReloadEnabled();
+            var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout(isHotReloadEnabled));
 
             console.KeyPressed += key =>
             {
@@ -151,7 +166,7 @@ namespace Microsoft.DotNet.Watch
 
                     if (!forceShutdown)
                     {
-                        reporter.Report(MessageDescriptor.ShutdownRequested);
+                        logger.Log(MessageDescriptor.ShutdownRequested);
                         shutdownCancellationSource.Cancel();
                     }
                     else
@@ -175,12 +190,12 @@ namespace Microsoft.DotNet.Watch
 
                 if (environmentOptions.IsPollingEnabled)
                 {
-                    reporter.Output("Polling file watcher is enabled");
+                    logger.LogInformation("Polling file watcher is enabled");
                 }
 
                 var context = CreateContext(processRunner);
 
-                if (IsHotReloadEnabled())
+                if (isHotReloadEnabled)
                 {
                     var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: null);
                     await watcher.WatchAsync(shutdownCancellationToken);
@@ -197,10 +212,9 @@ namespace Microsoft.DotNet.Watch
                 // Ctrl+C forced an exit
                 return 0;
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                reporter.Error(ex.ToString());
-                reporter.Error("An unexpected error occurred");
+                logger.LogError("An unexpected error occurred: {Exception}", e.ToString());
                 return 1;
             }
             finally
@@ -212,40 +226,47 @@ namespace Microsoft.DotNet.Watch
 
         // internal for testing
         internal DotNetWatchContext CreateContext(ProcessRunner processRunner)
-            => new()
+        {
+            return new()
             {
-                Reporter = reporter,
+                ProcessOutputReporter = processOutputReporter,
+                LoggerFactory = loggerFactory,
+                Logger = loggerFactory.CreateLogger(DotNetWatchContext.DefaultLogComponentName),
+                BuildLogger = loggerFactory.CreateLogger(DotNetWatchContext.BuildLogComponentName),
                 ProcessRunner = processRunner,
                 Options = options.GlobalOptions,
                 EnvironmentOptions = environmentOptions,
                 RootProjectOptions = rootProjectOptions,
             };
+        }
 
         private bool IsHotReloadEnabled()
         {
             if (rootProjectOptions.Command != "run")
             {
-                reporter.Verbose($"Command '{rootProjectOptions.Command}' does not support Hot Reload.");
+                logger.LogDebug("Command '{Command}' does not support Hot Reload.", rootProjectOptions.Command);
                 return false;
             }
 
             if (options.GlobalOptions.NoHotReload)
             {
-                reporter.Verbose("Hot Reload disabled by command line switch.");
+                logger.LogDebug("Hot Reload disabled by command line switch.");
                 return false;
             }
 
-            reporter.Report(MessageDescriptor.WatchingWithHotReload);
+            logger.Log(MessageDescriptor.WatchingWithHotReload);
             return true;
         }
 
         private async Task<int> ListFilesAsync(ProcessRunner processRunner, CancellationToken cancellationToken)
         {
+            var buildLogger = loggerFactory.CreateLogger(DotNetWatchContext.BuildLogComponentName);
+
             var fileSetFactory = new MSBuildFileSetFactory(
                 rootProjectOptions.ProjectPath,
                 rootProjectOptions.BuildArguments,
                 processRunner,
-                new BuildReporter(reporter, environmentOptions));
+                new BuildReporter(buildLogger, options.GlobalOptions, environmentOptions));
 
             if (await fileSetFactory.TryCreateAsync(requireProjectGraph: null, cancellationToken) is not { } evaluationResult)
             {

@@ -193,14 +193,25 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             if (runDotnetTest)
             {
+                var isMTP = testRunner == "Microsoft.Testing.Platform";
+                if (isMTP)
+                {
+                    File.WriteAllText(Path.Combine(outputDirectory, "dotnet.config"), """
+                        [dotnet.test.runner]
+                        name = "Microsoft.Testing.Platform"
+                        """);
+                }
+
                 var result = new DotnetTestCommand(_log, false)
                 .WithWorkingDirectory(outputDirectory)
-                .Execute(outputDirectory);
+#pragma warning disable SA1010 // Opening square brackets should be spaced correctly - false positive. Current formatting is good.
+                .Execute(isMTP ? ["--project", outputDirectory] : [outputDirectory]);
+#pragma warning restore SA1010 // Opening square brackets should be spaced correctly
 
                 result.Should().Pass();
 
                 result.StdOut.Should().Contain("Passed!");
-                result.StdOut.Should().MatchRegex(@"Passed:\s*1");
+                result.StdOut.Should().MatchRegex(isMTP ? "succeeded: 1" : @"Passed:\s*1");
             }
 
             // After executing dotnet new and before cleaning up

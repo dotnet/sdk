@@ -25,10 +25,6 @@ public class GenerateStaticWebAssetEndpointsManifestTest
                 ResponseHeaders =
                 [
                     new() {
-                        Name = "Accept-Ranges",
-                        Value = "bytes"
-                    },
-                    new() {
                         Name = "Cache-Control",
                         Value = "max-age=31536000, immutable"
                     },
@@ -71,10 +67,6 @@ public class GenerateStaticWebAssetEndpointsManifestTest
                 Selectors = [],
                 ResponseHeaders =
                 [
-                    new() {
-                        Name = "Accept-Ranges",
-                        Value = "bytes"
-                    },
                     new() {
                         Name = "Cache-Control",
                         Value = "max-age=31536000, immutable"
@@ -119,10 +111,6 @@ public class GenerateStaticWebAssetEndpointsManifestTest
                 ResponseHeaders =
                 [
                     new() {
-                        Name = "Accept-Ranges",
-                        Value = "bytes"
-                    },
-                    new() {
                         Name = "Cache-Control",
                         Value = "no-cache"
                     },
@@ -155,10 +143,6 @@ public class GenerateStaticWebAssetEndpointsManifestTest
                 Selectors = [],
                 ResponseHeaders =
                 [
-                    new() {
-                        Name = "Accept-Ranges",
-                        Value = "bytes"
-                    },
                     new() {
                         Name = "Cache-Control",
                         Value = "no-cache"
@@ -229,6 +213,220 @@ public class GenerateStaticWebAssetEndpointsManifestTest
             if (File.Exists(path))
             {
                 File.Delete(path);
+            }
+        }
+    }
+
+    [Fact]
+    public void ExcludesEndpoints_BasedOnExclusionPatterns()
+    {
+        // Arrange
+        var assets = new[]
+        {
+            CreateAsset("index.html", relativePath: "index.html", basePath: "_content/MyApp"),
+            CreateAsset("app.js", relativePath: "app.js", basePath: "_content/MyApp"),
+            CreateAsset("styles.css", relativePath: "styles.css", basePath: "_content/OtherApp"),
+        };
+        Array.Sort(assets, (l, r) => string.Compare(l.Identity, r.Identity, StringComparison.Ordinal));
+
+        var endpoints = CreateEndpoints(assets);
+        var path = Path.Combine(AppContext.BaseDirectory, Guid.NewGuid().ToString("N") + "endpoints.json");
+        var exclusionCachePath = Path.Combine(AppContext.BaseDirectory, Guid.NewGuid().ToString("N") + "exclusions.cache");
+
+        var task = new GenerateStaticWebAssetEndpointsManifest
+        {
+            Assets = assets.Select(a => a.ToTaskItem()).ToArray(),
+            Endpoints = endpoints.Select(e => e.ToTaskItem()).ToArray(),
+            ManifestType = "Build",
+            Source = "MyApp",
+            ManifestPath = path,
+            ExclusionPatterns = "**/*.js;**/*.html",
+            ExclusionPatternsCacheFilePath = exclusionCachePath,
+            BuildEngine = Mock.Of<IBuildEngine>()
+        };
+
+        try
+        {
+            // Act
+            task.Execute();
+
+            // Assert
+            new FileInfo(path).Should().Exist();
+            new FileInfo(exclusionCachePath).Should().Exist();
+            
+            var manifest = File.ReadAllText(path);
+            var json = JsonSerializer.Deserialize<StaticWebAssetEndpointsManifest>(manifest);
+            json.Should().NotBeNull();
+            
+            // Only styles.css endpoint should remain as others match _content/MyApp/**
+            json.Endpoints.Should().HaveCount(1);
+            json.Endpoints[0].Route.Should().Contain("styles.css");
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+
+            if (File.Exists(exclusionCachePath))
+            {
+                File.Delete(exclusionCachePath);
+            }
+        }
+    }
+
+    [Fact]
+    public void SkipsRegeneration_WhenExclusionPatternsUnchanged()
+    {
+        // Arrange
+        var assets = new[]
+        {
+            CreateAsset("index.html", relativePath: "index.html"),
+        };
+
+        var endpoints = CreateEndpoints(assets);
+        var path = Path.Combine(AppContext.BaseDirectory, Guid.NewGuid().ToString("N") + "endpoints.json");
+        var cachePath = Path.Combine(AppContext.BaseDirectory, Guid.NewGuid().ToString("N") + ".cache");
+        var exclusionCachePath = Path.Combine(AppContext.BaseDirectory, Guid.NewGuid().ToString("N") + "exclusions.cache");
+
+        // First run
+        var task = new GenerateStaticWebAssetEndpointsManifest
+        {
+            Assets = assets.Select(a => a.ToTaskItem()).ToArray(),
+            Endpoints = endpoints.Select(e => e.ToTaskItem()).ToArray(),
+            ManifestType = "Build",
+            Source = "MyApp",
+            ManifestPath = path,
+            CacheFilePath = cachePath,
+            ExclusionPatterns = "test/**",
+            ExclusionPatternsCacheFilePath = exclusionCachePath,
+            BuildEngine = Mock.Of<IBuildEngine>()
+        };
+
+        try
+        {
+            // Act - First execution
+            task.Execute();
+            File.WriteAllText(cachePath, "cache"); // Simulate cache file
+            var firstWriteTime = File.GetLastWriteTimeUtc(path);
+
+            // Act - Second execution with same patterns
+            Thread.Sleep(10); // Ensure time difference
+            var task2 = new GenerateStaticWebAssetEndpointsManifest
+            {
+                Assets = assets.Select(a => a.ToTaskItem()).ToArray(),
+                Endpoints = endpoints.Select(e => e.ToTaskItem()).ToArray(),
+                ManifestType = "Build",
+                Source = "MyApp",
+                ManifestPath = path,
+                CacheFilePath = cachePath,
+                ExclusionPatterns = "test/**",
+                ExclusionPatternsCacheFilePath = exclusionCachePath,
+                BuildEngine = Mock.Of<IBuildEngine>()
+            };
+            task2.Execute();
+
+            // Assert - File should not be regenerated
+            var secondWriteTime = File.GetLastWriteTimeUtc(path);
+            secondWriteTime.Should().Be(firstWriteTime);
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+
+            if (File.Exists(cachePath))
+            {
+                File.Delete(cachePath);
+            }
+
+            if (File.Exists(exclusionCachePath))
+            {
+                File.Delete(exclusionCachePath);
+            }
+        }
+    }
+
+    [Fact]
+    public void RegeneratesManifest_WhenExclusionPatternsChange()
+    {
+        // Arrange
+        var assets = new[]
+        {
+            CreateAsset("index.html", relativePath: "index.html"),
+        };
+
+        var endpoints = CreateEndpoints(assets);
+        var endpointsManifestPath = Path.Combine(AppContext.BaseDirectory, Guid.NewGuid().ToString("N") + ".endpoints.json");
+        var manifestPath = Path.Combine(AppContext.BaseDirectory, Guid.NewGuid().ToString("N") + ".cache");
+        var exclusionCachePath = Path.Combine(AppContext.BaseDirectory, Guid.NewGuid().ToString("N") + ".exclusions.cache");
+
+        // First run
+        var task = new GenerateStaticWebAssetEndpointsManifest
+        {
+            Assets = assets.Select(a => a.ToTaskItem()).ToArray(),
+            Endpoints = endpoints.Select(e => e.ToTaskItem()).ToArray(),
+            ManifestType = "Build",
+            Source = "MyApp",
+            ManifestPath = endpointsManifestPath,
+            CacheFilePath = manifestPath,
+            ExclusionPatterns = "test/**",
+            ExclusionPatternsCacheFilePath = exclusionCachePath,
+            BuildEngine = Mock.Of<IBuildEngine>()
+        };
+
+        try
+        {
+            File.WriteAllText(manifestPath, "manifest");
+            Thread.Sleep(10);
+
+            // Act - First execution
+            task.Execute();
+            var firstWriteTime = File.GetLastWriteTimeUtc(endpointsManifestPath);
+
+            // Act - Second execution with different patterns
+            Thread.Sleep(10); // Ensure time difference
+            var task2 = new GenerateStaticWebAssetEndpointsManifest
+            {
+                Assets = assets.Select(a => a.ToTaskItem()).ToArray(),
+                Endpoints = endpoints.Select(e => e.ToTaskItem()).ToArray(),
+                ManifestType = "Build",
+                Source = "MyApp",
+                ManifestPath = endpointsManifestPath,
+                CacheFilePath = manifestPath,
+                ExclusionPatterns = "different/**;pattern/**",
+                ExclusionPatternsCacheFilePath = exclusionCachePath,
+                BuildEngine = Mock.Of<IBuildEngine>()
+            };
+            task2.Execute();
+
+            // Assert - File should be regenerated
+            var secondWriteTime = File.GetLastWriteTimeUtc(endpointsManifestPath);
+            secondWriteTime.Should().BeAfter(firstWriteTime);
+            
+            // Verify cache file was updated
+            var cacheContent = File.ReadAllText(exclusionCachePath);
+            cacheContent.Should().Contain("different/**");
+            cacheContent.Should().Contain("pattern/**");
+        }
+        finally
+        {
+            if (File.Exists(endpointsManifestPath))
+            {
+                File.Delete(endpointsManifestPath);
+            }
+
+            if (File.Exists(manifestPath))
+            {
+                File.Delete(manifestPath);
+            }
+
+            if (File.Exists(exclusionCachePath))
+            {
+                File.Delete(exclusionCachePath);
             }
         }
     }

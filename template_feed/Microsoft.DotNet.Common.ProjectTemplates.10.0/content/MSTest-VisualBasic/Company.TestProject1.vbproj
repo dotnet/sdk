@@ -1,5 +1,5 @@
 ﻿<!--#if (UseMSTestSdk)-->
-<Project Sdk="MSTest.Sdk/3.9.0">
+<Project Sdk="MSTest.Sdk/4.0.0-preview.25415.9">
 
   <PropertyGroup>
     <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">net10.0</TargetFramework>
@@ -18,11 +18,6 @@
   </ItemGroup>
 <!--#endif-->
 <!--#else-->
-    <!--
-      Displays error on console in addition to the log file. Note that this feature comes with a performance impact.
-      For more information, visit https://learn.microsoft.com/dotnet/core/testing/unit-testing-platform-integration-dotnet-test#show-failure-per-test
-      -->
-    <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
     <TestingExtensionsProfile Condition=" '$(ExtensionsProfile)' != 'Default' ">$(ExtensionsProfile)</TestingExtensionsProfile>
   </PropertyGroup>
 <!--#endif-->
@@ -41,12 +36,6 @@
 <!--#if (TestRunner == "Microsoft.Testing.Platform")-->
     <EnableMSTestRunner>true</EnableMSTestRunner>
     <OutputType>Exe</OutputType>
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
-    <!--
-      Displays error on console in addition to the log file. Note that this feature comes with a performance impact.
-      For more information, visit https://learn.microsoft.com/dotnet/core/testing/unit-testing-platform-integration-dotnet-test#show-failure-per-test
-      -->
-    <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
 <!--#endif-->
   </PropertyGroup>
 
@@ -54,7 +43,7 @@
 <!--#if (CoverageTool == "coverlet")-->
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
 <!--#endif-->
-    <PackageReference Include="MSTest" Version="3.9.0" />
+    <PackageReference Include="MSTest" Version="4.0.0-preview.25415.9" />
   </ItemGroup>
 
   <ItemGroup>

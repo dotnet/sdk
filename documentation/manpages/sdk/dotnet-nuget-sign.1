@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-nuget-sign" "1" "2025-06-13" "" ".NET Documentation"
+.TH "dotnet-nuget-sign" "1" "2025-08-15" "" ".NET Documentation"
 .hy
 .SH dotnet nuget sign
 .PP
@@ -49,8 +49,8 @@ The \f[V]dotnet nuget sign\f[R] command signs all the packages matching the firs
 The certificate with the private key can be obtained from a file or from a certificate installed in a certificate store by providing a subject name or a SHA-1 fingerprint.
 .RS
 .PP
-This command requires a certificate root store that is valid for both code signing and timestamping.
-Also, this command may not be supported on some combinations of operating system and .NET SDK.
+This command requires a certificate root store that\[cq]s valid for both code signing and timestamping.
+Also, this command might not be supported on some combinations of operating system and .NET SDK.
 For more information, see NuGet signed package verification.
 .RE
 .SH ARGUMENTS
@@ -108,9 +108,11 @@ If there are multiple matching certificates in the result, or no matching certif
 Specifies the fingerprint of the certificate used to search a local certificate store for the certificate.
 .PP
 Starting with .NET 9, this option can be used to specify the SHA-1, SHA-256, SHA-384, or SHA-512 fingerprint of the certificate.
-However, a \f[V]NU3043\f[R] warning is raised when a SHA-1 certificate fingerprint is used because it is no longer considered secure.
+However, a \f[V]NU3043\f[R] warning is raised when a SHA-1 certificate fingerprint is used because it\[cq]s no longer considered secure.
+In .NET 10 and later versions, the warning is elevated to an error.
+Only SHA-2 family fingerprints (SHA-256, SHA-384, and SHA-512) are supported.
 .PP
-All the previous versions of the .NET SDK continue to accept only SHA-1 certificate fingerprint.
+All pre-.NET 9 versions of the .NET SDK continue to accept only SHA-1 certificate fingerprint.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--certificate-password <PASSWORD>\f[B]\f[R]
@@ -196,12 +198,12 @@ dotnet nuget sign foo.nupkg --certificate-path cert.pfx --certificate-password p
 .fi
 .RE
 .IP \[bu] 2
-Sign \f[I]foo.nupkg\f[R] with certificate (password protected) matches with the specified SHA-1 fingerprint in the default certificate store (CurrentUser):
+Sign \f[I]foo.nupkg\f[R] with certificate (password protected) matches with the specified SHA-256 fingerprint in the default certificate store (CurrentUser):
 .RS 2
 .IP
 .nf
 \f[C]
-dotnet nuget sign foo.nupkg --certificate-fingerprint 89967D1DD995010B6C66AE24FF8E66885E6E03A8 --certificate-password password
+dotnet nuget sign foo.nupkg --certificate-fingerprint B2C40F2F8775D7B7EBEB76BD5A9D3A4BC3F4B8A4D8D7C5F8A4C6B3E7A9E2D5F1 --certificate-password password
 \f[R]
 .fi
 .RE
@@ -216,12 +218,12 @@ dotnet nuget sign foo.nupkg --certificate-subject-name \[dq]Test certificate for
 .fi
 .RE
 .IP \[bu] 2
-Sign \f[I]foo.nupkg\f[R] with certificate (password protected) matches with the specified SHA-1 fingerprint in the certificate store CurrentUser:
+Sign \f[I]foo.nupkg\f[R] with certificate (password protected) matches with the specified SHA-256 fingerprint in the certificate store CurrentUser:
 .RS 2
 .IP
 .nf
 \f[C]
-dotnet nuget sign foo.nupkg --certificate-fingerprint 89967D1DD995010B6C66AE24FF8E66885E6E03A8 --certificate-password password --certificate-store-location CurrentUser --certificate-store-name Root
+dotnet nuget sign foo.nupkg --certificate-fingerprint B2C40F2F8775D7B7EBEB76BD5A9D3A4BC3F4B8A4D8D7C5F8A4C6B3E7A9E2D5F1 --certificate-password password --certificate-store-location CurrentUser --certificate-store-name Root
 \f[R]
 .fi
 .RE

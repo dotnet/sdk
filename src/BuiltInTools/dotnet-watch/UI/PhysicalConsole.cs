@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+
 namespace Microsoft.DotNet.Watch
 {
     /// <summary>
@@ -34,6 +36,32 @@ namespace Microsoft.DotNet.Watch
                 }
 
                 var c = (char)buffer[0];
+
+                // emulate propagation of Ctrl+C/SIGTERM to child processes
+                if (c == CtrlC)
+                {
+                    Console.WriteLine("Received CTRL+C key");
+
+                    foreach (var processId in ProcessRunner.GetRunningApplicationProcesses())
+                    {
+                        string? error;
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        {
+                            Console.WriteLine($"Sending Ctrl+C to {processId}");
+                            error = ProcessUtilities.SendWindowsCtrlCEvent(processId);
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Sending SIGTERM to {processId}");
+                            error = ProcessUtilities.SendPosixSignal(processId, ProcessUtilities.SIGTERM);
+                        }
+
+                        if (error != null)
+                        {
+                            throw new InvalidOperationException(error);
+                        }
+                    }
+                }
 
                 // handle all input keys that watcher might consume:
                 var key = c switch

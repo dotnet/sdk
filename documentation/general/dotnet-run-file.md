@@ -38,7 +38,10 @@ Additionally, the implicit project file has the following customizations:
 
   - `ArtifactsPath` is set to a [temp directory](#build-outputs).
 
-  - `RuntimeHostConfigurationOption`s are set for `EntryPointFilePath` and `EntryPointFileDirectoryPath` which can be accessed in the app via `AppContext`:
+  - `PublishDir` and `PackageOutputPath` are set to `./artifacts/` so the outputs of `dotnet publish` and `dotnet pack` are next to the file-based app.
+
+  - `RuntimeHostConfigurationOption`s are set for `EntryPointFilePath` and `EntryPointFileDirectoryPath` (except for `Publish` and `Pack` targets)
+    which can be accessed in the app via `AppContext`:
 
     ```cs
     string? filePath = AppContext.GetData("EntryPointFilePath") as string;
@@ -46,6 +49,10 @@ Additionally, the implicit project file has the following customizations:
     ```
 
   - `FileBasedProgram` property is set to `true` and can be used by SDK targets to detect file-based apps.
+
+  - `DisableDefaultItemsInProjectFolder` property is set to `true` which results in `EnableDefaultItems=false` by default
+    in case there is a project or solution in the same directory as the file-based app.
+    This ensures that items from nested projects and artifacts are not included by the app.
 
 ## Grow up
 
@@ -97,7 +104,7 @@ the compilation consists solely of the single file read from the standard input.
 
 Commands `dotnet restore file.cs` and `dotnet build file.cs` are needed for IDE support and hence work for file-based programs.
 
-Command `dotnet publish file.cs` is also supported for file-based programs.
+Commands `dotnet publish file.cs` and `dotnet pack file.cs` are also supported for file-based programs.
 Note that file-based apps have implicitly set `PublishAot=true`, so publishing uses Native AOT (and building reports AOT warnings).
 To opt out, use `#:property PublishAot=false` directive in your `.cs` file.
 
@@ -326,7 +333,7 @@ When disabled, [grow up](#grow-up) would generate projects in subdirectories
 similarly to [multi-entry-point scenarios](#multiple-entry-points) to preserve the program's behavior.
 
 Including `.cs` files from nested folders which contain `.csproj`s might be unexpected,
-hence we could consider reporting an error in such situations.
+hence we could consider excluding items from nested project folders.
 
 Similarly, we could report an error if there are many nested directories and files,
 so for example, if someone puts a C# file into `C:/sources` and executes `dotnet run C:/sources/file.cs` or opens that in the IDE,
@@ -369,7 +376,7 @@ so `dotnet file.cs` instead of `dotnet run file.cs` should be used in shebangs:
 
 ### Other possible commands
 
-We can consider supporting other commands like `dotnet pack`, `dotnet watch`,
+We can consider supporting other commands like `dotnet watch`,
 however the primary scenario is `dotnet run` and we might never support additional commands.
 
 All commands supporting file-based programs should have a way to receive the target path similarly to `dotnet run`,

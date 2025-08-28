@@ -620,6 +620,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(UseNativeHttpHandler)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.Net.Http.WasmEnableStreamingResponse"
+                                    Condition="'$(WasmEnableStreamingResponse)' != ''"
+                                    Value="$(WasmEnableStreamingResponse)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Net.Security.UseManagedNtlm"
                                     Condition="'$(_UseManagedNtlm)' != ''"
                                     Value="$(_UseManagedNtlm)"

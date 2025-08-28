@@ -125,7 +125,7 @@ public class RestoringCommand : MSBuildForwardingApp
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value, StringComparer.OrdinalIgnoreCase) is { } filteredList ? new(filteredList): ReadOnlyDictionary<string, string>.Empty;
         var restoreMSBuildArgs =
             MSBuildArgs.FromProperties(RestoreOptimizationProperties)
-                       .CloneWithAdditionalTarget("Restore")
+                       .CloneWithAdditionalTargets("Restore")
                        .CloneWithExplicitArgs([.. newArgumentsToAdd, .. existingArgumentsToForward])
                        .CloneWithAdditionalProperties(restoreProperties);
         if (msbuildArgs.Verbosity is {} verbosity)
