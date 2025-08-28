@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         public void RunHelpCommand_ShouldNotShowDuplicateOptions(string configuration)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString()).WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
