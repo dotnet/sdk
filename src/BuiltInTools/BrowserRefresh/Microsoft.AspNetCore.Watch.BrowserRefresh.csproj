@@ -1,11 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!-- Intentionally pinned. This feature is supported in projects targeting 8.0 or newer.-->
-    <!-- This should always use the oldest supported TFM -->
-    <TargetFramework>net8.0</TargetFramework>
+    <!--
+      This assembly may be loaded .NET 6.0+ web server.
+      When updating the TFM also update minimal supported version in BrowserConnector.cs.
+    -->
+    <TargetFramework>net6.0</TargetFramework>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
 
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.DotNet.HotReload.Web.Middleware</PackageId>
+    <PackageDescription>Package containing Hot Reload middleware.</PackageDescription>
+    <DisableTransitiveFrameworkReferenceDownloads Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</DisableTransitiveFrameworkReferenceDownloads>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,9 +22,9 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
-    <!-- Reference 8.0.0 targeting packs in Source Build -->
-    <FrameworkReference Update="Microsoft.AspNetCore.App" TargetingPackVersion="8.0.0" />
-    <FrameworkReference Update="Microsoft.NETCore.App" TargetingPackVersion="8.0.0" />
+    <!-- Reference 6.0.0 targeting packs in Source Build -->
+    <FrameworkReference Update="Microsoft.AspNetCore.App" TargetingPackVersion="6.0.0" />
+    <FrameworkReference Update="Microsoft.NETCore.App" TargetingPackVersion="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
