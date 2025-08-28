@@ -136,8 +136,6 @@ This file should be imported by eng/Versions.props
     <SystemTextEncodingCodePagesPackageVersion>10.0.0-rc.2.25416.109</SystemTextEncodingCodePagesPackageVersion>
     <SystemTextJsonPackageVersion>10.0.0-rc.2.25416.109</SystemTextJsonPackageVersion>
     <SystemWindowsExtensionsPackageVersion>10.0.0-rc.2.25416.109</SystemWindowsExtensionsPackageVersion>
-    <!-- dotnet/core-setup dependencies -->
-    <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
     <!-- microsoft/testfx dependencies -->
     <MicrosoftTestingPlatformPackageVersion>1.9.0-preview.25427.3</MicrosoftTestingPlatformPackageVersion>
     <MSTestPackageVersion>3.11.0-preview.25427.3</MSTestPackageVersion>
@@ -274,8 +272,6 @@ This file should be imported by eng/Versions.props
     <SystemTextEncodingCodePagesVersion>$(SystemTextEncodingCodePagesPackageVersion)</SystemTextEncodingCodePagesVersion>
     <SystemTextJsonVersion>$(SystemTextJsonPackageVersion)</SystemTextJsonVersion>
     <SystemWindowsExtensionsVersion>$(SystemWindowsExtensionsPackageVersion)</SystemWindowsExtensionsVersion>
-    <!-- dotnet/core-setup dependencies -->
-    <NETStandardLibraryRefVersion>$(NETStandardLibraryRefPackageVersion)</NETStandardLibraryRefVersion>
     <!-- microsoft/testfx dependencies -->
     <MicrosoftTestingPlatformVersion>$(MicrosoftTestingPlatformPackageVersion)</MicrosoftTestingPlatformVersion>
     <MSTestVersion>$(MSTestPackageVersion)</MSTestVersion>
