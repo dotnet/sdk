@@ -135,7 +135,7 @@
     <?endif?>
 
     <!--
-        When installing the SDK bundle to a custom location using the commandline parameters, it is intended, not mandatory, that 
+        When installing the SDK bundle to a custom location using the commandline parameters, it is intended, not mandatory, that
         both "DOTNETHOME_X86" and "DOTNETHOME_X64" should be used on the commandline and should take this convention:
             DOTNETHOME_X86=<InstallFolder>\x86
             DOTNETHOME_X64=<InstallFolder>\x64
@@ -160,17 +160,17 @@
 
       <!--
         The finalizer is not an installation package. It's detected based on the bundle's installation state (WixBundleInstalled).
-        
+
         User action        | Install | Repair  | Modify  | Uninstall | Uninstall (Upgrade)
-        WixBundleInstalled | FALSE   | TRUE    | TRUE    | TRUE      | TRUE 
+        WixBundleInstalled | FALSE   | TRUE    | TRUE    | TRUE      | TRUE
         WixBundleAction    | 6       | 8       | 7       | 4         | 4
         Finalizer (Plan)   | None    | Execute | Execute | Execute   | Execute
-        
+
         Setting an InstallCondition will cause Burn to remove the package if it evaluates to FALSE and
         the bundle is being installed, repaired, or modified. This breaks upgrades. We cannot use
         WixBundleAction in the DetectCondition because it's not finalized until the planning phase completes (after
         the detect phase). See https://github.com/orgs/wixtoolset/discussions/9017 for more detail.
-        
+
         The finalizer also takes the bundle action as a parameter to ensure it no-ops, but logs the action. -->
       <ExePackage SourceFile="$(FinalizerExeSourceFile)"
                   Bundle="no"

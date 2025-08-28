@@ -1,4 +1,3 @@
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <!-- Platform needs to be set with TreatAsLocalProperty since it is a global property and cannot be overridden otherwise. -->
 <Project TreatAsLocalProperty="Platform">
 
