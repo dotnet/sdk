@@ -93,7 +93,7 @@ internal partial class TestingPlatformCommand : System.CommandLine.Command, ICus
             exitCode = ExitCode.MinimumExpectedTestsPolicyViolation;
         }
 
-        return _eventHandlers.HasHandshakeFailure ? ExitCode.GenericFailure : exitCode;
+        return exitCode;
     }
 
     private void PrepareEnvironment(ParseResult parseResult, out TestOptions testOptions, out int degreeOfParallelism)
