@@ -47,7 +47,7 @@ internal sealed class ProjectLauncher(
             return null;
         }
 
-        var appModel = HotReloadAppModel.InferFromProject(projectNode, Logger);
+        var appModel = HotReloadAppModel.InferFromProject(projectNode, Logger, context.EnvironmentOptions);
 
         var processSpec = new ProcessSpec
         {
