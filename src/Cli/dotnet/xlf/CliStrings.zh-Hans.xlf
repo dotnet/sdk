@@ -746,7 +746,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="PackCmd_OneNuspecAllowed">
         <source>Only one .nuspec file can be packed at a time</source>
-        <target state="new">Only one .nuspec file can be packed at a time</target>
+        <target state="translated">一次只能打包一个 .nuspec 文件</target>
         <note />
       </trans-unit>
       <trans-unit id="Package">
