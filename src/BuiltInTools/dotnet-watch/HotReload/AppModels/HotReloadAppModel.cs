@@ -36,14 +36,14 @@ internal abstract partial class HotReloadAppModel(ProjectGraphNode? agentInjecti
         return true;
     }
 
-    public static HotReloadAppModel InferFromProject(ProjectGraphNode projectNode, ILogger logger)
+    public static HotReloadAppModel InferFromProject(ProjectGraphNode projectNode, ILogger logger, EnvironmentOptions environmentOptions)
     {
         var capabilities = projectNode.GetCapabilities();
 
         if (capabilities.Contains(ProjectCapability.WebAssembly))
         {
             logger.Log(MessageDescriptor.HotReloadProfile_BlazorWebAssembly);
-            return new BlazorWebAssemblyAppModel(clientProject: projectNode);
+            return new BlazorWebAssemblyAppModel(clientProject: projectNode, environmentOptions);
         }
 
         if (capabilities.Contains(ProjectCapability.AspNetCore))
@@ -51,7 +51,7 @@ internal abstract partial class HotReloadAppModel(ProjectGraphNode? agentInjecti
             if (projectNode.GetDescendantsAndSelf().FirstOrDefault(static p => p.GetCapabilities().Contains(ProjectCapability.WebAssembly)) is { } clientProject)
             {
                 logger.Log(MessageDescriptor.HotReloadProfile_BlazorHosted, projectNode.ProjectInstance.FullPath, clientProject.ProjectInstance.FullPath);
-                return new BlazorWebAssemblyHostedAppModel(clientProject: clientProject, serverProject: projectNode);
+                return new BlazorWebAssemblyHostedAppModel(clientProject: clientProject, serverProject: projectNode, environmentOptions);
             }
 
             logger.Log(MessageDescriptor.HotReloadProfile_WebApplication);

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class BlazorWebAssemblyHotReloadClient(ILogger logger, ILogger agentLogger, BrowserRefreshServer browserRefreshServer, ProjectGraphNode project)
+    internal sealed class BlazorWebAssemblyHotReloadClient(ILogger logger, ILogger agentLogger, BrowserRefreshServer browserRefreshServer, EnvironmentOptions environmentOptions, ProjectGraphNode project)
         : HotReloadClient(logger, agentLogger)
     {
         private static readonly ImmutableArray<string> s_defaultCapabilities60 =
@@ -81,7 +81,7 @@ namespace Microsoft.DotNet.Watch
                 return ApplyStatus.NoChangesApplied;
             }
 
-            if (browserRefreshServer.Options.TestFlags.HasFlag(TestFlags.MockBrowser))
+            if (environmentOptions.TestFlags.HasFlag(TestFlags.MockBrowser))
             {
                 // When testing abstract away the browser and pretend all changes have been applied:
                 return ApplyStatus.AllChangesApplied;

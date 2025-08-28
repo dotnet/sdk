@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Watch;
 /// <summary>
 /// Blazor client-only WebAssembly app.
 /// </summary>
-internal sealed class BlazorWebAssemblyAppModel(ProjectGraphNode clientProject)
+internal sealed class BlazorWebAssemblyAppModel(ProjectGraphNode clientProject, EnvironmentOptions environmentOptions)
     // Blazor WASM does not need agent injected as all changes are applied in the browser, the process being launched is a dev server.
     : WebApplicationAppModel(agentInjectionProject: null)
 {
@@ -25,6 +25,6 @@ internal sealed class BlazorWebAssemblyAppModel(ProjectGraphNode clientProject)
             return HotReloadClients.Empty;
         }
 
-        return new(new BlazorWebAssemblyHotReloadClient(clientLogger, agentLogger, browserRefreshServer, clientProject));
+        return new(new BlazorWebAssemblyHotReloadClient(clientLogger, agentLogger, browserRefreshServer, environmentOptions, clientProject));
     }
 }
