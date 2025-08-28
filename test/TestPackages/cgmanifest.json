@@ -1,5 +1,60 @@
 {
   "$schema": "https://json.schemastore.org/component-detection-manifest.json",
   "version": 1,
-  "registrations": []
+  "registrations": [
+    {
+      "component": {
+        "type": "nuget",
+        "nuget": {
+          "name": "coverlet.collector",
+          "version": "6.0.4"
+        }
+      }
+    },
+    {
+      "component": {
+        "type": "nuget",
+        "nuget": {
+          "name": "Microsoft.NET.Test.Sdk",
+          "version": "17.14.0"
+        }
+      }
+    },
+    {
+      "component": {
+        "type": "nuget",
+        "nuget": {
+          "name": "NUnit",
+          "version": "4.3.2"
+        }
+      }
+    },
+    {
+      "component": {
+        "type": "nuget",
+        "nuget": {
+          "name": "NUnit.Analyzers",
+          "version": "4.7.0"
+        }
+      }
+    },
+    {
+      "component": {
+        "type": "nuget",
+        "nuget": {
+          "name": "NUnit3TestAdapter",
+          "version": "5.0.0"
+        }
+      }
+    },
+    {
+      "component": {
+        "type": "nuget",
+        "nuget": {
+          "name": "MSTest",
+          "version": "4.0.0-preview.25415.9"
+        }
+      }
+    }
+  ]
 }
