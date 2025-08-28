@@ -23,9 +23,6 @@ internal static class ValidationUtility
             if (parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption))
                 count++;
 
-            if (parseResult.HasOption(TestingPlatformOptions.DirectoryOption))
-                count++;
-
             if (parseResult.HasOption(TestingPlatformOptions.SolutionOption))
                 count++;
 
@@ -60,18 +57,12 @@ internal static class ValidationUtility
 
         if (!string.IsNullOrEmpty(pathOptions.ProjectPath))
         {
-            return ValidateProjectFilePath(pathOptions.ProjectPath, output);
+            return ValidateProjectPath(pathOptions.ProjectPath, output);
         }
 
         if (!string.IsNullOrEmpty(pathOptions.SolutionPath))
         {
-            return ValidateSolutionFilePath(pathOptions.SolutionPath, output);
-        }
-
-        if (!string.IsNullOrEmpty(pathOptions.DirectoryPath) && !Directory.Exists(pathOptions.DirectoryPath))
-        {
-            output.WriteMessage(string.Format(CliCommandStrings.CmdNonExistentDirectoryErrorDescription, pathOptions.DirectoryPath));
-            return false;
+            return ValidateSolutionPath(pathOptions.SolutionPath, output);
         }
 
         return true;
@@ -105,39 +96,53 @@ internal static class ValidationUtility
             {
                 throw new GracefulException(CliCommandStrings.TestCommandUseProject);
             }
-            else if (Directory.Exists(token))
-            {
-                throw new GracefulException(CliCommandStrings.TestCommandUseDirectory);
-            }
             else if ((token.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
                       token.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) &&
                      File.Exists(token))
             {
                 throw new GracefulException(CliCommandStrings.TestCommandUseTestModules);
             }
+            else if (Directory.Exists(token))
+            {
+                throw new GracefulException(CliCommandStrings.TestCommandUseDirectoryWithSwitch);
+            }
         }
     }
 
-    private static bool ValidateSolutionFilePath(string filePath, TerminalTestReporter output)
+    private static bool ValidateSolutionPath(string path, TerminalTestReporter output)
     {
-        if (!CliConstants.SolutionExtensions.Contains(Path.GetExtension(filePath)))
+        // If it's a directory, just check if it exists
+        if (Directory.Exists(path))
         {
-            output.WriteMessage(string.Format(CliCommandStrings.CmdInvalidSolutionFileExtensionErrorDescription, filePath));
+            return true;
+        }
+
+        // If it's not a directory, validate as a file path
+        if (!CliConstants.SolutionExtensions.Contains(Path.GetExtension(path)))
+        {
+            output.WriteMessage(string.Format(CliCommandStrings.CmdInvalidSolutionFileExtensionErrorDescription, path));
             return false;
         }
 
-        return ValidateFilePathExists(filePath, output);
+        return ValidateFilePathExists(path, output);
     }
 
-    private static bool ValidateProjectFilePath(string filePath, TerminalTestReporter output)
+    private static bool ValidateProjectPath(string path, TerminalTestReporter output)
     {
-        if (!Path.GetExtension(filePath).EndsWith("proj", StringComparison.OrdinalIgnoreCase))
+        // If it's a directory, just check if it exists
+        if (Directory.Exists(path))
         {
-            output.WriteMessage(string.Format(CliCommandStrings.CmdInvalidProjectFileExtensionErrorDescription, filePath));
+            return true;
+        }
+
+        // If it's not a directory, validate as a file path
+        if (!Path.GetExtension(path).EndsWith("proj", StringComparison.OrdinalIgnoreCase))
+        {
+            output.WriteMessage(string.Format(CliCommandStrings.CmdInvalidProjectFileExtensionErrorDescription, path));
             return false;
         }
 
-        return ValidateFilePathExists(filePath, output);
+        return ValidateFilePathExists(path, output);
     }
 
     private static bool ValidateFilePathExists(string filePath, TerminalTestReporter output)

@@ -1,25 +1,25 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
-    internal class TestReporter(ITestOutputHelper output) : IReporter
+    internal class TestReporter(ITestOutputHelper output) : IReporter, IProcessOutputReporter
     {
-        private readonly Dictionary<int, Action> _actions = [];
+        private readonly Dictionary<EventId, Action> _actions = [];
         public readonly List<string> ProcessOutput = [];
         public readonly List<(MessageSeverity severity, string text)> Messages = [];
 
         public bool IsVerbose
             => true;
 
-        public bool PrefixProcessOutput
+        bool IProcessOutputReporter.PrefixProcessOutput
             => true;
 
         public event Action<OutputLine>? OnProcessOutput;
 
-        public void ReportProcessOutput(OutputLine line)
+        void IProcessOutputReporter.ReportOutput(OutputLine line)
         {
             WriteTestOutput(line.Content);
             ProcessOutput.Add(line.Content);
@@ -34,11 +34,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
             return semaphore;
         }
 
-        public void RegisterAction(MessageDescriptor descriptor, Action action)
-        {
-            Debug.Assert(descriptor.Id != null);
+        public void RegisterAction(MessageDescriptor eventId, Action action)
+            => RegisterAction(eventId.Id, action);
 
-            if (_actions.TryGetValue(descriptor.Id.Value, out var existing))
+        public void RegisterAction(EventId eventId, Action action)
+        {
+            if (_actions.TryGetValue(eventId, out var existing))
             {
                 existing += action;
             }
@@ -47,19 +48,18 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 existing = action;
             }
 
-            _actions[descriptor.Id.Value] = existing;
+            _actions[eventId] = existing;
         }
 
-        public void Report(MessageDescriptor descriptor, string prefix, object?[] args)
+        public void Report(EventId id, Emoji emoji, MessageSeverity severity, string message)
         {
-            if (descriptor.TryGetMessage(prefix, args, out var message))
+            if (severity != MessageSeverity.None)
             {
-                Messages.Add((descriptor.Severity, message));
-
-                WriteTestOutput($"{ToString(descriptor.Severity)} {descriptor.Emoji} {message}");
+                Messages.Add((severity, message));
+                WriteTestOutput($"{ToString(severity)} {emoji.ToDisplay()} {message}");
             }
 
-            if (descriptor.Id.HasValue && _actions.TryGetValue(descriptor.Id.Value, out var action))
+            if (_actions.TryGetValue(id, out var action))
             {
                 action();
             }

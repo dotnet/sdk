@@ -205,7 +205,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 var result = new DotnetTestCommand(_log, false)
                 .WithWorkingDirectory(outputDirectory)
 #pragma warning disable SA1010 // Opening square brackets should be spaced correctly - false positive. Current formatting is good.
-                .Execute(isMTP ? ["--directory", outputDirectory] : [outputDirectory]);
+                .Execute(isMTP ? ["--project", outputDirectory] : [outputDirectory]);
 #pragma warning restore SA1010 // Opening square brackets should be spaced correctly
 
                 result.Should().Pass();
