@@ -1,16 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.ObjectModel;
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Cli.NuGetPackageDownloader;
-using NuGet.Commands;
-using NuGet.Common;
 using NuGet.Versioning;
-using static Microsoft.DotNet.Cli.Commands.Run.CSharpDirective;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
@@ -18,9 +13,9 @@ internal static class PackCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-pack";
 
-    public static readonly Argument<IEnumerable<string>> SlnOrProjectArgument = new(CliStrings.SolutionOrProjectArgumentName)
+    public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
     {
-        Description = CliStrings.SolutionOrProjectArgumentDescription,
+        Description = CliStrings.SolutionOrProjectOrFileArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
@@ -97,7 +92,7 @@ internal static class PackCommandParser
     {
         var command = new DocumentedCommand("pack", DocsLink, CliCommandStrings.PackAppFullName);
 
-        command.Arguments.Add(SlnOrProjectArgument);
+        command.Arguments.Add(SlnOrProjectOrFileArgument);
         command.Options.Add(OutputOption);
         command.Options.Add(CommonOptions.ArtifactsPathOption);
         command.Options.Add(NoBuildOption);
