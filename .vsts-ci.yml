@@ -67,6 +67,8 @@ extends:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.22-amd64
       azureLinux30:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-build-amd64
+      azureLinux30fpm:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-fpm-amd64
       centosStream9:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
       debian12Amd64:
@@ -207,14 +209,14 @@ extends:
               osProperties: $(linuxOsPortableProperties) /p:BuildSdkDeb=true
               runTests: false
             - categoryName: Portable
-              container: azureLinux30
+              container: azureLinux30fpm
               # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: $(linuxOsPortableProperties) /p:IsRPMBasedDistro=true
               runTests: false
             - categoryName: Portable
-              container: azureLinux30
+              container: azureLinux30fpm
               buildArchitecture: arm64
               runtimeIdentifier: linux-arm64
               # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
