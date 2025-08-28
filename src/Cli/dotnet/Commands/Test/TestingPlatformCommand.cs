@@ -82,8 +82,17 @@ internal partial class TestingPlatformCommand : System.CommandLine.Command, ICus
         }
 
         _actionQueue.EnqueueCompleted();
-        var exitCode = _actionQueue.WaitAllActions();
         // Don't inline exitCode variable. We want to always call WaitAllActions first.
+        var exitCode = _actionQueue.WaitAllActions();
+        exitCode = _eventHandlers.HasHandshakeFailure ? ExitCode.GenericFailure : exitCode;
+        if (exitCode == ExitCode.Success &&
+            parseResult.HasOption(TestingPlatformOptions.MinimumExpectedTestsOption) &&
+            parseResult.GetValue(TestingPlatformOptions.MinimumExpectedTestsOption) is { } minimumExpectedTests &&
+            _output.TotalTests < minimumExpectedTests)
+        {
+            exitCode = ExitCode.MinimumExpectedTestsPolicyViolation;
+        }
+
         return _eventHandlers.HasHandshakeFailure ? ExitCode.GenericFailure : exitCode;
     }
 
@@ -144,6 +153,7 @@ internal partial class TestingPlatformCommand : System.CommandLine.Command, ICus
             UseCIAnsi = inCI,
             ShowAssembly = true,
             ShowAssemblyStartAndComplete = true,
+            MinimumExpectedTests = parseResult.GetValue(TestingPlatformOptions.MinimumExpectedTestsOption),
         });
 
         _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery, isHelp, _isRetry);

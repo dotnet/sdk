@@ -70,6 +70,12 @@ internal static class TestingPlatformOptions
         HelpName = CliCommandStrings.CmdNumberName
     };
 
+    public static readonly Option<int> MinimumExpectedTestsOption = new("--minimum-expected-tests")
+    {
+        Description = CliCommandStrings.CmdMinimumExpectedTestsDescription,
+        HelpName = CliCommandStrings.CmdNumberName
+    };
+
     public static readonly Option<string> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.TestConfigurationOptionDescription);
 
     public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.TestFrameworkOptionDescription);
