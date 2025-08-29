@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Watch
                 context.Logger.LogDebug("MSBuild incremental optimizations suppressed.");
             }
 
-            var environmentBuilder = EnvironmentVariablesBuilder.FromCurrentEnvironment();
+            var environmentBuilder = new Dictionary<string, string>();
 
             ChangedFile? changedFile = null;
             var buildEvaluator = new BuildEvaluator(context);
