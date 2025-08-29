@@ -77,12 +77,12 @@ NOTE: This file is imported from the following contexts, so be aware when writin
          so that the Publish of those kinds of packages isn't implicitly coerced to be platform-specific in any way.
          We _do_ have to set both SelfContained and PublishSelfContained here because the logic that applies PublishSelfContained to
          SelfContained has already run. -->
-    <PublishSelfContained Condition="!$(_IsRidSpecific) and !$(_IsImplicitRestore) and !$(_IsPacking)">false</PublishSelfContained>
-    <SelfContained Condition="!$(_IsRidSpecific) and !$(_IsImplicitRestore) and !$(_IsPacking)">false</SelfContained>
-    <PublishTrimmed Condition="!$(_IsRidSpecific) and !$(_IsImplicitRestore) and !$(_IsPacking)">false</PublishTrimmed>
-    <PublishReadyToRun Condition="!$(_IsRidSpecific) and !$(_IsImplicitRestore) and !$(_IsPacking)">false</PublishReadyToRun>
-    <PublishSingleFile Condition="!$(_IsRidSpecific) and !$(_IsImplicitRestore) and !$(_IsPacking)">false</PublishSingleFile>
-    <PublishAot Condition="!$(_IsRidSpecific) and !$(_IsImplicitRestore) and !$(_IsPacking)">false</PublishAot>
+    <PublishSelfContained Condition="!$(_IsRidSpecific) and !$(_IsImplicitRestore) and $(_IsPacking)">false</PublishSelfContained>
+    <SelfContained Condition="!$(_IsRidSpecific) and !$(_IsImplicitRestore) and $(_IsPacking)">false</SelfContained>
+    <PublishTrimmed Condition="!$(_IsRidSpecific) and !$(_IsImplicitRestore) and $(_IsPacking)">false</PublishTrimmed>
+    <PublishReadyToRun Condition="!$(_IsRidSpecific) and !$(_IsImplicitRestore) and $(_IsPacking)">false</PublishReadyToRun>
+    <PublishSingleFile Condition="!$(_IsRidSpecific) and !$(_IsImplicitRestore) and $(_IsPacking)">false</PublishSingleFile>
+    <PublishAot Condition="!$(_IsRidSpecific) and !$(_IsImplicitRestore) and $(_IsPacking)">false</PublishAot>
 
     <!-- Tool implementation files are not included in the primary package when the tool has RID-specific packages.  So only pack the tool implementation
        (and only depend on publish) if there are no RID-specific packages, or if the RuntimeIdentifier is set. -->
