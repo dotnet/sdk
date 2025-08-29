@@ -92,11 +92,13 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     <_ToolPackageShouldIncludeImplementation Condition="'$(_ToolPackageShouldIncludeImplementation)' == ''">false</_ToolPackageShouldIncludeImplementation>
 
     <!-- inner builds and non-RID-specific outer builds need publish content-->
-    <_PackToolPublishDependency Condition=" '$(_ToolPackageShouldIncludeImplementation)' != '' and '$(GeneratePackageOnBuild)' != 'true' and $(IsPublishable) == 'true' ">Publish</_PackToolPublishDependency>
+    <_PackToolPublishDependency Condition=" $(_ToolPackageShouldIncludeImplementation) and '$(GeneratePackageOnBuild)' != 'true' and $(IsPublishable) == 'true' ">Publish</_PackToolPublishDependency>
     <!-- BUT builds that GeneratePackageOnBuild can't directly rely on Publish since Publish would trigger Build, causing an infinite loop. -->
     <!-- To get around this, we try a bit of a workaround: since we can't set NoBuild=true and call Publish that way, we instead trigger all of the
          dependencies of the no-build Publish Target, _PublishNoBuildAlternative -->
-    <_PackToolPublishDependency Condition=" '$(_ToolPackageShouldIncludeImplementation)' != '' and '$(GeneratePackageOnBuild)' == 'true' and $(IsPublishable) == 'true' ">$(_PublishNoBuildAlternativeDependsOn)</_PackToolPublishDependency>
+    <_PackToolPublishDependency Condition=" $(_ToolPackageShouldIncludeImplementation) and '$(GeneratePackageOnBuild)' == 'true' and $(IsPublishable) == 'true' ">$(_PublishNoBuildAlternativeDependsOn)</_PackToolPublishDependency>
+    <!-- No implementation required? Then don't call either target. -->
+    <_PackToolPublishDependency Condition="!$(_ToolPackageShouldIncludeImplementation)"></_PackToolPublishDependency>
 
     <!-- GenerateNuspec is called in two places: crossTargeting NuGet targets, and single-targeting NuGet targets.
          Tools need to ensure that
