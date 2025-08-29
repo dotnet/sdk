@@ -56,7 +56,7 @@ internal static class TestingPlatformOptions
         Arity = ArgumentArity.ExactlyOne
     };
 
-    public static readonly Option<string> MaxParallelTestModulesOption = new("--max-parallel-test-modules")
+    public static readonly Option<int> MaxParallelTestModulesOption = new("--max-parallel-test-modules")
     {
         Description = CliCommandStrings.CmdMaxParallelTestModulesDescription,
         HelpName = CliCommandStrings.CmdNumberName
