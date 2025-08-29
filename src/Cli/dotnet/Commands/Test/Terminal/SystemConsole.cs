@@ -40,34 +40,8 @@ internal sealed class SystemConsole : IConsole
     // but can just kill the app in the device via a gesture
     public event ConsoleCancelEventHandler? CancelKeyPress
     {
-        add
-        {
-#if NET8_0_OR_GREATER
-            if (RuntimeInformation.RuntimeIdentifier.Contains("ios") ||
-                RuntimeInformation.RuntimeIdentifier.Contains("android"))
-            {
-                return;
-            }
-#endif
-
-#pragma warning disable IDE0027 // Use expression body for accessor
-            Console.CancelKeyPress += value;
-#pragma warning restore IDE0027 // Use expression body for accessor
-        }
-
-        remove
-        {
-#if NET8_0_OR_GREATER
-            if (RuntimeInformation.RuntimeIdentifier.Contains("ios") ||
-                RuntimeInformation.RuntimeIdentifier.Contains("android"))
-            {
-                return;
-            }
-#endif
-#pragma warning disable IDE0027 // Use expression body for accessor
-            Console.CancelKeyPress -= value;
-#pragma warning restore IDE0027 // Use expression body for accessor
-        }
+        add => Console.CancelKeyPress += value;
+        remove => Console.CancelKeyPress -= value;
     }
 
     public void SuppressOutput() => _suppressOutput = true;
@@ -153,60 +127,16 @@ internal sealed class SystemConsole : IConsole
     }
 
     public void SetForegroundColor(ConsoleColor color)
-    {
-#if NET8_0_OR_GREATER
-        if (RuntimeInformation.RuntimeIdentifier.Contains("ios") ||
-            RuntimeInformation.RuntimeIdentifier.Contains("android"))
-        {
-            return;
-        }
-#endif
-#pragma warning disable IDE0022 // Use expression body for method
-        Console.ForegroundColor = color;
-#pragma warning restore IDE0022 // Use expression body for method
-    }
+        => Console.ForegroundColor = color;
 
     public void SetBackgroundColor(ConsoleColor color)
-    {
-#if NET8_0_OR_GREATER
-        if (RuntimeInformation.RuntimeIdentifier.Contains("ios") ||
-            RuntimeInformation.RuntimeIdentifier.Contains("android"))
-        {
-            return;
-        }
-#endif
-#pragma warning disable IDE0022 // Use expression body for method
-        Console.BackgroundColor = color;
-#pragma warning restore IDE0022 // Use expression body for method
-    }
+        => Console.BackgroundColor = color;
 
     public ConsoleColor GetForegroundColor()
-    {
-#if NET8_0_OR_GREATER
-        if (RuntimeInformation.RuntimeIdentifier.Contains("ios") ||
-            RuntimeInformation.RuntimeIdentifier.Contains("android"))
-        {
-            return ConsoleColor.Black;
-        }
-#endif
-#pragma warning disable IDE0022 // Use expression body for method
-        return Console.ForegroundColor;
-#pragma warning restore IDE0022 // Use expression body for method
-    }
+        => Console.ForegroundColor;
 
     public ConsoleColor GetBackgroundColor()
-    {
-#if NET8_0_OR_GREATER
-        if (RuntimeInformation.RuntimeIdentifier.Contains("ios") ||
-            RuntimeInformation.RuntimeIdentifier.Contains("android"))
-        {
-            return ConsoleColor.Black;
-        }
-#endif
-#pragma warning disable IDE0022 // Use expression body for method
-        return Console.BackgroundColor;
-#pragma warning restore IDE0022 // Use expression body for method
-    }
+        => Console.BackgroundColor;
 
     public void Clear() => Console.Clear();
 }
