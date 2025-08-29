@@ -42,8 +42,7 @@ namespace Microsoft.DotNet.Watch
         }
 
         public override async Task WaitForConnectionEstablishedAsync(CancellationToken cancellationToken)
-            // Wait for the browser connection to be established as an indication that the process has started.
-            // Alternatively, we could inject agent into blazor-devserver.dll and establish a connection on the named pipe.
+            // Wait for the browser connection to be established. Currently we need the browser to be running in order to apply changes.
             => await browserRefreshServer.WaitForClientConnectionAsync(cancellationToken);
 
         public override Task<ImmutableArray<string>> GetUpdateCapabilitiesAsync(CancellationToken cancellationToken)
