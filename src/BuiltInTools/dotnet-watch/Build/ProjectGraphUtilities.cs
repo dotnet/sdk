@@ -6,6 +6,8 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.Cli;
+using Microsoft.Extensions.Logging;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -17,7 +19,7 @@ internal static class ProjectGraphUtilities
     public static ProjectGraph? TryLoadProjectGraph(
         string rootProjectFile,
         ImmutableDictionary<string, string> globalOptions,
-        IReporter reporter,
+        ILogger logger,
         bool projectGraphRequired,
         CancellationToken cancellationToken)
     {
@@ -41,7 +43,7 @@ internal static class ProjectGraphUtilities
         }
         catch (Exception e) when (e is not OperationCanceledException)
         {
-            reporter.Verbose("Failed to load project graph.");
+            logger.LogDebug("Failed to load project graph.");
 
             if (e is AggregateException { InnerExceptions: var innerExceptions })
             {
@@ -59,11 +61,11 @@ internal static class ProjectGraphUtilities
             {
                 if (projectGraphRequired)
                 {
-                    reporter.Error(e.Message);
+                    logger.LogError(e.Message);
                 }
                 else
                 {
-                    reporter.Warn(e.Message);
+                    logger.LogWarning(e.Message);
                 }
             }
         }
@@ -99,7 +101,7 @@ internal static class ProjectGraphUtilities
         => projectNode.IsNetCoreApp() && projectNode.IsTargetFrameworkVersionOrNewer(minVersion);
 
     public static bool IsWebApp(this ProjectGraphNode projectNode)
-        => projectNode.GetCapabilities().Any(static value => value is "AspNetCore" or "WebAssembly");
+        => projectNode.GetCapabilities().Any(static value => value is ProjectCapability.AspNetCore or ProjectCapability.WebAssembly);
 
     public static string? GetOutputDirectory(this ProjectGraphNode projectNode)
         => projectNode.ProjectInstance.GetPropertyValue(PropertyNames.TargetPath) is { Length: >0 } path ? Path.GetDirectoryName(Path.Combine(projectNode.ProjectInstance.Directory, path)) : null;
@@ -137,7 +139,19 @@ internal static class ProjectGraphUtilities
     public static bool GetBooleanMetadataValue(this ProjectItemInstance item, string metadataName, bool defaultValue = false)
         => item.GetMetadataValue(metadataName) is { Length: > 0 } value ? bool.TryParse(value, out var result) && result : defaultValue;
 
-    public static IEnumerable<ProjectGraphNode> GetTransitivelyReferencingProjects(this IEnumerable<ProjectGraphNode> projects)
+    public static IEnumerable<ProjectGraphNode> GetAncestorsAndSelf(this ProjectGraphNode project)
+        => GetAncestorsAndSelf([project]);
+
+    public static IEnumerable<ProjectGraphNode> GetAncestorsAndSelf(this IEnumerable<ProjectGraphNode> projects)
+        => GetTransitiveProjects(projects, static project => project.ReferencingProjects);
+
+    public static IEnumerable<ProjectGraphNode> GetDescendantsAndSelf(this ProjectGraphNode project)
+        => GetDescendantsAndSelf([project]);
+
+    public static IEnumerable<ProjectGraphNode> GetDescendantsAndSelf(this IEnumerable<ProjectGraphNode> projects)
+        => GetTransitiveProjects(projects, static project => project.ProjectReferences);
+
+    private static IEnumerable<ProjectGraphNode> GetTransitiveProjects(IEnumerable<ProjectGraphNode> projects, Func<ProjectGraphNode, IEnumerable<ProjectGraphNode>> getEdges)
     {
         var visited = new HashSet<ProjectGraphNode>();
         var queue = new Queue<ProjectGraphNode>();
@@ -151,13 +165,16 @@ internal static class ProjectGraphUtilities
             var project = queue.Dequeue();
             if (visited.Add(project))
             {
-                foreach (var referencingProject in project.ReferencingProjects)
+                yield return project;
+
+                foreach (var referencingProject in getEdges(project))
                 {
                     queue.Enqueue(referencingProject);
                 }
             }
         }
-
-        return visited;
     }
+
+    public static ProjectInstanceId GetProjectInstanceId(this ProjectGraphNode projectNode)
+        => new(projectNode.ProjectInstance.FullPath, projectNode.GetTargetFramework());
 }

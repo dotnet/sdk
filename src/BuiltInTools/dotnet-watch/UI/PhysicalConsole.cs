@@ -44,14 +44,21 @@ namespace Microsoft.DotNet.Watch
 
                     foreach (var processId in ProcessRunner.GetRunningApplicationProcesses())
                     {
+                        string? error;
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                         {
-                            ProcessUtilities.SendWindowsCtrlCEvent(processId, static l => throw new InvalidOperationException(l));
+                            Console.WriteLine($"Sending Ctrl+C to {processId}");
+                            error = ProcessUtilities.SendWindowsCtrlCEvent(processId);
                         }
                         else
                         {
                             Console.WriteLine($"Sending SIGTERM to {processId}");
-                            ProcessUtilities.SendPosixSignal(processId, ProcessUtilities.SIGTERM, static l => throw new InvalidOperationException(l));
+                            error = ProcessUtilities.SendPosixSignal(processId, ProcessUtilities.SIGTERM);
+                        }
+
+                        if (error != null)
+                        {
+                            throw new InvalidOperationException(error);
                         }
                     }
                 }

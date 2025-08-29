@@ -37,6 +37,7 @@ internal static class ItemNames
 internal static class MetadataNames
 {
     public const string Watch = nameof(Watch);
+    public const string TargetPath = nameof(TargetPath);
 }
 
 internal static class TargetNames
@@ -44,4 +45,12 @@ internal static class TargetNames
     public const string Compile = nameof(Compile);
     public const string Restore = nameof(Restore);
     public const string GenerateComputedBuildStaticWebAssets = nameof(GenerateComputedBuildStaticWebAssets);
+    public const string ReferenceCopyLocalPathsOutputGroup = nameof(ReferenceCopyLocalPathsOutputGroup);
+}
+
+internal static class ProjectCapability
+{
+    public const string Aspire = nameof(Aspire);
+    public const string AspNetCore = nameof(AspNetCore);
+    public const string WebAssembly = nameof(WebAssembly);
 }
