@@ -16,6 +16,7 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
+using Microsoft.Build.Logging.SimpleErrorLogger;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -112,10 +113,26 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             { "RestoreUseSkipNonexistentTargets", bool.FalseString },
         }
         .AsReadOnly());
+
+        if (MSBuildArgs.RequestedTargets is null or [])
+        {
+            RequestedTargets = MSBuildArgs.GetTargetResult;
+        }
+        else if (MSBuildArgs.GetTargetResult is null or [])
+        {
+            RequestedTargets = MSBuildArgs.RequestedTargets;
+        }
+        else
+        {
+            RequestedTargets = MSBuildArgs.RequestedTargets
+                .Union(MSBuildArgs.GetTargetResult, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
     }
 
     public string EntryPointFileFullPath { get; }
     public MSBuildArgs MSBuildArgs { get; }
+    private string[]? RequestedTargets { get; }
     public string? CustomArtifactsPath { get; init; }
     public string ArtifactsPath => field ??= CustomArtifactsPath ?? GetArtifactsPath(EntryPointFileFullPath);
     public bool NoRestore { get; init; }
@@ -160,13 +177,37 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public override int Execute()
     {
+        bool msbuildGet = MSBuildArgs.GetProperty is [_, ..] || MSBuildArgs.GetItem is [_, ..] || MSBuildArgs.GetTargetResult is [_, ..];
+        bool evalOnly = msbuildGet && RequestedTargets is null or [];
+        bool minimizeStdOut = msbuildGet && MSBuildArgs.GetResultOutputFile is null or [];
+
         var verbosity = MSBuildArgs.Verbosity ?? VerbosityOptions.quiet;
-        var consoleLogger = TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]);
+        var consoleLogger = minimizeStdOut
+            ? new SimpleErrorLogger()
+            : TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]);
         var binaryLogger = GetBinaryLogger(MSBuildArgs.OtherMSBuildArgs);
 
         CacheInfo? cache = null;
 
-        if (!NoBuild)
+        if (msbuildGet)
+        {
+            LastBuild = (BuildLevel.None, Cache: null);
+        }
+        else if (NoBuild)
+        {
+            // This is reached only during `restore`, not `run --no-build`
+            // (in the latter case, this virtual building command is not executed at all).
+            Debug.Assert(!NoRestore);
+
+            LastBuild = (BuildLevel.None, Cache: null);
+
+            if (!NoWriteBuildMarkers)
+            {
+                CreateTempSubdirectory(ArtifactsPath);
+                MarkArtifactsFolderUsed();
+            }
+        }
+        else
         {
             if (NoCache)
             {
@@ -230,22 +271,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             MarkBuildStart();
         }
-        else // if (NoBuild)
-        {
-            // This is reached only during `restore`, not `run --no-build`
-            // (in the latter case, this virtual building command is not executed at all).
-            Debug.Assert(!NoRestore);
 
-            LastBuild = (BuildLevel.None, Cache: null);
-
-            if (!NoWriteBuildMarkers)
-            {
-                CreateTempSubdirectory(ArtifactsPath);
-                MarkArtifactsFolderUsed();
-            }
-        }
-
-        if (!NoWriteBuildMarkers)
+        if (!NoWriteBuildMarkers && !msbuildGet)
         {
             CleanFileBasedAppArtifactsCommand.StartAutomaticCleanupIfNeeded();
         }
@@ -275,10 +302,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             BuildManager.DefaultBuildManager.BeginBuild(parameters);
 
+            int exitCode = 0;
+            ProjectInstance? projectInstance = null;
+            BuildResult? buildOrRestoreResult = null;
+
             // Do a restore first (equivalent to MSBuild's "implicit restore", i.e., `/restore`).
             // See https://github.com/dotnet/msbuild/blob/a1c2e7402ef0abe36bf493e395b04dd2cb1b3540/src/MSBuild/XMake.cs#L1838
             // and https://github.com/dotnet/msbuild/issues/11519.
-            if (!NoRestore)
+            if (!NoRestore && !evalOnly)
             {
                 var restoreRequest = new BuildRequestData(
                     CreateProjectInstance(projectCollection, addGlobalProperties: AddRestoreGlobalProperties(MSBuildArgs.RestoreGlobalProperties)),
@@ -289,36 +320,168 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 var restoreResult = BuildManager.DefaultBuildManager.BuildRequest(restoreRequest);
                 if (restoreResult.OverallResult != BuildResultCode.Success)
                 {
-                    return 1;
+                    exitCode = 1;
                 }
+
+                projectInstance = restoreRequest.ProjectInstance;
+                buildOrRestoreResult = restoreResult;
             }
 
             // Then do a build.
-            if (!NoBuild)
+            if (exitCode == 0 && !NoBuild && !evalOnly)
             {
                 var buildRequest = new BuildRequestData(
                     CreateProjectInstance(projectCollection),
-                    targetsToBuild: MSBuildArgs.RequestedTargets ?? ["Build"]);
+                    targetsToBuild: RequestedTargets ?? []);
 
                 var buildResult = BuildManager.DefaultBuildManager.BuildRequest(buildRequest);
                 if (buildResult.OverallResult != BuildResultCode.Success)
                 {
-                    return 1;
+                    exitCode = 1;
                 }
 
-                Debug.Assert(cache != null);
-                Debug.Assert(buildRequest.ProjectInstance != null);
+                if (exitCode == 0 && !msbuildGet)
+                {
+                    Debug.Assert(cache != null);
+                    Debug.Assert(buildRequest.ProjectInstance != null);
 
-                // Cache run info (to avoid re-evaluating the project instance).
-                cache.CurrentEntry.Run = RunProperties.FromProject(buildRequest.ProjectInstance);
+                    // Cache run info (to avoid re-evaluating the project instance).
+                    cache.CurrentEntry.Run = RunProperties.FromProject(buildRequest.ProjectInstance);
 
-                MarkBuildSuccess(cache);
+                    MarkBuildSuccess(cache);
+                }
+
+                projectInstance = buildRequest.ProjectInstance;
+                buildOrRestoreResult = buildResult;
+            }
+
+            // Print build information.
+            if (msbuildGet)
+            {
+                projectInstance ??= CreateProjectInstance(projectCollection);
+
+                var resultOutputFile = MSBuildArgs.GetResultOutputFile is [{ } file, ..] ? file : null;
+
+                // If a single property is requested, don't print as JSON.
+                if (MSBuildArgs is { GetProperty: [{ } singlePropertyName], GetItem: null or [], GetTargetResult: null or [] })
+                {
+                    var result = projectInstance.GetPropertyValue(singlePropertyName);
+                    if (resultOutputFile == null)
+                    {
+                        Console.WriteLine(result);
+                    }
+                    else
+                    {
+                        File.WriteAllText(path: resultOutputFile, contents: result + Environment.NewLine);
+                    }
+                }
+                else
+                {
+                    using var stream = resultOutputFile == null
+                       ? Console.OpenStandardOutput()
+                       : new FileStream(resultOutputFile, FileMode.Create, FileAccess.Write, FileShare.Read);
+                    using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
+                    writer.WriteStartObject();
+
+                    if (MSBuildArgs.GetProperty is [_, ..])
+                    {
+                        writer.WritePropertyName("Properties");
+                        writer.WriteStartObject();
+
+                        foreach (var propertyName in MSBuildArgs.GetProperty)
+                        {
+                            writer.WriteString(propertyName, projectInstance.GetPropertyValue(propertyName));
+                        }
+
+                        writer.WriteEndObject();
+                    }
+
+                    if (MSBuildArgs.GetItem is [_, ..])
+                    {
+                        writer.WritePropertyName("Items");
+                        writer.WriteStartObject();
+
+                        foreach (var itemName in MSBuildArgs.GetItem)
+                        {
+                            writer.WritePropertyName(itemName);
+                            writer.WriteStartArray();
+
+                            foreach (var item in projectInstance.GetItems(itemName))
+                            {
+                                writer.WriteStartObject();
+                                writer.WriteString("Identity", item.GetMetadataValue("Identity"));
+
+                                foreach (var metadatumName in item.MetadataNames)
+                                {
+                                    if (metadatumName.Equals("Identity", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        continue;
+                                    }
+
+                                    writer.WriteString(metadatumName, item.GetMetadataValue(metadatumName));
+                                }
+
+                                writer.WriteEndObject();
+                            }
+
+                            writer.WriteEndArray();
+                        }
+
+                        writer.WriteEndObject();
+                    }
+
+                    if (MSBuildArgs.GetTargetResult is [_, ..])
+                    {
+                        Debug.Assert(buildOrRestoreResult != null);
+
+                        writer.WritePropertyName("TargetResults");
+                        writer.WriteStartObject();
+
+                        foreach (var targetName in MSBuildArgs.GetTargetResult)
+                        {
+                            var targetResult = buildOrRestoreResult.ResultsByTarget[targetName];
+
+                            writer.WritePropertyName(targetName);
+                            writer.WriteStartObject();
+                            writer.WriteString("Result", targetResult.TargetResultCodeToString());
+                            writer.WritePropertyName("Items");
+                            writer.WriteStartArray();
+
+                            foreach (var item in targetResult.Items)
+                            {
+                                writer.WriteStartObject();
+                                writer.WriteString("Identity", item.GetMetadata("Identity"));
+
+                                foreach (string metadatumName in item.MetadataNames)
+                                {
+                                    if (metadatumName.Equals("Identity", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        continue;
+                                    }
+
+                                    writer.WriteString(metadatumName, item.GetMetadata(metadatumName));
+                                }
+
+                                writer.WriteEndObject();
+                            }
+
+                            writer.WriteEndArray();
+                            writer.WriteEndObject();
+                        }
+
+                        writer.WriteEndObject();
+                    }
+
+                    writer.WriteEndObject();
+                    writer.Flush();
+                    stream.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
+                }
             }
 
             BuildManager.DefaultBuildManager.EndBuild();
             consoleLogger = null; // avoid double disposal which would throw
 
-            return 0;
+            return exitCode;
         }
         catch (Exception e)
         {
@@ -753,7 +916,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 isVirtualProject: true,
                 targetFilePath: EntryPointFileFullPath,
                 artifactsPath: ArtifactsPath,
-                includeRuntimeConfigInformation: MSBuildArgs.RequestedTargets?.ContainsAny("Publish", "Pack") != true);
+                includeRuntimeConfigInformation: RequestedTargets?.ContainsAny("Publish", "Pack") != true);
             var projectFileText = projectFileWriter.ToString();
 
             using var reader = new StringReader(projectFileText);

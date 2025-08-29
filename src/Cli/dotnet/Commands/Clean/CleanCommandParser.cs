@@ -60,6 +60,10 @@ internal static class CleanCommandParser
         command.Options.Add(NoLogoOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(TargetOption);
+        command.Options.Add(CommonOptions.GetPropertyOption);
+        command.Options.Add(CommonOptions.GetItemOption);
+        command.Options.Add(CommonOptions.GetTargetResultOption);
+        command.Options.Add(CommonOptions.GetResultOutputFileOption);
         command.Subcommands.Add(CleanFileBasedAppArtifactsCommandParser.Command);
 
         command.SetAction(CleanCommand.Run);
