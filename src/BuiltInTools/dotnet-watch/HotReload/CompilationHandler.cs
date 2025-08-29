@@ -94,7 +94,6 @@ namespace Microsoft.DotNet.Watch
         public async Task<RunningProject?> TrackRunningProjectAsync(
             ProjectGraphNode projectNode,
             ProjectOptions projectOptions,
-            string namedPipeName,
             HotReloadClients clients,
             ProcessSpec processSpec,
             RestartOperation restartOperation,
@@ -109,7 +108,7 @@ namespace Microsoft.DotNet.Watch
 
             // It is important to first create the named pipe connection (Hot Reload client is the named pipe server)
             // and then start the process (named pipe client). Otherwise, the connection would fail.
-            clients.InitiateConnection(namedPipeName, processCommunicationCancellationSource.Token);
+            clients.InitiateConnection(processCommunicationCancellationSource.Token);
 
             processSpec.OnExit += (_, _) =>
             {
