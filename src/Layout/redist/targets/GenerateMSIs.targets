@@ -215,7 +215,7 @@
 
   <Target Name="GenerateSdkBundle"
           DependsOnTargets="$(GenerateSdkBundleDependsOn)"
-          Condition="'$(DotNetBuild)' != 'true' or '$(GenerateSdkBundleOnly)' == 'true'"
+          Condition="false"
           Inputs="$(SdkMSIInstallerFile);
                   $(DownloadedSharedFrameworkInstallerFile);
                   $(DownloadedHostFxrInstallerFile);
@@ -308,7 +308,8 @@
 
   <Target Name="GenerateMsis"
           AfterTargets="AfterBuild"
-          DependsOnTargets="$(GenerateMsisDependsOn)">
+          DependsOnTargets="$(GenerateMsisDependsOn)"
+          Condition="false">
   </Target>
 
 </Project>
