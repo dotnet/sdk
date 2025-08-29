@@ -204,39 +204,28 @@ internal sealed class BrowserRefreshServer : IAsyncDisposable
     {
         using var progressCancellationSource = new CancellationTokenSource();
 
-        // It make take a while to connect since the app might need to build first.
-        // Indicate progress in the output. Start with 60s and then report progress every 10s.
-        var firstReportSeconds = TimeSpan.FromSeconds(60);
-        var nextReportSeconds = TimeSpan.FromSeconds(10);
-
-        var reportDelayInSeconds = firstReportSeconds;
-        var connectionAttemptReported = false;
-
-        var progressReportingTask = Task.Run(async () =>
+        if (!_browserConnected.Task.IsCompleted)
         {
-            while (!progressCancellationSource.Token.IsCancellationRequested)
+            var progressReportingTask = Task.Run(async () =>
             {
-                await Task.Delay(Options.TestFlags != TestFlags.None ? TimeSpan.MaxValue : reportDelayInSeconds, progressCancellationSource.Token);
+                while (!progressCancellationSource.Token.IsCancellationRequested)
+                {
+                    _logger.LogInformation("Waiting for browser connection...");
+                    await Task.Delay(Options.TestFlags != TestFlags.None ? TimeSpan.MaxValue : TimeSpan.FromSeconds(10), progressCancellationSource.Token);
+                }
+            }, progressCancellationSource.Token);
 
-                connectionAttemptReported = true;
-                reportDelayInSeconds = nextReportSeconds;
-                _logger.LogInformation("Connecting to the browser ...");
+            try
+            {
+                await _browserConnected.Task.WaitAsync(cancellationToken);
             }
-        }, progressCancellationSource.Token);
-
-        try
-        {
-            await _browserConnected.Task.WaitAsync(cancellationToken);
-        }
-        finally
-        {
-            progressCancellationSource.Cancel();
+            finally
+            {
+                progressCancellationSource.Cancel();
+            }
         }
 
-        if (connectionAttemptReported)
-        {
-            _logger.LogInformation("Browser connection established.");
-        }
+        _logger.LogInformation("Browser connection established.");
     }
 
     private IReadOnlyCollection<BrowserConnection> GetOpenBrowserConnections()

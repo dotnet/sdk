@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Watch;
 ///
 /// The instances are also reused if the project file is updated or the project graph is reloaded.
 /// </summary>
-internal sealed class BrowserRefreshServerFactory(ILoggerFactory loggerFactory, EnvironmentOptions environmentOptions) : IAsyncDisposable
+internal sealed class BrowserRefreshServerFactory : IAsyncDisposable
 {
     private readonly Lock _serversGuard = new();
 
@@ -42,7 +42,7 @@ internal sealed class BrowserRefreshServerFactory(ILoggerFactory loggerFactory, 
         }));
     }
 
-    public async ValueTask<BrowserRefreshServer?> GetOrCreateBrowserRefreshServerAsync(ProjectGraphNode projectNode, HotReloadAppModel appModel, CancellationToken cancellationToken)
+    public async ValueTask<BrowserRefreshServer?> GetOrCreateBrowserRefreshServerAsync(ProjectGraphNode projectNode, WebApplicationAppModel appModel, CancellationToken cancellationToken)
     {
         BrowserRefreshServer? server;
         bool hasExistingServer;
@@ -54,7 +54,7 @@ internal sealed class BrowserRefreshServerFactory(ILoggerFactory loggerFactory, 
             hasExistingServer = _servers.TryGetValue(key, out server);
             if (!hasExistingServer)
             {
-                server = TryCreateRefreshServer(projectNode, appModel);
+                server = appModel.TryCreateRefreshServer(projectNode);
                 _servers.Add(key, server);
             }
         }
@@ -72,18 +72,6 @@ internal sealed class BrowserRefreshServerFactory(ILoggerFactory loggerFactory, 
         }
 
         return server;
-    }
-
-    private BrowserRefreshServer? TryCreateRefreshServer(ProjectGraphNode projectNode, HotReloadAppModel appModel)
-    {
-        var logger = loggerFactory.CreateLogger(BrowserRefreshServer.ServerLogComponentName, projectNode.GetDisplayName());
-
-        if (appModel is WebApplicationAppModel webApp && webApp.IsServerSupported(projectNode, environmentOptions, logger))
-        {
-            return new BrowserRefreshServer(environmentOptions, logger, loggerFactory);
-        }
-
-        return null;
     }
 
     public bool TryGetRefreshServer(ProjectGraphNode projectNode, [NotNullWhen(true)] out BrowserRefreshServer? server)

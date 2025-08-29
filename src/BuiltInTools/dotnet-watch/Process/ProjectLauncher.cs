@@ -11,8 +11,6 @@ internal delegate ValueTask ProcessExitAction(int processId, int? exitCode);
 internal sealed class ProjectLauncher(
     DotNetWatchContext context,
     ProjectNodeMap projectMap,
-    BrowserRefreshServerFactory browserConnector,
-    BrowserLauncher browserLauncher,
     CompilationHandler compilationHandler,
     int iteration)
 {
@@ -47,7 +45,19 @@ internal sealed class ProjectLauncher(
             return null;
         }
 
-        var appModel = HotReloadAppModel.InferFromProject(projectNode, Logger, context.EnvironmentOptions);
+        var appModel = HotReloadAppModel.InferFromProject(context, projectNode);
+
+        // create loggers that include project name in messages:
+        var projectDisplayName = projectNode.GetDisplayName();
+        var clientLogger = context.LoggerFactory.CreateLogger(HotReloadDotNetWatcher.ClientLogComponentName, projectDisplayName);
+        var agentLogger = context.LoggerFactory.CreateLogger(HotReloadDotNetWatcher.AgentLogComponentName, projectDisplayName);
+
+        var clients = await appModel.TryCreateClientsAsync(clientLogger, agentLogger, cancellationToken);
+        if (clients == null)
+        {
+            // error already reported
+            return null;
+        }
 
         var processSpec = new ProcessSpec
         {
@@ -60,7 +70,6 @@ internal sealed class ProjectLauncher(
         // Stream output lines to the process output reporter.
         // The reporter synchronizes the output of the process with the logger output,
         // so that the printed lines don't interleave.
-        var projectDisplayName = projectNode.GetDisplayName();
         processSpec.OnOutput += line =>
         {
             context.ProcessOutputReporter.ReportOutput(context.ProcessOutputReporter.PrefixProcessOutput ? line with { Content = $"[{projectDisplayName}] {line.Content}" } : line);
@@ -107,9 +116,27 @@ internal sealed class ProjectLauncher(
             }
         }
 
-        var browserRefreshServer = await browserConnector.GetOrCreateBrowserRefreshServerAsync(projectNode, appModel, cancellationToken);
-        browserRefreshServer?.SetEnvironmentVariables(environmentBuilder);
+        clients.BrowserRefreshServer?.SetEnvironmentVariables(environmentBuilder);
 
+        processSpec.Arguments = GetProcessArguments(projectOptions, environmentBuilder);
+
+        // Attach trigger to the process that detects when the web server reports to the output that it's listening.
+        // Launches browser on the URL found in the process output for root projects.
+        context.BrowserLauncher.InstallBrowserLaunchTrigger(processSpec, projectNode, projectOptions, clients.BrowserRefreshServer, cancellationToken);
+
+        return await compilationHandler.TrackRunningProjectAsync(
+            projectNode,
+            projectOptions,
+            namedPipeName,
+            clients,
+            processSpec,
+            restartOperation,
+            processTerminationSource,
+            cancellationToken);
+    }
+
+    private static IReadOnlyList<string> GetProcessArguments(ProjectOptions projectOptions, EnvironmentVariablesBuilder environmentBuilder)
+    {
         var arguments = new List<string>()
         {
             projectOptions.Command,
@@ -123,23 +150,7 @@ internal sealed class ProjectLauncher(
         }
 
         arguments.AddRange(projectOptions.CommandArguments);
-
-        processSpec.Arguments = arguments;
-
-        // Attach trigger to the process that detects when the web server reports to the output that it's listening.
-        // Launches browser on the URL found in the process output for root projects.
-        browserLauncher.InstallBrowserLaunchTrigger(processSpec, projectNode, projectOptions, browserRefreshServer, cancellationToken);
-
-        return await compilationHandler.TrackRunningProjectAsync(
-            projectNode,
-            projectOptions,
-            appModel,
-            namedPipeName,
-            browserRefreshServer,
-            processSpec,
-            restartOperation,
-            processTerminationSource,
-            cancellationToken);
+        return arguments;
     }
 
     public ValueTask<int> TerminateProcessAsync(RunningProject project, CancellationToken cancellationToken)
