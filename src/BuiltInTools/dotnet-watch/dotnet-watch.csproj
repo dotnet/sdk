@@ -50,8 +50,25 @@
 
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)\src\Cli\dotnet\dotnet.csproj" />
-    <ProjectReference Include="..\BrowserRefresh\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework;TargetFrameworks" OutputItemType="Content" TargetPath="middleware\Microsoft.AspNetCore.Watch.BrowserRefresh.dll" CopyToOutputDirectory="PreserveNewest" />
-    <ProjectReference Include="..\DotNetWatchTasks\DotNetWatchTasks.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework;TargetFrameworks" OutputItemType="Content" CopyToOutputDirectory="PreserveNewest" />
+
+    <ProjectReference Include="..\DotNetWatchTasks\DotNetWatchTasks.csproj">
+      <PrivateAssets>all</PrivateAssets>
+      <OutputItemType>Content</OutputItemType>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <UndefineProperties>TargetFramework;TargetFrameworks</UndefineProperties>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </ProjectReference>
+
+    <ProjectReference Include="..\BrowserRefresh\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj">
+      <PrivateAssets>all</PrivateAssets>
+      <OutputItemType>Content</OutputItemType>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <UndefineProperties>TargetFramework;TargetFrameworks</UndefineProperties>
+      <TargetPath>middleware\Microsoft.AspNetCore.Watch.BrowserRefresh.dll</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </ProjectReference>
 
     <ProjectReference Include="..\DotNetDeltaApplier\Microsoft.Extensions.DotNetDeltaApplier.csproj">
       <PrivateAssets>all</PrivateAssets>
