@@ -15,7 +15,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.DotNet.Watch;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload

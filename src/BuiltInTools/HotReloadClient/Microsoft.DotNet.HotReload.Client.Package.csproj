@@ -34,6 +34,7 @@
     <PackageReference Include="System.Diagnostics.DiagnosticSource" VersionOverride="$(SystemDiagnosticsDiagnosticSourceToolsetPackageVersion)" />
     <PackageReference Include="System.Memory" VersionOverride="$(SystemMemoryToolsetPackageVersion)" />
     <PackageReference Include="System.Threading.Tasks.Extensions" VersionOverride="$(SystemThreadingTasksExtensionsToolsetPackageVersion)" />
+    <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="$(MicrosoftBclAsyncInterfacesToolsetPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" VersionOverride="$(MicrosoftExtensionsLoggingAbstractionsToolsetPackageVersion)" />
   </ItemGroup>

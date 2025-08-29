@@ -23,4 +23,11 @@ internal static class LogEvents
     public static readonly LogEvent UpdatesApplied = Create(LogLevel.Debug, "Updates applied: {0} out of {1}.");
     public static readonly LogEvent Capabilities = Create(LogLevel.Debug, "Capabilities: '{1}'.");
     public static readonly LogEvent HotReloadSucceeded = Create(LogLevel.Information, "Hot reload succeeded.");
+    public static readonly LogEvent RefreshingBrowser = Create(LogLevel.Debug, "Refreshing browser.");
+    public static readonly LogEvent ReloadingBrowser = Create(LogLevel.Debug, "Reloading browser.");
+    public static readonly LogEvent NoBrowserConnected = Create(LogLevel.Debug, "No browser is connected.");
+    public static readonly LogEvent FailedToReceiveResponseFromConnectedBrowser = Create(LogLevel.Debug, "Failed to receive response from a connected browser.");
+    public static readonly LogEvent UpdatingDiagnostics = Create(LogLevel.Debug, "Updating diagnostics.");
+    public static readonly LogEvent SendingStaticAssetUpdateRequest = Create(LogLevel.Debug, "Sending static asset update request to connected browsers: '{0}'.");
+    public static readonly LogEvent RefreshServerRunningAt = Create(LogLevel.Debug, "Refresh server running at {0}.");
 }

@@ -5,7 +5,7 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.DotNet.Watch;
+namespace Microsoft.DotNet.HotReload;
 
 internal static class LoggingUtilities
 {
