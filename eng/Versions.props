@@ -64,6 +64,7 @@
     <WebDeploymentPackageVersion>4.0.5</WebDeploymentPackageVersion>
     <SystemCommandLineVersion>2.0.0-rc.1.25377.103</SystemCommandLineVersion>
     <SystemCommandLineNamingConventionBinderVersion>2.0.0-beta5.25279.2</SystemCommandLineNamingConventionBinderVersion>
+    <MicrosoftIORedistPackageVersion>6.1.3</MicrosoftIORedistPackageVersion>
     <MicrosoftCodeAnalysisAnalyzerTestingVersion>1.1.2</MicrosoftCodeAnalysisAnalyzerTestingVersion>
     <MicrosoftCodeAnalysisVersionForNetAnalyzers Condition="'$(DotNetBuildSourceOnly)' != 'true'">3.11.0</MicrosoftCodeAnalysisVersionForNetAnalyzers>
     <MicrosoftCodeAnalysisVersionForNetAnalyzers Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(MicrosoftCodeAnalysisVersion)</MicrosoftCodeAnalysisVersionForNetAnalyzers>
