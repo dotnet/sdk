@@ -206,11 +206,12 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor ConfiguredToUseBrowserRefresh = Create("Using browser-refresh middleware", Emoji.Default, MessageSeverity.Verbose);
         public static readonly MessageDescriptor SkippingConfiguringBrowserRefresh_SuppressedViaEnvironmentVariable = Create("Skipping configuring browser-refresh middleware since its refresh server suppressed via environment variable {0}.", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor SkippingConfiguringBrowserRefresh_TargetFrameworkNotSupported = Create("Skipping configuring browser-refresh middleware since the target framework version is not supported. For more information see 'https://aka.ms/dotnet/watch/unsupported-tfm'.", Emoji.Watch, MessageSeverity.Warning);
-        public static readonly MessageDescriptor UpdatingDiagnostics = Create("Updating diagnostics.", Emoji.Default, MessageSeverity.Verbose);
-        public static readonly MessageDescriptor FailedToReceiveResponseFromConnectedBrowser = Create("Failed to receive response from a connected browser.", Emoji.Default, MessageSeverity.Verbose);
-        public static readonly MessageDescriptor NoBrowserConnected = Create("No browser is connected.", Emoji.Default, MessageSeverity.Verbose);
-        public static readonly MessageDescriptor RefreshingBrowser = Create("Refreshing browser.", Emoji.Default, MessageSeverity.Verbose);
-        public static readonly MessageDescriptor ReloadingBrowser = Create("Reloading browser.", Emoji.Default, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor UpdatingDiagnostics = Create(LogEvents.UpdatingDiagnostics, Emoji.Default);
+        public static readonly MessageDescriptor FailedToReceiveResponseFromConnectedBrowser = Create(LogEvents.FailedToReceiveResponseFromConnectedBrowser, Emoji.Default);
+        public static readonly MessageDescriptor NoBrowserConnected = Create(LogEvents.NoBrowserConnected, Emoji.Default);
+        public static readonly MessageDescriptor RefreshingBrowser = Create(LogEvents.RefreshingBrowser, Emoji.Default);
+        public static readonly MessageDescriptor ReloadingBrowser = Create(LogEvents.ReloadingBrowser, Emoji.Default);
+        public static readonly MessageDescriptor RefreshServerRunningAt = Create(LogEvents.RefreshServerRunningAt, Emoji.Default);
         public static readonly MessageDescriptor IgnoringChangeInHiddenDirectory = Create("Ignoring change in hidden directory '{0}': {1} '{2}'", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor IgnoringChangeInOutputDirectory = Create("Ignoring change in output directory: {0} '{1}'", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor IgnoringChangeInExcludedFile = Create("Ignoring change in excluded file '{0}': {1}. Path matches {2} glob '{3}' set in '{4}'.", Emoji.Watch, MessageSeverity.Verbose);
@@ -234,7 +235,7 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor HotReloadOfScopedCssPartiallySucceeded = Create("Hot reload of scoped css partially succeeded: {0} project(s) out of {1} were updated.", Emoji.HotReload, MessageSeverity.Output);
         public static readonly MessageDescriptor HotReloadOfScopedCssFailed = Create("Hot reload of scoped css failed.", Emoji.Error, MessageSeverity.Error);
         public static readonly MessageDescriptor HotReloadOfStaticAssetsSucceeded = Create("Hot reload of static assets succeeded.", Emoji.HotReload, MessageSeverity.Output);
-        public static readonly MessageDescriptor SendingStaticAssetUpdateRequest = Create("Sending static asset update request to connected browsers: '{0}'.", Emoji.Refresh, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor SendingStaticAssetUpdateRequest = Create(LogEvents.SendingStaticAssetUpdateRequest, Emoji.Default);
         public static readonly MessageDescriptor HotReloadCapabilities = Create("Hot reload capabilities: {0}.", Emoji.HotReload, MessageSeverity.Verbose);
         public static readonly MessageDescriptor HotReloadSuspended = Create("Hot reload suspended. To continue hot reload, press \"Ctrl + R\".", Emoji.HotReload, MessageSeverity.Output);
         public static readonly MessageDescriptor UnableToApplyChanges = Create("Unable to apply changes due to compilation errors.", Emoji.HotReload, MessageSeverity.Output);

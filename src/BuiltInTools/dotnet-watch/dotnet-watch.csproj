@@ -66,7 +66,7 @@
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <UndefineProperties>TargetFramework;TargetFrameworks</UndefineProperties>
-      <TargetPath>middleware\Microsoft.AspNetCore.Watch.BrowserRefresh.dll</TargetPath>
+      <TargetPath>hotreload\net6.0\Microsoft.AspNetCore.Watch.BrowserRefresh.dll</TargetPath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </ProjectReference>
 
