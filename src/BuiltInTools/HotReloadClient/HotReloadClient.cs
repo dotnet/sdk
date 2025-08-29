@@ -24,10 +24,12 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
     public readonly ILogger Logger = logger;
     public readonly ILogger AgentLogger = agentLogger;
 
+    public abstract void ConfigureLaunchEnvironment(IDictionary<string, string> environmentBuilder);
+
     /// <summary>
     /// Initiates connection with the agent in the target process.
     /// </summary>
-    public abstract void InitiateConnection(string namedPipeName, CancellationToken cancellationToken);
+    public abstract void InitiateConnection(CancellationToken cancellationToken);
 
     /// <summary>
     /// Waits until the connection with the agent is established.

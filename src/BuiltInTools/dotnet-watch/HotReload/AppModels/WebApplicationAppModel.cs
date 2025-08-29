@@ -11,6 +11,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
 {
     // This needs to be in sync with the version BrowserRefreshMiddleware is compiled against.
     private static readonly Version s_minimumSupportedVersion = Versions.Version6_0;
+    private const string MiddlewareTargetFramework = "net6.0";
 
     public DotNetWatchContext Context => context;
 
@@ -35,13 +36,16 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
         return CreateClients(clientLogger, agentLogger, browserRefreshServer);
     }
 
+    private static string GetMiddlewareAssemblyPath()
+        => GetInjectedAssemblyPath(MiddlewareTargetFramework, "Microsoft.AspNetCore.Watch.BrowserRefresh");
+
     public BrowserRefreshServer? TryCreateRefreshServer(ProjectGraphNode projectNode)
     {
         var logger = context.LoggerFactory.CreateLogger(BrowserRefreshServer.ServerLogComponentName, projectNode.GetDisplayName());
 
         if (IsServerSupported(projectNode, logger))
         {
-            return new BrowserRefreshServer(context.EnvironmentOptions, logger, context.LoggerFactory);
+            return new BrowserRefreshServer(context.EnvironmentOptions, GetMiddlewareAssemblyPath(), logger, context.LoggerFactory);
         }
 
         return null;

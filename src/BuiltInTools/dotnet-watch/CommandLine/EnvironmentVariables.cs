@@ -16,6 +16,7 @@ internal static class EnvironmentVariables
         public const string AspNetCoreHostingStartupAssemblies = "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES";
         public const string AspNetCoreAutoReloadWSEndPoint = "ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT";
         public const string AspNetCoreAutoReloadWSKey = "ASPNETCORE_AUTO_RELOAD_WS_KEY";
+        public const char AspNetCoreHostingStartupAssembliesSeparator = ';';
 
         public const string DotNetWatchHotReloadNamedPipeName = HotReload.AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName;
         public const string DotNetStartupHooks = HotReload.AgentEnvironmentVariables.DotNetStartupHooks;

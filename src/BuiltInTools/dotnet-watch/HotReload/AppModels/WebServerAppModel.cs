@@ -10,12 +10,11 @@ namespace Microsoft.DotNet.Watch;
 internal sealed class WebServerAppModel(DotNetWatchContext context, ProjectGraphNode serverProject)
     : WebApplicationAppModel(context)
 {
-    public override ProjectGraphNode? AgentInjectionProject => serverProject;
     public override ProjectGraphNode LaunchingProject => serverProject;
 
     public override bool RequiresBrowserRefresh
         => false;
 
     protected override HotReloadClients CreateClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer)
-        => new(new DefaultHotReloadClient(clientLogger, agentLogger, enableStaticAssetUpdates: true), browserRefreshServer);
+        => new(new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(serverProject), enableStaticAssetUpdates: true), browserRefreshServer);
 }

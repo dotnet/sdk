@@ -75,48 +75,25 @@ internal sealed class ProjectLauncher(
             context.ProcessOutputReporter.ReportOutput(context.ProcessOutputReporter.PrefixProcessOutput ? line with { Content = $"[{projectDisplayName}] {line.Content}" } : line);
         };
 
-        var environmentBuilder = EnvironmentVariablesBuilder.FromCurrentEnvironment();
-        var namedPipeName = Guid.NewGuid().ToString();
+        var environmentBuilder = new Dictionary<string, string>();
 
+        // initialize with project settings:
         foreach (var (name, value) in projectOptions.LaunchEnvironmentVariables)
         {
-            // ignore dotnet-watch reserved variables -- these shouldn't be set by the project
-            if (name.Equals(EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies, StringComparison.OrdinalIgnoreCase) ||
-                name.Equals(EnvironmentVariables.Names.DotNetStartupHooks, StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-
-            environmentBuilder.SetVariable(name, value);
+            environmentBuilder[name] = value;
         }
 
         // override any project settings:
-        environmentBuilder.SetVariable(EnvironmentVariables.Names.DotnetWatch, "1");
-        environmentBuilder.SetVariable(EnvironmentVariables.Names.DotnetWatchIteration, (Iteration + 1).ToString(CultureInfo.InvariantCulture));
+        environmentBuilder[EnvironmentVariables.Names.DotnetWatch] = "1";
+        environmentBuilder[EnvironmentVariables.Names.DotnetWatchIteration] = (Iteration + 1).ToString(CultureInfo.InvariantCulture);
 
-        // Note:
-        // Microsoft.AspNetCore.Components.WebAssembly.Server.ComponentWebAssemblyConventions and Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware
-        // expect DOTNET_MODIFIABLE_ASSEMBLIES to be set in the blazor-devserver process, even though we are not performing Hot Reload in this process.
-        // The value is converted to DOTNET-MODIFIABLE-ASSEMBLIES header, which is in turn converted back to environment variable in Mono browser runtime loader:
-        // https://github.com/dotnet/runtime/blob/342936c5a88653f0f622e9d6cb727a0e59279b31/src/mono/browser/runtime/loader/config.ts#L330
-        environmentBuilder.SetVariable(EnvironmentVariables.Names.DotNetModifiableAssemblies, "debug");
-
-        if (appModel.TryGetStartupHookPath(out var startupHookPath))
+        if (Logger.IsEnabled(LogLevel.Debug))
         {
-            // HotReload startup hook should be loaded before any other startup hooks:
-            environmentBuilder.DotNetStartupHooks.Insert(0, startupHookPath);
-
-            environmentBuilder.SetVariable(EnvironmentVariables.Names.DotNetWatchHotReloadNamedPipeName, namedPipeName);
-
-            if (context.Options.Verbose)
-            {
-                environmentBuilder.SetVariable(
-                    EnvironmentVariables.Names.HotReloadDeltaClientLogMessages,
-                    (EnvironmentOptions.SuppressEmojis ? Emoji.Default : Emoji.Agent).GetLogMessagePrefix() + $"[{projectDisplayName}]");
-            }
+            environmentBuilder[EnvironmentVariables.Names.HotReloadDeltaClientLogMessages] =
+                (EnvironmentOptions.SuppressEmojis ? Emoji.Default : Emoji.Agent).GetLogMessagePrefix() + $"[{projectDisplayName}]";
         }
 
-        clients.BrowserRefreshServer?.SetEnvironmentVariables(environmentBuilder);
+        clients.ConfigureLaunchEnvironment(environmentBuilder);
 
         processSpec.Arguments = GetProcessArguments(projectOptions, environmentBuilder);
 
@@ -127,7 +104,6 @@ internal sealed class ProjectLauncher(
         return await compilationHandler.TrackRunningProjectAsync(
             projectNode,
             projectOptions,
-            namedPipeName,
             clients,
             processSpec,
             restartOperation,
@@ -135,7 +111,7 @@ internal sealed class ProjectLauncher(
             cancellationToken);
     }
 
-    private static IReadOnlyList<string> GetProcessArguments(ProjectOptions projectOptions, EnvironmentVariablesBuilder environmentBuilder)
+    private static IReadOnlyList<string> GetProcessArguments(ProjectOptions projectOptions, IDictionary<string, string> environmentBuilder)
     {
         var arguments = new List<string>()
         {
@@ -143,7 +119,7 @@ internal sealed class ProjectLauncher(
             "--no-build"
         };
 
-        foreach (var (name, value) in environmentBuilder.GetEnvironment())
+        foreach (var (name, value) in environmentBuilder)
         {
             arguments.Add("-e");
             arguments.Add($"{name}={value}");

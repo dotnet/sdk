@@ -37,7 +37,12 @@ namespace Microsoft.DotNet.Watch
             // Do nothing.
         }
 
-        public override void InitiateConnection(string namedPipeName, CancellationToken cancellationToken)
+        public override void ConfigureLaunchEnvironment(IDictionary<string, string> environmentBuilder)
+        {
+            // the environment is configued via browser refesh server
+        }
+
+        public override void InitiateConnection(CancellationToken cancellationToken)
         {
         }
 
