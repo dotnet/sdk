@@ -3,10 +3,11 @@
 
 
 using Microsoft.Build.Graph;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal readonly struct ProjectNodeMap(ProjectGraph graph, IReporter reporter)
+    internal readonly struct ProjectNodeMap(ProjectGraph graph, ILogger logger)
     {
         public readonly ProjectGraph Graph = graph;
 
@@ -23,7 +24,7 @@ namespace Microsoft.DotNet.Watch
                 return rootProjectNodes;
             }
 
-            reporter.Error($"Project '{projectPath}' not found in the project graph.");
+            logger.LogError("Project '{ProjectPath}' not found in the project graph.", projectPath);
             return [];
         }
 
@@ -39,7 +40,7 @@ namespace Microsoft.DotNet.Watch
             {
                 if (projectNodes.Count > 1)
                 {
-                    reporter.Error($"Project '{projectPath}' targets multiple frameworks. Specify which framework to run using '--framework'.");
+                    logger.LogError("Project '{ProjectPath}' targets multiple frameworks. Specify which framework to run using '--framework'.", projectPath);
                     return null;
                 }
 
@@ -54,7 +55,7 @@ namespace Microsoft.DotNet.Watch
                     if (candidate != null)
                     {
                         // shouldn't be possible:
-                        reporter.Warn($"Project '{projectPath}' has multiple instances targeting {targetFramework}.");
+                        logger.LogWarning("Project '{ProjectPath}' has multiple instances targeting {TargetFramework}.", projectPath, targetFramework);
                         return candidate;
                     }
 
@@ -64,7 +65,7 @@ namespace Microsoft.DotNet.Watch
 
             if (candidate == null)
             {
-                reporter.Error($"Project '{projectPath}' doesn't have a target for {targetFramework}.");
+                logger.LogError("Project '{ProjectPath}' doesn't have a target for {TargetFramework}.", projectPath, targetFramework);
             }
 
             return candidate;
