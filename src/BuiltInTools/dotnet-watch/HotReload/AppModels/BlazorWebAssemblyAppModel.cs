@@ -22,6 +22,6 @@ internal sealed class BlazorWebAssemblyAppModel(DotNetWatchContext context, Proj
     protected override HotReloadClients CreateClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer)
     {
         Debug.Assert(browserRefreshServer != null);
-        return new(new BlazorWebAssemblyHotReloadClient(clientLogger, agentLogger, browserRefreshServer, Context.EnvironmentOptions, clientProject), browserRefreshServer);
+        return new(CreateWebAssemblyClient(clientLogger, agentLogger, browserRefreshServer, clientProject), browserRefreshServer);
     }
 }

@@ -1,15 +1,28 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
+using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Collections.Immutable;
-using Microsoft.Build.Graph;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class BlazorWebAssemblyHotReloadClient(ILogger logger, ILogger agentLogger, BrowserRefreshServer browserRefreshServer, EnvironmentOptions environmentOptions, ProjectGraphNode project)
+    internal sealed class WebAssemblyHotReloadClient(
+        ILogger logger,
+        ILogger agentLogger,
+        AbstractBrowserRefreshServer browserRefreshServer,
+        ImmutableArray<string> projectHotReloadCapabilities,
+        Version projectTargetFrameworkVersion,
+        bool suppressBrowserRequestsForTesting)
         : HotReloadClient(logger, agentLogger)
     {
         private static readonly ImmutableArray<string> s_defaultCapabilities60 =
@@ -52,15 +65,13 @@ namespace Microsoft.DotNet.Watch
 
         public override Task<ImmutableArray<string>> GetUpdateCapabilitiesAsync(CancellationToken cancellationToken)
         {
-            var capabilities = project.GetWebAssemblyCapabilities().ToImmutableArray();
+            var capabilities = projectHotReloadCapabilities;
 
             if (capabilities.IsEmpty)
             {
-                var targetFramework = project.GetTargetFrameworkVersion();
+                Logger.LogDebug("Using capabilities based on project target framework version: '{Version}'.", projectTargetFrameworkVersion);
 
-                Logger.LogDebug("Using capabilities based on project target framework: '{TargetFramework}'.", targetFramework);
-
-                capabilities = targetFramework?.Major switch
+                capabilities = projectTargetFrameworkVersion.Major switch
                 {
                     9 => s_defaultCapabilities90,
                     8 => s_defaultCapabilities80,
@@ -71,7 +82,7 @@ namespace Microsoft.DotNet.Watch
             }
             else
             {
-                Logger.LogDebug("Project specifies capabilities: '{Capabilities}'", string.Join(' ', capabilities));
+                Logger.LogDebug("Project specifies capabilities: '{Capabilities}'", string.Join(" ", capabilities));
             }
 
             return Task.FromResult(capabilities);
@@ -85,9 +96,9 @@ namespace Microsoft.DotNet.Watch
                 return ApplyStatus.NoChangesApplied;
             }
 
-            if (environmentOptions.TestFlags.HasFlag(TestFlags.MockBrowser))
+            // When testing abstract away the browser and pretend all changes have been applied:
+            if (suppressBrowserRequestsForTesting)
             {
-                // When testing abstract away the browser and pretend all changes have been applied:
                 return ApplyStatus.AllChangesApplied;
             }
 
@@ -123,7 +134,7 @@ namespace Microsoft.DotNet.Watch
                     Deltas = deltas,
                     ResponseLoggingLevel = (int)loggingLevel
                 },
-                response: isProcessSuspended ? null : (value, logger) =>
+                response: isProcessSuspended ? null : new ResponseAction((value, logger) =>
                 {
                     if (ProcessUpdateResponse(value, logger))
                     {
@@ -133,7 +144,7 @@ namespace Microsoft.DotNet.Watch
                     {
                         anyFailure = true;
                     }
-                },
+                }),
                 cancellationToken);
 
             if (isProcessSuspended)
@@ -180,7 +191,7 @@ namespace Microsoft.DotNet.Watch
 
         private static bool ProcessUpdateResponse(ReadOnlySpan<byte> value, ILogger logger)
         {
-            var data = BrowserRefreshServer.DeserializeJson<JsonApplyDeltasResponse>(value);
+            var data = AbstractBrowserRefreshServer.DeserializeJson<JsonApplyDeltasResponse>(value);
 
             foreach (var entry in data.Log)
             {
