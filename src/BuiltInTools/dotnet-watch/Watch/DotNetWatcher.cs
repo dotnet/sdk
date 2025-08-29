@@ -25,8 +25,6 @@ namespace Microsoft.DotNet.Watch
 
             ChangedFile? changedFile = null;
             var buildEvaluator = new BuildEvaluator(context);
-            await using var browserConnector = new BrowserRefreshServerFactory(context.LoggerFactory, context.EnvironmentOptions);
-            var browserLauncher = new BrowserLauncher(context.Logger, context.EnvironmentOptions);
 
             for (var iteration = 0;;iteration++)
             {
@@ -42,7 +40,7 @@ namespace Microsoft.DotNet.Watch
                 {
                     projectRootNode = evaluationResult.ProjectGraph.GraphRoots.Single();
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, context.Logger);
-                    staticFileHandler = new StaticFileHandler(context.Logger, projectMap, browserConnector);
+                    staticFileHandler = new StaticFileHandler(context.Logger, projectMap, context.BrowserRefreshServerFactory);
                 }
                 else
                 {
@@ -64,8 +62,8 @@ namespace Microsoft.DotNet.Watch
                     }
                 };
 
-                var browserRefreshServer = (projectRootNode != null)
-                    ? await browserConnector.GetOrCreateBrowserRefreshServerAsync(projectRootNode, new DefaultAppModel(projectRootNode), shutdownCancellationToken)
+                var browserRefreshServer = projectRootNode != null && HotReloadAppModel.InferFromProject(context, projectRootNode) is WebApplicationAppModel webAppModel
+                    ? await context.BrowserRefreshServerFactory.GetOrCreateBrowserRefreshServerAsync(projectRootNode, webAppModel, shutdownCancellationToken)
                     : null;
 
                 browserRefreshServer?.SetEnvironmentVariables(environmentBuilder);
@@ -73,7 +71,7 @@ namespace Microsoft.DotNet.Watch
 
                 if (projectRootNode != null)
                 {
-                    browserLauncher.InstallBrowserLaunchTrigger(processSpec, projectRootNode, context.RootProjectOptions, browserRefreshServer, shutdownCancellationToken);
+                    context.BrowserLauncher.InstallBrowserLaunchTrigger(processSpec, projectRootNode, context.RootProjectOptions, browserRefreshServer, shutdownCancellationToken);
                 }
 
                 // Reset for next run

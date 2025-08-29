@@ -25,7 +25,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 ProcessRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero),
                 Options = new(),
                 RootProjectOptions = TestOptions.ProjectOptions,
-                EnvironmentOptions = environmentOptions
+                EnvironmentOptions = environmentOptions,
+                BrowserLauncher = new BrowserLauncher(NullLogger.Instance, environmentOptions),
+                BrowserRefreshServerFactory = new BrowserRefreshServerFactory()
             };
         }
 

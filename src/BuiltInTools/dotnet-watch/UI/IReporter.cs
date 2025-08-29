@@ -189,7 +189,7 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor WaitingForChanges = Create("Waiting for changes", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor LaunchedProcess = Create("Launched '{0}' with arguments '{1}': process id {2}", Emoji.Launch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor HotReloadChangeHandled = Create("Hot reload change handled in {0}ms.", Emoji.HotReload, MessageSeverity.Verbose);
-        public static readonly MessageDescriptor HotReloadSucceeded = Create("Hot reload succeeded.", Emoji.HotReload, MessageSeverity.Output);
+        public static readonly MessageDescriptor HotReloadSucceeded = Create(LogEvents.HotReloadSucceeded, Emoji.HotReload);
         public static readonly MessageDescriptor UpdatesApplied = Create(LogEvents.UpdatesApplied, Emoji.HotReload);
         public static readonly MessageDescriptor Capabilities = Create(LogEvents.Capabilities, Emoji.HotReload);
         public static readonly MessageDescriptor WaitingForFileChangeBeforeRestarting = Create("Waiting for a file to change before restarting ...", Emoji.Wait, MessageSeverity.Warning);
@@ -242,10 +242,10 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor HotReloadEnabled = Create("Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload.", Emoji.HotReload, MessageSeverity.Output);
         public static readonly MessageDescriptor PressCtrlRToRestart = Create("Press Ctrl+R to restart.", Emoji.LightBulb, MessageSeverity.Output);
         public static readonly MessageDescriptor HotReloadCanceledProcessExited = Create("Hot reload canceled because the process exited.", Emoji.HotReload, MessageSeverity.Verbose);
-        public static readonly MessageDescriptor HotReloadProfile_BlazorHosted = Create("HotReloadProfile: BlazorHosted. '{0}' references BlazorWebAssembly project '{1}'.", Emoji.HotReload, MessageSeverity.Verbose);
-        public static readonly MessageDescriptor HotReloadProfile_BlazorWebAssembly = Create("HotReloadProfile: BlazorWebAssembly.", Emoji.HotReload, MessageSeverity.Verbose);
-        public static readonly MessageDescriptor HotReloadProfile_WebApplication = Create("HotReloadProfile: WebApplication.", Emoji.HotReload, MessageSeverity.Verbose);
-        public static readonly MessageDescriptor HotReloadProfile_Default = Create("HotReloadProfile: Default.", Emoji.HotReload, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor ApplicationKind_BlazorHosted = Create("Application kind: BlazorHosted. '{0}' references BlazorWebAssembly project '{1}'.", Emoji.Default, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor ApplicationKind_BlazorWebAssembly = Create("Application kind: BlazorWebAssembly.", Emoji.Default, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor ApplicationKind_WebApplication = Create("Application kind: WebApplication.", Emoji.Default, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor ApplicationKind_Default = Create("Application kind: Default.", Emoji.Default, MessageSeverity.Verbose);
         public static readonly MessageDescriptor WatchingFilesForChanges = Create("Watching {0} file(s) for changes", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor WatchingFilesForChanges_FilePath = Create("> {0}", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor Building = Create("Building {0} ...", Emoji.Default, MessageSeverity.Output);

@@ -192,6 +192,8 @@ namespace Microsoft.DotNet.HotReload
                         update.IsApplicationProject),
                     ResponseLoggingLevel);
 
+                Logger.LogDebug("Sending static file update request for asset '{Url}'.", update.RelativePath);
+
                 var success = await SendAndReceiveUpdateAsync(request, isProcessSuspended, cancellationToken);
                 if (success)
                 {

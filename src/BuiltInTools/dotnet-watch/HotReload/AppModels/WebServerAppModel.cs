@@ -7,12 +7,15 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
-internal sealed class WebServerAppModel(ProjectGraphNode serverProject)
-    : WebApplicationAppModel(agentInjectionProject: serverProject)
+internal sealed class WebServerAppModel(DotNetWatchContext context, ProjectGraphNode serverProject)
+    : WebApplicationAppModel(context)
 {
+    public override ProjectGraphNode? AgentInjectionProject => serverProject;
+    public override ProjectGraphNode LaunchingProject => serverProject;
+
     public override bool RequiresBrowserRefresh
         => false;
 
-    public override HotReloadClients CreateClients(BrowserRefreshServer? browserRefreshServer, ILogger clientLogger, ILogger agentLogger)
-        => new(new DefaultHotReloadClient(clientLogger, agentLogger, enableStaticAssetUpdates: true));
+    protected override HotReloadClients CreateClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer)
+        => new(new DefaultHotReloadClient(clientLogger, agentLogger, enableStaticAssetUpdates: true), browserRefreshServer);
 }
