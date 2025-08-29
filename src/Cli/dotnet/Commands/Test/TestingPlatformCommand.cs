@@ -80,9 +80,18 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
         }
 
         _actionQueue.EnqueueCompleted();
-        var exitCode = _actionQueue.WaitAllActions();
         // Don't inline exitCode variable. We want to always call WaitAllActions first.
-        return _eventHandlers.HasHandshakeFailure ? ExitCode.GenericFailure : exitCode;
+        var exitCode = _actionQueue.WaitAllActions();
+        exitCode = _eventHandlers.HasHandshakeFailure ? ExitCode.GenericFailure : exitCode;
+        if (exitCode == ExitCode.Success &&
+            parseResult.HasOption(TestingPlatformOptions.MinimumExpectedTestsOption) &&
+            parseResult.GetValue(TestingPlatformOptions.MinimumExpectedTestsOption) is { } minimumExpectedTests &&
+            _output.TotalTests < minimumExpectedTests)
+        {
+            exitCode = ExitCode.MinimumExpectedTestsPolicyViolation;
+        }
+
+        return exitCode;
     }
 
     private void PrepareEnvironment(ParseResult parseResult, out TestOptions testOptions, out int degreeOfParallelism)
@@ -142,6 +151,7 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
             UseCIAnsi = inCI,
             ShowAssembly = true,
             ShowAssemblyStartAndComplete = true,
+            MinimumExpectedTests = parseResult.GetValue(TestingPlatformOptions.MinimumExpectedTestsOption),
         });
 
         _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery, isHelp, _isRetry);
