@@ -7,6 +7,12 @@
       <_DotNetHiveRoot Condition="!HasTrailingSlash('$(_DotNetHiveRoot)')">$(_DotNetHiveRoot)/</_DotNetHiveRoot>
     </PropertyGroup>
 
+    <!-- Get stage 0 SDK version without having to duplicate the LKG SDK property between the global.json
+    and a property. -->
+    <Exec Command="$(DotnetTool) --version" ConsoleToMsbuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="Stage0SdkVersion"/>
+    </Exec>
+
     <!-- Copy artifacts from the stage0 SDK folder.
          Ignore the sdk, templates and host files for which only live built artifacts should be used. -->
     <ItemGroup>
@@ -29,6 +35,13 @@
           SourceFiles="@(InstallerOutputFile->Metadata('Source'))"
           SkipUnchangedFiles="true"
           UseHardLinksIfPossible="true" />
+
+    <OverrideAndCreateBundledNETCoreAppPackageVersion
+      Stage0MicrosoftNETCoreAppRefPackageVersionPath="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/Microsoft.NETCoreSdk.BundledVersions.props"
+      MicrosoftNETCoreAppRefPackageVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
+      NewSDKVersion="$(Version)"
+      TargetRid="$(TargetRid)"
+      OutputPath="$(TestHostDotNetRoot)/sdk/$(Version)/Microsoft.NETCoreSdk.BundledVersions.props"/>
   </Target>
 
   <Target Name="PublishTestWorkloads"

@@ -55,8 +55,8 @@
 
     <!-- Crossgen2 is not bundled by default on platforms where Microsoft provides a package on nuget.org, 
          because it is large (100MB+). -->
-    <_IsCommunityPlatform Condition="'$(OSName)' != 'win' and '$(OSName)' != 'osx' 
-      and !('$(OSName)' == 'linux' and ('$(TargetArchitecture)' == 'x64' or '$(TargetArchitecture)' == 'x86' or '$(TargetArchitecture)' == 'arm' or '$(TargetArchitecture)' == 'arm64'))">true</_IsCommunityPlatform>
+    <_IsCommunityPlatform Condition="'$(OSName)' != 'win' and '$(OSName)' != 'osx'
+      and !(('$(OSName)' == 'linux' or '$(OSName)' == 'linux-musl') and ('$(TargetArchitecture)' == 'x64' or '$(TargetArchitecture)' == 'x86' or '$(TargetArchitecture)' == 'arm' or '$(TargetArchitecture)' == 'arm64'))">true</_IsCommunityPlatform>
     <BundleCrossgen2 Condition="'$(BundleCrossgen2)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildUseMonoRuntime)' != 'true' and '$(_IsCommunityPlatform)' == 'true'">true</BundleCrossgen2>
 
     <!-- Use the portable "linux-x64" Rid when downloading Linux shared framework compressed file. -->

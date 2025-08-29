@@ -103,7 +103,7 @@ jobs:
     - task: CopyFiles@2
       displayName: Copy LocProject.json
       inputs:
-        SourceFolder: '$(Build.SourcesDirectory)/eng/Localize/'
+        SourceFolder: '$(System.DefaultWorkingDirectory)/eng/Localize/'
         Contents: 'LocProject.json'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/loc'
       condition: ${{ parameters.condition }}

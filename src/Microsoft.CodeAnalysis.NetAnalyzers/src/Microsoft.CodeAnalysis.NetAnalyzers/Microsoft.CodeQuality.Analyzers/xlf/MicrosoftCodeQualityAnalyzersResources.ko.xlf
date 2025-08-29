@@ -164,7 +164,7 @@
       </trans-unit>
       <trans-unit id="DoNotExposeGenericListsDescription">
         <source>System.Collections.Generic.List&lt;T&gt; is a generic collection that's designed for performance and not inheritance. List&lt;T&gt; does not contain virtual members that make it easier to change the behavior of an inherited class.</source>
-        <target state="new">System.Collections.Generic.List&lt;T&gt; is a generic collection that's designed for performance and not inheritance. List&lt;T&gt; does not contain virtual members that make it easier to change the behavior of an inherited class.</target>
+        <target state="translated">System.Collections.Generic.List&lt;T&gt;는 상속이 아닌 성능을 위해 설계된 제네릭 컬렉션입니다. List&lt;T&gt;는 상속된 클래스의 동작을 더 쉽게 변경할 수 있도록 만들어 주는 가상 멤버를 포함하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotExposeGenericListsMessage">
@@ -864,7 +864,7 @@
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsMessage">
         <source>Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</source>
-        <target state="new">Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</target>
+        <target state="translated">{0} 형식은 Equals를 재정의하므로 IEquatable&lt;T&gt;를 구현해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CancellationTokenParametersMustComeLastTitle">
@@ -1574,12 +1574,12 @@
       </trans-unit>
       <trans-unit id="OverrideObjectEqualsMessage">
         <source>Type {0} should override Equals because it implements IEquatable&lt;T&gt;</source>
-        <target state="new">Type {0} should override Equals because it implements IEquatable&lt;T&gt;</target>
+        <target state="translated">{0} 형식은 IEquatable&lt;T&gt;를 구현하므로 Equals를 재정의해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideObjectEqualsTitle">
         <source>Override Object.Equals(object) when implementing IEquatable&lt;T&gt;</source>
-        <target state="new">Override Object.Equals(object) when implementing IEquatable&lt;T&gt;</target>
+        <target state="translated">IEquatable&lt;T&gt;를 구현할 때 Object.Equals(개체)를 재정의합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseIntegralOrStringArgumentForIndexersDescription">
@@ -1619,12 +1619,12 @@
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsDescription">
         <source>When a type T overrides Object.Equals(object), the implementation must cast the object argument to the correct type T before performing the comparison. If the type implements IEquatable&lt;T&gt;, and therefore offers the method T.Equals(T), and if the argument is known at compile time to be of type T, then the compiler can call IEquatable&lt;T&gt;.Equals(T) instead of Object.Equals(object), and no cast is necessary, improving performance.</source>
-        <target state="new">When a type T overrides Object.Equals(object), the implementation must cast the object argument to the correct type T before performing the comparison. If the type implements IEquatable&lt;T&gt;, and therefore offers the method T.Equals(T), and if the argument is known at compile time to be of type T, then the compiler can call IEquatable&lt;T&gt;.Equals(T) instead of Object.Equals(object), and no cast is necessary, improving performance.</target>
+        <target state="translated">형식 T가 Object.Equals(object)를 재정의하면 해당 구현은 비교를 수행하기 전에 개체 인수를 올바른 형식 T로 캐스트해야 합니다. 해당 형식이 IEquatable&lt;T&gt;를 구현하므로 T.Equals(T) 메서드를 제공하는 경우 및 인수가 컴파일 시간에 형식 T로 알려지는 경우 컴파일러는 Object.Equals(object) 대신 IEquatable&lt;T&gt;.Equals(T)를 호출할 수 있고, 캐스트가 필요하지 않으므로 성능이 향상됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideObjectEqualsDescription">
         <source>When a type T implements the interface IEquatable&lt;T&gt;, it suggests to a user who sees a call to the Equals method in source code that an instance of the type can be equated with an instance of any other type. The user might be confused if their attempt to equate the type with an instance of another type fails to compile. This violates the "principle of least surprise".</source>
-        <target state="new">When a type T implements the interface IEquatable&lt;T&gt;, it suggests to a user who sees a call to the Equals method in source code that an instance of the type can be equated with an instance of any other type. The user might be confused if their attempt to equate the type with an instance of another type fails to compile. This violates the "principle of least surprise".</target>
+        <target state="translated">형식 T가 인터페이스 IEquatable&lt;T&gt;를 구현하면 소스 코드에서 Equals 메서드에 대한 호출을 확인하는 사용자에게 이 형식의 인스턴스가 다른 형식의 인스턴스와 같을 수 있음을 알려줍니다. 사용자는 이 형식과 다른 형식의 인스턴스를 동일하게 만드는 시도가 컴파일에 실패하는 경우 혼란을 겪을 수 있습니다. 이 경우는 "최소 놀람의 원칙"을 위반합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="RenameToTitle">

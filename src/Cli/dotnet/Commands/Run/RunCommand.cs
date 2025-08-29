@@ -454,7 +454,7 @@ public class RunCommand
                 runtimeIdentifier,
                 defaultAppHostRuntimeIdentifier,
                 targetFrameworkVersion);
-            if (rootVariableName != null && Environment.GetEnvironmentVariable(rootVariableName) == null)
+            if (rootVariableName != null && string.IsNullOrEmpty(Environment.GetEnvironmentVariable(rootVariableName)))
             {
                 command.EnvironmentVariable(rootVariableName, Path.GetDirectoryName(new Muxer().MuxerPath));
             }

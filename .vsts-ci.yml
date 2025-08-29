@@ -21,7 +21,7 @@ parameters:
 - name: runTestBuild
   displayName: Run A Test Build
   type: boolean
-  default: true
+  default: false
 - name: enableArm64Job
   displayName: Enables the ARM64 job
   type: boolean

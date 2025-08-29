@@ -345,17 +345,23 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
         [Theory]
-        public void RunOnProjectWithClassLibrary_ShouldReturnExitCodeSuccess(string configuration)
+        [CombinatorialData]
+        public void RunOnProjectWithClassLibrary_ShouldReturnExitCodeSuccess(
+            [CombinatorialValues(TestingConstants.Debug, TestingConstants.Release)] string configuration,
+            [CombinatorialValues("TestProjectWithClassLibrary", "TestProjectWithClassLibraryDifferentTFMs")] string assetName,
+            bool useFrameworkOption)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithClassLibrary", Guid.NewGuid().ToString())
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset(assetName, Guid.NewGuid().ToString())
                 .WithSource();
+
+            string[] args = useFrameworkOption
+                ? new[] { TestingPlatformOptions.ConfigurationOption.Name, configuration, TestingPlatformOptions.FrameworkOption.Name, ToolsetInfo.CurrentTargetFramework }
+                : new[] { TestingPlatformOptions.ConfigurationOption.Name, configuration };
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(args);
 
             if (!TestContext.IsLocalized())
             {
