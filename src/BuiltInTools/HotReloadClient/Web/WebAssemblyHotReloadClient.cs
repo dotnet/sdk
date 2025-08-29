@@ -11,10 +11,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.DotNet.Watch
+namespace Microsoft.DotNet.HotReload
 {
     internal sealed class WebAssemblyHotReloadClient(
         ILogger logger,
