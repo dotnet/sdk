@@ -23,8 +23,6 @@ internal sealed class SystemConsole : IConsole
     /// </summary>
     public bool IsOutputRedirected => Console.IsOutputRedirected;
 
-    private bool _suppressOutput;
-
     static SystemConsole() =>
         // From https://github.com/dotnet/runtime/blob/main/src/libraries/System.Console/src/System/Console.cs#L236
         CaptureConsoleOutWriter = new StreamWriter(
@@ -44,86 +42,54 @@ internal sealed class SystemConsole : IConsole
         remove => Console.CancelKeyPress -= value;
     }
 
-    public void SuppressOutput() => _suppressOutput = true;
-
     public void WriteLine()
     {
-        if (!_suppressOutput)
-        {
-            CaptureConsoleOutWriter.WriteLine();
-        }
+        CaptureConsoleOutWriter.WriteLine();
     }
 
     public void WriteLine(string? value)
     {
-        if (!_suppressOutput)
-        {
-            CaptureConsoleOutWriter.WriteLine(value);
-        }
+        CaptureConsoleOutWriter.WriteLine(value);
     }
 
     public void WriteLine(object? value)
     {
-        if (!_suppressOutput)
-        {
-            CaptureConsoleOutWriter.WriteLine(value);
-        }
+        CaptureConsoleOutWriter.WriteLine(value);
     }
 
     public void WriteLine(string format, object? arg0)
     {
-        if (!_suppressOutput)
-        {
-            CaptureConsoleOutWriter.WriteLine(format, arg0);
-        }
+        CaptureConsoleOutWriter.WriteLine(format, arg0);
     }
 
     public void WriteLine(string format, object? arg0, object? arg1)
     {
-        if (!_suppressOutput)
-        {
-            CaptureConsoleOutWriter.WriteLine(format, arg0, arg1);
-        }
+        CaptureConsoleOutWriter.WriteLine(format, arg0, arg1);
     }
 
     public void WriteLine(string format, object? arg0, object? arg1, object? arg2)
     {
-        if (!_suppressOutput)
-        {
-            CaptureConsoleOutWriter.WriteLine(format, arg0, arg1, arg2);
-        }
+        CaptureConsoleOutWriter.WriteLine(format, arg0, arg1, arg2);
     }
 
     public void WriteLine(string format, object?[]? args)
     {
-        if (!_suppressOutput)
-        {
-            CaptureConsoleOutWriter.WriteLine(format, args!);
-        }
+        CaptureConsoleOutWriter.WriteLine(format, args!);
     }
 
     public void Write(string format, object?[]? args)
     {
-        if (!_suppressOutput)
-        {
-            CaptureConsoleOutWriter.Write(format, args!);
-        }
+        CaptureConsoleOutWriter.Write(format, args!);
     }
 
     public void Write(string? value)
     {
-        if (!_suppressOutput)
-        {
-            CaptureConsoleOutWriter.Write(value);
-        }
+        CaptureConsoleOutWriter.Write(value);
     }
 
     public void Write(char value)
     {
-        if (!_suppressOutput)
-        {
-            CaptureConsoleOutWriter.Write(value);
-        }
+        CaptureConsoleOutWriter.Write(value);
     }
 
     public void SetForegroundColor(ConsoleColor color)
