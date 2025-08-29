@@ -15,12 +15,16 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.DotNet.Watch;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload
 {
-    internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger, bool enableStaticAssetUpdates) : HotReloadClient(logger, agentLogger)
+    internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger, string startupHookPath, bool enableStaticAssetUpdates)
+        : HotReloadClient(logger, agentLogger)
     {
+        private readonly string _namedPipeName = Guid.NewGuid().ToString("N");
+
         private Task<ImmutableArray<string>>? _capabilitiesTask;
         private NamedPipeServerStream? _pipe;
         private bool _managedCodeUpdateFailedOrCancelled;
@@ -49,14 +53,18 @@ namespace Microsoft.DotNet.HotReload
         internal Task PendingUpdates
             => _pendingUpdates;
 
-        public override void InitiateConnection(string namedPipeName, CancellationToken cancellationToken)
+        // for testing
+        internal string NamedPipeName
+            => _namedPipeName;
+
+        public override void InitiateConnection(CancellationToken cancellationToken)
         {
 #if NET
             var options = PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly;
 #else
             var options = PipeOptions.Asynchronous;
 #endif
-            _pipe = new NamedPipeServerStream(namedPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, options);
+            _pipe = new NamedPipeServerStream(_namedPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, options);
 
             // It is important to establish the connection (WaitForConnectionAsync) before we return,
             // otherwise the client wouldn't be able to connect.
@@ -67,7 +75,7 @@ namespace Microsoft.DotNet.HotReload
             {
                 try
                 {
-                    Logger.LogDebug("Waiting for application to connect to pipe {NamedPipeName}.", namedPipeName);
+                    Logger.LogDebug("Waiting for application to connect to pipe {NamedPipeName}.", _namedPipeName);
 
                     await _pipe.WaitForConnectionAsync(cancellationToken);
 
@@ -108,6 +116,16 @@ namespace Microsoft.DotNet.HotReload
 
             if (_pipe == null)
                 throw new InvalidOperationException("Pipe has been disposed.");
+        }
+
+        public override void ConfigureLaunchEnvironment(IDictionary<string, string> environmentBuilder)
+        {
+            environmentBuilder[AgentEnvironmentVariables.DotNetModifiableAssemblies] = "debug";
+
+            // HotReload startup hook should be loaded before any other startup hooks:
+            environmentBuilder.InsertListItem(AgentEnvironmentVariables.DotNetStartupHooks, startupHookPath, Path.PathSeparator);
+
+            environmentBuilder[AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName] = _namedPipeName;
         }
 
         public override Task WaitForConnectionEstablishedAsync(CancellationToken cancellationToken)

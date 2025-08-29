@@ -38,11 +38,21 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
     public ILogger AgentLogger
         => clients.First().client.AgentLogger;
 
-    internal void InitiateConnection(string namedPipeName, CancellationToken cancellationToken)
+    internal void ConfigureLaunchEnvironment(IDictionary<string, string> environmentBuilder)
     {
         foreach (var (client, _) in clients)
         {
-            client.InitiateConnection(namedPipeName, cancellationToken);
+            client.ConfigureLaunchEnvironment(environmentBuilder);
+        }
+
+        browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder);
+    }
+
+    internal void InitiateConnection(CancellationToken cancellationToken)
+    {
+        foreach (var (client, _) in clients)
+        {
+            client.InitiateConnection(cancellationToken);
         }
     }
 

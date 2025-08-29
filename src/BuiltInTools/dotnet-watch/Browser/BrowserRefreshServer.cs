@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -40,6 +41,7 @@ internal sealed class BrowserRefreshServer : IAsyncDisposable
     private readonly ILogger _logger;
     private readonly TaskCompletionSource _terminateWebSocket;
     private readonly TaskCompletionSource _browserConnected;
+    private readonly string _middlewareAssemblyPath;
 
     // initialized by StartAsync
     private IHost? _lazyServer;
@@ -47,7 +49,7 @@ internal sealed class BrowserRefreshServer : IAsyncDisposable
 
     public readonly EnvironmentOptions Options;
 
-    public BrowserRefreshServer(EnvironmentOptions options, ILogger logger, ILoggerFactory loggerFactory)
+    public BrowserRefreshServer(EnvironmentOptions options, string middlewareAssemblyPath, ILogger logger, ILoggerFactory loggerFactory)
     {
         _rsa = RSA.Create(2048);
         Options = options;
@@ -55,6 +57,7 @@ internal sealed class BrowserRefreshServer : IAsyncDisposable
         _logger = logger;
         _terminateWebSocket = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         _browserConnected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _middlewareAssemblyPath = middlewareAssemblyPath;
     }
 
     public async ValueTask DisposeAsync()
@@ -79,21 +82,35 @@ internal sealed class BrowserRefreshServer : IAsyncDisposable
         _terminateWebSocket.TrySetResult();
     }
 
-    public void SetEnvironmentVariables(EnvironmentVariablesBuilder environmentBuilder)
+    public void ConfigureLaunchEnvironment(IDictionary<string, string> environmentBuilder)
     {
         Debug.Assert(_lazyServer != null);
         Debug.Assert(_lazyServerUrls != null);
 
-        environmentBuilder.SetVariable(EnvironmentVariables.Names.AspNetCoreAutoReloadWSEndPoint, _lazyServerUrls);
-        environmentBuilder.SetVariable(EnvironmentVariables.Names.AspNetCoreAutoReloadWSKey, GetServerKey());
+        environmentBuilder[EnvironmentVariables.Names.AspNetCoreAutoReloadWSEndPoint] = _lazyServerUrls;
+        environmentBuilder[EnvironmentVariables.Names.AspNetCoreAutoReloadWSKey] = GetServerKey();
 
-        environmentBuilder.DotNetStartupHooks.Add(Path.Combine(AppContext.BaseDirectory, "middleware", "Microsoft.AspNetCore.Watch.BrowserRefresh.dll"));
-        environmentBuilder.AspNetCoreHostingStartupAssemblies.Add("Microsoft.AspNetCore.Watch.BrowserRefresh");
+        environmentBuilder.InsertListItem(
+            EnvironmentVariables.Names.DotNetStartupHooks,
+            _middlewareAssemblyPath,
+            Path.PathSeparator);
+
+        environmentBuilder.InsertListItem(
+            EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies,
+            Path.GetFileName(_middlewareAssemblyPath),
+            EnvironmentVariables.Names.AspNetCoreHostingStartupAssembliesSeparator);
+
+        // Note:
+        // Microsoft.AspNetCore.Components.WebAssembly.Server.ComponentWebAssemblyConventions and Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware
+        // expect DOTNET_MODIFIABLE_ASSEMBLIES to be set in the blazor-devserver process, even though we are not performing Hot Reload in this process.
+        // The value is converted to DOTNET-MODIFIABLE-ASSEMBLIES header, which is in turn converted back to environment variable in Mono browser runtime loader:
+        // https://github.com/dotnet/runtime/blob/342936c5a88653f0f622e9d6cb727a0e59279b31/src/mono/browser/runtime/loader/config.ts#L330
+        environmentBuilder.SetVariable(EnvironmentVariables.Names.DotNetModifiableAssemblies, "debug");
 
         if (_logger.IsEnabled(LogLevel.Debug))
         {
             // enable debug logging from middleware:
-            environmentBuilder.SetVariable("Logging__LogLevel__Microsoft.AspNetCore.Watch", "Debug");
+            environmentBuilder["Logging__LogLevel__Microsoft.AspNetCore.Watch"] = "Debug";
         }
     }
 

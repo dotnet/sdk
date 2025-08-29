@@ -17,7 +17,6 @@ namespace Microsoft.DotNet.Watch;
 internal sealed class BlazorWebAssemblyHostedAppModel(DotNetWatchContext context, ProjectGraphNode clientProject, ProjectGraphNode serverProject)
     : WebApplicationAppModel(context)
 {
-    public override ProjectGraphNode? AgentInjectionProject => serverProject;
     public override ProjectGraphNode LaunchingProject => serverProject;
 
     public override bool RequiresBrowserRefresh => true;
@@ -29,7 +28,7 @@ internal sealed class BlazorWebAssemblyHostedAppModel(DotNetWatchContext context
         return new(
             [
                 (new BlazorWebAssemblyHotReloadClient(clientLogger, agentLogger, browserRefreshServer, Context.EnvironmentOptions, clientProject), "client"),
-                (new DefaultHotReloadClient(clientLogger, agentLogger, enableStaticAssetUpdates: false), "host")
+                (new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(serverProject), enableStaticAssetUpdates: false), "host")
             ],
             browserRefreshServer);
     }
