@@ -2448,8 +2448,8 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="PropertyDirectiveMissingParts">
         <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
-        <target state="translated">Direktiva property musí mít dvě části oddělené znakem =, například #:property PropertyName=PropertyValue: {0}</target>
-        <note>{0} is the file path and line number.</note>
+        <target state="needs-review-translation">Direktiva property musí mít dvě části oddělené znakem =, například #:property PropertyName=PropertyValue: {0}</target>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
@@ -2987,6 +2987,11 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
         <target state="translated">Standardní výstup</target>
         <note />
       </trans-unit>
+      <trans-unit id="StaticGraphRestoreNotSupported">
+        <source>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</source>
+        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</target>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
+      </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
         <target state="translated">Stav</target>
@@ -3052,9 +3057,9 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
         <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
-      <trans-unit id="TestCommandUseDirectory">
-        <source>Specifying a directory for 'dotnet test' should be via '--directory'.</source>
-        <target state="translated">Zadání adresáře pro dotnet test by mělo být prostřednictvím --directory.</target>
+      <trans-unit id="TestCommandUseDirectoryWithSwitch">
+        <source>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</source>
+        <target state="new">Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseProject">

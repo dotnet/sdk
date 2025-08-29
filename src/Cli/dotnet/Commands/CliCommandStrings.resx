@@ -1601,7 +1601,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   </data>
   <data name="PropertyDirectiveMissingParts" xml:space="preserve">
     <value>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</value>
-    <comment>{0} is the file path and line number.</comment>
+    <comment>{0} is the file path and line number.{Locked="#:property"}</comment>
+  </data>
+  <data name="StaticGraphRestoreNotSupported" xml:space="preserve">
+    <value>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</value>
+    <comment>{0} is the file path and line number.{Locked="#:property"}</comment>
   </data>
   <data name="InvalidDirectiveName" xml:space="preserve">
     <value>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</value>
@@ -2629,11 +2633,11 @@ Proceed?</value>
   <data name="TestCommandUseProject" xml:space="preserve">
     <value>Specifying a project for 'dotnet test' should be via '--project'.</value>
   </data>
-  <data name="TestCommandUseDirectory" xml:space="preserve">
-    <value>Specifying a directory for 'dotnet test' should be via '--directory'.</value>
-  </data>
   <data name="TestCommandUseTestModules" xml:space="preserve">
     <value>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</value>
+  </data>
+  <data name="TestCommandUseDirectoryWithSwitch" xml:space="preserve">
+    <value>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</value>
   </data>
   <data name="PackCmdVersionDescription" xml:space="preserve">
     <value>The version of the package to create</value>

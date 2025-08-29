@@ -2448,8 +2448,8 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
       </trans-unit>
       <trans-unit id="PropertyDirectiveMissingParts">
         <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
-        <target state="translated">La directive de propriété doit avoir deux parties séparées par '=' comme '#:property PropertyName=PropertyValue' : {0}</target>
-        <note>{0} is the file path and line number.</note>
+        <target state="needs-review-translation">La directive de propriété doit avoir deux parties séparées par '=' comme '#:property PropertyName=PropertyValue' : {0}</target>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
@@ -2987,6 +2987,11 @@ Votre projet cible plusieurs frameworks. Spécifiez le framework à exécuter à
         <target state="translated">Sortie standard</target>
         <note />
       </trans-unit>
+      <trans-unit id="StaticGraphRestoreNotSupported">
+        <source>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</source>
+        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</target>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
+      </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
         <target state="translated">État</target>
@@ -3052,9 +3057,9 @@ Votre projet cible plusieurs frameworks. Spécifiez le framework à exécuter à
         <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
-      <trans-unit id="TestCommandUseDirectory">
-        <source>Specifying a directory for 'dotnet test' should be via '--directory'.</source>
-        <target state="translated">La spécification d’un répertoire pour « dotnet test » doit se faire via « --directory ».</target>
+      <trans-unit id="TestCommandUseDirectoryWithSwitch">
+        <source>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</source>
+        <target state="new">Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseProject">

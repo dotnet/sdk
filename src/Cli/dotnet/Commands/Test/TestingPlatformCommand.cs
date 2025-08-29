@@ -6,13 +6,11 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Cli.Commands;
-using Microsoft.TemplateEngine.Cli.Help;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal partial class TestingPlatformCommand : System.CommandLine.Command, ICustomHelp
+internal partial class TestingPlatformCommand : Command, ICustomHelp
 {
     private MSBuildHandler _msBuildHandler;
     private TerminalTestReporter _output;
@@ -47,7 +45,7 @@ internal partial class TestingPlatformCommand : System.CommandLine.Command, ICus
     {
         ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult);
         ValidationUtility.ValidateSolutionOrProjectOrDirectoryOrModulesArePassedCorrectly(parseResult);
-        
+
         PrepareEnvironment(parseResult, out TestOptions testOptions, out int degreeOfParallelism);
 
         InitializeOutput(degreeOfParallelism, parseResult, testOptions.IsHelp);
@@ -163,6 +161,7 @@ internal partial class TestingPlatformCommand : System.CommandLine.Command, ICus
     {
         _actionQueue = new(degreeOfParallelism, buildOptions, async (TestApplication testApp) =>
         {
+            testApp.HandshakeReceived += _eventHandlers.OnHandshakeReceived;
             testApp.HelpRequested += OnHelpRequested;
             testApp.ErrorReceived += _eventHandlers.OnErrorReceived;
             testApp.TestProcessExited += _eventHandlers.OnTestProcessExited;
@@ -189,7 +188,8 @@ internal partial class TestingPlatformCommand : System.CommandLine.Command, ICus
 
     private static int GetDegreeOfParallelism(ParseResult parseResult)
     {
-        if (!int.TryParse(parseResult.GetValue(TestingPlatformOptions.MaxParallelTestModulesOption), out int degreeOfParallelism) || degreeOfParallelism <= 0)
+        var degreeOfParallelism = parseResult.GetValue(TestingPlatformOptions.MaxParallelTestModulesOption);
+        if (degreeOfParallelism <= 0)
             degreeOfParallelism = Environment.ProcessorCount;
         return degreeOfParallelism;
     }

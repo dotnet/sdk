@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.Diagnostics;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.Extensions.Configuration;
 
@@ -232,7 +231,6 @@ internal static class TestCommandParser
         command.SetAction(parseResult => command.Run(parseResult));
         command.Options.Add(TestingPlatformOptions.ProjectOption);
         command.Options.Add(TestingPlatformOptions.SolutionOption);
-        command.Options.Add(TestingPlatformOptions.DirectoryOption);
         command.Options.Add(TestingPlatformOptions.TestModulesFilterOption);
         command.Options.Add(TestingPlatformOptions.TestModulesRootDirectoryOption);
         command.Options.Add(TestingPlatformOptions.ResultsDirectoryOption);

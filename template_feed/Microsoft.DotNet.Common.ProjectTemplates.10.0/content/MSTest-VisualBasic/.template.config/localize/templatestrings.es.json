@@ -52,5 +52,7 @@
   "symbols/Fixture/choices/TestCleanup/description": "Método de accesorio TestCleanup",
   "postActions/restoreNugetPackages/description": "Restaure los paquetes NuGet necesarios para este proyecto.",
   "postActions/restoreNugetPackages/manualInstructions/default/text": "Ejecutar \"dotnet restore\"",
+  "postActions/createOrUpdateDotnetConfig/description": "Create or update 'dotnet.config' file required by Microsoft.Testing.Platform.",
+  "postActions/createOrUpdateDotnetConfig/manualInstructions/default/text": "Manually create 'dotnet.config' file setting the test runner to Microsoft.Testing.Platform",
   "postActions/openInEditor/description": "Abrir Test1.vb en el editor"
 }

@@ -2448,8 +2448,8 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="PropertyDirectiveMissingParts">
         <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
-        <target state="translated">Özellik yönergesi '#:property PropertyName=PropertyValue' gibi '=' ile ayrılmış iki parçaya sahip olmalıdır: {0}</target>
-        <note>{0} is the file path and line number.</note>
+        <target state="needs-review-translation">Özellik yönergesi '#:property PropertyName=PropertyValue' gibi '=' ile ayrılmış iki parçaya sahip olmalıdır: {0}</target>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
@@ -2987,6 +2987,11 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
         <target state="translated">Standart çıkış</target>
         <note />
       </trans-unit>
+      <trans-unit id="StaticGraphRestoreNotSupported">
+        <source>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</source>
+        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</target>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
+      </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
         <target state="translated">Durum</target>
@@ -3052,9 +3057,9 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
         <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
-      <trans-unit id="TestCommandUseDirectory">
-        <source>Specifying a directory for 'dotnet test' should be via '--directory'.</source>
-        <target state="translated">‘dotnet test’ için bir dizin belirtmek ‘--directory’ ile yapılmalıdır.</target>
+      <trans-unit id="TestCommandUseDirectoryWithSwitch">
+        <source>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</source>
+        <target state="new">Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseProject">

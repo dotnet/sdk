@@ -29,7 +29,7 @@ internal partial class TestingPlatformCommand
                 return;
             }
 
-            Dictionary<bool, List<CommandLineOption>> allOptions = GetAllOptions();
+            Dictionary<bool, List<CommandLineOption>> allOptions = GetAllOptions(context.Command.Options);
             allOptions.TryGetValue(true, out List<CommandLineOption> builtInOptions);
             allOptions.TryGetValue(false, out List<CommandLineOption> nonBuiltInOptions);
 
@@ -128,29 +128,36 @@ internal partial class TestingPlatformCommand
            (isBuiltIn, value) => [.. value, (moduleName, nonBuiltInOptions.ToArray())]);
     }
 
-    private Dictionary<bool, List<CommandLineOption>> GetAllOptions()
+    private Dictionary<bool, List<CommandLineOption>> GetAllOptions(IList<Option> commandOptions)
     {
-        Dictionary<bool, List<CommandLineOption>> builtInToOptions = [];
+        Dictionary<bool, List<CommandLineOption>> filteredOptions = [];
+
+        // Create a set of option names from the command's options for efficient lookup
+        var commandOptionNames = commandOptions.Select(o => o.Name.TrimStart('-')).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         foreach (KeyValuePair<string, CommandLineOption> option in _commandLineOptionNameToModuleNames)
         {
-            if (!builtInToOptions.TryGetValue(option.Value.IsBuiltIn.Value, out List<CommandLineOption> value))
+            // Only include options that are NOT already present in the command's options
+            if (!commandOptionNames.Contains(option.Value.Name))
             {
-                builtInToOptions.Add(option.Value.IsBuiltIn.Value, [option.Value]);
-            }
-            else
-            {
-                value.Add(option.Value);
+                if (!filteredOptions.TryGetValue(option.Value.IsBuiltIn.Value, out List<CommandLineOption> value))
+                {
+                    filteredOptions.Add(option.Value.IsBuiltIn.Value, [option.Value]);
+                }
+                else
+                {
+                    value.Add(option.Value);
+                }
             }
         }
 
         // Sort options alphabetically by name
-        foreach (var optionsList in builtInToOptions.Values)
+        foreach (var optionsList in filteredOptions.Values)
         {
             optionsList.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase));
         }
 
-        return builtInToOptions;
+        return filteredOptions;
     }
 
     private static Dictionary<bool, List<(string[], string[])>> GetModulesToMissingOptions(

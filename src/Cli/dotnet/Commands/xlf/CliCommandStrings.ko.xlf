@@ -2448,8 +2448,8 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="PropertyDirectiveMissingParts">
         <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
-        <target state="translated">property 지시문에는 '#:property PropertyName=PropertyValue'와 같이 '='로 구분된 두 부분이 있어야 합니다. {0}.</target>
-        <note>{0} is the file path and line number.</note>
+        <target state="needs-review-translation">property 지시문에는 '#:property PropertyName=PropertyValue'와 같이 '='로 구분된 두 부분이 있어야 합니다. {0}.</target>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
@@ -2987,6 +2987,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">표준 출력</target>
         <note />
       </trans-unit>
+      <trans-unit id="StaticGraphRestoreNotSupported">
+        <source>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</source>
+        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</target>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
+      </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
         <target state="translated">상태</target>
@@ -3052,9 +3057,9 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
-      <trans-unit id="TestCommandUseDirectory">
-        <source>Specifying a directory for 'dotnet test' should be via '--directory'.</source>
-        <target state="translated">'dotnet test'에 대한 디렉터리를 지정하려면 '--directory'를 통해 지정해야 합니다.</target>
+      <trans-unit id="TestCommandUseDirectoryWithSwitch">
+        <source>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</source>
+        <target state="new">Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseProject">

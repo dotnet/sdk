@@ -711,7 +711,10 @@ internal sealed partial class TerminalTestReporter : IDisposable
             if (targetFramework != null)
             {
                 terminal.Append(targetFramework);
-                terminal.Append('|');
+                if (architecture != null)
+                {
+                    terminal.Append('|');
+                }
             }
 
             if (architecture != null)
@@ -823,6 +826,15 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     internal void HandshakeFailure(string assemblyPath, string targetFramework, int exitCode, string outputData, string errorData)
     {
+        if (_isHelp)
+        {
+            // Ignore handshake failures for help for now.
+            // So far, MTP doesn't handshake on help.
+            // MTP should be updated for that, however, but this workaround will likely need to stay
+            // here for a bit to keep compatibility with older MTP versions. It doesn't have to stay for too long though.
+            return;
+        }
+
         Interlocked.Increment(ref _handshakeFailuresCount);
         _terminalWithProgress.WriteToTerminal(terminal =>
         {
