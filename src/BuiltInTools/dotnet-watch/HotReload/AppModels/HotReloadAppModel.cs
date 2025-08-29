@@ -8,24 +8,27 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
-internal abstract partial class HotReloadAppModel(ProjectGraphNode? agentInjectionProject)
+internal abstract partial class HotReloadAppModel()
 {
-    public abstract bool RequiresBrowserRefresh { get; }
+    /// <summary>
+    /// Project to inject agent into.
+    /// </summary>
+    public abstract ProjectGraphNode? AgentInjectionProject { get; }
 
-    public abstract HotReloadClients CreateClients(BrowserRefreshServer? browserRefreshServer, ILogger clientLogger, ILogger agentLogger);
+    public abstract ValueTask<HotReloadClients?> TryCreateClientsAsync(ILogger clientLogger, ILogger agentLogger, CancellationToken cancellationToken);
 
     /// <summary>
     /// Returns true and the path to the client agent implementation binary if the application needs the agent to be injected.
     /// </summary>
     public bool TryGetStartupHookPath([NotNullWhen(true)] out string? path)
     {
-        if (agentInjectionProject == null)
+        if (AgentInjectionProject == null)
         {
             path = null;
             return false;
         }
 
-        var hookTargetFramework = agentInjectionProject.GetTargetFramework() switch
+        var hookTargetFramework = AgentInjectionProject.GetTargetFramework() switch
         {
             // Note: Hot Reload is only supported on net6.0+
             "net6.0" or "net7.0" or "net8.0" or "net9.0" => "net6.0",
@@ -36,29 +39,29 @@ internal abstract partial class HotReloadAppModel(ProjectGraphNode? agentInjecti
         return true;
     }
 
-    public static HotReloadAppModel InferFromProject(ProjectGraphNode projectNode, ILogger logger, EnvironmentOptions environmentOptions)
+    public static HotReloadAppModel InferFromProject(DotNetWatchContext context, ProjectGraphNode projectNode)
     {
         var capabilities = projectNode.GetCapabilities();
 
         if (capabilities.Contains(ProjectCapability.WebAssembly))
         {
-            logger.Log(MessageDescriptor.HotReloadProfile_BlazorWebAssembly);
-            return new BlazorWebAssemblyAppModel(clientProject: projectNode, environmentOptions);
+            context.Logger.Log(MessageDescriptor.ApplicationKind_BlazorWebAssembly);
+            return new BlazorWebAssemblyAppModel(context, clientProject: projectNode);
         }
 
         if (capabilities.Contains(ProjectCapability.AspNetCore))
         {
             if (projectNode.GetDescendantsAndSelf().FirstOrDefault(static p => p.GetCapabilities().Contains(ProjectCapability.WebAssembly)) is { } clientProject)
             {
-                logger.Log(MessageDescriptor.HotReloadProfile_BlazorHosted, projectNode.ProjectInstance.FullPath, clientProject.ProjectInstance.FullPath);
-                return new BlazorWebAssemblyHostedAppModel(clientProject: clientProject, serverProject: projectNode, environmentOptions);
+                context.Logger.Log(MessageDescriptor.ApplicationKind_BlazorHosted, projectNode.ProjectInstance.FullPath, clientProject.ProjectInstance.FullPath);
+                return new BlazorWebAssemblyHostedAppModel(context, clientProject: clientProject, serverProject: projectNode);
             }
 
-            logger.Log(MessageDescriptor.HotReloadProfile_WebApplication);
-            return new WebServerAppModel(serverProject: projectNode);
+            context.Logger.Log(MessageDescriptor.ApplicationKind_WebApplication);
+            return new WebServerAppModel(context, serverProject: projectNode);
         }
 
-        logger.Log(MessageDescriptor.HotReloadProfile_Default);
+        context.Logger.Log(MessageDescriptor.ApplicationKind_Default);
         return new DefaultAppModel(projectNode);
     }
 }

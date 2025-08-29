@@ -22,4 +22,5 @@ internal static class LogEvents
 
     public static readonly LogEvent UpdatesApplied = Create(LogLevel.Debug, "Updates applied: {0} out of {1}.");
     public static readonly LogEvent Capabilities = Create(LogLevel.Debug, "Capabilities: '{1}'.");
+    public static readonly LogEvent HotReloadSucceeded = Create(LogLevel.Information, "Hot reload succeeded.");
 }

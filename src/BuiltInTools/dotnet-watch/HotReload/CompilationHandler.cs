@@ -94,26 +94,13 @@ namespace Microsoft.DotNet.Watch
         public async Task<RunningProject?> TrackRunningProjectAsync(
             ProjectGraphNode projectNode,
             ProjectOptions projectOptions,
-            HotReloadAppModel appModel,
             string namedPipeName,
-            BrowserRefreshServer? browserRefreshServer,
+            HotReloadClients clients,
             ProcessSpec processSpec,
             RestartOperation restartOperation,
             CancellationTokenSource processTerminationSource,
             CancellationToken cancellationToken)
         {
-            // create loggers that include project name in messages:
-            var projectDisplayName = projectNode.GetDisplayName();
-            var clientLogger = _loggerFactory.CreateLogger(HotReloadDotNetWatcher.ClientLogComponentName, projectDisplayName);
-            var agentLogger = _loggerFactory.CreateLogger(HotReloadDotNetWatcher.AgentLogComponentName, projectDisplayName);
-
-            var clients = appModel.CreateClients(browserRefreshServer, clientLogger, agentLogger);
-            if (clients.IsEmpty)
-            {
-                // error already reported
-                return null;
-            }
-
             var processExitedSource = new CancellationTokenSource();
             var processCommunicationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(processExitedSource.Token, cancellationToken);
 
@@ -131,7 +118,7 @@ namespace Microsoft.DotNet.Watch
             };
 
             var launchResult = new ProcessLaunchResult();
-            var runningProcess = _processRunner.RunAsync(processSpec, clientLogger, launchResult, processTerminationSource.Token);
+            var runningProcess = _processRunner.RunAsync(processSpec, clients.ClientLogger, launchResult, processTerminationSource.Token);
             if (launchResult.ProcessId == null)
             {
                 // error already reported
@@ -146,8 +133,6 @@ namespace Microsoft.DotNet.Watch
                 projectNode,
                 projectOptions,
                 clients,
-                clientLogger,
-                browserRefreshServer,
                 runningProcess,
                 launchResult.ProcessId.Value,
                 processExitedSource: processExitedSource,
@@ -171,7 +156,7 @@ namespace Microsoft.DotNet.Watch
                 var updatesToApply = _previousUpdates.Skip(appliedUpdateCount).ToImmutableArray();
                 if (updatesToApply.Any())
                 {
-                    _ = await clients.ApplyManagedCodeUpdatesAsync(ToManagedCodeUpdates(updatesToApply), isProcessSuspended: false, processCommunicationCancellationSource.Token);
+                    await clients.ApplyManagedCodeUpdatesAsync(ToManagedCodeUpdates(updatesToApply), isProcessSuspended: false, processCommunicationCancellationSource.Token);
                 }
 
                 appliedUpdateCount += updatesToApply.Length;
@@ -329,19 +314,11 @@ namespace Microsoft.DotNet.Watch
                 try
                 {
                     using var processCommunicationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(runningProject.ProcessExitedSource.Token, cancellationToken);
-                    var applySucceded = await runningProject.Clients.ApplyManagedCodeUpdatesAsync(ToManagedCodeUpdates(updates), isProcessSuspended: false, processCommunicationCancellationSource.Token) != ApplyStatus.Failed;
-                    if (applySucceded)
-                    {
-                        runningProject.Logger.Log(MessageDescriptor.HotReloadSucceeded);
-                        if (runningProject.BrowserRefreshServer is { } server)
-                        {
-                            await server.RefreshBrowserAsync(cancellationToken);
-                        }
-                    }
+                    await runningProject.Clients.ApplyManagedCodeUpdatesAsync(ToManagedCodeUpdates(updates), isProcessSuspended: false, processCommunicationCancellationSource.Token);
                 }
                 catch (OperationCanceledException) when (runningProject.ProcessExitedSource.Token.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
                 {
-                    runningProject.Logger.Log(MessageDescriptor.HotReloadCanceledProcessExited);
+                    runningProject.Clients.ClientLogger.Log(MessageDescriptor.HotReloadCanceledProcessExited);
                 }
             }, cancellationToken);
         }
@@ -397,7 +374,7 @@ namespace Microsoft.DotNet.Watch
             // report or clear diagnostics in the browser UI
             await ForEachProjectAsync(
                 _runningProjects,
-                (project, cancellationToken) => project.BrowserRefreshServer?.ReportCompilationErrorsInBrowserAsync([.. diagnosticsToDisplayInApp], cancellationToken).AsTask() ?? Task.CompletedTask,
+                (project, cancellationToken) => project.Clients.ReportCompilationErrorsInApplicationAsync([.. diagnosticsToDisplayInApp], cancellationToken).AsTask() ?? Task.CompletedTask,
                 cancellationToken);
 
             void ReportCompilationDiagnostics(DiagnosticSeverity severity)
@@ -502,7 +479,7 @@ namespace Microsoft.DotNet.Watch
         {
             var allFilesHandled = true;
 
-            var updates = new Dictionary<RunningProject, List<(string filePath, string relativeUrl, ProjectGraphNode containingProject)>>();
+            var updates = new Dictionary<RunningProject, List<(string filePath, string relativeUrl, string assemblyName, bool isApplicationProject)>>();
 
             foreach (var changedFile in files)
             {
@@ -536,7 +513,7 @@ namespace Microsoft.DotNet.Watch
                                         updates.Add(runningProject, updatesPerRunningProject = []);
                                     }
 
-                                    updatesPerRunningProject.Add((file.FilePath, file.StaticWebAssetPath, containingProjectNode));
+                                    updatesPerRunningProject.Add((file.FilePath, file.StaticWebAssetPath, containingProjectNode.GetAssemblyName(), containingProjectNode == runningProject.ProjectNode));
                                 }
                             }
                         }
@@ -552,39 +529,7 @@ namespace Microsoft.DotNet.Watch
             var tasks = updates.Select(async entry =>
             {
                 var (runningProject, assets) = entry;
-
-                if (runningProject.BrowserRefreshServer != null)
-                {
-                    await runningProject.BrowserRefreshServer.UpdateStaticAssetsAsync(assets.Select(a => a.relativeUrl), cancellationToken);
-                }
-                else
-                {
-                    var updates = new List<HotReloadStaticAssetUpdate>();
-
-                    foreach (var (filePath, relativeUrl, containingProject) in assets)
-                    {
-                        ImmutableArray<byte> content;
-                        try
-                        {
-                            content = ImmutableCollectionsMarshal.AsImmutableArray(await File.ReadAllBytesAsync(filePath, cancellationToken));
-                        }
-                        catch (Exception e)
-                        {
-                            _logger.LogError(e.Message);
-                            continue;
-                        }
-
-                        updates.Add(new HotReloadStaticAssetUpdate(
-                            assemblyName: containingProject.GetAssemblyName(),
-                            relativePath: relativeUrl,
-                            content: content,
-                            isApplicationProject: containingProject == runningProject.ProjectNode));
-
-                        _logger.LogDebug("Sending static file update request for asset '{Url}'.", relativeUrl);
-                    }
-
-                    await runningProject.Clients.ApplyStaticAssetUpdatesAsync([.. updates], isProcessSuspended: false, cancellationToken);
-                }
+                await runningProject.Clients.ApplyStaticAssetUpdatesAsync(assets, cancellationToken);
             });
 
             await Task.WhenAll(tasks).WaitAsync(cancellationToken);
