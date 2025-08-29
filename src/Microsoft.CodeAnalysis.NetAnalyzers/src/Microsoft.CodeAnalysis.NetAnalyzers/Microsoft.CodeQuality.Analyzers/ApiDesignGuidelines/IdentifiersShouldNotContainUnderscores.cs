@@ -20,7 +20,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     {
         internal const string RuleId = "CA1707";
 
-        private static readonly IImmutableSet<string> s_GlobalAsaxSpecialMethodNames =
+        private static readonly ImmutableHashSet<string> s_GlobalAsaxSpecialMethodNames =
             ImmutableHashSet.Create(
                 "Application_AuthenticateRequest",
                 "Application_BeginRequest",
