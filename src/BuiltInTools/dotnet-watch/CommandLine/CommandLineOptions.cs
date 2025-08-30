@@ -62,6 +62,12 @@ internal sealed class CommandLineOptions
             }
         });
 
+        // Options we need to know about that are passed through to the subcommand:
+        var shortProjectOption = new Option<string>("-p") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
+        var longProjectOption = new Option<string>("--project") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
+        var launchProfileOption = new Option<string>("--launch-profile", "-lp") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
+        var noLaunchProfileOption = new Option<bool>("--no-launch-profile") { Hidden = true, Arity = ArgumentArity.Zero };
+
         Option[] watchOptions =
         [
             quietOption,
@@ -70,12 +76,13 @@ internal sealed class CommandLineOptions
             noHotReloadOption,
             NonInteractiveOption
         ];
-
-        // Options we need to know about that are passed through to the subcommand:
-        var shortProjectOption = new Option<string>("-p") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
-        var longProjectOption = new Option<string>("--project") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
-        var launchProfileOption = new Option<string>("--launch-profile", "-lp") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
-        var noLaunchProfileOption = new Option<bool>("--no-launch-profile") { Hidden = true, Arity = ArgumentArity.Zero };
+        Option[] forwardToRunOptions =
+        [
+            shortProjectOption,
+            longProjectOption,
+            launchProfileOption,
+            noLaunchProfileOption
+        ];
 
         var rootCommand = new RootCommand(Resources.Help)
         {
@@ -159,7 +166,7 @@ internal sealed class CommandLineOptions
             }
         }
 
-        var commandArguments = GetCommandArguments(parseResult, watchOptions, explicitCommand, out var binLogToken, out var binLogPath);
+        var commandArguments = GetCommandArguments(parseResult, watchOptions, forwardToRunOptions, explicitCommand, out var binLogToken, out var binLogPath);
 
         // We assume that forwarded options, if any, are intended for dotnet build.
         var buildArguments = buildOptions.Select(option => option.ForwardingFunction!(parseResult)).SelectMany(args => args).ToList();
@@ -222,6 +229,7 @@ internal sealed class CommandLineOptions
     private static IReadOnlyList<string> GetCommandArguments(
         ParseResult parseResult,
         IReadOnlyList<Option> watchOptions,
+        IReadOnlyList<Option> forwardToRunOptions,
         Command? explicitCommand,
         out string? binLogToken,
         out string? binLogPath)
@@ -230,37 +238,47 @@ internal sealed class CommandLineOptions
         binLogToken = null;
         binLogPath = null;
 
+        bool isRunCommand = explicitCommand == null || explicitCommand?.Name == "run";
+
         foreach (var child in parseResult.CommandResult.Children)
         {
             var optionResult = (OptionResult)child;
 
             // skip watch options:
-            if (!watchOptions.Contains(optionResult.Option))
+            if (watchOptions.Contains(optionResult.Option))
             {
-                if (optionResult.Option.Name.Equals("--interactive", StringComparison.Ordinal) && parseResult.GetValue(NonInteractiveOption))
-                {
-                    // skip forwarding the interactive token (which may be computed by default) when users pass --non-interactive to watch itself
-                    continue;
-                }
+                continue;
+            }
+            
+            // skip forwarding run options to other commands.
+            if (isRunCommand == false && forwardToRunOptions.Contains(optionResult.Option))
+            {
+                continue;
+            }
 
-                // skip Option<bool> zero-arity options with an implicit optionresult - these weren't actually specified by the user:
-                if (optionResult.Option is Option<bool> boolOpt && boolOpt.Arity.Equals(ArgumentArity.Zero) && optionResult.Implicit)
-                {
-                    continue;
-                }
+            // skip forwarding the interactive token (which may be computed by default) when users pass --non-interactive to watch itself
+            if (optionResult.Option.Name.Equals("--interactive", StringComparison.Ordinal) && parseResult.GetValue(NonInteractiveOption))
+            {
+                continue;
+            }
 
-                var optionNameToForward = GetOptionNameToForward(optionResult);
-                if (optionResult.Tokens.Count == 0 && !optionResult.Implicit)
+            // skip Option<bool> zero-arity options with an implicit optionresult - these weren't actually specified by the user:
+            if (optionResult.Option is Option<bool> boolOpt && boolOpt.Arity.Equals(ArgumentArity.Zero) && optionResult.Implicit)
+            {
+                continue;
+            }
+
+            var optionNameToForward = GetOptionNameToForward(optionResult);
+            if (optionResult.Tokens.Count == 0 && !optionResult.Implicit)
+            {
+                arguments.Add(optionNameToForward);
+            }
+            else
+            {
+                foreach (var token in optionResult.Tokens)
                 {
                     arguments.Add(optionNameToForward);
-                }
-                else
-                {
-                    foreach (var token in optionResult.Tokens)
-                    {
-                        arguments.Add(optionNameToForward);
-                        arguments.Add(token.Value);
-                    }
+                    arguments.Add(token.Value);
                 }
             }
         }
