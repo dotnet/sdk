@@ -104,7 +104,6 @@
     <Compile Include="$(RepoRoot)src\Common\MSBuildUtilities.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\NuGetUtils.NuGet.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Cli\dotnet\Commands\Workload\InstallStateContents.cs" LinkBase="Cli" />
-    <Compile Include="$(RepoRoot)src\Cli\dotnet\Commands\Test\IPC\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

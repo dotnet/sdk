@@ -1,15 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NETCOREAPP
 using System.Buffers;
-#endif
 
 namespace Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 
 internal abstract class BaseSerializer
 {
-#if NETCOREAPP
     protected static string ReadString(Stream stream)
     {
         Span<byte> len = stackalloc byte[sizeof(int)];
@@ -32,11 +29,7 @@ internal abstract class BaseSerializer
         byte[] bytes = ArrayPool<byte>.Shared.Rent(size);
         try
         {
-#if NET7_0_OR_GREATER
             stream.ReadExactly(bytes, 0, size);
-#else
-            _ = stream.Read(bytes, 0, size);
-#endif
             return Encoding.UTF8.GetString(bytes, 0, size);
         }
         finally
@@ -161,106 +154,6 @@ internal abstract class BaseSerializer
         return BitConverter.ToBoolean(bytes);
     }
 
-#else
-    protected static string ReadString(Stream stream)
-    {
-        byte[] len = new byte[sizeof(int)];
-        stream.Read(len, 0, len.Length);
-        int length = BitConverter.ToInt32(len, 0);
-        byte[] bytes = new byte[length];
-        stream.Read(bytes, 0, bytes.Length);
-        return Encoding.UTF8.GetString(bytes);
-    }
-
-    protected static string ReadStringValue(Stream stream, int size)
-    {
-        byte[] bytes = new byte[size];
-        _ = stream.Read(bytes, 0, bytes.Length);
-
-        return Encoding.UTF8.GetString(bytes);
-    }
-
-    protected static void WriteString(Stream stream, string str)
-    {
-        byte[] bytes = Encoding.UTF8.GetBytes(str);
-        byte[] len = BitConverter.GetBytes(bytes.Length);
-        stream.Write(len, 0, len.Length);
-        stream.Write(bytes, 0, bytes.Length);
-    }
-
-    protected static void WriteStringValue(Stream stream, string str)
-    {
-        byte[] bytes = Encoding.UTF8.GetBytes(str);
-        stream.Write(bytes, 0, bytes.Length);
-    }
-
-    protected static void WriteStringSize(Stream stream, string str)
-    {
-        byte[] bytes = Encoding.UTF8.GetBytes(str);
-        byte[] len = BitConverter.GetBytes(bytes.Length);
-        stream.Write(len, 0, len.Length);
-    }
-
-    protected static void WriteSize<T>(Stream stream)
-        where T : struct
-    {
-        int sizeInBytes = GetSize<T>();
-        byte[] len = BitConverter.GetBytes(sizeInBytes);
-        stream.Write(len, 0, len.Length);
-    }
-
-    protected static void WriteInt(Stream stream, int value)
-    {
-        byte[] bytes = BitConverter.GetBytes(value);
-        stream.Write(bytes, 0, bytes.Length);
-    }
-
-    protected static int ReadInt(Stream stream)
-    {
-        byte[] bytes = new byte[sizeof(int)];
-        stream.Read(bytes, 0, bytes.Length);
-        return BitConverter.ToInt32(bytes, 0);
-    }
-
-    protected static void WriteLong(Stream stream, long value)
-    {
-        byte[] bytes = BitConverter.GetBytes(value);
-        stream.Write(bytes, 0, bytes.Length);
-    }
-
-    protected static void WriteShort(Stream stream, ushort value)
-    {
-        byte[] bytes = BitConverter.GetBytes(value);
-        stream.Write(bytes, 0, bytes.Length);
-    }
-
-    protected static long ReadLong(Stream stream)
-    {
-        byte[] bytes = new byte[sizeof(long)];
-        stream.Read(bytes, 0, bytes.Length);
-        return BitConverter.ToInt64(bytes, 0);
-    }
-
-    protected static ushort ReadShort(Stream stream)
-    {
-        byte[] bytes = new byte[sizeof(ushort)];
-        stream.Read(bytes, 0, bytes.Length);
-        return BitConverter.ToUInt16(bytes, 0);
-    }
-
-    protected static void WriteBool(Stream stream, bool value)
-    {
-        byte[] bytes = BitConverter.GetBytes(value);
-        stream.Write(bytes, 0, bytes.Length);
-    }
-
-    protected static bool ReadBool(Stream stream)
-    {
-        byte[] bytes = new byte[sizeof(bool)];
-        stream.Read(bytes, 0, bytes.Length);
-        return BitConverter.ToBoolean(bytes, 0);
-    }
-#endif
 
     protected static byte ReadByte(Stream stream) => (byte)stream.ReadByte();
 
