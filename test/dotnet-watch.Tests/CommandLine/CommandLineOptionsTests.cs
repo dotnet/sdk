@@ -117,6 +117,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         [Theory]
+        [CombinatorialData]
         public void RunOptions_LaunchProfile_NotPassedThrough(bool beforeCommand)
         {
             var options = VerifyOptions(beforeCommand ? ["--launch-profile", "p", "test"] : ["test", "--launch-profile", "p"]);
@@ -125,6 +126,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         [Theory]
+        [CombinatorialData]
         public void RunOptions_NoLaunchProfile_NotPassedThrough(bool beforeCommand)
         {
             var options = VerifyOptions(beforeCommand ? ["--no-launch-profile", "test"] : ["test", "--no-launch-profile"]);
@@ -133,6 +135,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         [Theory]
+        [CombinatorialData]
         public void RunOption_Project_NotPassedThrough(bool beforeCommand)
         {
             var options = VerifyOptions(beforeCommand ? ["--project", "MyProject.csproj", "test"] : ["test", "--project", "MyProject.csproj"]);
