@@ -118,6 +118,26 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         [Theory]
         [CombinatorialData]
+        public void RunOptions_NotPassedThrough(
+            [CombinatorialValues("--launch-profile", "--no-launch-profile")] string option,
+            bool beforeCommand)
+        {
+            var options = VerifyOptions(beforeCommand ? [option, "test"] : ["test", option]);
+            Assert.Equal("test", options.Command);
+            AssertEx.SequenceEqual([], options.CommandArguments);
+        }
+
+        [Theory]
+        [CombinatorialData]
+        public void RunOption_Project_NotPassedThrough(bool beforeCommand)
+        {
+            var options = VerifyOptions(beforeCommand ? ["--project", "MyProject.csproj", "test"] : ["test", "--project", "MyProject.csproj"]);
+            Assert.Equal("test", options.Command);
+            AssertEx.SequenceEqual([], options.CommandArguments);
+        }
+
+        [Theory]
+        [CombinatorialData]
         public void WatchOptions_NotPassedThrough(
             [CombinatorialValues("--quiet", "--verbose", "--no-hot-reload", "--non-interactive")] string option,
             bool beforeCommand)
