@@ -92,7 +92,7 @@ internal sealed class CommandLineOptions
         {
             rootCommand.Options.Add(watchOption);
         }
-        
+
         rootCommand.Options.Add(longProjectOption);
         rootCommand.Options.Add(shortProjectOption);
         rootCommand.Options.Add(launchProfileOption);
