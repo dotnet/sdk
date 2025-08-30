@@ -92,6 +92,11 @@ internal sealed class CommandLineOptions
         {
             rootCommand.Options.Add(watchOption);
         }
+        
+        rootCommand.Options.Add(longProjectOption);
+        rootCommand.Options.Add(shortProjectOption);
+        rootCommand.Options.Add(launchProfileOption);
+        rootCommand.Options.Add(noLaunchProfileOption);
 
         // We process all tokens that do not match any of the above options
         // to find the subcommand (the first unmatched token preceding "--")
