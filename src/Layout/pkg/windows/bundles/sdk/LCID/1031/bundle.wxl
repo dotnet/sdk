@@ -1,7 +1,7 @@
 ﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
   <String Id="Caption" Value="[WixBundleName] Installer"/>
   <String Id="Title" Value="[BUNDLEMONIKER]"/>
-  <String Id="ConfirmCancelMessage" Value="Are you sure you want to cancel?"/>
+  <String Id="ConfirmCancelMessage" Value="Möchten Sie den Vorgang wirklich abbrechen?"/>
   <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Previous version"/>
   <String Id="HelpHeader" Value="Setup Help"/>
   
@@ -37,7 +37,7 @@
   <String Id="SuccessHeader" Value="Setup Successful"/>
   <String Id="SuccessInstallHeader" Value="Installation Successfully Completed"/>
   <String Id="SuccessLaunchButton" Value="&amp;Launch"/>
-  <String Id="SuccessRestartText" Value="You must restart your computer to complete the installation of the software."/>
+  <String Id="SuccessRestartText" Value="Sie müssen den Computer neu starten, um die Installation der Software abzuschließen."/>
   <String Id="SuccessUninstallRestartText" Value="You must restart your computer to complete the removal of the software."/>
   <String Id="SuccessRestartButton" Value="&amp;Restart"/>
   <String Id="SuccessCloseButton" Value="&amp;Close"/>
@@ -46,11 +46,11 @@
   <String Id="FailureUninstallHeader" Value="Uninstall Failed"/>
   <String Id="FailureRepairHeader" Value="Repair Failed"/>
   <String Id="FailureHyperlinkLogText" Value="One or more issues caused the setup to fail. Please fix the issues and then retry setup. For more information, see the &lt;a href=&quot;#&quot;&gt;log file&lt;/a&gt;."/>
-  <String Id="FailureRestartText" Value="You must restart your computer to complete the rollback of the software."/>
+  <String Id="FailureRestartText" Value="Sie müssen den Computer neu starten, um das Zurücksetzen der Software abzuschließen."/>
   <String Id="FailureRestartButton" Value="&amp;Restart"/>
   <String Id="FailureCloseButton" Value="&amp;Close"/>
   <String Id="FilesInUseTitle" Value="Files In Use"/>
-  <String Id="FilesInUseLabel" Value="The following applications are using files that need to be updated:"/>
+  <String Id="FilesInUseLabel" Value="Die folgenden Anwendungen verwenden Dateien, die aktualisiert werden müssen:"/>
   <String Id="FilesInUseNetfxCloseRadioButton" Value="Close the &amp;applications."/>
   <String Id="FilesInUseCloseRadioButton" Value="Close the &amp;applications and attempt to restart them."/>
   <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Do not close applications. A reboot will be required."/>
@@ -76,8 +76,8 @@ This product collects usage data
   
   <String Id="WelcomeDescription" Value="The .NET SDK is used to build, run, and test .NET applications. You can choose from multiple languages, editors, and developer tools, and take advantage of a large ecosystem of libraries to build apps for web, mobile, desktop, gaming, and IoT. We hope you enjoy it!"/>
   <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2022 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;."/>
-  <String Id="LicenseAssent" Value="By clicking Install, you agree to the following terms:"/>
-  <String Id="LearnMoreTitle" Value="Learn more about .NET"/>
+  <String Id="LicenseAssent" Value="Durch Klicken auf „Installieren“ stimmen Sie den nachstehenden Bedingungen zu:"/>
+  <String Id="LearnMoreTitle" Value="Weitere Informationen zu .NET"/>
   <String Id="ResourcesHeader" Value="Resources"/>
   <String Id="CoreDocumentationLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-docs&quot;&gt;.NET Documentation&lt;/A&gt;"/>
   <String Id="SDKDocumentation" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-docs&quot;&gt;SDK Documentation&lt;/A&gt;"/>
@@ -85,11 +85,11 @@ This product collects usage data
   <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;Licensing Information for .NET&lt;/A&gt;"/>
   <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Telemetry collection and opt-out&lt;/A&gt;"/>
   <String Id="InstallationNoteTitle" Value="Installation note"/>
-  <String Id="InstallationNote" Value="A command will be run during the install process that will improve project restore speed and enable offline access. It will take up to a minute to complete."/>
+  <String Id="InstallationNote" Value="Während des Installationsvorgangs wird ein Befehl ausgeführt, durch den die Geschwindigkeit der Projektwiederherstellung verbessert und der Offlinezugriff aktiviert wird. Der Vorgang dauert bis zu einer Minute."/>
   
   <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2022 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;."/>
-  <String Id="LicenseAssent" Value="By clicking Install, you agree to the following terms:"/>
-  <String Id="InstallPathx64x86" Value="The installation path for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;"/>
-  <String Id="InstallPathARM64x86" Value="The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;"/>
-  <String Id="InstallPathARM64x64" Value="The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot;"/>
+  <String Id="LicenseAssent" Value="Durch Klicken auf „Installieren“ stimmen Sie den nachstehenden Bedingungen zu:"/>
+  <String Id="InstallPathx64x86" Value="Der Installationspfad „[DOTNETHOME_X64]“ für x64 SDK-Installationen kann nicht derselbe sein wie für x86 SDK-Installationen: „[DOTNETHOME_X86]“"/>
+  <String Id="InstallPathARM64x86" Value="Der Installationspfad „[DOTNETHOME_ARM64]“ für ARM64 SDK-Installationen kann nicht derselbe sein wie für x86 SDK-Installationen: „[DOTNETHOME_X86]“"/>
+  <String Id="InstallPathARM64x64" Value="Der Installationspfad „[DOTNETHOME_ARM64]“ für ARM64 SDK-Installationen kann nicht derselbe sein wie für x64 SDK-Installationen: „[DOTNETHOME_X64]“"/>
 </WixLocalization>

@@ -852,7 +852,7 @@ The header is followed by the list of parameters and their errors (might be seve
       </trans-unit>
       <trans-unit id="PostAction_DotnetConfig_Error_ArgumentNotConfigured">
         <source>Post action argument '{0}' is mandatory, but not configured.</source>
-        <target state="new">Post action argument '{0}' is mandatory, but not configured.</target>
+        <target state="translated">動作後引數 '{0}' 是強制的，但未設定。</target>
         <note />
       </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotBoolean">

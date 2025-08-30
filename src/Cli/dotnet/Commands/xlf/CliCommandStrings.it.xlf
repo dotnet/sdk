@@ -2443,7 +2443,7 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
       </trans-unit>
       <trans-unit id="PropertyDirectiveMissingParts">
         <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
-        <target state="needs-review-translation">La direttiva di proprietà deve avere due parti separate da '=', come '#:property PropertyName=PropertyValue': {0}</target>
+        <target state="translated">La direttiva di proprietà deve avere due parti separate da '=', come '#:property PropertyName=PropertyValue': {0}</target>
         <note>{0} is the file path and line number.{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
