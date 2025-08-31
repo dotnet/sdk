@@ -100,7 +100,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   =================================================================================
   -->
 
-  <Target Name="_MTPBuild" DependsOnTargets="_ComputeTargetFrameworkItems">
+  <Target Name="_MTPBuild">
     <CallTarget Targets="Build" />
   </Target>
 
