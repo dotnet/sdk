@@ -43,6 +43,13 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 return false;
             }
 
+            var telemetryDictionary = new Dictionary<string, string?>(capacity: 4)
+            {
+                { TelemetryConstants.DotnetConfigPostActionSection, sectionName },
+                { TelemetryConstants.DotnetConfigPostActionKey, key },
+                { TelemetryConstants.DotnetConfigPostActionValue, value },
+            };
+
             var fileSystem = environment.Host.FileSystem;
             var repoRoot = GetRootDirectory(fileSystem, outputBasePath);
             var dotnetConfigFilePath = Path.Combine(repoRoot, "dotnet.config");
@@ -55,6 +62,8 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                     """);
 
                 Reporter.Output.WriteLine(LocalizableStrings.PostAction_CreateDotnetConfig_Succeeded);
+                telemetryDictionary.Add(TelemetryConstants.DotnetConfigPostActionOutcome, TelemetryConstants.DotnetConfigPostActionOutcomeNewFileCreated);
+                TelemetryEventEntry.TrackEvent(TelemetryConstants.DotnetConfigPostActionEvent, telemetryDictionary);
                 return true;
             }
 
@@ -76,6 +85,8 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                     """);
 
                 Reporter.Output.WriteLine(LocalizableStrings.PostAction_CreateDotnetConfig_CreatedNewSection);
+                telemetryDictionary.Add(TelemetryConstants.DotnetConfigPostActionOutcome, TelemetryConstants.DotnetConfigPostActionOutcomeCreatedNewSection);
+                TelemetryEventEntry.TrackEvent(TelemetryConstants.DotnetConfigPostActionEvent, telemetryDictionary);
                 return true;
             }
 
@@ -84,6 +95,8 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             {
                 // The section exists, but the key/value pair does not.
                 Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_CreateDotnetConfig_ManuallyUpdate, $"{key} = \"{value}\"", $"[{sectionName}]"));
+                telemetryDictionary.Add(TelemetryConstants.DotnetConfigPostActionOutcome, TelemetryConstants.DotnetConfigPostActionOutcomeSectionExistsWithoutKeyNotYetSupported);
+                TelemetryEventEntry.TrackEvent(TelemetryConstants.DotnetConfigPostActionEvent, telemetryDictionary);
                 return false;
             }
 
@@ -91,10 +104,14 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             {
                 // The key already exists with the same value, nothing to do.
                 Reporter.Output.WriteLine(LocalizableStrings.PostAction_CreateDotnetConfig_ValueAlreadyExist);
+                telemetryDictionary.Add(TelemetryConstants.DotnetConfigPostActionOutcome, TelemetryConstants.DotnetConfigPostActionOutcomeExistingFileIsGood);
+                TelemetryEventEntry.TrackEvent(TelemetryConstants.DotnetConfigPostActionEvent, telemetryDictionary);
                 return true;
             }
 
             Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_CreateDotnetConfig_ManuallyUpdate, $"{key} = \"{value}\"", $"[{sectionName}]"));
+            telemetryDictionary.Add(TelemetryConstants.DotnetConfigPostActionOutcome, TelemetryConstants.DotnetConfigPostActionOutcomeDifferentExistingValueNotYetSupported);
+            TelemetryEventEntry.TrackEvent(TelemetryConstants.DotnetConfigPostActionEvent, telemetryDictionary);
             return false;
         }
 

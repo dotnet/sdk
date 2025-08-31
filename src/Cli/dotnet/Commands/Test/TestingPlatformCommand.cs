@@ -6,11 +6,12 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal partial class TestingPlatformCommand : Command, ICustomHelp
+internal partial class TestingPlatformCommand : System.CommandLine.Command, ICustomHelp
 {
     private MSBuildHandler _msBuildHandler;
     private TerminalTestReporter _output;
@@ -28,6 +29,7 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
 
     public int Run(ParseResult parseResult)
     {
+        TelemetryEventEntry.TrackEvent("test/mtp");
         int? exitCode = null;
         try
         {
