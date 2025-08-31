@@ -142,6 +142,13 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.NuGetOfflineCache.targets" />
 
+  <!-- Only import mobile telemetry for mobile platforms -->
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.MobileTelemetry.targets"
+          Condition="'$(TargetPlatformIdentifier)' == 'android' or
+                     '$(TargetPlatformIdentifier)' == 'ios' or
+                     '$(TargetPlatformIdentifier)' == 'maccatalyst' or
+                     '$(TargetPlatformIdentifier)' == 'tvos'" />
+
   <ItemGroup Condition=" '$(DisableImplicitFrameworkReferences)' != 'true' and '$(TargetFrameworkIdentifier)' == '.NETFramework'">
 
     <_SDKImplicitReference Include="System"/>
