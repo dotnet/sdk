@@ -275,8 +275,6 @@ This file should be imported by eng/Versions.props
     <SystemTextEncodingCodePagesVersion>$(SystemTextEncodingCodePagesPackageVersion)</SystemTextEncodingCodePagesVersion>
     <SystemTextJsonVersion>$(SystemTextJsonPackageVersion)</SystemTextJsonVersion>
     <SystemWindowsExtensionsVersion>$(SystemWindowsExtensionsPackageVersion)</SystemWindowsExtensionsVersion>
-    <!-- dotnet/core-setup dependencies -->
-    <NETStandardLibraryRefVersion>$(NETStandardLibraryRefPackageVersion)</NETStandardLibraryRefVersion>
     <!-- microsoft/testfx dependencies -->
     <MicrosoftTestingPlatformVersion>$(MicrosoftTestingPlatformPackageVersion)</MicrosoftTestingPlatformVersion>
     <MSTestVersion>$(MSTestPackageVersion)</MSTestVersion>
