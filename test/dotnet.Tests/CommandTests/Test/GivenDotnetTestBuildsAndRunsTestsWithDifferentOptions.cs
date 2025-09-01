@@ -218,7 +218,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
-        public void RunTestProjectSolutionWithArchOption_ShouldReturnExitCodeSuccess(string configuration)
+        public void RunTestProjectWithArchOption_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
@@ -233,6 +233,32 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, configuration, runtime: runtime), result.StdOut);
 
             result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        //  https://github.com/dotnet/sdk/issues/49665
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        public void RunTestProjectSolutionWithArchOption_NotSupported(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString()).WithSource();
+
+            var arch = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(CommonOptions.ArchitectureOption.Name, arch,
+                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("error NETSDK1134: Building a solution with a specific RuntimeIdentifier is not supported. If you would like to publish for a single RID, specify the RID at the individual project level instead.");
+            }
+            else
+            {
+                result.StdOut.Should().Contain("NETSDK1134");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         //  https://github.com/dotnet/sdk/issues/49665

@@ -3,10 +3,11 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal class FileWatcher(IReporter reporter, EnvironmentOptions environmentOptions) : IDisposable
+    internal class FileWatcher(ILogger logger, EnvironmentOptions environmentOptions) : IDisposable
     {
         // Directory watcher for each watched directory tree.
         // Keyed by full path to the root directory with a trailing directory separator.
@@ -43,7 +44,7 @@ namespace Microsoft.DotNet.Watch
             var watcher = DirectoryWatcher.Create(directory, fileNames, environmentOptions.IsPollingEnabled, includeSubdirectories);
             if (watcher is EventBasedDirectoryWatcher eventBasedWatcher)
             {
-                eventBasedWatcher.Logger = message => reporter.Verbose(message);
+                eventBasedWatcher.Logger = message => logger.LogDebug(message);
             }
 
             return watcher;
@@ -153,7 +154,7 @@ namespace Microsoft.DotNet.Watch
         {
             if (sender is DirectoryWatcher watcher)
             {
-                reporter.Warn($"The file watcher observing '{watcher.WatchedDirectory}' encountered an error: {error.Message}");
+                logger.LogWarning("The file watcher observing '{WatchedDirectory}' encountered an error: {Message}", watcher.WatchedDirectory, error.Message);
             }
         }
 
@@ -204,9 +205,9 @@ namespace Microsoft.DotNet.Watch
             return change;
         }
 
-        public static async ValueTask WaitForFileChangeAsync(string filePath, IReporter reporter, EnvironmentOptions environmentOptions, Action? startedWatching, CancellationToken cancellationToken)
+        public static async ValueTask WaitForFileChangeAsync(string filePath, ILogger logger, EnvironmentOptions environmentOptions, Action? startedWatching, CancellationToken cancellationToken)
         {
-            using var watcher = new FileWatcher(reporter, environmentOptions);
+            using var watcher = new FileWatcher(logger, environmentOptions);
 
             watcher.WatchContainingDirectories([filePath], includeSubdirectories: false);
 
@@ -217,7 +218,7 @@ namespace Microsoft.DotNet.Watch
 
             if (fileChange != null)
             {
-                reporter.Output($"File changed: {filePath}");
+                logger.LogInformation("File changed: {FilePath}", filePath);
             }
         }
     }

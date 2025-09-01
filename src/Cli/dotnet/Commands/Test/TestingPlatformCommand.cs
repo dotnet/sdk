@@ -151,6 +151,7 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
     {
         _actionQueue = new(degreeOfParallelism, buildOptions, async (TestApplication testApp) =>
         {
+            testApp.HandshakeReceived += _eventHandlers.OnHandshakeReceived;
             testApp.HelpRequested += OnHelpRequested;
             testApp.ErrorReceived += _eventHandlers.OnErrorReceived;
             testApp.TestProcessExited += _eventHandlers.OnTestProcessExited;
@@ -177,7 +178,8 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
 
     private static int GetDegreeOfParallelism(ParseResult parseResult)
     {
-        if (!int.TryParse(parseResult.GetValue(TestingPlatformOptions.MaxParallelTestModulesOption), out int degreeOfParallelism) || degreeOfParallelism <= 0)
+        var degreeOfParallelism = parseResult.GetValue(TestingPlatformOptions.MaxParallelTestModulesOption);
+        if (degreeOfParallelism <= 0)
             degreeOfParallelism = Environment.ProcessorCount;
         return degreeOfParallelism;
     }
