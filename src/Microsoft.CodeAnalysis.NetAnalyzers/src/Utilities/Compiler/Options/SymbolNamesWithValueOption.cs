@@ -93,7 +93,7 @@ namespace Analyzer.Utilities
 
                 // Wildcard is not last or is the only char, bail-out
                 if (wildcardIndex >= 0 &&
-                    (parts.SymbolName[^1] != WildcardChar ||
+                    (wildcardIndex != parts.SymbolName.Length - 1 ||
                     parts.SymbolName.Length == 1))
                 {
                     continue;
