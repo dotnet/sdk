@@ -1,12 +1,9 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
@@ -92,30 +89,23 @@ namespace Analyzer.Utilities
             {
                 var parts = getSymbolNamePartsFunc(symbolName);
 
-                var numberOfWildcards = parts.SymbolName.Count(c => c == WildcardChar);
-
-                // More than one wildcard, bail-out.
-                if (numberOfWildcards > 1)
-                {
-                    continue;
-                }
+                var wildcardIndex = parts.SymbolName.IndexOf(WildcardChar);
 
                 // Wildcard is not last or is the only char, bail-out
-                if (numberOfWildcards == 1 &&
+                if (wildcardIndex >= 0 &&
                     (parts.SymbolName[^1] != WildcardChar ||
                     parts.SymbolName.Length == 1))
                 {
                     continue;
                 }
 
-                if (numberOfWildcards == 1)
+                if (wildcardIndex >= 0)
                 {
                     ProcessWildcardName(parts, wildcardNamesBuilder);
                 }
-#pragma warning disable CA1847 // Use 'string.Contains(char)' instead of 'string.Contains(string)' when searching for a single character
                 else if (parts.SymbolName.Equals(".ctor", StringComparison.Ordinal) ||
                     parts.SymbolName.Equals(".cctor", StringComparison.Ordinal) ||
-                    !parts.SymbolName.Contains(".", StringComparison.Ordinal) && !parts.SymbolName.Contains(":", StringComparison.Ordinal))
+                    !parts.SymbolName.Contains('.') && !parts.SymbolName.Contains(':'))
                 {
                     ProcessName(parts, namesBuilder);
                 }
@@ -123,7 +113,6 @@ namespace Analyzer.Utilities
                 {
                     ProcessSymbolName(parts, compilation, optionalPrefix, symbolsBuilder);
                 }
-#pragma warning restore CA1847 // Use 'string.Contains(char)' instead of 'string.Contains(string)' when searching for a single character
             }
 
             if (namesBuilder.Count == 0 && symbolsBuilder.Count == 0 && wildcardNamesBuilder.Count == 0)
@@ -387,7 +376,7 @@ namespace Analyzer.Utilities
         /// MyClass->Suffix or T:MyNamespace.MyClass->Suffix or N:MyNamespace->Suffix.
         /// </example>
 #pragma warning disable CA1034 // Nested types should not be visible
-        public sealed class NameParts
+        public readonly struct NameParts
 #pragma warning restore CA1034 // Nested types should not be visible
         {
             public NameParts(string symbolName, TValue associatedValue)
