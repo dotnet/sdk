@@ -1845,8 +1845,8 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">Nie zainstalowano żadnych obciążeń i nie ma nic do naprawienia. Uruchom polecenie „dotnet workload search”, aby znaleźć obciążenia do zainstalowania.</target>
-        <note />
+        <target state="needs-review-translation">Nie zainstalowano żadnych obciążeń i nie ma nic do naprawienia. Uruchom polecenie „dotnet workload search”, aby znaleźć obciążenia do zainstalowania.</target>
+        <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
@@ -2444,7 +2444,7 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
       <trans-unit id="PropertyDirectiveMissingParts">
         <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
         <target state="translated">Dyrektywa właściwości musi mieć dwie części oddzielone znakiem „=”, na przykład „'#:property PropertyName=PropertyValue”: {0}</target>
-        <note>{0} is the file path and line number.</note>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
@@ -2678,15 +2678,15 @@ Domyślnie publikowana jest aplikacja zależna od struktury.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRun">
-        <source>Unable to run your project.
-Ensure you have a runnable project type and ensure '{0}' supports this project.
-A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
-The current {1} is '{2}'.</source>
-        <target state="translated">Nie można uruchomić projektu.
+        <source>Unable to proceed with project '{0}'.
+Ensure you have a runnable project type.
+A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
+The current OutputType is '{2}'.</source>
+        <target state="needs-review-translation">Nie można uruchomić projektu.
 Upewnij się, że używany typ projektu umożliwia uruchamianie oraz że element „{0}” obsługuje ten projekt.
 Projekt z możliwością uruchamiania musi mieć moniker TFM z możliwością uruchomienia (np. net5.0) i typ OutputType „Exe”.
 Bieżący element {1}: „{2}”.</target>
-        <note />
+        <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
@@ -2982,6 +2982,11 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
         <target state="translated">Standardowe dane wyjściowe</target>
         <note />
       </trans-unit>
+      <trans-unit id="StaticGraphRestoreNotSupported">
+        <source>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</source>
+        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</target>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
+      </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
         <target state="translated">Stan</target>
@@ -3047,9 +3052,9 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
         <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
-      <trans-unit id="TestCommandUseDirectory">
-        <source>Specifying a directory for 'dotnet test' should be via '--directory'.</source>
-        <target state="translated">Określenie katalogu dla elementu „dotnet test” powinno być za pomocą katalogu „--directory”.</target>
+      <trans-unit id="TestCommandUseDirectoryWithSwitch">
+        <source>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</source>
+        <target state="new">Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseProject">

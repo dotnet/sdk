@@ -94,7 +94,7 @@ namespace Microsoft.NET.Build.Tasks
         public static bool IsFrameworkDependent(ITaskItem[] runtimeFrameworks, bool isSelfContained, string runtimeIdentifier, bool hasPlatformLibrary)
         {
             return (hasPlatformLibrary || runtimeFrameworks?.Any() == true) &&
-                (!isSelfContained || string.IsNullOrEmpty(runtimeIdentifier));
+                (!isSelfContained || (string.IsNullOrEmpty(runtimeIdentifier) || runtimeIdentifier == "any"));
         }
 
         public static LockFileTargetLibrary GetLibrary(this LockFileTarget lockFileTarget, string libraryName)

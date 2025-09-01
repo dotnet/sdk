@@ -6,6 +6,8 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.Cli;
+using Microsoft.Extensions.Logging;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -17,7 +19,7 @@ internal static class ProjectGraphUtilities
     public static ProjectGraph? TryLoadProjectGraph(
         string rootProjectFile,
         ImmutableDictionary<string, string> globalOptions,
-        IReporter reporter,
+        ILogger logger,
         bool projectGraphRequired,
         CancellationToken cancellationToken)
     {
@@ -41,7 +43,7 @@ internal static class ProjectGraphUtilities
         }
         catch (Exception e) when (e is not OperationCanceledException)
         {
-            reporter.Verbose("Failed to load project graph.");
+            logger.LogDebug("Failed to load project graph.");
 
             if (e is AggregateException { InnerExceptions: var innerExceptions })
             {
@@ -59,11 +61,11 @@ internal static class ProjectGraphUtilities
             {
                 if (projectGraphRequired)
                 {
-                    reporter.Error(e.Message);
+                    logger.LogError(e.Message);
                 }
                 else
                 {
-                    reporter.Warn(e.Message);
+                    logger.LogWarning(e.Message);
                 }
             }
         }

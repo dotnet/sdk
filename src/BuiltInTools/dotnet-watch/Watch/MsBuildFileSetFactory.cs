@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.Build.Graph;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -27,7 +28,7 @@ namespace Microsoft.DotNet.Watch
 
         public string RootProjectFile => rootProjectFile;
         private EnvironmentOptions EnvironmentOptions => buildReporter.EnvironmentOptions;
-        private IReporter Reporter => buildReporter.Reporter;
+        private ILogger Logger => buildReporter.Logger;
 
         internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> files, ProjectGraph? projectGraph)
         {
@@ -60,19 +61,19 @@ namespace Microsoft.DotNet.Watch
                     }
                 };
 
-                Reporter.Verbose($"Running MSBuild target '{TargetName}' on '{rootProjectFile}'");
+                Logger.LogDebug("Running MSBuild target '{TargetName}' on '{Path}'", TargetName, rootProjectFile);
 
-                var exitCode = await processRunner.RunAsync(processSpec, Reporter, launchResult: null, cancellationToken);
+                var exitCode = await processRunner.RunAsync(processSpec, Logger, launchResult: null, cancellationToken);
 
                 var success = exitCode == 0 && File.Exists(watchList);
 
                 if (!success)
                 {
-                    Reporter.Error($"Error(s) finding watch items project file '{Path.GetFileName(rootProjectFile)}'.");
-                    Reporter.Output($"MSBuild output from target '{TargetName}':");
+                    Logger.LogError("Error(s) finding watch items project file '{FileName}'.", Path.GetFileName(rootProjectFile));
+                    Logger.LogInformation("MSBuild output from target '{TargetName}':", TargetName);
                 }
 
-                BuildOutput.ReportBuildOutput(Reporter, capturedOutput, success, projectDisplay: null);
+                BuildOutput.ReportBuildOutput(Logger, capturedOutput, success, projectDisplay: null);
                 if (!success)
                 {
                     return null;
@@ -126,7 +127,7 @@ namespace Microsoft.DotNet.Watch
                     var globalOptions = CommandLineOptions.ParseBuildProperties(buildArguments)
                         .ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value);
 
-                    projectGraph = ProjectGraphUtilities.TryLoadProjectGraph(rootProjectFile, globalOptions, Reporter, requireProjectGraph.Value, cancellationToken);
+                    projectGraph = ProjectGraphUtilities.TryLoadProjectGraph(rootProjectFile, globalOptions, Logger, requireProjectGraph.Value, cancellationToken);
                     if (projectGraph == null && requireProjectGraph == true)
                     {
                         return null;

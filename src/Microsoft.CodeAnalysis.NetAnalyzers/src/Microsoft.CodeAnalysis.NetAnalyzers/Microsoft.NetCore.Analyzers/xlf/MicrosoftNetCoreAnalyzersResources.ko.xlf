@@ -627,10 +627,10 @@
 The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.  
 The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
 Widening and user defined conversions are not supported with generic types.</source>
-        <target state="new">Enumerable.Cast&lt;T&gt; and Enumerable.OfType&lt;T&gt; require compatible types to function expectedly.  
-The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.  
-The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
-Widening and user defined conversions are not supported with generic types.</target>
+        <target state="translated">Enumerable.Cast&lt;T&gt; 및 Enumerable.OfType&lt;T&gt;가 제대로 작동하려면 호환되는 형식이 필요합니다.  
+Enumerable.Cast&lt;T&gt;에서 반환된 시퀀스에서 사용하는 일반 캐스트(IL 'unbox.any')는 지정된 형식의 요소에서 런타임에 InvalidCastException을 발생시킵니다.  
+Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' 연산자/IL 'isinst')는 지정된 형식의 요소로 성공하지 못하여 결과적으로 빈 시퀀스가 됩니다.  
+확대 및 사용자 정의 변환은 일반 형식에서 지원되지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesMessageCast">
@@ -645,7 +645,7 @@ Widening and user defined conversions are not supported with generic types.</tar
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesTitle">
         <source>Do not call Enumerable.Cast&lt;T&gt; or Enumerable.OfType&lt;T&gt; with incompatible types</source>
-        <target state="new">Do not call Enumerable.Cast&lt;T&gt; or Enumerable.OfType&lt;T&gt; with incompatible types</target>
+        <target state="translated">호환되지 않는 형식으로 Enumerable.Cast&lt;T&gt; 또는 Enumerable.OfType&lt;T&gt;를 호출하지 마세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallToImmutableCollectionOnAnImmutableCollectionValueMessage">
@@ -1710,7 +1710,7 @@ Widening and user defined conversions are not supported with generic types.</tar
       </trans-unit>
       <trans-unit id="MarkISerializableTypesWithSerializableMessage">
         <source>Add [Serializable] to {0} as this type implements ISerializable</source>
-        <target state="new">Add [Serializable] to {0} as this type implements ISerializable</target>
+        <target state="translated">ISerializable을 구현하는 [Serializable]을 {0}에 추가합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkISerializableTypesWithSerializableTitle">

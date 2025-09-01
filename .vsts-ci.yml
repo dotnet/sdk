@@ -5,7 +5,7 @@ trigger:
   branches:
     include:
     - main
-    - release/10.0.1xx-*
+    - release/10.0.1*
     - internal/release/*
     - exp/*
 
@@ -103,7 +103,7 @@ extends:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
-          locBranch: main
+          locBranch: release/10.0.1xx
           # WORKAROUND: BinSkim requires the folder exist prior to scanning.
           preSteps:
           - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
@@ -284,6 +284,7 @@ extends:
             publishUsingPipelines: true
             publishAssetsImmediately: true
             isAssetlessBuild: true
+            repositoryAlias: self
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022

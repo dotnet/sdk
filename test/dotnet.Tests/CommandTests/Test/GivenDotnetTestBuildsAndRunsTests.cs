@@ -268,6 +268,26 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
+        public void RunTestProjectsWithClassLibraryHavingIsTestProjectAndMTPProject_ShouldReturnExitCodeGenericFailure(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("ClassLibraryWithIsTestProjectAndOtherTestProjects", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain(string.Format(CliCommandStrings.CmdUnsupportedVSTestTestApplicationsDescription, "AnotherTestProject.csproj"));
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+        }
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
         public void RunOnEmptyFolder_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("EmptyFolder", Guid.NewGuid().ToString())

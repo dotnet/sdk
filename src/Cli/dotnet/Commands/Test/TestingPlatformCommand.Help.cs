@@ -143,6 +143,13 @@ internal partial class TestingPlatformCommand
                 value.Add(option.Value);
             }
         }
+
+        // Sort options alphabetically by name
+        foreach (var optionsList in builtInToOptions.Values)
+        {
+            optionsList.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase));
+        }
+
         return builtInToOptions;
     }
 

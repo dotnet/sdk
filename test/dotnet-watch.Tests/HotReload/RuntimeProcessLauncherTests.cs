@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
@@ -90,17 +91,19 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         return await startOp(cancellationToken);
     }
 
-    private RunningWatcher StartWatcher(TestAsset testAsset, string[] args, string workingDirectory, string projectPath, SemaphoreSlim? fileChangesCompleted = null)
+    private RunningWatcher StartWatcher(TestAsset testAsset, string[] args, string? workingDirectory = null)
     {
         var console = new TestConsole(Logger);
         var reporter = new TestReporter(Logger);
-        var environmentOptions = TestOptions.GetEnvironmentOptions(workingDirectory, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset);
-        var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout);
+        var loggerFactory = new LoggerFactory(reporter);
+        var environmentOptions = TestOptions.GetEnvironmentOptions(workingDirectory ?? testAsset.Path, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset);
+        var processRunner = new ProcessRunner(environmentOptions.GetProcessCleanupTimeout(isHotReloadEnabled: true));
 
         var program = Program.TryCreate(
-           TestOptions.GetCommandLineOptions(["--verbose", ..args, "--project", projectPath]),
+           TestOptions.GetCommandLineOptions(["--verbose", ..args]),
            console,
            environmentOptions,
+           loggerFactory,
            reporter,
            out var errorCode);
 
@@ -125,7 +128,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             catch (Exception e) when (e is not OperationCanceledException)
             {
                 shutdownSource.Cancel();
-                ((IReporter)reporter).Error($"Unexpected exception {e}");
+                Logger.WriteLine($"Unexpected exception {e}");
                 throw;
             }
         }, shutdownSource.Token);
@@ -154,7 +157,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var libProject = Path.Combine(libDir, "Lib.csproj");
         var libSource = Path.Combine(libDir, "Lib.cs");
 
-        await using var w = StartWatcher(testAsset, ["--non-interactive"], workingDirectory, hostProject);
+        await using var w = StartWatcher(testAsset, ["--non-interactive", "--project", hostProject], workingDirectory);
 
         var launchCompletionA = w.CreateCompletionSource();
         var launchCompletionB = w.CreateCompletionSource();
@@ -317,7 +320,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var libProject = Path.Combine(libDir, "Lib.csproj");
         var libSource = Path.Combine(libDir, "Lib.cs");
 
-        await using var w = StartWatcher(testAsset, ["--non-interactive"], workingDirectory, hostProject);
+        await using var w = StartWatcher(testAsset, ["--non-interactive", "--project", hostProject], workingDirectory);
 
         var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
         var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
@@ -407,7 +410,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var libProject = Path.Combine(testAsset.Path, "Lib2", "Lib2.csproj");
         var lib = Path.Combine(testAsset.Path, "Lib2", "Lib2.cs");
 
-        await using var w = StartWatcher(testAsset, args: [], workingDirectory, hostProject);
+        await using var w = StartWatcher(testAsset, args: ["--project", hostProject], workingDirectory);
 
         var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
         var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
@@ -496,7 +499,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var serviceSourceA2 = Path.Combine(serviceDirA, "A2.cs");
         var serviceProjectA = Path.Combine(serviceDirA, "A.csproj");
 
-        await using var w = StartWatcher(testAsset, ["--non-interactive"], workingDirectory, hostProject);
+        await using var w = StartWatcher(testAsset, ["--non-interactive", "--project", hostProject], workingDirectory);
 
         var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
 
@@ -588,7 +591,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             }
         }
 
-        await using var w = StartWatcher(testAsset, ["--no-exit"], workingDirectory, workingDirectory);
+        await using var w = StartWatcher(testAsset, ["--no-exit"], workingDirectory);
 
         var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
         var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
@@ -646,7 +649,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var projectPath = Path.Combine(testAsset.Path, "WatchHotReloadApp.csproj");
         var programPath = Path.Combine(testAsset.Path, "Program.cs");
 
-        await using var w = StartWatcher(testAsset, [], workingDirectory, projectPath);
+        await using var w = StartWatcher(testAsset, [], workingDirectory);
 
         var fileChangesCompleted = w.CreateCompletionSource();
         w.Watcher.Test_FileChangesCompletedTask = fileChangesCompleted.Task;
@@ -664,7 +667,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             }
         };
 
-        // let the host process start:
+        // start process:
         Log("Waiting for changes...");
         await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
 
@@ -681,5 +684,131 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         Log("Waiting for output 'System.Xml.Linq.XDocument'...");
         await hasUpdatedOutput.Task;
+    }
+
+    [Fact]
+    public async Task ProjectAndSourceFileChange_AddProjectReference()
+    {
+        var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
+            .WithSource()
+            .WithProjectChanges(project =>
+            {
+                foreach (var r in project.Root!.Descendants().Where(e => e.Name.LocalName == "ProjectReference").ToArray())
+                {
+                    r.Remove();
+                }
+            });
+
+        var appProjDir = Path.Combine(testAsset.Path, "AppWithDeps");
+        var appProjFile = Path.Combine(appProjDir, "App.WithDeps.csproj");
+        var appFile = Path.Combine(appProjDir, "Program.cs");
+
+        UpdateSourceFile(appFile, code => code.Replace("Lib.Print();", "// Lib.Print();"));
+
+        await using var w = StartWatcher(testAsset, [], appProjDir);
+
+        var fileChangesCompleted = w.CreateCompletionSource();
+        w.Watcher.Test_FileChangesCompletedTask = fileChangesCompleted.Task;
+
+        var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
+        var projectChangeTriggeredReEvaluation = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
+        var projectsRebuilt = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectsRebuilt);
+        var projectDependenciesDeployed = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectDependenciesDeployed);
+        var hotReloadSucceeded = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadSucceeded);
+
+        var hasUpdatedOutput = w.CreateCompletionSource();
+        w.Reporter.OnProcessOutput += line =>
+        {
+            if (line.Content.Contains("<Lib>"))
+            {
+                hasUpdatedOutput.TrySetResult();
+            }
+        };
+
+        // start process:
+        Log("Waiting for changes...");
+        await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
+
+        // change the project and source files at the same time:
+
+        UpdateSourceFile(appProjFile, src => src.Replace("""
+            <ItemGroup />
+            """, """
+            <ItemGroup>
+                <ProjectReference Include="..\Dependency\Dependency.csproj" />
+            </ItemGroup>
+            """));
+
+        UpdateSourceFile(appFile, code => code.Replace("// Lib.Print();", "Lib.Print();"));
+
+        // done updating files:
+        fileChangesCompleted.TrySetResult();
+
+        Log("Waiting for output '<Lib>'...");
+        await hasUpdatedOutput.Task;
+
+        AssertEx.ContainsSubstring("Resolving 'Dependency, Version=1.0.0.0'", w.Reporter.ProcessOutput);
+
+        Assert.Equal(1, projectChangeTriggeredReEvaluation.CurrentCount);
+        Assert.Equal(1, projectsRebuilt.CurrentCount);
+        Assert.Equal(1, projectDependenciesDeployed.CurrentCount);
+        Assert.Equal(1, hotReloadSucceeded.CurrentCount);
+    }
+
+    [Fact]
+    public async Task ProjectAndSourceFileChange_AddPackageReference()
+    {
+        var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+            .WithSource();
+
+        var projFilePath = Path.Combine(testAsset.Path, "WatchHotReloadApp.csproj");
+        var programFilePath = Path.Combine(testAsset.Path, "Program.cs");
+
+        await using var w = StartWatcher(testAsset, []);
+
+        var fileChangesCompleted = w.CreateCompletionSource();
+        w.Watcher.Test_FileChangesCompletedTask = fileChangesCompleted.Task;
+
+        var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
+        var projectChangeTriggeredReEvaluation = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
+        var projectsRebuilt = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectsRebuilt);
+        var projectDependenciesDeployed = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectDependenciesDeployed);
+        var hotReloadSucceeded = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadSucceeded);
+
+        var hasUpdatedOutput = w.CreateCompletionSource();
+        w.Reporter.OnProcessOutput += line =>
+        {
+            if (line.Content.Contains("Newtonsoft.Json.Linq.JToken"))
+            {
+                hasUpdatedOutput.TrySetResult();
+            }
+        };
+
+        // start process:
+        Log("Waiting for changes...");
+        await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
+
+        // change the project and source files at the same time:
+
+        UpdateSourceFile(projFilePath, source => source.Replace("""
+            <!-- items placeholder -->
+            """, """
+            <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+            """));
+
+        UpdateSourceFile(programFilePath, source => source.Replace("Console.WriteLine(\".\");", "Console.WriteLine(typeof(Newtonsoft.Json.Linq.JToken));"));
+
+        // done updating files:
+        fileChangesCompleted.TrySetResult();
+
+        Log("Waiting for output 'Newtonsoft.Json.Linq.JToken'...");
+        await hasUpdatedOutput.Task;
+
+        AssertEx.ContainsSubstring("Resolving 'Newtonsoft.Json, Version=13.0.0.0'", w.Reporter.ProcessOutput);
+
+        Assert.Equal(1, projectChangeTriggeredReEvaluation.CurrentCount);
+        Assert.Equal(0, projectsRebuilt.CurrentCount);
+        Assert.Equal(1, projectDependenciesDeployed.CurrentCount);
+        Assert.Equal(1, hotReloadSucceeded.CurrentCount);
     }
 }

@@ -511,8 +511,8 @@ public class RunCommand
         throw new GracefulException(
                 string.Format(
                     CliCommandStrings.RunCommandExceptionUnableToRun,
-                    "dotnet run",
-                    "OutputType",
+                    project.GetPropertyValue("MSBuildProjectFullPath"),
+                    Product.TargetFrameworkVersion,
                     project.GetPropertyValue("OutputType")));
     }
 

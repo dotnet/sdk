@@ -3,101 +3,86 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
-    public class GlobbingAppTests : DotNetWatchTestBase
+    public class GlobbingAppTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
-        private const string AppName = "WatchGlobbingApp";
-
-        public GlobbingAppTests(ITestOutputHelper logger)
-            : base(logger)
+        private async Task ValidateOperation(Action<string> operation, int expectedTypesAfterOperation)
         {
-        }
-
-        [ConditionalTheory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task ChangeCompiledFile(bool usePollingWatcher)
-        {
-            var testAsset = TestAssets.CopyTestAsset(AppName, identifier: usePollingWatcher.ToString())
+            var testAsset = TestAssets.CopyTestAsset("WatchGlobbingApp")
                .WithSource();
 
-            App.UsePollingWatcher = usePollingWatcher;
             App.Start(testAsset, ["--no-hot-reload"]);
 
-            await AssertCompiledAppDefinedTypes(expected: 2);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
+            await App.WaitUntilOutputContains("Defined types = 2");
+            App.Process.ClearOutput();
 
-            var fileToChange = Path.Combine(testAsset.Path, "include", "Foo.cs");
-            var programCs = File.ReadAllText(fileToChange);
-            File.WriteAllText(fileToChange, programCs);
+            operation(testAsset.Path);
 
-            await App.AssertFileChanged();
-            await App.AssertStarted();
-            await AssertCompiledAppDefinedTypes(expected: 2);
+            await App.WaitUntilOutputContains($"Defined types = {expectedTypesAfterOperation}");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
+        [Fact]
+        public async Task ChangeCompiledFile()
+        {
+            await ValidateOperation(
+                projectDir =>
+                {
+                    UpdateSourceFile(Path.Combine(projectDir, "include", "Foo.cs"), src => src);
+                },
+                expectedTypesAfterOperation: 2);
+        }
+
+        [Fact]
         public async Task DeleteCompiledFile()
         {
-            var testAsset = TestAssets.CopyTestAsset(AppName)
-               .WithSource();
-
-            App.Start(testAsset, ["--no-hot-reload"]);
-
-            await AssertCompiledAppDefinedTypes(expected: 2);
-
-            var fileToChange = Path.Combine(testAsset.Path, "include", "Foo.cs");
-            File.Delete(fileToChange);
-
-            await App.AssertStarted();
-            await AssertCompiledAppDefinedTypes(expected: 1);
+            await ValidateOperation(
+                projectDir =>
+                {
+                    File.Delete(Path.Combine(projectDir, "include", "Foo.cs"));
+                },
+                expectedTypesAfterOperation: 1);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
+        [Fact]
         public async Task DeleteSourceFolder()
         {
-            var testAsset = TestAssets.CopyTestAsset(AppName)
-               .WithSource();
-
-            App.Start(testAsset, ["--no-hot-reload"]);
-
-            await AssertCompiledAppDefinedTypes(expected: 2);
-
-            var folderToDelete = Path.Combine(testAsset.Path, "include");
-            Directory.Delete(folderToDelete, recursive: true);
-
-            await App.AssertStarted();
-            await AssertCompiledAppDefinedTypes(expected: 1);
+            await ValidateOperation(
+                projectDir =>
+                {
+                    Directory.Delete(Path.Combine(projectDir, "include"), recursive: true);
+                },
+                expectedTypesAfterOperation: 1);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
+        [Fact]
         public async Task RenameCompiledFile()
         {
-            var testAsset = TestAssets.CopyTestAsset(AppName)
-               .WithSource();
-
-            App.Start(testAsset, ["--no-hot-reload"]);
-
-            await App.AssertStarted();
-
-            var oldFile = Path.Combine(testAsset.Path, "include", "Foo.cs");
-            var newFile = Path.Combine(testAsset.Path, "include", "Foo_new.cs");
-            File.Move(oldFile, newFile);
-
-            await App.AssertStarted();
+            await ValidateOperation(
+                projectDir =>
+                {
+                    var oldFile = Path.Combine(projectDir, "include", "Foo.cs");
+                    var newFile = Path.Combine(projectDir, "include", "Foo_new.cs");
+                    File.Move(oldFile, newFile);
+                },
+                expectedTypesAfterOperation: 2);
         }
 
         [Fact]
         public async Task ChangeExcludedFile()
         {
-            var testAsset = TestAssets.CopyTestAsset(AppName)
+            var testAsset = TestAssets.CopyTestAsset("WatchGlobbingApp")
                .WithSource();
 
             App.Start(testAsset, ["--no-hot-reload"]);
 
-            await App.AssertStarted();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
+            await App.WaitUntilOutputContains("Defined types = 2");
+            App.Process.ClearOutput();
 
             var changedFile = Path.Combine(testAsset.Path, "exclude", "Baz.cs");
             File.WriteAllText(changedFile, "");
 
+            // no file change within timeout:
             var fileChanged = App.AssertFileChanged();
             var finished = await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(5)), fileChanged);
             Assert.NotSame(fileChanged, finished);
@@ -106,7 +91,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task ListsFiles()
         {
-            var testAsset = TestAssets.CopyTestAsset(AppName)
+            var testAsset = TestAssets.CopyTestAsset("WatchGlobbingApp")
                .WithSource();
 
             App.DotnetWatchArgs.Clear();
@@ -123,14 +108,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
                     "WatchGlobbingApp.csproj",
                 },
                 files);
-        }
-
-        private async Task AssertCompiledAppDefinedTypes(int expected)
-        {
-            var prefix = "Defined types = ";
-
-            var line = await App.AssertOutputLineStartsWith(prefix);
-            Assert.Equal(expected, int.Parse(line));
         }
     }
 }

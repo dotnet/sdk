@@ -4,7 +4,6 @@
 #nullable disable
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -21,13 +20,6 @@ internal static class TestingPlatformOptions
     {
         Description = CliCommandStrings.CmdSolutionDescription,
         HelpName = CliCommandStrings.CmdSolutionPathName,
-        Arity = ArgumentArity.ExactlyOne
-    };
-
-    public static readonly Option<string> DirectoryOption = new("--directory")
-    {
-        Description = CliCommandStrings.CmdDirectoryDescription,
-        HelpName = CliCommandStrings.CmdDirectoryPathName,
         Arity = ArgumentArity.ExactlyOne
     };
 

@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout repository code
         uses: actions/checkout@v4
+        with:
+          ref: release/10.0.1xx
 
       - name: Update man-pages
         run: |
@@ -38,7 +40,7 @@ jobs:
             git checkout -b $branch
             git commit -m "$title"
             git push -u origin $branch --force
-            gh pr create --base main --head $branch --title "$title" --body "$body"
+            gh pr create --base release/10.0.1xx --head $branch --title "$title" --body "$body"
           fi
         env:
           GH_TOKEN: ${{ github.token }}

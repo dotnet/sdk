@@ -5712,10 +5712,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -5752,6 +5748,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         },
         {
           "Name": "script-type",
@@ -5844,6 +5844,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -5932,6 +5936,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -6020,6 +6028,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -6108,6 +6120,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -6202,6 +6218,10 @@
           "Value": "__integrity__"
         },
         {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        },
+        {
           "Name": "script-type",
           "Value": "module"
         }
@@ -6292,6 +6312,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -6380,6 +6404,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -6468,6 +6496,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -6556,6 +6588,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -6612,10 +6648,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -6652,6 +6684,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         },
         {
           "Name": "script-type",
@@ -6744,6 +6780,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -6832,6 +6872,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -6920,6 +6964,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -7008,6 +7056,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -7096,6 +7148,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -7184,6 +7240,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -7272,6 +7332,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -7360,6 +7424,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -7448,6 +7516,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -7536,6 +7608,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -7624,6 +7700,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -7712,6 +7792,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -7800,6 +7884,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -7888,6 +7976,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -7976,6 +8068,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -8064,6 +8160,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -8152,6 +8252,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -8240,6 +8344,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -8328,6 +8436,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -8416,6 +8528,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -8504,6 +8620,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -8592,6 +8712,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -8680,6 +8804,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -8768,6 +8896,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -8856,6 +8988,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -8944,6 +9080,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -9032,6 +9172,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -9120,6 +9264,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -9208,6 +9356,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -9296,6 +9448,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -9384,6 +9540,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -9472,6 +9632,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -9560,6 +9724,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -9648,6 +9816,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -9736,6 +9908,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -9824,6 +10000,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -9912,6 +10092,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -10000,6 +10184,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -10088,6 +10276,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -10176,6 +10368,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -10264,6 +10460,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -10352,6 +10552,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -10440,6 +10644,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -10528,6 +10736,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -10616,6 +10828,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -10704,6 +10920,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -10792,6 +11012,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -10880,6 +11104,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -10968,6 +11196,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -11056,6 +11288,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -11144,6 +11380,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -11232,6 +11472,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -11320,6 +11564,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -11408,6 +11656,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -11496,6 +11748,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -11584,6 +11840,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -11672,6 +11932,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -11760,6 +12024,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -11848,6 +12116,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -11936,6 +12208,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -12024,6 +12300,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -12112,6 +12392,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -12200,6 +12484,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -12288,6 +12576,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -12376,6 +12668,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -12464,6 +12760,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -12552,6 +12852,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -12640,6 +12944,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -12728,6 +13036,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -12816,6 +13128,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -12904,6 +13220,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -12992,6 +13312,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -13080,6 +13404,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -13168,6 +13496,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -13256,6 +13588,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -13344,6 +13680,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -13432,6 +13772,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -13520,6 +13864,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -13608,6 +13956,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -13696,6 +14048,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -13784,6 +14140,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -13872,6 +14232,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -13960,6 +14324,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -14048,6 +14416,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -14136,6 +14508,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -14224,6 +14600,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -14312,6 +14692,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -14400,6 +14784,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -14488,6 +14876,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -14576,6 +14968,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -14664,6 +15060,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -14752,6 +15152,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -14840,6 +15244,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -14928,6 +15336,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -15016,6 +15428,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -15104,6 +15520,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -15192,6 +15612,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -15280,6 +15704,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -15368,6 +15796,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -15456,6 +15888,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -15544,6 +15980,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -15632,6 +16072,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -15720,6 +16164,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -15808,6 +16256,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -15896,6 +16348,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -15984,6 +16440,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -16072,6 +16532,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -16160,6 +16624,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -16248,6 +16716,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -16336,6 +16808,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -16424,6 +16900,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -16512,6 +16992,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -16600,6 +17084,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -16688,6 +17176,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -16776,6 +17268,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -16864,6 +17360,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -16952,6 +17452,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -17040,6 +17544,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -17128,6 +17636,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -17216,6 +17728,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -17304,6 +17820,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -17392,6 +17912,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -17480,6 +18004,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -17568,6 +18096,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -17656,6 +18188,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -17744,6 +18280,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -17832,6 +18372,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -17920,6 +18464,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -18008,6 +18556,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -18120,6 +18672,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -18232,6 +18788,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -18320,6 +18880,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -18408,6 +18972,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -18496,6 +19064,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -18584,6 +19156,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -18672,6 +19248,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -18760,6 +19340,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -18848,6 +19432,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -18936,6 +19524,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -19024,6 +19616,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -19112,6 +19708,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -19200,6 +19800,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -19294,6 +19898,10 @@
           "Value": "__integrity__"
         },
         {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        },
+        {
           "Name": "script-type",
           "Value": "module"
         }
@@ -19384,6 +19992,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -19472,6 +20084,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -22103,10 +22719,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -22151,10 +22763,6 @@
       "AssetFile": "${RestorePath}\\microsoft.dotnet.hotreload.webassembly.browser\\${PackageVersion}\\staticwebassets\\Microsoft.DotNet.HotReload.WebAssembly.Browser.__fingerprint__.lib.module.js",
       "Selectors": [],
       "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
         {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"

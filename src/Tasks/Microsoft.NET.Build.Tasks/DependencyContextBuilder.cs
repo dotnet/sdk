@@ -112,7 +112,7 @@ namespace Microsoft.NET.Build.Tasks
                 runtimeIdentifier,
                 string.IsNullOrWhiteSpace(platformLibraryName));
 
-            _isPortable = _isFrameworkDependent && string.IsNullOrEmpty(_runtimeIdentifier);
+            _isPortable = _isFrameworkDependent && (string.IsNullOrEmpty(_runtimeIdentifier) || _runtimeIdentifier == "any");
 
             if (_isFrameworkDependent != true || _isPortable != true)
             {
@@ -317,7 +317,7 @@ namespace Microsoft.NET.Build.Tasks
              * 1. If runtimeAssemblyGroups, nativeLibraryGroups, dependencies, and resourceAssemblies are all empty, remove this runtimeLibrary as well as any dependencies on it.
              * 2. Add all runtimeLibraries to a list of to-be-processed libraries called libraryCandidatesForRemoval
              * 3. libraryCandidatesForRemoval.Pop() --> if there are no runtimeAssemblyGroups, nativeLibraryGroups, or resourceAssemblies, and either dependencies is empty or all
-             *      dependencies have something else that depends on them, remove it (and from libraryCandidatesForRemoval), adding everything that depends on this to 
+             *      dependencies have something else that depends on them, remove it (and from libraryCandidatesForRemoval), adding everything that depends on this to
              *      libraryCandidatesForRemoval if it isn't already there
              * Repeat 3 until libraryCandidatesForRemoval is empty
              */
@@ -483,8 +483,8 @@ namespace Microsoft.NET.Build.Tasks
                 runtimeSignature: string.Empty,
                 _isPortable);
 
-            // Compute the runtime fallback graph 
-            // 
+            // Compute the runtime fallback graph
+            //
             // If the input RuntimeGraph is empty, or we're not compiling
             // for a specific RID, then an runtime fallback graph is empty
             //
