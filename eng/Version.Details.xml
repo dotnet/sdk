@@ -58,12 +58,6 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>7f2a07b481a3d24677ebcf6a45e7e27c8ff95a4e</Sha>
     </Dependency>
-    <!-- Change blob version in GenerateInstallerLayout.targets if this is unpinned to service targeting pack -->
-    <!-- No new netstandard.library planned for 3.1 timeframe at this time. -->
-    <Dependency Name="NETStandard.Library.Ref" Version="2.1.0" Pinned="true">
-      <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>7d57652f33493fa022125b7f63aad0d70c52d810</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.Build" Version="17.15.0-preview-25416-109">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>7f2a07b481a3d24677ebcf6a45e7e27c8ff95a4e</Sha>
@@ -545,13 +539,13 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>7f2a07b481a3d24677ebcf6a45e7e27c8ff95a4e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="1.9.0-preview.25427.4">
+    <Dependency Name="Microsoft.Testing.Platform" Version="1.9.0-preview.25430.5">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>605a2c741c420b1b7a6877fcce5a0fd69bb80e53</Sha>
+      <Sha>9d2e740bc8be46f45c6d69b33be1f5a913bf6231</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="3.11.0-preview.25427.4">
+    <Dependency Name="MSTest" Version="3.11.0-preview.25430.5">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>605a2c741c420b1b7a6877fcce5a0fd69bb80e53</Sha>
+      <Sha>9d2e740bc8be46f45c6d69b33be1f5a913bf6231</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="10.0.0-rc.2.25416.109">
       <Uri>https://github.com/dotnet/dotnet</Uri>
