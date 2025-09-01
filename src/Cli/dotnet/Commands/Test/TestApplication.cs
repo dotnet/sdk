@@ -23,6 +23,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
 
     private Task _testAppPipeConnectionLoop;
     private readonly List<NamedPipeServer> _testAppPipeConnections = [];
+    private readonly Dictionary<NamedPipeServer, HandshakeMessage> _handshakes = new();
 
     public event EventHandler<HandshakeArgs> HandshakeReceived;
     public event EventHandler<HelpEventArgs> HelpRequested;
@@ -146,7 +147,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         {
             while (!token.IsCancellationRequested)
             {
-                NamedPipeServer pipeConnection = new(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
+                NamedPipeServer pipeConnection = new NamedPipeServer(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
                 pipeConnection.RegisterAllSerializers();
 
                 await pipeConnection.WaitConnectionAsync(token);
@@ -173,13 +174,14 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         }
     }
 
-    private Task<IResponse> OnRequest(IRequest request)
+    private Task<IResponse> OnRequest(NamedPipeServer server, IRequest request)
     {
         try
         {
             switch (request)
             {
                 case HandshakeMessage handshakeMessage:
+                    _handshakes.Add(server, handshakeMessage);
                     if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ModulePath, out string value))
                     {
                         OnHandshakeMessage(handshakeMessage);
@@ -387,7 +389,34 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
     {
         foreach (var namedPipeServer in _testAppPipeConnections)
         {
-            namedPipeServer.Dispose();
+            try
+            {
+                namedPipeServer.Dispose();
+            }
+            catch (Exception ex)
+            {
+                StringBuilder messageBuilder;
+                if (_handshakes.TryGetValue(namedPipeServer, out var handshake))
+                {
+                    messageBuilder = new StringBuilder("Error disposing NamedPipeServer corresponding to handshake:");
+                    messageBuilder.AppendLine();
+                    foreach (var kvp in handshake.Properties)
+                    {
+                        messageBuilder.AppendLine($"{kvp.Key}: {kvp.Value}");
+                    }                    
+                }
+                else
+                {
+                    messageBuilder = new StringBuilder("Error disposing NamedPipeServer, and no handshake was found.");
+                    messageBuilder.AppendLine();
+                }
+
+                messageBuilder.AppendLine($"RunCommand: {Module.RunProperties.Command}");
+                messageBuilder.AppendLine($"RunArguments: {Module.RunProperties.Arguments}");
+                messageBuilder.AppendLine(ex.ToString());
+
+                Reporter.Error.WriteLine(messageBuilder.ToString());
+            }
         }
 
         WaitOnTestApplicationPipeConnectionLoop();

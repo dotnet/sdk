@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Cli.Commands.Test.IPC;
 
 internal sealed class NamedPipeServer : NamedPipeBase
 {
-    private readonly Func<IRequest, Task<IResponse>> _callback;
+    private readonly Func<NamedPipeServer, IRequest, Task<IResponse>> _callback;
     private readonly NamedPipeServerStream _namedPipeServerStream;
     private readonly CancellationToken _cancellationToken;
     private readonly MemoryStream _serializationBuffer = new();
@@ -24,7 +24,7 @@ internal sealed class NamedPipeServer : NamedPipeBase
 
     public NamedPipeServer(
         PipeNameDescription pipeNameDescription,
-        Func<IRequest, Task<IResponse>> callback,
+        Func<NamedPipeServer, IRequest, Task<IResponse>> callback,
         int maxNumberOfServerInstances,
         CancellationToken cancellationToken,
         bool skipUnknownMessages)
@@ -54,14 +54,6 @@ internal sealed class NamedPipeServer : NamedPipeBase
                 {
                     // We are being cancelled, so we don't need to wait anymore
                     return;
-                }
-                catch (Exception ex)
-                {
-                    // TODO: it might be better idea to let this exception bubble to
-                    // TestApplication. There, we should handle it by printing the exception without failing
-                    // the whole dotnet process, and provide more info about the specific test app that failed.
-                    // Potentially even knowing whether it's test host or test host controller that failed?
-                    Environment.FailFast($"[NamedPipeServer] Unhandled exception:{Environment.NewLine}{ex}", ex);
                 }
             }, cancellationToken);
     }
@@ -124,7 +116,7 @@ internal sealed class NamedPipeServer : NamedPipeBase
                 var deserializedObject = (IRequest)requestNamedPipeSerializer.Deserialize(_messageBuffer);
 
                 // Call the callback
-                IResponse response = await _callback(deserializedObject);
+                IResponse response = await _callback(this, deserializedObject);
 
                 // Write the message size
                 _messageBuffer.Position = 0;
@@ -205,21 +197,28 @@ internal sealed class NamedPipeServer : NamedPipeBase
             return;
         }
 
-        if (WasConnected)
+        try
         {
-            // If the loop task is null at this point we have race condition, means that the task didn't start yet and we already dispose.
-            // This is unexpected and we throw an exception.
-
-            // To close gracefully we need to ensure that the client closed the stream line 103.
-            if (!_loopTask.Wait(TimeSpan.FromSeconds(90)))
+            if (WasConnected)
             {
-                throw new InvalidOperationException("InternalLoopAsyncDidNotExitSuccessfullyErrorMessage");
+                // If the loop task is null at this point we have race condition, means that the task didn't start yet and we already dispose.
+                // This is unexpected and we throw an exception.
+
+                // To close gracefully we need to ensure that the client closed the stream line 103.
+                if (!_loopTask.Wait(TimeSpan.FromSeconds(90)))
+                {
+                    throw new InvalidOperationException("InternalLoopAsyncDidNotExitSuccessfullyErrorMessage");
+                }
             }
         }
+        finally
+        {
+            // Ensure we are still disposing the resouces correctly, even if _loopTask completes with
+            // an exception, or if the task doesn't complete within the 90 seconds limit.
+            _namedPipeServerStream.Dispose();
+            PipeName.Dispose();
 
-        _namedPipeServerStream.Dispose();
-        PipeName.Dispose();
-
-        _disposed = true;
+            _disposed = true;
+        }
     }
 }
