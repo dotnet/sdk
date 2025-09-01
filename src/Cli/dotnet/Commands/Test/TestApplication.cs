@@ -182,13 +182,8 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             {
                 case HandshakeMessage handshakeMessage:
                     _handshakes.Add(server, handshakeMessage);
-                    if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ModulePath, out string value))
-                    {
-                        OnHandshakeMessage(handshakeMessage);
-
-                        return Task.FromResult((IResponse)CreateHandshakeMessage(GetSupportedProtocolVersion(handshakeMessage)));
-                    }
-                    break;
+                    OnHandshakeMessage(handshakeMessage);
+                    return Task.FromResult((IResponse)CreateHandshakeMessage(GetSupportedProtocolVersion(handshakeMessage)));
 
                 case CommandLineOptionMessages commandLineOptionMessages:
                     OnCommandLineOptionMessages(commandLineOptionMessages);
