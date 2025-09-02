@@ -420,5 +420,24 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Verify the test runs successfully with UseAppHost=false
             result.ExitCode.Should().Be(0);
         }
+
+        [Theory]
+        [InlineData("3", ExitCodes.Success)]
+        [InlineData("5", ExitCodes.Success)]
+        [InlineData("7", ExitCodes.Success)]
+        [InlineData("10", ExitCodes.Success)]
+        [InlineData("11", ExitCodes.MinimumExpectedTestsPolicyViolation)]
+        public void RunMTPSolutionWithMinimumExpectedTests(string value, int expectedExitCode)
+        {
+            // The solution has two test projects. Each reports 5 tests. So, total 10 tests.
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionTestingMinimumExpectedTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(TestingPlatformOptions.MinimumExpectedTestsOption.Name, value);
+
+            result.ExitCode.Should().Be(expectedExitCode);
+        }
     }
 }

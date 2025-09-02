@@ -583,6 +583,11 @@ Dies entspricht dem Löschen von "project.assets.json".</target>
         <target state="translated">Die maximale Anzahl von Testmodulen, die parallel ausgeführt werden können.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdMinimumExpectedTestsDescription">
+        <source>Specifies the minimum number of tests that are expected to run.</source>
+        <target state="new">Specifies the minimum number of tests that are expected to run.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
         <source>Specify either the project, solution, directory, or test modules option.</source>
         <target state="translated">Geben Sie entweder die Option "Projekt", "Projektmappe", "Verzeichnis" oder "Testmodule" an.</target>
