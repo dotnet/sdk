@@ -191,6 +191,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
         private static bool IsProgressivelyEnhancedNavigation(HttpRequest request)
         {
+            // This is an exact copy from https://github.com/dotnet/aspnetcore/blob/bb2d778dc66aa998ea8e26db0e98e7e01423ff78/src/Components/Endpoints/src/Rendering/EndpointHtmlRenderer.Streaming.cs#L327-L332
             // For enhanced nav, the Blazor JS code controls the "accept" header precisely, so we can be very specific about the format
             var accept = request.Headers.Accept;
             return accept.Count == 1 && string.Equals(accept[0]!, "text/html; blazor-enhanced-nav=on", StringComparison.Ordinal);
