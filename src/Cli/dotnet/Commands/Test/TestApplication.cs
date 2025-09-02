@@ -395,7 +395,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
                 StringBuilder messageBuilder;
                 if (_handshakes.TryGetValue(namedPipeServer, out var handshake))
                 {
-                    messageBuilder = new StringBuilder(CliCommandStrings.DotnetTestPipeFailureWithoutHandshake);
+                    messageBuilder = new StringBuilder(CliCommandStrings.DotnetTestPipeFailureHasHandshake);
                     messageBuilder.AppendLine();
                     foreach (var kvp in handshake.Properties)
                     {
