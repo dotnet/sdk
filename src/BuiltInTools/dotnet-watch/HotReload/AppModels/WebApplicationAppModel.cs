@@ -54,7 +54,13 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
 
         if (IsServerSupported(projectNode, logger))
         {
-            return new BrowserRefreshServer(context.EnvironmentOptions, GetMiddlewareAssemblyPath(), logger, context.LoggerFactory);
+            return new BrowserRefreshServer(
+                logger,
+                context.LoggerFactory,
+                middlewareAssemblyPath: GetMiddlewareAssemblyPath(),
+                dotnetPath: context.EnvironmentOptions.MuxerPath,
+                autoReloadWebSocketHostName: context.EnvironmentOptions.AutoReloadWebSocketHostName,
+                suppressTimeouts: context.EnvironmentOptions.TestFlags != TestFlags.None);
         }
 
         return null;

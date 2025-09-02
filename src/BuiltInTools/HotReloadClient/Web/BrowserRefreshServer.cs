@@ -1,33 +1,59 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
+#if NET
+
+using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
-using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.DotNet.Watch;
+namespace Microsoft.DotNet.HotReload;
 
-internal sealed class BrowserRefreshServer(EnvironmentOptions options, string middlewareAssemblyPath, ILogger logger, ILoggerFactory loggerFactory)
+/// <summary>
+/// Kestrel-based Browser Refesh Server implementation.
+/// </summary>
+internal sealed class BrowserRefreshServer(    
+    ILogger logger,
+    ILoggerFactory loggerFactory,
+    string middlewareAssemblyPath,
+    string dotnetPath,
+    string? autoReloadWebSocketHostName,
+    bool suppressTimeouts)
     : AbstractBrowserRefreshServer(middlewareAssemblyPath, logger, loggerFactory)
 {
+    private sealed class WebServerHost(IHost host, ImmutableArray<string> endPoints)
+        : AbstractWebServerHost(endPoints, virtualDirectory: "/")
+    {
+        public override void Dispose()
+            => host.Dispose();
+
+        public override Task StartAsync(CancellationToken cancellation)
+            => host.StartAsync(cancellation);
+    }
+
     private static bool? s_lazyTlsSupported;
 
     protected override bool SuppressTimeouts
-        => options.TestFlags != TestFlags.None;
+        => suppressTimeouts;
 
     protected override async ValueTask<AbstractWebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken)
     {
-        var hostName = options.AutoReloadWebSocketHostName ?? "127.0.0.1";
+        var hostName = autoReloadWebSocketHostName ?? "127.0.0.1";
 
         var supportsTls = await IsTlsSupportedAsync(cancellationToken);
 
@@ -68,7 +94,7 @@ internal sealed class BrowserRefreshServer(EnvironmentOptions options, string mi
 
         try
         {
-            using var process = Process.Start(options.MuxerPath, "dev-certs https --check --quiet");
+            using var process = Process.Start(dotnetPath, "dev-certs https --check --quiet");
             await process
                 .WaitForExitAsync(cancellationToken)
                 .WaitAsync(SuppressTimeouts ? TimeSpan.MaxValue : TimeSpan.FromSeconds(10), cancellationToken);
@@ -94,7 +120,7 @@ internal sealed class BrowserRefreshServer(EnvironmentOptions options, string mi
 
         Debug.Assert(serverUrls != null);
 
-        if (options.AutoReloadWebSocketHostName is null)
+        if (autoReloadWebSocketHostName is null)
         {
             return [.. serverUrls.Select(s =>
                 s.Replace("http://127.0.0.1", "ws://localhost", StringComparison.Ordinal)
@@ -129,3 +155,5 @@ internal sealed class BrowserRefreshServer(EnvironmentOptions options, string mi
         await connection.Disconnected.Task;
     }
 }
+
+#endif
