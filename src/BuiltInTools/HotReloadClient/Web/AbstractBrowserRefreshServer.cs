@@ -31,6 +31,7 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
 
     private static readonly ReadOnlyMemory<byte> s_reloadMessage = Encoding.UTF8.GetBytes("Reload");
     private static readonly ReadOnlyMemory<byte> s_waitMessage = Encoding.UTF8.GetBytes("Wait");
+    private static readonly ReadOnlyMemory<byte> s_pingMessage = Encoding.UTF8.GetBytes("""{ "type" : "Ping" }""");
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
     private readonly List<BrowserConnection> _activeConnections = [];
@@ -39,7 +40,7 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
     private readonly RSA _rsa = CreateRsa();
 
     // initialized by StartAsync
-    private AbstractWebServerHost? _lazyHost;
+    private WebServerHost? _lazyHost;
 
     public virtual async ValueTask DisposeAsync()
     {
@@ -60,8 +61,11 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
         _rsa.Dispose();
     }
 
-    protected abstract ValueTask<AbstractWebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken);
+    protected abstract ValueTask<WebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken);
     protected abstract bool SuppressTimeouts { get; }
+
+    public ILogger Logger
+        => logger;
 
     private static RSA CreateRsa()
     {
@@ -70,9 +74,23 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
         return rsa;
     }
 
-    public void ConfigureLaunchEnvironment(IDictionary<string, string> builder)
+    public async ValueTask StartAsync(CancellationToken cancellationToken)
     {
-        Debug.Assert(_lazyHost != null);
+        if (_lazyHost != null)
+        {
+            throw new InvalidOperationException("Server already started");
+        }
+
+        _lazyHost = await CreateAndStartHostAsync(cancellationToken);
+        logger.Log(LogEvents.RefreshServerRunningAt, string.Join(",", _lazyHost.EndPoints));
+    }
+
+    public void ConfigureLaunchEnvironment(IDictionary<string, string> builder, bool enableHotReload)
+    {
+        if (_lazyHost == null)
+        {
+            throw new InvalidOperationException("Server not started");
+        }
 
         builder[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadWSEndPoint] = string.Join(",", _lazyHost.EndPoints);
 
@@ -88,26 +106,21 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
         builder.InsertListItem(MiddlewareEnvironmentVariables.DotNetStartupHooks, middlewareAssemblyPath, Path.PathSeparator);
         builder.InsertListItem(MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssemblies, Path.GetFileNameWithoutExtension(middlewareAssemblyPath), MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssembliesSeparator);
 
-        // Note:
-        // Microsoft.AspNetCore.Components.WebAssembly.Server.ComponentWebAssemblyConventions and Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware
-        // expect DOTNET_MODIFIABLE_ASSEMBLIES to be set in the blazor-devserver process, even though we are not performing Hot Reload in this process.
-        // The value is converted to DOTNET-MODIFIABLE-ASSEMBLIES header, which is in turn converted back to environment variable in Mono browser runtime loader:
-        // https://github.com/dotnet/runtime/blob/342936c5a88653f0f622e9d6cb727a0e59279b31/src/mono/browser/runtime/loader/config.ts#L330
-        builder[MiddlewareEnvironmentVariables.DotNetModifiableAssemblies] = "debug";
+        if (enableHotReload)
+        {
+            // Note:
+            // Microsoft.AspNetCore.Components.WebAssembly.Server.ComponentWebAssemblyConventions and Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware
+            // expect DOTNET_MODIFIABLE_ASSEMBLIES to be set in the blazor-devserver process, even though we are not performing Hot Reload in this process.
+            // The value is converted to DOTNET-MODIFIABLE-ASSEMBLIES header, which is in turn converted back to environment variable in Mono browser runtime loader:
+            // https://github.com/dotnet/runtime/blob/342936c5a88653f0f622e9d6cb727a0e59279b31/src/mono/browser/runtime/loader/config.ts#L330
+            builder[MiddlewareEnvironmentVariables.DotNetModifiableAssemblies] = "debug";
+        }
 
         if (logger.IsEnabled(LogLevel.Debug))
         {
             // enable debug logging from middleware:
             builder[MiddlewareEnvironmentVariables.LoggingLevel] = "Debug";
         }
-    }
-
-    public async ValueTask StartAsync(CancellationToken cancellationToken)
-    {
-        Debug.Assert(_lazyHost == null);
-
-        _lazyHost = await CreateAndStartHostAsync(cancellationToken);
-        logger.Log(LogEvents.RefreshServerRunningAt, string.Join(",", _lazyHost.EndPoints));
     }
 
     protected BrowserConnection OnBrowserConnected(WebSocket clientSocket, string? subProtocol)
@@ -235,6 +248,9 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
 
     public ValueTask SendWaitMessageAsync(CancellationToken cancellationToken)
         => SendAsync(s_waitMessage, cancellationToken);
+
+    public ValueTask SendPingMessageAsync(CancellationToken cancellationToken)
+        => SendAsync(s_pingMessage, cancellationToken);
 
     private ValueTask SendAsync(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
         => SendAndReceiveAsync(request: _ => messageBytes, response: null, cancellationToken);

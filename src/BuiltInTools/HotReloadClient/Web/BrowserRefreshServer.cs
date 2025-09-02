@@ -36,22 +36,12 @@ internal sealed class BrowserRefreshServer(
     bool suppressTimeouts)
     : AbstractBrowserRefreshServer(middlewareAssemblyPath, logger, loggerFactory)
 {
-    private sealed class WebServerHost(IHost host, ImmutableArray<string> endPoints)
-        : AbstractWebServerHost(endPoints, virtualDirectory: "/")
-    {
-        public override void Dispose()
-            => host.Dispose();
-
-        public override Task StartAsync(CancellationToken cancellation)
-            => host.StartAsync(cancellation);
-    }
-
     private static bool? s_lazyTlsSupported;
 
     protected override bool SuppressTimeouts
         => suppressTimeouts;
 
-    protected override async ValueTask<AbstractWebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken)
+    protected override async ValueTask<WebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken)
     {
         var hostName = autoReloadWebSocketHostName ?? "127.0.0.1";
 
@@ -81,7 +71,7 @@ internal sealed class BrowserRefreshServer(
         await host.StartAsync(cancellationToken);
 
         // URLs are only available after the server has started.
-        return new WebServerHost(host, GetServerUrls(host));
+        return new WebServerHost(host, GetServerUrls(host), virtualDirectory: "/");
     }
 
     private async ValueTask<bool> IsTlsSupportedAsync(CancellationToken cancellationToken)
