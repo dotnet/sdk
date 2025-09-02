@@ -36,6 +36,8 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
 
     public TestModule Module { get; } = module;
 
+    public bool HasFailureDuringDispose { get; private set; }
+
     public async Task<int> RunAsync(TestOptions testOptions)
     {
         if (testOptions.HasFilterMode && !ModulePathExists())
@@ -410,6 +412,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
                 messageBuilder.AppendLine($"RunArguments: {Module.RunProperties.Arguments}");
                 messageBuilder.AppendLine(ex.ToString());
 
+                HasFailureDuringDispose = true;
                 Reporter.Error.WriteLine(messageBuilder.ToString());
             }
         }
