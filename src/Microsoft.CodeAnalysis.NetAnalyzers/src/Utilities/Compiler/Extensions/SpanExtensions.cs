@@ -4,15 +4,54 @@ namespace Analyzer.Utilities.Extensions;
 
 internal static class SpanExtensions
 {
-    public static SpanSplitEnumerator Split(this ReadOnlySpan<char> source, char separator)
+    public static SpanSplitEnumerator Split(this ReadOnlySpan<char> source, char separator, StringSplitOptions options = StringSplitOptions.None)
     {
         return new SpanSplitEnumerator(source, separator);
+    }
+
+    public static SpanSplitEnumerator Split(this ReadOnlySpan<char> source, ReadOnlySpan<char> separator, StringSplitOptions options = StringSplitOptions.None)
+    {
+        return new SpanSplitEnumerator(source, separator);
+    }
+
+    public static int Split(this ReadOnlySpan<char> source, Span<Range> destination, char separator, StringSplitOptions options = StringSplitOptions.None)
+    {
+        ReadOnlySpan<char> separatorSpan = stackalloc[] { separator };
+        return Split(source, destination, separatorSpan, options);
+    }
+
+    public static int Split(this ReadOnlySpan<char> source, Span<Range> destination, ReadOnlySpan<char> separator, StringSplitOptions options = StringSplitOptions.None)
+    {
+        if (destination.IsEmpty)
+        {
+            return 0;
+        }
+        else if (separator.IsEmpty)
+        {
+            destination[0] = 0..(source.Length - 1);
+            return 1;
+        }
+
+        var i = 0;
+        foreach (Range range in source.Split(separator, options))
+        {
+            destination[i++] = range;
+
+            if (i == destination.Length - 1)
+            {
+                break;
+            }
+        }
+
+        return i;
     }
 
     public ref struct SpanSplitEnumerator
     {
         private readonly ReadOnlySpan<char> _source;
+        private readonly ReadOnlySpan<char> _separatorSpan;
         private readonly char _separator;
+        private readonly int _separatorLength;
 
         private int _currentIndex;
 
@@ -20,6 +59,14 @@ internal static class SpanExtensions
         {
             _source = source;
             _separator = separator;
+            _separatorLength = 1;
+        }
+
+        internal SpanSplitEnumerator(ReadOnlySpan<char> source, ReadOnlySpan<char> separator)
+        {
+            _source = source;
+            _separatorSpan = separator;
+            _separatorLength = separator.Length;
         }
 
         public Range Current { get; private set; }
@@ -39,11 +86,13 @@ internal static class SpanExtensions
                 return true;
             }
 
-            var index = _source[_currentIndex..].IndexOf(_separator);
-            var length = index >= 0 ? index : _source.Length - _currentIndex;
+            var slice = _source[_currentIndex..];
+            var index = _separatorSpan.IsEmpty ? slice.IndexOf(_separator) : slice.IndexOf(_separatorSpan);
 
-            this.Current = new Range(_currentIndex, _currentIndex + length);
-            _currentIndex += length + 1;
+            var partLength = index >= 0 ? index : _source.Length - _currentIndex;
+
+            this.Current = new Range(_currentIndex, _currentIndex + partLength);
+            _currentIndex += partLength + _separatorLength;
 
             return true;
         }

@@ -139,9 +139,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         EditorConfigOptionNames.AdditionalEnumNoneNames, RuleRename,
                         namedType.Locations[0].SourceTree!, context.Compilation).AsSpan();
 
-                foreach (var range in additionalEnumNoneNames.Split('|'))
+                foreach (var part in additionalEnumNoneNames.Split('|', StringSplitOptions.RemoveEmptyEntries))
                 {
-                    if (additionalEnumNoneNames[range].Equals(zeroValuedField.Name, StringComparison.OrdinalIgnoreCase))
+                    if (additionalEnumNoneNames[part].Equals(zeroValuedField.Name, StringComparison.OrdinalIgnoreCase))
                     {
                         return;
                     }
