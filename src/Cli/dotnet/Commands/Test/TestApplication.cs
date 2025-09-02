@@ -393,7 +393,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
                 StringBuilder messageBuilder;
                 if (_handshakes.TryGetValue(namedPipeServer, out var handshake))
                 {
-                    messageBuilder = new StringBuilder("Error disposing NamedPipeServer corresponding to handshake:");
+                    messageBuilder = new StringBuilder(CliCommandStrings.DotnetTestPipeFailureWithoutHandshake);
                     messageBuilder.AppendLine();
                     foreach (var kvp in handshake.Properties)
                     {
@@ -402,7 +402,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
                 }
                 else
                 {
-                    messageBuilder = new StringBuilder("Error disposing NamedPipeServer, and no handshake was found.");
+                    messageBuilder = new StringBuilder(CliCommandStrings.DotnetTestPipeFailureWithoutHandshake);
                     messageBuilder.AppendLine();
                 }
 

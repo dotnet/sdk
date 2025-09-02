@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Buffers;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipes;
 
@@ -86,6 +87,11 @@ internal sealed class NamedPipeServer : NamedPipeBase
             if (currentMessageSize == 0)
             {
                 // We need to read the message size, first 4 bytes
+                if (currentReadBytes < sizeof(int))
+                {
+                    throw new UnreachableException(CliCommandStrings.DotnetTestPipeIncompleteSize);
+                }
+
                 currentMessageSize = BitConverter.ToInt32(_readBuffer, 0);
                 missingBytesToReadOfCurrentChunk = currentReadBytes - sizeof(int);
                 missingBytesToReadOfWholeMessage = currentMessageSize;
@@ -97,6 +103,11 @@ internal sealed class NamedPipeServer : NamedPipeBase
                 // We need to read the rest of the message
                 await _messageBuffer.WriteAsync(_readBuffer.AsMemory(currentReadIndex, missingBytesToReadOfCurrentChunk), cancellationToken);
                 missingBytesToReadOfWholeMessage -= missingBytesToReadOfCurrentChunk;
+            }
+
+            if (missingBytesToReadOfWholeMessage < 0)
+            {
+                throw new UnreachableException(CliCommandStrings.DotnetTestPipeOverlapping);
             }
 
             // If we have read all the message, we can deserialize it
@@ -207,7 +218,7 @@ internal sealed class NamedPipeServer : NamedPipeBase
                 // To close gracefully we need to ensure that the client closed the stream line 103.
                 if (!_loopTask.Wait(TimeSpan.FromSeconds(90)))
                 {
-                    throw new InvalidOperationException("InternalLoopAsyncDidNotExitSuccessfullyErrorMessage");
+                    throw new InvalidOperationException(CliCommandStrings.InternalLoopAsyncDidNotExitSuccessfullyErrorMessage);
                 }
             }
         }
