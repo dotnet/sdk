@@ -5,6 +5,8 @@ using System.Collections.Immutable;
 using System.ComponentModel.Composition;
 using System.Text.Json;
 using Microsoft.CodeAnalysis.Workspaces.AnalyzerRedirecting;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 
 // Example:
 // FullPath: "C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\8.0.8\analyzers\dotnet\System.Windows.Forms.Analyzers.dll"
@@ -20,6 +22,8 @@ namespace Microsoft.Net.Sdk.AnalyzerRedirecting;
 [Export(typeof(IAnalyzerAssemblyRedirector))]
 public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
 {
+    private readonly IVsActivityLog? _log;
+
     private readonly bool _enabled;
 
     private readonly string? _insertedAnalyzersDirectory;
@@ -30,12 +34,16 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
     private readonly ImmutableDictionary<string, List<AnalyzerInfo>> _analyzerMap;
 
     [ImportingConstructor]
-    public SdkAnalyzerAssemblyRedirector()
-        : this(Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\DotNetRuntimeAnalyzers"))) { }
+    public SdkAnalyzerAssemblyRedirector(SVsServiceProvider serviceProvider) : this(
+        Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\DotNetRuntimeAnalyzers")),
+        serviceProvider.GetService<SVsActivityLog, IVsActivityLog>())
+    {
+    }
 
     // Internal for testing.
-    internal SdkAnalyzerAssemblyRedirector(string? insertedAnalyzersDirectory)
+    internal SdkAnalyzerAssemblyRedirector(string? insertedAnalyzersDirectory, IVsActivityLog? log = null)
     {
+        _log = log;
         var enable = Environment.GetEnvironmentVariable("DOTNET_ANALYZER_REDIRECTING");
         _enabled = !"0".Equals(enable, StringComparison.OrdinalIgnoreCase) && !"false".Equals(enable, StringComparison.OrdinalIgnoreCase);
         _insertedAnalyzersDirectory = insertedAnalyzersDirectory;
@@ -46,18 +54,21 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
     {
         if (!_enabled)
         {
+            Log("Analyzer redirecting is disabled.");
             return ImmutableDictionary<string, List<AnalyzerInfo>>.Empty;
         }
 
         var metadataFilePath = Path.Combine(_insertedAnalyzersDirectory, "metadata.json");
         if (!File.Exists(metadataFilePath))
         {
+            Log($"File does not exist: {metadataFilePath}");
             return ImmutableDictionary<string, List<AnalyzerInfo>>.Empty;
         }
 
         var versions = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(metadataFilePath));
         if (versions is null || versions.Count == 0)
         {
+            Log($"Versions are empty: {metadataFilePath}");
             return ImmutableDictionary<string, List<AnalyzerInfo>>.Empty;
         }
 
@@ -99,6 +110,8 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
                 }
             }
         }
+
+        Log($"Loaded analyzer map ({builder.Count}): {_insertedAnalyzersDirectory}");
 
         return builder.ToImmutable();
     }
@@ -159,5 +172,13 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
 
             return 0 == string.Compare(version1, 0, version2, 0, secondDotIndex, StringComparison.OrdinalIgnoreCase);
         }
+    }
+
+    private void Log(string message)
+    {
+        _log?.LogEntry(
+            (uint)__ACTIVITYLOG_ENTRYTYPE.ALE_INFORMATION,
+            nameof(SdkAnalyzerAssemblyRedirector),
+            message);
     }
 }
