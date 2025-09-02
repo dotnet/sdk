@@ -355,7 +355,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                     SymbolKind? symbolKind = null;
                     partCount = key.Split(parts, '(');
                     var part0 = key[parts[0]];
-                    var part1 = key[parts[1]];
                     switch (part0)
                     {
                         case CA1501RuleId:
@@ -371,6 +370,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
 
                     if (!isInvalidLine && partCount > 1)
                     {
+                        var part1 = key[parts[1]];
+
                         if (partCount > 2 ||
                             part1.Length == 0 ||
                             part1[^1] != ')')
