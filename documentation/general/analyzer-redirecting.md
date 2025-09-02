@@ -35,16 +35,28 @@ Targeting an SDK (and hence also loading analyzers) with newer major version in 
 The VSIX contains some analyzers, for example:
 
 ```
-AspNetCoreAnalyzers\9.0.0-preview.5.24306.11\analyzers\dotnet\cs\Microsoft.AspNetCore.App.Analyzers.dll
-NetCoreAnalyzers\9.0.0-preview.5.24306.7\analyzers\dotnet\cs\System.Text.RegularExpressions.Generator.dll
-WindowsDesktopAnalyzers\9.0.0-preview.5.24306.8\analyzers\dotnet\System.Windows.Forms.Analyzers.dll
-SDKAnalyzers\9.0.100-dev\Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll
-WebSDKAnalyzers\9.0.100-dev\Sdks\Microsoft.NET.Sdk.Web\analyzers\cs\Microsoft.AspNetCore.Analyzers.dll
+AspNetCoreAnalyzers\analyzers\dotnet\cs\Microsoft.AspNetCore.App.Analyzers.dll
+NetCoreAnalyzers\analyzers\dotnet\cs\System.Text.RegularExpressions.Generator.dll
+WindowsDesktopAnalyzers\analyzers\dotnet\System.Windows.Forms.Analyzers.dll
+SDKAnalyzers\Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll
+WebSDKAnalyzers\Sdks\Microsoft.NET.Sdk.Web\analyzers\cs\Microsoft.AspNetCore.Analyzers.dll
+```
+
+And metadata at `metadata.json`:
+
+```json
+{
+  "AspNetCoreAnalyzers": "9.0.0-preview.5.24306.11",
+  "NetCoreAnalyzers": "9.0.0-preview.5.24306.7",
+  "WindowsDesktopAnalyzers": "9.0.0-preview.5.24306.8",
+  "SDKAnalyzers": "9.0.100-dev",
+  "WebSDKAnalyzers": "9.0.100-dev",
+}
 ```
 
 Given an analyzer assembly load going through our `IAnalyzerAssemblyRedirector`,
 we will redirect it if the original path of the assembly being loaded matches the path of a VSIX-deployed analyzer -
-only segments of these paths starting after the version segment are compared,
+only relevant segments (see example below) of these paths are compared,
 plus the major and minor component of the versions must match.
 
 For example, the analyzer
@@ -56,15 +68,25 @@ C:\Program Files\dotnet\sdk\9.0.100-preview.5.24307.3\Sdks\Microsoft.NET.Sdk\ana
 will be redirected to
 
 ```
-{VSIX}\SDKAnalyzers\9.0.100-dev\Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll
+{VSIX}\SDKAnalyzers\Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll
 ```
 
-because
+where `metadata.json` has `"SDKAnalyzers": "9.0.100-dev"`, because
 1. the suffix `Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll` matches, and
 2. the version `9.0.100-preview.5.24307.3` has the same major and minor component (`9.0`) as the version `9.0.100-dev`
    (both versions are read from the paths, not DLL metadata).
 
 Analyzers that cannot be matched will continue to be loaded from the SDK
 (and will fail to load if they reference Roslyn that is newer than is in VS).
+
+### NGEN
+
+Note that these analyzers will have NGEN enabled for them when inserted to VS, which needs all the folders containing DLLs hard-coded in probing paths configuration file.
+That is also why the versions are part of a separate metadata file instead of the directory layout.
+
+### Implementation
+
+Analyzer DLLs are contained in transport package `VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers`.
+The redirecting logic lives in "system" VS extension `Microsoft.Net.Sdk.AnalyzerRedirecting`.
 
 [torn-sdk]: https://github.com/dotnet/sdk/issues/42087

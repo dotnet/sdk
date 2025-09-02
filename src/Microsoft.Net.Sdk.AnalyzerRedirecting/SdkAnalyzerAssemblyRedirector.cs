@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.ComponentModel.Composition;
+using System.Text.Json;
 using Microsoft.CodeAnalysis.Workspaces.AnalyzerRedirecting;
 
 // Example:
@@ -48,40 +49,53 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
             return ImmutableDictionary<string, List<AnalyzerInfo>>.Empty;
         }
 
+        var metadataFilePath = Path.Combine(_insertedAnalyzersDirectory, "metadata.json");
+        if (!File.Exists(metadataFilePath))
+        {
+            return ImmutableDictionary<string, List<AnalyzerInfo>>.Empty;
+        }
+
+        var versions = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(metadataFilePath));
+        if (versions is null || versions.Count == 0)
+        {
+            return ImmutableDictionary<string, List<AnalyzerInfo>>.Empty;
+        }
+
         var builder = ImmutableDictionary.CreateBuilder<string, List<AnalyzerInfo>>(StringComparer.OrdinalIgnoreCase);
 
         // Expects layout like:
-        // VsInstallDir\DotNetRuntimeAnalyzers\WindowsDesktopAnalyzers\8.0.8\analyzers\dotnet\System.Windows.Forms.Analyzers.dll
-        //                                     ~~~~~~~~~~~~~~~~~~~~~~~                                                           = topLevelDirectory
-        //                                                             ~~~~~                                                     = versionDirectory
-        //                                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ = analyzerPath
+        // VsInstallDir\DotNetRuntimeAnalyzers\WindowsDesktopAnalyzers\analyzers\dotnet\System.Windows.Forms.Analyzers.dll
+        //                                     ~~~~~~~~~~~~~~~~~~~~~~~                                                     = topLevelDirectory
+        //                                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ = analyzerPath
 
         foreach (string topLevelDirectory in Directory.EnumerateDirectories(_insertedAnalyzersDirectory))
         {
-            foreach (string versionDirectory in Directory.EnumerateDirectories(topLevelDirectory))
+            foreach (string analyzerPath in Directory.EnumerateFiles(topLevelDirectory, "*.dll", SearchOption.AllDirectories))
             {
-                foreach (string analyzerPath in Directory.EnumerateFiles(versionDirectory, "*.dll", SearchOption.AllDirectories))
+                if (!analyzerPath.StartsWith(topLevelDirectory, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!analyzerPath.StartsWith(versionDirectory, StringComparison.OrdinalIgnoreCase))
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    string version = Path.GetFileName(versionDirectory);
-                    string analyzerName = Path.GetFileNameWithoutExtension(analyzerPath);
-                    string pathSuffix = analyzerPath.Substring(versionDirectory.Length + 1 /* slash */);
-                    pathSuffix = Path.GetDirectoryName(pathSuffix);
+                string subsetName = Path.GetFileName(topLevelDirectory);
+                if (!versions.TryGetValue(subsetName, out string version))
+                {
+                    continue;
+                }
 
-                    AnalyzerInfo analyzer = new() { FullPath = analyzerPath, ProductVersion = version, PathSuffix = pathSuffix };
+                string analyzerName = Path.GetFileNameWithoutExtension(analyzerPath);
+                string pathSuffix = analyzerPath.Substring(topLevelDirectory.Length + 1 /* slash */);
+                pathSuffix = Path.GetDirectoryName(pathSuffix);
 
-                    if (builder.TryGetValue(analyzerName, out var existing))
-                    {
-                        existing.Add(analyzer);
-                    }
-                    else
-                    {
-                        builder.Add(analyzerName, [analyzer]);
-                    }
+                AnalyzerInfo analyzer = new() { FullPath = analyzerPath, ProductVersion = version, PathSuffix = pathSuffix };
+
+                if (builder.TryGetValue(analyzerName, out var existing))
+                {
+                    existing.Add(analyzer);
+                }
+                else
+                {
+                    builder.Add(analyzerName, [analyzer]);
                 }
             }
         }
