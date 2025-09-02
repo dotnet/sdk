@@ -45,7 +45,7 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
             client.ConfigureLaunchEnvironment(environmentBuilder);
         }
 
-        browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder);
+        browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder, enableHotReload: true);
     }
 
     internal void InitiateConnection(CancellationToken cancellationToken)

@@ -66,7 +66,7 @@ namespace Microsoft.DotNet.Watch
                     ? await context.BrowserRefreshServerFactory.GetOrCreateBrowserRefreshServerAsync(projectRootNode, webAppModel, shutdownCancellationToken)
                     : null;
 
-                browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder);
+                browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder, enableHotReload: false);
 
                 foreach (var (name, value) in environmentBuilder)
                 {
