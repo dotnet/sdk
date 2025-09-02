@@ -169,7 +169,8 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             if (request.Headers.TryGetValue("Sec-Fetch-Dest", out var values) &&
                 !StringValues.IsNullOrEmpty(values) &&
-                !string.Equals(values[0], "document", StringComparison.OrdinalIgnoreCase))
+                !string.Equals(values[0], "document", StringComparison.OrdinalIgnoreCase) &&
+                !IsProgressivelyEnhancedNavigation(context.Request))
             {
                 // See https://github.com/dotnet/aspnetcore/issues/37326.
                 // Only inject scripts that are destined for a browser page.
@@ -191,6 +192,13 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             }
 
             return false;
+        }
+
+        private static bool IsProgressivelyEnhancedNavigation(HttpRequest request)
+        {
+            // For enhanced nav, the Blazor JS code controls the "accept" header precisely, so we can be very specific about the format
+            var accept = request.Headers.Accept;
+            return accept.Count == 1 && string.Equals(accept[0]!, "text/html; blazor-enhanced-nav=on", StringComparison.Ordinal);
         }
 
         internal void Test_SetEnvironment(string dotnetModifiableAssemblies, string aspnetcoreBrowserTools)
