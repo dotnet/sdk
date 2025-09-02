@@ -4,6 +4,9 @@ variables:
   linuxOsglibcProperties: /p:OSName=linux
   helixTargetContainerPrefix: '@mcr.microsoft.com/dotnet-buildtools/prereqs:'
 
+  # Use MSBuild server globally
+  DOTNET_CLI_USE_MSBUILD_SERVER: 1
+
   ############### ARCADE ###############
   # "Post-build signing" means that this build will NOT sign itself.
   PostBuildSign: true
