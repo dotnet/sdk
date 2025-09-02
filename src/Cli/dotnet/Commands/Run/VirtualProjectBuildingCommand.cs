@@ -359,123 +359,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             if (msbuildGet)
             {
                 projectInstance ??= CreateProjectInstance(projectCollection);
-
-                var resultOutputFile = MSBuildArgs.GetResultOutputFile is [{ } file, ..] ? file : null;
-
-                // If a single property is requested, don't print as JSON.
-                if (MSBuildArgs is { GetProperty: [{ } singlePropertyName], GetItem: null or [], GetTargetResult: null or [] })
-                {
-                    var result = projectInstance.GetPropertyValue(singlePropertyName);
-                    if (resultOutputFile == null)
-                    {
-                        Console.WriteLine(result);
-                    }
-                    else
-                    {
-                        File.WriteAllText(path: resultOutputFile, contents: result + Environment.NewLine);
-                    }
-                }
-                else
-                {
-                    using var stream = resultOutputFile == null
-                       ? Console.OpenStandardOutput()
-                       : new FileStream(resultOutputFile, FileMode.Create, FileAccess.Write, FileShare.Read);
-                    using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
-                    writer.WriteStartObject();
-
-                    if (MSBuildArgs.GetProperty is [_, ..])
-                    {
-                        writer.WritePropertyName("Properties");
-                        writer.WriteStartObject();
-
-                        foreach (var propertyName in MSBuildArgs.GetProperty)
-                        {
-                            writer.WriteString(propertyName, projectInstance.GetPropertyValue(propertyName));
-                        }
-
-                        writer.WriteEndObject();
-                    }
-
-                    if (MSBuildArgs.GetItem is [_, ..])
-                    {
-                        writer.WritePropertyName("Items");
-                        writer.WriteStartObject();
-
-                        foreach (var itemName in MSBuildArgs.GetItem)
-                        {
-                            writer.WritePropertyName(itemName);
-                            writer.WriteStartArray();
-
-                            foreach (var item in projectInstance.GetItems(itemName))
-                            {
-                                writer.WriteStartObject();
-                                writer.WriteString("Identity", item.GetMetadataValue("Identity"));
-
-                                foreach (var metadatumName in item.MetadataNames)
-                                {
-                                    if (metadatumName.Equals("Identity", StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        continue;
-                                    }
-
-                                    writer.WriteString(metadatumName, item.GetMetadataValue(metadatumName));
-                                }
-
-                                writer.WriteEndObject();
-                            }
-
-                            writer.WriteEndArray();
-                        }
-
-                        writer.WriteEndObject();
-                    }
-
-                    if (MSBuildArgs.GetTargetResult is [_, ..])
-                    {
-                        Debug.Assert(buildOrRestoreResult != null);
-
-                        writer.WritePropertyName("TargetResults");
-                        writer.WriteStartObject();
-
-                        foreach (var targetName in MSBuildArgs.GetTargetResult)
-                        {
-                            var targetResult = buildOrRestoreResult.ResultsByTarget[targetName];
-
-                            writer.WritePropertyName(targetName);
-                            writer.WriteStartObject();
-                            writer.WriteString("Result", targetResult.TargetResultCodeToString());
-                            writer.WritePropertyName("Items");
-                            writer.WriteStartArray();
-
-                            foreach (var item in targetResult.Items)
-                            {
-                                writer.WriteStartObject();
-                                writer.WriteString("Identity", item.GetMetadata("Identity"));
-
-                                foreach (string metadatumName in item.MetadataNames)
-                                {
-                                    if (metadatumName.Equals("Identity", StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        continue;
-                                    }
-
-                                    writer.WriteString(metadatumName, item.GetMetadata(metadatumName));
-                                }
-
-                                writer.WriteEndObject();
-                            }
-
-                            writer.WriteEndArray();
-                            writer.WriteEndObject();
-                        }
-
-                        writer.WriteEndObject();
-                    }
-
-                    writer.WriteEndObject();
-                    writer.Flush();
-                    stream.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
-                }
+                PrintBuildInformation(projectCollection, projectInstance, buildOrRestoreResult);
             }
 
             BuildManager.DefaultBuildManager.EndBuild();
@@ -547,6 +431,126 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
 
             return null;
+        }
+
+        void PrintBuildInformation(ProjectCollection projectCollection, ProjectInstance projectInstance, BuildResult? buildOrRestoreResult)
+        {
+            var resultOutputFile = MSBuildArgs.GetResultOutputFile is [{ } file, ..] ? file : null;
+
+            // If a single property is requested, don't print as JSON.
+            if (MSBuildArgs is { GetProperty: [{ } singlePropertyName], GetItem: null or [], GetTargetResult: null or [] })
+            {
+                var result = projectInstance.GetPropertyValue(singlePropertyName);
+                if (resultOutputFile == null)
+                {
+                    Console.WriteLine(result);
+                }
+                else
+                {
+                    File.WriteAllText(path: resultOutputFile, contents: result + Environment.NewLine);
+                }
+            }
+            else
+            {
+                using var stream = resultOutputFile == null
+                   ? Console.OpenStandardOutput()
+                   : new FileStream(resultOutputFile, FileMode.Create, FileAccess.Write, FileShare.Read);
+                using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
+                writer.WriteStartObject();
+
+                if (MSBuildArgs.GetProperty is [_, ..])
+                {
+                    writer.WritePropertyName("Properties");
+                    writer.WriteStartObject();
+
+                    foreach (var propertyName in MSBuildArgs.GetProperty)
+                    {
+                        writer.WriteString(propertyName, projectInstance.GetPropertyValue(propertyName));
+                    }
+
+                    writer.WriteEndObject();
+                }
+
+                if (MSBuildArgs.GetItem is [_, ..])
+                {
+                    writer.WritePropertyName("Items");
+                    writer.WriteStartObject();
+
+                    foreach (var itemName in MSBuildArgs.GetItem)
+                    {
+                        writer.WritePropertyName(itemName);
+                        writer.WriteStartArray();
+
+                        foreach (var item in projectInstance.GetItems(itemName))
+                        {
+                            writer.WriteStartObject();
+                            writer.WriteString("Identity", item.GetMetadataValue("Identity"));
+
+                            foreach (var metadatumName in item.MetadataNames)
+                            {
+                                if (metadatumName.Equals("Identity", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    continue;
+                                }
+
+                                writer.WriteString(metadatumName, item.GetMetadataValue(metadatumName));
+                            }
+
+                            writer.WriteEndObject();
+                        }
+
+                        writer.WriteEndArray();
+                    }
+
+                    writer.WriteEndObject();
+                }
+
+                if (MSBuildArgs.GetTargetResult is [_, ..])
+                {
+                    Debug.Assert(buildOrRestoreResult != null);
+
+                    writer.WritePropertyName("TargetResults");
+                    writer.WriteStartObject();
+
+                    foreach (var targetName in MSBuildArgs.GetTargetResult)
+                    {
+                        var targetResult = buildOrRestoreResult.ResultsByTarget[targetName];
+
+                        writer.WritePropertyName(targetName);
+                        writer.WriteStartObject();
+                        writer.WriteString("Result", targetResult.TargetResultCodeToString());
+                        writer.WritePropertyName("Items");
+                        writer.WriteStartArray();
+
+                        foreach (var item in targetResult.Items)
+                        {
+                            writer.WriteStartObject();
+                            writer.WriteString("Identity", item.GetMetadata("Identity"));
+
+                            foreach (string metadatumName in item.MetadataNames)
+                            {
+                                if (metadatumName.Equals("Identity", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    continue;
+                                }
+
+                                writer.WriteString(metadatumName, item.GetMetadata(metadatumName));
+                            }
+
+                            writer.WriteEndObject();
+                        }
+
+                        writer.WriteEndArray();
+                        writer.WriteEndObject();
+                    }
+
+                    writer.WriteEndObject();
+                }
+
+                writer.WriteEndObject();
+                writer.Flush();
+                stream.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
+            }
         }
     }
 
