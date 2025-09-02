@@ -2646,4 +2646,7 @@ Proceed?</value>
   <data name="PackCmdVersion" xml:space="preserve">
     <value>VERSION</value>
   </data>
+  <data name="CmdMinimumExpectedTestsDescription" xml:space="preserve">
+    <value>Specifies the minimum number of tests that are expected to run.</value>
+  </data>
 </root>

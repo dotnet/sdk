@@ -17,6 +17,15 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
 
     public void OnHandshakeReceived(object sender, HandshakeArgs args)
     {
+        var testApplication = (TestApplication)sender;
+        // Today, it's 1.0.0 in MTP.
+        // https://github.com/microsoft/testfx/blob/516eebb3c9b7e81eb2677c00b3d0b7867d8acb33/src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/Constants.cs#L40
+        var supportedProtocolVersions = args.Handshake.Properties[HandshakeMessagePropertyNames.SupportedProtocolVersions];
+        if (supportedProtocolVersions != "1.0.0" && !supportedProtocolVersions.Split(';').Contains("1.0.0"))
+        {
+            _output.HandshakeFailure(testApplication.Module.TargetPath, string.Empty, ExitCode.GenericFailure, $"Supported protocol versions '{supportedProtocolVersions}' doesn't include '1.0.0' which is not supported by the current .NET SDK.", string.Empty);
+        }
+
         var hostType = args.Handshake.Properties[HandshakeMessagePropertyNames.HostType];
         // https://github.com/microsoft/testfx/blob/2a9a353ec2bb4ce403f72e8ba1f29e01e7cf1fd4/src/Platform/Microsoft.Testing.Platform/Hosts/CommonTestHost.cs#L87-L97
         if (hostType == "TestHost")
@@ -24,7 +33,6 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
             // AssemblyRunStarted counts "retry count", and writes to terminal "(Try <number-of-try>) Running tests from <assembly>"
             // So, we want to call it only for test host, and not for test host controller (or orchestrator, if in future it will handshake as well)
             // Calling it for both test host and test host controllers means we will count retries incorrectly, and will messages twice.
-            var testApplication = (TestApplication)sender;
             var executionId = args.Handshake.Properties[HandshakeMessagePropertyNames.ExecutionId];
             var instanceId = args.Handshake.Properties[HandshakeMessagePropertyNames.InstanceId];
             var arch = args.Handshake.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();

@@ -3,10 +3,6 @@
 
 #nullable disable
 
-#pragma warning disable IDE0240 // Remove redundant nullable directive
-#nullable disable
-#pragma warning restore IDE0240 // Remove redundant nullable directive
-
 using System.Globalization;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 
@@ -34,13 +30,9 @@ internal abstract class NamedPipeBase
             return skipUnknownMessages
                 ? new UnknownMessageSerializer(id)
                 : throw new ArgumentException((string.Format(
-                CultureInfo.InvariantCulture,
-#if dotnet
-                 LocalizableStrings.NoSerializerRegisteredWithIdErrorMessage,
-#else
-                "No serializer registered with ID '{0}'",
-#endif
-                id)));
+                    CultureInfo.InvariantCulture,
+                    CliCommandStrings.NoSerializerRegisteredWithIdErrorMessage,
+                    id)));
         }
     }
 
@@ -50,10 +42,6 @@ internal abstract class NamedPipeBase
             ? serializer
             : throw new ArgumentException(string.Format(
                 CultureInfo.InvariantCulture,
-#if dotnet
-                 LocalizableStrings.NoSerializerRegisteredWithTypeErrorMessage,
-#else
-                "No serializer registered with type '{0}'",
-#endif
+                CliCommandStrings.NoSerializerRegisteredWithTypeErrorMessage,
                 type));
 }
