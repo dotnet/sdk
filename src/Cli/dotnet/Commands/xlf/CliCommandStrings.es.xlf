@@ -583,6 +583,11 @@ Esta acción es equivalente a eliminar project.assets.json.</target>
         <target state="translated">Número máximo de módulos de prueba que se pueden ejecutar en paralelo.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdMinimumExpectedTestsDescription">
+        <source>Specifies the minimum number of tests that are expected to run.</source>
+        <target state="new">Specifies the minimum number of tests that are expected to run.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
         <source>Specify either the project, solution, directory, or test modules option.</source>
         <target state="translated">Especifique la opción de módulos de proyecto, solución, directorio o prueba.</target>
@@ -2444,7 +2449,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       <trans-unit id="PropertyDirectiveMissingParts">
         <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
         <target state="translated">La directiva de propiedad debe tener dos partes separadas por "=", como "like '#:property PropertyName=PropertyValue": {0}</target>
-        <note>{0} is the file path and line number.</note>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
@@ -2981,6 +2986,11 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <source>Standard output</source>
         <target state="translated">Salida estándar</target>
         <note />
+      </trans-unit>
+      <trans-unit id="StaticGraphRestoreNotSupported">
+        <source>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</source>
+        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</target>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>

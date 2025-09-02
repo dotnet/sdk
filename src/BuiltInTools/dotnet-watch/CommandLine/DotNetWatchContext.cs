@@ -2,13 +2,21 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.DotNet.Watch
 {
     internal sealed class DotNetWatchContext
     {
+        public const string DefaultLogComponentName = $"{nameof(DotNetWatchContext)}:Default";
+        public const string BuildLogComponentName = $"{nameof(DotNetWatchContext)}:Build";
+
         public required GlobalOptions Options { get; init; }
         public required EnvironmentOptions EnvironmentOptions { get; init; }
-        public required IReporter Reporter { get; init; }
+        public required IProcessOutputReporter ProcessOutputReporter { get; init; }
+        public required ILogger Logger { get; init; }
+        public required ILogger BuildLogger { get; init; }
+        public required ILoggerFactory LoggerFactory { get; init; }
         public required ProcessRunner ProcessRunner { get; init; }
 
         public required ProjectOptions RootProjectOptions { get; init; }

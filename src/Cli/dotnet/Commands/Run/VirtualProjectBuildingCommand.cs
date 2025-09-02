@@ -106,7 +106,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         Debug.Assert(Path.IsPathFullyQualified(entryPointFileFullPath));
 
         EntryPointFileFullPath = entryPointFileFullPath;
-        MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(new Dictionary<string, string>(2, StringComparer.OrdinalIgnoreCase)
         {
             // See https://github.com/dotnet/msbuild/blob/main/documentation/specs/build-nonexistent-projects-by-default.md.
             { "_BuildNonexistentProjectsByDefault", bool.TrueString },
@@ -181,7 +181,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         bool evalOnly = msbuildGet && RequestedTargets is null or [];
         bool minimizeStdOut = msbuildGet && MSBuildArgs.GetResultOutputFile is null or [];
 
-        var verbosity = MSBuildArgs.Verbosity ?? VerbosityOptions.quiet;
+        var verbosity = MSBuildArgs.Verbosity ?? MSBuildForwardingAppWithoutLogging.DefaultVerbosity;
         var consoleLogger = minimizeStdOut
             ? new SimpleErrorLogger()
             : TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]);
@@ -1106,6 +1106,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 writer.WriteLine("""
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                        <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
                     """);
             }
 
@@ -1643,7 +1644,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
             if (propertyValue is null)
             {
-                return context.Diagnostics.AddError<Property?>(context.SourceFile, context.Info.Span, location => string.Format(CliCommandStrings.PropertyDirectiveMissingParts, location));
+                return context.Diagnostics.AddError<Property?>(context.SourceFile, context.Info.Span, static location => string.Format(CliCommandStrings.PropertyDirectiveMissingParts, location));
             }
 
             try
@@ -1653,6 +1654,12 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             catch (XmlException ex)
             {
                 return context.Diagnostics.AddError<Property?>(context.SourceFile, context.Info.Span, location => string.Format(CliCommandStrings.PropertyDirectiveInvalidName, location, ex.Message), ex);
+            }
+
+            if (propertyName.Equals("RestoreUseStaticGraphEvaluation", StringComparison.OrdinalIgnoreCase) &&
+                MSBuildUtilities.ConvertStringToBool(propertyValue))
+            {
+                context.Diagnostics.AddError(context.SourceFile, context.Info.Span, static location => string.Format(CliCommandStrings.StaticGraphRestoreNotSupported, location));
             }
 
             return new Property(context.Info)

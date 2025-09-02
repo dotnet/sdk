@@ -3,7 +3,6 @@
 
 #nullable disable
 
-using System.CommandLine;
 using System.Diagnostics;
 using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
