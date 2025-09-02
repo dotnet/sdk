@@ -328,34 +328,35 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
 
             var builder = ImmutableDictionary.CreateBuilder<string, IReadOnlyList<(SymbolKind?, uint)>>(StringComparer.OrdinalIgnoreCase);
             var lines = additionalText.GetTextOrEmpty(cancellationToken).Lines;
+            Span<Range> parts = stackalloc Range[3];
+
             foreach (var line in lines)
             {
-                var contents = line.ToString().Trim();
+                var rawContents = line.ToString();
+                var contents = rawContents.AsSpan().Trim();
                 if (contents.Length == 0 || contents.StartsWith("#", StringComparison.Ordinal))
                 {
                     // Ignore empty lines and comments.
                     continue;
                 }
 
-                var parts = contents.Split(':');
-                for (int i = 0; i < parts.Length; i++)
-                {
-                    parts[i] = parts[i].Trim();
-                }
+                var partCount = contents.Split(parts, ':');
 
                 var isInvalidLine = false;
-                string key = parts[0];
-                if (parts.Length != 2 ||                            // We require exactly one ':' separator in the line.
-                    key.Any(char.IsWhiteSpace) ||                   // We do not allow white spaces in rule name.
-                    !uint.TryParse(parts[1], out uint threshold))    // Value must be a non-negative integral threshold.
+                var key = contents[parts[0]].Trim();
+                if (partCount != 2 ||                            // We require exactly one ':' separator in the line.
+                    ContainsWhiteSpace(key) ||                   // We do not allow white spaces in rule name.
+                    !uint.TryParse(contents[parts[1]].Trim().ToString(), out uint threshold))    // Value must be a non-negative integral threshold.
                 {
                     isInvalidLine = true;
                 }
                 else
                 {
                     SymbolKind? symbolKind = null;
-                    string[] keyParts = key.Split('(');
-                    switch (keyParts[0])
+                    partCount = key.Split(parts, '(');
+                    var part0 = key[parts[0]];
+                    var part1 = key[parts[1]];
+                    switch (part0)
                     {
                         case CA1501RuleId:
                         case CA1502RuleId:
@@ -368,18 +369,18 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                             break;
                     }
 
-                    if (!isInvalidLine && keyParts.Length > 1)
+                    if (!isInvalidLine && partCount > 1)
                     {
-                        if (keyParts.Length > 2 ||
-                            keyParts[1].Length == 0 ||
-                            keyParts[1].Last() != ')')
+                        if (partCount > 2 ||
+                            part1.Length == 0 ||
+                            part1[^1] != ')')
                         {
                             isInvalidLine = true;
                         }
                         else
                         {
                             // Remove the trailing ')'
-                            var symbolKindStr = keyParts[1][0..^1];
+                            var symbolKindStr = part1[0..^1];
                             switch (symbolKindStr)
                             {
                                 case "Assembly":
@@ -413,10 +414,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
 
                     if (!isInvalidLine)
                     {
-                        if (!builder.TryGetValue(keyParts[0], out var values))
+                        var ruleId = part0.ToString();
+                        if (!builder.TryGetValue(ruleId, out var values))
                         {
                             values = new List<(SymbolKind?, uint)>();
-                            builder.Add(keyParts[0], values);
+                            builder.Add(ruleId, values);
                         }
 
                         ((List<(SymbolKind?, uint)>)values).Add((symbolKind, threshold));
@@ -426,7 +428,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                 if (isInvalidLine)
                 {
                     // Invalid entry '{0}' in code metrics rule specification file '{1}'.
-                    string arg1 = contents;
+                    string arg1 = rawContents.Length == contents.Length ? rawContents : contents.ToString();
                     string arg2 = Path.GetFileName(additionalText.Path);
                     LinePositionSpan linePositionSpan = lines.GetLinePositionSpan(line.Span);
                     Location location = Location.Create(additionalText.Path, line.Span, linePositionSpan);
@@ -482,6 +484,18 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                 symbol = symbol.ContainingSymbol;
             }
 
+            return false;
+        }
+
+        private static bool ContainsWhiteSpace(ReadOnlySpan<char> span)
+        {
+            foreach (var ch in span)
+            {
+                if (char.IsWhiteSpace(ch))
+                {
+                    return true;
+                }
+            }
             return false;
         }
     }

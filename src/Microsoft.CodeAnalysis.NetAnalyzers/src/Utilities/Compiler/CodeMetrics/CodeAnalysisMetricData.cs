@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Utilities.Extensions;
 
 #pragma warning disable CS3001 // Some types from Roslyn are not CLS-Compliant
 #pragma warning disable CS3003 // Some types from Roslyn are not CLS-Compliant
@@ -170,10 +171,13 @@ namespace Microsoft.CodeAnalysis.CodeMetrics
             {
                 foreach (var child in Children)
                 {
-                    foreach (var line in child.ToString().Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
+                    var metricData = child.ToString().AsSpan();
+
+                    foreach (var part in metricData.Split(Environment.NewLine.AsSpan(), StringSplitOptions.RemoveEmptyEntries))
                     {
+                        var line = metricData[part];
                         builder.AppendLine();
-                        builder.Append($"{indent}{line}");
+                        builder.Append($"{indent}{line.ToString()}");
                     }
                 }
             }

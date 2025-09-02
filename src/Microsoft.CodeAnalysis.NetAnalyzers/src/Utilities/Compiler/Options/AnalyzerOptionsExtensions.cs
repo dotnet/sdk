@@ -157,9 +157,9 @@ namespace Analyzer.Utilities
             static bool TryParseValue(string value, out ImmutableHashSet<TEnum> result)
             {
                 var builder = ImmutableHashSet.CreateBuilder<TEnum>();
-                foreach (var kindStr in value.Split(','))
+                foreach (var part in value.AsSpan().Split(','))
                 {
-                    if (Enum.TryParse(kindStr, ignoreCase: true, result: out TEnum kind))
+                    if (Enum.TryParse(value[part], ignoreCase: true, result: out TEnum kind))
                     {
                         builder.Add(kind);
                     }
@@ -340,16 +340,21 @@ namespace Analyzer.Utilities
 
             static SymbolNamesWithValueOption<string?>.NameParts GetParts(string name)
             {
-                var split = name.Split(new[] { "->" }, StringSplitOptions.RemoveEmptyEntries);
+                var nameSpan = name.AsSpan();
+                Span<Range> parts = stackalloc Range[3];
+                var partCount = SpanExtensions.Split(nameSpan, parts, "->", StringSplitOptions.RemoveEmptyEntries);
 
                 // If we don't find exactly one '->', we assume that there is no given suffix.
-                if (split.Length != 2)
+                if (partCount != 2)
                 {
                     return new SymbolNamesWithValueOption<string?>.NameParts(name, null);
                 }
 
+                var typeName = name[parts[0]];
+                var suffix = nameSpan[parts[1]];
+
                 // Note that we do not validate if the suffix will give a valid class name.
-                var trimmedSuffix = split[1].Trim();
+                var trimmedSuffix = suffix.Trim();
 
                 // Check if the given suffix is the special suffix symbol "{[ ]*?}" (opening curly brace '{', 0..N spaces and a closing curly brace '}')
                 if (trimmedSuffix.Length >= 2 &&
@@ -360,15 +365,15 @@ namespace Analyzer.Utilities
                     {
                         if (trimmedSuffix[i] != ' ')
                         {
-                            return new SymbolNamesWithValueOption<string?>.NameParts(split[0], trimmedSuffix);
+                            return new SymbolNamesWithValueOption<string?>.NameParts(typeName, trimmedSuffix.ToString());
                         }
                     }
 
                     // Replace the special empty suffix symbol by an empty string
-                    return new SymbolNamesWithValueOption<string?>.NameParts(split[0], string.Empty);
+                    return new SymbolNamesWithValueOption<string?>.NameParts(typeName, string.Empty);
                 }
 
-                return new SymbolNamesWithValueOption<string?>.NameParts(split[0], trimmedSuffix);
+                return new SymbolNamesWithValueOption<string?>.NameParts(typeName, trimmedSuffix.ToString());
             }
         }
 
@@ -389,21 +394,26 @@ namespace Analyzer.Utilities
 
             static SymbolNamesWithValueOption<INamedTypeSymbol?>.NameParts GetParts(string name, Compilation compilation)
             {
-                var split = name.Split(new[] { "->" }, StringSplitOptions.RemoveEmptyEntries);
+                var nameSpan = name.AsSpan();
+                Span<Range> parts = stackalloc Range[3];
+                var partCount = SpanExtensions.Split(name.AsSpan(), parts, "->", StringSplitOptions.RemoveEmptyEntries);
 
                 // If we don't find exactly one '->', we assume that there is no given suffix.
-                if (split.Length != 2)
+                if (partCount != 2)
                 {
                     return new SymbolNamesWithValueOption<INamedTypeSymbol?>.NameParts(name, null);
                 }
 
-                var genericInterfaceFullName = split[1].Trim();
+                var typeName = name[parts[0]];
+                var suffix = nameSpan[parts[1]];
+
+                var genericInterfaceFullName = suffix.Trim();
                 if (!genericInterfaceFullName.StartsWith("T:", StringComparison.Ordinal))
                 {
-                    genericInterfaceFullName = $"T:{genericInterfaceFullName}";
+                    genericInterfaceFullName = $"T:{genericInterfaceFullName.ToString()}";
                 }
 
-                var matchingSymbols = DocumentationCommentId.GetSymbolsForDeclarationId(genericInterfaceFullName, compilation);
+                var matchingSymbols = DocumentationCommentId.GetSymbolsForDeclarationId(genericInterfaceFullName.ToString(), compilation);
 
                 if (matchingSymbols.Length != 1 ||
                     matchingSymbols[0] is not INamedTypeSymbol namedType ||
@@ -411,10 +421,10 @@ namespace Analyzer.Utilities
                     !namedType.IsGenericType)
                 {
                     // Invalid matching type so we assume there was no associated type
-                    return new SymbolNamesWithValueOption<INamedTypeSymbol?>.NameParts(split[0], null);
+                    return new SymbolNamesWithValueOption<INamedTypeSymbol?>.NameParts(typeName, null);
                 }
 
-                return new SymbolNamesWithValueOption<INamedTypeSymbol?>.NameParts(split[0], namedType);
+                return new SymbolNamesWithValueOption<INamedTypeSymbol?>.NameParts(typeName, namedType);
             }
         }
 

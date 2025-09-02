@@ -305,8 +305,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static void UpdateNamespaceTable(Dictionary<string, string> namespaceTable, string namespaceName)
         {
-            foreach (string word in namespaceName.Split('.'))
+            foreach (Range part in namespaceName.AsSpan().Split('.'))
             {
+                var word = namespaceName[part];
+
                 if (!namespaceTable.ContainsKey(word))
                     namespaceTable.Add(word, namespaceName);
             }
