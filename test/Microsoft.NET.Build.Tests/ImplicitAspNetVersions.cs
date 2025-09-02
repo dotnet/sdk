@@ -46,7 +46,9 @@ namespace Microsoft.NET.Build.Tests
             aspnetVersion.ToString().Should().Be("2.1.1");
         }
 
-        [Theory]
+        //  https://github.com/dotnet/sdk/issues/49665
+        //  error : NETSDK1056: Project is targeting runtime 'osx-arm64' but did not resolve any runtime-specific packages. This runtime may not be supported by the target framework.
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("Microsoft.AspNetCore.App")]
         [InlineData("Microsoft.AspNetCore.All")]
         public void AspNetCoreVersionRollsForward(string aspnetPackageName)

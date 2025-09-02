@@ -29,6 +29,38 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.Equal(solutionFileFullPath, solutionFiles[0]);
         }
 
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/49923
+        public void AddProjectToSolutionPostActionFindSlnxFileAtOutputPath()
+        {
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
+            EnsureParentDirectoriesExist(targetBasePath);
+            
+            string solutionFileFullPath = Path.Combine(targetBasePath, "MySln.slnx");
+            _engineEnvironmentSettings.Host.FileSystem.WriteAllText(solutionFileFullPath, string.Empty);
+
+            IReadOnlyList<string> solutionFiles = DotnetSlnPostActionProcessor.FindSolutionFilesAtOrAbovePath(_engineEnvironmentSettings.Host.FileSystem, targetBasePath);
+            Assert.Single(solutionFiles);
+            Assert.Equal(solutionFileFullPath, solutionFiles[0]);
+        }
+
+        [Fact(DisplayName = nameof(AddProjectToSolutionPostActionPrefersSlnOverSlnx))]
+        public void AddProjectToSolutionPostActionPrefersSlnOverSlnx()
+        {
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
+            EnsureParentDirectoriesExist(targetBasePath);
+            
+            string slnFileFullPath = Path.Combine(targetBasePath, "MySln.sln");
+            string slnxFileFullPath = Path.Combine(targetBasePath, "MySln.slnx");
+            _engineEnvironmentSettings.Host.FileSystem.WriteAllText(slnFileFullPath, string.Empty);
+            _engineEnvironmentSettings.Host.FileSystem.WriteAllText(slnxFileFullPath, string.Empty);
+
+            IReadOnlyList<string> solutionFiles = DotnetSlnPostActionProcessor.FindSolutionFilesAtOrAbovePath(_engineEnvironmentSettings.Host.FileSystem, targetBasePath);
+            Assert.Single(solutionFiles);
+            Assert.Equal(slnFileFullPath, solutionFiles[0]);
+        }
+
         [Fact(DisplayName = nameof(AddProjectToSolutionPostActionFindsOneProjectToAdd))]
         public void AddProjectToSolutionPostActionFindsOneProjectToAdd()
         {
@@ -310,6 +342,20 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 targetBasePath);
 
             Assert.False(result);
+        }
+
+        private void EnsureParentDirectoriesExist(string targetBasePath)
+        {
+            // Ensure parent directories exist to avoid DirectoryNotFoundException during traversal
+            string? currentPath = targetBasePath;
+            while (!string.IsNullOrEmpty(currentPath) && currentPath != Path.GetPathRoot(currentPath))
+            {
+                if (!_engineEnvironmentSettings.Host.FileSystem.DirectoryExists(currentPath))
+                {
+                    _engineEnvironmentSettings.Host.FileSystem.CreateDirectory(currentPath);
+                }
+                currentPath = Path.GetDirectoryName(currentPath);
+            }
         }
 
         private class MockAddProjectToSolutionCallback

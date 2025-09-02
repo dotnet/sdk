@@ -95,8 +95,8 @@ internal abstract class WorkloadCommandBase : CommandBase
         RestoreActionConfiguration = _parseResult.ToRestoreActionConfig();
 
         Verbosity = verbosityOptions == null
-            ? parseResult.GetValue(CommonOptions.VerbosityOption)
-            : parseResult.GetValue(verbosityOptions);
+            ? parseResult.GetValue(CommonOptions.VerbosityOption(VerbosityOptions.normal))
+            : parseResult.GetValue(verbosityOptions) ;
 
         ILogger nugetLogger = Verbosity.IsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger();
 

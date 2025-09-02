@@ -953,4 +953,23 @@ The header is followed by the list of parameters and their errors (might be seve
   <data name="PostAction_ModifyJson_Verbose_AttemptingToFindJsonFile" xml:space="preserve">
     <value>Attempting to find json file '{0}' in '{1}'</value>
   </data>
+  <data name="PostAction_DotnetConfig_Error_ArgumentNotConfigured" xml:space="preserve">
+    <value>Post action argument '{0}' is mandatory, but not configured.</value>
+  </data>
+  <data name="PostAction_CreateDotnetConfig_Succeeded" xml:space="preserve">
+    <value>Successfully created 'dotnet.config' file.</value>
+    <comment>{Locked="dotnet.config"}</comment>
+  </data>
+  <data name="PostAction_CreateDotnetConfig_CreatedNewSection" xml:space="preserve">
+    <value>Created new section in 'dotnet.config' file</value>
+    <comment>{Locked="dotnet.config"}</comment>
+  </data>
+  <data name="PostAction_CreateDotnetConfig_ValueAlreadyExist" xml:space="preserve">
+    <value>The required value in 'dotnet.config' is already set.</value>
+    <comment>{Locked="dotnet.config"}</comment>
+  </data>
+  <data name="PostAction_CreateDotnetConfig_ManuallyUpdate" xml:space="preserve">
+    <value>Updating existing values in 'dotnet.config' is not yet supported. Please, manually update 'dotnet.config' to have '{0}' under section '{1}'.</value>
+    <comment>{Locked="dotnet.config"}</comment>
+  </data>
 </root>

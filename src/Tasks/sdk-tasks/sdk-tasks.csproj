@@ -37,4 +37,10 @@
     <Using Include="Microsoft.Build.Utilities.Task" Alias="Task" />
   </ItemGroup>
 
+  <!--
+    Encountered an error about this target being missing when rebuilding within VS.
+    See: https://github.com/dotnet/msbuild/issues/4303#issuecomment-482345617
+  -->
+  <Target Name="GetTargetPath" />
+
 </Project>

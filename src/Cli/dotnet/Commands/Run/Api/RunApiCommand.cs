@@ -1,11 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Run.Api;
 
@@ -61,9 +63,8 @@ internal abstract class RunApiInput
 
         public override RunApiOutput Execute()
         {
-            var sourceFile = VirtualProjectBuildingCommand.LoadSourceFile(EntryPointFileFullPath);
-            var errors = ImmutableArray.CreateBuilder<SimpleDiagnostic>();
-            var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: true, errors);
+            var sourceFile = SourceFile.Load(EntryPointFileFullPath);
+            var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: true, DiagnosticBag.Collect(out var diagnostics));
             string artifactsPath = ArtifactsPath ?? VirtualProjectBuildingCommand.GetArtifactsPath(EntryPointFileFullPath);
 
             var csprojWriter = new StringWriter();
@@ -72,7 +73,7 @@ internal abstract class RunApiInput
             return new RunApiOutput.Project
             {
                 Content = csprojWriter.ToString(),
-                Diagnostics = errors.ToImmutableArray(),
+                Diagnostics = diagnostics.ToImmutableArray(),
             };
         }
     }
@@ -84,14 +85,14 @@ internal abstract class RunApiInput
 
         public override RunApiOutput Execute()
         {
+            var msbuildArgs = MSBuildArgs.FromVerbosity(VerbosityOptions.quiet);
             var buildCommand = new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: EntryPointFileFullPath,
-                msbuildArgs: ["-verbosity:quiet"])
+                msbuildArgs: msbuildArgs)
             {
                 CustomArtifactsPath = ArtifactsPath,
             };
-
-            buildCommand.PrepareProjectInstance();
+            buildCommand.MarkArtifactsFolderUsed();
 
             var runCommand = new RunCommand(
                 noBuild: false,
@@ -103,14 +104,14 @@ internal abstract class RunApiInput
                 noRestore: false,
                 noCache: false,
                 interactive: false,
-                verbosity: VerbosityOptions.quiet,
-                restoreArgs: [],
-                args: [],
+                msbuildArgs: msbuildArgs,
+                applicationArgs: [],
                 readCodeFromStdin: false,
-                environmentVariables: ReadOnlyDictionary<string, string>.Empty);
+                environmentVariables: ReadOnlyDictionary<string, string>.Empty,
+                msbuildRestoreProperties: ReadOnlyDictionary<string, string>.Empty);
 
             runCommand.TryGetLaunchProfileSettingsIfNeeded(out var launchSettings);
-            var targetCommand = (Utils.Command)runCommand.GetTargetCommand(buildCommand.CreateProjectInstance);
+            var targetCommand = (Utils.Command)runCommand.GetTargetCommand(buildCommand.CreateProjectInstance, cachedRunProperties: null);
             runCommand.ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings);
 
             return new RunApiOutput.RunCommand

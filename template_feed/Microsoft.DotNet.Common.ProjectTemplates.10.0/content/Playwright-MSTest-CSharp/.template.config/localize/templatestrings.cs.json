@@ -57,5 +57,7 @@
   "symbols/Fixture/choices/TestCleanup/description": "Metoda testovacího přípravku TestCleanup",
   "postActions/restoreNugetPackages/description": "Obnoví balíčky NuGet vyžadované tímto projektem.",
   "postActions/restoreNugetPackages/manualInstructions/default/text": "Spustit dotnet restore",
+  "postActions/createOrUpdateDotnetConfig/description": "Create or update 'dotnet.config' file required by Microsoft.Testing.Platform.",
+  "postActions/createOrUpdateDotnetConfig/manualInstructions/default/text": "Manually create 'dotnet.config' file setting the test runner to Microsoft.Testing.Platform",
   "postActions/openInEditor/description": "Otevře Test1.cs v editoru."
 }

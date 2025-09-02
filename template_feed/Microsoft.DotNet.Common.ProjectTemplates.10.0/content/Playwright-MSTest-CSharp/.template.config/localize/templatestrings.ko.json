@@ -57,5 +57,7 @@
   "symbols/Fixture/choices/TestCleanup/description": "TestCleanup fixture 메서드",
   "postActions/restoreNugetPackages/description": "이 프로젝트에 필요한 NuGet 패키지를 복원합니다.",
   "postActions/restoreNugetPackages/manualInstructions/default/text": "'dotnet restore' 실행",
+  "postActions/createOrUpdateDotnetConfig/description": "Create or update 'dotnet.config' file required by Microsoft.Testing.Platform.",
+  "postActions/createOrUpdateDotnetConfig/manualInstructions/default/text": "Manually create 'dotnet.config' file setting the test runner to Microsoft.Testing.Platform",
   "postActions/openInEditor/description": "편집기에서 Test1.cs 열기"
 }

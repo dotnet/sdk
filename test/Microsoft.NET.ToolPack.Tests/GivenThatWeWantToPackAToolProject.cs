@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Runtime.CompilerServices;
+using Microsoft.DotNet.Cli.Utils;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 
@@ -20,9 +21,9 @@ namespace Microsoft.NET.ToolPack.Tests
 
         private string SetupNuGetPackage(bool multiTarget, string packageType = null, [CallerMemberName] string callingMethod = "")
         {
-
+            string id = $"{callingMethod}-{_targetFrameworkOrFrameworks}";
             TestAsset helloWorldAsset = _testAssetsManager
-                .CopyTestAsset("PortableTool", callingMethod + multiTarget + (packageType ?? ""))
+                .CopyTestAsset("PortableTool", id)
                 .WithSource()
                 .WithProjectChanges(project =>
                 {
@@ -39,7 +40,7 @@ namespace Microsoft.NET.ToolPack.Tests
 
             var packCommand = new PackCommand(helloWorldAsset);
 
-            var result = packCommand.Execute();
+            var result = packCommand.Execute($"/bl:{id}-{{}}.binlog");
             result.Should().Pass();
 
             return packCommand.GetNuGetPackage();
@@ -192,9 +193,9 @@ namespace Microsoft.NET.ToolPack.Tests
                 string[] args = multiTarget ? new[] { $"/p:TargetFramework={_targetFrameworkOrFrameworks}" } : Array.Empty<string>();
                 getValuesCommand.Execute(args)
                     .Should().Pass();
-                string runCommandPath = getValuesCommand.GetValues().Single();
-                runCommandPath
-                    .Should().Be("dotnet", because: "The RunCommand should recognize that this is a non-AppHost tool and should use the muxer to launch it");
+                var runCommand = new FileInfo(getValuesCommand.GetValues().Single());
+                runCommand.Name
+                    .Should().Be("consoledemo" + Constants.ExeSuffix, because: "The RunCommand should recognize that this is an AppHost-using project and should use the AppHost for non-tool use cases.");
             }
         }
 

@@ -52,5 +52,7 @@
   "symbols/Fixture/choices/TestCleanup/description": "TestCleanup フィクスチャ メソッド",
   "postActions/restoreNugetPackages/description": "このプロジェクトに必要な NuGet パッケージを復元します。",
   "postActions/restoreNugetPackages/manualInstructions/default/text": "'dotnet restore' を実行する",
+  "postActions/createOrUpdateDotnetConfig/description": "Create or update 'dotnet.config' file required by Microsoft.Testing.Platform.",
+  "postActions/createOrUpdateDotnetConfig/manualInstructions/default/text": "Manually create 'dotnet.config' file setting the test runner to Microsoft.Testing.Platform",
   "postActions/openInEditor/description": "エディターで Test1.vb を開きます"
 }

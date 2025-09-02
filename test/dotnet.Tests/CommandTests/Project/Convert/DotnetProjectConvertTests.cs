@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -33,7 +32,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         new DirectoryInfo(dotnetProjectConvert)
             .EnumerateFileSystemInfos().Select(d => d.Name).Order()
-            .Should().BeEquivalentTo(["Program"]);
+            .Should().BeEquivalentTo(["Program", "Program.cs"]);
 
         new DirectoryInfo(Path.Join(dotnetProjectConvert, "Program"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
@@ -140,7 +139,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFileSystemInfos().Select(d => d.Name).Order()
-            .Should().BeEquivalentTo(["Program1", "Program2.cs"]);
+            .Should().BeEquivalentTo(["Program1", "Program1.cs", "Program2.cs"]);
 
         new DirectoryInfo(Path.Join(testInstance.Path, "Program1"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
@@ -208,7 +207,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program"]);
+            .Should().BeEquivalentTo(["Program", "Program.CS"]);
 
         new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
@@ -230,7 +229,10 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program"]);
+            .Should().BeEquivalentTo(["Program", "Program.cs"]);
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Program.cs"))
+            .Should().Be(content);
 
         new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
@@ -255,11 +257,318 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         new DirectoryInfo(Path.Join(testInstance.Path, "app"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program"]);
+            .Should().BeEquivalentTo(["Program", "Program.cs"]);
 
         new DirectoryInfo(Path.Join(testInstance.Path, "app", "Program"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
             .Should().BeEquivalentTo(["Program.csproj", "Program.cs"]);
+    }
+
+    /// <summary>
+    /// Default items like <c>None</c> or <c>Content</c> are copied over.
+    /// </summary>
+    [Fact]
+    public void DefaultItems()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine();
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "my.json"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "");
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "subdir"));
+        File.WriteAllText(Path.Join(testInstance.Path, "subdir", "second.json"), "");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program", "Program.cs", "Resources.resx", "Util.cs", "my.json", "subdir"]);
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program.csproj", "Resources.resx", "Program.cs", "my.json", "subdir"]);
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program", "subdir"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["second.json"]);
+    }
+
+    [Fact]
+    public void DefaultItems_MoreIncluded()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property EnableDefaultCompileItems=true
+            Console.WriteLine();
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "my.json"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program", "Program.cs", "Resources.resx", "Util.cs", "my.json"]);
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program.csproj", "Program.cs", "Resources.resx", "Util.cs", "my.json"]);
+    }
+
+    [Fact]
+    public void DefaultItems_MoreExcluded()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property EnableDefaultItems=false
+            Console.WriteLine();
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "my.json"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program", "Program.cs", "Resources.resx", "Util.cs", "my.json"]);
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program.csproj", "Program.cs"]);
+    }
+
+    /// <summary>
+    /// <c>ExcludeFromFileBasedAppConversion</c> metadata can be used to exclude items from the conversion.
+    /// </summary>
+    [Fact]
+    public void DefaultItems_ExcludedViaMetadata()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine();
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "my.json"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "second.json"), "");
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.targets"), """
+            <Project>
+                <ItemGroup>
+                    <None Update="$(MSBuildThisFileDirectory)second.json" ExcludeFromFileBasedAppConversion="true" />
+                </ItemGroup>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Directory.Build.targets", "Program", "Program.cs", "Resources.resx", "Util.cs", "my.json", "second.json"]);
+
+        // `second.json` is excluded from the conversion.
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Directory.Build.targets", "Program.csproj", "Resources.resx", "Program.cs", "my.json"]);
+    }
+
+    [Fact]
+    public void DefaultItems_ImplicitBuildFileInDirectory()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine(Util.GetText());
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+            class Util { public static string GetText() => "Hi from Util"; }
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+                <ItemGroup>
+                    <Compile Include="Util.cs" />
+                </ItemGroup>
+            </Project>
+            """);
+
+        // The app works before conversion.
+        string expectedOutput = "Hi from Util";
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        // Convert.
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Directory.Build.props", "Program", "Program.cs", "Util.cs"]);
+
+        // Directory.Build.props is included as it's a None item.
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Directory.Build.props", "Program.csproj", "Program.cs", "Util.cs"]);
+
+        // The app works after conversion.
+        new DotnetCommand(Log, "run", "Program/Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+    }
+
+    [Fact]
+    public void DefaultItems_ImplicitBuildFileOutsideDirectory()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var subdir = Path.Join(testInstance.Path, "subdir");
+        Directory.CreateDirectory(subdir);
+        File.WriteAllText(Path.Join(subdir, "Program.cs"), """
+            Console.WriteLine(Util.GetText());
+            """);
+        File.WriteAllText(Path.Join(subdir, "Util.cs"), """
+            class Util { public static string GetText() => "Hi from Util"; }
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+                <ItemGroup>
+                    <Compile Include="$(MSBuildThisFileDirectory)subdir\Util.cs" />
+                </ItemGroup>
+            </Project>
+            """);
+
+        // The app works before conversion.
+        string expectedOutput = "Hi from Util";
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(subdir)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        // Convert.
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(subdir)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(subdir)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program", "Program.cs", "Util.cs"]);
+
+        new DirectoryInfo(Path.Join(subdir, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program.csproj", "Program.cs", "Util.cs"]);
+
+        // The app works after conversion.
+        new DotnetCommand(Log, "run", "Program/Program.cs")
+            .WithWorkingDirectory(subdir)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+    }
+
+    [Fact]
+    public void DefaultItems_ImplicitBuildFileAndUtilOutsideDirectory()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var subdir = Path.Join(testInstance.Path, "subdir");
+        Directory.CreateDirectory(subdir);
+        File.WriteAllText(Path.Join(subdir, "Program.cs"), """
+            Console.WriteLine(Util.GetText());
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+            class Util { public static string GetText() => "Hi from Util"; }
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+                <ItemGroup>
+                    <Compile Include="$(MSBuildThisFileDirectory)Util.cs" />
+                </ItemGroup>
+            </Project>
+            """);
+
+        // The app works before conversion.
+        string expectedOutput = "Hi from Util";
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(subdir)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        // Convert.
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(subdir)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(subdir)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program", "Program.cs"]);
+
+        new DirectoryInfo(Path.Join(subdir, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program.csproj", "Program.cs"]);
+
+        // The app works after conversion.
+        new DotnetCommand(Log, "run", "Program/Program.cs")
+            .WithWorkingDirectory(subdir)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+    }
+
+    /// <summary>
+    /// Scripts in repo root should not include default items.
+    /// Part of <see href="https://github.com/dotnet/sdk/issues/49826"/>.
+    /// </summary>
+    [Theory, CombinatorialData]
+    public void DefaultItems_AlongsideProj([CombinatorialValues("sln", "slnx", "csproj", "vbproj", "shproj", "proj")] string ext)
+    {
+        bool considered = ext is "sln" or "slnx" or "csproj";
+
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine();
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "my.json"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, $"repo.{ext}"), "");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program", "Program.cs", "Resources.resx", "Util.cs", "my.json", $"repo.{ext}"]);
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(considered
+                ? ["Program.csproj", "Program.cs"]
+                : ["my.json", "Program.csproj", "Program.cs", "Resources.resx"]);
     }
 
     /// <summary>
@@ -284,16 +593,39 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     }
 
     /// <summary>
+    /// Since we perform MSBuild evaluation during the conversion (to find included items to copy over),
+    /// the conversion can fail when the specified SDK does not exist.
+    /// </summary>
+    [Fact]
+    public void ProcessingFails_Evaluation()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var filePath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(filePath, "#:sdk Microsoft.ThisSdkDoesNotExist");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            // The SDK 'Microsoft.ThisSdkDoesNotExist' specified could not be found.
+            .And.HaveStdErrContaining("Microsoft.ThisSdkDoesNotExist");
+
+        new DirectoryInfo(Path.Join(testInstance.Path))
+            .EnumerateDirectories().Should().BeEmpty();
+    }
+
+    /// <summary>
     /// End-to-end test of directive processing. More cases are covered by faster unit tests below.
     /// </summary>
     [Fact]
     public void ProcessingSucceeds()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
-            #:sdk Aspire.Hosting.Sdk@9.1.0
+        var originalSource = """
+            #:package Humanizer@2.14.1
             Console.WriteLine();
-            """);
+            """;
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), originalSource);
 
         new DotnetCommand(Log, "project", "convert", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
@@ -302,7 +634,10 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program"]);
+            .Should().BeEquivalentTo(["Program", "Program.cs"]);
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Program.cs"))
+            .Should().Be(originalSource);
 
         new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
@@ -313,7 +648,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         File.ReadAllText(Path.Join(testInstance.Path, "Program", "Program.csproj"))
             .Should().Be($"""
-                <Project Sdk="Aspire.Hosting.Sdk/9.1.0">
+                <Project Sdk="Microsoft.NET.Sdk">
 
                   <PropertyGroup>
                     <OutputType>Exe</OutputType>
@@ -322,6 +657,10 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
                   </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageReference Include="Humanizer" Version="2.14.1" />
+                  </ItemGroup>
 
                 </Project>
 
@@ -336,32 +675,66 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 #!/program
                 #:sdk Microsoft.NET.Sdk
                 #:sdk Aspire.Hosting.Sdk@9.1.0
-                #:property TargetFramework=net11.0
+                #:property TargetFramework=net472
                 #:package System.CommandLine@2.0.0-beta4.22272.1
                 #:property LangVersion=preview
                 Console.WriteLine();
                 """,
-            expectedProject: $"""
+            expectedProject: """
                 <Project Sdk="Microsoft.NET.Sdk">
 
                   <Sdk Name="Aspire.Hosting.Sdk" Version="9.1.0" />
 
                   <PropertyGroup>
                     <OutputType>Exe</OutputType>
-                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
-                    <TargetFramework>net11.0</TargetFramework>
+                    <TargetFramework>net472</TargetFramework>
                     <LangVersion>preview</LangVersion>
                   </PropertyGroup>
 
                   <ItemGroup>
                     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
                   </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: """
+                Console.WriteLine();
+                """);
+    }
+
+    /// <summary>
+    /// There should be only one <c>PropertyGroup</c> element when the default properties are overridden.
+    /// </summary>
+    [Fact]
+    public void Directives_AllDefaultOverridden()
+    {
+        VerifyConversion(
+            inputCSharp: """
+                #!/program
+                #:sdk Microsoft.NET.Web.Sdk
+                #:property OutputType=Exe
+                #:property TargetFramework=net472
+                #:property Nullable=disable
+                #:property PublishAot=false
+                #:property Custom=1
+                #:property ImplicitUsings=disable
+                Console.WriteLine();
+                """,
+            expectedProject: """
+                <Project Sdk="Microsoft.NET.Web.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>net472</TargetFramework>
+                    <Nullable>disable</Nullable>
+                    <PublishAot>false</PublishAot>
+                    <Custom>1</Custom>
+                    <ImplicitUsings>disable</ImplicitUsings>
+                  </PropertyGroup>
 
                 </Project>
 
@@ -388,9 +761,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <MyProp>MyValue</MyProp>
                   </PropertyGroup>
 
@@ -466,9 +836,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <Prop1>One=a/b</Prop1>
                     <Prop2>Two/a=b</Prop2>
                   </PropertyGroup>
@@ -511,7 +878,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
     [Theory, CombinatorialData]
     public void Directives_EmptyName(
-        [CombinatorialValues("sdk", "property", "package")] string directive,
+        [CombinatorialValues("sdk", "property", "package", "project")] string directive,
         [CombinatorialValues(" ", "")] string value)
     {
         VerifyConversionThrows(
@@ -578,9 +945,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <Prop>&lt;test&quot;&gt;</Prop>
                   </PropertyGroup>
 
@@ -615,9 +979,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <Name>Value</Name>
                     <NugetPackageDescription>&quot;My package with spaces&quot;</NugetPackageDescription>
                   </PropertyGroup>
@@ -629,6 +990,53 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                  #  !  /test
                   #!  /program   x   
                  # :property Name=Value
+                """);
+    }
+
+    [Fact]
+    public void Directives_BlankLines()
+    {
+        var expectedProject = $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <PublishAot>true</PublishAot>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="A" Version="B" />
+              </ItemGroup>
+
+            </Project>
+
+            """;
+
+        VerifyConversion(
+            inputCSharp: """
+                #:package A@B
+
+                Console.WriteLine();
+                """,
+            expectedProject: expectedProject,
+            expectedCSharp: """
+
+                Console.WriteLine();
+                """);
+
+        VerifyConversion(
+            inputCSharp: """
+
+                #:package A@B
+                Console.WriteLine();
+                """,
+            expectedProject: expectedProject,
+            expectedCSharp: """
+
+                Console.WriteLine();
                 """);
     }
 
@@ -662,9 +1070,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <Prop1>1</Prop1>
                     <Prop2>2</Prop2>
                   </PropertyGroup>
@@ -711,9 +1116,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <Prop1>1</Prop1>
                     <Prop2>2</Prop2>
                   </PropertyGroup>
@@ -757,9 +1159,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
-                  </PropertyGroup>
-
-                  <PropertyGroup>
                     <Prop1>1</Prop1>
                     <Prop2>2</Prop2>
                   </PropertyGroup>
@@ -850,10 +1249,37 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             ]);
     }
 
+    [Fact] // https://github.com/dotnet/sdk/issues/49797
+    public void Directives_VersionedSdkFirst()
+    {
+        VerifyConversion(
+            inputCSharp: """
+                #:sdk Microsoft.NET.Sdk@9.0.0
+                Console.WriteLine();
+                """,
+            expectedProject: $"""
+                <Project Sdk="Microsoft.NET.Sdk/9.0.0">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                  </PropertyGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: """
+                Console.WriteLine();
+                """);
+    }
+
     private static void Convert(string inputCSharp, out string actualProject, out string? actualCSharp, bool force, string? filePath)
     {
         var sourceFile = new SourceFile(filePath ?? "/app/Program.cs", SourceText.From(inputCSharp, Encoding.UTF8));
-        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !force, errors: null);
+        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !force, DiagnosticBag.ThrowOnFirst());
         var projectWriter = new StringWriter();
         VirtualProjectBuildingCommand.WriteProjectFile(projectWriter, directives, isVirtualProject: false);
         actualProject = projectWriter.ToString();
@@ -879,8 +1305,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     private static void VerifyDirectiveConversionErrors(string inputCSharp, IEnumerable<string> expectedErrors)
     {
         var sourceFile = new SourceFile("/app/Program.cs", SourceText.From(inputCSharp, Encoding.UTF8));
-        var errors = ImmutableArray.CreateBuilder<SimpleDiagnostic>();
-        VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: true, errors: errors);
-        errors.Select(e => e.Message).Should().BeEquivalentTo(expectedErrors);
+        VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: true, DiagnosticBag.Collect(out var diagnostics));
+        diagnostics.Select(e => e.Message).Should().BeEquivalentTo(expectedErrors);
     }
 }

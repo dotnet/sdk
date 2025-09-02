@@ -66,7 +66,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public void GivenWorkloadInstallItCanInstallPacks(bool userLocal, string sdkVersion)
         {
             var mockWorkloadIds = new WorkloadId[] { new WorkloadId("xamarin-android") };
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "--skip-manifest-update" });
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "--skip-manifest-update" });
             (_, var installManager, var installer, _, _, _, _) = GetTestInstallers(parseResult, userLocal, sdkVersion, installedFeatureBand: sdkVersion);
 
             installManager.Execute()
@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public void GivenWorkloadInstallItCanRollBackPackInstallation(bool userLocal, string sdkVersion)
         {
             var mockWorkloadIds = new WorkloadId[] { new WorkloadId("xamarin-android"), new WorkloadId("xamarin-android-build") };
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "xamarin-android-build", "--skip-manifest-update" });
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "xamarin-android-build", "--skip-manifest-update" });
             (_, var installManager, var installer, var workloadResolver, _, _, _) = GetTestInstallers(parseResult, userLocal, sdkVersion, failingWorkload: "xamarin-android-build", installedFeatureBand: sdkVersion);
 
             var exceptionThrown = Assert.Throws<GracefulException>(() => installManager.Execute());
@@ -110,7 +110,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var installer = new MockPackWorkloadInstaller(failingWorkload: "xamarin-android-build", failingRollback: true);
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot);
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "xamarin-android-build", "--skip-manifest-update" });
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "xamarin-android-build", "--skip-manifest-update" });
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, "6.0.100", workloadResolver);
 
             var installManager = new WorkloadInstallCommand(parseResult, reporter: _reporter, workloadResolverFactory, workloadInstaller: installer);
@@ -127,10 +127,10 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [InlineData(false, "6.0.100")]
         public void GivenWorkloadInstallItCanUpdateAdvertisingManifests(bool userLocal, string sdkVersion)
         {
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android" });
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android" });
             (_, var installManager, var installer, _, var manifestUpdater, _, var resolverFactory) = GetTestInstallers(parseResult, userLocal, sdkVersion, installedFeatureBand: sdkVersion);
 
-            new WorkloadConfigCommand(Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]), workloadResolverFactory: resolverFactory).Execute().Should().Be(0);
+            new WorkloadConfigCommand(Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]), workloadResolverFactory: resolverFactory).Execute().Should().Be(0);
             installManager.Execute()
                 .Should().Be(0);
 
@@ -148,7 +148,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var installer = new MockPackWorkloadInstaller(failingGarbageCollection: true);
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot);
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "xamarin-android-build", "--skip-manifest-update" });
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "xamarin-android-build", "--skip-manifest-update" });
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, "6.0.100", workloadResolver);
             var installManager = new WorkloadInstallCommand(parseResult, reporter: _reporter, workloadResolverFactory, workloadInstaller: installer);
 
@@ -174,13 +174,13 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public void GivenNoWorkloadsInstalledInfoOptionRemarksOnThat()
         {
             // We can't easily mock the end to end process of installing a workload and testing --info on it so we are adding that to the manual testing document.
-            // However, we can test a setup where no workloads are installed and --info is provided. 
+            // However, we can test a setup where no workloads are installed and --info is provided.
 
             _reporter.Clear();
             var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot);
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android" });
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android" });
 
             WorkloadInfoHelper workloadInfoHelper = new WorkloadInfoHelper(isInteractive: false, workloadResolver: workloadResolver);
             WorkloadCommandParser.ShowWorkloadsInfo(parseResult, workloadInfoHelper: workloadInfoHelper, reporter: _reporter);
@@ -199,7 +199,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdErrContaining("Required command was not provided.");
+                .HaveStdErrContaining("'--infoz'"); // we should complain about the bad option not being recognized
         }
 
         [Theory]
@@ -210,7 +210,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public void GivenWorkloadInstallItCanUpdateInstalledManifests(bool userLocal, string sdkVersion)
         {
             var parseResult =
-                Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android" });
+                Parser.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android" });
             var featureBand = new SdkFeatureBand(sdkVersion);
             var manifestsToUpdate =
                 new ManifestUpdateWithWorkloads[]
@@ -220,7 +220,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             (_, var installManager, var installer, _, _, _, var resolverFactory) =
                 GetTestInstallers(parseResult, userLocal, sdkVersion, manifestUpdates: manifestsToUpdate, installedFeatureBand: sdkVersion);
 
-            new WorkloadConfigCommand(Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]), workloadResolverFactory: resolverFactory).Execute().Should().Be(0);
+            new WorkloadConfigCommand(Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]), workloadResolverFactory: resolverFactory).Execute().Should().Be(0);
             installManager.Execute()
                 .Should().Be(0);
 
@@ -245,14 +245,14 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                     };
             var cachePath = Path.Combine(_testAssetsManager.CreateTestDirectory(identifier: AppendForUserLocal("mockCache_", userLocal) + sdkVersion).Path,
                 "mockCachePath");
-            var parseResult = Parser.Instance.Parse(new string[]
+            var parseResult = Parser.Parse(new string[]
             {
                 "dotnet", "workload", "install", "xamarin-android", "--from-cache", cachePath
             });
             (_, var installManager, var installer, _, _, _, var resolverFactory) = GetTestInstallers(parseResult, userLocal, sdkVersion,
                 tempDirManifestPath: _manifestPath, manifestUpdates: manifestsToUpdate, installedFeatureBand: sdkVersion);
 
-            new WorkloadConfigCommand(Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]), workloadResolverFactory: resolverFactory).Execute().Should().Be(0);
+            new WorkloadConfigCommand(Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]), workloadResolverFactory: resolverFactory).Execute().Should().Be(0);
             installManager.Execute();
 
             installer.InstalledManifests[0].manifestUpdate.ManifestId.Should().Be(manifestsToUpdate[0].ManifestUpdate.ManifestId);
@@ -269,7 +269,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public void GivenWorkloadInstallItCanDownloadToOfflineCache(bool userLocal, string sdkVersion)
         {
             var cachePath = Path.Combine(_testAssetsManager.CreateTestDirectory(identifier: AppendForUserLocal("mockCache_", userLocal) + sdkVersion).Path, "mockCachePath");
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "--download-to-cache", cachePath });
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "--download-to-cache", cachePath });
             (_, var installManager, _, _, var manifestUpdater, var packageDownloader, _) = GetTestInstallers(parseResult, userLocal, sdkVersion, tempDirManifestPath: _manifestPath, installedFeatureBand: sdkVersion);
 
             installManager.Execute();
@@ -293,7 +293,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             var mockWorkloadIds = new WorkloadId[] { new WorkloadId("xamarin-android") };
             var cachePath = "mockCachePath";
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "--from-cache", cachePath });
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "--from-cache", cachePath });
             (_, var installManager, var installer, _, _, var nugetDownloader, _) = GetTestInstallers(parseResult, userLocal, sdkVersion, installedFeatureBand: sdkVersion);
 
             installManager.Execute();
@@ -313,7 +313,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [InlineData(false, "6.0.100")]
         public void GivenWorkloadInstallItPrintsDownloadUrls(bool userLocal, string sdkVersion)
         {
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "--print-download-link-only" });
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "--print-download-link-only" });
             (_, var installManager, _, _, _, _, _) = GetTestInstallers(parseResult, userLocal, sdkVersion, tempDirManifestPath: _manifestPath, installedFeatureBand: sdkVersion);
 
             installManager.Execute();
@@ -333,7 +333,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { manifestPath }), dotnetRoot);
             var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
             var manifestUpdater = new MockWorkloadManifestUpdater();
-            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", mockWorkloadId });
+            var parseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", mockWorkloadId });
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, "6.0.100", workloadResolver, userProfileDir: testDirectory);
 
             var command = new WorkloadInstallCommand(parseResult, reporter: _reporter, workloadResolverFactory, workloadInstaller: installer,
@@ -368,13 +368,13 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             }
 
             // Successfully install a workload
-            var installParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", existingWorkload });
+            var installParseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", existingWorkload });
             var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: new MockNuGetPackageDownloader(tmpDir),
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
             installCommand.Execute();
 
             // Install a workload with a mocked nuget failure
-            installParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", installingWorkload });
+            installParseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", installingWorkload });
             installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: nugetDownloader,
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
             var exceptionThrown = Assert.Throws<GracefulException>(() => installCommand.Execute());
@@ -400,7 +400,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
             var tmpDir = Path.Combine(testDirectory, "tmp");
             var manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "MockWorkloadsSample.json");
-            
+
             var manifestUpdater = new MockWorkloadManifestUpdater();
             var prev7SdkFeatureVersion = "6.0.100-preview.7.21379.14";
             var prev7FormattedFeatureVersion = "6.0.100-preview.7";
@@ -424,7 +424,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var rc1WorkloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, rc1SdkFeatureVersion, workloadResolver, userProfileDir);
 
             // Install a workload for preview 7
-            var installParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", existingWorkload });
+            var installParseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", existingWorkload });
             var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, prev7workloadResolverFactory, nugetPackageDownloader: new MockNuGetPackageDownloader(tmpDir),
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
             installCommand.Execute();
@@ -514,7 +514,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             File.WriteAllText(rollbackFilePath, mockRollbackFileContent);
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
 
-            var installParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", workload, "--from-rollback-file", rollbackFilePath });
+            var installParseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", workload, "--from-rollback-file", rollbackFilePath });
             var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: new MockNuGetPackageDownloader(tmpDir),
                 tempDirPath: testDirectory);
 
@@ -540,7 +540,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             File.WriteAllText(rollbackFilePath, mockRollbackFileContent);
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
 
-            var installParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", workload, "--from-rollback-file", rollbackFilePath });
+            var installParseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", workload, "--from-rollback-file", rollbackFilePath });
             var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: new MockNuGetPackageDownloader(tmpDir),
                 tempDirPath: testDirectory);
 
@@ -563,7 +563,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
 
             // Successfully install a workload
-            var installParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", workloadId });
+            var installParseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", workloadId });
             var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: new MockNuGetPackageDownloader(tmpDir),
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
             installCommand.Execute()
@@ -571,7 +571,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             _reporter.Clear();
 
             // Install again, this time it should tell you that you already have the workload installed
-            installParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", workloadId, "mock-2" });
+            installParseResult = Parser.Parse(new string[] { "dotnet", "workload", "install", workloadId, "mock-2" });
             installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: new MockNuGetPackageDownloader(tmpDir),
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
             installCommand.Execute()
@@ -624,7 +624,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             string sdkFeatureBand = "6.0.300";
 
             var parseResult =
-               Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", verbosityFlag, "xamarin-android" });
+               Parser.Parse(new string[] { "dotnet", "workload", "install", verbosityFlag, "xamarin-android" });
             var manifestsToUpdate =
                 new ManifestUpdateWithWorkloads[]
                     {

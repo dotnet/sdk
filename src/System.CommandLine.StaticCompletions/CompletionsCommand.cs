@@ -114,7 +114,7 @@ public class GenerateScriptCommand : Command
         {
             IShellProvider shell = args.GetValue(shellArg)!; // this cannot be null due to the way the shellArg is defined/configured
             var script = shell.GenerateCompletions(args.RootCommandResult.Command);
-            args.Configuration.Output.Write(script);
+            args.InvocationConfiguration.Output.Write(script);
         });
     }
 }

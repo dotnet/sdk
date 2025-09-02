@@ -27,7 +27,7 @@ internal class WorkloadUninstallCommand : WorkloadCommandBase
         IReporter reporter = null,
         IWorkloadResolverFactory workloadResolverFactory = null,
         INuGetPackageDownloader nugetPackageDownloader = null)
-        : base(parseResult, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader)
+        : base(parseResult, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader, verbosityOptions: WorkloadUninstallCommandParser.VerbosityOption)
     {
         _workloadIds = parseResult.GetValue(WorkloadUninstallCommandParser.WorkloadIdArgument)
             .Select(workloadId => new WorkloadId(workloadId)).ToList().AsReadOnly();

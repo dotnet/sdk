@@ -250,8 +250,7 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
               "tools": {}
             }
             """;
-        _fileSystem.Directory.CreateDirectory(Path.Combine(folderPath.Value, Constants.DotConfigDirectoryName));
-        string manifestFileLocation = Path.Combine(folderPath.Value, Constants.DotConfigDirectoryName, Constants.ToolManifestFileName);
+        string manifestFileLocation = Path.Combine(folderPath.Value, Constants.ToolManifestFileName);
         _fileSystem.File.WriteAllText(manifestFileLocation, manifestFileContent);
 
         return manifestFileLocation;

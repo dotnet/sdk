@@ -154,7 +154,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
 
-            testProject.PackageReferences.Add(new TestPackageReference("Microsoft.NET.Test.Sdk", "16.7.1"));
+            testProject.PackageReferences.Add(new TestPackageReference("Microsoft.NET.Test.Sdk", "17.12.0"));
             testProject.PackageReferences.Add(new TestPackageReference("xunit", "2.4.1"));
             testProject.PackageReferences.Add(new TestPackageReference("xunit.runner.visualstudio", "2.4.3", privateAssets: "all"));
 

@@ -310,7 +310,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             Directory.CreateDirectory(Path.Combine(emptyInstalledManifestsDir, testManifestName));
             File.WriteAllText(Path.Combine(emptyInstalledManifestsDir, testManifestName, _manifestFileName), GetManifestContent(new ManifestVersion("1.0.0")));
 
-            var workloadManifestProvider = new MockManifestProvider((testManifestName, Path.Combine(emptyInstalledManifestsDir, testManifestName, _manifestFileName), "1.0.0", "6.0.200")) 
+            var workloadManifestProvider = new MockManifestProvider((testManifestName, Path.Combine(emptyInstalledManifestsDir, testManifestName, _manifestFileName), "1.0.0", "6.0.200"))
             {
                 SdkFeatureBand = new SdkFeatureBand(sdkFeatureBand)
             };
@@ -651,7 +651,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             (var updater2, var downloader2, var sentinelPath2, var resolver2) = GetTestUpdater(testDir: testDir, featureBand: "6.0.200");
 
             new WorkloadConfigCommand(
-                Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]),
+                Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]),
                 workloadResolverFactory: new MockWorkloadResolverFactory(testDir, "6.0.100", resolver1)).Execute().Should().Be(0);
             await updater1.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
             File.Exists(sentinelPath2).Should().BeFalse();
@@ -659,7 +659,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             downloader1.DownloadCallParams.Should().BeEquivalentTo(GetExpectedDownloadedPackages("6.0.100"));
 
             new WorkloadConfigCommand(
-                Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]),
+                Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]),
                 workloadResolverFactory: new MockWorkloadResolverFactory(testDir, "6.0.200", resolver2)).Execute().Should().Be(0);
             await updater2.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
             File.Exists(sentinelPath2).Should().BeTrue();
@@ -693,7 +693,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             (var manifestUpdater, var packageDownloader, var sentinelPath, var workloadResolver) = GetTestUpdater(testDir, featureBand, testName, getEnvironmentVariable);
             var configCommand = new WorkloadConfigCommand(
-                Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]),
+                Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]),
                 workloadResolverFactory: new MockWorkloadResolverFactory(testDir, featureBand, workloadResolver));
             return (manifestUpdater, packageDownloader, sentinelPath, configCommand);
         }

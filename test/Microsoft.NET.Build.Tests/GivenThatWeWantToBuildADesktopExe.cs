@@ -949,7 +949,7 @@ class Program
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [Fact]
         public void It_places_package_xml_in_ref_folder_in_output_directory()
         {
             var testProject = new TestProject()
@@ -964,13 +964,18 @@ class Program
 
             testProject.AdditionalProperties.Add("CopyDebugSymbolFilesFromPackages", "true");
             testProject.AdditionalProperties.Add("CopyDocumentationFilesFromPackages", "true");
+            // we need to disable package pruning to ensure that the xml file is copied
+            // from the packagereference - otherwise this dependency will be satisfied
+            // by the framework reference and the xml file will not be copied.
+            testProject.AdditionalProperties.Add("RestoreEnablePackagePruning", "false");
 
             TestAsset testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
 
             buildCommand
-                .Execute()
+                .WithWorkingDirectory(testAsset.TestRoot)
+                .Execute("/bl:{}.binlog")
                 .Should()
                 .Pass();
 

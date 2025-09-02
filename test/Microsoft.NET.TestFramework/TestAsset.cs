@@ -270,14 +270,14 @@ namespace Microsoft.NET.TestFramework
             return this;
         }
 
-        public string ReadMSTestVersionFromProps(string propsFilePath)
+        public string ReadMSTestPackageVersionFromProps(string propsFilePath)
         {
             XDocument doc = XDocument.Load(propsFilePath);
-            XElement? msTestVersionElement = doc.Descendants("MSTestVersion").FirstOrDefault();
-            return msTestVersionElement?.Value ?? throw new InvalidOperationException("MSTestVersion not found in Version.props");
+            XElement? msTestVersionElement = doc.Descendants("MSTestPackageVersion").FirstOrDefault();
+            return msTestVersionElement?.Value ?? throw new InvalidOperationException("MSTestPackageVersion not found in Version.props");
         }
 
-        public void UpdateProjectFileWithMSTestVersion(string projectPath, string msTestVersion)
+        public void UpdateProjectFileWithMSTestPackageVersion(string projectPath, string msTestVersion)
         {
             if (projectPath is null)
             {

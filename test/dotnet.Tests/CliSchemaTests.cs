@@ -23,7 +23,8 @@ public class CliSchemaTests : SdkTest
       "description": "Display solution folder paths.",
       "hidden": false,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -46,7 +47,7 @@ public class CliSchemaTests : SdkTest
       "description": "The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.",
       "order": 0,
       "hidden": false,
-      "valueType": "System.Collections.Generic.IEnumerable<System.String>",
+      "valueType": "System.String[]",
       "hasDefaultValue": false,
       "arity": {
         "minimum": 0
@@ -87,7 +88,8 @@ public class CliSchemaTests : SdkTest
       "description": "Force the command to ignore any persistent build servers.",
       "hidden": false,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -128,7 +130,8 @@ public class CliSchemaTests : SdkTest
       "description": "Do not display the startup banner or the copyright message.",
       "hidden": false,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -168,6 +171,28 @@ public class CliSchemaTests : SdkTest
       "required": false,
       "recursive": false
     },
+    "--target": {
+      "description": "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
+      "hidden": true,
+      "aliases": [
+        "--t",
+        "-t",
+        "-target",
+        "/t",
+        "/target"
+      ],
+      "helpName": "TARGET",
+      "valueType": "System.String[]",
+      "hasDefaultValue": true,
+      "defaultValue": [
+        "Clean"
+      ],
+      "arity": {
+        "minimum": 0
+      },
+      "required": false,
+      "recursive": false
+    },
     "--verbosity": {
       "description": "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].",
       "hidden": false,
@@ -175,14 +200,61 @@ public class CliSchemaTests : SdkTest
         "-v"
       ],
       "helpName": "LEVEL",
-      "valueType": "Microsoft.DotNet.Cli.VerbosityOptions",
-      "hasDefaultValue": false,
+      "valueType": "Microsoft.DotNet.Cli.Utils.VerbosityOptions",
+      "hasDefaultValue": true,
+      "defaultValue": "normal",
       "arity": {
         "minimum": 1,
         "maximum": 1
       },
       "required": false,
       "recursive": false
+    }
+  },
+  "subcommands": {
+    "file-based-apps": {
+      "description": "Removes artifacts created for file-based apps",
+      "hidden": true,
+      "options": {
+        "--automatic": {
+          "hidden": true,
+          "valueType": "System.Boolean",
+          "hasDefaultValue": true,
+          "defaultValue": false,
+          "arity": {
+            "minimum": 0,
+            "maximum": 1
+          },
+          "required": false,
+          "recursive": false
+        },
+        "--days": {
+          "description": "How many days an artifact folder needs to be unused in order to be removed",
+          "hidden": false,
+          "valueType": "System.Int32",
+          "hasDefaultValue": true,
+          "defaultValue": 30,
+          "arity": {
+            "minimum": 1,
+            "maximum": 1
+          },
+          "required": false,
+          "recursive": false
+        },
+        "--dry-run": {
+          "description": "Determines changes without actually modifying the file system",
+          "hidden": false,
+          "valueType": "System.Boolean",
+          "hasDefaultValue": true,
+          "defaultValue": false,
+          "arity": {
+            "minimum": 0,
+            "maximum": 0
+          },
+          "required": false,
+          "recursive": false
+        }
+      }
     }
   }
 }
@@ -335,7 +407,8 @@ public class CliSchemaTests : SdkTest
       "description": "Prevent restoring multiple projects in parallel.",
       "hidden": false,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -385,7 +458,8 @@ public class CliSchemaTests : SdkTest
       "description": "Treat package source failures as warnings.",
       "hidden": false,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -397,7 +471,8 @@ public class CliSchemaTests : SdkTest
       "description": "Allow prerelease workload manifests.",
       "hidden": false,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 1
@@ -422,7 +497,8 @@ public class CliSchemaTests : SdkTest
       "description": "Do not cache packages and http requests.",
       "hidden": true,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -434,7 +510,8 @@ public class CliSchemaTests : SdkTest
       "description": "Do not cache packages and http requests.",
       "hidden": false,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -446,7 +523,8 @@ public class CliSchemaTests : SdkTest
       "description": "Only print the list of links to download without downloading.",
       "hidden": true,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 1
@@ -471,7 +549,8 @@ public class CliSchemaTests : SdkTest
       "description": "Skip updating the workload manifests.",
       "hidden": false,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -483,7 +562,8 @@ public class CliSchemaTests : SdkTest
       "description": "Skip signature verification of workload packages and installers.",
       "hidden": true,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -525,8 +605,9 @@ public class CliSchemaTests : SdkTest
         "-v"
       ],
       "helpName": "LEVEL",
-      "valueType": "Microsoft.DotNet.Cli.VerbosityOptions",
-      "hasDefaultValue": false,
+      "valueType": "Microsoft.DotNet.Cli.Utils.VerbosityOptions",
+      "hasDefaultValue": true,
+      "defaultValue": "normal",
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -629,7 +710,8 @@ public class CliSchemaTests : SdkTest
     "--debug": {
       "hidden": false,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -641,7 +723,8 @@ public class CliSchemaTests : SdkTest
       "description": "Force the command to ignore any persistent build servers.",
       "hidden": false,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -653,7 +736,8 @@ public class CliSchemaTests : SdkTest
       "description": "",
       "hidden": true,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -665,7 +749,8 @@ public class CliSchemaTests : SdkTest
       "description": "Force all dependencies to be resolved even if the last restore was successful.\nThis is equivalent to deleting project.assets.json.",
       "hidden": true,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -693,7 +778,8 @@ public class CliSchemaTests : SdkTest
       "description": "",
       "hidden": true,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -718,7 +804,8 @@ public class CliSchemaTests : SdkTest
       "description": "",
       "hidden": true,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -730,7 +817,8 @@ public class CliSchemaTests : SdkTest
       "description": "Do not build project-to-project references and only build the specified project.",
       "hidden": false,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -742,7 +830,8 @@ public class CliSchemaTests : SdkTest
       "description": "",
       "hidden": true,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -754,7 +843,8 @@ public class CliSchemaTests : SdkTest
       "description": "Do not use incremental building.",
       "hidden": false,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -766,7 +856,8 @@ public class CliSchemaTests : SdkTest
       "description": "Do not restore the project before building.",
       "hidden": false,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -778,7 +869,8 @@ public class CliSchemaTests : SdkTest
       "description": "Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.",
       "hidden": false,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -790,7 +882,8 @@ public class CliSchemaTests : SdkTest
       "description": "Do not display the startup banner or the copyright message.",
       "hidden": false,
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -849,10 +942,27 @@ public class CliSchemaTests : SdkTest
         "/p",
         "/property"
       ],
-      "valueType": "System.String[]",
+      "valueType": "System.Collections.ObjectModel.ReadOnlyDictionary<System.String, System.String>",
       "hasDefaultValue": false,
       "arity": {
-        "minimum": 1
+        "minimum": 0
+      },
+      "required": false,
+      "recursive": false
+    },
+    "--restoreProperty": {
+      "hidden": true,
+      "aliases": [
+        "--rp",
+        "-restoreProperty",
+        "-rp",
+        "/restoreProperty",
+        "/rp"
+      ],
+      "valueType": "System.Collections.ObjectModel.ReadOnlyDictionary<System.String, System.String>",
+      "hasDefaultValue": false,
+      "arity": {
+        "minimum": 0
       },
       "required": false,
       "recursive": false
@@ -880,7 +990,8 @@ public class CliSchemaTests : SdkTest
         "--sc"
       ],
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 1
@@ -900,6 +1011,25 @@ public class CliSchemaTests : SdkTest
       "required": false,
       "recursive": false
     },
+    "--target": {
+      "description": "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
+      "hidden": true,
+      "aliases": [
+        "--t",
+        "-t",
+        "-target",
+        "/t",
+        "/target"
+      ],
+      "helpName": "TARGET",
+      "valueType": "System.String[]",
+      "hasDefaultValue": true,
+      "arity": {
+        "minimum": 0
+      },
+      "required": false,
+      "recursive": false
+    },
     "--use-current-runtime": {
       "description": "Use current runtime as the target runtime.",
       "hidden": false,
@@ -907,7 +1037,8 @@ public class CliSchemaTests : SdkTest
         "--ucr"
       ],
       "valueType": "System.Boolean",
-      "hasDefaultValue": false,
+      "hasDefaultValue": true,
+      "defaultValue": false,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -919,10 +1050,14 @@ public class CliSchemaTests : SdkTest
       "description": "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].",
       "hidden": false,
       "aliases": [
-        "-v"
+        "--v",
+        "-v",
+        "-verbosity",
+        "/v",
+        "/verbosity"
       ],
       "helpName": "LEVEL",
-      "valueType": "Microsoft.DotNet.Cli.VerbosityOptions",
+      "valueType": "System.Nullable<Microsoft.DotNet.Cli.Utils.VerbosityOptions>",
       "hasDefaultValue": false,
       "arity": {
         "minimum": 1,
@@ -963,11 +1098,11 @@ public class CliSchemaTests : SdkTest
     {
         var stream = new MemoryStream();
         var writer = new StreamWriter(stream);
-        CliSchema.PrintCliSchema(Parser.Instance.Parse(commandArgs).CommandResult, writer, null);
+        CliSchema.PrintCliSchema(Parser.Parse(commandArgs).CommandResult, writer, null);
         stream.Position = 0;
         var reader = new StreamReader(stream);
         var output = reader.ReadToEnd();
-        output.Should().BeEquivalentTo(json.ReplaceLineEndings("\n"));
+        output.Should().BeVisuallyEquivalentTo(json);
     }
 
     [Fact]

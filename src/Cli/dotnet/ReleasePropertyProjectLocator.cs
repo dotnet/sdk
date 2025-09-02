@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.Build.Execution;
@@ -24,8 +25,8 @@ internal class ReleasePropertyProjectLocator
         public string? FrameworkOption;
         public string? ConfigurationOption;
 
-        public DependentCommandOptions(IEnumerable<string> slnOrProjectArgs, string? configOption = null, string? frameworkOption = null)
-        => (SlnOrProjectArgs, ConfigurationOption, FrameworkOption) = (slnOrProjectArgs, configOption, frameworkOption);
+        public DependentCommandOptions(IEnumerable<string>? slnOrProjectArgs, string? configOption = null, string? frameworkOption = null)
+        => (SlnOrProjectArgs, ConfigurationOption, FrameworkOption) = (slnOrProjectArgs ?? [], configOption, frameworkOption);
     }
 
     private readonly ParseResult _parseResult;
@@ -53,24 +54,23 @@ internal class ReleasePropertyProjectLocator
     /// ... a boolean that may or may not exist in the targeted project.
     /// </summary>
     /// <returns>Returns a string such as -property:configuration=value for a projects desired config. May be empty string.</returns>
-    public IEnumerable<string> GetCustomDefaultConfigurationValueIfSpecified()
+    public ReadOnlyDictionary<string, string>? GetCustomDefaultConfigurationValueIfSpecified()
     {
         // Setup
         Debug.Assert(_propertyToCheck == MSBuildPropertyNames.PUBLISH_RELEASE || _propertyToCheck == MSBuildPropertyNames.PACK_RELEASE, "Only PackRelease or PublishRelease are currently expected.");
-        var nothing = Enumerable.Empty<string>();
         if (string.Equals(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DISABLE_PUBLISH_AND_PACK_RELEASE), "true", StringComparison.OrdinalIgnoreCase))
         {
-            return nothing;
+            return null;
         }
 
         // Analyze Global Properties
         var globalProperties = GetUserSpecifiedExplicitMSBuildProperties();
-        InjectTargetFrameworkIntoGlobalProperties(globalProperties);
+        globalProperties = InjectTargetFrameworkIntoGlobalProperties(globalProperties);
 
         // Configuration doesn't work in a .proj file, but it does as a global property.
         // Detect either A) --configuration option usage OR /p:Configuration=Foo, if so, don't use these properties.
-        if (_options.ConfigurationOption != null || globalProperties.ContainsKey(MSBuildPropertyNames.CONFIGURATION))
-            return [$"-property:{EnvironmentVariableNames.DISABLE_PUBLISH_AND_PACK_RELEASE}=true"]; // Don't throw error if publish* conflicts but global config specified.
+        if (_options.ConfigurationOption != null || globalProperties is not null && globalProperties.ContainsKey(MSBuildPropertyNames.CONFIGURATION))
+            return new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase) { [EnvironmentVariableNames.DISABLE_PUBLISH_AND_PACK_RELEASE] = "true" }.AsReadOnly(); // Don't throw error if publish* conflicts but global config specified.
 
         // Determine the project being acted upon
         ProjectInstance? project = GetTargetedProject(globalProperties);
@@ -81,22 +81,22 @@ internal class ReleasePropertyProjectLocator
             string propertyToCheckValue = project.GetPropertyValue(_propertyToCheck);
             if (!string.IsNullOrEmpty(propertyToCheckValue))
             {
-                var newConfigurationArgs = new List<string>();
+                var newConfigurationArgs = new Dictionary<string, string>(2, StringComparer.OrdinalIgnoreCase);
 
                 if (propertyToCheckValue.Equals("true", StringComparison.OrdinalIgnoreCase))
                 {
-                    newConfigurationArgs.Add($"-property:{MSBuildPropertyNames.CONFIGURATION}={MSBuildPropertyNames.CONFIGURATION_RELEASE_VALUE}");
+                    newConfigurationArgs[MSBuildPropertyNames.CONFIGURATION] = MSBuildPropertyNames.CONFIGURATION_RELEASE_VALUE;
                 }
 
                 if (_isHandlingSolution) // This will allow us to detect conflicting configuration values during evaluation.
                 {
-                    newConfigurationArgs.Add($"-property:_SolutionLevel{_propertyToCheck}={propertyToCheckValue}");
+                    newConfigurationArgs[$"_SolutionLevel{_propertyToCheck}"] = propertyToCheckValue;
                 }
 
-                return newConfigurationArgs;
+                return newConfigurationArgs.AsReadOnly();
             }
         }
-        return nothing;
+        return null;
     }
 
     /// <summary>
@@ -104,7 +104,7 @@ internal class ReleasePropertyProjectLocator
     /// </summary>
     /// <returns>A project instance that will be targeted to publish/pack, etc. null if one does not exist.
     /// Will return an arbitrary project in the solution if one exists in the solution and there's no project targeted.</returns>
-    public ProjectInstance? GetTargetedProject(Dictionary<string, string> globalProps)
+    public ProjectInstance? GetTargetedProject(ReadOnlyDictionary<string, string>? globalProps)
     {
         foreach (string arg in _slnOrProjectArgs.Append(Directory.GetCurrentDirectory()))
         {
@@ -138,7 +138,7 @@ internal class ReleasePropertyProjectLocator
 
     /// <returns>An arbitrary existant project in a solution file. Returns null if no projects exist.
     /// Throws exception if two+ projects disagree in PublishRelease, PackRelease, or whatever _propertyToCheck is, and have it defined.</returns>
-    public ProjectInstance? GetArbitraryProjectFromSolution(string slnPath, Dictionary<string, string> globalProps)
+    public ProjectInstance? GetArbitraryProjectFromSolution(string slnPath, ReadOnlyDictionary<string, string>? globalProps)
     {
         string slnFullPath = Path.GetFullPath(slnPath);
         if (!Path.Exists(slnFullPath))
@@ -208,7 +208,7 @@ internal class ReleasePropertyProjectLocator
     /// <param name="solution">The solution to get an arbitrary project from.</param>
     /// <param name="globalProps">The global properties to load into the project.</param>
     /// <returns>null if no project exists in the solution that can be evaluated properly. Else, the first project in the solution that can be.</returns>
-    private ProjectInstance? GetSingleProjectFromSolution(SolutionModel sln, string slnPath, Dictionary<string, string> globalProps)
+    private ProjectInstance? GetSingleProjectFromSolution(SolutionModel sln, string slnPath, ReadOnlyDictionary<string, string>? globalProps)
     {
         foreach (var project in sln.SolutionProjects.AsEnumerable())
         {
@@ -240,7 +240,7 @@ internal class ReleasePropertyProjectLocator
     }
 
     /// <returns>Creates a ProjectInstance if the project is valid, elsewise, fails.</returns>
-    private static ProjectInstance? TryGetProjectInstance(string projectPath, Dictionary<string, string> globalProperties)
+    private static ProjectInstance? TryGetProjectInstance(string projectPath, ReadOnlyDictionary<string, string>? globalProperties)
     {
         try
         {
@@ -262,29 +262,11 @@ internal class ReleasePropertyProjectLocator
     /// <returns>Returns true if the path exists and is a sln file type.</returns>
     private static bool IsValidSlnFilePath(string path)
     {
-        return File.Exists(path) && (Path.GetExtension(path).Equals(".sln")|| Path.GetExtension(path).Equals(".slnx"));
+        return File.Exists(path) && (Path.GetExtension(path).Equals(".sln") || Path.GetExtension(path).Equals(".slnx"));
     }
 
     /// <returns>A case-insensitive dictionary of any properties passed from the user and their values.</returns>
-    private Dictionary<string, string> GetUserSpecifiedExplicitMSBuildProperties()
-    {
-        Dictionary<string, string> globalProperties = new(StringComparer.OrdinalIgnoreCase);
-
-        string[]? globalPropEnumerable = _parseResult.GetValue(CommonOptions.PropertiesOption);
-
-        if ( globalPropEnumerable != null )
-        {
-            foreach (var keyEqValString in globalPropEnumerable)
-            {
-                var propertyPairs = MSBuildPropertyParser.ParseProperties(keyEqValString);
-                foreach (var propertyKeyValue in propertyPairs)
-                {
-                    globalProperties[propertyKeyValue.key] = propertyKeyValue.value;
-                }
-            }
-        }
-        return globalProperties;
-    }
+    private ReadOnlyDictionary<string, string>? GetUserSpecifiedExplicitMSBuildProperties() => _parseResult.GetValue(CommonOptions.PropertiesOption);
 
     /// <summary>
     /// Because command-line options that translate to MSBuild properties aren't in the global arguments from Properties, we need to add the TargetFramework to the collection.
@@ -293,13 +275,25 @@ internal class ReleasePropertyProjectLocator
     /// </summary>
     /// <param name="oldGlobalProperties">The set of MSBuild properties that were specified explicitly like -p:Property=Foo or in other syntax sugars.</param>
     /// <returns>The same set of global properties for the project, but with the new potential TFM based on -f or --framework.</returns>
-    void InjectTargetFrameworkIntoGlobalProperties(Dictionary<string, string> globalProperties)
+    private ReadOnlyDictionary<string, string>? InjectTargetFrameworkIntoGlobalProperties(ReadOnlyDictionary<string, string>? globalProperties)
     {
-        if (_options.FrameworkOption != null)
+        if (globalProperties is null || globalProperties.Count == 0)
         {
-            // Note: dotnet -f FRAMEWORK_1 --property:TargetFramework=FRAMEWORK_2 will use FRAMEWORK_1.
-            // So we can replace the value in the globals non-dubiously if it exists.
-            globalProperties[MSBuildPropertyNames.TARGET_FRAMEWORK] = _options.FrameworkOption;
+            if (_options.FrameworkOption != null)
+            {
+                return new(new Dictionary<string, string>() { [MSBuildPropertyNames.TARGET_FRAMEWORK] = _options.FrameworkOption });
+            }
+            return null;
         }
+        if (_options.FrameworkOption is null)
+        {
+            return globalProperties;
+        }
+
+        var newDictionary = new Dictionary<string, string>(globalProperties, StringComparer.OrdinalIgnoreCase);
+        // Note: dotnet -f FRAMEWORK_1 --property:TargetFramework=FRAMEWORK_2 will use FRAMEWORK_1.
+        // So we can replace the value in the globals non-dubiously if it exists.
+        newDictionary[MSBuildPropertyNames.TARGET_FRAMEWORK] = _options.FrameworkOption;
+        return new(newDictionary);
     }
 }

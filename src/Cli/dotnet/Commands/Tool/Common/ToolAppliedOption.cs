@@ -5,6 +5,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Common;
@@ -56,17 +57,17 @@ internal class ToolAppliedOption
         string message)
     {
         List<string> options = [];
-        if (parseResult.GetResult(GlobalOptionName) is not null)
+        if (parseResult.HasOption(GlobalOptionName))
         {
             options.Add(GlobalOptionName);
         }
 
-        if (parseResult.GetResult(LocalOptionName) is not null)
+        if (parseResult.HasOption(LocalOptionName))
         {
             options.Add(LocalOptionName);
         }
 
-        if (parseResult.GetResult(ToolPathName) is not null)
+        if (parseResult.HasOption(ToolPathName))
         {
             options.Add(ToolPathName);
         }
@@ -85,12 +86,12 @@ internal class ToolAppliedOption
         string message)
     {
         List<string> options = [];
-        if (parseResult.GetResult(UpdateAllOption) is not null)
+        if (parseResult.HasOption(UpdateAllOption))
         {
             options.Add(UpdateAllOption.Name);
         }
 
-        if (parseResult.GetResult(VersionOption) is not null)
+        if (parseResult.HasOption(VersionOption))
         {
             options.Add(VersionOption.Name);
         }
@@ -107,7 +108,7 @@ internal class ToolAppliedOption
     internal static void EnsureToolManifestAndOnlyLocalFlagCombination(ParseResult parseResult)
     {
         if (GlobalOrToolPath(parseResult) &&
-            parseResult.GetResult(ToolManifestName) is not null)
+            parseResult.HasOption(ToolManifestName))
         {
             throw new GracefulException(
                 string.Format(
@@ -116,6 +117,6 @@ internal class ToolAppliedOption
     }
 
     private static bool GlobalOrToolPath(ParseResult parseResult)
-        => parseResult.GetResult(GlobalOptionName) is not null
-        || parseResult.GetResult(ToolPathName) is not null;
+        => parseResult.HasOption(GlobalOptionName)
+        || parseResult.HasOption(ToolPathName);
 }

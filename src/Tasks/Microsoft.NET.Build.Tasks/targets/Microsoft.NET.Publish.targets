@@ -1138,7 +1138,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                     TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
                     RuntimeIdentifier="$(RuntimeIdentifier)"
                     OutputDir="$(PublishDir)"
-                    ShowDiagnosticOutput="$(TraceSingleFileBundler)">
+                    ShowDiagnosticOutput="$(TraceSingleFileBundler)"
+                    EnableMacOSCodeSign="$(_EnableMacOSCodeSign)">
       <Output TaskParameter="ExcludedFiles" ItemName="_FilesExcludedFromBundle"/>
     </GenerateBundle>
 
@@ -1288,7 +1289,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <GetEmbeddedApphostPaths
-      PackagedShimOutputDirectory="$(PackagedShimOutputRootDirectory)/shims/$(TargetFramework)"
+      PackagedShimOutputDirectory="$([MSBuild]::NormalizeDirectory($(PackagedShimOutputRootDirectory), 'shims', $(TargetFramework)))"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
       ToolCommandName="$(ToolCommandName)"
       >

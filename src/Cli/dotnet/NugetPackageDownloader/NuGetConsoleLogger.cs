@@ -86,4 +86,15 @@ internal class NuGetConsoleLogger : ILogger
     {
         Reporter.Error.WriteLine($"[NuGet Manager] [Warning] {data}");
     }
+    private static LogLevel MappingVerbosityToNugetLogLevel(VerbosityOptions verbosity)
+    {
+        return verbosity switch
+        {
+            VerbosityOptions.diagnostic or VerbosityOptions.diag => LogLevel.Debug,
+            VerbosityOptions.minimal or VerbosityOptions.m => LogLevel.Minimal,
+            VerbosityOptions.normal or VerbosityOptions.n => LogLevel.Information,
+            VerbosityOptions.detailed or VerbosityOptions.d => LogLevel.Verbose,
+            _ => LogLevel.Information
+        };
+    }
 }

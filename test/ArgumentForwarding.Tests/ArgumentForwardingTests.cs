@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.CommandFactory;
+using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Tests.ArgumentForwarding
 {
@@ -18,7 +19,7 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
         {
             // This test has a dependency on an argument reflector
             // Make sure it's been binplaced properly
-            FindAndEnsureReflectorPresent();    
+            FindAndEnsureReflectorPresent();
         }
 
         private void FindAndEnsureReflectorPresent()
@@ -144,6 +145,15 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
             var escapedEvaluatedRawArgument = EscapeAndEvaluateArgumentStringCmd(rawEvaluatedArgument);
 
             rawEvaluatedArgument.Length.Should().NotBe(escapedEvaluatedRawArgument.Length);
+        }
+
+        [Fact]
+        public void ForwardAsWorks()
+        {
+            var cmd = Microsoft.DotNet.Cli.Commands.Package.Add.PackageAddCommandParser.GetCommand();
+            var parseResult = cmd.Parse(["package", "add", "thing", "--prerelease"]);
+            var forwardedValues = parseResult.OptionValuesToBeForwarded();
+            forwardedValues.Should().Contain("--prerelease");
         }
 
         /// <summary>

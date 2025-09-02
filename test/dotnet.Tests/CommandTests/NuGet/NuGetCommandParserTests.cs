@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [InlineData("--framework net472 -f net6.0")]
         public void NuGetWhyCommandCanParseFrameworkOptions(string inputOptions)
         {
-            var result = Parser.Instance.Parse($"dotnet nuget why C:\\path Fake.Package {inputOptions}");
+            var result = Parser.Parse($"dotnet nuget why C:\\path Fake.Package {inputOptions}");
 
             result.Errors.Should().BeEmpty();
             var parsedArguments = result.GetArguments();

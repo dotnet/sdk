@@ -83,8 +83,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             var instantiateCommand = (InstantiateCommand)parseResult.CommandResult.Command;
             var args = new InstantiateCommandArgs(instantiateCommand, parseResult);
             TemplateCommand templateCommand = new(instantiateCommand, settings, packageManager, templateGroup, templateGroup.Templates.Single());
-            CommandLineConfiguration parser = ParserFactory.CreateParser(templateCommand);
-            ParseResult templateParseResult = parser.Parse(args.TokensToInvoke ?? Array.Empty<string>());
+            Command parser = ParserFactory.CreateParser(templateCommand);
+            ParseResult templateParseResult = parser.Parse(args.TokensToInvoke ?? Array.Empty<string>(), ParserFactory.ParserConfiguration);
             var templateArgs = new TemplateCommandArgs(templateCommand, instantiateCommand, templateParseResult);
 
             Assert.Equal(expectedValue, templateArgs.Name);
@@ -146,8 +146,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             var instantiateCommand = (InstantiateCommand)parseResult.CommandResult.Command;
             var args = new InstantiateCommandArgs(instantiateCommand, parseResult);
             TemplateCommand templateCommand = new(instantiateCommand, settings, packageManager, templateGroup, templateGroup.Templates.Single());
-            CommandLineConfiguration parser = ParserFactory.CreateParser(templateCommand);
-            ParseResult templateParseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>());
+            Command parser = ParserFactory.CreateParser(templateCommand);
+            ParseResult templateParseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>(), ParserFactory.ParserConfiguration);
             var templateArgs = new TemplateCommandArgs(templateCommand, instantiateCommand, templateParseResult);
 
             if (string.IsNullOrWhiteSpace(expectedValue))
@@ -181,8 +181,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             var instantiateCommand = (InstantiateCommand)parseResult.CommandResult.Command;
             var args = new InstantiateCommandArgs(instantiateCommand, parseResult);
             TemplateCommand templateCommand = new(instantiateCommand, settings, packageManager, templateGroup, templateGroup.Templates.Single());
-            CommandLineConfiguration parser = ParserFactory.CreateParser(templateCommand);
-            ParseResult templateParseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>());
+            Command parser = ParserFactory.CreateParser(templateCommand);
+            ParseResult templateParseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>(), ParserFactory.ParserConfiguration);
             var templateArgs = new TemplateCommandArgs(templateCommand, instantiateCommand, templateParseResult);
 
             if (string.IsNullOrWhiteSpace(expectedValue))
@@ -224,8 +224,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             var args = new InstantiateCommandArgs(instantiateCommand, parseResult);
 
             TemplateCommand templateCommand = new(instantiateCommand, settings, packageManager, templateGroup, templateGroup.Templates.Single());
-            CommandLineConfiguration parser = ParserFactory.CreateParser(templateCommand);
-            ParseResult templateParseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>());
+            Command parser = ParserFactory.CreateParser(templateCommand);
+            ParseResult templateParseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>(), ParserFactory.ParserConfiguration);
             Assert.True(templateParseResult.Errors.Any());
             Assert.Equal(expectedError, templateParseResult.Errors.Single().Message);
         }
@@ -258,8 +258,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             var args = new InstantiateCommandArgs(instantiateCommand, parseResult);
 
             TemplateCommand templateCommand = new(instantiateCommand, settings, packageManager, templateGroup, templateGroup.Templates.Single());
-            CommandLineConfiguration parser = ParserFactory.CreateParser(templateCommand);
-            ParseResult templateParseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>());
+            Command parser = ParserFactory.CreateParser(templateCommand);
+            ParseResult templateParseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>(), ParserFactory.ParserConfiguration);
             Assert.True(templateParseResult.Errors.Any());
             Assert.Equal(expectedError, templateParseResult.Errors.Single().Message);
         }

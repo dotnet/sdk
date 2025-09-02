@@ -49,7 +49,8 @@ public class PackageTests
         };
         IReadOnlyList<string> knownProjectReferences = new List<string>()
         {
-            "..\\..\\Cli\\Microsoft.DotNet.Cli.Utils\\Microsoft.DotNet.Cli.Utils.csproj"
+            "..\\..\\Cli\\Microsoft.DotNet.Cli.Utils\\Microsoft.DotNet.Cli.Utils.csproj",
+            "..\\..\\Microsoft.Extensions.Logging.MSBuild\\Microsoft.Extensions.Logging.MSBuild.csproj"
         };
 
         string projectFilePath = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "ProjectFiles", "Microsoft.NET.Build.Containers.csproj");
@@ -86,6 +87,7 @@ public class PackageTests
               "containerize/Microsoft.Extensions.Logging.Abstractions.dll",
               "containerize/Microsoft.Extensions.Logging.Configuration.dll",
               "containerize/Microsoft.Extensions.Logging.Console.dll",
+              "containerize/Microsoft.Extensions.Logging.MSBuild.dll",
               "containerize/Microsoft.Extensions.Logging.dll",
               "containerize/Microsoft.Extensions.Options.ConfigurationExtensions.dll",
               "containerize/Microsoft.Extensions.Options.dll",
@@ -118,6 +120,7 @@ public class PackageTests
               $"tasks/{netTFM}/Microsoft.Extensions.DependencyInjection.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.Logging.Abstractions.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.Logging.dll",
+              $"tasks/{netTFM}/Microsoft.Extensions.Logging.MSBuild.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.Options.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.Primitives.dll",
               $"tasks/{netTFM}/Microsoft.NET.Build.Containers.deps.json",

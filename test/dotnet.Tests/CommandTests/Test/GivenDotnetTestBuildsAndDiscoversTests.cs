@@ -14,9 +14,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
         }
 
+        //  https://github.com/dotnet/sdk/issues/49665
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void DiscoverTestProjectWithNoTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString())
@@ -37,9 +38,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.ZeroTests);
         }
 
+        //  https://github.com/dotnet/sdk/issues/49665
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void DiscoverMultipleTestProjectsWithNoTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultipleTestProjectSolution", Guid.NewGuid().ToString())
@@ -60,9 +62,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.ZeroTests);
         }
 
+        //  https://github.com/dotnet/sdk/issues/49665
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void DiscoverTestProjectWithTests_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithDiscoveredTests", Guid.NewGuid().ToString())
@@ -81,9 +84,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
+        //  https://github.com/dotnet/sdk/issues/49665
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void DiscoverMultipleTestProjectsWithTests_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDiscoveredTests", Guid.NewGuid().ToString())
@@ -103,9 +107,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
+        //  https://github.com/dotnet/sdk/issues/49665
+        //   Error output: Failed to load /private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, error: dlopen(/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void DiscoverProjectWithMSTestMetaPackageAndMultipleTFMsWithTests_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
@@ -143,6 +149,40 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+        }
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
+        public void DiscoverTestProjectWithCustomRunArgumentsAndTestEscaping(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestAppPrintingCommandLineArguments", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(TestingPlatformOptions.ListTestsOption.Name,
+                                             TestingPlatformOptions.ConfigurationOption.Name, configuration,
+                                             "-p:RunArguments=--hello world \"\" world2",
+                                             "Another arg with spaces",
+                                             "My other arg with spaces",
+                                             "Arg ending with backslash and containing spaces\\",
+                                             "ArgWithoutSpacesEndingWith\\");
+
+            result.StdOut.Should().Contain("""
+                 args[0]=--hello
+                  args[1]=world
+                  args[2]=
+                  args[3]=world2
+                  args[4]=--list-tests
+                  args[5]=Another arg with spaces
+                  args[6]=My other arg with spaces
+                  args[7]=Arg ending with backslash and containing spaces\
+                  args[8]=ArgWithoutSpacesEndingWith\
+                  args[9]=--server
+                  args[10]=dotnettestcli
+                  args[11]=--dotnet-test-pipe
+                """);
         }
     }
 }

@@ -22,8 +22,9 @@ internal class LaunchSettingsManager
         };
     }
 
-    public static LaunchSettingsApplyResult TryApplyLaunchSettings(string launchSettingsJsonContents, string? profileName = null)
+    public static LaunchSettingsApplyResult TryApplyLaunchSettings(string launchSettingsPath, string? profileName = null)
     {
+        var launchSettingsJsonContents = File.ReadAllText(launchSettingsPath);
         try
         {
             var jsonDocumentOptions = new JsonDocumentOptions
@@ -115,7 +116,7 @@ internal class LaunchSettingsManager
         }
         catch (JsonException ex)
         {
-            return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.DeserializationExceptionMessage, ex.Message));
+            return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.DeserializationExceptionMessage, launchSettingsPath, ex.Message));
         }
     }
 

@@ -18,8 +18,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         [Fact]
         public void KnownHelpAliasesAreCorrect()
         {
-            ParseResult result = new CommandLineConfiguration(new RootCommand())
-                .Parse(Constants.KnownHelpAliases[0]);
+            var result = new RootCommand().Parse(Constants.KnownHelpAliases[0]);
 
             Option helpOption = result.CommandResult
                 .Children

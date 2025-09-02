@@ -125,13 +125,8 @@ public class DefineStaticWebAssetEndpoints : Task
             foreach (var (label, route, values) in _resolvedRoutes)
             {
                 var (mimeType, cacheSetting) = ResolveContentType(asset, ContentTypeProvider, matchContext, Log);
-                var headers = new StaticWebAssetEndpointResponseHeader[6]
+                var headers = new StaticWebAssetEndpointResponseHeader[5]
                 {
-                    new()
-                    {
-                        Name = "Accept-Ranges",
-                        Value = "bytes"
-                    },
                     new()
                     {
                         Name = "Content-Length",
@@ -159,14 +154,14 @@ public class DefineStaticWebAssetEndpoints : Task
                 {
                     // max-age=31536000 is one year in seconds. immutable means that the asset will never change.
                     // max-age is for browsers that do not support immutable.
-                    headers[5] = new() { Name = "Cache-Control", Value = "max-age=31536000, immutable" };
+                    headers[4] = new() { Name = "Cache-Control", Value = "max-age=31536000, immutable" };
                 }
                 else
                 {
                     // Force revalidation on non-fingerprinted assets. We can be more granular here and have rules based on the content type.
                     // These values can later be changed at runtime by modifying the endpoint. For example, it might be safer to cache images
                     // for a longer period of time than scripts or stylesheets.
-                    headers[5] = new() { Name = "Cache-Control", Value = !string.IsNullOrEmpty(cacheSetting) ? cacheSetting : "no-cache" };
+                    headers[4] = new() { Name = "Cache-Control", Value = !string.IsNullOrEmpty(cacheSetting) ? cacheSetting : "no-cache" };
                 }
 
                 var properties = new StaticWebAssetEndpointProperty[values.Count + (values.Count > 0 ? 2 : 1)];

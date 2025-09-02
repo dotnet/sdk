@@ -30,7 +30,7 @@ internal class WorkloadRepairCommand : WorkloadCommandBase
         IWorkloadResolverFactory workloadResolverFactory = null,
         IInstaller workloadInstaller = null,
         INuGetPackageDownloader nugetPackageDownloader = null)
-        : base(parseResult, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader)
+        : base(parseResult, verbosityOptions: WorkloadRepairCommandParser.VerbosityOption, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader)
     {
         var configOption = parseResult.GetValue(WorkloadRepairCommandParser.ConfigOption);
         var sourceOption = parseResult.GetValue(WorkloadRepairCommandParser.SourceOption);

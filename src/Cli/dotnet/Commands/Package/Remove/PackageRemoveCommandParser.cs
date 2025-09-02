@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
@@ -10,7 +8,7 @@ namespace Microsoft.DotNet.Cli.Commands.Package.Remove;
 
 internal static class PackageRemoveCommandParser
 {
-    public static readonly Argument<IEnumerable<string>> CmdPackageArgument = new(CliCommandStrings.CmdPackage)
+    public static readonly Argument<string[]> CmdPackageArgument = new(CliCommandStrings.CmdPackage)
     {
         Description = CliCommandStrings.PackageRemoveAppHelpText,
         Arity = ArgumentArity.OneOrMore,
@@ -32,6 +30,7 @@ internal static class PackageRemoveCommandParser
         command.Arguments.Add(CmdPackageArgument);
         command.Options.Add(InteractiveOption);
         command.Options.Add(PackageCommandParser.ProjectOption);
+        command.Options.Add(PackageCommandParser.FileOption);
 
         command.SetAction((parseResult) => new PackageRemoveCommand(parseResult).Execute());
 

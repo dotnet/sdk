@@ -5,7 +5,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32;
 using Microsoft.Win32.Msi;
 
-if (args.Length < 3)
+if (args.Length < 4)
 {
     return (int)Error.INVALID_COMMAND_LINE;
 }
@@ -13,6 +13,7 @@ if (args.Length < 3)
 string logPath = args[0];
 string sdkVersion = args[1];
 string platform = args[2];
+int bundleAction = Convert.ToInt32(args[3]);
 
 using StreamWriter logStream = new StreamWriter(logPath);
 
@@ -21,7 +22,15 @@ Logger.Init(logStream);
 Logger.Log($"{nameof(logPath)}: {logPath}");
 Logger.Log($"{nameof(sdkVersion)}: {sdkVersion}");
 Logger.Log($"{nameof(platform)}: {platform}");
+Logger.Log($"{nameof(bundleAction)}: {bundleAction}");
 int exitCode = (int)Error.SUCCESS;
+
+// The finalizer should only run when the parent bundle is being removed if WixBundleAction is set to BOOTSTRAPPER_ACTION_UNINSTALL
+// or BOOTSTRAPPER_ACTION_UNSAFE_UNINSTALL.
+if (bundleAction < 3 || bundleAction > 4)
+{
+    return exitCode;
+}
 
 try
 {

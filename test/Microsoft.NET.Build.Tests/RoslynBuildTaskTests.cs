@@ -69,7 +69,8 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         VerifyCompiler(buildCommand, CoreCompilerFileName(language), useSharedCompilation);
     }
 
-    [Theory, CombinatorialData]
+    //  https://github.com/dotnet/sdk/issues/49665
+    [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX), CombinatorialData]
     public void DotNet_ToolsetPackage(bool useSharedCompilation, Language language)
     {
         var testAsset = CreateProject(useSharedCompilation, language, AddCompilersToolsetPackage);
@@ -104,6 +105,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         {
             Name = "App1",
             IsExe = true,
+            TargetExtension = projExtension,
             SourceFiles =
             {
                 [sourceName] = sourceText,
@@ -117,7 +119,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         }
 
         configure?.Invoke(project);
-        return _testAssetsManager.CreateTestProject(project, callingMethod: callingMethod, targetExtension: projExtension);
+        return _testAssetsManager.CreateTestProject(project, callingMethod: callingMethod);
     }
 
     private static void AddCompilersToolsetPackage(TestProject project)

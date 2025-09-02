@@ -12,11 +12,11 @@ Options:
   -lang, --language <language>           Filters templates based on language.
   --type <type>                          Filters templates based on available types. Predefined values are "project" and "item".
   --tag <tag>                            Filters the templates based on the tag.
-  --ignore-constraints                   Disables checking if the template meets the constraints to be run.
+  --ignore-constraints                   Disables checking if the template meets the constraints to be run. [default: False]
   -o, --output <output>                  Location to place the generated output.
   --project <project>                    The project that should be used for context evaluation.
-  --columns-all                          Displays all columns in the output.
+  --columns-all                          Displays all columns in the output. [default: False]
   --columns <author|language|tags|type>  Specifies the columns to display in the output.
   -v, --verbosity <LEVEL>                Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic]. [default: normal]
-  -d, --diagnostics                      Enables diagnostic output.
+  -d, --diagnostics                      Enables diagnostic output. [default: False]
   -?, -h, --help                         Show command line help.

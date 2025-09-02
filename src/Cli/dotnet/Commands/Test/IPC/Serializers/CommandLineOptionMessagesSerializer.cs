@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NETCOREAPP
-#endif
-
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 

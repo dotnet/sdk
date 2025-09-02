@@ -1,0 +1,29 @@
+{
+    "author": "Test Asset",
+    "classifications": [ "Test Asset" ],
+    "name": "TestAssets.PostActions.CreateOrUpdateDotnetConfig.AddNewSection",
+    "generatorVersions": "[1.0.0.0-*)",
+    "groupIdentity": "TestAssets.PostActions.CreateOrUpdateDotnetConfig.AddNewSection",
+    "precedence": "100",
+    "identity": "TestAssets.PostActions.CreateOrUpdateDotnetConfig.AddNewSection",
+    "shortName": "TestAssets.PostActions.CreateOrUpdateDotnetConfig.AddNewSection",
+    "sourceName": "AddNewSection",
+    "primaryOutputs": [
+        {
+            "path": "AddNewSection.csproj"
+        }
+    ],
+    "postActions": [
+        {
+            "description": "Add dotnet.config",
+            "manualInstructions": [ { "text": "Create dotnet.config manually." } ],
+            "args": {
+                "section": "SectionFromTemplateJson",
+                "key": "KeyFromTemplateJson",
+                "value": "ValueFromTemplateJson"
+            },
+            "actionId": "597E7933-0D87-452C-B094-8FA0EEF7FD97",
+            "continueOnError": true
+        }
+    ]
+}

@@ -13,38 +13,40 @@ public static class RestoreCommand
 {
     public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
-        var parser = Parser.Instance;
-        var result = parser.ParseFrom("dotnet restore", args);
+        var result = Parser.Parse(["dotnet", "restore", ..args]);
         return FromParseResult(result, msbuildPath);
     }
 
     public static CommandBase FromParseResult(ParseResult result, string? msbuildPath = null)
     {
         result.HandleDebugSwitch();
-
         result.ShowHelpOrErrorIfAppropriate();
 
-        string[] args = result.GetValue(RestoreCommandParser.SlnOrProjectOrFileArgument) ?? [];
-
-        LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
-
-        string[] forwardedOptions = result.OptionValuesToBeForwarded(RestoreCommandParser.GetCommand()).ToArray();
-
-        if (nonBinLogArgs is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
-        {
-            return new VirtualProjectBuildingCommand(
-                entryPointFileFullPath: Path.GetFullPath(arg),
-                msbuildArgs: [.. forwardedOptions, ..binLogArgs])
+        return CommandFactory.CreateVirtualOrPhysicalCommand(
+            RestoreCommandParser.GetCommand(),
+            RestoreCommandParser.SlnOrProjectOrFileArgument,
+            static (msbuildArgs, appFilePath) =>
             {
-                NoCache = true,
-                NoBuild = true,
-            };
-        }
-
-        return CreateForwarding(["-target:Restore", .. forwardedOptions, .. args], msbuildPath);
+                return new VirtualProjectBuildingCommand(
+                    entryPointFileFullPath: Path.GetFullPath(appFilePath),
+                    msbuildArgs: msbuildArgs
+                )
+                {
+                    NoBuild = true,
+                    NoCache = true,
+                };
+            },
+            static (msbuildArgs, msbuildPath) =>
+            {
+                return CreateForwarding(msbuildArgs, msbuildPath);
+            },
+            [CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, RestoreCommandParser.TargetOption, RestoreCommandParser.VerbosityOption],
+            result,
+            msbuildPath
+        );
     }
 
-    public static MSBuildForwardingApp CreateForwarding(IEnumerable<string> msbuildArgs, string? msbuildPath = null)
+    public static MSBuildForwardingApp CreateForwarding(MSBuildArgs msbuildArgs, string? msbuildPath = null)
     {
         var forwardingApp = new MSBuildForwardingApp(msbuildArgs, msbuildPath);
         NuGetSignatureVerificationEnabler.ConditionallyEnable(forwardingApp);

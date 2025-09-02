@@ -3,10 +3,6 @@
 
 #nullable disable
 
-#pragma warning disable IDE0240 // Remove redundant nullable directive
-#nullable disable
-#pragma warning restore IDE0240 // Remove redundant nullable directive
-
 using System.Globalization;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 
@@ -14,8 +10,8 @@ namespace Microsoft.DotNet.Cli.Commands.Test.IPC;
 
 internal abstract class NamedPipeBase
 {
-    private readonly Dictionary<Type, object> _typeSerializer = [];
-    private readonly Dictionary<int, object> _idSerializer = [];
+    private readonly Dictionary<Type, INamedPipeSerializer> _typeSerializer = [];
+    private readonly Dictionary<int, INamedPipeSerializer> _idSerializer = [];
 
     public void RegisterSerializer(INamedPipeSerializer namedPipeSerializer, Type type)
     {
@@ -25,35 +21,27 @@ internal abstract class NamedPipeBase
 
     protected INamedPipeSerializer GetSerializer(int id, bool skipUnknownMessages = false)
     {
-        if (_idSerializer.TryGetValue(id, out object serializer))
+        if (_idSerializer.TryGetValue(id, out INamedPipeSerializer serializer))
         {
-            return (INamedPipeSerializer)serializer;
+            return serializer;
         }
         else
         {
             return skipUnknownMessages
                 ? new UnknownMessageSerializer(id)
                 : throw new ArgumentException((string.Format(
-                CultureInfo.InvariantCulture,
-#if dotnet
-                 LocalizableStrings.NoSerializerRegisteredWithIdErrorMessage,
-#else
-                "No serializer registered with ID '{0}'",
-#endif
-                id)));
+                    CultureInfo.InvariantCulture,
+                    CliCommandStrings.NoSerializerRegisteredWithIdErrorMessage,
+                    id)));
         }
     }
 
 
     protected INamedPipeSerializer GetSerializer(Type type)
-        => _typeSerializer.TryGetValue(type, out object serializer)
-            ? (INamedPipeSerializer)serializer
+        => _typeSerializer.TryGetValue(type, out INamedPipeSerializer serializer)
+            ? serializer
             : throw new ArgumentException(string.Format(
                 CultureInfo.InvariantCulture,
-#if dotnet
-                 LocalizableStrings.NoSerializerRegisteredWithTypeErrorMessage,
-#else
-                "No serializer registered with type '{0}'",
-#endif
+                CliCommandStrings.NoSerializerRegisteredWithTypeErrorMessage,
                 type));
 }

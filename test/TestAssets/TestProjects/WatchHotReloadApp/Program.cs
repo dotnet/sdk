@@ -26,8 +26,14 @@ Console.WriteLine($"Configuration = {assembly.GetCustomAttributes<AssemblyConfig
 
 while (true)
 {
-    Console.WriteLine(".");
+    F();
     await Task.Delay(1000);
 }
 
+void F()
+{
+    Console.WriteLine(".");
+}
+
 class C { /* member placeholder */ }
+

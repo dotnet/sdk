@@ -46,6 +46,11 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 try
                 {
                     await _next(context);
+
+                    // We complete the wrapper stream to ensure that any intermediate buffers
+                    // get fully flushed to the response stream. This is also required to
+                    // reliably determine whether script injection was performed.
+                    await responseStreamWrapper.CompleteAsync();
                 }
                 finally
                 {
@@ -210,7 +215,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 LogLevel.Warning,
                 new EventId(3, "FailedToConfiguredForRefreshes"),
                 "Unable to configure browser refresh script injection on the response. " +
-                $"Consider manually adding '{WebSocketScriptInjection.InjectedScript}' to the body of the page.");
+                $"Consider manually adding '{ScriptInjectingStream.InjectedScript}' to the body of the page.");
 
             private static readonly Action<ILogger, StringValues, Exception?> _responseCompressionDetected = LoggerMessage.Define<StringValues>(
                 LogLevel.Warning,

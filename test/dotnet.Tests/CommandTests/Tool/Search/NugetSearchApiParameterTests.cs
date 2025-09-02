@@ -12,7 +12,7 @@ namespace dotnet.Tests.ToolSearchTests
         [Fact]
         public void ItShouldValidateSkipType()
         {
-            var result = Parser.Instance.Parse("dotnet tool search mytool --skip wrongtype");
+            var result = Parser.Parse("dotnet tool search mytool --skip wrongtype");
             Action a = () => new NugetSearchApiParameter(result);
             a.Should().Throw<GracefulException>();
         }
@@ -20,7 +20,7 @@ namespace dotnet.Tests.ToolSearchTests
         [Fact]
         public void ItShouldValidateTakeType()
         {
-            var result = Parser.Instance.Parse("dotnet tool search mytool --take wrongtype");
+            var result = Parser.Parse("dotnet tool search mytool --take wrongtype");
 
             Action a = () => new NugetSearchApiParameter(result);
             a.Should().Throw<GracefulException>();
@@ -29,7 +29,7 @@ namespace dotnet.Tests.ToolSearchTests
         [Fact]
         public void ItShouldNotThrowWhenInputIsValid()
         {
-            var parseResult = Parser.Instance.Parse("dotnet tool search mytool --detail --skip 3 --take 4 --prerelease");
+            var parseResult = Parser.Parse("dotnet tool search mytool --detail --skip 3 --take 4 --prerelease");
 
             var result = new NugetSearchApiParameter(parseResult);
             result.Prerelease.Should().Be(true);

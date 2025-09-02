@@ -179,11 +179,22 @@ internal static class CliSchema
                 option.HelpName,
                 option.ValueType.ToCliTypeString(),
                 option.HasDefaultValue,
-                option.HasDefaultValue ? option.GetDefaultValue() : null,
+                option.HasDefaultValue ? HumanizeValue(option.GetDefaultValue()) : null,
                 CreateArityDetails(option.Arity),
                 option.Required,
                 option.Recursive
             );
+
+    /// <summary>
+    /// Maps some types that don't serialize well to more human-readable strings.
+    /// For example, <see cref="VerbosityOptions"/> is serialized as a string instead of an integer.
+    /// </summary>
+    private static object? HumanizeValue(object? v) => v switch
+    {
+        VerbosityOptions o => Enum.GetName(o),
+        null => null,
+        _ => v // For other types, return as is
+    };
 
     private static ArgumentDetails CreateArgumentDetails(int index, Argument argument) => new ArgumentDetails(
                 argument.Description?.ReplaceLineEndings("\n"),
@@ -192,7 +203,7 @@ internal static class CliSchema
                 argument.HelpName,
                 argument.ValueType.ToCliTypeString(),
                 argument.HasDefaultValue,
-                argument.HasDefaultValue ? argument.GetDefaultValue() : null,
+                argument.HasDefaultValue ? HumanizeValue(argument.GetDefaultValue()) : null,
                 CreateArityDetails(argument.Arity)
             );
 

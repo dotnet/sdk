@@ -15,7 +15,7 @@ public class ParseCommand
         result.HandleDebugSwitch();
 
         var tokens = result.Tokens.Skip(1).Select(t => t.Value).ToArray();
-        var reparsed = Parser.Instance.Parse(tokens);
+        var reparsed = Parser.Parse(tokens);
         Console.WriteLine(reparsed.ToString());
 
 

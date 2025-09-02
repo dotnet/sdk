@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.Diagnostics;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.Extensions.Configuration;
 
@@ -86,13 +85,13 @@ internal static class TestCommandParser
     {
         Description = CliCommandStrings.CmdBlameDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:VSTestBlame=true");
+    }.ForwardIfEnabled("-property:VSTestBlame=true");
 
     public static readonly Option<bool> BlameCrashOption = new ForwardedOption<bool>("--blame-crash")
     {
         Description = CliCommandStrings.CmdBlameCrashDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:VSTestBlameCrash=true");
+    }.ForwardIfEnabled("-property:VSTestBlameCrash=true");
 
     public static readonly Option<string> BlameCrashDumpOption = CreateBlameCrashDumpOption();
 
@@ -112,7 +111,7 @@ internal static class TestCommandParser
     {
         Description = CliCommandStrings.CmdBlameCrashCollectAlwaysDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAsMany(o => ["-property:VSTestBlameCrash=true", "-property:VSTestBlameCrashCollectAlways=true"]);
+    }.ForwardIfEnabled(["-property:VSTestBlameCrash=true", "-property:VSTestBlameCrashCollectAlways=true"]);
 
     public static readonly Option<bool> BlameHangOption = new ForwardedOption<bool>("--blame-hang")
     {
@@ -144,13 +143,18 @@ internal static class TestCommandParser
     {
         Description = CliCommandStrings.TestCmdNoLogo,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:VSTestNoLogo=true");
+    }.ForwardIfEnabled("-property:VSTestNoLogo=true");
 
     public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
     public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.TestFrameworkOptionDescription);
 
     public static readonly Option ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.TestConfigurationOptionDescription);
+
+    public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.VerbosityOption();
+    public static readonly Option<string[]> VsTestTargetOption = CommonOptions.RequiredMSBuildTargetOption("VSTest");
+    public static readonly Option<string[]> MTPTargetOption = CommonOptions.RequiredMSBuildTargetOption(CliConstants.MTPTarget);
+
 
     private static readonly Command Command = ConstructCommand();
 
@@ -227,17 +231,20 @@ internal static class TestCommandParser
         command.SetAction(parseResult => command.Run(parseResult));
         command.Options.Add(TestingPlatformOptions.ProjectOption);
         command.Options.Add(TestingPlatformOptions.SolutionOption);
-        command.Options.Add(TestingPlatformOptions.DirectoryOption);
         command.Options.Add(TestingPlatformOptions.TestModulesFilterOption);
         command.Options.Add(TestingPlatformOptions.TestModulesRootDirectoryOption);
+        command.Options.Add(TestingPlatformOptions.ResultsDirectoryOption);
+        command.Options.Add(TestingPlatformOptions.ConfigFileOption);
+        command.Options.Add(TestingPlatformOptions.DiagnosticOutputDirectoryOption);
         command.Options.Add(TestingPlatformOptions.MaxParallelTestModulesOption);
+        command.Options.Add(TestingPlatformOptions.MinimumExpectedTestsOption);
         command.Options.Add(CommonOptions.ArchitectureOption);
         command.Options.Add(CommonOptions.PropertiesOption);
         command.Options.Add(TestingPlatformOptions.ConfigurationOption);
         command.Options.Add(TestingPlatformOptions.FrameworkOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
         command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
-        command.Options.Add(CommonOptions.VerbosityOption);
+        command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.NoRestoreOption);
         command.Options.Add(TestingPlatformOptions.NoBuildOption);
         command.Options.Add(TestingPlatformOptions.NoAnsiOption);
@@ -245,6 +252,7 @@ internal static class TestCommandParser
         command.Options.Add(TestingPlatformOptions.OutputOption);
         command.Options.Add(TestingPlatformOptions.NoLaunchProfileOption);
         command.Options.Add(TestingPlatformOptions.NoLaunchProfileArgumentsOption);
+        command.Options.Add(MTPTargetOption);
 
         return command;
     }
@@ -284,10 +292,12 @@ internal static class TestCommandParser
         command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
         command.Options.Add(NoRestoreOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
-        command.Options.Add(CommonOptions.VerbosityOption);
+        command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.ArchitectureOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
+        command.Options.Add(CommonOptions.PropertiesOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.Options.Add(VsTestTargetOption);
         command.SetAction(TestCommand.Run);
 
         return command;

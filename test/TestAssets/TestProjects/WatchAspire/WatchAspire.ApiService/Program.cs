@@ -1,4 +1,8 @@
+using System;
+
 var builder = WebApplication.CreateBuilder(args);
+
+Console.WriteLine($"ApiService working directory: '{Environment.CurrentDirectory}'");
 
 // Add service defaults & Aspire components.
 builder.AddServiceDefaults();

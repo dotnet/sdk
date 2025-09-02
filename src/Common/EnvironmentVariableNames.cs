@@ -35,7 +35,7 @@ static class EnvironmentVariableNames
     public static string? TryGetDotNetRootVariableName(string runtimeIdentifier, string defaultAppHostRuntimeIdentifier, Version? targetFrameworkVersion)
         => TryGetDotNetRootVariableNameImpl(runtimeIdentifier, defaultAppHostRuntimeIdentifier, targetFrameworkVersion, RuntimeInformation.ProcessArchitecture, Environment.Is64BitProcess);
 
-    internal static string? TryGetDotNetRootVariableNameImpl(string runtimeIdentifier, string defaultAppHostRuntimeIdentifier, Version? targetFrameworkVersion, Architecture currentArchitecture, bool is64bit)
+    internal static string? TryGetDotNetRootVariableNameImpl(string runtimeIdentifier, string defaultAppHostRuntimeIdentifier, Version? targetFrameworkVersion, Architecture currentArchitecture, bool is64bit, bool onlyUseArchSpecific = false)
     {
         // If the app targets the same architecture as SDK is running on or an unknown architecture, set DOTNET_ROOT, DOTNET_ROOT(x86) for 32-bit, DOTNET_ROOT_arch for TFM 6+.
         // If the app targets different architecture from the SDK, do not set DOTNET_ROOT.
@@ -43,7 +43,7 @@ static class EnvironmentVariableNames
         if (!TryParseArchitecture(runtimeIdentifier, out var targetArchitecture) && !TryParseArchitecture(defaultAppHostRuntimeIdentifier, out targetArchitecture) ||
             targetArchitecture == currentArchitecture)
         {
-            var suffix = targetFrameworkVersion != null && targetFrameworkVersion >= s_version6_0 ?
+            var suffix = onlyUseArchSpecific || (targetFrameworkVersion != null && targetFrameworkVersion >= s_version6_0) ?
                 $"_{currentArchitecture.ToString().ToUpperInvariant()}" :
                 is64bit ? "" : "(x86)";
 
@@ -52,6 +52,9 @@ static class EnvironmentVariableNames
 
         return null;
     }
+
+    internal static string? TryGetDotNetRootArchVariableName(string runtimeIdentifier, string defaultAppHostRuntimeIdentifier)
+        => TryGetDotNetRootVariableNameImpl(runtimeIdentifier, defaultAppHostRuntimeIdentifier, null, RuntimeInformation.ProcessArchitecture, Environment.Is64BitProcess, onlyUseArchSpecific: true);
 
     internal static bool TryParseArchitecture(string runtimeIdentifier, out Architecture architecture)
     {

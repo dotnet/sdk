@@ -5,7 +5,7 @@
 
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
-using Microsoft.DotNet.Cli.Commands.Hidden.Add;
+using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Frameworks;
@@ -16,7 +16,7 @@ internal class ReferenceAddCommand(ParseResult parseResult) : CommandBase(parseR
 {
     private readonly string _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
             parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
-            parseResult.GetValue(AddCommandParser.ProjectArgument);
+            parseResult.GetValue(PackageCommandParser.ProjectOrFileArgument);
 
     public override int Execute()
     {

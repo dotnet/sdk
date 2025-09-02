@@ -12,18 +12,11 @@ internal sealed class PipeNameDescription(string name, bool isDirectory) : IDisp
 
     public string Name { get; } = name;
 
-    public void Dispose() => Dispose(true);
-
-    public void Dispose(bool disposing)
+    public void Dispose()
     {
         if (_disposed)
         {
             return;
-        }
-
-        if (disposing)
-        {
-            // TODO: dispose managed state (managed objects).
         }
 
         if (_isDirectory)

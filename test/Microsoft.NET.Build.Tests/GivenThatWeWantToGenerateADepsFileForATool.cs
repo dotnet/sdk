@@ -17,10 +17,15 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        //  Disabled on full Framework MSBuild due to https://github.com/dotnet/sdk/issues/1293
         [CoreMSBuildOnlyFact]
         public void It_creates_a_deps_file_for_the_tool_and_the_tool_runs()
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                //  https://github.com/dotnet/sdk/issues/49665
+                return;
+            }
+
             TestProject toolProject = new()
             {
                 Name = "TestTool",
@@ -37,10 +42,15 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("Hello World!");
         }
 
-        //  Disabled on full Framework MSBuild due to https://github.com/dotnet/sdk/issues/1293
         [CoreMSBuildOnlyFact]
         public void It_handles_conflicts_when_creating_a_tool_deps_file()
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                //  https://github.com/dotnet/sdk/issues/49665
+                return;
+            }
+
             TestProject toolProject = new()
             {
                 Name = "DependencyContextTool",

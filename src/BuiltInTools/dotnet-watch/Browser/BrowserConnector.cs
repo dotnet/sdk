@@ -6,10 +6,11 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Microsoft.Build.Graph;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed partial class BrowserConnector(DotNetWatchContext context) : IAsyncDisposable, IStaticAssetChangeApplierProvider
+    internal sealed partial class BrowserConnector(DotNetWatchContext context) : IAsyncDisposable
     {
         private readonly record struct ProjectKey(string projectPath, string targetFramework);
 
@@ -76,7 +77,7 @@ namespace Microsoft.DotNet.Watch
                 hasExistingServer = _servers.TryGetValue(key, out server);
                 if (!hasExistingServer)
                 {
-                    server = IsServerSupported(projectNode, appModel) ? new BrowserRefreshServer(context.EnvironmentOptions, context.Reporter) : null;
+                    server = IsServerSupported(projectNode, appModel) ? new BrowserRefreshServer(context.EnvironmentOptions, context.LoggerFactory) : null;
                     _servers.Add(key, server);
                 }
             }
@@ -102,18 +103,6 @@ namespace Microsoft.DotNet.Watch
             return server;
         }
 
-        bool IStaticAssetChangeApplierProvider.TryGetApplier(ProjectGraphNode projectNode, [NotNullWhen(true)] out IStaticAssetChangeApplier? applier)
-        {
-            if (TryGetRefreshServer(projectNode, out var server))
-            {
-                applier = server;
-                return true;
-            }
-
-            applier = null;
-            return false;
-        }
-
         public bool TryGetRefreshServer(ProjectGraphNode projectNode, [NotNullWhen(true)] out BrowserRefreshServer? server)
         {
             var key = GetProjectKey(projectNode);
@@ -133,7 +122,7 @@ namespace Microsoft.DotNet.Watch
             {
                 if (context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.MockBrowser))
                 {
-                    context.Reporter.Error("Test requires browser to launch");
+                    context.Logger.LogError("Test requires browser to launch");
                 }
 
                 return null;
@@ -149,9 +138,6 @@ namespace Microsoft.DotNet.Watch
 
             void handler(OutputLine line)
             {
-                // We've redirected the output, but want to ensure that it continues to appear in the user's console.
-                (line.IsError ? Console.Error : Console.Out).WriteLine(line.Content);
-
                 if (matchFound)
                 {
                     return;
@@ -176,7 +162,7 @@ namespace Microsoft.DotNet.Watch
                 {
                     // Subsequent iterations (project has been rebuilt and relaunched).
                     // Use refresh server to reload the browser, if available.
-                    context.Reporter.Verbose("Reloading browser.");
+                    context.Logger.LogDebug("Reloading browser.");
                     _ = server.SendReloadMessageAsync(cancellationToken);
                 }
             }
@@ -199,7 +185,7 @@ namespace Microsoft.DotNet.Watch
                 fileName = browserPath;
             }
 
-            context.Reporter.Verbose($"Launching browser: {fileName} {args}");
+            context.Logger.LogDebug("Launching browser: {FileName} {Args}", fileName, args);
 
             if (context.EnvironmentOptions.TestFlags != TestFlags.None)
             {
@@ -229,18 +215,18 @@ namespace Microsoft.DotNet.Watch
                     // From emperical observation, it's noted that failing to launch a browser results in either Process.Start returning a null-value
                     // or for the process to have immediately exited.
                     // We can use this to provide a helpful message.
-                    context.Reporter.Output($"Unable to launch the browser. Navigate to {launchUrl}", emoji: "🌐");
+                    context.Logger.LogInformation("Unable to launch the browser. Url '{Url}'.", launchUrl);
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                context.Reporter.Verbose($"An exception occurred when attempting to launch a browser: {ex}");
+                context.Logger.LogDebug("Failed to launch a browser: {Message}", e.Message);
             }
         }
 
         private bool CanLaunchBrowser(DotNetWatchContext context, ProjectGraphNode projectNode, ProjectOptions projectOptions, [NotNullWhen(true)] out LaunchSettingsProfile? launchProfile)
         {
-            var reporter = context.Reporter;
+            var logger = context.Logger;
             launchProfile = null;
 
             if (context.EnvironmentOptions.SuppressLaunchBrowser)
@@ -251,24 +237,24 @@ namespace Microsoft.DotNet.Watch
             if (!projectNode.IsNetCoreApp(minVersion: Versions.Version3_1))
             {
                 // Browser refresh middleware supports 3.1 or newer
-                reporter.Verbose("Browser refresh is only supported in .NET Core 3.1 or newer projects.");
+                logger.LogDebug("Browser refresh is only supported in .NET Core 3.1 or newer projects.");
                 return false;
             }
 
             if (!CommandLineOptions.IsCodeExecutionCommand(projectOptions.Command))
             {
-                reporter.Verbose($"Command '{projectOptions.Command}' does not support browser refresh.");
+                logger.LogDebug("Command '{Command}' does not support browser refresh.", projectOptions.Command);
                 return false;
             }
 
             launchProfile = GetLaunchProfile(projectOptions);
             if (launchProfile is not { LaunchBrowser: true })
             {
-                reporter.Verbose("launchSettings does not allow launching browsers.");
+                logger.LogDebug("launchSettings does not allow launching browsers.");
                 return false;
             }
 
-            reporter.Report(MessageDescriptor.ConfiguredToLaunchBrowser);
+            logger.Log(MessageDescriptor.ConfiguredToLaunchBrowser);
             return true;
         }
 
@@ -276,34 +262,31 @@ namespace Microsoft.DotNet.Watch
         {
             if (context.EnvironmentOptions.SuppressBrowserRefresh)
             {
-                context.Reporter.Report(MessageDescriptor.SkippingConfiguringBrowserRefresh_SuppressedViaEnvironmentVariable.ToErrorWhen(appModel.RequiresBrowserRefresh), EnvironmentVariables.SuppressBrowserRefresh);
+                context.Logger.Log(MessageDescriptor.SkippingConfiguringBrowserRefresh_SuppressedViaEnvironmentVariable.WithSeverityWhen(MessageSeverity.Error, appModel.RequiresBrowserRefresh), EnvironmentVariables.Names.SuppressBrowserRefresh);
                 return false;
             }
 
             if (!projectNode.IsNetCoreApp(minVersion: s_minimumSupportedVersion))
             {
-                context.Reporter.Report(MessageDescriptor.SkippingConfiguringBrowserRefresh_TargetFrameworkNotSupported.ToErrorWhen(appModel.RequiresBrowserRefresh));
+                context.Logger.Log(MessageDescriptor.SkippingConfiguringBrowserRefresh_TargetFrameworkNotSupported.WithSeverityWhen(MessageSeverity.Error, appModel.RequiresBrowserRefresh));
                 return false;
             }
 
             // We only want to enable browser refresh if this is a WebApp (ASP.NET Core / Blazor app).
             if (!projectNode.IsWebApp())
             {
-                context.Reporter.Report(MessageDescriptor.SkippingConfiguringBrowserRefresh_NotWebApp.ToErrorWhen(appModel.RequiresBrowserRefresh));
+                context.Logger.Log(MessageDescriptor.SkippingConfiguringBrowserRefresh_NotWebApp.WithSeverityWhen(MessageSeverity.Error, appModel.RequiresBrowserRefresh));
                 return false;
             }
 
-            context.Reporter.Report(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+            context.Logger.Log(MessageDescriptor.ConfiguredToUseBrowserRefresh);
             return true;
         }
 
         private LaunchSettingsProfile GetLaunchProfile(ProjectOptions projectOptions)
         {
-            var projectDirectory = Path.GetDirectoryName(projectOptions.ProjectPath);
-            Debug.Assert(projectDirectory != null);
-
             return (projectOptions.NoLaunchProfile == true
-                ? null : LaunchSettingsProfile.ReadLaunchProfile(projectDirectory, projectOptions.LaunchProfileName, context.Reporter)) ?? new();
+                ? null : LaunchSettingsProfile.ReadLaunchProfile(projectOptions.ProjectPath, projectOptions.LaunchProfileName, context.Logger)) ?? new();
         }
     }
 }

@@ -23,9 +23,6 @@ internal static class ValidationUtility
             if (parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption))
                 count++;
 
-            if (parseResult.HasOption(TestingPlatformOptions.DirectoryOption))
-                count++;
-
             if (parseResult.HasOption(TestingPlatformOptions.SolutionOption))
                 count++;
 
@@ -53,49 +50,99 @@ internal static class ValidationUtility
             }
         }
     }
+
     public static bool ValidateBuildPathOptions(BuildOptions buildPathOptions, TerminalTestReporter output)
     {
         PathOptions pathOptions = buildPathOptions.PathOptions;
 
         if (!string.IsNullOrEmpty(pathOptions.ProjectPath))
         {
-            return ValidateProjectFilePath(pathOptions.ProjectPath, output);
+            return ValidateProjectPath(pathOptions.ProjectPath, output);
         }
 
         if (!string.IsNullOrEmpty(pathOptions.SolutionPath))
         {
-            return ValidateSolutionFilePath(pathOptions.SolutionPath, output);
-        }
-
-        if (!string.IsNullOrEmpty(pathOptions.DirectoryPath) && !Directory.Exists(pathOptions.DirectoryPath))
-        {
-            output.WriteMessage(string.Format(CliCommandStrings.CmdNonExistentDirectoryErrorDescription, pathOptions.DirectoryPath));
-            return false;
+            return ValidateSolutionPath(pathOptions.SolutionPath, output);
         }
 
         return true;
     }
 
-    private static bool ValidateSolutionFilePath(string filePath, TerminalTestReporter output)
+    /// <summary>
+    /// Validates that arguments requiring specific command-line switches are used correctly for Microsoft.Testing.Platform.
+    /// Provides helpful error messages when users provide file/directory arguments without proper switches.
+    /// </summary>
+    public static void ValidateSolutionOrProjectOrDirectoryOrModulesArePassedCorrectly(ParseResult parseResult)
     {
-        if (!CliConstants.SolutionExtensions.Contains(Path.GetExtension(filePath)))
+        if (Environment.GetEnvironmentVariable("DOTNET_TEST_DISABLE_SWITCH_VALIDATION") is "true" or "1")
         {
-            output.WriteMessage(string.Format(CliCommandStrings.CmdInvalidSolutionFileExtensionErrorDescription, filePath));
-            return false;
+            // In case there is a valid case, users can opt-out.
+            // Note that the validation here is added to have a "better" error message for scenarios that will already fail.
+            // So, disabling validation is okay if the user scenario is valid.
+            return;
         }
 
-        return ValidateFilePathExists(filePath, output);
+        foreach (string token in parseResult.UnmatchedTokens)
+        {
+            // Check for .sln files
+            if ((token.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) ||
+                token.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase)) && File.Exists(token))
+            {
+                throw new GracefulException(CliCommandStrings.TestCommandUseSolution);
+            }
+            else if ((token.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
+                     token.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase) ||
+                     token.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase)) && File.Exists(token))
+            {
+                throw new GracefulException(CliCommandStrings.TestCommandUseProject);
+            }
+            else if ((token.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
+                      token.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) &&
+                     File.Exists(token))
+            {
+                throw new GracefulException(CliCommandStrings.TestCommandUseTestModules);
+            }
+            else if (Directory.Exists(token))
+            {
+                throw new GracefulException(CliCommandStrings.TestCommandUseDirectoryWithSwitch);
+            }
+        }
     }
 
-    private static bool ValidateProjectFilePath(string filePath, TerminalTestReporter output)
+    private static bool ValidateSolutionPath(string path, TerminalTestReporter output)
     {
-        if (!Path.GetExtension(filePath).EndsWith("proj", StringComparison.OrdinalIgnoreCase))
+        // If it's a directory, just check if it exists
+        if (Directory.Exists(path))
         {
-            output.WriteMessage(string.Format(CliCommandStrings.CmdInvalidProjectFileExtensionErrorDescription, filePath));
+            return true;
+        }
+
+        // If it's not a directory, validate as a file path
+        if (!CliConstants.SolutionExtensions.Contains(Path.GetExtension(path)))
+        {
+            output.WriteMessage(string.Format(CliCommandStrings.CmdInvalidSolutionFileExtensionErrorDescription, path));
             return false;
         }
 
-        return ValidateFilePathExists(filePath, output);
+        return ValidateFilePathExists(path, output);
+    }
+
+    private static bool ValidateProjectPath(string path, TerminalTestReporter output)
+    {
+        // If it's a directory, just check if it exists
+        if (Directory.Exists(path))
+        {
+            return true;
+        }
+
+        // If it's not a directory, validate as a file path
+        if (!Path.GetExtension(path).EndsWith("proj", StringComparison.OrdinalIgnoreCase))
+        {
+            output.WriteMessage(string.Format(CliCommandStrings.CmdInvalidProjectFileExtensionErrorDescription, path));
+            return false;
+        }
+
+        return ValidateFilePathExists(path, output);
     }
 
     private static bool ValidateFilePathExists(string filePath, TerminalTestReporter output)

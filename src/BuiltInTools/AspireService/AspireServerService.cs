@@ -170,7 +170,7 @@ internal partial class AspireServerService : IAsyncDisposable
             var jsonSerialized = JsonSerializer.SerializeToUtf8Bytes(notification, JsonSerializerOptions);
             await SendMessageAsync(dcpId, jsonSerialized, cancelationToken);
         }
-        catch (Exception e) when (LogAndPropagate(e))
+        catch (Exception e) when (e is not OperationCanceledException && LogAndPropagate(e))
         {
         }
 
@@ -340,7 +340,7 @@ internal partial class AspireServerService : IAsyncDisposable
             context.Response.StatusCode = (int)HttpStatusCode.Created;
             context.Response.Headers.Location = $"{context.Request.Scheme}://{context.Request.Host}{context.Request.Path}/{sessionId}";
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not OperationCanceledException)
         {
             Log($"Failed to start project{(projectPath == null ? "" : $" '{projectPath}'")}: {e}");
 
@@ -419,7 +419,7 @@ internal partial class AspireServerService : IAsyncDisposable
             var sessionExists = await _aspireServerEvents.StopSessionAsync(context.GetDcpId(), sessionId, _shutdownCancellationTokenSource.Token);
             context.Response.StatusCode = (int)(sessionExists ? HttpStatusCode.OK : HttpStatusCode.NoContent);
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not OperationCanceledException)
         {
             Log($"[#{sessionId}] Failed to stop: {e}");
 

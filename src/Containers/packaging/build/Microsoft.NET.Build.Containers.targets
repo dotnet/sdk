@@ -71,7 +71,7 @@
 
   <!-- This Target is called early on in the chain for both single-RID and multi-RID containers - but for single-RID it's important
        that we ensure all of the data necessary to create a single-RID container is computed after we exit this target. -->
-  <Target Name="ComputeContainerConfig" DependsOnTargets="ComputeContainerBaseImage;_ComputeContainerExecutionArgs">
+  <Target Name="ComputeContainerConfig" DependsOnTargets="ComputeContainerBaseImage;_ContainerEstablishRIDNess;_ComputeContainerExecutionArgs">
     <PropertyGroup Label="VS defaults">
       <!-- RegistryUrl is used by existing VS targets for Docker builds - this lets us fill that void -->
       <ContainerRegistry Condition="'$(RegistryUrl)' != ''">$(RegistryUrl)</ContainerRegistry>
@@ -181,21 +181,20 @@
   <PropertyGroup>
     <PublishContainerDependsOn>
       _ContainerVerifySDKVersion;
-      _ContainerEstablishRIDNess;
       ComputeContainerConfig;
-      _CheckContainersPackage
+      _CheckContainersPackage;
     </PublishContainerDependsOn>
   </PropertyGroup>
 
   <!-- These args are relevant to container execution and are per-RID by nature. Therefore they're a direct dependency of the _PublishSingleContainer
        target and not computed at the outer, multi-RID build layer. -->
-  <Target Name="_ComputeContainerExecutionArgs" Condition="'$(_IsSingleRIDBuild)' == 'true'">
+  <Target Name="_ComputeContainerExecutionArgs" DependsOnTargets="_ContainerEstablishRIDNess" Condition="'$(_IsSingleRIDBuild)' == 'true'">
     <PropertyGroup>
       <!-- The Container RID should default to the RID used for the entire build (to ensure things run on the platform they are built for), but the user knows best and so should be able to set it explicitly.
            For builds that have a RID, we default to that RID. Otherwise, we default to the Linux RID matching the architecture of the currently-executing SDK. -->
       <_ContainerIsTargetingWindows>false</_ContainerIsTargetingWindows>
       <_ContainerIsTargetingWindows Condition="$(ContainerRuntimeIdentifier.StartsWith('win'))">true</_ContainerIsTargetingWindows>
-      
+
       <!-- Set the WorkingDirectory depending on the RID -->
       <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and !$(_ContainerIsTargetingWindows)">/app/</ContainerWorkingDirectory>
       <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and $(_ContainerIsTargetingWindows)">C:\app\</ContainerWorkingDirectory>

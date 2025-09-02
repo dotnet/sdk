@@ -52,5 +52,7 @@
   "symbols/Fixture/choices/TestCleanup/description": "TestCleanup düzen yöntemi",
   "postActions/restoreNugetPackages/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
   "postActions/restoreNugetPackages/manualInstructions/default/text": "\"dotnet restore\" çalıştır",
+  "postActions/createOrUpdateDotnetConfig/description": "Create or update 'dotnet.config' file required by Microsoft.Testing.Platform.",
+  "postActions/createOrUpdateDotnetConfig/manualInstructions/default/text": "Manually create 'dotnet.config' file setting the test runner to Microsoft.Testing.Platform",
   "postActions/openInEditor/description": "Test1.cs'yi düzenleyicide açar"
 }

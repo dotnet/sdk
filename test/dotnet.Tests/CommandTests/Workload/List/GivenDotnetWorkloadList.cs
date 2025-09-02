@@ -21,8 +21,8 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
         public GivenDotnetWorkloadList(ITestOutputHelper log) : base(log)
         {
             _reporter = new BufferedReporter();
-            _machineReadableParseResult = Parser.Instance.Parse("dotnet workload list --machine-readable");
-            _parseResult = Parser.Instance.Parse("dotnet workload list");
+            _machineReadableParseResult = Parser.Parse("dotnet workload list --machine-readable");
+            _parseResult = Parser.Parse("dotnet workload list");
             _manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "MockListSample.json");
         }
 

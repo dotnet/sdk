@@ -41,7 +41,7 @@ public class DockerDaemonTests : IDisposable
         }
     }
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public async Task Can_detect_when_daemon_is_running()
     {
         var available = await new DockerCli(_loggerFactory).IsAvailableAsync(default).ConfigureAwait(false);

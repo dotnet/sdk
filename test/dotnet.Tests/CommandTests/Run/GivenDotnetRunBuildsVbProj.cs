@@ -25,19 +25,13 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute("--launch-profile", "test");
 
-            string[] expectedErrorWords = CliCommandStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile
-                .Replace("\'{0}\'", "")
-                .Split(" ")
-                .Where(word => !string.IsNullOrEmpty(word))
-                .ToArray();
-
             runResult
-                .Should()
-                .Pass()
-                .And
-                .HaveStdOutContaining("Hello World!");
-
-            expectedErrorWords.ForEach(word => runResult.Should().HaveStdErrContaining(word));
+                .Should().Pass()
+                .And.HaveStdOutContaining("Hello World!")
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile, "test", $"""
+                    {Path.Join(testInstance.Path, "My Project", "launchSettings.json")}
+                    {Path.Join(testInstance.Path, "VBTestApp.run.json")}
+                    """));
         }
 
         [Fact]
