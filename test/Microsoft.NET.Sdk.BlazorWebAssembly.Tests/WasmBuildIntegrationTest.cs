@@ -705,7 +705,7 @@ public class TestReference
             var nugetRestorePath = Path.Combine(testInstance.TestRoot, ".nuget");
 
             new DotnetRestoreCommand(Log, "-bl:msbuild-restore.binlog", "-r", "linux-x64")
-                .WithWorkingDirectory(Path.Combine(testInstance.TestRoot, "BlazorHosted"))
+                .WithWorkingDirectory(Path.Combine(testInstance.TestRoot, "blazorhosted"))
                 .WithEnvironmentVariable("NUGET_PACKAGES", nugetRestorePath)
                 .Execute()
                 .Should().Pass();
