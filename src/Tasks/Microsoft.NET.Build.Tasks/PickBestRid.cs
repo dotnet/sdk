@@ -36,7 +36,7 @@ namespace Microsoft.NET.Build.Tasks
         public string? MatchingRid { get; set; }
 
         /// <summary>
-        /// Computes the thing
+        /// Finds the best matching RID from the supported RIDs using the runtime graph.
         /// </summary>
         protected override void ExecuteCore()
         {
