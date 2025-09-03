@@ -33,9 +33,9 @@ public class DotnetInstallTests
         var mode = InstallMode.SDK;
         var architecture = InstallArchitecture.x64;
 
-        var install = new DotnetInstall(version, directory, type, mode, architecture);
+        var install = new DotnetInstall(new DotnetVersion(version), directory, type, mode, architecture);
 
-        install.FullySpecifiedVersion.Should().Be(version);
+        install.FullySpecifiedVersion.Value.Should().Be(version);
         install.ResolvedDirectory.Should().Be(directory);
         install.Type.Should().Be(type);
         install.Mode.Should().Be(mode);

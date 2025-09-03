@@ -3,12 +3,21 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 internal static class DnupUtilities
 {
+    public static string ExeSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "";
+
+    public static string GetDotnetExeName()
+    {
+        return "dotnet" + ExeSuffix;
+    }
+
     public static InstallArchitecture GetInstallArchitecture(System.Runtime.InteropServices.Architecture architecture)
     {
         return architecture switch
@@ -17,6 +26,21 @@ internal static class DnupUtilities
             System.Runtime.InteropServices.Architecture.X64 => InstallArchitecture.x64,
             System.Runtime.InteropServices.Architecture.Arm64 => InstallArchitecture.arm64,
             _ => throw new NotSupportedException($"Architecture {architecture} is not supported.")
+        };
+    }
+
+    public static void ForceReplaceFile(string sourcePath, string destPath)
+    {
+        File.Copy(sourcePath, destPath, overwrite: true);
+
+        // Copy file attributes
+        var srcInfo = new FileInfo(sourcePath);
+        var dstInfo = new FileInfo(destPath)
+        {
+            CreationTimeUtc = srcInfo.CreationTimeUtc,
+            LastWriteTimeUtc = srcInfo.LastWriteTimeUtc,
+            LastAccessTimeUtc = srcInfo.LastAccessTimeUtc,
+            Attributes = srcInfo.Attributes
         };
     }
 }

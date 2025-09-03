@@ -24,6 +24,7 @@ internal class InstallerOrchestratorSingleton
         DotnetInstall install = new ManifestChannelVersionResolver().Resolve(installRequest);
 
         // Check if the install already exists and we don't need to do anything
+        // read write mutex only for manifest?
         using (var finalizeLock = modifyInstallStateMutex())
         {
             if (InstallAlreadyExists(installRequest.ResolvedDirectory, install))
@@ -32,7 +33,7 @@ internal class InstallerOrchestratorSingleton
             }
         }
 
-        ArchiveDotnetInstaller installer = new(install);
+        ArchiveDotnetInstaller installer = new(installRequest, install);
         installer.Prepare();
 
         // Extract and commit the install to the directory
