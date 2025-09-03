@@ -14,7 +14,7 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
         scratchExtractionDirectory = Directory.CreateTempSubdirectory().FullName;
     }
 
-    public void Prepare()
+    public Prepare()
     {
         // Download the archive to a user protected (wrx) random folder in temp
 
@@ -24,32 +24,59 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
         // Download to scratchDownloadDirectory
 
         // Verify the hash and or signature of the archive
+        VerifyArchive(scratchDownloadDirectory);
 
         // Extract to a temporary directory for the final replacement later.
-        // ExtractArchive(scratchDownloadDirectory, scratchExtractionDirectory);
+        ExtractArchive(scratchDownloadDirectory, scratchExtractionDirectory);
     }
 
     /**
-    private async Task<string?> ExtractArchive(string archivePath, IFileSystem extractionDirectory)
+    Returns a string if the archive is valid within SDL specification, false otherwise.
+    */
+    private void VerifyArchive(string archivePath)
     {
-        // TODO: Ensure this fails if the dir already exists as that's a security issue
-        extractionDirectory.CreateDirectory(tempExtractDir);
+        if (archivePath != null) // replace this with actual verification logic once its implemented.
+        {
+            throw new InvalidOperationException("Archive verification failed.");
+        }
+    }
 
-        using var tempRealPath = new DirectoryResource(extractionDirectory.ConvertPathToInternal(tempExtractDir));
+    /**
+    Extracts the specified archive to the given extraction directory.
+    The archive will be decompressed if necessary.
+    Expects either a .tar.gz, .tar, or .zip archive.
+    */
+    private string? ExtractArchive(string archivePath, string extractionDirectory)
+    {
         if (Utilities.CurrentRID.OS != OSPlatform.Windows)
         {
-            // TODO: See if this works if 'tar' is unavailable
-            var procResult = await ProcUtil.RunWithOutput("tar", $"-xzf \"{archivePath}\" -C \"{tempRealPath.Path}\"");
-            if (procResult.ExitCode != 0)
+            var needsDecompression = archivePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase);
+            using var archiveDecompressedPath = needsDecompression ? new DirectoryResource(archivePath) : new DirectoryResource(Path.Combine(archivePath), "decompressed");
+
+            // Run gzip decompression iff .gz is at the end of the archive file, which is true for .NET archives
+            if (needsDecompression)
             {
-                return procResult.Error;
+                using FileStream originalFileStream = File.OpenRead(archivePath);
+                using FileStream decompressedFileStream = File.Create(archiveDecompressedPath.Path);
+                using GZipStream decompressionStream = new GZipStream(originalFileStream, CompressionMode.Decompress);
+                decompressionStream.CopyTo(decompressedFileStream);
+            }
+
+            try
+            {
+                TarFile.ExtractToDirectory(archiveDecompressedPath.Path, extractionDirectory, overwriteFiles: true);
+                // The temp folder will be cleaned out at class destruction time - no need to clean it now.
+            }
+            catch (Exception e)
+            {
+                return e.Message;
             }
         }
         else
         {
             try
             {
-                ZipFile.ExtractToDirectory(archivePath, tempRealPath.Path, overwriteFiles: true);
+                ZipFile.ExtractToDirectory(archivePath, extractionDirectory, overwriteFiles: true);
             }
             catch (Exception e)
             {
@@ -57,7 +84,6 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
             }
         }
     }
-    */
 
     internal static string ConstructArchiveName(string? versionString, string rid, string suffix)
     {
@@ -75,6 +101,7 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
         IFileSystem destFs,
         string destDir)
     {
+        // Make sure the first task has finished
         destFs.CreateDirectory(destDir);
 
         try
