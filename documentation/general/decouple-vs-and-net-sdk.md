@@ -147,7 +147,7 @@ These values are recognized for property `RoslynCompilerType`:
 - `Core`: use the compiler that comes with the .NET SDK
 - `Framework`: use the compiler that comes with .NET Framework MSBuild
 - `FrameworkPackage`: download the Microsoft.Net.Sdk.Compilers.Toolset package which contains the .NET Framework compiler corresponding to the .NET SDK version
-- `Custom`: the SDK will not override `RoslynTasksAssembly` - used for example by Microsoft.Net.Compilers.Toolset package which injects its own version of the build task
+- `Custom`: the SDK will not override `RoslynTasksAssembly` and the other properties listed above - used for example by Microsoft.Net.Compilers.Toolset package which injects its own version of the build task
 
 ## Alternative
 
