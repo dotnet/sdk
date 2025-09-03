@@ -30,7 +30,7 @@ internal sealed class NamedPipeServer : NamedPipeBase
         CancellationToken cancellationToken,
         bool skipUnknownMessages)
     {
-        _namedPipeServerStream = new((PipeName = pipeNameDescription).Name, PipeDirection.InOut, maxNumberOfServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+        _namedPipeServerStream = new((PipeName = pipeNameDescription).Name, PipeDirection.InOut, maxNumberOfServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
         _callback = callback;
         _cancellationToken = cancellationToken;
         _skipUnknownMessages = skipUnknownMessages;
