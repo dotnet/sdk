@@ -128,6 +128,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Uncomment this once https://github.com/Microsoft/visualfsharp/issues/3207 gets fixed -->
     <!-- <WarningsAsErrors>$(WarningsAsErrors);NU1605</WarningsAsErrors> -->
+
+    <!-- Implicitly set UserSecretsId for file-based apps. -->
+    <UserSecretsId Condition="'$(FileBasedProgram)' == 'true' and '$(UserSecretsId)' == ''">$(MSBuildProjectName)-$([MSBuild]::StableStringHash($(MSBuildProjectFullPath.ToLowerInvariant()), 'Sha256'))</UserSecretsId>
   </PropertyGroup>
 
   <PropertyGroup>
