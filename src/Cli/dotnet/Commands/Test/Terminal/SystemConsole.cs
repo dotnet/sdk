@@ -23,8 +23,6 @@ internal sealed class SystemConsole : IConsole
     /// </summary>
     public bool IsOutputRedirected => Console.IsOutputRedirected;
 
-    private bool _suppressOutput;
-
     static SystemConsole() =>
         // From https://github.com/dotnet/runtime/blob/main/src/libraries/System.Console/src/System/Console.cs#L236
         CaptureConsoleOutWriter = new StreamWriter(
@@ -40,173 +38,71 @@ internal sealed class SystemConsole : IConsole
     // but can just kill the app in the device via a gesture
     public event ConsoleCancelEventHandler? CancelKeyPress
     {
-        add
-        {
-#if NET8_0_OR_GREATER
-            if (RuntimeInformation.RuntimeIdentifier.Contains("ios") ||
-                RuntimeInformation.RuntimeIdentifier.Contains("android"))
-            {
-                return;
-            }
-#endif
-
-#pragma warning disable IDE0027 // Use expression body for accessor
-            Console.CancelKeyPress += value;
-#pragma warning restore IDE0027 // Use expression body for accessor
-        }
-
-        remove
-        {
-#if NET8_0_OR_GREATER
-            if (RuntimeInformation.RuntimeIdentifier.Contains("ios") ||
-                RuntimeInformation.RuntimeIdentifier.Contains("android"))
-            {
-                return;
-            }
-#endif
-#pragma warning disable IDE0027 // Use expression body for accessor
-            Console.CancelKeyPress -= value;
-#pragma warning restore IDE0027 // Use expression body for accessor
-        }
+        add => Console.CancelKeyPress += value;
+        remove => Console.CancelKeyPress -= value;
     }
-
-    public void SuppressOutput() => _suppressOutput = true;
 
     public void WriteLine()
     {
-        if (!_suppressOutput)
-        {
-            CaptureConsoleOutWriter.WriteLine();
-        }
+        CaptureConsoleOutWriter.WriteLine();
     }
 
     public void WriteLine(string? value)
     {
-        if (!_suppressOutput)
-        {
-            CaptureConsoleOutWriter.WriteLine(value);
-        }
+        CaptureConsoleOutWriter.WriteLine(value);
     }
 
     public void WriteLine(object? value)
     {
-        if (!_suppressOutput)
-        {
-            CaptureConsoleOutWriter.WriteLine(value);
-        }
+        CaptureConsoleOutWriter.WriteLine(value);
     }
 
     public void WriteLine(string format, object? arg0)
     {
-        if (!_suppressOutput)
-        {
-            CaptureConsoleOutWriter.WriteLine(format, arg0);
-        }
+        CaptureConsoleOutWriter.WriteLine(format, arg0);
     }
 
     public void WriteLine(string format, object? arg0, object? arg1)
     {
-        if (!_suppressOutput)
-        {
-            CaptureConsoleOutWriter.WriteLine(format, arg0, arg1);
-        }
+        CaptureConsoleOutWriter.WriteLine(format, arg0, arg1);
     }
 
     public void WriteLine(string format, object? arg0, object? arg1, object? arg2)
     {
-        if (!_suppressOutput)
-        {
-            CaptureConsoleOutWriter.WriteLine(format, arg0, arg1, arg2);
-        }
+        CaptureConsoleOutWriter.WriteLine(format, arg0, arg1, arg2);
     }
 
     public void WriteLine(string format, object?[]? args)
     {
-        if (!_suppressOutput)
-        {
-            CaptureConsoleOutWriter.WriteLine(format, args!);
-        }
+        CaptureConsoleOutWriter.WriteLine(format, args!);
     }
 
     public void Write(string format, object?[]? args)
     {
-        if (!_suppressOutput)
-        {
-            CaptureConsoleOutWriter.Write(format, args!);
-        }
+        CaptureConsoleOutWriter.Write(format, args!);
     }
 
     public void Write(string? value)
     {
-        if (!_suppressOutput)
-        {
-            CaptureConsoleOutWriter.Write(value);
-        }
+        CaptureConsoleOutWriter.Write(value);
     }
 
     public void Write(char value)
     {
-        if (!_suppressOutput)
-        {
-            CaptureConsoleOutWriter.Write(value);
-        }
+        CaptureConsoleOutWriter.Write(value);
     }
 
     public void SetForegroundColor(ConsoleColor color)
-    {
-#if NET8_0_OR_GREATER
-        if (RuntimeInformation.RuntimeIdentifier.Contains("ios") ||
-            RuntimeInformation.RuntimeIdentifier.Contains("android"))
-        {
-            return;
-        }
-#endif
-#pragma warning disable IDE0022 // Use expression body for method
-        Console.ForegroundColor = color;
-#pragma warning restore IDE0022 // Use expression body for method
-    }
+        => Console.ForegroundColor = color;
 
     public void SetBackgroundColor(ConsoleColor color)
-    {
-#if NET8_0_OR_GREATER
-        if (RuntimeInformation.RuntimeIdentifier.Contains("ios") ||
-            RuntimeInformation.RuntimeIdentifier.Contains("android"))
-        {
-            return;
-        }
-#endif
-#pragma warning disable IDE0022 // Use expression body for method
-        Console.BackgroundColor = color;
-#pragma warning restore IDE0022 // Use expression body for method
-    }
+        => Console.BackgroundColor = color;
 
     public ConsoleColor GetForegroundColor()
-    {
-#if NET8_0_OR_GREATER
-        if (RuntimeInformation.RuntimeIdentifier.Contains("ios") ||
-            RuntimeInformation.RuntimeIdentifier.Contains("android"))
-        {
-            return ConsoleColor.Black;
-        }
-#endif
-#pragma warning disable IDE0022 // Use expression body for method
-        return Console.ForegroundColor;
-#pragma warning restore IDE0022 // Use expression body for method
-    }
+        => Console.ForegroundColor;
 
     public ConsoleColor GetBackgroundColor()
-    {
-#if NET8_0_OR_GREATER
-        if (RuntimeInformation.RuntimeIdentifier.Contains("ios") ||
-            RuntimeInformation.RuntimeIdentifier.Contains("android"))
-        {
-            return ConsoleColor.Black;
-        }
-#endif
-#pragma warning disable IDE0022 // Use expression body for method
-        return Console.BackgroundColor;
-#pragma warning restore IDE0022 // Use expression body for method
-    }
+        => Console.BackgroundColor;
 
     public void Clear() => Console.Clear();
 }

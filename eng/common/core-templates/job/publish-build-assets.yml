@@ -38,6 +38,8 @@ parameters:
   # Optional: A minimatch pattern for the asset manifests to publish to BAR
   assetManifestsPattern: '*/manifests/**/*.xml'
 
+  repositoryAlias: self
+
 jobs:
 - job: Asset_Registry_Publish
 
