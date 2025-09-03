@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using Microsoft.Build.Framework;
 using NuGet.RuntimeModel;
 
@@ -17,25 +15,25 @@ namespace Microsoft.NET.Build.Tasks
         /// The path to the RID graph to read
         /// </summary>
         [Required]
-        public string RuntimeGraphPath { get; set; }
+        public string RuntimeGraphPath { get; set; } = "";
 
         /// <summary>
         /// The RID to find the best fit for
         /// </summary>
         [Required]
-        public string TargetRid { get; set; }
+        public string TargetRid { get; set; } = "";
 
         /// <summary>
         /// All of the RIDs that are allowed to match against the Target RID
         /// </summary>
         [Required]
-        public string[] SupportedRids { get; set; }
+        public string[] SupportedRids { get; set; } = Array.Empty<string>();
 
         /// <summary>
         /// The solution to the puzzle
         /// </summary>
         [Output]
-        public string MatchingRid { get; set; }
+        public string? MatchingRid { get; set; }
 
         /// <summary>
         /// Computes the thing

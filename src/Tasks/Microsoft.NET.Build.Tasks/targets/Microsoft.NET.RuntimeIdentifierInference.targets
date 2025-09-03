@@ -366,6 +366,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetDefaultPlatformTargetForNetFramework"
            AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.NET.Build.Tasks.PickBestRid"
+           AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <!--
     Switch our default .NETFramework CPU architecture choice back to AnyCPU before
