@@ -9,13 +9,21 @@ using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal sealed class TestApplication(TestModule module, BuildOptions buildOptions, TestOptions testOptions) : IDisposable
+internal sealed class TestApplication(
+    TestModule module,
+    BuildOptions buildOptions,
+    TestOptions testOptions,
+    TerminalTestReporter output) : IDisposable
 {
     private readonly BuildOptions _buildOptions = buildOptions;
+    private readonly TerminalTestReporter _output = output;
+
+    private (string TargetFramework, string Architecture, string ExecutionId)? _handshakeInfo;
 
     private readonly List<string> _outputData = [];
     private readonly List<string> _errorData = [];
@@ -26,14 +34,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
     private readonly List<NamedPipeServer> _testAppPipeConnections = [];
     private readonly Dictionary<NamedPipeServer, HandshakeMessage> _handshakes = new();
 
-    public event EventHandler<HandshakeArgs> HandshakeReceived;
     public event EventHandler<HelpEventArgs> HelpRequested;
-    public event EventHandler<DiscoveredTestEventArgs> DiscoveredTestsReceived;
-    public event EventHandler<TestResultEventArgs> TestResultsReceived;
-    public event EventHandler<FileArtifactEventArgs> FileArtifactsReceived;
-    public event EventHandler<SessionEventArgs> SessionEventReceived;
-    public event EventHandler<ErrorEventArgs> ErrorReceived;
-    public event EventHandler<TestProcessExitEventArgs> TestProcessExited;
 
     public TestModule Module { get; } = module;
     public TestOptions TestOptions { get; } = testOptions;
@@ -283,9 +284,47 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         StoreOutputAndErrorData(process);
         await process.WaitForExitAsync();
 
-        TestProcessExited?.Invoke(this, new TestProcessExitEventArgs { OutputData = _outputData, ErrorData = _errorData, ExitCode = process.ExitCode });
+        string outputData = string.Join(Environment.NewLine, _outputData);
+        string errorData = string.Join(Environment.NewLine, _errorData);
+        if (_handshakeInfo.HasValue)
+        {
+            _output.AssemblyRunCompleted(_handshakeInfo.Value.ExecutionId, process.ExitCode, outputData, errorData);
+        }
+        else
+        {
+            _output.HandshakeFailure(Module.TargetPath ?? Module.ProjectFullPath, Module.TargetFramework, process.ExitCode, outputData, errorData);
+        }
+
+        LogTestProcessExit(process.ExitCode, outputData, errorData);
 
         return process.ExitCode;
+    }
+
+    private static void LogTestProcessExit(int exitCode, string outputData, string errorData)
+    {
+        if (!Logger.TraceEnabled)
+        {
+            return;
+        }
+
+        var logMessageBuilder = new StringBuilder();
+
+        if (exitCode != ExitCode.Success)
+        {
+            logMessageBuilder.AppendLine($"Test Process exited with non-zero exit code: {exitCode}");
+        }
+
+        if (!string.IsNullOrEmpty(outputData))
+        {
+            logMessageBuilder.AppendLine($"Output Data: {outputData}");
+        }
+
+        if (!string.IsNullOrEmpty(errorData))
+        {
+            logMessageBuilder.AppendLine($"Error Data: {errorData}");
+        }
+
+        Logger.LogTrace(() => logMessageBuilder.ToString());
     }
 
     private void StoreOutputAndErrorData(Process process)
@@ -314,7 +353,9 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
     {
         if (!File.Exists(Module.RunProperties.Command))
         {
-            ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{Module.RunProperties.Command}' not found. Build the test application before or run 'dotnet test'." });
+            // TODO: The error should be shown to the user, not just logged to trace.
+            Logger.LogTrace(() => $"Test module '{Module.RunProperties.Command}' not found. Build the test application before or run 'dotnet test'.");
+
             return false;
         }
         return true;
@@ -322,48 +363,254 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
 
     public void OnHandshakeMessage(HandshakeMessage handshakeMessage, bool gotSupportedVersion)
     {
-        HandshakeReceived?.Invoke(this, new HandshakeArgs { Handshake = new Handshake(handshakeMessage.Properties), GotSupportedVersion = gotSupportedVersion });
+        if (!gotSupportedVersion)
+        {
+            _output.HandshakeFailure(
+                Module.TargetPath,
+                string.Empty,
+                ExitCode.GenericFailure,
+                string.Format(
+                    CliCommandStrings.DotnetTestIncompatibleHandshakeVersion,
+                    handshakeMessage.Properties[HandshakeMessagePropertyNames.SupportedProtocolVersions],
+                    ProtocolConstants.SupportedVersions),
+                string.Empty);
+        }
+
+        if (!_handshakeInfo.HasValue)
+        {
+            var executionId = handshakeMessage.Properties[HandshakeMessagePropertyNames.ExecutionId];
+            var arch = handshakeMessage.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
+            var tfm = TargetFrameworkParser.GetShortTargetFramework(handshakeMessage.Properties[HandshakeMessagePropertyNames.Framework]);
+
+            _handshakeInfo = (tfm, arch, executionId);
+        }
+        else
+        {
+            // TODO: Verify we get the same info.
+        }
+
+        var hostType = handshakeMessage.Properties[HandshakeMessagePropertyNames.HostType];
+        // https://github.com/microsoft/testfx/blob/2a9a353ec2bb4ce403f72e8ba1f29e01e7cf1fd4/src/Platform/Microsoft.Testing.Platform/Hosts/CommonTestHost.cs#L87-L97
+        if (hostType == "TestHost")
+        {
+            // AssemblyRunStarted counts "retry count", and writes to terminal "(Try <number-of-try>) Running tests from <assembly>"
+            // So, we want to call it only for test host, and not for test host controller (or orchestrator, if in future it will handshake as well)
+            // Calling it for both test host and test host controllers means we will count retries incorrectly, and will messages twice.
+            var instanceId = handshakeMessage.Properties[HandshakeMessagePropertyNames.InstanceId];
+            var handshakeInfo = _handshakeInfo.Value;
+            _output.AssemblyRunStarted(Module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.TargetFramework, instanceId);
+        }
+
+        LogHandshake(handshakeMessage);
     }
 
-    public void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
+    private static void LogHandshake(HandshakeMessage handshakeMessage)
+    {
+        if (!Logger.TraceEnabled)
+        {
+            return;
+        }
+
+        var logMessageBuilder = new StringBuilder();
+
+        foreach (var property in handshakeMessage.Properties)
+        {
+            logMessageBuilder.AppendLine($"{GetHandshakePropertyName(property.Key)}: {property.Value}");
+        }
+
+        Logger.LogTrace(() => logMessageBuilder.ToString());
+    }
+
+    private static string GetHandshakePropertyName(byte propertyId) =>
+        propertyId switch
+        {
+            HandshakeMessagePropertyNames.PID => nameof(HandshakeMessagePropertyNames.PID),
+            HandshakeMessagePropertyNames.Architecture => nameof(HandshakeMessagePropertyNames.Architecture),
+            HandshakeMessagePropertyNames.Framework => nameof(HandshakeMessagePropertyNames.Framework),
+            HandshakeMessagePropertyNames.OS => nameof(HandshakeMessagePropertyNames.OS),
+            HandshakeMessagePropertyNames.SupportedProtocolVersions => nameof(HandshakeMessagePropertyNames.SupportedProtocolVersions),
+            HandshakeMessagePropertyNames.HostType => nameof(HandshakeMessagePropertyNames.HostType),
+            HandshakeMessagePropertyNames.ModulePath => nameof(HandshakeMessagePropertyNames.ModulePath),
+            HandshakeMessagePropertyNames.ExecutionId => nameof(HandshakeMessagePropertyNames.ExecutionId),
+            HandshakeMessagePropertyNames.InstanceId => nameof(HandshakeMessagePropertyNames.InstanceId),
+            _ => string.Empty,
+        };
+
+    private void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
     {
         HelpRequested?.Invoke(this, new HelpEventArgs { ModulePath = commandLineOptionMessages.ModulePath, CommandLineOptions = [.. commandLineOptionMessages.CommandLineOptionMessageList.Select(message => new CommandLineOption(message.Name, message.Description, message.IsHidden, message.IsBuiltIn))] });
     }
 
-    internal void OnDiscoveredTestMessages(DiscoveredTestMessages discoveredTestMessages)
+    private void OnDiscoveredTestMessages(DiscoveredTestMessages discoveredTestMessages)
     {
-        DiscoveredTestsReceived?.Invoke(this, new DiscoveredTestEventArgs
+        if (TestOptions.IsHelp)
         {
-            ExecutionId = discoveredTestMessages.ExecutionId,
-            InstanceId = discoveredTestMessages.InstanceId,
-            DiscoveredTests = [.. discoveredTestMessages.DiscoveredMessages.Select(message => new DiscoveredTest(message.Uid, message.DisplayName))]
-        });
+            // TODO: Better to throw exception?
+            return;
+        }
+
+        foreach (var test in discoveredTestMessages.DiscoveredMessages)
+        {
+            _output.TestDiscovered(Module.TargetPath, _handshakeInfo.Value.TargetFramework, _handshakeInfo.Value.Architecture, _handshakeInfo.Value.ExecutionId,
+                    test.DisplayName,
+                    test.Uid);
+        }
+
+        LogDiscoveredTests(discoveredTestMessages);
     }
 
-    internal void OnTestResultMessages(TestResultMessages testResultMessage)
+    private static void LogDiscoveredTests(DiscoveredTestMessages discoveredTestMessages)
     {
-        TestResultsReceived?.Invoke(this, new TestResultEventArgs
+        if (!Logger.TraceEnabled)
         {
-            ExecutionId = testResultMessage.ExecutionId,
-            InstanceId = testResultMessage.InstanceId,
-            SuccessfulTestResults = [.. testResultMessage.SuccessfulTestMessages.Select(message => new SuccessfulTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.StandardOutput, message.ErrorOutput, message.SessionUid))],
-            FailedTestResults = [.. testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, [.. message.Exceptions.Select(e => new FlatException(e.ErrorMessage, e.ErrorType, e.StackTrace))], message.StandardOutput, message.ErrorOutput, message.SessionUid))]
-        });
+            return;
+        }
+
+        var logMessageBuilder = new StringBuilder();
+
+        logMessageBuilder.AppendLine($"DiscoveredTests Execution Id: {discoveredTestMessages.ExecutionId}");
+        logMessageBuilder.AppendLine($"TestResults Instance Id: {discoveredTestMessages.InstanceId}");
+
+        foreach (var discoveredTestMessage in discoveredTestMessages.DiscoveredMessages)
+        {
+            logMessageBuilder.AppendLine($"DiscoveredTest: {discoveredTestMessage.Uid}, {discoveredTestMessage.DisplayName}");
+        }
+
+        Logger.LogTrace(() => logMessageBuilder.ToString());
+    }
+
+    private void OnTestResultMessages(TestResultMessages testResultMessage)
+    {
+        if (TestOptions.IsHelp)
+        {
+            // TODO: Better to throw exception?
+            return;
+        }
+
+        var handshakeInfo = _handshakeInfo.Value;
+        foreach (var testResult in testResultMessage.SuccessfulTestMessages)
+        {
+            _output.TestCompleted(Module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
+                testResultMessage.InstanceId,
+                testResult.Uid,
+                testResult.DisplayName,
+                testResult.Reason,
+                ToOutcome(testResult.State),
+                TimeSpan.FromTicks(testResult.Duration ?? 0),
+                exceptions: null,
+                expected: null,
+                actual: null,
+                standardOutput: testResult.StandardOutput,
+                errorOutput: testResult.ErrorOutput);
+        }
+
+        foreach (var testResult in testResultMessage.FailedTestMessages)
+        {
+            _output.TestCompleted(Module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, testResultMessage.InstanceId,
+                testResult.Uid,
+                testResult.DisplayName,
+                testResult.Reason,
+                ToOutcome(testResult.State),
+                TimeSpan.FromTicks(testResult.Duration ?? 0),
+                exceptions: [.. testResult.Exceptions.Select(fe => new Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace))],
+                expected: null,
+                actual: null,
+                standardOutput: testResult.StandardOutput,
+                errorOutput: testResult.ErrorOutput);
+        }
+
+        LogTestResults(testResultMessage);
+    }
+
+    public static TestOutcome ToOutcome(byte? testState) => testState switch
+    {
+        TestStates.Passed => TestOutcome.Passed,
+        TestStates.Skipped => TestOutcome.Skipped,
+        TestStates.Failed => TestOutcome.Fail,
+        TestStates.Error => TestOutcome.Error,
+        TestStates.Timeout => TestOutcome.Timeout,
+        TestStates.Cancelled => TestOutcome.Canceled,
+        _ => throw new ArgumentOutOfRangeException(nameof(testState), $"Invalid test state value {testState}")
+    };
+
+    private static void LogTestResults(TestResultMessages testResultMessages)
+    {
+        if (!Logger.TraceEnabled)
+        {
+            return;
+        }
+
+        var logMessageBuilder = new StringBuilder();
+
+        logMessageBuilder.AppendLine($"TestResults Execution Id: {testResultMessages.ExecutionId}");
+        logMessageBuilder.AppendLine($"TestResults Instance Id: {testResultMessages.InstanceId}");
+
+        foreach (SuccessfulTestResultMessage successfulTestResult in testResultMessages.SuccessfulTestMessages)
+        {
+            logMessageBuilder.AppendLine($"SuccessfulTestResult: {successfulTestResult.Uid}, {successfulTestResult.DisplayName}, " +
+                $"{successfulTestResult.State}, {successfulTestResult.Duration}, {successfulTestResult.Reason}, {successfulTestResult.StandardOutput}," +
+                $"{successfulTestResult.ErrorOutput}, {successfulTestResult.SessionUid}");
+        }
+
+        foreach (FailedTestResultMessage failedTestResult in testResultMessages.FailedTestMessages)
+        {
+            logMessageBuilder.AppendLine($"FailedTestResult: {failedTestResult.Uid}, {failedTestResult.DisplayName}, " +
+                $"{failedTestResult.State}, {failedTestResult.Duration}, {failedTestResult.Reason}, {string.Join(", ", failedTestResult.Exceptions?.Select(e => $"{e.ErrorMessage}, {e.ErrorType}, {e.StackTrace}"))}" +
+                $"{failedTestResult.StandardOutput}, {failedTestResult.ErrorOutput}, {failedTestResult.SessionUid}");
+        }
+
+        Logger.LogTrace(() => logMessageBuilder.ToString());
     }
 
     internal void OnFileArtifactMessages(FileArtifactMessages fileArtifactMessages)
     {
-        FileArtifactsReceived?.Invoke(this, new FileArtifactEventArgs
+        if (TestOptions.IsHelp)
         {
-            ExecutionId = fileArtifactMessages.ExecutionId,
-            InstanceId = fileArtifactMessages.InstanceId,
-            FileArtifacts = [.. fileArtifactMessages.FileArtifacts.Select(message => new FileArtifact(message.FullPath, message.DisplayName, message.Description, message.TestUid, message.TestDisplayName, message.SessionUid))]
-        });
+            // TODO: Better to throw exception?
+            return;
+        }
+
+        var handshakeInfo = _handshakeInfo.Value;
+        foreach (var artifact in fileArtifactMessages.FileArtifacts)
+        {
+            _output.ArtifactAdded(
+                outOfProcess: false,
+                Module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
+                artifact.TestDisplayName, artifact.FullPath);
+        }
+
+        LogFileArtifacts(fileArtifactMessages);
     }
 
-    internal void OnSessionEvent(TestSessionEvent sessionEvent)
+    private static void LogFileArtifacts(FileArtifactMessages fileArtifactMessages)
     {
-        SessionEventReceived?.Invoke(this, new SessionEventArgs { SessionEvent = new TestSession(sessionEvent.SessionType, sessionEvent.SessionUid, sessionEvent.ExecutionId) });
+        if (!Logger.TraceEnabled)
+        {
+            return;
+        }
+
+        var logMessageBuilder = new StringBuilder();
+
+        logMessageBuilder.AppendLine($"FileArtifactMessages Execution Id: {fileArtifactMessages.ExecutionId}");
+        logMessageBuilder.AppendLine($"TestResults Instance Id: {fileArtifactMessages.InstanceId}");
+
+        foreach (FileArtifactMessage fileArtifactMessage in fileArtifactMessages.FileArtifacts)
+        {
+            logMessageBuilder.AppendLine($"FileArtifact: {fileArtifactMessage.FullPath}, {fileArtifactMessage.DisplayName}, " +
+                $"{fileArtifactMessage.Description}, {fileArtifactMessage.TestUid}, {fileArtifactMessage.TestDisplayName}, " +
+                $"{fileArtifactMessage.SessionUid}");
+        }
+
+        Logger.LogTrace(() => logMessageBuilder.ToString());
+    }
+
+    private void OnSessionEvent(TestSessionEvent sessionEvent)
+    {
+        // TODO: We shouldn't only log here!
+        // We should use it in a more meaningful way. e.g, ensure we received session start/end events.
+        if (!Logger.TraceEnabled) return;
+
+        Logger.LogTrace(() => $"TestSessionEvent: {sessionEvent.SessionType}, {sessionEvent.SessionUid}, {sessionEvent.ExecutionId}");
     }
 
     public override string ToString()
