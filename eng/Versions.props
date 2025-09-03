@@ -193,7 +193,7 @@
     <MicrosoftTemplateEngineUtilsPackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineUtilsPackageVersion>
     <MicrosoftTemplateSearchCommonPackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateSearchCommonPackageVersion>
     <!-- test dependencies -->
-    <MicrosoftTemplateEngineMocksPackageVersion>9.0.111-servicing.25452.4</MicrosoftTemplateEngineMocksPackageVersion>
+    <MicrosoftTemplateEngineMocksPackageVersion>9.0.111-servicing.25452.6</MicrosoftTemplateEngineMocksPackageVersion>
     <MicrosoftTemplateEngineTestHelperPackageVersion>$(MicrosoftTemplateEngineMocksPackageVersion)</MicrosoftTemplateEngineTestHelperPackageVersion>
     <MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>
     <MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>$(MicrosoftTemplateEngineMocksPackageVersion)</MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>
