@@ -19,20 +19,21 @@ internal record DotnetInstallBase(
 
 /// <summary>
 /// Represents a .NET installation with a fully specified version.
+/// The MuxerDirectory is the directory of the corresponding .NET host that has visibility into this .NET installation.
 /// </summary>
 internal record DotnetInstall(
-    string FullySpecifiedVersion,
-    string ResolvedDirectory,
+    DotnetVersion FullySpecifiedVersion,
+    string MuxerDirectory,
     InstallType Type,
     InstallMode Mode,
-    InstallArchitecture Architecture) : DotnetInstallBase(ResolvedDirectory, Type, Mode, Architecture);
+    InstallArchitecture Architecture) : DotnetInstallBase(MuxerDirectory, Type, Mode, Architecture);
 
 /// <summary>
 /// Represents a request for a .NET installation with a channel version that will get resolved into a fully specified version.
 /// </summary>
 internal record DotnetInstallRequest(
     string ChannelVersion,
-    string ResolvedDirectory,
+    string TargetDirectory,
     InstallType Type,
     InstallMode Mode,
-    InstallArchitecture Architecture) : DotnetInstallBase(ResolvedDirectory, Type, Mode, Architecture);
+    InstallArchitecture Architecture) : DotnetInstallBase(Path.Combine(TargetDirectory, DnupUtilities.GetDotnetExeName()), Type, Mode, Architecture);

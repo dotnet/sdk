@@ -1,20 +1,33 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Generic;
+using System.Formats.Tar;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
 {
+    private readonly DotnetInstallRequest _request;
+    private readonly DotnetInstall _install;
     private string scratchDownloadDirectory;
     private string scratchExtractionDirectory;
 
-    public ArchiveDotnetInstaller(DotnetInstall version)
+    public ArchiveDotnetInstaller(DotnetInstallRequest request, DotnetInstall version)
     {
+        _request = request;
+        _install = version;
         scratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
         scratchExtractionDirectory = Directory.CreateTempSubdirectory().FullName;
     }
 
-    public Prepare()
+    public void Prepare()
     {
         // Download the archive to a user protected (wrx) random folder in temp
 
@@ -48,24 +61,31 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
     */
     private string? ExtractArchive(string archivePath, string extractionDirectory)
     {
-        if (Utilities.CurrentRID.OS != OSPlatform.Windows)
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             var needsDecompression = archivePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase);
-            using var archiveDecompressedPath = needsDecompression ? new DirectoryResource(archivePath) : new DirectoryResource(Path.Combine(archivePath), "decompressed");
-
-            // Run gzip decompression iff .gz is at the end of the archive file, which is true for .NET archives
-            if (needsDecompression)
-            {
-                using FileStream originalFileStream = File.OpenRead(archivePath);
-                using FileStream decompressedFileStream = File.Create(archiveDecompressedPath.Path);
-                using GZipStream decompressionStream = new GZipStream(originalFileStream, CompressionMode.Decompress);
-                decompressionStream.CopyTo(decompressedFileStream);
-            }
+            string decompressedPath = archivePath;
 
             try
             {
-                TarFile.ExtractToDirectory(archiveDecompressedPath.Path, extractionDirectory, overwriteFiles: true);
-                // The temp folder will be cleaned out at class destruction time - no need to clean it now.
+                // Run gzip decompression iff .gz is at the end of the archive file, which is true for .NET archives
+                if (needsDecompression)
+                {
+                    decompressedPath = Path.Combine(Path.GetDirectoryName(archivePath) ?? Directory.CreateTempSubdirectory().FullName, "decompressed.tar");
+                    using FileStream originalFileStream = File.OpenRead(archivePath);
+                    using FileStream decompressedFileStream = File.Create(decompressedPath);
+                    using GZipStream decompressionStream = new GZipStream(originalFileStream, CompressionMode.Decompress);
+                    decompressionStream.CopyTo(decompressedFileStream);
+                }
+
+                // Use System.Formats.Tar for .NET 7+
+                TarFile.ExtractToDirectory(decompressedPath, extractionDirectory, overwriteFiles: true);
+
+                // Clean up temporary decompressed file
+                if (needsDecompression && File.Exists(decompressedPath))
+                {
+                    File.Delete(decompressedPath);
+                }
             }
             catch (Exception e)
             {
@@ -83,6 +103,7 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
                 return e.Message;
             }
         }
+        return null;
     }
 
     internal static string ConstructArchiveName(string? versionString, string rid, string suffix)
@@ -92,41 +113,39 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
             : $"dotnet-sdk-{versionString}-{rid}{suffix}";
     }
 
-    /**
-    public static async Task<string?> ExtractSdkToDir(
-        DotnetVersion? existingMuxerVersion,
-        DotnetVersion runtimeVersion,
-        string archivePath,
-        IFileSystem tempFs,
-        IFileSystem destFs,
-        string destDir)
+
+    private string? ExtractSdkToDir(string extractedArchivePath, string destDir, IEnumerable<DotnetVersion> existingSdkVersions)
     {
-        // Make sure the first task has finished
-        destFs.CreateDirectory(destDir);
+        // Ensure destination directory exists
+        Directory.CreateDirectory(destDir);
+
+        DotnetVersion? existingMuxerVersion = existingSdkVersions.Any() ? existingSdkVersions.Max() : (DotnetVersion?)null;
+        DotnetVersion runtimeVersion = _install.FullySpecifiedVersion;
 
         try
         {
-            // We want to copy over all the files from the extraction directory to the target
-            // directory, with one exception: the top-level "dotnet exe" (muxer). That has special logic.
-            CopyMuxer(existingMuxerVersion, runtimeVersion, tempFs, tempExtractDir, destFs, destDir);
+            CopyMuxer(existingMuxerVersion, runtimeVersion, extractedArchivePath, destDir);
 
-            var extractFullName = tempExtractDir.FullName;
-            foreach (var dir in tempFs.EnumerateDirectories(tempExtractDir))
+            foreach (var sourcePath in Directory.EnumerateFileSystemEntries(extractedArchivePath, "*", SearchOption.AllDirectories))
             {
-                destFs.CreateDirectory(Path.Combine(destDir, dir.GetName()));
-                foreach (var fsItem in tempFs.EnumerateItems(dir, SearchOption.AllDirectories))
-                {
-                    var relativePath = fsItem.Path.FullName[extractFullName.Length..].TrimStart('/');
-                    var destPath = Path.Combine(destDir, relativePath);
+                var relativePath = Path.GetRelativePath(extractedArchivePath, sourcePath);
+                var destPath = Path.Combine(destDir, relativePath);
 
-                    if (fsItem.IsDirectory)
+                if (File.Exists(sourcePath))
+                {
+                    // Skip dotnet.exe
+                    if (string.Equals(Path.GetFileName(sourcePath), DnupUtilities.GetDotnetExeName(), StringComparison.OrdinalIgnoreCase))
                     {
-                        destFs.CreateDirectory(destPath);
+                        continue;
                     }
-                    else
-                    {
-                        ForceReplaceFile(tempFs, fsItem.Path, destFs, destPath);
-                    }
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+                    DnupUtilities.ForceReplaceFile(sourcePath, destPath);
+                }
+                else if (Directory.Exists(sourcePath))
+                {
+                    // Merge directories: create if not exists, do not delete anything in dest
+                    Directory.CreateDirectory(destPath);
                 }
             }
         }
@@ -136,37 +155,33 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
         }
         return null;
     }
-    */
 
-    /**
-    private static void CopyMuxer(
-        DotnetVersion? existingMuxerVersion,
-        DotnetVersion newRuntimeVersion,
-        IFileSystem tempFs,
-        string tempExtractDir,
-        IFileSystem destFs,
-        string destDir)
-    {   //The "dotnet" exe (muxer) is special in two ways:
+    private void CopyMuxer(DotnetVersion? existingMuxerVersion, DotnetVersion newRuntimeVersion, string archiveDir, string destDir)
+    {
+        // The "dotnet" exe (muxer) is special in two ways:
         // 1. It is shared between all SDKs, so it may be locked by another process.
         // 2. It should always be the newest version, so we don't want to overwrite it if the SDK
         //    we're installing is older than the one already installed.
-        //
-        var muxerTargetPath = Path.Combine(destDir, DotnetExeName);
+        var muxerTargetPath = Path.Combine(destDir, DnupUtilities.GetDotnetExeName());
 
-        if (newRuntimeVersion.CompareSortOrderTo(existingMuxerVersion) <= 0)
+        if (existingMuxerVersion is not null && newRuntimeVersion.CompareTo(existingMuxerVersion) <= 0)
         {
             // The new SDK is older than the existing muxer, so we don't need to do anything.
             return;
         }
 
         // The new SDK is newer than the existing muxer, so we need to replace it.
-        ForceReplaceFile(tempFs, Path.Combine(tempExtractDir, DotnetExeName), destFs, muxerTargetPath);
+        DnupUtilities.ForceReplaceFile(Path.Combine(archiveDir, DnupUtilities.GetDotnetExeName()), muxerTargetPath);
     }
-    */
 
     public void Commit()
     {
-        //ExtractSdkToDir();
+        Commit(existingSdkVersions: Enumerable.Empty<DotnetVersion>()); // todo impl this
+    }
+
+    public void Commit(IEnumerable<DotnetVersion> existingSdkVersions)
+    {
+        ExtractSdkToDir(scratchExtractionDirectory, _request.TargetDirectory, existingSdkVersions);
     }
 
     public void Dispose()
