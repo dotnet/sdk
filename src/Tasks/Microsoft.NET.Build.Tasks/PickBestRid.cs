@@ -51,7 +51,7 @@ namespace Microsoft.NET.Build.Tasks
             RuntimeGraph graph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
             string bestRidForPlatform = NuGetUtils.GetBestMatchingRid(graph, CurrentRid, SupportedRids, out bool wasInGraph);
 
-            if (!wasInGraph)
+            if (!wasInGraph || bestRidForPlatform == null)
             {
                 Log.LogError(Strings.UnableToFindMatchingRid, CurrentRid, string.Join(",", SupportedRids), RuntimeGraphPath);
                 return;

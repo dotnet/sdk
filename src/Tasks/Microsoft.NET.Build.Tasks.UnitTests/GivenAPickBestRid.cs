@@ -181,8 +181,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     SupportedRids = new[] { "linux", "osx" }
                 };
 
-                task.Execute().Should().BeTrue();
+                task.Execute().Should().BeFalse();
                 task.MatchingRid.Should().BeNull();
+
+                var buildEngine = (MockBuildEngine)task.BuildEngine;
+                buildEngine.Errors.Should().HaveCount(1);
+                buildEngine.Errors[0].Message.Should().Contain("win-x64");
+                buildEngine.Errors[0].Message.Should().Contain("Unable to find a matching RID");
             }
             finally
             {
