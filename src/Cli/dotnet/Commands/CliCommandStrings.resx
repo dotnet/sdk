@@ -2663,4 +2663,7 @@ Proceed?</value>
   <data name="DotnetTestPipeFailureWithoutHandshake" xml:space="preserve">
     <value>Error disposing 'NamedPipeServer', and no handshake was found.</value>
   </data>
+  <data name="DotnetTestIncompatibleHandshakeVersion" xml:space="preserve">
+    <value>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</value>
+  </data>
 </root>

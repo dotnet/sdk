@@ -184,8 +184,9 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             {
                 case HandshakeMessage handshakeMessage:
                     _handshakes.Add(server, handshakeMessage);
-                    OnHandshakeMessage(handshakeMessage);
-                    return Task.FromResult((IResponse)CreateHandshakeMessage(GetSupportedProtocolVersion(handshakeMessage)));
+                    string negotiatedVersion = GetSupportedProtocolVersion(handshakeMessage);
+                    OnHandshakeMessage(handshakeMessage, negotiatedVersion.Length > 0);
+                    return Task.FromResult((IResponse)CreateHandshakeMessage(negotiatedVersion));
 
                 case CommandLineOptionMessages commandLineOptionMessages:
                     OnCommandLineOptionMessages(commandLineOptionMessages);
@@ -235,15 +236,26 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
 
     private static string GetSupportedProtocolVersion(HandshakeMessage handshakeMessage)
     {
-        handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.SupportedProtocolVersions, out string protocolVersions);
-
-        string version = string.Empty;
-        if (protocolVersions is not null && protocolVersions.Split(";").Contains(ProtocolConstants.Version))
+        if (!handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.SupportedProtocolVersions, out string protocolVersions) ||
+            protocolVersions is null)
         {
-            version = ProtocolConstants.Version;
+            // It's not expected we hit this.
+            // TODO: Maybe we should fail more hard?
+            return string.Empty;
         }
 
-        return version;
+        // NOTE: Today, ProtocolConstants.Version is only 1.0.0 (i.e, SDK supports only a single version).
+        // Whenever we support multiple versions in SDK, we should do intersection
+        // between protocolVersions given by MTP, and the versions supported by SDK.
+        // Then we return the "highest" version from the intersection.
+        // The current logic **assumes** that ProtocolConstants.SupportedVersions is a single version.
+        if (protocolVersions.Split(";").Contains(ProtocolConstants.SupportedVersions))
+        {
+            return ProtocolConstants.SupportedVersions;
+        }
+
+        // The version given by MTP is not supported by SDK.
+        return string.Empty;
     }
 
     private static HandshakeMessage CreateHandshakeMessage(string version) =>
@@ -304,9 +316,9 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         return true;
     }
 
-    public void OnHandshakeMessage(HandshakeMessage handshakeMessage)
+    public void OnHandshakeMessage(HandshakeMessage handshakeMessage, bool gotSupportedVersion)
     {
-        HandshakeReceived?.Invoke(this, new HandshakeArgs { Handshake = new Handshake(handshakeMessage.Properties) });
+        HandshakeReceived?.Invoke(this, new HandshakeArgs { Handshake = new Handshake(handshakeMessage.Properties), GotSupportedVersion = gotSupportedVersion });
     }
 
     public void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
