@@ -210,7 +210,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             {
                 terminal.Append(DoubleIndentation);
                 terminal.Append("- ");
-                if (!String.IsNullOrWhiteSpace(artifact.TestName))
+                if (!string.IsNullOrWhiteSpace(artifact.TestName))
                 {
                     terminal.Append(CliCommandStrings.ForTest);
                     terminal.Append(" '");
@@ -364,7 +364,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         AppendExitCodeAndUrl(terminal, exitCode, isRun: true);
     }
 
-    private void AppendExitCodeAndUrl(ITerminal terminal, int? exitCode, bool isRun)
+    private static void AppendExitCodeAndUrl(ITerminal terminal, int? exitCode, bool isRun)
     {
         // When we crash with exception we don't have any predetermined exit code, and won't write our helper message to point users to exit code overview.
         // When we succeed we also don't point users to exit code overview.
@@ -568,7 +568,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? firstErrorMessage = GetStringFromIndexOrDefault(exceptions, e => e.ErrorMessage, index);
         string? firstErrorType = GetStringFromIndexOrDefault(exceptions, e => e.ErrorType, index);
         string? firstStackTrace = GetStringFromIndexOrDefault(exceptions, e => e.StackTrace, index);
-        if (String.IsNullOrWhiteSpace(firstErrorMessage) && String.IsNullOrWhiteSpace(firstErrorType) && String.IsNullOrWhiteSpace(firstStackTrace))
+        if (string.IsNullOrWhiteSpace(firstErrorMessage) && string.IsNullOrWhiteSpace(firstErrorType) && string.IsNullOrWhiteSpace(firstStackTrace))
         {
             return;
         }
@@ -597,7 +597,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private static void FormatExpectedAndActual(ITerminal terminal, string? expected, string? actual)
     {
-        if (String.IsNullOrWhiteSpace(expected) && String.IsNullOrWhiteSpace(actual))
+        if (string.IsNullOrWhiteSpace(expected) && string.IsNullOrWhiteSpace(actual))
         {
             return;
         }
@@ -615,7 +615,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
     private static void FormatStackTrace(ITerminal terminal, FlatException[] exceptions, int index)
     {
         string? stackTrace = GetStringFromIndexOrDefault(exceptions, e => e.StackTrace, index);
-        if (String.IsNullOrWhiteSpace(stackTrace))
+        if (string.IsNullOrWhiteSpace(stackTrace))
         {
             return;
         }
@@ -633,7 +633,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private static void FormatStandardAndErrorOutput(ITerminal terminal, string? standardOutput, string? standardError)
     {
-        if (String.IsNullOrWhiteSpace(standardOutput) && String.IsNullOrWhiteSpace(standardError))
+        if (string.IsNullOrWhiteSpace(standardOutput) && string.IsNullOrWhiteSpace(standardError))
         {
             return;
         }
@@ -680,7 +680,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         Match match = GetFrameRegex().Match(stackTraceLine);
         if (match.Success)
         {
-            bool weHaveFilePathAndCodeLine = !String.IsNullOrWhiteSpace(match.Groups["code"].Value);
+            bool weHaveFilePathAndCodeLine = !string.IsNullOrWhiteSpace(match.Groups["code"].Value);
             terminal.Append(CliCommandStrings.StackFrameAt);
             terminal.Append(' ');
 
@@ -698,7 +698,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 terminal.Append(' ');
                 terminal.Append(CliCommandStrings.StackFrameIn);
                 terminal.Append(' ');
-                if (!String.IsNullOrWhiteSpace(match.Groups["file"].Value))
+                if (!string.IsNullOrWhiteSpace(match.Groups["file"].Value))
                 {
                     int line = int.TryParse(match.Groups["line"].Value, out int value) ? value : 0;
                     terminal.AppendLink(match.Groups["file"].Value, line);
@@ -718,7 +718,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private static void AppendIndentedLine(ITerminal terminal, string? message, string indent)
     {
-        if (String.IsNullOrWhiteSpace(message))
+        if (string.IsNullOrWhiteSpace(message))
         {
             return;
         }
@@ -904,9 +904,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
     }
 
     internal void TestDiscovered(
-        string assembly,
-        string? targetFramework,
-        string? architecture,
         string executionId,
         string? displayName,
         string? uid)
@@ -1001,11 +998,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         };
 
     public void TestInProgress(
-        string assembly,
-        string? targetFramework,
-        string? architecture,
         string testNodeUid,
-        string instanceId,
         string displayName,
         string executionId)
     {

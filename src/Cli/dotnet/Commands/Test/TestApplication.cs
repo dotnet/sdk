@@ -451,9 +451,9 @@ internal sealed class TestApplication(
 
         foreach (var test in discoveredTestMessages.DiscoveredMessages)
         {
-            _output.TestDiscovered(Module.TargetPath, _handshakeInfo.Value.TargetFramework, _handshakeInfo.Value.Architecture, _handshakeInfo.Value.ExecutionId,
-                    test.DisplayName,
-                    test.Uid);
+            _output.TestDiscovered(_handshakeInfo.Value.ExecutionId,
+                test.DisplayName,
+                test.Uid);
         }
 
         LogDiscoveredTests(discoveredTestMessages);
