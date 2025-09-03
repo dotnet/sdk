@@ -84,34 +84,13 @@ namespace Microsoft.NET.Build.Tasks
                 }
 
                 // Check if the item's runtime identifier is compatible with the target runtime identifier
-                if (IsCompatibleRuntimeIdentifier(runtimeGraph, targetRid, itemRuntimeIdentifier))
+                if (runtimeGraph.AreCompatible(targetRid, itemRuntimeIdentifier))
                 {
                     selectedItems.Add(item);
                 }
             }
 
             SelectedItems = selectedItems.ToArray();
-        }
-
-        /// <summary>
-        /// Determines if a candidate runtime identifier is compatible with a target runtime identifier.
-        /// </summary>
-        /// <param name="runtimeGraph">The runtime graph containing compatibility information.</param>
-        /// <param name="targetRuntimeIdentifier">The target runtime identifier.</param>
-        /// <param name="candidateRuntimeIdentifier">The candidate runtime identifier to check.</param>
-        /// <returns>True if the candidate is compatible with the target, false otherwise.</returns>
-        private static bool IsCompatibleRuntimeIdentifier(RuntimeGraph runtimeGraph, string targetRuntimeIdentifier, string candidateRuntimeIdentifier)
-        {
-            if (string.Equals(targetRuntimeIdentifier, candidateRuntimeIdentifier, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            // Get the list of compatible runtime identifiers for the target
-            var compatibleRuntimeIdentifiers = runtimeGraph.ExpandRuntime(targetRuntimeIdentifier);
-
-            // Check if the candidate runtime identifier is in the list of compatible ones
-            return compatibleRuntimeIdentifiers.Contains(candidateRuntimeIdentifier, StringComparer.OrdinalIgnoreCase);
         }
     }
 }
