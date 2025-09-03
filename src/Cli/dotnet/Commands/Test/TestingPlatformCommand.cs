@@ -113,14 +113,19 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
 
     private void InitializeActionQueue(int degreeOfParallelism, TestOptions testOptions, BuildOptions buildOptions)
     {
-        if (testOptions.IsHelp)
+        _actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, async (TestApplication testApp) =>
         {
-            InitializeHelpActionQueue(degreeOfParallelism, testOptions, buildOptions);
-        }
-        else
-        {
-            InitializeTestExecutionActionQueue(degreeOfParallelism, testOptions, buildOptions);
-        }
+            testApp.HandshakeReceived += _eventHandlers.OnHandshakeReceived;
+            testApp.DiscoveredTestsReceived += _eventHandlers.OnDiscoveredTestsReceived;
+            testApp.TestResultsReceived += _eventHandlers.OnTestResultsReceived;
+            testApp.FileArtifactsReceived += _eventHandlers.OnFileArtifactsReceived;
+            testApp.SessionEventReceived += _eventHandlers.OnSessionEventReceived;
+            testApp.HelpRequested += OnHelpRequested;
+            testApp.ErrorReceived += _eventHandlers.OnErrorReceived;
+            testApp.TestProcessExited += _eventHandlers.OnTestProcessExited;
+
+            return await testApp.RunAsync();
+        });
     }
 
     private void SetupCancelKeyPressHandler()
@@ -155,35 +160,6 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
         });
 
         _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery, isHelp, _isRetry);
-    }
-
-    private void InitializeHelpActionQueue(int degreeOfParallelism, TestOptions testOptions, BuildOptions buildOptions)
-    {
-        _actionQueue = new(degreeOfParallelism, buildOptions, async (TestApplication testApp) =>
-        {
-            testApp.HandshakeReceived += _eventHandlers.OnHandshakeReceived;
-            testApp.HelpRequested += OnHelpRequested;
-            testApp.ErrorReceived += _eventHandlers.OnErrorReceived;
-            testApp.TestProcessExited += _eventHandlers.OnTestProcessExited;
-
-            return await testApp.RunAsync(testOptions);
-        });
-    }
-
-    private void InitializeTestExecutionActionQueue(int degreeOfParallelism, TestOptions testOptions, BuildOptions buildOptions)
-    {
-        _actionQueue = new(degreeOfParallelism, buildOptions, async (TestApplication testApp) =>
-        {
-            testApp.HandshakeReceived += _eventHandlers.OnHandshakeReceived;
-            testApp.DiscoveredTestsReceived += _eventHandlers.OnDiscoveredTestsReceived;
-            testApp.TestResultsReceived += _eventHandlers.OnTestResultsReceived;
-            testApp.FileArtifactsReceived += _eventHandlers.OnFileArtifactsReceived;
-            testApp.SessionEventReceived += _eventHandlers.OnSessionEventReceived;
-            testApp.ErrorReceived += _eventHandlers.OnErrorReceived;
-            testApp.TestProcessExited += _eventHandlers.OnTestProcessExited;
-
-            return await testApp.RunAsync(testOptions);
-        });
     }
 
     private static int GetDegreeOfParallelism(ParseResult parseResult)

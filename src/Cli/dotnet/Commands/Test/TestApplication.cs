@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Diagnostics;
+using System.Globalization;
 using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
@@ -12,7 +13,7 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal sealed class TestApplication(TestModule module, BuildOptions buildOptions) : IDisposable
+internal sealed class TestApplication(TestModule module, BuildOptions buildOptions, TestOptions testOptions) : IDisposable
 {
     private readonly BuildOptions _buildOptions = buildOptions;
 
@@ -35,17 +36,20 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
     public event EventHandler<TestProcessExitEventArgs> TestProcessExited;
 
     public TestModule Module { get; } = module;
+    public TestOptions TestOptions { get; } = testOptions;
 
     public bool HasFailureDuringDispose { get; private set; }
 
-    public async Task<int> RunAsync(TestOptions testOptions)
+    public async Task<int> RunAsync()
     {
-        if (testOptions.HasFilterMode && !ModulePathExists())
+        // TODO: RunAsync is probably expected to be executed exactly once on each TestApplication instance.
+        // Consider throwing an exception if it's called more than once.
+        if (TestOptions.HasFilterMode && !ModulePathExists())
         {
             return ExitCode.GenericFailure;
         }
 
-        var processStartInfo = CreateProcessStartInfo(testOptions);
+        var processStartInfo = CreateProcessStartInfo();
 
         _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
         var testProcessResult = await StartProcess(processStartInfo);
@@ -55,7 +59,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         return testProcessResult;
     }
 
-    private ProcessStartInfo CreateProcessStartInfo(TestOptions testOptions)
+    private ProcessStartInfo CreateProcessStartInfo()
     {
         var processStartInfo = new ProcessStartInfo
         {
@@ -63,7 +67,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             // For the case of dotnet test --test-modules path/to/dll, the TestModulesFilterHandler is responsible
             // for providing the dotnet muxer as RunCommand, and `exec "path/to/dll"` as RunArguments.
             FileName = Module.RunProperties.Command,
-            Arguments = GetArguments(testOptions),
+            Arguments = GetArguments(),
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
@@ -96,7 +100,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         return processStartInfo;
     }
 
-    private string GetArguments(TestOptions testOptions)
+    private string GetArguments()
     {
         // Keep RunArguments first.
         // In the case of UseAppHost=false, RunArguments is set to `exec $(TargetPath)`:
@@ -107,7 +111,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         // In short, it's expected to already be escaped properly.
         StringBuilder builder = new(Module.RunProperties.Arguments);
 
-        if (testOptions.IsHelp)
+        if (TestOptions.IsHelp)
         {
             builder.Append($" {TestingPlatformOptions.HelpOption.Name}");
         }
@@ -259,9 +263,9 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
     }
 
     private static HandshakeMessage CreateHandshakeMessage(string version) =>
-        new(new Dictionary<byte, string>
+        new(new Dictionary<byte, string>(capacity: 5)
         {
-            { HandshakeMessagePropertyNames.PID, Process.GetCurrentProcess().Id.ToString() },
+            { HandshakeMessagePropertyNames.PID, Environment.ProcessId.ToString(CultureInfo.InvariantCulture) },
             { HandshakeMessagePropertyNames.Architecture, RuntimeInformation.ProcessArchitecture.ToString() },
             { HandshakeMessagePropertyNames.Framework, RuntimeInformation.FrameworkDescription },
             { HandshakeMessagePropertyNames.OS, RuntimeInformation.OSDescription },
@@ -275,7 +279,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             Logger.LogTrace(() => $"Test application arguments: {processStartInfo.Arguments}");
         }
 
-        var process = Process.Start(processStartInfo);
+        using var process = Process.Start(processStartInfo);
         StoreOutputAndErrorData(process);
         await process.WaitForExitAsync();
 

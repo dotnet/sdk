@@ -68,6 +68,12 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
     public void OnDiscoveredTestsReceived(object sender, DiscoveredTestEventArgs args)
     {
         var testApp = (TestApplication)sender;
+        if (testApp.TestOptions.IsHelp)
+        {
+            // TODO: Better to throw exception?
+            return;
+        }
+
         var appInfo = _executions[testApp];
 
         foreach (var test in args.DiscoveredTests)
@@ -83,6 +89,12 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
     public void OnTestResultsReceived(object sender, TestResultEventArgs args)
     {
         var testApp = (TestApplication)sender;
+        if (testApp.TestOptions.IsHelp)
+        {
+            // TODO: Better to throw exception?
+            return;
+        }
+
         var appInfo = _executions[testApp];
 
         foreach (var testResult in args.SuccessfulTestResults)
@@ -122,6 +134,12 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
     public void OnFileArtifactsReceived(object sender, FileArtifactEventArgs args)
     {
         var testApp = (TestApplication)sender;
+        if (testApp.TestOptions.IsHelp)
+        {
+            // TODO: Better to throw exception?
+            return;
+        }
+
         var appInfo = _executions[testApp];
 
         foreach (var artifact in args.FileArtifacts)
@@ -145,6 +163,7 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
 
     public void OnErrorReceived(object sender, ErrorEventArgs args)
     {
+        // TODO: The error should be shown to the user, not just logged to trace.
         if (!Logger.TraceEnabled) return;
 
         Logger.LogTrace(() => args.ErrorMessage);
