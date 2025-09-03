@@ -997,10 +997,10 @@ You may need to build the project on another operating system or architecture, o
   </data>
   <data name="RuntimeGraphFileDoesNotExist" xml:space="preserve">
     <value>NETSDK1229: File '{0}' does not exist. Please ensure the runtime graph path exists.</value>
-    <comment>{StrBegins="NETSDK1229: "}</comment>
+    <comment>{StrBegins="NETSDK1229: "}{Locked="{0}"}</comment>
   </data>
   <data name="UnableToFindMatchingRid" xml:space="preserve">
     <value>NETSDK1230: Unable to find a matching RID for '{0}' from among [{1}] in graph '{2}'.</value>
-    <comment>{StrBegins="NETSDK1230: "}</comment>
+    <comment>{StrBegins="NETSDK1230: "}{Locked="{0}"}{Locked="{1}"}{Locked="{2}"}</comment>
   </data>
 </root>
