@@ -20,13 +20,13 @@ namespace Microsoft.NET.Build.Tasks
         /// The target runtime identifier to check compatibility against.
         /// </summary>
         [Required]
-        public string? TargetRuntimeIdentifier { get; set; }
+        public string TargetRuntimeIdentifier { get; set; } = null!;
 
         /// <summary>
         /// The list of candidate items to filter.
         /// </summary>
         [Required]
-        public ITaskItem[]? Items { get; set; }
+        public ITaskItem[] Items { get; set; } = null!;
 
         /// <summary>
         /// The name of the MSBuild metadata to check on each item. Defaults to "RuntimeIdentifier".
@@ -37,7 +37,7 @@ namespace Microsoft.NET.Build.Tasks
         /// Path to the RuntimeIdentifierGraph file.
         /// </summary>
         [Required]
-        public string? RuntimeIdentifierGraphPath { get; set; }
+        public string RuntimeIdentifierGraphPath { get; set; } = null!;
 
         /// <summary>
         /// The filtered items that are compatible with the target runtime identifier.
@@ -47,29 +47,15 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            if (Items == null || Items.Length == 0)
+            if (Items.Length == 0)
             {
                 SelectedItems = Array.Empty<ITaskItem>();
                 return;
             }
 
-            string targetRid = TargetRuntimeIdentifier ?? string.Empty;
-            string ridGraphPath = RuntimeIdentifierGraphPath ?? string.Empty;
             string ridMetadata = RuntimeIdentifierItemMetadata ?? "RuntimeIdentifier";
 
-            if (string.IsNullOrEmpty(targetRid))
-            {
-                Log.LogError("TargetRuntimeIdentifier is required but was not provided.");
-                return;
-            }
-
-            if (string.IsNullOrEmpty(ridGraphPath))
-            {
-                Log.LogError("RuntimeIdentifierGraphPath is required but was not provided.");
-                return;
-            }
-
-            RuntimeGraph runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(ridGraphPath);
+            RuntimeGraph runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeIdentifierGraphPath);
 
             var selectedItems = new List<ITaskItem>();
             
@@ -84,7 +70,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
 
                 // Check if the item's runtime identifier is compatible with the target runtime identifier
-                if (runtimeGraph.AreCompatible(targetRid, itemRuntimeIdentifier))
+                if (runtimeGraph.AreCompatible(TargetRuntimeIdentifier, itemRuntimeIdentifier))
                 {
                     selectedItems.Add(item);
                 }
