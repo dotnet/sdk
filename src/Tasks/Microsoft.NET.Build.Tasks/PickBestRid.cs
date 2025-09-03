@@ -23,10 +23,10 @@ namespace Microsoft.NET.Build.Tasks
         /// The RID to find the best fit for
         /// </summary>
         [Required]
-        public string CurrentRid { get; set; }
+        public string TargetRid { get; set; }
 
         /// <summary>
-        /// All of the RIDs that are allowed to match against the Current RID
+        /// All of the RIDs that are allowed to match against the Target RID
         /// </summary>
         [Required]
         public string[] SupportedRids { get; set; }
@@ -49,11 +49,11 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             RuntimeGraph graph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
-            string bestRidForPlatform = NuGetUtils.GetBestMatchingRid(graph, CurrentRid, SupportedRids, out bool wasInGraph);
+            string bestRidForPlatform = NuGetUtils.GetBestMatchingRid(graph, TargetRid, SupportedRids, out bool wasInGraph);
 
             if (!wasInGraph || bestRidForPlatform == null)
             {
-                Log.LogError(Strings.UnableToFindMatchingRid, CurrentRid, string.Join(",", SupportedRids), RuntimeGraphPath);
+                Log.LogError(Strings.UnableToFindMatchingRid, TargetRid, string.Join(",", SupportedRids), RuntimeGraphPath);
                 return;
             }
 

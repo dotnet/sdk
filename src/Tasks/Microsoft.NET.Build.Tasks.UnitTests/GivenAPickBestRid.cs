@@ -52,7 +52,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 {
                     BuildEngine = new MockBuildEngine(),
                     RuntimeGraphPath = runtimeGraphPath,
-                    CurrentRid = "win-x64",
+                    TargetRid = "win-x64",
                     SupportedRids = new[] { "any", "win", "win-x64" }
                 };
 
@@ -77,7 +77,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 {
                     BuildEngine = new MockBuildEngine(),
                     RuntimeGraphPath = runtimeGraphPath,
-                    CurrentRid = "win-x64",
+                    TargetRid = "win-x64",
                     SupportedRids = new[] { "any", "win" }
                 };
 
@@ -102,7 +102,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 {
                     BuildEngine = new MockBuildEngine(),
                     RuntimeGraphPath = runtimeGraphPath,
-                    CurrentRid = "win-x64",
+                    TargetRid = "win-x64",
                     SupportedRids = new[] { "any" }
                 };
 
@@ -122,7 +122,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             {
                 BuildEngine = new MockBuildEngine(),
                 RuntimeGraphPath = "non-existent-file.json",
-                CurrentRid = "win-x64",
+                TargetRid = "win-x64",
                 SupportedRids = new[] { "any" }
             };
 
@@ -136,7 +136,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [Fact]
-        public void ItHandlesUnknownCurrentRid()
+        public void ItHandlesUnknownTargetRid()
         {
             var runtimeGraphPath = Path.GetTempFileName();
             File.WriteAllText(runtimeGraphPath, RuntimeGraphContent);
@@ -147,7 +147,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 {
                     BuildEngine = new MockBuildEngine(),
                     RuntimeGraphPath = runtimeGraphPath,
-                    CurrentRid = "unknown-rid",
+                    TargetRid = "unknown-rid",
                     SupportedRids = new[] { "any", "win" }
                 };
 
@@ -177,7 +177,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 {
                     BuildEngine = new MockBuildEngine(),
                     RuntimeGraphPath = runtimeGraphPath,
-                    CurrentRid = "win-x64",
+                    TargetRid = "win-x64",
                     SupportedRids = new[] { "linux", "osx" }
                 };
 
