@@ -214,11 +214,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         SpectreAnsiConsole.MarkupInterpolated($"Installing .NET SDK [blue]{resolvedChannelVersion}[/] to [blue]{resolvedInstallPath}[/]...");
 
-        SpectreAnsiConsole.Progress()
-            .Start(ctx =>
-            {
-                _dotnetInstaller.InstallSdks(resolvedInstallPath, ctx, new[] { resolvedChannelVersion }.Concat(additionalVersionsToInstall));
-            });
+        _dotnetInstaller.InstallSdks(resolvedInstallPath, SpectreAnsiConsole.Progress().Start(ctx => ctx), new[] { resolvedChannelVersion }.Concat(additionalVersionsToInstall));
 
         if (resolvedSetDefaultInstall == true)
         {
