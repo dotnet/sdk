@@ -20,7 +20,7 @@ namespace Microsoft.NET.Publish.Tests
 
         [Theory]
         [InlineData(true, false)]
-        [InlineData(true, true, Skip = "https://github.com/dotnet/sdk/issues/49926")]
+        [InlineData(true, true)]
         [InlineData(false, false)]
         public void RunPublishItemsOutputGroupOutputsTest(bool specifyRid, bool singleFile)
         {
