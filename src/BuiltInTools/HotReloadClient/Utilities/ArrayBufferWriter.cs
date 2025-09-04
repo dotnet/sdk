@@ -1,18 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if !NET
+
 #nullable enable
 
 using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-
-#if NET
-
-[assembly: TypeForwardedTo(typeof(ArrayBufferWriter<>))]
-
-#else
 
 namespace System.Buffers;
 
@@ -36,7 +32,7 @@ internal sealed class ArrayBufferWriter<T> : IBufferWriter<T>
     /// </summary>
     public ArrayBufferWriter()
     {
-        _buffer = Array.Empty<T>();
+        _buffer = [];
         _index = 0;
     }
 

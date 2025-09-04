@@ -40,13 +40,13 @@ internal readonly struct BrowserConnection : IAsyncDisposable
         ServerLogger.LogDebug("Connected to referesh server.");
     }
 
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
-        await ClientSocket.CloseOutputAsync(WebSocketCloseStatus.Empty, null, default);
         ClientSocket.Dispose();
 
         Disconnected.TrySetResult(default);
         ServerLogger.LogDebug("Disconnected.");
+        return new();
     }
 
     internal async ValueTask<bool> TrySendMessageAsync(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
@@ -71,8 +71,11 @@ internal readonly struct BrowserConnection : IAsyncDisposable
 
     internal async ValueTask<bool> TryReceiveMessageAsync(ResponseAction receiver, CancellationToken cancellationToken)
     {
+#if NET
+        var writer = new System.Buffers.ArrayBufferWriter<byte>(initialCapacity: 1024);
+#else
         var writer = new ArrayBufferWriter<byte>(initialCapacity: 1024);
-
+#endif
         while (true)
         {
 #if NET

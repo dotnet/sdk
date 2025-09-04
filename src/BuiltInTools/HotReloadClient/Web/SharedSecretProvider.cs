@@ -2,28 +2,44 @@
 
 #nullable enable
 
-#if !NET
-
 using System;
 using System.IO;
 using System.Security.Cryptography;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal static class RSAExtensions
+internal sealed class SharedSecretProvider : IDisposable
 {
+    private readonly RSA _rsa = RSA.Create(2048);
+
+    public void Dispose()
+        => _rsa.Dispose();
+
+    internal string DecryptSecret(string secret)
+        => Convert.ToBase64String(_rsa.Decrypt(Convert.FromBase64String(secret), RSAEncryptionPadding.OaepSHA256));
+
+    internal string GetPublicKey()
+#if NET
+        => Convert.ToBase64String(_rsa.ExportSubjectPublicKeyInfo());
+#else
+        => ExportPublicKeyNetFramework();
+#endif
+
     /// <summary>
     /// Export the public key in the X.509 SubjectPublicKeyInfo representation which is equivalent to the .NET Core RSA api
     /// ExportSubjectPublicKeyInfo.
     ///
     /// Algorithm from https://stackoverflow.com/a/28407693 or https://github.com/Azure/azure-powershell/blob/main/src/KeyVault/KeyVault/Helpers/JwkHelper.cs
     /// </summary>
-    internal static string ExportSubjectPublicKeyInfoAsBase64(this RSA rsa)
+    internal string ExportPublicKeyNetFramework()
     {
         var writer = new StringWriter();
-        ExportPublicKey(rsa.ExportParameters(includePrivateParameters: false), writer);
+        ExportPublicKey(ExportPublicKeyParameters(), writer);
         return writer.ToString();
     }
+
+    internal RSAParameters ExportPublicKeyParameters()
+        => _rsa.ExportParameters(includePrivateParameters: false);
 
     private static void ExportPublicKey(RSAParameters parameters, TextWriter outputStream)
     {
@@ -138,4 +154,3 @@ internal static class RSAExtensions
         }
     }
 }
-#endif
