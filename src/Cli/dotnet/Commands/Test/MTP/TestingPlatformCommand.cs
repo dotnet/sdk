@@ -12,7 +12,6 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal partial class TestingPlatformCommand : Command, ICustomHelp
 {
-    private MSBuildHandler _msBuildHandler;
     private TerminalTestReporter _output;
     private TestApplicationActionQueue _actionQueue;
 
@@ -52,7 +51,7 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
 
         InitializeActionQueue(degreeOfParallelism, testOptions, buildOptions);
 
-        _msBuildHandler = new(buildOptions, _actionQueue, _output);
+        var msBuildHandler = new MSBuildHandler(buildOptions, _actionQueue, _output);
         TestModulesFilterHandler testModulesFilterHandler = new(_actionQueue, _output);
 
         if (testOptions.HasFilterMode)
@@ -64,12 +63,12 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
         }
         else
         {
-            if (!_msBuildHandler.RunMSBuild())
+            if (!msBuildHandler.RunMSBuild())
             {
                 return ExitCode.GenericFailure;
             }
 
-            if (!_msBuildHandler.EnqueueTestApplications())
+            if (!msBuildHandler.EnqueueTestApplications())
             {
                 return ExitCode.GenericFailure;
             }
