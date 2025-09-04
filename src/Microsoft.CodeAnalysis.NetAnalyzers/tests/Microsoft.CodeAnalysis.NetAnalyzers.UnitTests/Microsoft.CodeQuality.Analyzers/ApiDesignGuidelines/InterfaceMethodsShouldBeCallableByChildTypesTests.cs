@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.InterfaceMethodsShouldBeCallableByChildTypesAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.InterfaceMethodsShouldBeCallableByChildTypesFixer>;
@@ -386,6 +385,89 @@ public class ImplementsGeneralThree : IGeneral
 ",
             CSharpResult(11, 21, "ImplementsGeneral", "IGeneral.DoSomething"),
             CSharpResult(21, 21, "ImplementsGeneralThree", "IGeneral.DoSomething"));
+        }
+
+        [Fact]
+        public async Task CA1033InterfaceWithDefaultImplementationsCSharpAsync()
+        {
+            await VerifyCS.Test.Create("""
+                using System;
+
+                public interface IGeneral
+                {
+                    int this[int item] { get; }
+                    string Name { get; }
+                    event EventHandler TheEvent;
+                    object DoSomething();
+                }
+
+                public interface IExtendsGeneral : IGeneral
+                {
+                    int this[int item]
+                    {
+                        get { return item; }
+                    }
+
+                    string Name
+                    {
+                        get { return "name"; }
+                    }
+
+                    event EventHandler TheEvent
+                    {
+                        add { DoSomething(); }
+                        remove { DoSomething(); }
+                    }
+
+                    object IGeneral.DoSomething() { return null; }
+                }
+                """,
+                LanguageVersion.CSharp8).RunAsync();
+        }
+
+        [Fact]
+        public async Task CA1033InterfaceWithExpressionBodiedDefaultImplementationsCSharpAsync()
+        {
+            await VerifyCS.Test.Create("""
+                using System;
+
+                public interface IGeneral
+                {
+                    int this[int item] { get; }
+                    string Name { get; }
+                    event EventHandler TheEvent;
+                    object DoSomething();
+                }
+
+                public interface IExtendsGeneral : IGeneral
+                {
+                    int this[int item]
+                    {
+                        get => item;
+                    }
+                
+                    string Name
+                    {
+                        get => "name";
+                    }
+                
+                    event EventHandler TheEvent
+                    {
+                        add => DoSomething();
+                        remove => DoSomething();
+                    }
+                
+                    object IGeneral.DoSomething() => null;
+                }
+                
+                public interface IAlsoExtendsGeneral : IGeneral
+                {
+                    int this[int item] => item;
+                
+                    string Name => "name";
+                }
+                """,
+                LanguageVersion.CSharp8).RunAsync();
         }
 
         #endregion
