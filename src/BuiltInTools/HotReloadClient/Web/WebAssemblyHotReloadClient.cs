@@ -44,6 +44,33 @@ namespace Microsoft.DotNet.HotReload
         /// </summary>
         private readonly Queue<int> _pendingUpdates = [];
 
+        private readonly ImmutableArray<string> _capabilities = GetUpdateCapabilities(logger, projectHotReloadCapabilities, projectTargetFrameworkVersion);
+
+        private static ImmutableArray<string> GetUpdateCapabilities(ILogger logger, ImmutableArray<string> projectHotReloadCapabilities, Version projectTargetFrameworkVersion)
+        {
+            var capabilities = projectHotReloadCapabilities;
+
+            if (capabilities.IsEmpty)
+            {
+                logger.LogDebug("Using capabilities based on project target framework version: '{Version}'.", projectTargetFrameworkVersion);
+
+                capabilities = projectTargetFrameworkVersion.Major switch
+                {
+                    9 => s_defaultCapabilities90,
+                    8 => s_defaultCapabilities80,
+                    7 => s_defaultCapabilities70,
+                    6 => s_defaultCapabilities60,
+                    _ => [],
+                };
+            }
+            else
+            {
+                logger.LogDebug("Project specifies capabilities: '{Capabilities}'", string.Join(" ", capabilities));
+            }
+
+            return capabilities;
+        }
+
         public override void Dispose()
         {
             // Do nothing.
@@ -63,29 +90,7 @@ namespace Microsoft.DotNet.HotReload
             => await browserRefreshServer.WaitForClientConnectionAsync(cancellationToken);
 
         public override Task<ImmutableArray<string>> GetUpdateCapabilitiesAsync(CancellationToken cancellationToken)
-        {
-            var capabilities = projectHotReloadCapabilities;
-
-            if (capabilities.IsEmpty)
-            {
-                Logger.LogDebug("Using capabilities based on project target framework version: '{Version}'.", projectTargetFrameworkVersion);
-
-                capabilities = projectTargetFrameworkVersion.Major switch
-                {
-                    9 => s_defaultCapabilities90,
-                    8 => s_defaultCapabilities80,
-                    7 => s_defaultCapabilities70,
-                    6 => s_defaultCapabilities60,
-                    _ => [],
-                };
-            }
-            else
-            {
-                Logger.LogDebug("Project specifies capabilities: '{Capabilities}'", string.Join(" ", capabilities));
-            }
-
-            return Task.FromResult(capabilities);
-        }
+            => Task.FromResult(_capabilities);
 
         public override async Task<ApplyStatus> ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
         {

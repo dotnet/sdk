@@ -37,7 +37,7 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
     private readonly List<BrowserConnection> _activeConnections = [];
     private readonly TaskCompletionSource<VoidResult> _browserConnected = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-    private readonly RSA _rsa = CreateRsa();
+    private readonly SharedSecretProvider _sharedSecretProvider = new();
 
     // initialized by StartAsync
     private WebServerHost? _lazyHost;
@@ -53,12 +53,11 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
 
         foreach (var connection in connectionsToDispose)
         {
-            connection.ServerLogger.LogDebug("Disconnecting from browser.");
             await connection.DisposeAsync();
         }
 
         _lazyHost?.Dispose();
-        _rsa.Dispose();
+        _sharedSecretProvider.Dispose();
     }
 
     protected abstract ValueTask<WebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken);
@@ -66,13 +65,6 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
 
     public ILogger Logger
         => logger;
-
-    private static RSA CreateRsa()
-    {
-        var rsa = RSA.Create();
-        rsa.KeySize = 2048;
-        return rsa;
-    }
 
     public async ValueTask StartAsync(CancellationToken cancellationToken)
     {
@@ -93,14 +85,7 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
         }
 
         builder[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadWSEndPoint] = string.Join(",", _lazyHost.EndPoints);
-
-#if NET
-        var publicKey = Convert.ToBase64String(_rsa.ExportSubjectPublicKeyInfo());
-#else
-        var publicKey = _rsa.ExportSubjectPublicKeyInfoAsBase64();
-#endif
-        builder[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadWSKey] = publicKey;
-
+        builder[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadWSKey] = _sharedSecretProvider.GetPublicKey();
         builder[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadVirtualDirectory] = _lazyHost.VirtualDirectory;
 
         builder.InsertListItem(MiddlewareEnvironmentVariables.DotNetStartupHooks, middlewareAssemblyPath, Path.PathSeparator);
@@ -125,9 +110,7 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
 
     protected BrowserConnection OnBrowserConnected(WebSocket clientSocket, string? subProtocol)
     {
-        var sharedSecret = (subProtocol != null)
-            ? Convert.ToBase64String(_rsa.Decrypt(Convert.FromBase64String(WebUtility.UrlDecode(subProtocol)), RSAEncryptionPadding.OaepSHA256))
-            : null;
+        var sharedSecret = (subProtocol != null) ? _sharedSecretProvider.DecryptSecret(WebUtility.UrlDecode(subProtocol)) : null;
 
         var connection = new BrowserConnection(clientSocket, sharedSecret, loggerFactory);
 
@@ -162,13 +145,20 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
 
         var progressReportingTask = Task.Run(async () =>
         {
-            while (!progressCancellationSource.Token.IsCancellationRequested)
+            try
             {
-                await Task.Delay(SuppressTimeouts ? TimeSpan.MaxValue : reportDelayInSeconds, progressCancellationSource.Token);
+                while (!progressCancellationSource.Token.IsCancellationRequested)
+                {
+                    await Task.Delay(SuppressTimeouts ? TimeSpan.MaxValue : reportDelayInSeconds, progressCancellationSource.Token);
 
-                connectionAttemptReported = true;
-                reportDelayInSeconds = nextReportSeconds;
-                logger.LogInformation("Connecting to the browser ...");
+                    connectionAttemptReported = true;
+                    reportDelayInSeconds = nextReportSeconds;
+                    logger.LogInformation("Connecting to the browser ...");
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // nop
             }
         }, progressCancellationSource.Token);
 
