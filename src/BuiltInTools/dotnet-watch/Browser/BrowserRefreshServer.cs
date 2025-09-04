@@ -40,6 +40,7 @@ namespace Microsoft.DotNet.Watch
         private readonly TaskCompletionSource _terminateWebSocket;
         private readonly TaskCompletionSource _browserConnected;
         private readonly string? _environmentHostName;
+        private readonly string? _refreshPort;
 
         // initialized by StartAsync
         private IHost? _refreshServer;
@@ -56,6 +57,7 @@ namespace Microsoft.DotNet.Watch
             _terminateWebSocket = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _browserConnected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _environmentHostName = EnvironmentVariables.AutoReloadWSHostName;
+            _refreshPort = EnvironmentVariables.AutoReloadWSPort;
         }
 
         public async ValueTask DisposeAsync()
@@ -106,6 +108,7 @@ namespace Microsoft.DotNet.Watch
             Debug.Assert(_refreshServer == null);
 
             var hostName = _environmentHostName ?? "127.0.0.1";
+            var port = _refreshPort ?? "0"
 
             var supportsTLS = await SupportsTlsAsync();
 
@@ -115,11 +118,11 @@ namespace Microsoft.DotNet.Watch
                     builder.UseKestrel();
                     if (supportsTLS)
                     {
-                        builder.UseUrls($"https://{hostName}:0", $"http://{hostName}:0");
+                        builder.UseUrls($"https://{hostName}:{port}", $"http://{hostName}:{port}");
                     }
                     else
                     {
-                        builder.UseUrls($"http://{hostName}:0");
+                        builder.UseUrls($"http://{hostName}:{port}");
                     }
 
                     builder.Configure(app =>
