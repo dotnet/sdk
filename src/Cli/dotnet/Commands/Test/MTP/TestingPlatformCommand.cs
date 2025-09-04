@@ -51,10 +51,10 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
         var actionQueue = InitializeActionQueue(degreeOfParallelism, testOptions, buildOptions);
 
         var msBuildHandler = new MSBuildHandler(buildOptions, actionQueue, _output);
-        var testModulesFilterHandler = new TestModulesFilterHandler(actionQueue, _output);
 
         if (testOptions.HasFilterMode)
         {
+            var testModulesFilterHandler = new TestModulesFilterHandler(actionQueue, _output);
             if (!testModulesFilterHandler.RunWithTestModulesFilter(parseResult))
             {
                 return ExitCode.GenericFailure;
