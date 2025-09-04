@@ -177,8 +177,14 @@ The <xref:Microsoft.Extensions.FileProviders.PhysicalFileProvider> class uses \f
 \f[B]\f[VB]DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME\f[B]\f[R]
 .RS 2
 .PP
-As part of \f[V]dotnet watch\f[R], the browser refresh server mechanism reads this value to determine the WebSocket host environment.
+As part of \f[V]dotnet watch\f[R], the browser refresh server mechanism reads this value to determine the WebSocket host environment's hostname.
 The value \f[V]127.0.0.1\f[R] is replaced by \f[V]localhost\f[R], and the \f[V]http://\f[R] and \f[V]https://\f[R] schemes are replaced with \f[V]ws://\f[R] and \f[V]wss://\f[R] respectively.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]DOTNET_WATCH_AUTO_RELOAD_WS_PORT\f[B]\f[R]
+.RS 2
+.PP
+As part of \f[V]dotnet watch\f[R], the browser refresh server mechanism reads this value to determine the WebSocket host environment's port.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]DOTNET_WATCH_ITERATION\f[B]\f[R]
