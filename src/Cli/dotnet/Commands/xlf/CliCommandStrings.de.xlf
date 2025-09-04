@@ -1880,8 +1880,8 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">Es sind keine Workloads installiert, es ist keine Reparatur erforderlich. Führen Sie „dotnet workload search“ aus, um zu installierende Workloads zu finden.</target>
-        <note />
+        <target state="needs-review-translation">Es sind keine Workloads installiert, es ist keine Reparatur erforderlich. Führen Sie „dotnet workload search“ aus, um zu installierende Workloads zu finden.</target>
+        <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
@@ -2717,10 +2717,10 @@ Standardmäßig wird eine Framework-abhängige Anwendung veröffentlicht.</targe
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="new">Unable to proceed with project '{0}'.
-Ensure you have a runnable project type.
-A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
-The current OutputType is '{2}'.</target>
+        <target state="needs-review-translation">Ihr Projekt kann nicht ausgeführt werden.
+Stellen Sie sicher, dass der Projekttyp ausführbar ist und "{0}" dieses Projekt unterstützt.
+Ein ausführbares Projekt muss ein ausführbares TFM (z. B. net5.0) und den OutputType "Exe" verwenden.
+{1} lautet aktuell "{2}".</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
