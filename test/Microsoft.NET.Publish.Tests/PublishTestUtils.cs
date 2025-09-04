@@ -100,8 +100,14 @@ namespace Microsoft.NET.Publish.Tests
         /// and that means RIDs are inferred when publishing these. This list should contain all TFMs that do not infer SelfContained
         /// when PublishSelfContained or PublishSingleFile are set without an explicit SelfContained value.
         /// </summary>
+        /// <remarks>
+        /// Tried to be fancy here and compute this by stripping the NET8Plus items from the SupportedTfms list,
+        /// but that broke test explorer integration in devkit.
+        /// </remarks>
         public static IEnumerable<object[]> TFMsThatDoNotInferPublishSelfContained => [
-            ..SupportedTfms.Except(Net8Plus)
+            ["net5.0"],
+            ["net6.0"],
+            ["net7.0"],
         ];
 #else
 #error If building for a newer TFM, please update the values above to include both the old and new TFMs.
