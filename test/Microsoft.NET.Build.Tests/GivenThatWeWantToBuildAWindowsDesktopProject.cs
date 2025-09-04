@@ -578,7 +578,9 @@ namespace Microsoft.NET.Build.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
-            buildCommand.Execute()
+            buildCommand
+                .WithWorkingDirectory(testAsset.TestRoot)
+                .Execute("-bl")
                 .Should()
                 .Pass();
         }
