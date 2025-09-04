@@ -330,9 +330,10 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("netstandard1.0", false)]
         [InlineData("net451", false)]
         [InlineData("net462")]
-        [InlineData("net481")]
-        [InlineData("net9.0", true, "")]
-        [InlineData("netstandard2.1", true, "")]
+        [InlineData("net481")]                
+        [InlineData("net9.0", false, "")] //These target frameworks shouldn't prune packages unless explicitly enabled
+        [InlineData("netstandard2.1", false, "")]        
+        [InlineData("net10.0", true, "")] //.NET 10 and up should prune packages by default
         public void PrunePackageDataSucceeds(string targetFramework, bool shouldPrune = true, string enablePackagePruning = "True")
         {
             var nugetFramework = NuGetFramework.Parse(targetFramework);
