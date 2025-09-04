@@ -162,20 +162,13 @@ internal sealed class TestApplication(
         catch (OperationCanceledException ex)
         {
             // We are exiting
-            if (Logger.TraceEnabled)
-            {
-                string tokenType = ex.CancellationToken == token ? "internal token" : "external token";
-                Logger.LogTrace(() => $"WaitConnectionAsync() throws OperationCanceledException with {tokenType}");
-            }
+            Logger.LogTrace($"WaitConnectionAsync() throws OperationCanceledException with {(ex.CancellationToken == token ? "internal token" : "external token")}");
         }
         catch (Exception ex)
         {
-            if (Logger.TraceEnabled)
-            {
-                Logger.LogTrace(() => ex.ToString());
-            }
-
-            Environment.FailFast(ex.ToString());
+            var exAsString = ex.ToString();
+            Logger.LogTrace(exAsString);
+            Environment.FailFast(exAsString);
         }
     }
 
@@ -213,10 +206,7 @@ internal sealed class TestApplication(
 
                 // If we don't recognize the message, log and skip it
                 case UnknownMessage unknownMessage:
-                    if (Logger.TraceEnabled)
-                    {
-                        Logger.LogTrace(() => $"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
-                    }
+                    Logger.LogTrace($"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
                     return Task.FromResult((IResponse)VoidResponse.CachedInstance);
 
                 default:
@@ -226,12 +216,9 @@ internal sealed class TestApplication(
         }
         catch (Exception ex)
         {
-            if (Logger.TraceEnabled)
-            {
-                Logger.LogTrace(() => ex.ToString());
-            }
-
-            Environment.FailFast(ex.ToString());
+            string exAsString = ex.ToString();
+            Logger.LogTrace(exAsString);
+            Environment.FailFast(exAsString);
         }
 
         return Task.FromResult((IResponse)VoidResponse.CachedInstance);
@@ -273,10 +260,7 @@ internal sealed class TestApplication(
 
     private async Task<int> StartProcess(ProcessStartInfo processStartInfo)
     {
-        if (Logger.TraceEnabled)
-        {
-            Logger.LogTrace(() => $"Test application arguments: {processStartInfo.Arguments}");
-        }
+        Logger.LogTrace($"Test application arguments: {processStartInfo.Arguments}");
 
         using var process = Process.Start(processStartInfo);
         StoreOutputAndErrorData(process);
@@ -314,7 +298,7 @@ internal sealed class TestApplication(
         if (!File.Exists(Module.RunProperties.Command))
         {
             // TODO: The error should be shown to the user, not just logged to trace.
-            Logger.LogTrace(() => $"Test module '{Module.RunProperties.Command}' not found. Build the test application before or run 'dotnet test'.");
+            Logger.LogTrace($"Test module '{Module.RunProperties.Command}' not found. Build the test application before or run 'dotnet test'.");
 
             return false;
         }
@@ -391,7 +375,7 @@ internal sealed class TestApplication(
                     foreach (var kvp in handshake.Properties)
                     {
                         messageBuilder.AppendLine($"{kvp.Key}: {kvp.Value}");
-                    }                    
+                    }
                 }
                 else
                 {
