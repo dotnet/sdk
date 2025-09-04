@@ -22,12 +22,12 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
 
     public string DocsLink => "https://aka.ms/dotnet-test";
 
-    public int Run(ParseResult parseResult)
+    public int Run(ParseResult parseResult, bool isHelp = false)
     {
         int? exitCode = null;
         try
         {
-            exitCode = RunInternal(parseResult);
+            exitCode = RunInternal(parseResult, isHelp);
             return exitCode.Value;
         }
         finally
@@ -36,14 +36,14 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
         }
     }
 
-    private int RunInternal(ParseResult parseResult)
+    private int RunInternal(ParseResult parseResult, bool isHelp)
     {
         ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult);
         ValidationUtility.ValidateSolutionOrProjectOrDirectoryOrModulesArePassedCorrectly(parseResult);
 
         int degreeOfParallelism = GetDegreeOfParallelism(parseResult);
         bool filterModeEnabled = parseResult.HasOption(MicrosoftTestingPlatformOptions.TestModulesFilterOption);
-        var testOptions = new TestOptions(filterModeEnabled, IsHelp: parseResult.HasOption(MicrosoftTestingPlatformOptions.HelpOption));
+        var testOptions = new TestOptions(filterModeEnabled, IsHelp: isHelp);
 
         InitializeOutput(degreeOfParallelism, parseResult, testOptions.IsHelp);
 

@@ -22,7 +22,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
             WriteHelpOptions(context);
             Console.WriteLine(CliCommandStrings.HelpWaitingForOptionsAndExtensions);
 
-            Run(context.ParseResult);
+            Run(context.ParseResult, isHelp: true);
 
             if (_commandLineOptionNameToModuleNames.IsEmpty)
             {

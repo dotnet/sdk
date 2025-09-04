@@ -111,11 +111,6 @@ internal static class MicrosoftTestingPlatformOptions
         Description = CliCommandStrings.CmdListTestsDescription,
         Arity = ArgumentArity.Zero
     };
-
-    public static readonly Option<string> HelpOption = new("--help", ["-h", "-?"])
-    {
-        Arity = ArgumentArity.Zero
-    };
 }
 
 internal enum OutputOptions
