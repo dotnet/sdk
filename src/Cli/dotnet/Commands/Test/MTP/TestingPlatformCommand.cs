@@ -13,7 +13,6 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 internal partial class TestingPlatformCommand : Command, ICustomHelp
 {
     private TerminalTestReporter _output;
-    private TestApplicationActionQueue _actionQueue;
 
     private byte _cancelled;
     private bool _isDiscovery;
@@ -49,10 +48,10 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
 
         BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult, degreeOfParallelism);
 
-        InitializeActionQueue(degreeOfParallelism, testOptions, buildOptions);
+        var actionQueue = InitializeActionQueue(degreeOfParallelism, testOptions, buildOptions);
 
-        var msBuildHandler = new MSBuildHandler(buildOptions, _actionQueue, _output);
-        TestModulesFilterHandler testModulesFilterHandler = new(_actionQueue, _output);
+        var msBuildHandler = new MSBuildHandler(buildOptions, actionQueue, _output);
+        var testModulesFilterHandler = new TestModulesFilterHandler(actionQueue, _output);
 
         if (testOptions.HasFilterMode)
         {
@@ -74,9 +73,9 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
             }
         }
 
-        _actionQueue.EnqueueCompleted();
+        actionQueue.EnqueueCompleted();
         // Don't inline exitCode variable. We want to always call WaitAllActions first.
-        var exitCode = _actionQueue.WaitAllActions();
+        var exitCode = actionQueue.WaitAllActions();
         exitCode = _output.HasHandshakeFailure ? ExitCode.GenericFailure : exitCode;
         if (exitCode == ExitCode.Success &&
             parseResult.HasOption(TestingPlatformOptions.MinimumExpectedTestsOption) &&
@@ -106,9 +105,9 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
         _isRetry = arguments.Contains("--retry-failed-tests");
     }
 
-    private void InitializeActionQueue(int degreeOfParallelism, TestOptions testOptions, BuildOptions buildOptions)
+    private TestApplicationActionQueue InitializeActionQueue(int degreeOfParallelism, TestOptions testOptions, BuildOptions buildOptions)
     {
-        _actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, async (TestApplication testApp) =>
+        return new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, async (TestApplication testApp) =>
         {
             testApp.HelpRequested += OnHelpRequested;
             return await testApp.RunAsync();
