@@ -13,10 +13,7 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 internal partial class TestingPlatformCommand : Command, ICustomHelp
 {
     private TerminalTestReporter _output;
-
     private byte _cancelled;
-    private bool _isDiscovery;
-    private bool _isRetry;
 
     public TestingPlatformCommand(string name, string description = null) : base(name, description)
     {
@@ -42,9 +39,13 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
         ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult);
         ValidationUtility.ValidateSolutionOrProjectOrDirectoryOrModulesArePassedCorrectly(parseResult);
 
-        PrepareEnvironment(parseResult, out TestOptions testOptions, out int degreeOfParallelism);
+        int degreeOfParallelism = GetDegreeOfParallelism(parseResult);
+        bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
+        var testOptions = new TestOptions(filterModeEnabled, IsHelp: parseResult.HasOption(TestingPlatformOptions.HelpOption));
 
         InitializeOutput(degreeOfParallelism, parseResult, testOptions.IsHelp);
+
+        SetupCancelKeyPressHandler();
 
         BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult, degreeOfParallelism);
 
@@ -88,23 +89,6 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
         return exitCode;
     }
 
-    private void PrepareEnvironment(ParseResult parseResult, out TestOptions testOptions, out int degreeOfParallelism)
-    {
-        SetupCancelKeyPressHandler();
-
-        degreeOfParallelism = GetDegreeOfParallelism(parseResult);
-
-        bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
-
-        var arguments = parseResult.GetArguments();
-        testOptions = GetTestOptions(filterModeEnabled, isHelp: ContainsHelpOption(arguments));
-
-        _isDiscovery = ContainsListTestsOption(arguments);
-
-        // This is ugly, and we need to replace it by passing out some info from testing platform to inform us that some process level retry plugin is active.
-        _isRetry = arguments.Contains("--retry-failed-tests");
-    }
-
     private TestApplicationActionQueue InitializeActionQueue(int degreeOfParallelism, TestOptions testOptions, BuildOptions buildOptions)
     {
         return new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, async (TestApplication testApp) =>
@@ -145,7 +129,11 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
             MinimumExpectedTests = parseResult.GetValue(TestingPlatformOptions.MinimumExpectedTestsOption),
         });
 
-        _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery, isHelp, _isRetry);
+        var isDiscovery = parseResult.HasOption(TestingPlatformOptions.ListTestsOption);
+        // This is ugly, and we need to replace it by passing out some info from testing platform to inform us that some process level retry plugin is active.
+        var isRetry = parseResult.GetArguments().Contains("--retry-failed-tests");
+
+        _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, isDiscovery, isHelp, isRetry);
     }
 
     private static int GetDegreeOfParallelism(ParseResult parseResult)
@@ -154,19 +142,6 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
         if (degreeOfParallelism <= 0)
             degreeOfParallelism = Environment.ProcessorCount;
         return degreeOfParallelism;
-    }
-
-    private static TestOptions GetTestOptions(bool hasFilterMode, bool isHelp) =>
-        new(hasFilterMode, isHelp);
-
-    private static bool ContainsHelpOption(IEnumerable<string> args)
-    {
-        return args.Contains(TestingPlatformOptions.HelpOption.Name) || TestingPlatformOptions.HelpOption.Aliases.Any(alias => args.Contains(alias));
-    }
-
-    private static bool ContainsListTestsOption(IEnumerable<string> args)
-    {
-        return args.Contains(TestingPlatformOptions.ListTestsOption.Name);
     }
 
     private void CompleteRun(int? exitCode)
