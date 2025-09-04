@@ -44,7 +44,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             if (Environment.GetEnvironmentVariable("SYSTEM_TEAMPROJECT") == "internal")
             {
                 return;
-            }            
+            }
+
             var nonexistantPackageName = "Some-package-that-does-not-exist";
 
             new DotnetNewCommand(_log, "details", nonexistantPackageName)
