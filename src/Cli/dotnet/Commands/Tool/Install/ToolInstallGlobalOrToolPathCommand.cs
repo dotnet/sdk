@@ -142,7 +142,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
     {
         using var _activity = Activities.Source.StartActivity("install-tool");
         _activity?.DisplayName = $"Install {packageId}";
-        _activity?.SetTag("toolId", packageId);
+        _activity?.SetTag("tool.package.id", packageId);
 
         if (!string.IsNullOrEmpty(_configFilePath) && !File.Exists(_configFilePath))
         {
@@ -171,7 +171,8 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         {
             NuGetVersion nugetVersion = GetBestMatchNugetVersion(packageId, versionRange, toolPackageDownloader);
             _activity?.DisplayName = $"Install {packageId}@{nugetVersion}";
-            _activity?.SetTag("toolVersion", nugetVersion);
+            _activity?.SetTag("tool.package.id", packageId);
+            _activity?.SetTag("tool.package.version", nugetVersion);
 
             if (ToolVersionAlreadyInstalled(oldPackageNullable, nugetVersion))
             {
