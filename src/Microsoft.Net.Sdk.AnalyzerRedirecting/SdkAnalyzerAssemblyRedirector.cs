@@ -35,7 +35,7 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
 
     [ImportingConstructor]
     public SdkAnalyzerAssemblyRedirector(SVsServiceProvider serviceProvider) : this(
-        Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\DotNetRuntimeAnalyzers")),
+        Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"CommonExtensions\Microsoft\DotNet")),
         serviceProvider.GetService<SVsActivityLog, IVsActivityLog>())
     {
     }
