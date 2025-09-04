@@ -108,7 +108,7 @@ namespace Microsoft.DotNet.Watch
             Debug.Assert(_refreshServer == null);
 
             var hostName = _environmentHostName ?? "127.0.0.1";
-            var port = _refreshPort ?? "0"
+            var port = _refreshPort ?? "0";
 
             var supportsTLS = await SupportsTlsAsync();
 
