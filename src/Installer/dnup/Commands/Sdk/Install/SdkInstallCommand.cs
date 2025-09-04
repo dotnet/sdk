@@ -8,6 +8,7 @@ using Spectre.Console;
 
 
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
@@ -19,7 +20,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
     private readonly bool? _updateGlobalJson = result.GetValue(SdkInstallCommandParser.UpdateGlobalJsonOption);
     private readonly bool _interactive = result.GetValue(SdkInstallCommandParser.InteractiveOption);
 
-    private readonly IBootstrapperController _dotnetInstaller = new EnvironmentVariableMockDotnetInstaller();
+    private readonly IBootstrapperController _dotnetInstaller = new BootstrapperController();
     private readonly IReleaseInfoProvider _releaseInfoProvider = new EnvironmentVariableMockReleaseInfoProvider();
 
     public override int Execute()
@@ -209,10 +210,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             }
         }
 
-
         //  TODO: Implement transaction / rollback?
-        //  TODO: Use Mutex to avoid concurrent installs?
-
 
         SpectreAnsiConsole.MarkupInterpolated($"Installing .NET SDK [blue]{resolvedChannelVersion}[/] to [blue]{resolvedInstallPath}[/]...");
 
@@ -253,150 +251,5 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         return false;
     }
 
-    class EnvironmentVariableMockDotnetInstaller : IBootstrapperController
-    {
-        public GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory)
-        {
-            return new GlobalJsonInfo
-            {
-                GlobalJsonPath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_PATH"),
-                GlobalJsonContents = null // Set to null for test mock; update as needed for tests
-            };
-        }
-
-        public string GetDefaultDotnetInstallPath()
-        {
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "dotnet");
-        }
-
-        public InstallType GetConfiguredInstallType(out string? currentInstallPath)
-        {
-            var testHookDefaultInstall = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_INSTALL");
-            InstallType returnValue = InstallType.None;
-            if (!Enum.TryParse<InstallType>(testHookDefaultInstall, out returnValue))
-            {
-                returnValue = InstallType.None;
-            }
-            currentInstallPath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_CURRENT_INSTALL_PATH");
-            return returnValue;
-        }
-
-        public string? GetLatestInstalledAdminVersion()
-        {
-            var latestAdminVersion = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_LATEST_ADMIN_VERSION");
-            if (string.IsNullOrEmpty(latestAdminVersion))
-            {
-                latestAdminVersion = "10.0.203";
-            }
-            return latestAdminVersion;
-        }
-
-        public void InstallSdks(string dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions)
-        {
-            //var task = progressContext.AddTask($"Downloading .NET SDK {resolvedChannelVersion}");
-            using (var httpClient = new System.Net.Http.HttpClient())
-            {
-                List<Action> downloads = sdkVersions.Select(version =>
-                {
-                    string downloadLink = "https://builds.dotnet.microsoft.com/dotnet/Sdk/9.0.303/dotnet-sdk-9.0.303-win-x64.exe";
-                    var task = progressContext.AddTask($"Downloading .NET SDK {version}");
-                    return (Action)(() =>
-                    {
-                        Download(downloadLink, httpClient, task);
-                    });
-                }).ToList();
-
-
-                foreach (var download in downloads)
-                {
-                    download();
-                }
-            }
-        }
-
-        void Download(string url, HttpClient httpClient, ProgressTask task)
-        {
-            //string tempFilePath = Path.Combine(Path.GetTempPath(), Path.GetFileName(url));
-            //using (var response = httpClient.GetAsync(url, System.Net.Http.HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult())
-            //{
-            //    response.EnsureSuccessStatusCode();
-            //    var contentLength = response.Content.Headers.ContentLength ?? 0;
-            //    using (var stream = response.Content.ReadAsStream())
-            //    using (var fileStream = File.Create(tempFilePath))
-            //    {
-            //        var buffer = new byte[81920];
-            //        long totalRead = 0;
-            //        int read;
-            //        while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
-            //        {
-            //            fileStream.Write(buffer, 0, read);
-            //            totalRead += read;
-            //            if (contentLength > 0)
-            //            {
-            //                task.Value = (double)totalRead / contentLength * 100;
-            //            }
-            //        }
-            //        task.Value = 100;
-            //    }
-            //}
-
-            for (int i = 0; i < 100; i++)
-            {
-                task.Increment(1);
-                Thread.Sleep(20); // Simulate some work
-            }
-            task.Value = 100;
-        }
-
-        public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null, bool? allowPrerelease = null, string? rollForward = null)
-        {
-            SpectreAnsiConsole.WriteLine($"Updating {globalJsonPath} to SDK version {sdkVersion} (AllowPrerelease={allowPrerelease}, RollForward={rollForward})");
-        }
-        public void ConfigureInstallType(InstallType installType, string? dotnetRoot = null)
-        {
-            SpectreAnsiConsole.WriteLine($"Configuring install type to {installType} (dotnetRoot={dotnetRoot})");
-        }
-    }
-
-    class EnvironmentVariableMockReleaseInfoProvider : IReleaseInfoProvider
-    {
-        public List<string> GetAvailableChannels()
-        {
-            var channels = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_AVAILABLE_CHANNELS");
-            if (string.IsNullOrEmpty(channels))
-            {
-                return ["latest", "preview", "10", "10.0.1xx", "10.0.2xx", "9", "9.0.3xx", "9.0.2xx", "9.0.1xx"];
-            }
-            return channels.Split(',').ToList();
-        }
-        public string GetLatestVersion(string channel)
-        {
-            if (channel == "preview")
-            {
-                return "11.0.100-preview.1.42424";
-            }
-            else if (channel == "latest" || channel == "10" || channel == "10.0.2xx")
-            {
-                return "10.0.203";
-            }
-            else if (channel == "10.0.1xx")
-            {
-                return "10.0.106";
-            }
-            else if (channel == "9" || channel == "9.0.3xx")
-            {
-                return "9.0.309";
-            }
-            else if (channel == "9.0.2xx")
-            {
-                return "9.0.212";
-            }
-            else if (channel == "9.0.1xx")
-            {
-                return "9.0.115";
-            }
-
-            return channel;
-        }
-    }
+    // ...existing code...
 }

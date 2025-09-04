@@ -18,7 +18,8 @@ internal class InstallerOrchestratorSingleton
 
     private ScopedMutex modifyInstallStateMutex() => new ScopedMutex("Global\\Finalize");
 
-    public int Install(DotnetInstallRequest installRequest)
+    // Returns null on failure, DotnetInstall on success
+    public DotnetInstall? Install(DotnetInstallRequest installRequest)
     {
         // Map InstallRequest to DotnetInstallObject by converting channel to fully specified version
         DotnetInstall install = new ManifestChannelVersionResolver().Resolve(installRequest);
@@ -29,7 +30,7 @@ internal class InstallerOrchestratorSingleton
         {
             if (InstallAlreadyExists(installRequest.ResolvedDirectory, install))
             {
-                return 0;
+                return install;
             }
         }
 
@@ -41,7 +42,7 @@ internal class InstallerOrchestratorSingleton
         {
             if (InstallAlreadyExists(installRequest.ResolvedDirectory, install))
             {
-                return 0;
+                return install;
             }
 
             installer.Commit();
@@ -54,12 +55,11 @@ internal class InstallerOrchestratorSingleton
             }
             else
             {
-                // TODO Handle validation failure better
-                return 1;
+                return null;
             }
         }
 
-        return 0;
+        return install;
     }
 
     // Add a doc string mentioning you must hold a mutex over the directory
