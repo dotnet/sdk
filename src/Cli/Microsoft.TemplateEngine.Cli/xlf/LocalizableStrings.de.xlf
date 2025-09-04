@@ -832,22 +832,22 @@ The header is followed by the list of parameters and their errors (might be seve
       </trans-unit>
       <trans-unit id="PostAction_CreateDotnetConfig_CreatedNewSection">
         <source>Created new section in 'dotnet.config' file</source>
-        <target state="new">Created new section in 'dotnet.config' file</target>
+        <target state="translated">Neuer Abschnitt in der dotnet.config-Datei erstellt</target>
         <note>{Locked="dotnet.config"}</note>
       </trans-unit>
       <trans-unit id="PostAction_CreateDotnetConfig_ManuallyUpdate">
         <source>Updating existing values in 'dotnet.config' is not yet supported. Please, manually update 'dotnet.config' to have '{0}' under section '{1}'.</source>
-        <target state="new">Updating existing values in 'dotnet.config' is not yet supported. Please, manually update 'dotnet.config' to have '{0}' under section '{1}'.</target>
+        <target state="translated">Das Aktualisieren vorhandener Werte in „dotnet.config“ wird noch nicht unterstützt. Aktualisieren Sie „dotnet.config“ manuell, damit „{0}“ im Abschnitt „{1}“ vorhanden ist.</target>
         <note>{Locked="dotnet.config"}</note>
       </trans-unit>
       <trans-unit id="PostAction_CreateDotnetConfig_Succeeded">
         <source>Successfully created 'dotnet.config' file.</source>
-        <target state="new">Successfully created 'dotnet.config' file.</target>
+        <target state="translated">Die dotnet.config-Datei wurde erfolgreich erstellt.</target>
         <note>{Locked="dotnet.config"}</note>
       </trans-unit>
       <trans-unit id="PostAction_CreateDotnetConfig_ValueAlreadyExist">
         <source>The required value in 'dotnet.config' is already set.</source>
-        <target state="new">The required value in 'dotnet.config' is already set.</target>
+        <target state="translated">Der erforderliche Wert in „dotnet.config“ ist bereits festgelegt.</target>
         <note>{Locked="dotnet.config"}</note>
       </trans-unit>
       <trans-unit id="PostAction_DotnetConfig_Error_ArgumentNotConfigured">
