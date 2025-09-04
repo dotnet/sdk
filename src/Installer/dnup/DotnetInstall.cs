@@ -17,6 +17,11 @@ internal record DotnetInstallBase(
     public Guid Id { get; } = Guid.NewGuid();
 }
 
+internal record InstallRequestOptions()
+{
+    // Include things such as the custom feed here.
+}
+
 /// <summary>
 /// Represents a .NET installation with a fully specified version.
 /// The MuxerDirectory is the directory of the corresponding .NET host that has visibility into this .NET installation.
@@ -36,4 +41,5 @@ internal record DotnetInstallRequest(
     string TargetDirectory,
     InstallType Type,
     InstallMode Mode,
-    InstallArchitecture Architecture) : DotnetInstallBase(Path.Combine(TargetDirectory, DnupUtilities.GetDotnetExeName()), Type, Mode, Architecture);
+    InstallArchitecture Architecture,
+    InstallRequestOptions Options) : DotnetInstallBase(Path.Combine(TargetDirectory, DnupUtilities.GetDotnetExeName()), Type, Mode, Architecture);

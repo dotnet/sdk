@@ -8,7 +8,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -29,18 +28,23 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
 
     public void Prepare()
     {
-        // Download the archive to a user protected (wrx) random folder in temp
+        using var releaseManifest = new ReleaseManifest();
+        var archiveName = $"dotnet-{_install.Id}";
+        var archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DnupUtilities.GetFileExtensionForPlatform());
 
-        // string archiveName = ConstructArchiveName(versionString: null, Utilities.CurrentRID, Utilities.ZipSuffix);
-        // string archivePath = Path.Combine(scratchDownloadDirectory, archiveName);
-
-        // Download to scratchDownloadDirectory
-
-        // Verify the hash and or signature of the archive
-        VerifyArchive(scratchDownloadDirectory);
-
+        // Download the archive with hash verification using the DotNet Releases library
+        var downloadSuccess = releaseManifest.DownloadArchiveWithVerification(_install, archivePath);
+        if (!downloadSuccess)
+        {
+            throw new InvalidOperationException($"Failed to download .NET archive for version {_install.FullySpecifiedVersion.Value}");
+        }
+        
         // Extract to a temporary directory for the final replacement later.
-        ExtractArchive(scratchDownloadDirectory, scratchExtractionDirectory);
+        var extractResult = ExtractArchive(archivePath, scratchExtractionDirectory);
+        if (extractResult != null)
+        {
+            throw new InvalidOperationException($"Failed to extract archive: {extractResult}");
+        }
     }
 
     /**
@@ -48,7 +52,7 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
     */
     private void VerifyArchive(string archivePath)
     {
-        if (archivePath != null) // replace this with actual verification logic once its implemented.
+        if (!File.Exists(archivePath)) // replace this with actual verification logic once its implemented.
         {
             throw new InvalidOperationException("Archive verification failed.");
         }
@@ -112,7 +116,6 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
             ? $"dotnet-sdk-{rid}{suffix}"
             : $"dotnet-sdk-{versionString}-{rid}{suffix}";
     }
-
 
     private string? ExtractSdkToDir(string extractedArchivePath, string destDir, IEnumerable<DotnetVersion> existingSdkVersions)
     {
