@@ -42,8 +42,8 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
         ValidationUtility.ValidateSolutionOrProjectOrDirectoryOrModulesArePassedCorrectly(parseResult);
 
         int degreeOfParallelism = GetDegreeOfParallelism(parseResult);
-        bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
-        var testOptions = new TestOptions(filterModeEnabled, IsHelp: parseResult.HasOption(TestingPlatformOptions.HelpOption));
+        bool filterModeEnabled = parseResult.HasOption(MicrosoftTestingPlatformOptions.TestModulesFilterOption);
+        var testOptions = new TestOptions(filterModeEnabled, IsHelp: parseResult.HasOption(MicrosoftTestingPlatformOptions.HelpOption));
 
         InitializeOutput(degreeOfParallelism, parseResult, testOptions.IsHelp);
 
@@ -81,8 +81,8 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
         var exitCode = actionQueue.WaitAllActions();
         exitCode = _output.HasHandshakeFailure ? ExitCode.GenericFailure : exitCode;
         if (exitCode == ExitCode.Success &&
-            parseResult.HasOption(TestingPlatformOptions.MinimumExpectedTestsOption) &&
-            parseResult.GetValue(TestingPlatformOptions.MinimumExpectedTestsOption) is { } minimumExpectedTests &&
+            parseResult.HasOption(MicrosoftTestingPlatformOptions.MinimumExpectedTestsOption) &&
+            parseResult.GetValue(MicrosoftTestingPlatformOptions.MinimumExpectedTestsOption) is { } minimumExpectedTests &&
             _output.TotalTests < minimumExpectedTests)
         {
             exitCode = ExitCode.MinimumExpectedTestsPolicyViolation;
@@ -113,9 +113,9 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
     private void InitializeOutput(int degreeOfParallelism, ParseResult parseResult, bool isHelp)
     {
         var console = new SystemConsole();
-        var showPassedTests = parseResult.GetValue(TestingPlatformOptions.OutputOption) == OutputOptions.Detailed;
-        var noProgress = parseResult.HasOption(TestingPlatformOptions.NoProgressOption);
-        var noAnsi = parseResult.HasOption(TestingPlatformOptions.NoAnsiOption);
+        var showPassedTests = parseResult.GetValue(MicrosoftTestingPlatformOptions.OutputOption) == OutputOptions.Detailed;
+        var noProgress = parseResult.HasOption(MicrosoftTestingPlatformOptions.NoProgressOption);
+        var noAnsi = parseResult.HasOption(MicrosoftTestingPlatformOptions.NoAnsiOption);
 
         // TODO: Replace this with proper CI detection that we already have in telemetry. https://github.com/microsoft/testfx/issues/5533#issuecomment-2838893327
         bool inCI = string.Equals(Environment.GetEnvironmentVariable("TF_BUILD"), "true", StringComparison.OrdinalIgnoreCase) || string.Equals(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), "true", StringComparison.OrdinalIgnoreCase);
@@ -128,10 +128,10 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
             UseCIAnsi = inCI,
             ShowAssembly = true,
             ShowAssemblyStartAndComplete = true,
-            MinimumExpectedTests = parseResult.GetValue(TestingPlatformOptions.MinimumExpectedTestsOption),
+            MinimumExpectedTests = parseResult.GetValue(MicrosoftTestingPlatformOptions.MinimumExpectedTestsOption),
         });
 
-        var isDiscovery = parseResult.HasOption(TestingPlatformOptions.ListTestsOption);
+        var isDiscovery = parseResult.HasOption(MicrosoftTestingPlatformOptions.ListTestsOption);
         // This is ugly, and we need to replace it by passing out some info from testing platform to inform us that some process level retry plugin is active.
         var isRetry = parseResult.GetArguments().Contains("--retry-failed-tests");
 
@@ -140,7 +140,7 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
 
     private static int GetDegreeOfParallelism(ParseResult parseResult)
     {
-        var degreeOfParallelism = parseResult.GetValue(TestingPlatformOptions.MaxParallelTestModulesOption);
+        var degreeOfParallelism = parseResult.GetValue(MicrosoftTestingPlatformOptions.MaxParallelTestModulesOption);
         if (degreeOfParallelism <= 0)
             degreeOfParallelism = Environment.ProcessorCount;
         return degreeOfParallelism;

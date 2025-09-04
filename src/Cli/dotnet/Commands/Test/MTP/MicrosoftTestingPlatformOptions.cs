@@ -7,7 +7,7 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal static class TestingPlatformOptions
+internal static class MicrosoftTestingPlatformOptions
 {
     public static readonly Option<string> ProjectOption = new("--project")
     {
