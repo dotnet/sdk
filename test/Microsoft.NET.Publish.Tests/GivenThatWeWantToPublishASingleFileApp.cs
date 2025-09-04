@@ -853,8 +853,8 @@ class C
                 testProject.AdditionalProperties.Add("CetCompat", cetCompat.ToString());
             }
 
-            var binlogDestPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot ?
-                Path.Combine(ciOutputRoot, "binlog", $"{nameof(It_can_disable_cetcompat)}_{cetCompat?.ToString() ?? "null"}.binlog") :
+            var binlogDestPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot && Environment.GetEnvironmentVariable("HELIX_WORKITEM_ID") is { } helixGuid ?
+                Path.Combine(ciOutputRoot, "binlog", helixGuid, $"{nameof(It_can_disable_cetcompat)}_{cetCompat?.ToString() ?? "null"}.binlog") :
                 "./msbuild.binlog";
 
 
