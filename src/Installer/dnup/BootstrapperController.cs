@@ -128,7 +128,7 @@ public class BootstrapperController : IBootstrapperController
         }
         else
         {
-            progressContext.AddTask($"Installed .NET SDK {newInstall.FullySpecifiedVersion}, available via {newInstall.MuxerDirectory}");
+            Spectre.Console.AnsiConsole.MarkupLine($"[green]Installed .NET SDK {newInstall.FullySpecifiedVersion}, available via {newInstall.MuxerDirectory}[/]");
         }
     }
 
