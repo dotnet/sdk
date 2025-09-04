@@ -228,7 +228,7 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
 
     public void Commit()
     {
-        Commit(existingSdkVersions: Enumerable.Empty<DotnetVersion>()); // todo impl this
+        Commit(GetExistingSdkVersions(_request.TargetDirectory));
     }
 
     public void Commit(IEnumerable<DotnetVersion> existingSdkVersions)
@@ -248,5 +248,45 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
     {
         File.Delete(scratchExtractionDirectory);
         File.Delete(scratchDownloadDirectory);
+    }
+
+    // This should be cached and more sophisticated based on vscode logic in the future
+    private IEnumerable<DotnetVersion> GetExistingSdkVersions(string targetDirectory)
+    {
+        var dotnetExe = Path.Combine(targetDirectory, DnupUtilities.GetDotnetExeName());
+        if (!File.Exists(dotnetExe))
+            return Enumerable.Empty<DotnetVersion>();
+
+        try
+        {
+            var process = new System.Diagnostics.Process();
+            process.StartInfo.FileName = dotnetExe;
+            process.StartInfo.Arguments = "--list-sdks";
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.CreateNoWindow = true;
+            process.Start();
+            var output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+
+            var versions = new List<DotnetVersion>();
+            foreach (var line in output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var parts = line.Split(' ');
+                if (parts.Length > 0)
+                {
+                    var versionStr = parts[0];
+                    if (DotnetVersion.TryParse(versionStr, out var version))
+                    {
+                        versions.Add(version);
+                    }
+                }
+            }
+            return versions;
+        }
+        catch
+        {
+            return Enumerable.Empty<DotnetVersion>();
+        }
     }
 }
