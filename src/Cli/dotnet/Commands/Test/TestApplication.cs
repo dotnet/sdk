@@ -398,7 +398,7 @@ internal sealed class TestApplication(
             // Calling it for both test host and test host controllers means we will count retries incorrectly, and will messages twice.
             var instanceId = handshakeMessage.Properties[HandshakeMessagePropertyNames.InstanceId];
             var handshakeInfo = _handshakeInfo.Value;
-            _output.AssemblyRunStarted(Module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.TargetFramework, instanceId);
+            _output.AssemblyRunStarted(Module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, instanceId);
         }
 
         LogHandshake(handshakeMessage);
