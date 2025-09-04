@@ -43,4 +43,33 @@ internal static class DnupUtilities
             Attributes = srcInfo.Attributes
         };
     }
+
+    public static string GetRuntimeIdentifier(InstallArchitecture architecture)
+    {
+        var os = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "win" :
+                 RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "osx" :
+                 RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "linux" : "unknown";
+
+        var arch = architecture switch
+        {
+            InstallArchitecture.x64 => "x64",
+            InstallArchitecture.x86 => "x86",
+            InstallArchitecture.arm64 => "arm64",
+            _ => "x64" // Default fallback
+        };
+
+        return $"{os}-{arch}";
+    }
+
+    public static string GetFileExtensionForPlatform()
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return ".zip"; // Windows typically uses zip archives
+        }
+        else
+        {
+            return ".tar.gz"; // Unix-like systems use tar.gz
+        }
+    }
 }

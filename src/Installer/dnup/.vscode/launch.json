@@ -1,0 +1,30 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch dnup",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/../../../artifacts/bin/dnup/Debug/net10.0/dnup.dll",
+            "args": "${input:commandLineArgs}",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "stopAtEntry": false
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach",
+            "requireExactSource": false
+        }
+    ],
+    "inputs": [
+        {
+            "id": "commandLineArgs",
+            "type": "promptString",
+            "description": "Command line arguments",
+            "default": ""
+        }
+    ]
+}
