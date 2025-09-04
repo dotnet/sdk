@@ -168,9 +168,7 @@ internal sealed class TestApplicationHandler
     {
         // TODO: We shouldn't only log here!
         // We should use it in a more meaningful way. e.g, ensure we received session start/end events.
-        if (!Logger.TraceEnabled) return;
-
-        Logger.LogTrace(() => $"TestSessionEvent: {sessionEvent.SessionType}, {sessionEvent.SessionUid}, {sessionEvent.ExecutionId}");
+        Logger.LogTrace($"TestSessionEvent: {sessionEvent.SessionType}, {sessionEvent.SessionUid}, {sessionEvent.ExecutionId}");
     }
 
     internal void OnTestProcessExited(int exitCode, List<string> outputData, List<string> errorData)
@@ -214,7 +212,7 @@ internal sealed class TestApplicationHandler
             logMessageBuilder.AppendLine($"{GetHandshakePropertyName(property.Key)}: {property.Value}");
         }
 
-        Logger.LogTrace(() => logMessageBuilder.ToString());
+        Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
     }
 
     private static void LogDiscoveredTests(DiscoveredTestMessages discoveredTestMessages)
@@ -234,7 +232,7 @@ internal sealed class TestApplicationHandler
             logMessageBuilder.AppendLine($"DiscoveredTest: {discoveredTestMessage.Uid}, {discoveredTestMessage.DisplayName}");
         }
 
-        Logger.LogTrace(() => logMessageBuilder.ToString());
+        Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
     }
 
     private static void LogTestResults(TestResultMessages testResultMessages)
@@ -263,7 +261,7 @@ internal sealed class TestApplicationHandler
                 $"{failedTestResult.StandardOutput}, {failedTestResult.ErrorOutput}, {failedTestResult.SessionUid}");
         }
 
-        Logger.LogTrace(() => logMessageBuilder.ToString());
+        Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
     }
 
     private static void LogFileArtifacts(FileArtifactMessages fileArtifactMessages)
@@ -285,7 +283,7 @@ internal sealed class TestApplicationHandler
                 $"{fileArtifactMessage.SessionUid}");
         }
 
-        Logger.LogTrace(() => logMessageBuilder.ToString());
+        Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
     }
 
     private static void LogTestProcessExit(int exitCode, string outputData, string errorData)
@@ -312,6 +310,6 @@ internal sealed class TestApplicationHandler
             logMessageBuilder.AppendLine($"Error Data: {errorData}");
         }
 
-        Logger.LogTrace(() => logMessageBuilder.ToString());
+        Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
     }
 }
