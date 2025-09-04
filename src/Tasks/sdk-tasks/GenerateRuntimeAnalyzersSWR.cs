@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Cli.Build
             return true;
         }
 
-        private void AddFolder(StringBuilder sb, string relativeSourcePath, string swrInstallDir, bool ngenAssemblies = false, IEnumerable<string> filesToInclude = null)
+        private void AddFolder(StringBuilder sb, string relativeSourcePath, string swrInstallDir, bool ngenAssemblies = true, IEnumerable<string> filesToInclude = null)
         {
             string sourceFolder = Path.Combine(RuntimeAnalyzersLayoutDirectory, relativeSourcePath);
 

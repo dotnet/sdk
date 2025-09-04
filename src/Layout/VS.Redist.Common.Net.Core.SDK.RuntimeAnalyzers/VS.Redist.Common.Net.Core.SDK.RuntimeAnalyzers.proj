@@ -43,6 +43,21 @@
           DestinationFiles="@(RuntimeAnalyzersContent->'$(OutputPath)\%(DeploymentSubpath)\%(RecursiveDir)%(Filename)%(Extension)')"
           UseHardlinksIfPossible="true" />
 
+    <!-- Replace Experimental=true with SystemComponent=true in the VS extension manifest. -->
+    <PropertyGroup>
+      <_VsixNamespace>
+        <Namespace Prefix="pm" Uri="http://schemas.microsoft.com/developer/vsx-schema/2011" />
+      </_VsixNamespace>
+    </PropertyGroup>
+    <XmlPoke XmlInputPath="$(OutputPath)\AnalyzerRedirecting\extension.vsixmanifest"
+             Namespaces="$(_VsixNamespace)"
+             Query="/pm:PackageManifest/pm:Installation/@Experimental"
+             Value="false" />
+    <XmlPoke XmlInputPath="$(OutputPath)\AnalyzerRedirecting\extension.vsixmanifest"
+             Namespaces="$(_VsixNamespace)"
+             Query="/pm:PackageManifest/pm:Installation/@SystemComponent"
+             Value="true" />
+
     <GenerateRuntimeAnalyzersSWR RuntimeAnalyzersLayoutDirectory="$(OutputPath)"
                                  OutputFile="$(SdkRuntimeAnalyzersSwrFile)" />
 
