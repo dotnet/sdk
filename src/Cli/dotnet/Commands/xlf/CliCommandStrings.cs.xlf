@@ -2717,10 +2717,10 @@ Ve výchozím nastavení je publikována aplikace závislá na architektuře.</t
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="new">Unable to proceed with project '{0}'.
-Ensure you have a runnable project type.
-A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
-The current OutputType is '{2}'.</target>
+        <target state="translated">V projektu {0} nelze pokračovat.
+Ujistěte se, že máte spustitelný typ projektu.
+Spustitelný projekt by měl cílit na spustitelný TFM (například net{1}) a mít OutputType Exe.
+Aktuální OutputType je {2}.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -3089,7 +3089,7 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
       </trans-unit>
       <trans-unit id="TestCommandUseDirectoryWithSwitch">
         <source>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</source>
-        <target state="new">Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</target>
+        <target state="translated">Zadání adresáře pro dotnet test by mělo být prostřednictvím --project nebo --solution.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseProject">
