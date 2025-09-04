@@ -1902,11 +1902,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             if (childAttributes.TryGetValue(platform, out var childAttribute))
                             {
                                 // only later versions could narrow, other versions ignored
-                                if (childAttribute.SupportedFirst.IsGreaterThanOrEqualTo(attributes.SupportedFirst) &&
-                                    (attributes.SupportedSecond == null || attributes.SupportedSecond < childAttribute.SupportedFirst))
+                                if (childAttribute.SupportedFirst.IsGreaterThanOrEqualTo(attributes.SupportedFirst))
                                 {
-                                    attributes.SupportedSecond = childAttribute.SupportedFirst;
                                     supportFound = true;
+                                    if (attributes.SupportedSecond == null || attributes.SupportedSecond < childAttribute.SupportedFirst)
+                                    {
+                                        attributes.SupportedSecond = childAttribute.SupportedFirst;
+
+                                    }
                                 }
 
                                 if (childAttribute.UnsupportedFirst != null)
@@ -2011,7 +2014,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         {
                             allowList = true;
                         }
-                        else if (DenyList(attributes))
+                        else if (DenyList(attributes) || !attributes.IsSet())
                         {
                             unsupportedList.Add(platform);
                         }
