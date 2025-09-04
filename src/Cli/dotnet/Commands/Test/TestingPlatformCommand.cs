@@ -15,7 +15,6 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
     private MSBuildHandler _msBuildHandler;
     private TerminalTestReporter _output;
     private TestApplicationActionQueue _actionQueue;
-    private TestApplicationsEventHandlers _eventHandlers;
 
     private byte _cancelled;
     private bool _isDiscovery;
@@ -37,7 +36,6 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
         finally
         {
             CompleteRun(exitCode);
-            CleanUp();
         }
     }
 
@@ -56,8 +54,6 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
 
         _msBuildHandler = new(buildOptions, _actionQueue, _output);
         TestModulesFilterHandler testModulesFilterHandler = new(_actionQueue, _output);
-
-        _eventHandlers = new TestApplicationsEventHandlers(_output);
 
         if (testOptions.HasFilterMode)
         {
@@ -82,7 +78,7 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
         _actionQueue.EnqueueCompleted();
         // Don't inline exitCode variable. We want to always call WaitAllActions first.
         var exitCode = _actionQueue.WaitAllActions();
-        exitCode = _eventHandlers.HasHandshakeFailure ? ExitCode.GenericFailure : exitCode;
+        exitCode = _output.HasHandshakeFailure ? ExitCode.GenericFailure : exitCode;
         if (exitCode == ExitCode.Success &&
             parseResult.HasOption(TestingPlatformOptions.MinimumExpectedTestsOption) &&
             parseResult.GetValue(TestingPlatformOptions.MinimumExpectedTestsOption) is { } minimumExpectedTests &&
@@ -113,14 +109,11 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
 
     private void InitializeActionQueue(int degreeOfParallelism, TestOptions testOptions, BuildOptions buildOptions)
     {
-        if (testOptions.IsHelp)
+        _actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, async (TestApplication testApp) =>
         {
-            InitializeHelpActionQueue(degreeOfParallelism, testOptions, buildOptions);
-        }
-        else
-        {
-            InitializeTestExecutionActionQueue(degreeOfParallelism, testOptions, buildOptions);
-        }
+            testApp.HelpRequested += OnHelpRequested;
+            return await testApp.RunAsync();
+        });
     }
 
     private void SetupCancelKeyPressHandler()
@@ -157,35 +150,6 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
         _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery, isHelp, _isRetry);
     }
 
-    private void InitializeHelpActionQueue(int degreeOfParallelism, TestOptions testOptions, BuildOptions buildOptions)
-    {
-        _actionQueue = new(degreeOfParallelism, buildOptions, async (TestApplication testApp) =>
-        {
-            testApp.HandshakeReceived += _eventHandlers.OnHandshakeReceived;
-            testApp.HelpRequested += OnHelpRequested;
-            testApp.ErrorReceived += _eventHandlers.OnErrorReceived;
-            testApp.TestProcessExited += _eventHandlers.OnTestProcessExited;
-
-            return await testApp.RunAsync(testOptions);
-        });
-    }
-
-    private void InitializeTestExecutionActionQueue(int degreeOfParallelism, TestOptions testOptions, BuildOptions buildOptions)
-    {
-        _actionQueue = new(degreeOfParallelism, buildOptions, async (TestApplication testApp) =>
-        {
-            testApp.HandshakeReceived += _eventHandlers.OnHandshakeReceived;
-            testApp.DiscoveredTestsReceived += _eventHandlers.OnDiscoveredTestsReceived;
-            testApp.TestResultsReceived += _eventHandlers.OnTestResultsReceived;
-            testApp.FileArtifactsReceived += _eventHandlers.OnFileArtifactsReceived;
-            testApp.SessionEventReceived += _eventHandlers.OnSessionEventReceived;
-            testApp.ErrorReceived += _eventHandlers.OnErrorReceived;
-            testApp.TestProcessExited += _eventHandlers.OnTestProcessExited;
-
-            return await testApp.RunAsync(testOptions);
-        });
-    }
-
     private static int GetDegreeOfParallelism(ParseResult parseResult)
     {
         var degreeOfParallelism = parseResult.GetValue(TestingPlatformOptions.MaxParallelTestModulesOption);
@@ -213,10 +177,5 @@ internal partial class TestingPlatformCommand : Command, ICustomHelp
         {
             _output?.TestExecutionCompleted(DateTimeOffset.Now, exitCode);
         }
-    }
-
-    private void CleanUp()
-    {
-        _eventHandlers?.Dispose();
     }
 }
