@@ -49,6 +49,10 @@ try {
   $env:DOTNET_ROOT = $TestDotnetRoot
   $env:DOTNET_ADD_GLOBAL_TOOLS_TO_PATH="0"
 
+  # MSBuild dogfood
+  $env:DOTNET_CLI_USE_MSBUILD_SERVER=1
+  $env:MSBUILDUSESERVER=1
+
   # Avoid downloading Microsoft.Net.Sdk.Compilers.Toolset from feed
   # Locally built SDK package version is Major.Minor.0-dev, which won't be available.
   $env:BuildWithNetFrameworkHostedCompiler = $false

@@ -42,6 +42,8 @@ function CreateBuildEnvScripts()
   $scriptContents = @"
 @echo off
 title SDK Build ($RepoRoot)
+set DOTNET_CLI_USE_MSBUILD_SERVER=1
+set MSBUILDUSESERVER=1
 set DOTNET_MULTILEVEL_LOOKUP=0
 REM https://aka.ms/vs/unsigned-dotnet-debugger-lib
 set VSDebugger_ValidateDotnetDebugLibSignatures=0
