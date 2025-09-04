@@ -94,7 +94,7 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             // GenerateBundle has been throwing IOException intermittently in CI runs when accessing the singlefilehost binary specifically.
-            // We hope that it's a Defender issue and that a quick retry will paper over the intermittent delay it.
+            // We hope that it's a Defender issue and that a quick retry will paper over the intermittent delay.
             await DoWithRetry(() => bundler.GenerateBundle(fileSpec));
 
             // Certain files are excluded from the bundle, based on BundleOptions.
