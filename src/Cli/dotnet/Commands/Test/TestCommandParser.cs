@@ -227,7 +227,7 @@ internal static class TestCommandParser
 
     private static Command GetTestingPlatformCliCommand()
     {
-        var command = new TestingPlatformCommand("test", CliCommandStrings.DotnetTestCommand);
+        var command = new MicrosoftTestingPlatformTestCommand("test", CliCommandStrings.DotnetTestCommand);
         command.SetAction(parseResult => command.Run(parseResult));
         command.Options.Add(TestingPlatformOptions.ProjectOption);
         command.Options.Add(TestingPlatformOptions.SolutionOption);

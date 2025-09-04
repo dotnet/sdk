@@ -10,15 +10,17 @@ using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal partial class TestingPlatformCommand : Command, ICustomHelp
+internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHelp, ICommandDocument
 {
     private TerminalTestReporter _output;
     private byte _cancelled;
 
-    public TestingPlatformCommand(string name, string description = null) : base(name, description)
+    public MicrosoftTestingPlatformTestCommand(string name, string description = null) : base(name, description)
     {
         TreatUnmatchedTokensAsErrors = false;
     }
+
+    public string DocsLink => "https://aka.ms/dotnet-test";
 
     public int Run(ParseResult parseResult)
     {
