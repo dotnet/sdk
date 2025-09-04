@@ -121,7 +121,15 @@ public class BootstrapperController : IBootstrapperController
             new InstallRequestOptions()
         );
 
-        InstallerOrchestratorSingleton.Instance.Install(request);
+        DotnetInstall? newInstall = InstallerOrchestratorSingleton.Instance.Install(request);
+        if (newInstall == null)
+        {
+            throw new Exception($"Failed to install .NET SDK {channelVersion}");
+        }
+        else
+        {
+            progressContext.AddTask($"Installed .NET SDK {newInstall.FullySpecifiedVersion}, available via {newInstall.MuxerDirectory}");
+        }
     }
 
     public void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null, bool? allowPrerelease = null, string? rollForward = null) => throw new NotImplementedException();

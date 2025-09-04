@@ -1,0 +1,18 @@
+{
+  "dotnet.defaultSolution": "dnup.csproj",
+  "csharp.debug.console": "externalTerminal",
+  "editor.formatOnSave": true,
+  "omnisharp.enableRoslynAnalyzers": true,
+  "omnisharp.useModernNet": true,
+  "dotnetAcquisitionExtension.existingDotnetPath": [
+    {
+      "extensionId": "ms-dotnettools.csharp",
+      "path": "C:\\Program Files\\dotnet\\dotnet.exe"
+    }
+  ],
+  "launch": {
+    "configurations": [],
+    "compounds": []
+  },
+  "omnisharp.defaultLaunchSolution": "dnup.csproj"
+}
