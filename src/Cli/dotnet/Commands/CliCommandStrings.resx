@@ -2649,4 +2649,22 @@ Proceed?</value>
   <data name="CmdMinimumExpectedTestsDescription" xml:space="preserve">
     <value>Specifies the minimum number of tests that are expected to run.</value>
   </data>
+  <data name="DotnetTestPipeOverlapping" xml:space="preserve">
+    <value>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</value>
+  </data>
+  <data name="DotnetTestPipeIncompleteSize" xml:space="preserve">
+    <value>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</value>
+  </data>
+  <data name="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage" xml:space="preserve">
+    <value>Method '{0}' did not exit successfully</value>
+  </data>
+  <data name="DotnetTestPipeFailureHasHandshake" xml:space="preserve">
+    <value>Error disposing 'NamedPipeServer' corresponding to handshake:</value>
+  </data>
+  <data name="DotnetTestPipeFailureWithoutHandshake" xml:space="preserve">
+    <value>Error disposing 'NamedPipeServer', and no handshake was found.</value>
+  </data>
+  <data name="DotnetTestIncompatibleHandshakeVersion" xml:space="preserve">
+    <value>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</value>
+  </data>
 </root>

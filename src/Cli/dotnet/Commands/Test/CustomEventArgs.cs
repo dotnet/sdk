@@ -5,19 +5,20 @@
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal class HandshakeArgs : EventArgs
+internal sealed class HandshakeArgs : EventArgs
 {
     public Handshake Handshake { get; set; }
+    public bool GotSupportedVersion { get; set; }
 }
 
-internal class HelpEventArgs : EventArgs
+internal sealed class HelpEventArgs : EventArgs
 {
     public string ModulePath { get; set; }
 
     public CommandLineOption[] CommandLineOptions { get; set; }
 }
 
-internal class DiscoveredTestEventArgs : EventArgs
+internal sealed class DiscoveredTestEventArgs : EventArgs
 {
     public string ExecutionId { get; set; }
 
@@ -26,7 +27,7 @@ internal class DiscoveredTestEventArgs : EventArgs
     public DiscoveredTest[] DiscoveredTests { get; set; }
 }
 
-internal class TestResultEventArgs : EventArgs
+internal sealed class TestResultEventArgs : EventArgs
 {
     public string ExecutionId { get; set; }
 
@@ -37,7 +38,7 @@ internal class TestResultEventArgs : EventArgs
     public FailedTestResult[] FailedTestResults { get; set; }
 }
 
-internal class FileArtifactEventArgs : EventArgs
+internal sealed class FileArtifactEventArgs : EventArgs
 {
     public string ExecutionId { get; set; }
 
@@ -46,25 +47,19 @@ internal class FileArtifactEventArgs : EventArgs
     public FileArtifact[] FileArtifacts { get; set; }
 }
 
-internal class SessionEventArgs : EventArgs
+internal sealed class SessionEventArgs : EventArgs
 {
     public TestSession SessionEvent { get; set; }
 }
 
-internal class ErrorEventArgs : EventArgs
+internal sealed class ErrorEventArgs : EventArgs
 {
     public string ErrorMessage { get; set; }
 }
 
-internal class TestProcessExitEventArgs : EventArgs
+internal sealed class TestProcessExitEventArgs : EventArgs
 {
     public List<string> OutputData { get; set; }
     public List<string> ErrorData { get; set; }
     public int ExitCode { get; set; }
-}
-
-internal class ExecutionEventArgs : EventArgs
-{
-    public string ModulePath { get; set; }
-    public string ExecutionId { get; set; }
 }
