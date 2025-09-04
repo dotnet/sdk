@@ -2717,10 +2717,10 @@ El valor predeterminado es publicar una aplicación dependiente del marco.</targ
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="new">Unable to proceed with project '{0}'.
-Ensure you have a runnable project type.
-A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
-The current OutputType is '{2}'.</target>
+        <target state="translated">No se puede continuar con el proyecto '{0}'.
+Asegúrese de que tiene un tipo de proyecto que se puede ejecutar.
+Un proyecto ejecutable debe tener como destino un TFM ejecutable (por ejemplo, net{1}) y tener OutputType 'Exe'.
+El OutputType actual es '{2}'.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -3089,7 +3089,7 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
       </trans-unit>
       <trans-unit id="TestCommandUseDirectoryWithSwitch">
         <source>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</source>
-        <target state="new">Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</target>
+        <target state="translated">La especificación de un directorio para 'dotnet test' debería ser a través de '--project' o '--solution'.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseProject">

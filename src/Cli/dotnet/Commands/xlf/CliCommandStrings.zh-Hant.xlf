@@ -2717,10 +2717,10 @@ The default is to publish a framework-dependent application.</source>
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="new">Unable to proceed with project '{0}'.
-Ensure you have a runnable project type.
-A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
-The current OutputType is '{2}'.</target>
+        <target state="translated">無法繼續處理專案 '{0}'。
+請確定您有可執行的專案類型。
+可執行的專案應以可執行的 TFM (例如 net{1}) 為目標，且 OutputType 應為 'Exe'。
+目前的 OutputType 為 '{2}'。</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -3089,7 +3089,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="TestCommandUseDirectoryWithSwitch">
         <source>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</source>
-        <target state="new">Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</target>
+        <target state="translated">指定 'dotnet test' 的目錄應透過 '--project' 或 '--solution'。</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseProject">
