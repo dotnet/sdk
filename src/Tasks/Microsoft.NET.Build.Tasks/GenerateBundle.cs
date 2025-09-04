@@ -124,7 +124,7 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     Log.LogMessage(MessageImportance.High, $"Unable to access file during bundling. Retrying {RetryCount} more times...");
                     RetryCount--;
-                    await Task.Delay(_jitter.Next(50, 150));
+                    await Task.Delay(_jitter.Next(10, 50));
                 }
             }
         }
