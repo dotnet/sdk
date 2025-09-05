@@ -1170,7 +1170,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     if (deduplicated.TryGetValue(directive, out var existingDirective))
                     {
                         var typeAndName = $"#:{existingDirective.GetType().Name.ToLowerInvariant()} {existingDirective.Name}";
-                        diagnostics.AddError(sourceFile, directive.Info.Span, location => string.Format(CliCommandStrings.DuplicateDirective, typeAndName, location));
+                        diagnostics.AddError(sourceFile, directive.Info.Span, string.Format(CliCommandStrings.DuplicateDirective, typeAndName));
                     }
                     else
                     {
@@ -1220,7 +1220,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             if (trivia.ContainsDiagnostics && trivia.IsKind(SyntaxKind.IgnoredDirectiveTrivia))
             {
-                diagnostics.AddError(sourceFile, trivia.Span, location => string.Format(CliCommandStrings.CannotConvertDirective, location));
+                diagnostics.AddError(sourceFile, trivia.Span, CliCommandStrings.CannotConvertDirective);
             }
         }
 
@@ -1342,7 +1342,7 @@ internal readonly record struct SourceFile(string Path, SourceText Text)
     public string GetLocationString(TextSpan span)
     {
         var positionSpan = GetFileLinePositionSpan(span);
-        return $"{positionSpan.Path}:{positionSpan.StartLinePosition.Line + 1}";
+        return $"{positionSpan.Path}({positionSpan.StartLinePosition.Line + 1})";
     }
 }
 
@@ -1396,7 +1396,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             "property" => Property.Parse(context),
             "package" => Package.Parse(context),
             "project" => Project.Parse(context),
-            var other => context.Diagnostics.AddError<Named>(context.SourceFile, context.Info.Span, location => string.Format(CliCommandStrings.UnrecognizedDirective, other, location)),
+            var other => context.Diagnostics.AddError<Named>(context.SourceFile, context.Info.Span, string.Format(CliCommandStrings.UnrecognizedDirective, other)),
         };
     }
 
@@ -1408,13 +1408,13 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         string directiveKind = context.DirectiveKind;
         if (firstPart.IsWhiteSpace())
         {
-            return context.Diagnostics.AddError<(string, string?)?>(context.SourceFile, context.Info.Span, location => string.Format(CliCommandStrings.MissingDirectiveName, directiveKind, location));
+            return context.Diagnostics.AddError<(string, string?)?>(context.SourceFile, context.Info.Span, string.Format(CliCommandStrings.MissingDirectiveName, directiveKind));
         }
 
         // If the name contains characters that resemble separators, report an error to avoid any confusion.
         if (Patterns.DisallowedNameCharacters.IsMatch(firstPart))
         {
-            return context.Diagnostics.AddError<(string, string?)?>(context.SourceFile, context.Info.Span, location => string.Format(CliCommandStrings.InvalidDirectiveName, directiveKind, separator, location));
+            return context.Diagnostics.AddError<(string, string?)?>(context.SourceFile, context.Info.Span, string.Format(CliCommandStrings.InvalidDirectiveName, directiveKind, separator));
         }
 
         var secondPart = i < 0 ? [] : context.DirectiveText.AsSpan((i + 1)..).TrimStart();
@@ -1481,7 +1481,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
             if (propertyValue is null)
             {
-                return context.Diagnostics.AddError<Property?>(context.SourceFile, context.Info.Span, static location => string.Format(CliCommandStrings.PropertyDirectiveMissingParts, location));
+                return context.Diagnostics.AddError<Property?>(context.SourceFile, context.Info.Span, CliCommandStrings.PropertyDirectiveMissingParts);
             }
 
             try
@@ -1490,13 +1490,13 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             }
             catch (XmlException ex)
             {
-                return context.Diagnostics.AddError<Property?>(context.SourceFile, context.Info.Span, location => string.Format(CliCommandStrings.PropertyDirectiveInvalidName, location, ex.Message), ex);
+                return context.Diagnostics.AddError<Property?>(context.SourceFile, context.Info.Span, string.Format(CliCommandStrings.PropertyDirectiveInvalidName, ex.Message), ex);
             }
 
             if (propertyName.Equals("RestoreUseStaticGraphEvaluation", StringComparison.OrdinalIgnoreCase) &&
                 MSBuildUtilities.ConvertStringToBool(propertyValue))
             {
-                context.Diagnostics.AddError(context.SourceFile, context.Info.Span, static location => string.Format(CliCommandStrings.StaticGraphRestoreNotSupported, location));
+                context.Diagnostics.AddError(context.SourceFile, context.Info.Span, CliCommandStrings.StaticGraphRestoreNotSupported);
             }
 
             return new Property(context.Info)
@@ -1544,7 +1544,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             if (directiveText.IsWhiteSpace())
             {
                 string directiveKind = context.DirectiveKind;
-                return context.Diagnostics.AddError<Project?>(context.SourceFile, context.Info.Span, location => string.Format(CliCommandStrings.MissingDirectiveName, directiveKind, location));
+                return context.Diagnostics.AddError<Project?>(context.SourceFile, context.Info.Span, string.Format(CliCommandStrings.MissingDirectiveName, directiveKind));
             }
 
             try
@@ -1565,7 +1565,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             }
             catch (GracefulException e)
             {
-                context.Diagnostics.AddError(context.SourceFile, context.Info.Span, location => string.Format(CliCommandStrings.InvalidProjectDirective, location, e.Message), e);
+                context.Diagnostics.AddError(context.SourceFile, context.Info.Span, string.Format(CliCommandStrings.InvalidProjectDirective, e.Message), e);
             }
 
             return new Project(context.Info)
@@ -1639,22 +1639,22 @@ internal readonly struct DiagnosticBag
     public static DiagnosticBag Collect(out ImmutableArray<SimpleDiagnostic>.Builder builder) => new() { Builder = builder = ImmutableArray.CreateBuilder<SimpleDiagnostic>() };
     public static DiagnosticBag Ignore() => new() { IgnoreDiagnostics = true, Builder = null };
 
-    public void AddError(SourceFile sourceFile, TextSpan span, Func<string, string> messageFactory, Exception? inner = null)
+    public void AddError(SourceFile sourceFile, TextSpan span, string message, Exception? inner = null)
     {
         if (Builder != null)
         {
             Debug.Assert(!IgnoreDiagnostics);
-            Builder.Add(new SimpleDiagnostic { Location = sourceFile.GetFileLinePositionSpan(span), Message = messageFactory(sourceFile.GetLocationString(span)) });
+            Builder.Add(new SimpleDiagnostic { Location = sourceFile.GetFileLinePositionSpan(span), Message = message });
         }
         else if (!IgnoreDiagnostics)
         {
-            throw new GracefulException(messageFactory(sourceFile.GetLocationString(span)), inner);
+            throw new GracefulException($"{sourceFile.GetLocationString(span)}: {CliCommandStrings.DirectiveError}: {message}", inner);
         }
     }
 
-    public T? AddError<T>(SourceFile sourceFile, TextSpan span, Func<string, string> messageFactory, Exception? inner = null)
+    public T? AddError<T>(SourceFile sourceFile, TextSpan span, string message, Exception? inner = null)
     {
-        AddError(sourceFile, span, messageFactory, inner);
+        AddError(sourceFile, span, message, inner);
         return default;
     }
 }
