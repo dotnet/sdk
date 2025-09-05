@@ -444,7 +444,7 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
         }
         catch
         {
-            return Enumerable.Empty<DotnetVersion>();
+            return [];
         }
     }
 }

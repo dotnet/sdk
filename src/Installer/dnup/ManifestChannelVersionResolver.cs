@@ -17,9 +17,9 @@ internal class ManifestChannelVersionResolver
         // Resolve strings or other options
         if (!dotnetVersion.IsValidMajorVersion())
         {
-        // TODO ping the r-manifest to handle 'lts' 'latest' etc
-        // Do this in a separate class and use dotnet release library to do so
-        // https://github.com/dotnet/deployment-tools/tree/main/src/Microsoft.Deployment.DotNet.Releases
+            // TODO ping the r-manifest to handle 'lts' 'latest' etc
+            // Do this in a separate class and use dotnet release library to do so
+            // https://github.com/dotnet/deployment-tools/tree/main/src/Microsoft.Deployment.DotNet.Releases
         }
 
         // Make sure the version is fully specified
@@ -29,7 +29,7 @@ internal class ManifestChannelVersionResolver
         }
 
         return new DotnetInstall(
-            fullySpecifiedVersion,
+            dotnetVersion,
             dotnetChannelVersion.ResolvedDirectory,
             dotnetChannelVersion.Type,
             dotnetChannelVersion.Mode,

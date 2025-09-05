@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Text.Json.Serialization;
 using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -25,6 +26,7 @@ public enum DotnetVersionType
 /// Supports both SDK versions (with feature bands) and Runtime versions, and handles build hashes and preview versions.
 /// </summary>
 [DebuggerDisplay("{Value} ({VersionType})")]
+[JsonConverter(typeof(DotnetVersionJsonConverter))]
 public readonly record struct DotnetVersion : IComparable<DotnetVersion>, IComparable<string>, IEquatable<string>
 {
     private readonly ReleaseVersion? _releaseVersion;
@@ -88,7 +90,7 @@ public readonly record struct DotnetVersion : IComparable<DotnetVersion>, ICompa
     {
         Value = value ?? string.Empty;
         VersionType = versionType;
-        _releaseVersion = ReleaseVersion.TryParse(GetVersionWithoutBuildHash(), out var version) ? version : null;
+        _releaseVersion = !string.IsNullOrEmpty(Value) && ReleaseVersion.TryParse(GetVersionWithoutBuildHash(), out var version) ? version : null;
     }
 
     /// <summary>
