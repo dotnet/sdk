@@ -9,6 +9,7 @@ using Spectre.Console;
 
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
@@ -22,6 +23,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
     private readonly IBootstrapperController _dotnetInstaller = new BootstrapperController();
     private readonly IReleaseInfoProvider _releaseInfoProvider = new EnvironmentVariableMockReleaseInfoProvider();
+    private readonly ManifestChannelVersionResolver _channelVersionResolver = new ManifestChannelVersionResolver();
 
     public override int Execute()
     {
@@ -185,7 +187,18 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         List<string> additionalVersionsToInstall = new();
 
-        var resolvedChannelVersion = _releaseInfoProvider.GetLatestVersion(resolvedChannel);
+        // Create a request and resolve it using the channel version resolver
+        var installRequest = new DotnetInstallRequest(
+            resolvedChannel,
+            resolvedInstallPath,
+            InstallType.User,
+            InstallMode.SDK,
+            DnupUtilities.GetInstallArchitecture(System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture),
+            new ManagementCadence(ManagementCadenceType.DNUP),
+            new InstallRequestOptions());
+
+        var resolvedInstall = _channelVersionResolver.Resolve(installRequest);
+        var resolvedChannelVersion = resolvedInstall.FullySpecifiedVersion.Value;
 
         if (resolvedSetDefaultInstall == true && defaultInstallState == InstallType.Admin)
         {
@@ -214,7 +227,42 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         SpectreAnsiConsole.MarkupInterpolated($"Installing .NET SDK [blue]{resolvedChannelVersion}[/] to [blue]{resolvedInstallPath}[/]...");
 
-        _dotnetInstaller.InstallSdks(resolvedInstallPath, SpectreAnsiConsole.Progress().Start(ctx => ctx), new[] { resolvedChannelVersion }.Concat(additionalVersionsToInstall));
+        // Create and use a progress context
+        var progressContext = SpectreAnsiConsole.Progress().Start(ctx => ctx);
+
+        // Install the main SDK using the InstallerOrchestratorSingleton directly
+        DotnetInstall? mainInstall = InstallerOrchestratorSingleton.Instance.Install(installRequest);
+        if (mainInstall == null)
+        {
+            SpectreAnsiConsole.MarkupLine($"[red]Failed to install .NET SDK {resolvedChannelVersion}[/]");
+            return 1;
+        }
+        SpectreAnsiConsole.MarkupLine($"[green]Installed .NET SDK {mainInstall.FullySpecifiedVersion}, available via {mainInstall.MuxerDirectory}[/]");
+
+        // Install any additional versions
+        foreach (var additionalVersion in additionalVersionsToInstall)
+        {
+            // Create the request for the additional version
+            var additionalRequest = new DotnetInstallRequest(
+                additionalVersion,
+                resolvedInstallPath,
+                InstallType.User,
+                InstallMode.SDK,
+                DnupUtilities.GetInstallArchitecture(RuntimeInformation.ProcessArchitecture),
+                new ManagementCadence(ManagementCadenceType.DNUP),
+                new InstallRequestOptions());
+
+            // Install the additional version directly using InstallerOrchestratorSingleton
+            DotnetInstall? additionalInstall = InstallerOrchestratorSingleton.Instance.Install(additionalRequest);
+            if (additionalInstall == null)
+            {
+                SpectreAnsiConsole.MarkupLine($"[red]Failed to install additional .NET SDK {additionalVersion}[/]");
+            }
+            else
+            {
+                SpectreAnsiConsole.MarkupLine($"[green]Installed additional .NET SDK {additionalInstall.FullySpecifiedVersion}, available via {additionalInstall.MuxerDirectory}[/]");
+            }
+        }
 
         if (resolvedSetDefaultInstall == true)
         {

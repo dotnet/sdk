@@ -17,7 +17,7 @@ public record DotnetInstallBase(
     public Guid Id { get; } = Guid.NewGuid();
 }
 
-internal record InstallRequestOptions()
+public record InstallRequestOptions()
 {
     // Include things such as the custom feed here.
 }
@@ -37,7 +37,7 @@ public record DotnetInstall(
 /// <summary>
 /// Represents a request for a .NET installation with a channel version that will get resolved into a fully specified version.
 /// </summary>
-internal record DotnetInstallRequest(
+public record DotnetInstallRequest(
     string ChannelVersion,
     string TargetDirectory,
     InstallType Type,

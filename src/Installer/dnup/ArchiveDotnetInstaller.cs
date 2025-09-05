@@ -51,7 +51,7 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
     */
     private void VerifyArchive(string archivePath)
     {
-        if (!File.Exists(archivePath)) // replace this with actual verification logic once its implemented.
+        if (!File.Exists(archivePath)) // Enhancement: replace this with actual verification logic once its implemented.
         {
             throw new InvalidOperationException("Archive verification failed.");
         }
