@@ -102,6 +102,7 @@
     <PackageVersion Include="NuGet.Build.Tasks.Console" Version="$(NuGetBuildTasksConsolePackageVersion)" />
     <PackageVersion Include="NuGet.Build.Tasks.Pack" Version="$(NuGetConfigurationPackageVersion)" />
     <PackageVersion Include="NuGet.CommandLine.XPlat" Version="$(NuGetCommandLineXPlatPackageVersion)" />
+    <PackageVersion Include="NuGet.Commands" Version="$(NuGetCommandsPackageVersion)" />
     <PackageVersion Include="NuGet.Common" Version="$(NuGetCommonPackageVersion)" />
     <PackageVersion Include="NuGet.Configuration" Version="$(NuGetConfigurationPackageVersion)" />
     <PackageVersion Include="NuGet.Frameworks" Version="$(NuGetBuildTasksPackageVersion)" />
