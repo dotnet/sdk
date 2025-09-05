@@ -107,7 +107,16 @@ public static class ParseResultExtensions
         return parseResult.CommandResult.Command.Equals(Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
     }
 
-    public static bool CanBeInvoked(this ParseResult parseResult) => parseResult.Action is not null;
+    public static bool CanBeInvoked(this ParseResult parseResult) =>
+        parseResult.Action is not null // we have an invokable action (meaning .SetAction was called)
+        && IsNotRootCommandWithUnknownArg(parseResult);
+
+    public static bool IsNotRootCommandWithUnknownArg(this ParseResult parseResult) =>
+        parseResult.CommandResult is { Command: var chosenCommand } // we have a command
+        && (
+            chosenCommand != Parser.RootCommand // not the root command, or
+            // is the root command but isn't an unbound subcommand
+            || (chosenCommand == Parser.RootCommand && parseResult.GetValue<string>(Parser.DotnetSubCommand) is null));
 
     public static int HandleMissingCommand(this ParseResult parseResult)
     {
