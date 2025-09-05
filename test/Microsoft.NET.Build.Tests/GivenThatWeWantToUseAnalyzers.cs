@@ -152,6 +152,72 @@ namespace Microsoft.NET.Build.Tests
             Assert.Equal(expectEnabled ?? false, expectedNamespaces.All(expectedNamespace => namespaces.Contains(expectedNamespace)));
         }
 
+        [Fact]
+        public void It_enables_aspnet_generators_for_non_web_projects_with_framework_reference()
+        {
+            var asset = _testAssetsManager
+                .CopyTestAsset("AppWithLibrary")
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    // Only modify the TestApp project, not TestLibrary
+                    if (project.Root.Attribute("Sdk")?.Value == "Microsoft.NET.Sdk" &&
+                        project.Descendants(ns + "OutputType").Any(e => e.Value == "Exe"))
+                    {
+                        // Add FrameworkReference to ASP.NET
+                        project.Root.Add(new XElement(ns + "ItemGroup",
+                            new XElement(ns + "FrameworkReference", new XAttribute("Include", "Microsoft.AspNetCore.App"))));
+                        
+                        // Enable configuration binding generator (like the repro in the issue)
+                        project.Root.Add(new XElement(ns + "PropertyGroup",
+                            new XElement(ns + "EnableConfigurationBindingGenerator", "true")));
+                    }
+                });
+
+            // This should pass once we fix the issue - the non-web project should get the InterceptorsPreviewNamespaces
+            VerifyInterceptorsFeaturePropertiesForTestApp(asset, expectEnabled: true, "Microsoft.Extensions.Configuration.Binder.SourceGeneration");
+            VerifyConfigBindingGeneratorIsUsedForTestApp(asset, expectEnabled: true);
+        }
+
+        private void VerifyInterceptorsFeaturePropertiesForTestApp(TestAsset asset, bool? expectEnabled, params string[] expectedNamespaces)
+        {
+            var command = new GetValuesCommand(
+                Log,
+                Path.Combine(asset.Path, "TestApp"),
+                ToolsetInfo.CurrentTargetFramework,
+                "InterceptorsPreviewNamespaces",
+                GetValuesCommand.ValueType.Property);
+
+            command
+                .WithWorkingDirectory(asset.Path)
+                .Execute()
+                .Should().Pass();
+
+            var namespaces = command.GetValues();
+
+            Assert.Equal(expectEnabled ?? false, expectedNamespaces.All(expectedNamespace => namespaces.Contains(expectedNamespace)));
+        }
+
+        private void VerifyConfigBindingGeneratorIsUsedForTestApp(TestAsset asset, bool? expectEnabled)
+        {
+            var command = new GetValuesCommand(
+                Log,
+                Path.Combine(asset.Path, "TestApp"),
+                ToolsetInfo.CurrentTargetFramework,
+                "Analyzer",
+                GetValuesCommand.ValueType.Item);
+
+            command
+                .WithWorkingDirectory(asset.Path)
+                .Execute()
+                .Should().Pass();
+
+            var analyzers = command.GetValues();
+
+            Assert.Equal(expectEnabled ?? false, analyzers.Any(analyzer => analyzer.Contains("Microsoft.Extensions.Configuration.Binder.SourceGeneration.dll")));
+        }
+
         [Theory]
         [InlineData("C#", "AppWithLibrary")]
         [InlineData("VB", "AppWithLibraryVB")]
