@@ -94,6 +94,13 @@ internal partial class TestingPlatformCommand
 
     private void OnHelpRequested(object sender, HelpEventArgs args)
     {
+        var testApp = (TestApplication)sender;
+        if (!testApp.TestOptions.IsHelp)
+        {
+            // TODO: Better to throw exception?
+            return;
+        }
+        
         CommandLineOption[] commandLineOptionMessages = args.CommandLineOptions;
         string moduleName = args.ModulePath;
 

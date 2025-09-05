@@ -3089,7 +3089,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="TestCommandUseDirectoryWithSwitch">
         <source>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</source>
-        <target state="new">Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</target>
+        <target state="translated">指定 'dotnet test' 的目錄應透過 '--project' 或 '--solution'。</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseProject">

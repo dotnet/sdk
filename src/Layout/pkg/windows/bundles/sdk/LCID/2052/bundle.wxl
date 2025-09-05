@@ -1,93 +1,93 @@
 ﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
-  <String Id="Caption" Value="[WixBundleName] Installer"/>
+  <String Id="Caption" Value="[WixBundleName] 安装程序"/>
   <String Id="Title" Value="[BUNDLEMONIKER]"/>
   <String Id="ConfirmCancelMessage" Value="是否确实要取消?"/>
-  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Previous version"/>
-  <String Id="HelpHeader" Value="Setup Help"/>
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="上一个版本"/>
+  <String Id="HelpHeader" Value="安装帮助"/>
   
-  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [directory] - installs, repairs, uninstalls or creates a complete local copy of the bundle in directory. Install is the default.
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [directory] - 在目录中安装、修复、卸载或创建捆绑包的完整本地副本。Install 为默认值。
 
-/passive | /quiet -  displays minimal UI with no prompts or displays no UI and no prompts. By default, UI and all prompts are displayed.
+/passive | /quiet - 在无提示的情况下显示最小 UI 或不显示 UI 和提示。默认情况下，将显示 UI 和所有提示。
 
-/norestart - suppress any attempts to restart. By default UI will prompt before restart.
+/norestart - 抑制任何重启尝试。默认情况下，UI 将在重启前提示。
 
-/log &lt;LOG_FILE&gt; - logs to the specified file. By default a log file is created in %TEMP%.
+/log &lt;LOG_FILE&gt; - 记录到指定的文件。默认在 %TEMP% 中创建日志文件。
 
-/lang &lt;LCID&gt; - displays the UI using the specified numeric language code identifier."/>
-  <String Id="HelpCloseButton" Value="&amp;Close"/>
-  <String Id="InstallAcceptCheckbox" Value="I &amp;agree to the license terms and conditions"/>
-  <String Id="InstallOptionsButton" Value="&amp;Options"/>
-  <String Id="InstallInstallButton" Value="&amp;Install"/>
-  <String Id="InstallCloseButton" Value="&amp;Close"/>
-  <String Id="ProgressHeader" Value="Setup Progress"/>
-  <String Id="ProgressLabel" Value="Processing:"/>
-  <String Id="OverallProgressPackageText" Value="Initializing..."/>
-  <String Id="ProgressCancelButton" Value="&amp;Cancel"/>
-  <String Id="ModifyHeader" Value="Modify Setup"/>
-  <String Id="ModifyText" Value="Select repair to reinstall the product or uninstall to remove it."/>
-  <String Id="ModifyRepairButton" Value="&amp;Repair"/>
-  <String Id="ModifyUninstallButton" Value="&amp;Uninstall"/>
-  <String Id="ModifyCloseButton" Value="&amp;Close"/>
-  <String Id="SuccessCacheHeader" Value="Cache Successfully Completed"/>
-  <String Id="SuccessRepairHeader" Value="Repair Successfully Completed"/>
-  <String Id="SuccessUninstallHeader" Value="Uninstall Successfully Completed"/>
-  <String Id="SuccessLayoutHeader" Value="Layout Successfully Completed"/>
-  <String Id="SuccessModifyHeader" Value="Modify Successfully Completed"/>
-  <String Id="SuccessUnsafeUninstallHeader" Value="Uninstall Successfully Completed"/>
-  <String Id="SuccessHeader" Value="Setup Successful"/>
-  <String Id="SuccessInstallHeader" Value="Installation Successfully Completed"/>
-  <String Id="SuccessLaunchButton" Value="&amp;Launch"/>
+/lang &lt;LCID&gt; - 使用指定的数字语言代码标识符显示 UI。"/>
+  <String Id="HelpCloseButton" Value="关闭(&amp;C)"/>
+  <String Id="InstallAcceptCheckbox" Value="我同意(&amp;A)许可条款和条件"/>
+  <String Id="InstallOptionsButton" Value="选项(&amp;O)"/>
+  <String Id="InstallInstallButton" Value="安装(&amp;I)"/>
+  <String Id="InstallCloseButton" Value="关闭(&amp;C)"/>
+  <String Id="ProgressHeader" Value="安装进度"/>
+  <String Id="ProgressLabel" Value="正在处理:"/>
+  <String Id="OverallProgressPackageText" Value="正在初始化..."/>
+  <String Id="ProgressCancelButton" Value="取消(&amp;C)"/>
+  <String Id="ModifyHeader" Value="修改安装"/>
+  <String Id="ModifyText" Value="选择“修复”以重新安装产品或选择“卸载”以将其移除。"/>
+  <String Id="ModifyRepairButton" Value="修复(&amp;R)"/>
+  <String Id="ModifyUninstallButton" Value="卸载(&amp;U)"/>
+  <String Id="ModifyCloseButton" Value="关闭(&amp;C)"/>
+  <String Id="SuccessCacheHeader" Value="已成功完成缓存"/>
+  <String Id="SuccessRepairHeader" Value="已成功完成修复"/>
+  <String Id="SuccessUninstallHeader" Value="已成功完成卸载"/>
+  <String Id="SuccessLayoutHeader" Value="已成功完成布局"/>
+  <String Id="SuccessModifyHeader" Value="已成功完成修改"/>
+  <String Id="SuccessUnsafeUninstallHeader" Value="已成功完成卸载"/>
+  <String Id="SuccessHeader" Value="安装成功"/>
+  <String Id="SuccessInstallHeader" Value="已成功完成安装"/>
+  <String Id="SuccessLaunchButton" Value="启动(&amp;L)"/>
   <String Id="SuccessRestartText" Value="必须重启计算机才能完成软件安装。"/>
-  <String Id="SuccessUninstallRestartText" Value="You must restart your computer to complete the removal of the software."/>
-  <String Id="SuccessRestartButton" Value="&amp;Restart"/>
-  <String Id="SuccessCloseButton" Value="&amp;Close"/>
-  <String Id="FailureHeader" Value="Setup Failed"/>
-  <String Id="FailureInstallHeader" Value="Setup Failed"/>
-  <String Id="FailureUninstallHeader" Value="Uninstall Failed"/>
-  <String Id="FailureRepairHeader" Value="Repair Failed"/>
-  <String Id="FailureHyperlinkLogText" Value="One or more issues caused the setup to fail. Please fix the issues and then retry setup. For more information, see the &lt;a href=&quot;#&quot;&gt;log file&lt;/a&gt;."/>
+  <String Id="SuccessUninstallRestartText" Value="必须重启计算机才能完成软件移除。"/>
+  <String Id="SuccessRestartButton" Value="重启(&amp;R)"/>
+  <String Id="SuccessCloseButton" Value="关闭(&amp;C)"/>
+  <String Id="FailureHeader" Value="安装失败"/>
+  <String Id="FailureInstallHeader" Value="安装失败"/>
+  <String Id="FailureUninstallHeader" Value="卸载失败"/>
+  <String Id="FailureRepairHeader" Value="修复失败"/>
+  <String Id="FailureHyperlinkLogText" Value="一个或多个问题导致了安装失败。请修复问题，然后重试安装。有关详细信息，请参阅&lt;a href=&quot;#&quot;&gt;日志文件&lt;/a&gt;。"/>
   <String Id="FailureRestartText" Value="必须重新启动计算机才能完成软件回退。"/>
-  <String Id="FailureRestartButton" Value="&amp;Restart"/>
-  <String Id="FailureCloseButton" Value="&amp;Close"/>
-  <String Id="FilesInUseTitle" Value="Files In Use"/>
+  <String Id="FailureRestartButton" Value="重启(&amp;R)"/>
+  <String Id="FailureCloseButton" Value="关闭(&amp;C)"/>
+  <String Id="FilesInUseTitle" Value="文件正在使用"/>
   <String Id="FilesInUseLabel" Value="以下应用程序正在使用的文件需要更新:"/>
-  <String Id="FilesInUseNetfxCloseRadioButton" Value="Close the &amp;applications."/>
-  <String Id="FilesInUseCloseRadioButton" Value="Close the &amp;applications and attempt to restart them."/>
-  <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Do not close applications. A reboot will be required."/>
-  <String Id="FilesInUseRetryButton" Value="&amp;Retry"/>
-  <String Id="FilesInUseIgnoreButton" Value="&amp;Ignore"/>
-  <String Id="FilesInUseExitButton" Value="E&amp;xit"/>
+  <String Id="FilesInUseNetfxCloseRadioButton" Value="关闭应用程序(&amp;A)。"/>
+  <String Id="FilesInUseCloseRadioButton" Value="关闭应用程序，并尝试重启它们(&amp;A)。"/>
+  <String Id="FilesInUseDontCloseRadioButton" Value="不关闭应用程序(&amp;D)。需要重新启动。"/>
+  <String Id="FilesInUseRetryButton" Value="重试(&amp;R)"/>
+  <String Id="FilesInUseIgnoreButton" Value="忽略(&amp;I)"/>
+  <String Id="FilesInUseExitButton" Value="退出(&amp;X)"/>
   
-  <String Id="FirstTimeWelcomeMessage" Value="The following products were installed:
+  <String Id="FirstTimeWelcomeMessage" Value="已安装以下产品:
     • .NET SDK [DOTNETSDKVERSION]
-    • .NET Runtime [DOTNETRUNTIMEVERSION]
-    • ASP.NET Core Runtime [ASPNETCOREVERSION]
-    • .NET Windows Desktop Runtime [WINFORMSANDWPFVERSION]
+    • .NET 运行时 [DOTNETRUNTIMEVERSION]
+    • ASP.NET Core 运行时 [ASPNETCOREVERSION]
+    • .NET Windows Desktop 运行时 [WINFORMSANDWPFVERSION]
 
-This product collects usage data
-    • &lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;More information and opt-out&lt;/A&gt;"/>
-  <String Id="NetDocumentationLinkText" Value="Resources
-    • &lt;A HREF=&quot;https://aka.ms/dotnet-docs&quot;&gt;.NET Documentation&lt;/A&gt;"/>
-  <String Id="SdkDocumentationLinkText" Value="    • &lt;A HREF=&quot;https://aka.ms/dotnet-sdk-docs&quot;&gt;SDK Documentation&lt;/A&gt;"/>
-  <String Id="ReleaseNotesLinkText" Value="    • &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Release Notes &lt;/A&gt;"/>
-  <String Id="TutorialsLinkText" Value="    • &lt;A HREF=&quot;https://aka.ms/dotnet-tutorials&quot;&gt;Tutorials&lt;/A&gt;"/>
+此产品会收集使用情况数据
+    • &lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;详细信息和选择退出&lt;/A&gt;"/>
+  <String Id="NetDocumentationLinkText" Value="资源
+    • &lt;A HREF=&quot;https://aka.ms/dotnet-docs&quot;&gt;.NET 文档&lt;/A&gt;"/>
+  <String Id="SdkDocumentationLinkText" Value="    • &lt;A HREF=&quot;https://aka.ms/dotnet-sdk-docs&quot;&gt;SDK 文档&lt;/A&gt;"/>
+  <String Id="ReleaseNotesLinkText" Value="    • &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;发行说明&lt;/A&gt;"/>
+  <String Id="TutorialsLinkText" Value="    • &lt;A HREF=&quot;https://aka.ms/dotnet-tutorials&quot;&gt;教程&lt;/A&gt;"/>
   
   <String Id="WelcomeHeader" Value=".NET SDK" Localizable="no"/>
   
-  <String Id="WelcomeDescription" Value="The .NET SDK is used to build, run, and test .NET applications. You can choose from multiple languages, editors, and developer tools, and take advantage of a large ecosystem of libraries to build apps for web, mobile, desktop, gaming, and IoT. We hope you enjoy it!"/>
-  <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2022 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;."/>
+  <String Id="WelcomeDescription" Value=".NET SDK 用于生成、运行和测试 .NET 应用程序。可以从多种语言、编辑器和开发人员工具中进行选择，并利用大型库生态系统来生成面向 Web、移动设备、桌面、游戏和 IoT 的应用。希望你会喜欢它!"/>
+  <String Id="VisualStudioWarning" Value="如果计划将 .NET [VERSIONMAJOR].[VERSIONMINOR] 与 Visual Studio 配合使用，则需使用 Visual Studio 2022 [MINIMUMVSVERSION] 或更高版本。&lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;了解详细信息&lt;/A&gt;."/>
   <String Id="LicenseAssent" Value="单击“安装”即表示你同意以下条款:"/>
   <String Id="LearnMoreTitle" Value="了解有关 .NET 的详细信息"/>
-  <String Id="ResourcesHeader" Value="Resources"/>
-  <String Id="CoreDocumentationLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-docs&quot;&gt;.NET Documentation&lt;/A&gt;"/>
-  <String Id="SDKDocumentation" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-docs&quot;&gt;SDK Documentation&lt;/A&gt;"/>
-  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;Privacy Statement&lt;/A&gt;"/>
-  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;Licensing Information for .NET&lt;/A&gt;"/>
-  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Telemetry collection and opt-out&lt;/A&gt;"/>
-  <String Id="InstallationNoteTitle" Value="Installation note"/>
+  <String Id="ResourcesHeader" Value="资源"/>
+  <String Id="CoreDocumentationLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-docs&quot;&gt;.NET 文档&lt;/A&gt;"/>
+  <String Id="SDKDocumentation" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-docs&quot;&gt;SDK 文档&lt;/A&gt;"/>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;隐私声明&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;.NET 的许可信息&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;遥测收集和选择退出&lt;/A&gt;"/>
+  <String Id="InstallationNoteTitle" Value="安装说明"/>
   <String Id="InstallationNote" Value="将在要提升项目还原速度并实现脱机访问的安装进程期间运行命令。此操作最多 1 分钟即可完成。"/>
   
-  <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2022 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;."/>
+  <String Id="VisualStudioWarning" Value="如果计划将 .NET [VERSIONMAJOR].[VERSIONMINOR] 与 Visual Studio 配合使用，则需使用 Visual Studio 2022 [MINIMUMVSVERSION] 或更高版本。&lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;了解详细信息&lt;/A&gt;."/>
   <String Id="LicenseAssent" Value="单击“安装”即表示你同意以下条款:"/>
   <String Id="InstallPathx64x86" Value="x64 SDK 安装的安装路径: &quot;[DOTNETHOME_X64]&quot; 不能与 x86 SDK 安装的路径相同: &quot;[DOTNETHOME_X86]&quot;"/>
   <String Id="InstallPathARM64x86" Value="ARM64 SDK 安装的安装路径: &quot;[DOTNETHOME_ARM64]&quot; 不能与 x86 SDK 安装的路径相同: &quot;[DOTNETHOME_X86]&quot;"/>

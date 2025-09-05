@@ -832,22 +832,22 @@ The header is followed by the list of parameters and their errors (might be seve
       </trans-unit>
       <trans-unit id="PostAction_CreateDotnetConfig_CreatedNewSection">
         <source>Created new section in 'dotnet.config' file</source>
-        <target state="new">Created new section in 'dotnet.config' file</target>
+        <target state="translated">'dotnet.config' dosyasında yeni bölüm oluşturuldu</target>
         <note>{Locked="dotnet.config"}</note>
       </trans-unit>
       <trans-unit id="PostAction_CreateDotnetConfig_ManuallyUpdate">
         <source>Updating existing values in 'dotnet.config' is not yet supported. Please, manually update 'dotnet.config' to have '{0}' under section '{1}'.</source>
-        <target state="new">Updating existing values in 'dotnet.config' is not yet supported. Please, manually update 'dotnet.config' to have '{0}' under section '{1}'.</target>
+        <target state="translated">'dotnet.config' içindeki mevcut değerleri güncelleştirmek henüz desteklenmemektedir. Lütfen 'dotnet.config' dosyasını manuel olarak güncelleştirmek suretiyle '{1}' bölümünün altına '{0}' ekleyin.</target>
         <note>{Locked="dotnet.config"}</note>
       </trans-unit>
       <trans-unit id="PostAction_CreateDotnetConfig_Succeeded">
         <source>Successfully created 'dotnet.config' file.</source>
-        <target state="new">Successfully created 'dotnet.config' file.</target>
+        <target state="translated">'dotnet.config' dosyası başarıyla oluşturuldu.</target>
         <note>{Locked="dotnet.config"}</note>
       </trans-unit>
       <trans-unit id="PostAction_CreateDotnetConfig_ValueAlreadyExist">
         <source>The required value in 'dotnet.config' is already set.</source>
-        <target state="new">The required value in 'dotnet.config' is already set.</target>
+        <target state="translated">'dotnet.config' dosyasında gerekli değer zaten ayarlanmıştır.</target>
         <note>{Locked="dotnet.config"}</note>
       </trans-unit>
       <trans-unit id="PostAction_DotnetConfig_Error_ArgumentNotConfigured">
