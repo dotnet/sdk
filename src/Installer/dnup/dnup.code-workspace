@@ -1,60 +1,78 @@
 {
-  "folders": [
-    {
-      "path": ".",
-      "name": "dnup"
-    }
-  ],
-  "settings": {
-    "dotnet.defaultSolution": "dnup.csproj",
-    "omnisharp.defaultLaunchSolution": "dnup.csproj",
-    "csharp.debug.console": "externalTerminal",
-    "editor.formatOnSave": true,
-    "omnisharp.enableRoslynAnalyzers": true,
-    "omnisharp.useModernNet": true
-  },
-  "launch": {
-    "version": "0.2.0",
-    "configurations": [
-      {
-        "name": "Launch dnup (Default)",
-        "type": "coreclr",
-        "request": "launch",
-        "preLaunchTask": "build",
-        "program": "${workspaceFolder}/../../../artifacts/bin/dnup/Debug/net10.0/dnup.dll",
-        "args": [
-          "sdk",
-          "install"
-        ],
-        "cwd": "${workspaceFolder}",
-        "console": "externalTerminal",
-        "stopAtEntry": false,
-        "logging": {
-          "moduleLoad": false
+    "folders": [
+        {
+            "path": ".",
+            "name": "dnup"
+        },
+        {
+            "path": "../../../test/dnup.Tests",
+            "name": "dnup.Tests"
         }
-      }
     ],
-    "compounds": []
-  },
-  "tasks": {
-    "version": "2.0.0",
-    "tasks": [
-      {
-        "label": "build",
-        "type": "process",
-        "command": "dotnet",
-        "args": [
-          "build",
-          "${workspaceFolder}/dnup.csproj",
-          "/property:GenerateFullPaths=true",
-          "/consoleloggerparameters:NoSummary"
+    "settings": {
+        "dotnet.defaultSolution": "dnup.csproj",
+        "omnisharp.defaultLaunchSolution": "dnup.csproj",
+        "csharp.debug.console": "externalTerminal",
+        "editor.formatOnSave": true,
+        "omnisharp.enableRoslynAnalyzers": true,
+        "omnisharp.useModernNet": true
+    },
+    "launch": {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "Launch dnup (Default)",
+                "type": "coreclr",
+                "request": "launch",
+                "preLaunchTask": "build",
+                "program": "${workspaceFolder}/../../../artifacts/bin/dnup/Debug/net10.0/dnup.dll",
+                "args": [
+                    "sdk",
+                    "install"
+                ],
+                "cwd": "${workspaceFolder}",
+                "console": "externalTerminal",
+                "stopAtEntry": false,
+                "logging": {
+                    "moduleLoad": false
+                }
+            }
         ],
-        "problemMatcher": "$msCompile",
-        "group": {
-          "kind": "build",
-          "isDefault": true
-        }
-      }
-    ]
-  }
+        "compounds": []
+    },
+    "tasks": {
+        "version": "2.0.0",
+        "tasks": [
+            {
+                "label": "build",
+                "type": "process",
+                "command": "dotnet",
+                "args": [
+                    "build",
+                    "dnup.csproj",
+                    "/property:GenerateFullPaths=true",
+                    "/consoleloggerparameters:NoSummary"
+                ],
+                "problemMatcher": "$msCompile",
+                "group": {
+                    "kind": "build",
+                    "isDefault": true
+                }
+            },
+            {
+                "label": "test",
+                "type": "process",
+                "command": "dotnet",
+                "args": [
+                    "test",
+                    "../../../../test/dnup.Tests/dnup.Tests.csproj"
+                ],
+                "problemMatcher": "$msCompile",
+                "group": {
+                    "kind": "test",
+                    "isDefault": true
+                }
+            }
+        ]
+    }
 }

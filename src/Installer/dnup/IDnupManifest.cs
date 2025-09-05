@@ -7,7 +7,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
 {
     internal interface IDnupManifest
     {
-        IEnumerable<DotnetInstall> GetInstalledVersions();
+        IEnumerable<DotnetInstall> GetInstalledVersions(IInstallationValidator? validator = null);
+        IEnumerable<DotnetInstall> GetInstalledVersions(string muxerDirectory, IInstallationValidator? validator = null);
         void AddInstalledVersion(DotnetInstall version);
         void RemoveInstalledVersion(DotnetInstall version);
     }

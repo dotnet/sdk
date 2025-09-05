@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper
 {
-    internal enum InstallArchitecture
+    public enum InstallArchitecture
     {
         x86,
         x64,
