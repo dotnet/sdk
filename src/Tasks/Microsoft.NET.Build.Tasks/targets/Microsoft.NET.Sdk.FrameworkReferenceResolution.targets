@@ -473,12 +473,8 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="'@(FrameworkReference)' != ''">
     
     <!-- Check if we have Microsoft.AspNetCore.App framework reference -->
-    <ItemGroup>
-      <_AspNetCoreAppFrameworkReference Include="@(FrameworkReference)" Condition="'%(Identity)' == 'Microsoft.AspNetCore.App'" />
-    </ItemGroup>
-    
     <PropertyGroup>
-      <_HasAspNetCoreApp Condition="'@(_AspNetCoreAppFrameworkReference)' != ''">true</_HasAspNetCoreApp>
+      <_HasAspNetCoreApp Condition="@(FrameworkReference->AnyHaveMetadataValue('Identity', 'Microsoft.AspNetCore.App'))">true</_HasAspNetCoreApp>
     </PropertyGroup>
     
     <!-- Enable ASP.NET generators and set interceptor namespaces when ASP.NET framework reference is present -->
