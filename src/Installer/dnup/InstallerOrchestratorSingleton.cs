@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -30,6 +32,7 @@ internal class InstallerOrchestratorSingleton
         {
             if (InstallAlreadyExists(installRequest.ResolvedDirectory, install))
             {
+                Console.WriteLine($"\n.NET SDK {install.FullySpecifiedVersion.Value} is already installed, skipping installation.");
                 return install;
             }
         }
@@ -62,16 +65,27 @@ internal class InstallerOrchestratorSingleton
         return install;
     }
 
-    // Add a doc string mentioning you must hold a mutex over the directory
+    /// <summary>
+    /// Gets the existing installs from the manifest. Must hold a mutex over the directory.
+    /// </summary>
     private IEnumerable<DotnetInstall> GetExistingInstalls(string directory)
     {
-        // assert we have the finalize lock
-        return Enumerable.Empty<DotnetInstall>();
+        var manifestManager = new DnupSharedManifest();
+        // Use the overload that filters by muxer directory
+        return manifestManager.GetInstalledVersions(directory);
     }
 
+    /// <summary>
+    /// Checks if the installation already exists. Must hold a mutex over the directory.
+    /// </summary>
     private bool InstallAlreadyExists(string directory, DotnetInstall install)
     {
-        // assert we have the finalize lock
-        return false;
+        var existingInstalls = GetExistingInstalls(directory);
+
+        // Check if there's any existing installation that matches the version we're trying to install
+        return existingInstalls.Any(existing =>
+            existing.FullySpecifiedVersion.Value == install.FullySpecifiedVersion.Value &&
+            existing.Type == install.Type &&
+            existing.Architecture == install.Architecture);
     }
 }
