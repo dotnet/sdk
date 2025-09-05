@@ -7,5 +7,5 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 
 internal interface ILLMEnvironmentDetector
 {
-    bool IsLLMEnvironment();
+    string GetLLMEnvironment();
 }

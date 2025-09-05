@@ -8,21 +8,21 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 internal class LLMEnvironmentDetectorForTelemetry : ILLMEnvironmentDetector
 {
     // Systems where the variable must be present and not-null
-    private static readonly string[] _ifNonNullVariables = [
+    private static readonly string[] _claudeVariables = [
         // Claude Code
         "CLAUDECODE"
     ];
 
-    public bool IsLLMEnvironment()
+    public string GetLLMEnvironment()
     {
-        foreach (var variable in _ifNonNullVariables)
+        foreach (var variable in _claudeVariables)
         {
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable(variable)))
             {
-                return true;
+                return "claude";
             }
         }
 
-        return false;
+        return null;
     }
 }

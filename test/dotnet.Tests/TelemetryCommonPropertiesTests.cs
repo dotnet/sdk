@@ -167,7 +167,7 @@ namespace Microsoft.DotNet.Tests
         public void TelemetryCommonPropertiesShouldReturnIsLLMDetection()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["LLM Environment"].Should().BeOneOf("True", "False");
+            unitUnderTest.GetTelemetryCommonProperties()["llm"].Should().BeOneOf("claude", null);
         }
 
         [Theory]
@@ -193,7 +193,7 @@ namespace Microsoft.DotNet.Tests
 
         [Theory]
         [MemberData(nameof(LLMTelemetryTestCases))]
-        public void CanDetectLLMStatusForEnvVars(Dictionary<string, string> envVars, bool expected)
+        public void CanDetectLLMStatusForEnvVars(Dictionary<string, string> envVars, string expected)
         {
             try
             {
@@ -201,7 +201,7 @@ namespace Microsoft.DotNet.Tests
                 {
                     Environment.SetEnvironmentVariable(key, value);
                 }
-                new LLMEnvironmentDetectorForTelemetry().IsLLMEnvironment().Should().Be(expected);
+                new LLMEnvironmentDetectorForTelemetry().GetLLMEnvironment().Should().Be(expected);
             }
             finally
             {
@@ -213,11 +213,11 @@ namespace Microsoft.DotNet.Tests
         }
 
         public static IEnumerable<object[]> LLMTelemetryTestCases => new List<object[]>{
-            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "1" } }, true },
-            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "true" } }, true },
-            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "anything" } }, true },
-            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "" } }, false },
-            new object[] { new Dictionary<string, string> { { "SomethingElse", "hi" } }, false },
+            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "1" } }, "claude" },
+            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "true" } }, "claude" },
+            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "anything" } }, "claude" },
+            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "" } }, null },
+            new object[] { new Dictionary<string, string> { { "SomethingElse", "hi" } }, null },
         };
 
         public static IEnumerable<object[]> CITelemetryTestCases => new List<object[]>{

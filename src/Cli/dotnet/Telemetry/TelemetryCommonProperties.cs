@@ -48,7 +48,7 @@ internal class TelemetryCommonProperties(
     private const string LibcVersion = "Libc Version";
 
     private const string CI = "Continuous Integration";
-    private const string LLM = "LLM Environment";
+    private const string LLM = "llm";
 
     private const string TelemetryProfileEnvironmentVariable = "DOTNET_CLI_TELEMETRY_PROFILE";
     private const string CannotFindMacAddress = "Unknown";
@@ -69,7 +69,7 @@ internal class TelemetryCommonProperties(
             {TelemetryProfile, Environment.GetEnvironmentVariable(TelemetryProfileEnvironmentVariable)},
             {DockerContainer, _userLevelCacheWriter.RunWithCache(IsDockerContainerCacheKey, () => _dockerContainerDetector.IsDockerContainer().ToString("G") )},
             {CI, _ciEnvironmentDetector.IsCIEnvironment().ToString() },
-            {LLM, _llmEnvironmentDetector.IsLLMEnvironment().ToString() },
+            {LLM, _llmEnvironmentDetector.GetLLMEnvironment() },
             {CurrentPathHash, _hasher(_getCurrentDirectory())},
             {MachineIdOld, _userLevelCacheWriter.RunWithCache(MachineIdCacheKey, GetMachineId)},
             // we don't want to recalcuate a new id for every new SDK version. Reuse the same path across versions.
