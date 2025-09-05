@@ -43,9 +43,9 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
 
         int degreeOfParallelism = GetDegreeOfParallelism(parseResult);
         bool filterModeEnabled = parseResult.HasOption(MicrosoftTestingPlatformOptions.TestModulesFilterOption);
-        var testOptions = new TestOptions(filterModeEnabled, IsHelp: isHelp);
+        var testOptions = new TestOptions(filterModeEnabled, IsHelp: isHelp, IsDiscovery: parseResult.HasOption(MicrosoftTestingPlatformOptions.ListTestsOption));
 
-        InitializeOutput(degreeOfParallelism, parseResult, testOptions.IsHelp);
+        InitializeOutput(degreeOfParallelism, parseResult, testOptions);
 
         SetupCancelKeyPressHandler();
 
@@ -110,7 +110,7 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
         };
     }
 
-    private void InitializeOutput(int degreeOfParallelism, ParseResult parseResult, bool isHelp)
+    private void InitializeOutput(int degreeOfParallelism, ParseResult parseResult, TestOptions testOptions)
     {
         var console = new SystemConsole();
         var showPassedTests = parseResult.GetValue(MicrosoftTestingPlatformOptions.OutputOption) == OutputOptions.Detailed;
@@ -131,11 +131,10 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
             MinimumExpectedTests = parseResult.GetValue(MicrosoftTestingPlatformOptions.MinimumExpectedTestsOption),
         });
 
-        var isDiscovery = parseResult.HasOption(MicrosoftTestingPlatformOptions.ListTestsOption);
         // This is ugly, and we need to replace it by passing out some info from testing platform to inform us that some process level retry plugin is active.
         var isRetry = parseResult.GetArguments().Contains("--retry-failed-tests");
 
-        _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, isDiscovery, isHelp, isRetry);
+        _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, testOptions.IsDiscovery, testOptions.IsHelp, isRetry);
     }
 
     private static int GetDegreeOfParallelism(ParseResult parseResult)

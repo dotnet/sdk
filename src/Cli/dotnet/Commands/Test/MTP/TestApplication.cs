@@ -115,6 +115,11 @@ internal sealed class TestApplication(
             builder.Append($" {CliConstants.HelpOptionKey}");
         }
 
+        if (TestOptions.IsDiscovery)
+        {
+            builder.Append($" {MicrosoftTestingPlatformOptions.ListTestsOption.Name}");
+        }
+
         if (_buildOptions.PathOptions.ResultsDirectoryPath is { } resultsDirectoryPath)
         {
             builder.Append($" {MicrosoftTestingPlatformOptions.ResultsDirectoryOption.Name} {ArgumentEscaper.EscapeSingleArg(resultsDirectoryPath)}");
