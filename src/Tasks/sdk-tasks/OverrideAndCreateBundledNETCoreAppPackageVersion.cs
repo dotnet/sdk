@@ -15,14 +15,16 @@ using NuGet.Frameworks;
 namespace Microsoft.DotNet.Build.Tasks
 {
     /// <summary>
-    /// Updates version numbers in the stage 2 bundled versions file by copying values from the stage 0 file
-    /// for items where the TargetFramework is not the latest supported. Matches and updates multiple item types.
+    /// For stage 2, we want use the version numbers from stage 0 for the downlevel .NET versions.  This is because
+    /// the latest patches of different major versions are built entirely separately, and we want to have tests
+    /// on downlevel versions but we can't depend on the latest patches being available in test environments.
+    ///
+    /// So we copy the version numbers from stage 0 for those downlevel versions.    
     /// </summary>
     public sealed class OverrideAndCreateBundledNETCoreAppPackageVersion : Task
     {
         [Required] public string Stage0BundledVersionsPath { get; set; }
         [Required] public string Stage2BundledVersionsPath { get; set; }
-        [Required] public string OutputPath { get; set; }
 
         public override bool Execute()
         {
@@ -44,7 +46,7 @@ namespace Microsoft.DotNet.Build.Tasks
                     .Select(tf => new { Raw = tf, Parsed = NuGetFramework.Parse(tf) })
                     .ToList();
                 var latest = allTargetFrameworks
-                    .OrderByDescending(tf => tf.Parsed, NuGetFramework.Comparer)
+                    .OrderByDescending(tf => tf.Parsed.Version)
                     .FirstOrDefault();
                 var latestTargetFramework = latest?.Raw;
 
@@ -96,7 +98,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 UpdateItems("KnownRuntimePack", new[] { "Include", "TargetFramework", "RuntimePackLabels" }, new[] { "LatestRuntimeFrameworkVersion" });
                 UpdateItems("KnownILLinkPack", new[] { "Include", "TargetFramework" }, new[] { "ILLinkPackVersion" });
 
-                stage2Doc.Save(OutputPath);
+                stage2Doc.Save(Stage2BundledVersionsPath);
                 return !Log.HasLoggedErrors;
             }
             catch (Exception ex)
