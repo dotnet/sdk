@@ -40,9 +40,19 @@ namespace Analyzer.Utilities.Extensions
                 (propertyValue.Contains(WebAppProjectGuidString, StringComparison.OrdinalIgnoreCase) ||
                  propertyValue.Contains(WebSiteProjectGuidString, StringComparison.OrdinalIgnoreCase)))
             {
-                var guids = propertyValue.Split(';').Select(g => g.Trim()).ToImmutableArray();
-                return guids.Contains(WebAppProjectGuidString, StringComparer.OrdinalIgnoreCase) ||
-                    guids.Contains(WebSiteProjectGuidString, StringComparer.OrdinalIgnoreCase);
+                var valueSpan = propertyValue.AsSpan();
+                var guids = valueSpan.Split(';');
+
+                foreach (var part in guids)
+                {
+                    var guid = valueSpan[part].Trim();
+
+                    if (guid.Equals(WebAppProjectGuidString, StringComparison.OrdinalIgnoreCase) ||
+                        guid.Equals(WebSiteProjectGuidString, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
             }
 
             return false;
