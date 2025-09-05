@@ -249,7 +249,8 @@
       <_DotNetMsiPackages Include="$(DownloadsFolder)$(DownloadedHostFxrInstallerFileName);
                                    $(DownloadsFolder)$(DownloadedSharedHostInstallerFileName);
                                    $(DownloadsFolder)$(DownloadedSharedFrameworkInstallerFileName);
-                                   $(DownloadsFolder)$(DownloadedNetCoreAppHostPackInstallerFileName)"/>
+                                   $(DownloadsFolder)$(DownloadedNetCoreAppHostPackInstallerFileName);
+                                   $(DownloadsFolder)$(DownloadedNetCoreAppTargetingPackInstallerFileName)"/>
 
       <!-- ASP.NET Core Runtime -->
       <_DotNetMsiPackages Include="$(DownloadsFolder)$(DownloadedAspNetCoreSharedFxInstallerFileName);
@@ -258,12 +259,6 @@
       <!-- .NET Windows Desktop Runtime -->
       <_DotNetMsiPackages Include="$(DownloadsFolder)$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName);
                                    $(DownloadsFolder)$(DownloadedWindowsDesktopTargetingPackInstallerFileName)"/>
-
-      <!-- Additional apphost and targeting packs -->
-      <_DotNetMsiPackages Condition="'$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64'"
-                          Include="$(DownloadsFolder)$(DownloadedArm64NetCoreAppHostPackInstallerFileName);
-                                   $(DownloadsFolder)$(DownloadedAlternateNetCoreAppHostPackInstallerFileName);
-                                   $(DownloadsFolder)$(DownloadedNetStandardTargetingPackInstallerFileName)" />
     </ItemGroup>
 
     <PropertyGroup>

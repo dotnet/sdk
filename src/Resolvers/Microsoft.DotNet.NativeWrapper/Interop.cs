@@ -80,6 +80,7 @@ namespace Microsoft.DotNet.NativeWrapper
             resolved_sdk_dir = 0,
             global_json_path = 1,
             requested_version = 2,
+            global_json_state = 3,
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]

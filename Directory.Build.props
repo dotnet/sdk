@@ -38,6 +38,7 @@
     <PackageProjectUrl>https://github.com/dotnet/sdk</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <LangVersion>Preview</LangVersion>
+    <LangVersion Condition="'$(Language)' == 'VB'">16</LangVersion>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <DebugSymbols>true</DebugSymbols>
     <!-- Default to all packages generating a corresponding symbol package -->
@@ -63,9 +64,9 @@
     <UseSharedCompilation Condition="'$(DotNetBuildSourceOnly)' == 'true'">false</UseSharedCompilation>
     <DisableImplicitPackageTargetFallback>true</DisableImplicitPackageTargetFallback>
 
-    <DefineConstants Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(DefineConstants);CI_BUILD</DefineConstants>
-    <DefineConstants Condition="'$(OfficialBuilder)' == 'Microsoft'">$(DefineConstants);MICROSOFT_ENABLE_TELEMETRY</DefineConstants>
-    <DefineConstants Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefineConstants);DOT_NET_BUILD_FROM_SOURCE</DefineConstants>
+    <DefineConstants Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(DefineConstants),CI_BUILD</DefineConstants>
+    <DefineConstants Condition="'$(OfficialBuilder)' == 'Microsoft'">$(DefineConstants),MICROSOFT_ENABLE_TELEMETRY</DefineConstants>
+    <DefineConstants Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefineConstants),DOT_NET_BUILD_FROM_SOURCE</DefineConstants>
 
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
@@ -107,6 +108,9 @@
 
     <HostFxrVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</HostFxrVersion>
     <SharedHostVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedHostVersion>
+
+    <MicrosoftCodeAnalysisVersionForNetAnalyzers Condition="'$(DotNetBuildSourceOnly)' != 'true'">3.11.0</MicrosoftCodeAnalysisVersionForNetAnalyzers>
+    <MicrosoftCodeAnalysisVersionForNetAnalyzers Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(MicrosoftCodeAnalysisVersion)</MicrosoftCodeAnalysisVersionForNetAnalyzers>
   </PropertyGroup>
 
   <Import Project="build/GenerateResxSource.targets" />

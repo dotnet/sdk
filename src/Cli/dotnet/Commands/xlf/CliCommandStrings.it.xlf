@@ -583,6 +583,11 @@ Equivale a eliminare project.assets.json.</target>
         <target state="translated">Numero massimo di moduli di test che possono essere eseguiti in parallelo.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdMinimumExpectedTestsDescription">
+        <source>Specifies the minimum number of tests that are expected to run.</source>
+        <target state="new">Specifies the minimum number of tests that are expected to run.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
         <source>Specify either the project, solution, directory, or test modules option.</source>
         <target state="translated">Specifica l'opzione progetto, soluzione, directory o moduli di test.</target>
@@ -1158,6 +1163,31 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">Comando di test .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
+        <source>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</source>
+        <target state="new">Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeFailureHasHandshake">
+        <source>Error disposing 'NamedPipeServer' corresponding to handshake:</source>
+        <target state="new">Error disposing 'NamedPipeServer' corresponding to handshake:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeFailureWithoutHandshake">
+        <source>Error disposing 'NamedPipeServer', and no handshake was found.</source>
+        <target state="new">Error disposing 'NamedPipeServer', and no handshake was found.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeIncompleteSize">
+        <source>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</source>
+        <target state="new">'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeOverlapping">
+        <source>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</source>
+        <target state="new">'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
         <source>DIRECTORY</source>
         <target state="translated">DIRECTORY</target>
@@ -1515,6 +1545,11 @@ Rendi distinti i nomi profilo.</target>
       <trans-unit id="IntermediateWorkingDirOptionDescription">
         <source>The working directory used by the command to execute.</source>
         <target state="translated">Directory di lavoro usata dal comando da eseguire.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage">
+        <source>Method '{0}' did not exit successfully</source>
+        <target state="new">Method '{0}' did not exit successfully</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
@@ -1906,6 +1941,16 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
       <trans-unit id="PackCmdOutputDirDescription">
         <source>The output directory to place built packages in.</source>
         <target state="translated">Directory di output in cui inserire i pacchetti compilati.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersion">
+        <source>VERSION</source>
+        <target state="translated">VERSIONE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersionDescription">
+        <source>The version of the package to create</source>
+        <target state="translated">La versione del pacchetto da creare</target>
         <note />
       </trans-unit>
       <trans-unit id="PackConfigurationOptionDescription">
@@ -2434,7 +2479,7 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
       <trans-unit id="PropertyDirectiveMissingParts">
         <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
         <target state="translated">La direttiva di proprietà deve avere due parti separate da '=', come '#:property PropertyName=PropertyValue': {0}</target>
-        <note>{0} is the file path and line number.</note>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
@@ -2668,15 +2713,15 @@ Per impostazione predefinita, viene generato un pacchetto dipendente dal framewo
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRun">
-        <source>Unable to run your project.
-Ensure you have a runnable project type and ensure '{0}' supports this project.
-A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
-The current {1} is '{2}'.</source>
-        <target state="translated">Non è possibile eseguire il progetto.
-Assicurarsi che sia presente un tipo di progetto eseguibile e che '{0}' supporti tale progetto.
-Un progetto eseguibile deve essere destinato a un TFM eseguibile, ad esempio net5.0, inoltre OutputType deve essere impostato su 'Exe'.
-Il valore corrente di {1} è '{2}'.</target>
-        <note />
+        <source>Unable to proceed with project '{0}'.
+Ensure you have a runnable project type.
+A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
+The current OutputType is '{2}'.</source>
+        <target state="translated">Non è possibile procedere con il progetto '{0}'.
+Assicurarsi che sia presente un tipo di progetto eseguibile.
+Un progetto eseguibile deve essere destinato a un TFM eseguibile, ad esempio net{1}, inoltre OutputType deve essere impostato su 'Exe'.
+L'OutputType corrente è '{2}'.</target>
+        <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
@@ -2819,7 +2864,7 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
         <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
-        <target state="needs-review-translation">I carichi di lavoro sono configurati per l'installazione e l'aggiornamento con le versioni del carico di lavoro, ma non ne sono stati trovati. Eseguire il "dotnet workload restore" per installare una versione del carico di lavoro.</target>
+        <target state="translated">Non sono installati set di carico di lavoro. Esegui il "dotnet workload restore" per installare un set del carico di lavoro.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">
@@ -2972,6 +3017,11 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <target state="translated">Output standard</target>
         <note />
       </trans-unit>
+      <trans-unit id="StaticGraphRestoreNotSupported">
+        <source>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</source>
+        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</target>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
+      </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
         <target state="translated">Stato</target>
@@ -3037,24 +3087,24 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
-      <trans-unit id="TestCommandUseDirectory">
-        <source>Specifying a directory for 'dotnet test' should be via '--directory'.</source>
-        <target state="new">Specifying a directory for 'dotnet test' should be via '--directory'.</target>
+      <trans-unit id="TestCommandUseDirectoryWithSwitch">
+        <source>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</source>
+        <target state="translated">La specifica di una directory per 'dotnet test' deve avvenire tramite '--project' o '-solution'.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseProject">
         <source>Specifying a project for 'dotnet test' should be via '--project'.</source>
-        <target state="new">Specifying a project for 'dotnet test' should be via '--project'.</target>
+        <target state="translated">La specifica di un progetto per 'dotnet test' deve avvenire tramite '--project'.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseSolution">
         <source>Specifying a solution for 'dotnet test' should be via '--solution'.</source>
-        <target state="new">Specifying a solution for 'dotnet test' should be via '--solution'.</target>
+        <target state="translated">La specifica di una soluzione per 'dotnet test' deve avvenire tramite '--solution'.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseTestModules">
         <source>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</source>
-        <target state="new">Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</target>
+        <target state="translated">La specifica di DLL o eseguibili per 'dotnet test' deve avvenire tramite '--test-modules'.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestConfigurationOptionDescription">
@@ -3867,12 +3917,12 @@ Per visualizzare un valore, specifica l'opzione della riga di comando corrispond
       </trans-unit>
       <trans-unit id="WorkloadManifestInstallationConfigurationLooseManifests">
         <source>Configured to use loose manifests when installing new manifests.</source>
-        <target state="new">Configured to use loose manifests when installing new manifests.</target>
+        <target state="translated">Configurato per l'uso manifesti staccati durante l'installazione di nuovi manifesti.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadManifestInstallationConfigurationWorkloadSets">
         <source>Configured to use workload sets when installing new manifests.</source>
-        <target state="new">Configured to use workload sets when installing new manifests.</target>
+        <target state="translated">Configurato per l'uso "workload sets" durante l'installazione di nuovi manifesti.</target>
         <note>{Locked="workload sets"}</note>
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">

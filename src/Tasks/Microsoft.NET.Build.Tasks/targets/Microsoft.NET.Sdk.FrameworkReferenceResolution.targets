@@ -53,13 +53,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
   
   <!-- TODO: https://github.com/dotnet/sdk/issues/49917 Remove the framework based condition when the data for netcoreapp2.1 and below is fixed-->
+  <!-- Package pruning is expected to be enable for all TFMs for multi-targeted projects, so still generate the pruning data when RestoreEnablePackagePruning is '' which implies a multi-targeted project. -->
   <Target Name="AddPrunePackageReferences" BeforeTargets="CollectPrunePackageReferences"
           DependsOnTargets="ProcessFrameworkReferences"
-          Condition="'$(RestoreEnablePackagePruning)' == 'true'
-          AND (('$(TargetFrameworkIdentifier)' == '.NETCoreApp'
-          AND '$(TargetFrameworkVersion)' != ''
-          AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '3.0')))
-          OR ('$(TargetFrameworkIdentifier)' != '.NETCoreApp'))">
+          Condition="'$(RestoreEnablePackagePruning)' == 'true' OR '$(RestoreEnablePackagePruning)' == ''">
     <PropertyGroup>
       <PrunePackageDataRoot Condition="'$(PrunePackageDataRoot)' == ''">$(NetCoreRoot)\sdk\$(NETCoreSdkVersion)\PrunePackageData\</PrunePackageDataRoot>
       <PrunePackageTargetingPackRoots Condition="'$(PrunePackageTargetingPackRoots)' == ''">$(NetCoreTargetingPackRoot)</PrunePackageTargetingPackRoots>

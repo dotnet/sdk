@@ -79,7 +79,6 @@ namespace Microsoft.NET.Build.Tests
                 "1.exe",
                 "1.pdb",
                 "1.exe.config",
-                "System.Diagnostics.DiagnosticSource.dll"
             };
 
             foreach (var targetFramework in targetFrameworks)
@@ -180,6 +179,7 @@ namespace Microsoft.NET.Build.Tests
             )
         {
             var buildCommand = new BuildCommand(testAsset, "1");
+            buildCommand.WithWorkingDirectory(testAsset.TestRoot);
             var buildResult = buildCommand.ExecuteWithoutRestore(msbuildArguments);
 
             var outputDirectories = targetFrameworks.ToImmutableDictionary(tf => tf, tf => buildCommand.GetOutputDirectory(tf));
