@@ -79,5 +79,29 @@ namespace Microsoft.DotNet.Tools.Dnup.Tests
             // Should not be a preview version
             Assert.DoesNotContain("-", version);
         }
+
+        [Fact]
+        public void GetLatestVersionForChannel_Preview_ReturnsLatestPreviewVersion()
+        {
+            var manifest = new ReleaseManifest();
+            var version = manifest.GetLatestVersionForChannel("preview", InstallMode.SDK);
+
+            Console.WriteLine($"Preview Version found: {version ?? "null"}");
+
+            // Check that we got a version
+            Assert.False(string.IsNullOrEmpty(version));
+
+            // Preview versions should contain a hyphen (e.g., "11.0.0-preview.1")
+            Assert.Contains("-", version);
+
+            // Should contain preview, rc, beta, or alpha
+            Assert.True(
+                version.Contains("preview", StringComparison.OrdinalIgnoreCase) ||
+                version.Contains("rc", StringComparison.OrdinalIgnoreCase) ||
+                version.Contains("beta", StringComparison.OrdinalIgnoreCase) ||
+                version.Contains("alpha", StringComparison.OrdinalIgnoreCase),
+                $"Version {version} should be a preview/rc/beta/alpha version"
+            );
+        }
     }
 }

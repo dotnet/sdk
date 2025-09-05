@@ -200,7 +200,7 @@ internal class ReleaseManifest : IDisposable
     /// <summary>
     /// Finds the latest fully specified version for a given channel string (major, major.minor, or feature band).
     /// </summary>
-    /// <param name="channel">Channel string (e.g., "9", "9.0", "9.0.1xx", "9.0.103", "lts", "sts")</param>
+    /// <param name="channel">Channel string (e.g., "9", "9.0", "9.0.1xx", "9.0.103", "lts", "sts", "preview")</param>
     /// <param name="mode">InstallMode.SDK or InstallMode.Runtime</param>
     /// <returns>Latest fully specified version string, or null if not found</returns>
     public string? GetLatestVersionForChannel(string channel, InstallMode mode)
@@ -224,8 +224,12 @@ internal class ReleaseManifest : IDisposable
             var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
             return GetLatestVersionBySupportStatus(productIndex, isLts: false, mode);
         }
-
-        // Parse the channel string into components
+        else if (string.Equals(channel, "preview", StringComparison.OrdinalIgnoreCase))
+        {
+            // Handle Preview channel - get the latest preview version
+            var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
+            return GetLatestPreviewVersion(productIndex, mode);
+        }        // Parse the channel string into components
         var (major, minor, featureBand, isFullySpecified) = ParseVersionChannel(channel);
 
         // If major is invalid, return null
@@ -383,8 +387,77 @@ internal class ReleaseManifest : IDisposable
     }
 
     /// <summary>
-    /// Gets the latest version for a major.minor channel (e.g., "9.0").
+    /// Gets the latest preview version available.
     /// </summary>
+    /// <param name="index">The product collection to search</param>
+    /// <param name="mode">InstallMode.SDK or InstallMode.Runtime</param>
+    /// <returns>Latest preview version string, or null if none found</returns>
+    private string? GetLatestPreviewVersion(ProductCollection index, InstallMode mode)
+    {
+        // Get all products
+        var allProducts = index.ToList();
+
+        // Order by major and minor version (descending) to get the most recent first
+        var sortedProducts = allProducts
+            .OrderByDescending(p =>
+            {
+                var productParts = p.ProductVersion.Split('.');
+                if (productParts.Length > 0 && int.TryParse(productParts[0], out var majorVersion))
+                {
+                    return majorVersion * 100 + (productParts.Length > 1 && int.TryParse(productParts[1], out var minorVersion) ? minorVersion : 0);
+                }
+                return 0;
+            })
+            .ToList();
+
+        // Get all releases from products
+        foreach (var product in sortedProducts)
+        {
+            var releases = product.GetReleasesAsync().GetAwaiter().GetResult();
+
+            // Filter for preview versions
+            var previewReleases = releases
+                .Where(r => r.IsPreview)
+                .ToList();
+
+            if (!previewReleases.Any())
+            {
+                continue; // No preview releases for this product, try next one
+            }
+
+            // Find latest version based on mode
+            if (mode == InstallMode.SDK)
+            {
+                var sdks = previewReleases
+                    .SelectMany(r => r.Sdks)
+                    .Where(sdk => sdk.Version.ToString().Contains("-")) // Include only preview/RC versions
+                    .OrderByDescending(sdk => sdk.Version)
+                    .ToList();
+
+                if (sdks.Any())
+                {
+                    return sdks.First().Version.ToString();
+                }
+            }
+            else // Runtime mode
+            {
+                var runtimes = previewReleases
+                    .SelectMany(r => r.Runtimes)
+                    .Where(runtime => runtime.Version.ToString().Contains("-")) // Include only preview/RC versions
+                    .OrderByDescending(runtime => runtime.Version)
+                    .ToList();
+
+                if (runtimes.Any())
+                {
+                    return runtimes.First().Version.ToString();
+                }
+            }
+        }
+
+        return null; // No preview versions found
+    }    /// <summary>
+         /// Gets the latest version for a major.minor channel (e.g., "9.0").
+         /// </summary>
     private string? GetLatestVersionForMajorMinor(ProductCollection index, int major, int minor, InstallMode mode)
     {
         // Find the product for the requested major.minor
