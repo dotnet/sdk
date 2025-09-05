@@ -250,6 +250,7 @@ internal static class TestCommandParser
         command.Options.Add(MicrosoftTestingPlatformOptions.NoAnsiOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.NoProgressOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.OutputOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.ListTestsOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.NoLaunchProfileOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.NoLaunchProfileArgumentsOption);
         command.Options.Add(MTPTargetOption);
