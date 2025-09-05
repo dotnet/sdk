@@ -4,7 +4,6 @@
 #nullable disable
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -21,13 +20,6 @@ internal static class TestingPlatformOptions
     {
         Description = CliCommandStrings.CmdSolutionDescription,
         HelpName = CliCommandStrings.CmdSolutionPathName,
-        Arity = ArgumentArity.ExactlyOne
-    };
-
-    public static readonly Option<string> DirectoryOption = new("--directory")
-    {
-        Description = CliCommandStrings.CmdDirectoryDescription,
-        HelpName = CliCommandStrings.CmdDirectoryPathName,
         Arity = ArgumentArity.ExactlyOne
     };
 
@@ -64,9 +56,15 @@ internal static class TestingPlatformOptions
         Arity = ArgumentArity.ExactlyOne
     };
 
-    public static readonly Option<string> MaxParallelTestModulesOption = new("--max-parallel-test-modules")
+    public static readonly Option<int> MaxParallelTestModulesOption = new("--max-parallel-test-modules")
     {
         Description = CliCommandStrings.CmdMaxParallelTestModulesDescription,
+        HelpName = CliCommandStrings.CmdNumberName
+    };
+
+    public static readonly Option<int> MinimumExpectedTestsOption = new("--minimum-expected-tests")
+    {
+        Description = CliCommandStrings.CmdMinimumExpectedTestsDescription,
         HelpName = CliCommandStrings.CmdNumberName
     };
 

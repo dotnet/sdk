@@ -3,7 +3,6 @@
 
 #nullable disable
 
-using System.CommandLine;
 using System.Diagnostics;
 using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
@@ -24,6 +23,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
 
     private Task _testAppPipeConnectionLoop;
     private readonly List<NamedPipeServer> _testAppPipeConnections = [];
+    private readonly Dictionary<NamedPipeServer, HandshakeMessage> _handshakes = new();
 
     public event EventHandler<HandshakeArgs> HandshakeReceived;
     public event EventHandler<HelpEventArgs> HelpRequested;
@@ -35,6 +35,8 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
     public event EventHandler<TestProcessExitEventArgs> TestProcessExited;
 
     public TestModule Module { get; } = module;
+
+    public bool HasFailureDuringDispose { get; private set; }
 
     public async Task<int> RunAsync(TestOptions testOptions)
     {
@@ -147,7 +149,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         {
             while (!token.IsCancellationRequested)
             {
-                NamedPipeServer pipeConnection = new(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
+                var pipeConnection = new NamedPipeServer(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
                 pipeConnection.RegisterAllSerializers();
 
                 await pipeConnection.WaitConnectionAsync(token);
@@ -174,20 +176,17 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         }
     }
 
-    private Task<IResponse> OnRequest(IRequest request)
+    private Task<IResponse> OnRequest(NamedPipeServer server, IRequest request)
     {
         try
         {
             switch (request)
             {
                 case HandshakeMessage handshakeMessage:
-                    if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ModulePath, out string value))
-                    {
-                        OnHandshakeMessage(handshakeMessage);
-
-                        return Task.FromResult((IResponse)CreateHandshakeMessage(GetSupportedProtocolVersion(handshakeMessage)));
-                    }
-                    break;
+                    _handshakes.Add(server, handshakeMessage);
+                    string negotiatedVersion = GetSupportedProtocolVersion(handshakeMessage);
+                    OnHandshakeMessage(handshakeMessage, negotiatedVersion.Length > 0);
+                    return Task.FromResult((IResponse)CreateHandshakeMessage(negotiatedVersion));
 
                 case CommandLineOptionMessages commandLineOptionMessages:
                     OnCommandLineOptionMessages(commandLineOptionMessages);
@@ -237,15 +236,26 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
 
     private static string GetSupportedProtocolVersion(HandshakeMessage handshakeMessage)
     {
-        handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.SupportedProtocolVersions, out string protocolVersions);
-
-        string version = string.Empty;
-        if (protocolVersions is not null && protocolVersions.Split(";").Contains(ProtocolConstants.Version))
+        if (!handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.SupportedProtocolVersions, out string protocolVersions) ||
+            protocolVersions is null)
         {
-            version = ProtocolConstants.Version;
+            // It's not expected we hit this.
+            // TODO: Maybe we should fail more hard?
+            return string.Empty;
         }
 
-        return version;
+        // NOTE: Today, ProtocolConstants.Version is only 1.0.0 (i.e, SDK supports only a single version).
+        // Whenever we support multiple versions in SDK, we should do intersection
+        // between protocolVersions given by MTP, and the versions supported by SDK.
+        // Then we return the "highest" version from the intersection.
+        // The current logic **assumes** that ProtocolConstants.SupportedVersions is a single version.
+        if (protocolVersions.Split(";").Contains(ProtocolConstants.SupportedVersions))
+        {
+            return ProtocolConstants.SupportedVersions;
+        }
+
+        // The version given by MTP is not supported by SDK.
+        return string.Empty;
     }
 
     private static HandshakeMessage CreateHandshakeMessage(string version) =>
@@ -306,9 +316,9 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         return true;
     }
 
-    public void OnHandshakeMessage(HandshakeMessage handshakeMessage)
+    public void OnHandshakeMessage(HandshakeMessage handshakeMessage, bool gotSupportedVersion)
     {
-        HandshakeReceived?.Invoke(this, new HandshakeArgs { Handshake = new Handshake(handshakeMessage.Properties) });
+        HandshakeReceived?.Invoke(this, new HandshakeArgs { Handshake = new Handshake(handshakeMessage.Properties), GotSupportedVersion = gotSupportedVersion });
     }
 
     public void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
@@ -388,7 +398,35 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
     {
         foreach (var namedPipeServer in _testAppPipeConnections)
         {
-            namedPipeServer.Dispose();
+            try
+            {
+                namedPipeServer.Dispose();
+            }
+            catch (Exception ex)
+            {
+                StringBuilder messageBuilder;
+                if (_handshakes.TryGetValue(namedPipeServer, out var handshake))
+                {
+                    messageBuilder = new StringBuilder(CliCommandStrings.DotnetTestPipeFailureHasHandshake);
+                    messageBuilder.AppendLine();
+                    foreach (var kvp in handshake.Properties)
+                    {
+                        messageBuilder.AppendLine($"{kvp.Key}: {kvp.Value}");
+                    }                    
+                }
+                else
+                {
+                    messageBuilder = new StringBuilder(CliCommandStrings.DotnetTestPipeFailureWithoutHandshake);
+                    messageBuilder.AppendLine();
+                }
+
+                messageBuilder.AppendLine($"RunCommand: {Module.RunProperties.Command}");
+                messageBuilder.AppendLine($"RunArguments: {Module.RunProperties.Arguments}");
+                messageBuilder.AppendLine(ex.ToString());
+
+                HasFailureDuringDispose = true;
+                Reporter.Error.WriteLine(messageBuilder.ToString());
+            }
         }
 
         WaitOnTestApplicationPipeConnectionLoop();

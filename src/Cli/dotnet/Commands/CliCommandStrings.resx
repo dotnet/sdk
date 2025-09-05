@@ -1214,6 +1214,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   </data>
   <data name="NoWorkloadsToRepair" xml:space="preserve">
     <value>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</value>
+    <comment>{Locked="dotnet workload search"}</comment>
   </data>
   <data name="NoWorkloadsToUpdate" xml:space="preserve">
     <value>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</value>
@@ -1779,10 +1780,11 @@ The default is to publish a framework-dependent application.</value>
     <value>Couldn't find a project to run. Ensure a project exists in {0}, or pass the path to the project using {1}.</value>
   </data>
   <data name="RunCommandExceptionUnableToRun" xml:space="preserve">
-    <value>Unable to run your project.
-Ensure you have a runnable project type and ensure '{0}' supports this project.
-A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
-The current {1} is '{2}'.</value>
+    <value>Unable to proceed with project '{0}'.
+Ensure you have a runnable project type.
+A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
+The current OutputType is '{2}'.</value>
+    <comment>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</comment>
   </data>
   <data name="RunCommandExceptionUnableToRunSpecifyFramework" xml:space="preserve">
     <value>Unable to run your project
@@ -2632,16 +2634,37 @@ Proceed?</value>
   <data name="TestCommandUseProject" xml:space="preserve">
     <value>Specifying a project for 'dotnet test' should be via '--project'.</value>
   </data>
-  <data name="TestCommandUseDirectory" xml:space="preserve">
-    <value>Specifying a directory for 'dotnet test' should be via '--directory'.</value>
-  </data>
   <data name="TestCommandUseTestModules" xml:space="preserve">
     <value>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</value>
+  </data>
+  <data name="TestCommandUseDirectoryWithSwitch" xml:space="preserve">
+    <value>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</value>
   </data>
   <data name="PackCmdVersionDescription" xml:space="preserve">
     <value>The version of the package to create</value>
   </data>
   <data name="PackCmdVersion" xml:space="preserve">
     <value>VERSION</value>
+  </data>
+  <data name="CmdMinimumExpectedTestsDescription" xml:space="preserve">
+    <value>Specifies the minimum number of tests that are expected to run.</value>
+  </data>
+  <data name="DotnetTestPipeOverlapping" xml:space="preserve">
+    <value>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</value>
+  </data>
+  <data name="DotnetTestPipeIncompleteSize" xml:space="preserve">
+    <value>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</value>
+  </data>
+  <data name="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage" xml:space="preserve">
+    <value>Method '{0}' did not exit successfully</value>
+  </data>
+  <data name="DotnetTestPipeFailureHasHandshake" xml:space="preserve">
+    <value>Error disposing 'NamedPipeServer' corresponding to handshake:</value>
+  </data>
+  <data name="DotnetTestPipeFailureWithoutHandshake" xml:space="preserve">
+    <value>Error disposing 'NamedPipeServer', and no handshake was found.</value>
+  </data>
+  <data name="DotnetTestIncompatibleHandshakeVersion" xml:space="preserve">
+    <value>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</value>
   </data>
 </root>

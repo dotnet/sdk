@@ -115,6 +115,27 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        public void RunWithDirectoryAsProjectOption_ShouldReturnExitCodeGenericFailure(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
+
+            string projectPath = $"TestProject";
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(TestingPlatformOptions.ProjectOption.Name, projectPath,
+                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            // Validate that only TestProject ran
+            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, configuration), result.StdOut);
+            Assert.DoesNotMatch(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, true, configuration), result.StdOut);
+
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+        }
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunWithInvalidSolutionExtension_ShouldReturnExitCodeGenericFailure(string configuration)
         {
@@ -128,29 +149,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             result.StdOut.Should().Contain(string.Format(CliCommandStrings.CmdInvalidSolutionFileExtensionErrorDescription, invalidSolutionPath));
-
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
-        }
-
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
-        public void RunWithBothProjectAndSolutionAndDirectoryOptions_ShouldReturnExitCodeGenericFailure(string configuration)
-        {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
-
-            string testProjectPath = $"TestProject{Path.DirectorySeparatorChar}TestProject.csproj";
-            string testSolutionPath = "MultiTestProjectSolutionWithTests.sln";
-            string testDirectoryPath = "TestProjects";
-
-            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
-                                    .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ProjectOption.Name, testProjectPath,
-                                             TestingPlatformOptions.SolutionOption.Name, testSolutionPath,
-                                             TestingPlatformOptions.DirectoryOption.Name, testDirectoryPath,
-                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
-
-            result.StdErr.Should().Contain(CliCommandStrings.CmdMultipleBuildPathOptionsErrorDescription);
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
@@ -216,29 +214,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
-        public void RunWithNonExistentDirectoryPath_ShouldReturnExitCodeGenericFailure(string configuration)
-        {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
-
-            string directoryPath = "Directory";
-
-            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
-                                    .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.DirectoryOption.Name, directoryPath,
-                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
-
-            result.StdOut.Should().Contain(string.Format(CliCommandStrings.CmdNonExistentDirectoryErrorDescription, directoryPath));
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
-        }
-
         //  https://github.com/dotnet/sdk/issues/49665
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
-        public void RunTestProjectSolutionWithArchOption_ShouldReturnExitCodeSuccess(string configuration)
+        public void RunTestProjectWithArchOption_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
@@ -253,6 +233,32 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, configuration, runtime: runtime), result.StdOut);
 
             result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        //  https://github.com/dotnet/sdk/issues/49665
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        public void RunTestProjectSolutionWithArchOption_NotSupported(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString()).WithSource();
+
+            var arch = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(CommonOptions.ArchitectureOption.Name, arch,
+                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("error NETSDK1134: Building a solution with a specific RuntimeIdentifier is not supported. If you would like to publish for a single RID, specify the RID at the individual project level instead.");
+            }
+            else
+            {
+                result.StdOut.Should().Contain("NETSDK1134");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         //  https://github.com/dotnet/sdk/issues/49665

@@ -17,6 +17,20 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
 
     public void OnHandshakeReceived(object sender, HandshakeArgs args)
     {
+        var testApplication = (TestApplication)sender;
+        if (!args.GotSupportedVersion)
+        {
+            _output.HandshakeFailure(
+                testApplication.Module.TargetPath,
+                string.Empty,
+                ExitCode.GenericFailure,
+                string.Format(
+                    CliCommandStrings.DotnetTestIncompatibleHandshakeVersion,
+                    args.Handshake.Properties[HandshakeMessagePropertyNames.SupportedProtocolVersions],
+                    ProtocolConstants.SupportedVersions),
+                string.Empty);
+        }
+
         var hostType = args.Handshake.Properties[HandshakeMessagePropertyNames.HostType];
         // https://github.com/microsoft/testfx/blob/2a9a353ec2bb4ce403f72e8ba1f29e01e7cf1fd4/src/Platform/Microsoft.Testing.Platform/Hosts/CommonTestHost.cs#L87-L97
         if (hostType == "TestHost")
@@ -24,7 +38,6 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
             // AssemblyRunStarted counts "retry count", and writes to terminal "(Try <number-of-try>) Running tests from <assembly>"
             // So, we want to call it only for test host, and not for test host controller (or orchestrator, if in future it will handshake as well)
             // Calling it for both test host and test host controllers means we will count retries incorrectly, and will messages twice.
-            var testApplication = (TestApplication)sender;
             var executionId = args.Handshake.Properties[HandshakeMessagePropertyNames.ExecutionId];
             var instanceId = args.Handshake.Properties[HandshakeMessagePropertyNames.InstanceId];
             var arch = args.Handshake.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();

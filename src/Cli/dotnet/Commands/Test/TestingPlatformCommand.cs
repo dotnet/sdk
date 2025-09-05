@@ -6,13 +6,11 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Cli.Commands;
-using Microsoft.TemplateEngine.Cli.Help;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal partial class TestingPlatformCommand : System.CommandLine.Command, ICustomHelp
+internal partial class TestingPlatformCommand : Command, ICustomHelp
 {
     private MSBuildHandler _msBuildHandler;
     private TerminalTestReporter _output;
@@ -47,7 +45,7 @@ internal partial class TestingPlatformCommand : System.CommandLine.Command, ICus
     {
         ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult);
         ValidationUtility.ValidateSolutionOrProjectOrDirectoryOrModulesArePassedCorrectly(parseResult);
-        
+
         PrepareEnvironment(parseResult, out TestOptions testOptions, out int degreeOfParallelism);
 
         InitializeOutput(degreeOfParallelism, parseResult, testOptions.IsHelp);
@@ -82,9 +80,18 @@ internal partial class TestingPlatformCommand : System.CommandLine.Command, ICus
         }
 
         _actionQueue.EnqueueCompleted();
-        var exitCode = _actionQueue.WaitAllActions();
         // Don't inline exitCode variable. We want to always call WaitAllActions first.
-        return _eventHandlers.HasHandshakeFailure ? ExitCode.GenericFailure : exitCode;
+        var exitCode = _actionQueue.WaitAllActions();
+        exitCode = _eventHandlers.HasHandshakeFailure ? ExitCode.GenericFailure : exitCode;
+        if (exitCode == ExitCode.Success &&
+            parseResult.HasOption(TestingPlatformOptions.MinimumExpectedTestsOption) &&
+            parseResult.GetValue(TestingPlatformOptions.MinimumExpectedTestsOption) is { } minimumExpectedTests &&
+            _output.TotalTests < minimumExpectedTests)
+        {
+            exitCode = ExitCode.MinimumExpectedTestsPolicyViolation;
+        }
+
+        return exitCode;
     }
 
     private void PrepareEnvironment(ParseResult parseResult, out TestOptions testOptions, out int degreeOfParallelism)
@@ -144,6 +151,7 @@ internal partial class TestingPlatformCommand : System.CommandLine.Command, ICus
             UseCIAnsi = inCI,
             ShowAssembly = true,
             ShowAssemblyStartAndComplete = true,
+            MinimumExpectedTests = parseResult.GetValue(TestingPlatformOptions.MinimumExpectedTestsOption),
         });
 
         _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery, isHelp, _isRetry);
@@ -153,6 +161,7 @@ internal partial class TestingPlatformCommand : System.CommandLine.Command, ICus
     {
         _actionQueue = new(degreeOfParallelism, buildOptions, async (TestApplication testApp) =>
         {
+            testApp.HandshakeReceived += _eventHandlers.OnHandshakeReceived;
             testApp.HelpRequested += OnHelpRequested;
             testApp.ErrorReceived += _eventHandlers.OnErrorReceived;
             testApp.TestProcessExited += _eventHandlers.OnTestProcessExited;
@@ -179,7 +188,8 @@ internal partial class TestingPlatformCommand : System.CommandLine.Command, ICus
 
     private static int GetDegreeOfParallelism(ParseResult parseResult)
     {
-        if (!int.TryParse(parseResult.GetValue(TestingPlatformOptions.MaxParallelTestModulesOption), out int degreeOfParallelism) || degreeOfParallelism <= 0)
+        var degreeOfParallelism = parseResult.GetValue(TestingPlatformOptions.MaxParallelTestModulesOption);
+        if (degreeOfParallelism <= 0)
             degreeOfParallelism = Environment.ProcessorCount;
         return degreeOfParallelism;
     }

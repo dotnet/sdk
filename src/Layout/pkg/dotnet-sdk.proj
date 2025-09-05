@@ -130,7 +130,6 @@
       <LinuxPackageDependency Include="dotnet-runtime-$(MicrosoftNETCoreAppMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRuntimePackageVersionWithTilde)" />
       <LinuxPackageDependency Include="dotnet-targeting-pack-$(MicrosoftNETCoreAppMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRefPackageVersionWithTilde)" />
       <LinuxPackageDependency Include="dotnet-apphost-pack-$(MicrosoftNETCoreAppMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRuntimePackageVersionWithTilde)" />
-      <LinuxPackageDependency Condition="'$(TargetArchitecture)' == 'x64'" Include="netstandard-targeting-pack-$(NetStandardTargetingPackMajorMinorVersion)" Version="$(NetStandardTargetingPackPackageVersionWithTilde)" />
       <LinuxPackageDependency Include="aspnetcore-runtime-$(AspNetCoreMajorMinorVersion)" Version="$(AspNetCoreRuntimeVersionWithTilde)" />
       <LinuxPackageDependency Include="aspnetcore-targeting-pack-$(AspNetCoreMajorMinorVersion)" Version="$(AspNetCoreRefVersionWithTilde)" />
       <LinuxPostInstallScript Include="$(DebianPostinstFile)" Condition="'$(BuildDebPackage)' == 'true'" />
@@ -160,12 +159,6 @@
 
     <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(HostFxrVersion)">
       <Output TaskParameter="MajorMinorVersion" PropertyName="HostFxrMajorMinorVersion" />
-    </GetLinuxNativeInstallerDependencyVersions>
-
-    <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(NETStandardLibraryRefPackageVersion)">
-      <Output TaskParameter="VersionWithTilde" PropertyName="NetStandardTargetingPackPackageVersionWithTilde" />
-      <Output TaskParameter="MajorMinorVersion" PropertyName="NetStandardTargetingPackMajorMinorVersion" />
-      <Output TaskParameter="MajorMinorPatchVersion" PropertyName="NetStandardTargetingPackMajorMinorPatchVersion" />
     </GetLinuxNativeInstallerDependencyVersions>
   </Target>
 

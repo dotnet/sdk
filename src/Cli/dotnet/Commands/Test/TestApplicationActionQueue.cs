@@ -56,9 +56,18 @@ internal class TestApplicationActionQueue
         {
             foreach (var module in nonParallelizedGroup)
             {
+                int result = ExitCode.GenericFailure;
                 var testApp = new TestApplication(module, buildOptions);
-                int result = await action(testApp);
-                testApp.Dispose();
+                using (testApp)
+                {
+                    result = await action(testApp);
+                }
+
+                if (result == ExitCode.Success && testApp.HasFailureDuringDispose)
+                {
+                    result = ExitCode.GenericFailure;
+                }
+                
                 lock (_lock)
                 {
                     if (_aggregateExitCode is null)
