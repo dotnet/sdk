@@ -28,6 +28,8 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_cleans_the_project_successfully_with_static_graph_and_isolation()
         {
+            Log.WriteLine("MSBuild version: " + TestContext.Current.ToolsetUnderTest.MSBuildVersion);
+
             var (testAsset, outputDirectories) = BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new[] { "/graph", "/bl:build-{}.binlog" });
 
             var cleanCommand = new DotnetCommand(
