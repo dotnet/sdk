@@ -163,6 +163,13 @@ namespace Microsoft.DotNet.Tests
             }
         }
 
+        [Fact]
+        public void TelemetryCommonPropertiesShouldReturnIsLLMDetection()
+        {
+            var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
+            unitUnderTest.GetTelemetryCommonProperties()["LLM Environment"].Should().BeOneOf("True", "False");
+        }
+
         [Theory]
         [MemberData(nameof(CITelemetryTestCases))]
         public void CanDetectCIStatusForEnvVars(Dictionary<string, string> envVars, bool expected)
@@ -183,6 +190,35 @@ namespace Microsoft.DotNet.Tests
                 }
             }
         }
+
+        [Theory]
+        [MemberData(nameof(LLMTelemetryTestCases))]
+        public void CanDetectLLMStatusForEnvVars(Dictionary<string, string> envVars, bool expected)
+        {
+            try
+            {
+                foreach (var (key, value) in envVars)
+                {
+                    Environment.SetEnvironmentVariable(key, value);
+                }
+                new LLMEnvironmentDetectorForTelemetry().IsLLMEnvironment().Should().Be(expected);
+            }
+            finally
+            {
+                foreach (var (key, value) in envVars)
+                {
+                    Environment.SetEnvironmentVariable(key, null);
+                }
+            }
+        }
+
+        public static IEnumerable<object[]> LLMTelemetryTestCases => new List<object[]>{
+            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "1" } }, true },
+            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "true" } }, true },
+            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "anything" } }, true },
+            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "" } }, false },
+            new object[] { new Dictionary<string, string> { { "SomethingElse", "hi" } }, false },
+        };
 
         public static IEnumerable<object[]> CITelemetryTestCases => new List<object[]>{
             new object[] { new Dictionary<string, string> { { "TF_BUILD", "true" } }, true },
