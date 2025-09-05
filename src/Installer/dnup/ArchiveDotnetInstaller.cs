@@ -61,9 +61,22 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
 
     internal static string ConstructArchiveName(string? versionString, string rid, string suffix)
     {
-        return versionString is null
-            ? $"dotnet-sdk-{rid}{suffix}"
-            : $"dotnet-sdk-{versionString}-{rid}{suffix}";
+        // If version is not specified, use a generic name
+        if (string.IsNullOrEmpty(versionString))
+        {
+            return $"dotnet-sdk-{rid}{suffix}";
+        }
+
+        // Make sure the version string doesn't have any build hash or prerelease identifiers
+        // This ensures compatibility with the official download URLs
+        string cleanVersion = versionString;
+        int dashIndex = versionString.IndexOf('-');
+        if (dashIndex >= 0)
+        {
+            cleanVersion = versionString.Substring(0, dashIndex);
+        }
+
+        return $"dotnet-sdk-{cleanVersion}-{rid}{suffix}";
     }
 
 

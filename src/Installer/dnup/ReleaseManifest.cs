@@ -20,21 +20,25 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 internal class ReleaseManifest : IDisposable
 {
     /// <summary>
-    /// Finds the latest fully specified version for a given channel string (major, major.minor, or feature band).
+    /// Parses a version channel string into its components.
     /// </summary>
-    /// <param name="channel">Channel string (e.g., "9", "9.0", "9.0.1xx")</param>
-    /// <param name="mode">InstallMode.SDK or InstallMode.Runtime</param>
-    /// <returns>Latest fully specified version string, or null if not found</returns>
-    public string? GetLatestVersionForChannel(string channel, InstallMode mode)
+    /// <param name="channel">Channel string to parse (e.g., "9", "9.0", "9.0.1xx", "9.0.103")</param>
+    /// <returns>Tuple containing (major, minor, featureBand, isFullySpecified)</returns>
+    private (int Major, int Minor, string? FeatureBand, bool IsFullySpecified) ParseVersionChannel(string channel)
     {
-        // Parse channel
         var parts = channel.Split('.');
         int major = parts.Length > 0 && int.TryParse(parts[0], out var m) ? m : -1;
         int minor = parts.Length > 1 && int.TryParse(parts[1], out var n) ? n : -1;
-        string? featureBandPattern = null;
-        if (parts.Length == 3 && parts[2].EndsWith("xx"))
+
         // Check if we have a feature band (like 1xx) or a fully specified patch
+        string? featureBand = null;
+        bool isFullySpecified = false;
+
+        if (parts.Length >= 3)
         {
+            if (parts[2].EndsWith("xx"))
+            {
+                // Feature band pattern (e.g., "1xx")
                 featureBand = parts[2].Substring(0, parts[2].Length - 2);
             }
             else if (int.TryParse(parts[2], out _))
@@ -60,22 +64,25 @@ internal class ReleaseManifest : IDisposable
             var productParts = p.ProductVersion.Split('.');
             if (productParts.Length > 0 && int.TryParse(productParts[0], out var productMajor))
             {
-                // Split the product version into parts
-                var productParts = p.ProductVersion.Split('.');
-                }
-                return false;
-            }).ToList();
-
                 return productMajor == major;
             }
             return false;
         }).ToList();
 
-            foreach (var matchingProduct in matchingProducts)
+        // Order by minor version (descending) to prioritize newer versions
+        return matchingProducts.OrderByDescending(p =>
         {
             var productParts = p.ProductVersion.Split('.');
+            if (productParts.Length > 1 && int.TryParse(productParts[1], out var productMinor))
             {
-                var productReleases = matchingProduct.GetReleasesAsync().GetAwaiter().GetResult();
+                return productMinor;
+            }
+            return 0;
+        }).ToList();
+    }
+
+    /// <summary>
+    /// Gets all SDK components from the releases and returns the latest one.
     /// </summary>
     /// <param name="releases">List of releases to search</param>
     /// <param name="majorFilter">Optional major version filter</param>
