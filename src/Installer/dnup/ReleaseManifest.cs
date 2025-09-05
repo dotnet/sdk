@@ -200,7 +200,7 @@ internal class ReleaseManifest : IDisposable
     /// <summary>
     /// Finds the latest fully specified version for a given channel string (major, major.minor, or feature band).
     /// </summary>
-    /// <param name="channel">Channel string (e.g., "9", "9.0", "9.0.1xx", "9.0.103")</param>
+    /// <param name="channel">Channel string (e.g., "9", "9.0", "9.0.1xx", "9.0.103", "lts", "sts")</param>
     /// <param name="mode">InstallMode.SDK or InstallMode.Runtime</param>
     /// <returns>Latest fully specified version string, or null if not found</returns>
     public string? GetLatestVersionForChannel(string channel, InstallMode mode)
@@ -209,6 +209,20 @@ internal class ReleaseManifest : IDisposable
         if (string.IsNullOrEmpty(channel))
         {
             return null;
+        }
+
+        // Check for special channel strings (case insensitive)
+        if (string.Equals(channel, "lts", StringComparison.OrdinalIgnoreCase))
+        {
+            // Handle LTS (Long-Term Support) channel
+            var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
+            return GetLatestVersionBySupportStatus(productIndex, isLts: true, mode);
+        }
+        else if (string.Equals(channel, "sts", StringComparison.OrdinalIgnoreCase))
+        {
+            // Handle STS (Standard-Term Support) channel
+            var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
+            return GetLatestVersionBySupportStatus(productIndex, isLts: false, mode);
         }
 
         // Parse the channel string into components
@@ -279,6 +293,93 @@ internal class ReleaseManifest : IDisposable
         {
             return GetLatestRuntimeVersion(allReleases, major);
         }
+    }
+
+    /// <summary>
+    /// Gets the latest version based on support status (LTS or STS).
+    /// </summary>
+    /// <param name="index">The product collection to search</param>
+    /// <param name="isLts">True for LTS (Long-Term Support), false for STS (Standard-Term Support)</param>
+    /// <param name="mode">InstallMode.SDK or InstallMode.Runtime</param>
+    /// <returns>Latest stable version string matching the support status, or null if none found</returns>
+    private string? GetLatestVersionBySupportStatus(ProductCollection index, bool isLts, InstallMode mode)
+    {
+        // Get all products
+        var allProducts = index.ToList();
+
+        // LTS versions typically have even minor versions (e.g., 6.0, 8.0, 10.0)
+        // STS versions typically have odd minor versions (e.g., 7.0, 9.0, 11.0)
+        var filteredProducts = allProducts.Where(p =>
+        {
+            var productParts = p.ProductVersion.Split('.');
+            if (productParts.Length > 1 && int.TryParse(productParts[1], out var minorVersion))
+            {
+                // For LTS, we want even minor versions (0, 2, 4, etc.)
+                // For STS, we want odd minor versions (1, 3, 5, etc.)
+                bool isEvenMinor = minorVersion % 2 == 0;
+                return isLts ? isEvenMinor : !isEvenMinor;
+            }
+            return false;
+        }).ToList();
+
+        // Order by major and minor version (descending) to get the most recent first
+        filteredProducts = filteredProducts
+            .OrderByDescending(p =>
+            {
+                var productParts = p.ProductVersion.Split('.');
+                if (productParts.Length > 0 && int.TryParse(productParts[0], out var majorVersion))
+                {
+                    return majorVersion * 100 + (productParts.Length > 1 && int.TryParse(productParts[1], out var minorVersion) ? minorVersion : 0);
+                }
+                return 0;
+            })
+            .ToList();
+
+        // Get all releases from filtered products
+        foreach (var product in filteredProducts)
+        {
+            var releases = product.GetReleasesAsync().GetAwaiter().GetResult();
+
+            // Filter out preview versions
+            var stableReleases = releases
+                .Where(r => !r.IsPreview)
+                .ToList();
+
+            if (!stableReleases.Any())
+            {
+                continue; // No stable releases for this product, try next one
+            }
+
+            // Find latest version based on mode
+            if (mode == InstallMode.SDK)
+            {
+                var sdks = stableReleases
+                    .SelectMany(r => r.Sdks)
+                    .Where(sdk => !sdk.Version.ToString().Contains("-")) // Exclude any preview/RC versions
+                    .OrderByDescending(sdk => sdk.Version)
+                    .ToList();
+
+                if (sdks.Any())
+                {
+                    return sdks.First().Version.ToString();
+                }
+            }
+            else // Runtime mode
+            {
+                var runtimes = stableReleases
+                    .SelectMany(r => r.Runtimes)
+                    .Where(runtime => !runtime.Version.ToString().Contains("-")) // Exclude any preview/RC versions
+                    .OrderByDescending(runtime => runtime.Version)
+                    .ToList();
+
+                if (runtimes.Any())
+                {
+                    return runtimes.First().Version.ToString();
+                }
+            }
+        }
+
+        return null; // No matching versions found
     }
 
     /// <summary>
