@@ -1,23 +1,95 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
+using System.Text.Json;
+using System.Threading;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 internal class DnupSharedManifest : IDnupManifest
 {
-    public IEnumerable<DotnetInstall> GetInstalledVersions()
+    private static readonly string ManifestPath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+        "dnup", "dnup_manifest.json");
+
+    public DnupSharedManifest()
     {
-        return [];
+        EnsureManifestExists();
+    }
+
+    private void EnsureManifestExists()
+    {
+        if (!File.Exists(ManifestPath))
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(ManifestPath)!);
+            File.WriteAllText(ManifestPath, JsonSerializer.Serialize(new List<DotnetInstall>(), DnupManifestJsonContext.Default.ListDotnetInstall));
+        }
+    }
+
+    private void AssertHasFinalizationMutex()
+    {
+        var mutex = Mutex.OpenExisting(Constants.MutexNames.ModifyInstallationStates);
+        if (!mutex.WaitOne(0))
+        {
+            throw new InvalidOperationException("The dnup manifest was accessed while not holding the mutex.");
+        }
+        mutex.ReleaseMutex();
+        mutex.Dispose();
+    }
+
+    public IEnumerable<DotnetInstall> GetInstalledVersions(IInstallationValidator? validator = null)
+    {
+        AssertHasFinalizationMutex();
+        EnsureManifestExists();
+
+        var json = File.ReadAllText(ManifestPath);
+        try
+        {
+            var installs = JsonSerializer.Deserialize(json, DnupManifestJsonContext.Default.ListDotnetInstall);
+            var validInstalls = installs ?? new List<DotnetInstall>();
+
+            if (validator != null)
+            {
+                var invalids = validInstalls.Where(i => !validator.Validate(i)).ToList();
+                if (invalids.Count > 0)
+                {
+                    validInstalls = validInstalls.Except(invalids).ToList();
+                    var newJson = JsonSerializer.Serialize(validInstalls, DnupManifestJsonContext.Default.ListDotnetInstall);
+                    File.WriteAllText(ManifestPath, newJson);
+                }
+            }
+            return validInstalls;
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidOperationException($"The dnup manifest is corrupt or inaccessible: {ex.Message}");
+        }
     }
 
     public void AddInstalledVersion(DotnetInstall version)
     {
+        AssertHasFinalizationMutex();
+        EnsureManifestExists();
+
+        var installs = GetInstalledVersions().ToList();
+        installs.Add(version);
+        var json = JsonSerializer.Serialize(installs, DnupManifestJsonContext.Default.ListDotnetInstall);
+        Directory.CreateDirectory(Path.GetDirectoryName(ManifestPath)!);
+        File.WriteAllText(ManifestPath, json);
     }
 
     public void RemoveInstalledVersion(DotnetInstall version)
     {
+        AssertHasFinalizationMutex();
+        EnsureManifestExists();
+
+        var installs = GetInstalledVersions().ToList();
+        installs.RemoveAll(i => i.Id == version.Id && i.FullySpecifiedVersion == version.FullySpecifiedVersion);
+        var json = JsonSerializer.Serialize(installs, DnupManifestJsonContext.Default.ListDotnetInstall);
+        File.WriteAllText(ManifestPath, json);
     }
 }
