@@ -33,6 +33,7 @@ internal class ManifestChannelVersionResolver
             dotnetChannelVersion.ResolvedDirectory,
             dotnetChannelVersion.Type,
             dotnetChannelVersion.Mode,
-            dotnetChannelVersion.Architecture);
+            dotnetChannelVersion.Architecture,
+            dotnetChannelVersion.Cadence);
     }
 }

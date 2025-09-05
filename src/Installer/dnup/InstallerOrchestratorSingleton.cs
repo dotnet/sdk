@@ -16,7 +16,7 @@ internal class InstallerOrchestratorSingleton
 
     public static InstallerOrchestratorSingleton Instance => _instance;
 
-    private ScopedMutex modifyInstallStateMutex() => new ScopedMutex("Global\\Finalize");
+    private ScopedMutex modifyInstallStateMutex() => new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
     // Returns null on failure, DotnetInstall on success
     public DotnetInstall? Install(DotnetInstallRequest installRequest)

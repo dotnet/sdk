@@ -117,7 +117,8 @@ public class BootstrapperController : IBootstrapperController
             InstallType.User,
             InstallMode.SDK,
             // Get current machine architecture and convert it to correct enum value
-            DnupUtilities.GetInstallArchitecture(System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture),
+            DnupUtilities.GetInstallArchitecture(RuntimeInformation.ProcessArchitecture),
+            new ManagementCadence(ManagementCadenceType.DNUP),
             new InstallRequestOptions()
         );
 

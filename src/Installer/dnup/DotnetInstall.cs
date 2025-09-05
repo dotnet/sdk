@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// <summary>
 /// Base record for .NET installation information with common properties.
 /// </summary>
-internal record DotnetInstallBase(
+public record DotnetInstallBase(
     string ResolvedDirectory,
     InstallType Type,
     InstallMode Mode,
@@ -26,12 +26,13 @@ internal record InstallRequestOptions()
 /// Represents a .NET installation with a fully specified version.
 /// The MuxerDirectory is the directory of the corresponding .NET host that has visibility into this .NET installation.
 /// </summary>
-internal record DotnetInstall(
+public record DotnetInstall(
     DotnetVersion FullySpecifiedVersion,
     string MuxerDirectory,
     InstallType Type,
     InstallMode Mode,
-    InstallArchitecture Architecture) : DotnetInstallBase(MuxerDirectory, Type, Mode, Architecture);
+    InstallArchitecture Architecture,
+    ManagementCadence Cadence) : DotnetInstallBase(MuxerDirectory, Type, Mode, Architecture);
 
 /// <summary>
 /// Represents a request for a .NET installation with a channel version that will get resolved into a fully specified version.
@@ -42,4 +43,5 @@ internal record DotnetInstallRequest(
     InstallType Type,
     InstallMode Mode,
     InstallArchitecture Architecture,
+    ManagementCadence Cadence,
     InstallRequestOptions Options) : DotnetInstallBase(Path.Combine(TargetDirectory, DnupUtilities.GetDotnetExeName()), Type, Mode, Architecture);

@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.Tools.Bootstrapper
 {
-    internal enum InstallMode
+    public enum InstallMode
     {
         SDK,
         Runtime,

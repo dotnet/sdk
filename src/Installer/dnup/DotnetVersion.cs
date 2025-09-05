@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// <summary>
 /// Represents the type of .NET version (SDK or Runtime).
 /// </summary>
-internal enum DotnetVersionType
+public enum DotnetVersionType
 {
     /// <summary>Automatically detect based on version format.</summary>
     Auto,
@@ -25,7 +25,7 @@ internal enum DotnetVersionType
 /// Supports both SDK versions (with feature bands) and Runtime versions, and handles build hashes and preview versions.
 /// </summary>
 [DebuggerDisplay("{Value} ({VersionType})")]
-internal readonly record struct DotnetVersion : IComparable<DotnetVersion>, IComparable<string>, IEquatable<string>
+public readonly record struct DotnetVersion : IComparable<DotnetVersion>, IComparable<string>, IEquatable<string>
 {
     private readonly ReleaseVersion? _releaseVersion;
 
