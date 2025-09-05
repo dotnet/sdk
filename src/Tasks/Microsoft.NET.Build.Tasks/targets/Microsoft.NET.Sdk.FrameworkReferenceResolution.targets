@@ -471,6 +471,21 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="ResolveOffByDefaultAnalyzers" AfterTargets="ResolveTargetingPackAssets"
           Condition="'@(FrameworkReference)' != ''">
+    
+    <!-- Enable ASP.NET generators and set interceptor namespaces when ASP.NET framework reference is present -->
+    <PropertyGroup>
+      <!-- Default settings for trimmed apps when Microsoft.AspNetCore.App is referenced. -->
+      <EnableRequestDelegateGenerator Condition="'@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App'))' != '' And '$(EnableRequestDelegateGenerator)' == '' And ('$(PublishTrimmed)' == 'true' Or '$(PublishAot)' == 'true')">true</EnableRequestDelegateGenerator>
+      <EnableConfigurationBindingGenerator Condition="'@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App'))' != '' And '$(EnableConfigurationBindingGenerator)' == '' And ('$(PublishTrimmed)' == 'true' Or '$(PublishAot)' == 'true')">true</EnableConfigurationBindingGenerator>
+      
+      <!-- Set the namespaces emitted by the RequestDelegateGenerator for interception when applicable. -->
+      <InterceptorsPreviewNamespaces Condition="'@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App'))' != '' And '$(EnableRequestDelegateGenerator)' == 'true'">$(InterceptorsPreviewNamespaces);Microsoft.AspNetCore.Http.Generated</InterceptorsPreviewNamespaces>
+      <!-- Set the namespaces emitted by the ConfigurationBindingGenerator for interception when applicable. -->
+      <InterceptorsPreviewNamespaces Condition="'@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App'))' != '' And '$(EnableConfigurationBindingGenerator)' == 'true'">$(InterceptorsPreviewNamespaces);Microsoft.Extensions.Configuration.Binder.SourceGeneration</InterceptorsPreviewNamespaces>
+      <!-- Set the namespaces emitted by the ValidationsGenerator for interception when applicable (.NET 10 and above). -->
+      <InterceptorsPreviewNamespaces Condition="'@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App'))' != '' And '$(_TargetFrameworkVersionWithoutV)' != '' and $([MSBuild]::VersionGreaterThanOrEquals('$(_TargetFrameworkVersionWithoutV)', '10.0'))">$(InterceptorsPreviewNamespaces);Microsoft.Extensions.Validation.Generated</InterceptorsPreviewNamespaces>
+    </PropertyGroup>
+    
     <ItemGroup>
       <OffByDefaultAnalyzer Include="Microsoft.AspNetCore.Http.RequestDelegateGenerator.dll"
                             IsEnabled="$(EnableRequestDelegateGenerator)"/>
