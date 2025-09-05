@@ -112,7 +112,7 @@ internal sealed class TestApplication(
 
         if (TestOptions.IsHelp)
         {
-            builder.Append($" {MicrosoftTestingPlatformOptions.HelpOption.Name}");
+            builder.Append($" {CliConstants.HelpOptionKey}");
         }
 
         if (_buildOptions.PathOptions.ResultsDirectoryPath is { } resultsDirectoryPath)
