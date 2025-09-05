@@ -26,6 +26,15 @@ public static class Constants
     public static readonly string EnableDefaultEmbeddedResourceItems = nameof(EnableDefaultEmbeddedResourceItems);
     public static readonly string EnableDefaultNoneItems = nameof(EnableDefaultNoneItems);
 
+    // MSBuild targets
+    public const string Build = nameof(Build);
+    public const string ComputeRunArguments = nameof(ComputeRunArguments);
+    public const string CoreCompile = nameof(CoreCompile);
+
+    // MSBuild item metadata
+    public const string Identity = nameof(Identity);
+    public const string FullPath = nameof(FullPath);
+
     public static readonly string ProjectArgumentName = "<PROJECT>";
     public static readonly string SolutionArgumentName = "<SLN_FILE>";
     public static readonly string ToolPackageArgumentName = "<PACKAGE_ID>";
