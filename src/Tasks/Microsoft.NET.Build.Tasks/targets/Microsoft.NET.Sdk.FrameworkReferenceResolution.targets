@@ -472,18 +472,27 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="ResolveOffByDefaultAnalyzers" AfterTargets="ResolveTargetingPackAssets"
           Condition="'@(FrameworkReference)' != ''">
     
-    <!-- Enable ASP.NET generators and set interceptor namespaces when ASP.NET framework reference is present -->
+    <!-- Check if we have Microsoft.AspNetCore.App framework reference -->
+    <ItemGroup>
+      <_AspNetCoreAppFrameworkReference Include="@(FrameworkReference)" Condition="'%(Identity)' == 'Microsoft.AspNetCore.App'" />
+    </ItemGroup>
+    
     <PropertyGroup>
+      <_HasAspNetCoreApp Condition="'@(_AspNetCoreAppFrameworkReference)' != ''">true</_HasAspNetCoreApp>
+    </PropertyGroup>
+    
+    <!-- Enable ASP.NET generators and set interceptor namespaces when ASP.NET framework reference is present -->
+    <PropertyGroup Condition="'$(_HasAspNetCoreApp)' == 'true'">
       <!-- Default settings for trimmed apps when Microsoft.AspNetCore.App is referenced. -->
-      <EnableRequestDelegateGenerator Condition="'@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App'))' != '' And '$(EnableRequestDelegateGenerator)' == '' And ('$(PublishTrimmed)' == 'true' Or '$(PublishAot)' == 'true')">true</EnableRequestDelegateGenerator>
-      <EnableConfigurationBindingGenerator Condition="'@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App'))' != '' And '$(EnableConfigurationBindingGenerator)' == '' And ('$(PublishTrimmed)' == 'true' Or '$(PublishAot)' == 'true')">true</EnableConfigurationBindingGenerator>
+      <EnableRequestDelegateGenerator Condition="'$(EnableRequestDelegateGenerator)' == '' And ('$(PublishTrimmed)' == 'true' Or '$(PublishAot)' == 'true')">true</EnableRequestDelegateGenerator>
+      <EnableConfigurationBindingGenerator Condition="'$(EnableConfigurationBindingGenerator)' == '' And ('$(PublishTrimmed)' == 'true' Or '$(PublishAot)' == 'true')">true</EnableConfigurationBindingGenerator>
       
       <!-- Set the namespaces emitted by the RequestDelegateGenerator for interception when applicable. -->
-      <InterceptorsPreviewNamespaces Condition="'@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App'))' != '' And '$(EnableRequestDelegateGenerator)' == 'true'">$(InterceptorsPreviewNamespaces);Microsoft.AspNetCore.Http.Generated</InterceptorsPreviewNamespaces>
+      <InterceptorsPreviewNamespaces Condition="'$(EnableRequestDelegateGenerator)' == 'true'">$(InterceptorsPreviewNamespaces);Microsoft.AspNetCore.Http.Generated</InterceptorsPreviewNamespaces>
       <!-- Set the namespaces emitted by the ConfigurationBindingGenerator for interception when applicable. -->
-      <InterceptorsPreviewNamespaces Condition="'@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App'))' != '' And '$(EnableConfigurationBindingGenerator)' == 'true'">$(InterceptorsPreviewNamespaces);Microsoft.Extensions.Configuration.Binder.SourceGeneration</InterceptorsPreviewNamespaces>
+      <InterceptorsPreviewNamespaces Condition="'$(EnableConfigurationBindingGenerator)' == 'true'">$(InterceptorsPreviewNamespaces);Microsoft.Extensions.Configuration.Binder.SourceGeneration</InterceptorsPreviewNamespaces>
       <!-- Set the namespaces emitted by the ValidationsGenerator for interception when applicable (.NET 10 and above). -->
-      <InterceptorsPreviewNamespaces Condition="'@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App'))' != '' And '$(_TargetFrameworkVersionWithoutV)' != '' and $([MSBuild]::VersionGreaterThanOrEquals('$(_TargetFrameworkVersionWithoutV)', '10.0'))">$(InterceptorsPreviewNamespaces);Microsoft.Extensions.Validation.Generated</InterceptorsPreviewNamespaces>
+      <InterceptorsPreviewNamespaces Condition="'$(_TargetFrameworkVersionWithoutV)' != '' and $([MSBuild]::VersionGreaterThanOrEquals('$(_TargetFrameworkVersionWithoutV)', '10.0'))">$(InterceptorsPreviewNamespaces);Microsoft.Extensions.Validation.Generated</InterceptorsPreviewNamespaces>
     </PropertyGroup>
     
     <ItemGroup>
