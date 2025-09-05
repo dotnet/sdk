@@ -70,6 +70,21 @@ internal class DnupSharedManifest : IDnupManifest
         }
     }
 
+    /// <summary>
+    /// Gets installed versions filtered by a specific muxer directory.
+    /// </summary>
+    /// <param name="muxerDirectory">Directory to filter by (must match the MuxerDirectory property)</param>
+    /// <param name="validator">Optional validator to check installation validity</param>
+    /// <returns>Installations that match the specified directory</returns>
+    public IEnumerable<DotnetInstall> GetInstalledVersions(string muxerDirectory, IInstallationValidator? validator = null)
+    {
+        return GetInstalledVersions(validator)
+            .Where(install => string.Equals(
+                Path.GetFullPath(install.MuxerDirectory),
+                Path.GetFullPath(muxerDirectory),
+                StringComparison.OrdinalIgnoreCase));
+    }
+
     public void AddInstalledVersion(DotnetInstall version)
     {
         AssertHasFinalizationMutex();

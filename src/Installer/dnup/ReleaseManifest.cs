@@ -19,6 +19,55 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// </summary>
 internal class ReleaseManifest : IDisposable
 {
+    /// <summary>
+    /// Finds the latest fully specified version for a given channel string (major, major.minor, or feature band).
+    /// </summary>
+    /// <param name="channel">Channel string (e.g., "9", "9.0", "9.0.1xx")</param>
+    /// <param name="mode">InstallMode.SDK or InstallMode.Runtime</param>
+    /// <returns>Latest fully specified version string, or null if not found</returns>
+    public string? GetLatestVersionForChannel(string channel, InstallMode mode)
+    {
+        var products = GetProductCollection();
+        // Parse channel
+        var parts = channel.Split('.');
+        int major = parts.Length > 0 && int.TryParse(parts[0], out var m) ? m : -1;
+        int minor = parts.Length > 1 && int.TryParse(parts[1], out var n) ? n : -1;
+        string? featureBandPattern = null;
+        if (parts.Length == 3 && parts[2].EndsWith("xx"))
+        {
+            featureBandPattern = parts[2].Substring(0, parts[2].Length - 2); // e.g., "1" from "1xx"
+        }
+
+        // Find matching product(s)
+        var matchingProducts = products.Where(p =>
+            int.TryParse(p.ProductVersion.Split('.')[0], out var prodMajor) && prodMajor == major &&
+            (minor == -1 || (p.ProductVersion.Split('.').Length > 1 && int.TryParse(p.ProductVersion.Split('.')[1], out var prodMinor) && prodMinor == minor))
+        );
+        foreach (var product in matchingProducts.OrderByDescending(p => p.ProductVersion))
+        {
+            var releases = product.GetReleasesAsync().GetAwaiter().GetResult();
+            // Filter by mode (SDK or Runtime)
+            var filtered = releases.Where(r =>
+                r.Files.Any(f => mode == InstallMode.SDK ? f.Name.Contains("sdk", StringComparison.OrdinalIgnoreCase) : f.Name.Contains("runtime", StringComparison.OrdinalIgnoreCase))
+            );
+
+            // If feature band pattern is specified, filter SDK releases by patch
+            if (featureBandPattern != null && mode == InstallMode.SDK)
+            {
+                filtered = filtered.Where(r =>
+                    r.Version.Patch >= 100 && r.Version.Patch <= 999 &&
+                    r.Version.Patch.ToString().StartsWith(featureBandPattern)
+                );
+            }
+
+            var latest = filtered.OrderByDescending(r => r.Version).FirstOrDefault();
+            if (latest != null)
+            {
+                return latest.Version.ToString();
+            }
+        }
+        return null;
+    }
     private const string CacheSubdirectory = "dotnet-manifests";
     private const int MaxRetryCount = 3;
     private const int RetryDelayMilliseconds = 1000;
