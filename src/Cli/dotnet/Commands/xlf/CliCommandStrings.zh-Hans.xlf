@@ -1880,8 +1880,8 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">未安装工作负载，没有要修复的内容。请运行“dotnet 工作负载搜索”，查找要安装的工作负载。</target>
-        <note />
+        <target state="needs-review-translation">未安装工作负载，没有要修复的内容。请运行“dotnet workload search”，查找要安装的工作负载。</target>
+        <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
@@ -2717,10 +2717,10 @@ The default is to publish a framework-dependent application.</source>
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="translated">无法继续进行项目 ‘{0}’。
-确保具有可运行的项目类型。
-可运行的项目应面向可运行的 TFM (例如 net{1})且其 OutputType 为 ‘Exe’。
-当前 OutputType 为 ‘{2}’。</target>
+        <target state="needs-review-translation">无法运行项目。
+请确保你具有可运行的项目类型且“{0}”支持此项目。
+可运行的项目应面向可运行的 TFM (例如 net5.0)且其 OutputType 为 "Exe"。
+当前的 {1} 为“{2}”。</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
