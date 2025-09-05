@@ -27,7 +27,6 @@ internal class ReleaseManifest : IDisposable
     /// <returns>Latest fully specified version string, or null if not found</returns>
     public string? GetLatestVersionForChannel(string channel, InstallMode mode)
     {
-        var products = GetProductCollection();
         // Parse channel
         var parts = channel.Split('.');
         int major = parts.Length > 0 && int.TryParse(parts[0], out var m) ? m : -1;
@@ -38,36 +37,98 @@ internal class ReleaseManifest : IDisposable
             featureBandPattern = parts[2].Substring(0, parts[2].Length - 2); // e.g., "1" from "1xx"
         }
 
-        // Find matching product(s)
-        var matchingProducts = products.Where(p =>
-            int.TryParse(p.ProductVersion.Split('.')[0], out var prodMajor) && prodMajor == major &&
-            (minor == -1 || (p.ProductVersion.Split('.').Length > 1 && int.TryParse(p.ProductVersion.Split('.')[1], out var prodMinor) && prodMinor == minor))
-        );
-        foreach (var product in matchingProducts.OrderByDescending(p => p.ProductVersion))
-        {
-            var releases = product.GetReleasesAsync().GetAwaiter().GetResult();
-            // Filter by mode (SDK or Runtime)
-            var filtered = releases.Where(r =>
-                r.Files.Any(f => mode == InstallMode.SDK ? f.Name.Contains("sdk", StringComparison.OrdinalIgnoreCase) : f.Name.Contains("runtime", StringComparison.OrdinalIgnoreCase))
-            );
+        // Load the index manifest
+        var index = ProductCollection.GetAsync().GetAwaiter().GetResult();
 
-            // If feature band pattern is specified, filter SDK releases by patch
-            if (featureBandPattern != null && mode == InstallMode.SDK)
+        // For major-only channels like "9", we need to find all products with that major version
+        if (minor == -1)
+        {
+            // Get all products with matching major version
+            var matchingProducts = index.Where(p =>
             {
-                filtered = filtered.Where(r =>
-                    r.Version.Patch >= 100 && r.Version.Patch <= 999 &&
-                    r.Version.Patch.ToString().StartsWith(featureBandPattern)
-                );
+                // Split the product version into parts
+                var productParts = p.ProductVersion.Split('.');
+                if (productParts.Length > 0 && int.TryParse(productParts[0], out var productMajor))
+                {
+                    return productMajor == major;
+                }
+                return false;
+            }).ToList();
+
+            // For each matching product, get releases and filter
+            var allReleases = new List<(ProductRelease Release, Product Product)>();
+
+            foreach (var matchingProduct in matchingProducts)
+            {
+                var productReleases = matchingProduct.GetReleasesAsync().GetAwaiter().GetResult();
+
+                // Filter by mode (SDK or Runtime)
+                var filteredForProduct = productReleases.Where(r =>
+                    r.Files.Any(f => mode == InstallMode.SDK ?
+                        f.Name.Contains("sdk", StringComparison.OrdinalIgnoreCase) :
+                        f.Name.Contains("runtime", StringComparison.OrdinalIgnoreCase))
+                ).ToList();
+
+                foreach (var release in filteredForProduct)
+                {
+                    allReleases.Add((release, matchingProduct));
+                }
             }
 
-            var latest = filtered.OrderByDescending(r => r.Version).FirstOrDefault();
-            if (latest != null)
+            // Find the latest release across all products
+            var latestAcrossProducts = allReleases.OrderByDescending(r => r.Release.Version).FirstOrDefault();
+
+            if (latestAcrossProducts.Release != null)
             {
-                return latest.Version.ToString();
+                return latestAcrossProducts.Release.Version.ToString();
+            }
+
+            return null;
+        }
+
+        // Find the product for the requested major.minor
+        string channelKey = $"{major}.{minor}";
+        var product = index.FirstOrDefault(p => p.ProductVersion == channelKey);
+        if (product == null)
+        {
+            return null;
+        }
+
+        // Load releases from the sub-manifest for this product
+        var releases = product.GetReleasesAsync().GetAwaiter().GetResult();
+
+        // Filter by mode (SDK or Runtime)
+        var filtered = releases.Where(r =>
+            r.Files.Any(f => mode == InstallMode.SDK ?
+                f.Name.Contains("sdk", StringComparison.OrdinalIgnoreCase) :
+                f.Name.Contains("runtime", StringComparison.OrdinalIgnoreCase))
+        ).ToList();
+
+        // If feature band pattern is specified, handle it specially for SDK
+        if (featureBandPattern != null && mode == InstallMode.SDK)
+        {
+            if (int.TryParse(featureBandPattern, out var bandNum))
+            {
+                // For feature bands, we need to construct the version manually
+                // Since SDK feature bands are represented differently than runtime versions,
+                // we return a special format for feature bands
+                if (filtered.Any())
+                {
+                    // Return the feature band version pattern
+                    return $"{major}.{minor}.{featureBandPattern}00";
+                }
             }
         }
+
+        var latest = filtered.OrderByDescending(r => r.Version).FirstOrDefault();
+        if (latest != null)
+        {
+            return latest.Version.ToString();
+        }
+
         return null;
     }
+    
     private const string CacheSubdirectory = "dotnet-manifests";
     private const int MaxRetryCount = 3;
     private const int RetryDelayMilliseconds = 1000;
@@ -344,60 +405,12 @@ internal class ReleaseManifest : IDisposable
         // Use ScopedMutex for cross-process locking
         using var mutex = new ScopedMutex(ReleaseCacheMutexName);
 
-        if (!mutex.HasHandle)
-        {
-            // If we couldn't acquire the mutex, still try to load the collection
-            // but don't write to the cache file to avoid conflicts
-            return _productCollection ??= ProductCollection.GetAsync().GetAwaiter().GetResult();
-        }
-
-        // Double-check locking pattern
-        if (_productCollection != null)
-        {
-            return _productCollection;
-        }
-
-        string cacheFilePath = Path.Combine(_cacheDirectory, "releases.json");
-        bool useCachedData = false;
-
-        if (File.Exists(cacheFilePath))
-        {
-            var cacheFileAge = File.GetLastWriteTimeUtc(cacheFilePath);
-            // If cache exists and is less than 24 hours old, use it
-            useCachedData = (DateTime.UtcNow - cacheFileAge).TotalHours < 24;
-        }
-
-        if (useCachedData)
-        {
-            try
-            {
-                string json = File.ReadAllText(cacheFilePath);
-                _productCollection = DeserializeProductCollection(json);
-                return _productCollection;
-            }
-            catch
-            {
-                // Continue to fetch fresh data if cache loading fails
-            }
-        }
-
-        // Fetch fresh data with retry logic
+        // Always use the index manifest for ProductCollection
         for (int attempt = 1; attempt <= MaxRetryCount; attempt++)
         {
             try
             {
                 _productCollection = ProductCollection.GetAsync().GetAwaiter().GetResult();
-
-                try
-                {
-                    string json = SerializeProductCollection(_productCollection);
-                    File.WriteAllText(cacheFilePath, json);
-                }
-                catch
-                {
-                    // Continue since we have the data in memory
-                }
-
                 return _productCollection;
             }
             catch
@@ -406,7 +419,6 @@ internal class ReleaseManifest : IDisposable
                 {
                     throw;
                 }
-
                 Thread.Sleep(RetryDelayMilliseconds * attempt); // Exponential backoff
             }
         }

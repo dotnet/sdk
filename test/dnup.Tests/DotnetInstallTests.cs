@@ -33,7 +33,7 @@ public class DotnetInstallTests
         var mode = InstallMode.SDK;
         var architecture = InstallArchitecture.x64;
 
-        var install = new DotnetInstall(new DotnetVersion(version), directory, type, mode, architecture);
+        var install = new DotnetInstall(new DotnetVersion(version), directory, type, mode, architecture, new ManagementCadence());
 
         install.FullySpecifiedVersion.Value.Should().Be(version);
         install.ResolvedDirectory.Should().Be(directory);
@@ -58,8 +58,8 @@ public class DotnetInstallTests
     public void Records_ShouldSupportValueEquality()
     {
         // Arrange
-        var install1 = new DotnetInstall("8.0.301", "/test", InstallType.User, InstallMode.SDK, InstallArchitecture.x64);
-        var install2 = new DotnetInstall("8.0.301", "/test", InstallType.User, InstallMode.SDK, InstallArchitecture.x64);
+        var install1 = new DotnetInstall("8.0.301", "/test", InstallType.User, InstallMode.SDK, InstallArchitecture.x64, new ManagementCadence());
+        var install2 = new DotnetInstall("8.0.301", "/test", InstallType.User, InstallMode.SDK, InstallArchitecture.x64, new ManagementCadence());
 
         // Act & Assert
         // Records should be equal based on values, except for the Id which is always unique
