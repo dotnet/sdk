@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Watch
             {
                 var consoleInput = new ConsoleInputReader(_console, context.Options.Quiet, context.EnvironmentOptions.SuppressEmojis);
 
-                var noPrompt = EnvironmentVariables.RestartOnRudeEdit;
+                var noPrompt = context.EnvironmentOptions.RestartOnRudeEdit;
                 if (noPrompt)
                 {
                     context.Logger.LogDebug("DOTNET_WATCH_RESTART_ON_RUDE_EDIT = 'true'. Will restart without prompt.");
@@ -66,7 +66,6 @@ namespace Microsoft.DotNet.Watch
                 _context.Logger.Log(MessageDescriptor.HotReloadEnabled with { Severity = MessageSeverity.Verbose });
             }
 
-            await using var browserConnector = new BrowserConnector(_context);
             using var fileWatcher = new FileWatcher(_context.Logger, _context.EnvironmentOptions);
 
             for (var iteration = 0; !shutdownCancellationToken.IsCancellationRequested; iteration++)
@@ -117,8 +116,8 @@ namespace Microsoft.DotNet.Watch
 
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, _context.Logger);
                     compilationHandler = new CompilationHandler(_context.LoggerFactory, _context.Logger, _context.ProcessRunner);
-                    var scopedCssFileHandler = new ScopedCssFileHandler(_context.Logger, _context.BuildLogger, projectMap, browserConnector, _context.Options, _context.EnvironmentOptions);
-                    var projectLauncher = new ProjectLauncher(_context, projectMap, browserConnector, compilationHandler, iteration);
+                    var scopedCssFileHandler = new ScopedCssFileHandler(_context.Logger, _context.BuildLogger, projectMap, _context.BrowserRefreshServerFactory, _context.Options, _context.EnvironmentOptions);
+                    var projectLauncher = new ProjectLauncher(_context, projectMap, compilationHandler, iteration);
                     evaluationResult.ItemExclusions.Report(_context.Logger);
 
                     runtimeProcessLauncher = runtimeProcessLauncherFactory?.TryCreate(rootProject, projectLauncher, rootProjectOptions);

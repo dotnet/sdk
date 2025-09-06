@@ -267,7 +267,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
     public static readonly AspireServiceFactory Instance = new();
 
     public const string AspireLogComponentName = "Aspire";
-    public const string AppHostProjectCapability = "Aspire";
+    public const string AppHostProjectCapability = ProjectCapability.Aspire;
 
     public IRuntimeProcessLauncher? TryCreate(ProjectGraphNode projectNode, ProjectLauncher projectLauncher, ProjectOptions hostProjectOptions)
         => projectNode.GetCapabilities().Contains(AppHostProjectCapability)

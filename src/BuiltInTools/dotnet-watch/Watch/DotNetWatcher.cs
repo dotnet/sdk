@@ -21,11 +21,10 @@ namespace Microsoft.DotNet.Watch
                 context.Logger.LogDebug("MSBuild incremental optimizations suppressed.");
             }
 
-            var environmentBuilder = EnvironmentVariablesBuilder.FromCurrentEnvironment();
+            var environmentBuilder = new Dictionary<string, string>();
 
             ChangedFile? changedFile = null;
             var buildEvaluator = new BuildEvaluator(context);
-            await using var browserConnector = new BrowserConnector(context);
 
             for (var iteration = 0;;iteration++)
             {
@@ -41,7 +40,7 @@ namespace Microsoft.DotNet.Watch
                 {
                     projectRootNode = evaluationResult.ProjectGraph.GraphRoots.Single();
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, context.Logger);
-                    staticFileHandler = new StaticFileHandler(context.Logger, projectMap, browserConnector);
+                    staticFileHandler = new StaticFileHandler(context.Logger, projectMap, context.BrowserRefreshServerFactory);
                 }
                 else
                 {
@@ -63,11 +62,21 @@ namespace Microsoft.DotNet.Watch
                     }
                 };
 
-                var browserRefreshServer = (projectRootNode != null)
-                    ? await browserConnector.GetOrCreateBrowserRefreshServerAsync(projectRootNode, processSpec, environmentBuilder, context.RootProjectOptions, new DefaultAppModel(projectRootNode), shutdownCancellationToken)
+                var browserRefreshServer = projectRootNode != null && HotReloadAppModel.InferFromProject(context, projectRootNode) is WebApplicationAppModel webAppModel
+                    ? await context.BrowserRefreshServerFactory.GetOrCreateBrowserRefreshServerAsync(projectRootNode, webAppModel, shutdownCancellationToken)
                     : null;
 
-                environmentBuilder.SetProcessEnvironmentVariables(processSpec);
+                browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder, enableHotReload: false);
+
+                foreach (var (name, value) in environmentBuilder)
+                {
+                    processSpec.EnvironmentVariables.Add(name, value);
+                }
+
+                if (projectRootNode != null)
+                {
+                    context.BrowserLauncher.InstallBrowserLaunchTrigger(processSpec, projectRootNode, context.RootProjectOptions, browserRefreshServer, shutdownCancellationToken);
+                }
 
                 // Reset for next run
                 buildEvaluator.RequiresRevaluation = false;

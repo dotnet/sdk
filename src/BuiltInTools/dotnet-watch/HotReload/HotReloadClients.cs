@@ -2,21 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using Microsoft.Build.Graph;
+using Microsoft.DotNet.Watch;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, string name)> clients) : IDisposable
+internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, string name)> clients, BrowserRefreshServer? browserRefreshServer) : IDisposable
 {
-    public static readonly HotReloadClients Empty = new([]);
-
-    public HotReloadClients(HotReloadClient client)
-        : this([(client, "")])
+    public HotReloadClients(HotReloadClient client, BrowserRefreshServer? browserRefreshServer)
+        : this([(client, "")], browserRefreshServer)
     {
     }
-
-    public bool IsEmpty
-        => clients.IsEmpty;
 
     public void Dispose()
     {
@@ -26,11 +23,36 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
         }
     }
 
-    internal void InitiateConnection(string namedPipeName, CancellationToken cancellationToken)
+    public BrowserRefreshServer? BrowserRefreshServer
+        => browserRefreshServer;
+
+    /// <summary>
+    /// All clients share the same loggers.
+    /// </summary>
+    public ILogger ClientLogger
+        => clients.First().client.Logger;
+
+    /// <summary>
+    /// All clients share the same loggers.
+    /// </summary>
+    public ILogger AgentLogger
+        => clients.First().client.AgentLogger;
+
+    internal void ConfigureLaunchEnvironment(IDictionary<string, string> environmentBuilder)
     {
         foreach (var (client, _) in clients)
         {
-            client.InitiateConnection(namedPipeName, cancellationToken);
+            client.ConfigureLaunchEnvironment(environmentBuilder);
+        }
+
+        browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder, enableHotReload: true);
+    }
+
+    internal void InitiateConnection(CancellationToken cancellationToken)
+    {
+        foreach (var (client, _) in clients)
+        {
+            client.InitiateConnection(cancellationToken);
         }
     }
 
@@ -53,58 +75,60 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
         return [.. results.SelectMany(r => r).Distinct(StringComparer.Ordinal).OrderBy(c => c)];
     }
 
-    public async ValueTask<ApplyStatus> ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
+    public async ValueTask ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
     {
+        var anyFailure = false;
+
         if (clients is [var (singleClient, _)])
         {
-            return await singleClient.ApplyManagedCodeUpdatesAsync(updates, isProcessSuspended, cancellationToken);
+            anyFailure = await singleClient.ApplyManagedCodeUpdatesAsync(updates, isProcessSuspended, cancellationToken) == ApplyStatus.Failed;
         }
-
-        // Apply to all processes.
-        // The module the change is for does not need to be loaded to any of the processes, yet we still consider it successful if the application does not fail.
-        // In each process we store the deltas for application when/if the module is loaded to the process later.
-        // An error is only reported if the delta application fails, which would be a bug either in the runtime (applying valid delta incorrectly),
-        // the compiler (producing wrong delta), or rude edit detection (the change shouldn't have been allowed).
-
-        var results = await Task.WhenAll(clients.Select(c => c.client.ApplyManagedCodeUpdatesAsync(updates, isProcessSuspended, cancellationToken)));
-
-        var anyFailure = false;
-        var anyChangeApplied = false;
-        var allChangesApplied = false;
-
-        var index = 0;
-        foreach (var status in results)
+        else
         {
-            var (client, name) = clients[index++];
+            // Apply to all processes.
+            // The module the change is for does not need to be loaded to any of the processes, yet we still consider it successful if the application does not fail.
+            // In each process we store the deltas for application when/if the module is loaded to the process later.
+            // An error is only reported if the delta application fails, which would be a bug either in the runtime (applying valid delta incorrectly),
+            // the compiler (producing wrong delta), or rude edit detection (the change shouldn't have been allowed).
 
-            switch (status)
+            var results = await Task.WhenAll(clients.Select(c => c.client.ApplyManagedCodeUpdatesAsync(updates, isProcessSuspended, cancellationToken)));
+
+            var index = 0;
+            foreach (var status in results)
             {
-                case ApplyStatus.Failed:
-                    anyFailure = true;
-                    break;
+                var (client, name) = clients[index++];
 
-                case ApplyStatus.AllChangesApplied:
-                    anyChangeApplied = true;
-                    allChangesApplied = true;
-                    break;
+                switch (status)
+                {
+                    case ApplyStatus.Failed:
+                        anyFailure = true;
+                        break;
 
-                case ApplyStatus.SomeChangesApplied:
-                    anyChangeApplied = true;
-                    allChangesApplied = false;
-                    client.Logger.LogWarning("Some changes not applied to {Name} because they are not supported by the runtime.", name);
-                    break;
+                    case ApplyStatus.AllChangesApplied:
+                        break;
 
-                case ApplyStatus.NoChangesApplied:
-                    allChangesApplied = false;
-                    client.Logger.LogWarning("No changes applied to {Name} because they are not supported by the runtime.", name);
-                    break;
+                    case ApplyStatus.SomeChangesApplied:
+                        client.Logger.LogWarning("Some changes not applied to {Name} because they are not supported by the runtime.", name);
+                        break;
+
+                    case ApplyStatus.NoChangesApplied:
+                        client.Logger.LogWarning("No changes applied to {Name} because they are not supported by the runtime.", name);
+                        break;
+                }
             }
         }
 
-        return anyFailure ? ApplyStatus.Failed
-            : allChangesApplied ? ApplyStatus.AllChangesApplied
-            : anyChangeApplied ? ApplyStatus.SomeChangesApplied
-            : ApplyStatus.NoChangesApplied;
+        if (!anyFailure)
+        {
+            // all clients share the same loggers, pick any:
+            var logger = clients[0].client.Logger;
+            logger.Log(LogEvents.HotReloadSucceeded);
+
+            if (browserRefreshServer != null)
+            {
+                await browserRefreshServer.RefreshBrowserAsync(cancellationToken);
+            }
+        }
     }
 
     public async ValueTask InitialUpdatesAppliedAsync(CancellationToken cancellationToken)
@@ -119,6 +143,40 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
         }
     }
 
+    public async Task ApplyStaticAssetUpdatesAsync(IEnumerable<(string filePath, string relativeUrl, string assemblyName, bool isApplicationProject)> assets, CancellationToken cancellationToken)
+    {
+        if (browserRefreshServer != null)
+        {
+            await browserRefreshServer.UpdateStaticAssetsAsync(assets.Select(static a => a.relativeUrl), cancellationToken);
+        }
+        else
+        {
+            var updates = new List<HotReloadStaticAssetUpdate>();
+
+            foreach (var (filePath, relativeUrl, assemblyName, isApplicationProject) in assets)
+            {
+                ImmutableArray<byte> content;
+                try
+                {
+                    content = ImmutableCollectionsMarshal.AsImmutableArray(await File.ReadAllBytesAsync(filePath, cancellationToken));
+                }
+                catch (Exception e)
+                {
+                    ClientLogger.LogError("Failed to read file {FilePath}: {Message}", filePath, e.Message);
+                    continue;
+                }
+
+                updates.Add(new HotReloadStaticAssetUpdate(
+                    assemblyName: assemblyName,
+                    relativePath: relativeUrl,
+                    content: content,
+                    isApplicationProject));
+            }
+
+            await ApplyStaticAssetUpdatesAsync([.. updates], isProcessSuspended: false, cancellationToken);
+        }
+    }
+
     public async ValueTask ApplyStaticAssetUpdatesAsync(ImmutableArray<HotReloadStaticAssetUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
     {
         if (clients is [var (singleClient, _)])
@@ -130,4 +188,7 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
             await Task.WhenAll(clients.Select(c => c.client.ApplyStaticAssetUpdatesAsync(updates, isProcessSuspended, cancellationToken)));
         }
     }
+
+    public ValueTask ReportCompilationErrorsInApplicationAsync(ImmutableArray<string> compilationErrors, CancellationToken cancellationToken)
+        => browserRefreshServer?.ReportCompilationErrorsInBrowserAsync(compilationErrors, cancellationToken) ?? ValueTask.CompletedTask;
 }

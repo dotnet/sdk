@@ -193,7 +193,7 @@ namespace Microsoft.DotNet.Watch
                     logger.LogInformation("Polling file watcher is enabled");
                 }
 
-                var context = CreateContext(processRunner);
+                using var context = CreateContext(processRunner);
 
                 if (isHotReloadEnabled)
                 {
@@ -227,16 +227,20 @@ namespace Microsoft.DotNet.Watch
         // internal for testing
         internal DotNetWatchContext CreateContext(ProcessRunner processRunner)
         {
+            var logger = loggerFactory.CreateLogger(DotNetWatchContext.DefaultLogComponentName);
+
             return new()
             {
                 ProcessOutputReporter = processOutputReporter,
                 LoggerFactory = loggerFactory,
-                Logger = loggerFactory.CreateLogger(DotNetWatchContext.DefaultLogComponentName),
+                Logger = logger,
                 BuildLogger = loggerFactory.CreateLogger(DotNetWatchContext.BuildLogComponentName),
                 ProcessRunner = processRunner,
                 Options = options.GlobalOptions,
                 EnvironmentOptions = environmentOptions,
                 RootProjectOptions = rootProjectOptions,
+                BrowserRefreshServerFactory = new BrowserRefreshServerFactory(),
+                BrowserLauncher = new BrowserLauncher(logger, environmentOptions),
             };
         }
 

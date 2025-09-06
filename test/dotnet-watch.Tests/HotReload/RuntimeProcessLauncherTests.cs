@@ -116,7 +116,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             serviceHolder.Value = s;
         });
 
-        var watcher = new HotReloadDotNetWatcher(program.CreateContext(processRunner), console, runtimeProcessLauncherFactory: factory);
+        var context = program.CreateContext(processRunner);
+        var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: factory);
 
         var shutdownSource = new CancellationTokenSource();
         var watchTask = Task.Run(async () =>
@@ -130,6 +131,10 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 shutdownSource.Cancel();
                 Logger.WriteLine($"Unexpected exception {e}");
                 throw;
+            }
+            finally
+            {
+                context.Dispose();
             }
         }, shutdownSource.Token);
 
