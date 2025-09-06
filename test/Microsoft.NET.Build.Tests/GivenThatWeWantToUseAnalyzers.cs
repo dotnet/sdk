@@ -152,6 +152,71 @@ namespace Microsoft.NET.Build.Tests
             Assert.Equal(expectEnabled ?? false, expectedNamespaces.All(expectedNamespace => namespaces.Contains(expectedNamespace)));
         }
 
+        [Fact]
+        public void It_enables_aspnet_generators_for_non_web_projects_with_framework_reference()
+        {
+            // Create a simple non-web project with ASP.NET FrameworkReference 
+            var asset = _testAssetsManager
+                .CreateTestProject(new TestProject()
+                {
+                    Name = "NonWebAppWithAspNet",
+                    TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                    IsSdkProject = true,
+                    IsExe = true
+                })
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    
+                    // Add FrameworkReference to ASP.NET Core (this is key to reproducing the issue)
+                    project.Root.Add(new XElement(ns + "ItemGroup",
+                        new XElement(ns + "FrameworkReference", new XAttribute("Include", "Microsoft.AspNetCore.App"))));
+                    
+                    // Enable configuration binding generator explicitly (like the repro in the issue)
+                    project.Root.Add(new XElement(ns + "PropertyGroup",
+                        new XElement(ns + "EnableConfigurationBindingGenerator", "true")));
+                });
+
+            // Get the actual values to see what's happening
+            var command = new GetValuesCommand(
+                Log,
+                Path.Combine(asset.Path, "NonWebAppWithAspNet"),
+                ToolsetInfo.CurrentTargetFramework,
+                "InterceptorsPreviewNamespaces",
+                GetValuesCommand.ValueType.Property);
+
+            command
+                .WithWorkingDirectory(asset.Path)
+                .Execute()
+                .Should().Pass();
+
+            var namespaces = command.GetValues();
+            
+            // This should work correctly - the non-web project should get the InterceptorsPreviewNamespaces
+            // because the logic was moved from Web SDK to FrameworkReferenceResolution targets
+            Assert.True(namespaces.Contains("Microsoft.Extensions.Configuration.Binder.SourceGeneration"), 
+                $"Expected InterceptorsPreviewNamespaces to contain 'Microsoft.Extensions.Configuration.Binder.SourceGeneration' but got: [{string.Join(", ", namespaces)}]");
+        }
+
+        private void VerifyInterceptorsFeaturePropertiesForProject(TestAsset asset, string projectName, bool? expectEnabled, params string[] expectedNamespaces)
+        {
+            var command = new GetValuesCommand(
+                Log,
+                Path.Combine(asset.Path, projectName),
+                ToolsetInfo.CurrentTargetFramework,
+                "InterceptorsPreviewNamespaces",
+                GetValuesCommand.ValueType.Property);
+
+            command
+                .WithWorkingDirectory(asset.Path)
+                .Execute()
+                .Should().Pass();
+
+            var namespaces = command.GetValues();
+
+            Assert.Equal(expectEnabled ?? false, expectedNamespaces.All(expectedNamespace => namespaces.Contains(expectedNamespace)));
+        }
+
         [Theory]
         [InlineData("C#", "AppWithLibrary")]
         [InlineData("VB", "AppWithLibraryVB")]
