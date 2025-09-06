@@ -37,12 +37,13 @@ namespace Microsoft.DotNet.HotReload
         private static readonly ImmutableArray<string> s_defaultCapabilities90 =
             s_defaultCapabilities80;
 
-        private int _updateId;
+        private int _updateBatchId;
 
         /// <summary>
         /// Updates that were sent over to the agent while the process has been suspended.
         /// </summary>
-        private readonly Queue<int> _pendingUpdates = [];
+        private readonly object _pendingUpdatesGate = new();
+        private Task _pendingUpdates = Task.CompletedTask;
 
         private readonly ImmutableArray<string> _capabilities = GetUpdateCapabilities(logger, projectHotReloadCapabilities, projectTargetFrameworkVersion);
 
@@ -76,6 +77,10 @@ namespace Microsoft.DotNet.HotReload
             // Do nothing.
         }
 
+        // for testing
+        internal Task PendingUpdates
+            => _pendingUpdates;
+
         public override void ConfigureLaunchEnvironment(IDictionary<string, string> environmentBuilder)
         {
             // the environment is configued via browser refesh server
@@ -106,19 +111,7 @@ namespace Microsoft.DotNet.HotReload
                 return ApplyStatus.AllChangesApplied;
             }
 
-            if (!isProcessSuspended)
-            {
-                await ProcessPendingUpdatesAsync(cancellationToken);
-            }
-
-            var anySuccess = false;
-            var anyFailure = false;
-
             // Make sure to send the same update to all browsers, the only difference is the shared secret.
-
-            var updateId = _updateId++;
-            Logger.LogDebug("Sending update #{UpdateId}", updateId);
-
             var deltas = updates.Select(static update => new JsonDelta
             {
                 ModuleId = update.ModuleId,
@@ -130,32 +123,7 @@ namespace Microsoft.DotNet.HotReload
 
             var loggingLevel = Logger.IsEnabled(LogLevel.Debug) ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
 
-            await browserRefreshServer.SendAndReceiveAsync(
-                request: sharedSecret => new JsonApplyHotReloadDeltasRequest
-                {
-                    SharedSecret = sharedSecret,
-                    UpdateId = updateId,
-                    Deltas = deltas,
-                    ResponseLoggingLevel = (int)loggingLevel
-                },
-                response: isProcessSuspended ? null : new ResponseAction((value, logger) =>
-                {
-                    if (ProcessUpdateResponse(value, logger))
-                    {
-                        anySuccess = true;
-                    }
-                    else
-                    {
-                        anyFailure = true;
-                    }
-                }),
-                cancellationToken);
-
-            if (isProcessSuspended)
-            {
-                Logger.LogDebug("Update #{UpdateId} will be completed after app resumes.", updateId);
-                _pendingUpdates.Enqueue(updateId);
-            }
+            var (anySuccess, anyFailure) = await SendAndReceiveUpdateAsync(deltas, loggingLevel, isProcessSuspended, cancellationToken);
 
             // If no browser is connected we assume the changes have been applied.
             // If at least one browser suceeds we consider the changes successfully applied.
@@ -166,34 +134,67 @@ namespace Microsoft.DotNet.HotReload
             return (!anySuccess && anyFailure) ? ApplyStatus.Failed : (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
         }
 
+        private async ValueTask<(bool anySuccess, bool anyFailure)> SendAndReceiveUpdateAsync(JsonDelta[] deltas, ResponseLoggingLevel loggingLevel, bool isProcessSuspended, CancellationToken cancellationToken)
+        {
+            var batchId = _updateBatchId++;
+
+            if (!isProcessSuspended)
+            {
+                return await SendAndReceiveAsync(batchId, cancellationToken);
+            }
+
+            lock (_pendingUpdatesGate)
+            {
+                var previous = _pendingUpdates;
+
+                _pendingUpdates = Task.Run(async () =>
+                {
+                    await previous;
+                    await SendAndReceiveAsync(batchId, cancellationToken);
+                }, cancellationToken);
+            }
+
+            return (anySuccess: true, anyFailure: false);
+
+            async ValueTask<(bool anySuccess, bool anyFailure)> SendAndReceiveAsync(int batchId, CancellationToken cancellationToken)
+            {
+                Logger.LogDebug("Sending update batch #{UpdateId}", batchId);
+
+                var anySuccess = false;
+                var anyFailure = false;
+
+                await browserRefreshServer.SendAndReceiveAsync(
+                    request: sharedSecret => new JsonApplyHotReloadDeltasRequest
+                    {
+                        SharedSecret = sharedSecret,
+                        UpdateId = batchId,
+                        Deltas = deltas,
+                        ResponseLoggingLevel = (int)loggingLevel
+                    },
+                    response: new ResponseAction((value, logger) =>
+                    {
+                        if (ReceiveUpdateResponseAsync(value, logger))
+                        {
+                            Logger.LogDebug("Update batch #{UpdateId} completed.", batchId);
+                            anySuccess = true;
+                        }
+                        else
+                        {
+                            Logger.LogDebug("Update batch #{UpdateId} failed.", batchId);
+                            anyFailure = true;
+                        }
+                    }),
+                    cancellationToken);
+
+                return (anySuccess, anyFailure);
+            }
+        }
+
         public override Task<ApplyStatus> ApplyStaticAssetUpdatesAsync(ImmutableArray<HotReloadStaticAssetUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken)
             // static asset updates are handled by browser refresh server:
             => Task.FromResult(ApplyStatus.NoChangesApplied);
 
-        private async ValueTask ProcessPendingUpdatesAsync(CancellationToken cancellationToken)
-        {
-            while (_pendingUpdates.Count > 0)
-            {
-                var updateId = _pendingUpdates.Dequeue();
-                var success = false;
-
-                await browserRefreshServer.SendAndReceiveAsync<object?>(
-                    request: null,
-                    response: (value, logger) => success = ProcessUpdateResponse(value, logger),
-                    cancellationToken);
-
-                if (success)
-                {
-                    Logger.LogDebug("Update #{UpdateId} completed.", updateId);
-                }
-                else
-                {
-                    Logger.LogDebug("Update #{UpdateId} failed.", updateId);
-                }
-            }
-        }
-
-        private static bool ProcessUpdateResponse(ReadOnlySpan<byte> value, ILogger logger)
+        private static bool ReceiveUpdateResponseAsync(ReadOnlySpan<byte> value, ILogger logger)
         {
             var data = AbstractBrowserRefreshServer.DeserializeJson<JsonApplyDeltasResponse>(value);
 
