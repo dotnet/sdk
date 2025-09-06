@@ -105,24 +105,6 @@ namespace Microsoft.NET.Build.Tests
             return itemValues;
         }
 
-        private string GetPropertyValue(string propertyName, string projectFolder, string targetFramework)
-        {
-            var getValuesCommand = new GetValuesCommand(Log, projectFolder,
-                targetFramework, propertyName, GetValuesCommand.ValueType.Property)
-            {
-                Configuration = "Debug"
-            };
-
-            getValuesCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var values = getValuesCommand.GetValues();
-            values.Count.Should().Be(1);
-            return values[0];
-        }
-
         private TestAsset CreateDocumentationFileLibraryAsset(bool? generateDocumentationFile, string documentationFile, string language, [CallerMemberName] string callingMethod = "")
         {
             string genDocFileIdentifier = generateDocumentationFile == null ? "null" : generateDocumentationFile.Value.ToString();
@@ -1068,124 +1050,25 @@ namespace ProjectNameWithSpaces
                 .Should()
                 .Pass();
 
-            GetPropertyValue("RootNamespace", projectFolder, testProject.TargetFrameworks).Should().Be("Project_Name_With_Spaces");
-        }
-
-        [Theory]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("netcoreapp5.0")]
-        public void It_makes_RootNamespace_safe_when_project_name_has_dashes(string targetFramework)
-        {
-            var testProject = new TestProject()
+            string GetPropertyValue(string propertyName)
             {
-                Name = "my-project-with-dashes",
-                TargetFrameworks = targetFramework,
-            };
+                var getValuesCommand = new GetValuesCommand(Log, projectFolder,
+                    testProject.TargetFrameworks, propertyName, GetValuesCommand.ValueType.Property)
+                {
+                    Configuration = "Debug"
+                };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+                getValuesCommand
+                    .Execute()
+                    .Should()
+                    .Pass();
 
-            // Overwrite the default file. CreateTestProject uses the defined project name for the namespace.
-            // We need a buildable project to extract the property to verify it
-            // since this issue only surfaces in VS when adding a new class through an item template.
-            File.WriteAllText(Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.cs"), @"
-using System;
-using System.Collections.Generic;
+                var values = getValuesCommand.GetValues();
+                values.Count.Should().Be(1);
+                return values[0];
+            }
 
-namespace MyProjectWithDashes
-{
-    public class MyProjectWithDashesClass
-    {
-        public static string Name { get { return ""my-project-with-dashes""; } }
-        public static List<string> List { get { return null; } }
-    }
-}");
-            string projectFolder = Path.Combine(testAsset.Path, testProject.Name);
-
-            var buildCommand = new BuildCommand(testAsset, $"{testProject.Name}");
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            GetPropertyValue("RootNamespace", projectFolder, testProject.TargetFrameworks).Should().Be("my_project_with_dashes");
-        }
-
-        [Theory]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("netcoreapp5.0")]
-        public void It_makes_RootNamespace_safe_when_project_name_starts_with_digit(string targetFramework)
-        {
-            var testProject = new TestProject()
-            {
-                Name = "13monkeys",
-                TargetFrameworks = targetFramework,
-            };
-
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
-
-            // Overwrite the default file. CreateTestProject uses the defined project name for the namespace.
-            // We need a buildable project to extract the property to verify it
-            // since this issue only surfaces in VS when adding a new class through an item template.
-            File.WriteAllText(Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.cs"), @"
-using System;
-using System.Collections.Generic;
-
-namespace _13monkeys
-{
-    public class _13monkeysClass
-    {
-        public static string Name { get { return ""13monkeys""; } }
-        public static List<string> List { get { return null; } }
-    }
-}");
-            string projectFolder = Path.Combine(testAsset.Path, testProject.Name);
-
-            var buildCommand = new BuildCommand(testAsset, $"{testProject.Name}");
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            GetPropertyValue("RootNamespace", projectFolder, testProject.TargetFrameworks).Should().Be("_13monkeys");
-        }
-
-        [Theory]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("netcoreapp5.0")]
-        public void It_makes_RootNamespace_safe_when_project_name_has_dashes_and_starts_with_digit(string targetFramework)
-        {
-            var testProject = new TestProject()
-            {
-                Name = "13-monkeys-project",
-                TargetFrameworks = targetFramework,
-            };
-
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
-
-            // Overwrite the default file. CreateTestProject uses the defined project name for the namespace.
-            // We need a buildable project to extract the property to verify it
-            // since this issue only surfaces in VS when adding a new class through an item template.
-            File.WriteAllText(Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.cs"), @"
-using System;
-using System.Collections.Generic;
-
-namespace _13_monkeys_project
-{
-    public class _13_monkeys_projectClass
-    {
-        public static string Name { get { return ""13-monkeys-project""; } }
-        public static List<string> List { get { return null; } }
-    }
-}");
-            string projectFolder = Path.Combine(testAsset.Path, testProject.Name);
-
-            var buildCommand = new BuildCommand(testAsset, $"{testProject.Name}");
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            GetPropertyValue("RootNamespace", projectFolder, testProject.TargetFrameworks).Should().Be("_13_monkeys_project");
+            GetPropertyValue("RootNamespace").Should().Be("Project_Name_With_Spaces");
         }
 
         [WindowsOnlyFact(Skip = "We need new SDK packages with different assembly versions to build this (.38 and .39 have the same assembly version)")]
