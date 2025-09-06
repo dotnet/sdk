@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal readonly struct BrowserConnection : IAsyncDisposable
+internal readonly struct BrowserConnection : IDisposable
 {
     public const string ServerLogComponentName = $"{nameof(BrowserConnection)}:Server";
     public const string AgentLogComponentName = $"{nameof(BrowserConnection)}:Agent";
@@ -40,13 +40,12 @@ internal readonly struct BrowserConnection : IAsyncDisposable
         ServerLogger.LogDebug("Connected to referesh server.");
     }
 
-    public ValueTask DisposeAsync()
+    public void Dispose()
     {
         ClientSocket.Dispose();
 
         Disconnected.TrySetResult(default);
         ServerLogger.LogDebug("Disconnected.");
-        return new();
     }
 
     internal async ValueTask<bool> TrySendMessageAsync(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)

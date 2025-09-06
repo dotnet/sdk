@@ -17,14 +17,14 @@ namespace Microsoft.DotNet.Watch;
 ///
 /// The instances are also reused if the project file is updated or the project graph is reloaded.
 /// </summary>
-internal sealed class BrowserRefreshServerFactory : IAsyncDisposable
+internal sealed class BrowserRefreshServerFactory : IDisposable
 {
     private readonly Lock _serversGuard = new();
 
     // Null value is cached for project instances that are not web projects or do not support browser refresh for other reason.
     private readonly Dictionary<ProjectInstanceId, BrowserRefreshServer?> _servers = [];
 
-    public async ValueTask DisposeAsync()
+    public void Dispose()
     {
         BrowserRefreshServer?[] serversToDispose;
 
@@ -34,13 +34,10 @@ internal sealed class BrowserRefreshServerFactory : IAsyncDisposable
             _servers.Clear();
         }
 
-        await Task.WhenAll(serversToDispose.Select(async server =>
+        foreach (var server in serversToDispose)
         {
-            if (server != null)
-            {
-                await server.DisposeAsync();
-            }
-        }));
+            server?.Dispose();
+        };
     }
 
     public async ValueTask<BrowserRefreshServer?> GetOrCreateBrowserRefreshServerAsync(ProjectGraphNode projectNode, WebApplicationAppModel appModel, CancellationToken cancellationToken)

@@ -193,7 +193,7 @@ namespace Microsoft.DotNet.Watch
                     logger.LogInformation("Polling file watcher is enabled");
                 }
 
-                await using var context = CreateContext(processRunner);
+                using var context = CreateContext(processRunner);
 
                 if (isHotReloadEnabled)
                 {

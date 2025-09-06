@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.HotReload;
 /// Communicates with aspnetcore-browser-refresh.js loaded in the browser.
 /// Associated with a project instance.
 /// </summary>
-internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPath, ILogger logger, ILoggerFactory loggerFactory) : IAsyncDisposable
+internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPath, ILogger logger, ILoggerFactory loggerFactory) : IDisposable
 {
     public const string ServerLogComponentName = "BrowserRefreshServer";
 
@@ -42,7 +42,7 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
     // initialized by StartAsync
     private WebServerHost? _lazyHost;
 
-    public virtual async ValueTask DisposeAsync()
+    public virtual void Dispose()
     {
         BrowserConnection[] connectionsToDispose;
         lock (_activeConnections)
@@ -53,7 +53,7 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
 
         foreach (var connection in connectionsToDispose)
         {
-            await connection.DisposeAsync();
+            connection.Dispose();
         }
 
         _lazyHost?.Dispose();
@@ -188,7 +188,7 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
         }
     }
 
-    private async ValueTask DisposeClosedBrowserConnectionsAsync()
+    private void DisposeClosedBrowserConnections()
     {
         List<BrowserConnection>? lazyConnectionsToDispose = null;
 
@@ -216,7 +216,7 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
         {
             foreach (var connection in lazyConnectionsToDispose)
             {
-                await connection.DisposeAsync();
+                connection.Dispose();
             }
         }
     }
@@ -283,7 +283,7 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
             logger.Log(LogEvents.FailedToReceiveResponseFromConnectedBrowser);
         }
 
-        await DisposeClosedBrowserConnectionsAsync();
+        DisposeClosedBrowserConnections();
     }
 
     public ValueTask RefreshBrowserAsync(CancellationToken cancellationToken)
