@@ -122,8 +122,8 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
 
         _output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
         {
-            ShowPassedTests = () => showPassedTests,
-            ShowProgress = () => !noProgress,
+            ShowPassedTests = showPassedTests,
+            ShowProgress = !noProgress,
             UseAnsi = !noAnsi,
             UseCIAnsi = inCI,
             ShowAssembly = true,
