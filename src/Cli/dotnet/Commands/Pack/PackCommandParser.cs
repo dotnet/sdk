@@ -108,6 +108,10 @@ internal static class PackCommandParser
         command.Options.Add(ConfigurationOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(TargetOption);
+        command.Options.Add(CommonOptions.GetPropertyOption);
+        command.Options.Add(CommonOptions.GetItemOption);
+        command.Options.Add(CommonOptions.GetTargetResultOption);
+        command.Options.Add(CommonOptions.GetResultOutputFileOption);
 
         // Don't include runtime option because we want to include it specifically and allow the short version ("-r") to be used
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);
