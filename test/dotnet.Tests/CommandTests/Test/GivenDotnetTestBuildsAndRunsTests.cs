@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -102,7 +102,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -132,7 +132,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -161,8 +161,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute(
-                                        TestingPlatformOptions.ConfigurationOption.Name, configuration,
-                                        TestingPlatformOptions.NoLaunchProfileOption.Name);
+                                        MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration,
+                                        MicrosoftTestingPlatformOptions.NoLaunchProfileOption.Name);
 
             result.StdOut.Should()
                 .Contain("FAILED to find argument from launchSettings.json")
@@ -180,8 +180,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute(
-                                        TestingPlatformOptions.ConfigurationOption.Name, configuration,
-                                        TestingPlatformOptions.NoLaunchProfileArgumentsOption.Name, "true");
+                                        MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration,
+                                        MicrosoftTestingPlatformOptions.NoLaunchProfileArgumentsOption.Name, "true");
 
             result.StdOut.Should()
                 .Contain("Using launch settings from")
@@ -199,7 +199,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -226,7 +226,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute("--minimum-expected-tests 2",
-                                    TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -255,7 +255,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -275,7 +275,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -295,7 +295,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -315,7 +315,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -335,7 +335,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -356,8 +356,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .WithSource();
 
             string[] args = useFrameworkOption
-                ? new[] { TestingPlatformOptions.ConfigurationOption.Name, configuration, TestingPlatformOptions.FrameworkOption.Name, ToolsetInfo.CurrentTargetFramework }
-                : new[] { TestingPlatformOptions.ConfigurationOption.Name, configuration };
+                ? new[] { MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration, MicrosoftTestingPlatformOptions.FrameworkOption.Name, ToolsetInfo.CurrentTargetFramework }
+                : new[] { MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration };
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
@@ -390,7 +390,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .Execute(
-                                        TestingPlatformOptions.ConfigurationOption.Name, configuration,
+                                        MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration,
                                         CommonOptions.PropertiesOption.Name, "PROPERTY_TO_ENABLE_MTP=1");
 
             if (!TestContext.IsLocalized())
@@ -435,7 +435,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute(TestingPlatformOptions.MinimumExpectedTestsOption.Name, value);
+                .Execute(MicrosoftTestingPlatformOptions.MinimumExpectedTestsOption.Name, value);
 
             result.ExitCode.Should().Be(expectedExitCode);
         }

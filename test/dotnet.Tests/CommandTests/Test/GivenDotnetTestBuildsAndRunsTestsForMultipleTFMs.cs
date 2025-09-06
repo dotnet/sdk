@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -66,7 +66,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -156,7 +156,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration,
+                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration,
                                     CommonOptions.ArchitectureOption.Name, arch);
 
             if (!TestContext.IsLocalized())
@@ -184,7 +184,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
