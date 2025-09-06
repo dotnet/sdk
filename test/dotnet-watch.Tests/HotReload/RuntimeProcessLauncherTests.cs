@@ -134,7 +134,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             }
             finally
             {
-                await context.DisposeAsync();
+                context.Dispose();
             }
         }, shutdownSource.Token);
 
