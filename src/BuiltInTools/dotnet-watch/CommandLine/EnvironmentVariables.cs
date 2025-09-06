@@ -47,6 +47,7 @@ internal static class EnvironmentVariables
     public static string TestOutputDir => Environment.GetEnvironmentVariable("__DOTNET_WATCH_TEST_OUTPUT_DIR") ?? "";  
 
     public static string? AutoReloadWSHostName => Environment.GetEnvironmentVariable("DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME");
+    public static string? AutoReloadWSPort => Environment.GetEnvironmentVariable("DOTNET_WATCH_AUTO_RELOAD_WS_PORT");
     public static string? BrowserPath => Environment.GetEnvironmentVariable("DOTNET_WATCH_BROWSER_PATH");
 
     private static bool ReadBool(string variableName)
