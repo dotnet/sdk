@@ -9,7 +9,7 @@ using Microsoft.TemplateEngine.Cli.Help;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal partial class TestingPlatformCommand
+internal partial class MicrosoftTestingPlatformTestCommand
 {
     private readonly ConcurrentDictionary<string, CommandLineOption> _commandLineOptionNameToModuleNames = [];
     private readonly ConcurrentDictionary<bool, List<(string, string[])>> _moduleNamesToCommandLineOptions = [];
@@ -22,7 +22,7 @@ internal partial class TestingPlatformCommand
             WriteHelpOptions(context);
             Console.WriteLine(CliCommandStrings.HelpWaitingForOptionsAndExtensions);
 
-            Run(context.ParseResult);
+            Run(context.ParseResult, isHelp: true);
 
             if (_commandLineOptionNameToModuleNames.IsEmpty)
             {

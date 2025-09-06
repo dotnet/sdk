@@ -1,5 +1,5 @@
 <!--#if (UseMSTestSdk)-->
-<Project Sdk="MSTest.Sdk/4.0.0-preview.25415.9">
+<Project Sdk="MSTest.Sdk/4.0.0-preview.25454.2">
 
   <PropertyGroup>
     <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">net10.0</TargetFramework>
@@ -48,7 +48,7 @@
 <!--#if (CoverageTool == "coverlet")-->
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
 <!--#endif-->
-    <PackageReference Include="MSTest" Version="4.0.0-preview.25415.9" />
+    <PackageReference Include="MSTest" Version="4.0.0-preview.25454.2" />
   </ItemGroup>
 
   <ItemGroup>

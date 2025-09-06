@@ -20,14 +20,14 @@ internal sealed class TestModulesFilterHandler(TestApplicationActionQueue action
     public bool RunWithTestModulesFilter(ParseResult parseResult)
     {
         // If the module path pattern(s) was provided, we will use that to filter the test modules
-        string testModules = parseResult.GetValue(TestingPlatformOptions.TestModulesFilterOption);
+        string testModules = parseResult.GetValue(MicrosoftTestingPlatformOptions.TestModulesFilterOption);
 
         // If the root directory was provided, we will use that to search for the test modules
         // Otherwise, we will use the current directory
         string rootDirectory = Directory.GetCurrentDirectory();
-        if (parseResult.HasOption(TestingPlatformOptions.TestModulesRootDirectoryOption))
+        if (parseResult.HasOption(MicrosoftTestingPlatformOptions.TestModulesRootDirectoryOption))
         {
-            rootDirectory = parseResult.GetValue(TestingPlatformOptions.TestModulesRootDirectoryOption);
+            rootDirectory = parseResult.GetValue(MicrosoftTestingPlatformOptions.TestModulesRootDirectoryOption);
 
             // If the root directory is not valid, we simply return
             if (string.IsNullOrEmpty(rootDirectory) || !Directory.Exists(rootDirectory))

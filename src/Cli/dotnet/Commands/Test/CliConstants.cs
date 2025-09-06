@@ -8,6 +8,7 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 internal static class CliConstants
 {
     public const string ServerOptionKey = "--server";
+    public const string HelpOptionKey = "--help";
     public const string DotNetTestPipeOptionKey = "--dotnet-test-pipe";
 
     public const string ServerOptionValue = "dotnettestcli";

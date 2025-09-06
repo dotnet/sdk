@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure, "dotnet test should fail with a meaningful error when run against console app without MTP handshake");
         }
