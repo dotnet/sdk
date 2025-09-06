@@ -1,0 +1,30 @@
+<!-- Licensed to the .NET Foundation under one or more agreements.
+The .NET Foundation licenses this file to you under the MIT license. -->
+
+<Project>
+    <!-- Build telemetry hook. -->
+    <Target Name="_MobileTelemetry_Build"
+            AfterTargets="Build"
+            DependsOnTargets="_MobileTelemetry_Collect">
+
+        <ItemGroup>
+            <MobileTelemetry Remove="@(MobileTelemetry)" />
+            <MobileTelemetry Include="Invocation" Value="build" />
+            <MobileTelemetry Include="@(MobileTelemetryCommon)" />
+        </ItemGroup>
+        <AllowEmptyTelemetry EventName="MobileProperties" EventData="@(MobileTelemetry)" />
+    </Target>
+
+    <!-- Collect telemetry data -->
+    <Target Name="_MobileTelemetry_Collect">
+        <ItemGroup>
+            <MobileTelemetryCommon Remove="@(MobileTelemetryCommon)" />
+            <MobileTelemetryCommon Include="TargetPlatformIdentifier" Value="$(TargetPlatformIdentifier)"/>
+            <MobileTelemetryCommon Include="RuntimeIdentifier" Value="$(RuntimeIdentifier)" />
+            <MobileTelemetryCommon Include="UseMonoRuntime" Value="$(UseMonoRuntime)" />
+            <MobileTelemetryCommon Include="PublishAot" Value="$(PublishAot)" />
+            <MobileTelemetryCommon Include="PublishReadyToRun" Value="$(PublishReadyToRun)" />
+            <MobileTelemetryCommon Include="PublishReadyToRunComposite" Value="$(PublishReadyToRunComposite)" />
+        </ItemGroup>
+    </Target>
+</Project>
