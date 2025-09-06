@@ -27,6 +27,8 @@ internal sealed class TestApplicationHandler
 
     internal void OnHandshakeReceived(HandshakeMessage handshakeMessage, bool gotSupportedVersion)
     {
+        LogHandshake(handshakeMessage);
+
         if (!gotSupportedVersion)
         {
             _output.HandshakeFailure(
@@ -38,6 +40,10 @@ internal sealed class TestApplicationHandler
                     handshakeMessage.Properties[HandshakeMessagePropertyNames.SupportedProtocolVersions],
                     ProtocolConstants.SupportedVersions),
                 string.Empty);
+
+            // Protocol version is not supported.
+            // We don't attempt to do anything else.
+            return;
         }
 
         if (!_handshakeInfo.HasValue)
@@ -64,8 +70,6 @@ internal sealed class TestApplicationHandler
             var handshakeInfo = _handshakeInfo.Value;
             _output.AssemblyRunStarted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, instanceId);
         }
-
-        LogHandshake(handshakeMessage);
     }
 
     private static string GetHandshakePropertyName(byte propertyId) =>
@@ -85,6 +89,11 @@ internal sealed class TestApplicationHandler
 
     internal void OnDiscoveredTestsReceived(DiscoveredTestMessages discoveredTestMessages)
     {
+        LogDiscoveredTests(discoveredTestMessages);
+
+        // TODO: If _handshakeInfo is null, we should error.
+        // We shouldn't be getting any discovered test messages without a previous handshake.
+
         if (_options.IsHelp)
         {
             // TODO: Better to throw exception?
@@ -97,12 +106,15 @@ internal sealed class TestApplicationHandler
                 test.DisplayName,
                 test.Uid);
         }
-
-        LogDiscoveredTests(discoveredTestMessages);
     }
 
     internal void OnTestResultsReceived(TestResultMessages testResultMessage)
     {
+        LogTestResults(testResultMessage);
+
+        // TODO: If _handshakeInfo is null, we should error.
+        // We shouldn't be getting any test result messages without a previous handshake.
+
         if (_options.IsHelp)
         {
             // TODO: Better to throw exception?
@@ -140,12 +152,15 @@ internal sealed class TestApplicationHandler
                 standardOutput: testResult.StandardOutput,
                 errorOutput: testResult.ErrorOutput);
         }
-
-        LogTestResults(testResultMessage);
     }
 
     internal void OnFileArtifactsReceived(FileArtifactMessages fileArtifactMessages)
     {
+        LogFileArtifacts(fileArtifactMessages);
+
+        // TODO: If _handshakeInfo is null, we should error.
+        // We shouldn't be getting any file artifact messages without a previous handshake.
+
         if (_options.IsHelp)
         {
             // TODO: Better to throw exception?
@@ -160,12 +175,15 @@ internal sealed class TestApplicationHandler
                 _module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
                 artifact.TestDisplayName, artifact.FullPath);
         }
-
-        LogFileArtifacts(fileArtifactMessages);
     }
 
     internal void OnSessionEventReceived(TestSessionEvent sessionEvent)
     {
+        LogSessionEvent(sessionEvent);
+
+        // TODO: If _handshakeInfo is null, we should error.
+        // We shouldn't be getting any session event messages without a previous handshake.
+
         // TODO: We shouldn't only log here!
         // We should use it in a more meaningful way. e.g, ensure we received session start/end events.
         Logger.LogTrace($"TestSessionEvent: {sessionEvent.SessionType}, {sessionEvent.SessionUid}, {sessionEvent.ExecutionId}");
@@ -310,6 +328,21 @@ internal sealed class TestApplicationHandler
             logMessageBuilder.AppendLine($"Error Data: {errorData}");
         }
 
+        Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
+    }
+
+    private static void LogSessionEvent(TestSessionEvent testSessionEvent)
+    {
+        if (!Logger.TraceEnabled)
+        {
+            return;
+        }
+
+        var logMessageBuilder = new StringBuilder();
+
+        logMessageBuilder.AppendLine($"TestSessionEvent.SessionType: {testSessionEvent.SessionType}");
+        logMessageBuilder.AppendLine($"TestSessionEvent.SessionUid: {testSessionEvent.SessionUid}");
+        logMessageBuilder.AppendLine($"TestSessionEvent.ExecutionId: {testSessionEvent.ExecutionId}");
         Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
     }
 }
