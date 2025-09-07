@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.CommandLine.StaticCompletions;
 using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Extensions;
 using NuGet.Packaging;
 
 namespace Microsoft.DotNet.Cli.Commands.Restore;
@@ -195,11 +195,12 @@ internal static class RestoreCommandParser
 
         if (includeRuntimeOption)
         {
-            Option<IEnumerable<string>> runtimeOption = new DynamicForwardedOption<IEnumerable<string>>("--runtime")
+            Option<IEnumerable<string>> runtimeOption = new ForwardedOption<IEnumerable<string>>("--runtime")
             {
                 Description = CliCommandStrings.CmdRuntimeOptionDescription,
                 HelpName = CliCommandStrings.CmdRuntimeOption,
                 Hidden = !showHelp,
+                IsDynamic = true
             }.ForwardAsSingle(RestoreRuntimeArgFunc)
              .AllowSingleArgPerToken()
              .AddCompletions(CliCompletion.RunTimesFromProjectFile);

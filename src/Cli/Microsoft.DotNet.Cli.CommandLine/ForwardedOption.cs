@@ -50,13 +50,3 @@ public class ForwardedOption<T> : Option<T>, IForwardedOption
         return ForwardingFunction;
     }
 }
-
-public class DynamicForwardedOption<T> : ForwardedOption<T>, IDynamicOption
-{
-    public DynamicForwardedOption(string name, Func<ArgumentResult, T> parseArgument, string? description = null)
-        : base(name, parseArgument, description)
-    {
-    }
-
-    public DynamicForwardedOption(string name, params string[] aliases) : base(name, aliases) { }
-}

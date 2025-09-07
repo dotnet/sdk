@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
+using System.CommandLine.StaticCompletions;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
@@ -26,10 +27,11 @@ public static class PackageAddCommandParser
         return QueryNuGet(context.WordToComplete, allowPrerelease, CancellationToken.None).Result.Select(packageId => new CompletionItem(packageId));
     });
 
-    public static readonly Option<string> VersionOption = new DynamicForwardedOption<string>("--version", "-v")
+    public static readonly Option<string> VersionOption = new ForwardedOption<string>("--version", "-v")
     {
         Description = CliCommandStrings.CmdVersionDescription,
-        HelpName = CliCommandStrings.CmdVersion
+        HelpName = CliCommandStrings.CmdVersion,
+        IsDynamic = true
     }.ForwardAsSingle(o => $"--version {o}")
         .AddCompletions((context) =>
         {

@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
+using System.CommandLine.StaticCompletions;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
@@ -14,10 +15,11 @@ namespace Microsoft.DotNet.Cli;
 internal static class CommonOptions
 {
     public static Option<bool> YesOption =
-        new DynamicOption<bool>("--yes", "-y")
+        new Option<bool>("--yes", "-y")
         {
             Description = CliStrings.YesOptionDescription,
-            Arity = ArgumentArity.Zero
+            Arity = ArgumentArity.Zero,
+            IsDynamic = true
         };
 
     public static Option<ReadOnlyDictionary<string, string>?> PropertiesOption =
@@ -168,13 +170,13 @@ internal static class CommonOptions
         .AggregateRepeatedTokens();
 
     public static Option<string> FrameworkOption(string description) =>
-        new DynamicForwardedOption<string>("--framework", "-f")
+        new ForwardedOption<string>("--framework", "-f")
         {
             Description = description,
             HelpName = CliStrings.FrameworkArgumentName
         }
-        .AddCompletions(CliCompletion.TargetFrameworksFromProjectFile)
-        .ForwardAsSingle(o => $"--property:TargetFramework={o}");
+        .ForwardAsSingle(o => $"--property:TargetFramework={o}")
+        .AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
 
     public static Option<string> ArtifactsPathOption =
         new ForwardedOption<string>(
@@ -198,17 +200,19 @@ internal static class CommonOptions
     public const string RuntimeOptionName = "--runtime";
 
     public static Option<string> RuntimeOption(string description) =>
-        new DynamicForwardedOption<string>(RuntimeOptionName, "-r")
+        new ForwardedOption<string>(RuntimeOptionName, "-r")
         {
             HelpName = RuntimeArgName,
-            Description = description
+            Description = description,
+            IsDynamic = true
         }.ForwardAsMany(RuntimeArgFunc!)
         .AddCompletions(CliCompletion.RunTimesFromProjectFile);
 
     public static Option<string> LongFormRuntimeOption =
-        new DynamicForwardedOption<string>(RuntimeOptionName)
+        new ForwardedOption<string>(RuntimeOptionName)
         {
-            HelpName = RuntimeArgName
+            HelpName = RuntimeArgName,
+            IsDynamic = true,
         }.ForwardAsMany(RuntimeArgFunc!)
         .AddCompletions(CliCompletion.RunTimesFromProjectFile);
 
@@ -220,10 +224,11 @@ internal static class CommonOptions
         }.ForwardAs("--property:UseCurrentRuntimeIdentifier=True");
 
     public static Option<string?> ConfigurationOption(string description) =>
-        new DynamicForwardedOption<string?>("--configuration", "-c")
+        new ForwardedOption<string?>("--configuration", "-c")
         {
             Description = description,
-            HelpName = CliStrings.ConfigurationArgumentName
+            HelpName = CliStrings.ConfigurationArgumentName,
+            IsDynamic = true
         }.ForwardAsSingle(o => $"--property:Configuration={o}")
         .AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
 
@@ -466,28 +471,22 @@ internal static class CommonOptions
 
     private static string GetArchFromRid(string rid) => rid.Substring(rid.LastIndexOf("-", StringComparison.InvariantCulture) + 1, rid.Length - rid.LastIndexOf("-", StringComparison.InvariantCulture) - 1);
 
-    internal static Option<T> AddCompletions<T>(this Option<T> option, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
+    extension<T>(Option<T> option)
     {
-        option.CompletionSources.Add(completionSource);
-        return option;
+        public Option<T> AddCompletions(Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
+        {
+            option.CompletionSources.Add(completionSource);
+            return option;
+        }
     }
 
-    internal static Argument<T> AddCompletions<T>(this Argument<T> argument, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
+    extension<T>(Argument<T> argument)
     {
-        argument.CompletionSources.Add(completionSource);
-        return argument;
-    }
-
-    internal static DynamicOption<T> AddCompletions<T>(this DynamicOption<T> option, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
-    {
-        option.CompletionSources.Add(completionSource);
-        return option;
-    }
-
-    internal static DynamicForwardedOption<T> AddCompletions<T>(this DynamicForwardedOption<T> option, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
-    {
-        option.CompletionSources.Add(completionSource);
-        return option;
+        public Argument<T> AddCompletions(Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
+        {
+            argument.CompletionSources.Add(completionSource);
+            return argument;
+        }
     }
 }
 
