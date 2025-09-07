@@ -18,13 +18,13 @@ internal static class CleanCommandParser
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static readonly Option<string> OutputOption = new ForwardedOption<string>("--output", "-o")
+    public static readonly Option<string> OutputOption = new Option<string>("--output", "-o")
     {
         Description = CliCommandStrings.CleanCmdOutputDirDescription,
         HelpName = CliCommandStrings.CleanCmdOutputDir
     }.ForwardAsOutputPath("OutputPath");
 
-    public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
+    public static readonly Option<bool> NoLogoOption = new Option<bool>("--nologo")
     {
         Description = CliCommandStrings.CleanCmdNoLogo,
         Arity = ArgumentArity.Zero

@@ -19,37 +19,37 @@ internal static class PackCommandParser
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static readonly Option<string> OutputOption = new ForwardedOption<string>("--output", "-o")
+    public static readonly Option<string> OutputOption = new Option<string>("--output", "-o")
     {
         Description = CliCommandStrings.PackCmdOutputDirDescription,
         HelpName = CliCommandStrings.PackCmdOutputDir
     }.ForwardAsSingle(o => $"-property:PackageOutputPath={CommandDirectoryContext.GetFullPath(o)}");
 
-    public static readonly Option<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
+    public static readonly Option<bool> NoBuildOption = new Option<bool>("--no-build")
     {
         Description = CliCommandStrings.CmdNoBuildOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:NoBuild=true");
 
-    public static readonly Option<bool> IncludeSymbolsOption = new ForwardedOption<bool>("--include-symbols")
+    public static readonly Option<bool> IncludeSymbolsOption = new Option<bool>("--include-symbols")
     {
         Description = CliCommandStrings.CmdIncludeSymbolsDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:IncludeSymbols=true");
 
-    public static readonly Option<bool> IncludeSourceOption = new ForwardedOption<bool>("--include-source")
+    public static readonly Option<bool> IncludeSourceOption = new Option<bool>("--include-source")
     {
         Description = CliCommandStrings.CmdIncludeSourceDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:IncludeSource=true");
 
-    public static readonly Option<bool> ServiceableOption = new ForwardedOption<bool>("--serviceable", "-s")
+    public static readonly Option<bool> ServiceableOption = new Option<bool>("--serviceable", "-s")
     {
         Description = CliCommandStrings.CmdServiceableDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:Serviceable=true");
 
-    public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
+    public static readonly Option<bool> NoLogoOption = new Option<bool>("--nologo")
     {
         Description = CliCommandStrings.PackCmdNoLogo,
         Arity = ArgumentArity.Zero
@@ -63,7 +63,7 @@ internal static class PackCommandParser
     public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = BuildCommandParser.VerbosityOption;
 
     public static Option<NuGetVersion> VersionOption =
-        new ForwardedOption<NuGetVersion>("--version")
+        new Option<NuGetVersion>("--version")
         {
             Description = CliCommandStrings.PackCmdVersionDescription,
             HelpName = CliCommandStrings.PackCmdVersion,
