@@ -3,8 +3,9 @@
   <PropertyGroup>
     <!--
       Used in in-proc VS and VS Code.
+      We also need to target $(SdkTargetFramework) to allow tests to run.
     -->
-    <TargetFrameworks>net9.0;net472</TargetFrameworks>
+    <TargetFrameworks>$(VisualStudioServiceTargetFramework);$(SdkTargetFramework);$(VisualStudioTargetFramework)</TargetFrameworks>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <DebugType>none</DebugType>
     <GenerateDependencyFile>false</GenerateDependencyFile>
@@ -24,9 +25,9 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Contracts" PrivateAssets="all" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <!-- net472 polyfills
-      Since this code may be run in Visual Studio / full framework MSBuild, these packages need to use the "toolset" package versions so they
+  <ItemGroup>
+    <!--
+      Since this code may be run in Visual Studio / VS Code / full framework MSBuild, these packages need to use the "toolset" package versions so they
       don't depend on higher versions of the packages than are available in those environments.
     -->
     <PackageReference Include="System.Buffers" VersionOverride="$(SystemBuffersToolsetPackageVersion)" />
@@ -39,9 +40,8 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" VersionOverride="$(MicrosoftExtensionsLoggingAbstractionsToolsetPackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
   <!-- Make sure the shared source files do not require any global usings -->
