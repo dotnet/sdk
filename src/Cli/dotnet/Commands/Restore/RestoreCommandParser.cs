@@ -18,7 +18,7 @@ internal static class RestoreCommandParser
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static readonly Option<IEnumerable<string>> SourceOption = new ForwardedOption<IEnumerable<string>>("--source", "-s")
+    public static readonly Option<IEnumerable<string>> SourceOption = new Option<IEnumerable<string>>("--source", "-s")
     {
         Description = CliCommandStrings.CmdSourceOptionDescription,
         HelpName = CliCommandStrings.CmdSourceOption
@@ -34,22 +34,22 @@ internal static class RestoreCommandParser
                 VerbosityOption,
                 CommonOptions.InteractiveMsBuildForwardOption,
                 CommonOptions.ArtifactsPathOption,
-                new ForwardedOption<bool>("--use-lock-file")
+                new Option<bool>("--use-lock-file")
                 {
                     Description = CliCommandStrings.CmdUseLockFileOptionDescription,
                     Arity = ArgumentArity.Zero
                 }.ForwardAs("-property:RestorePackagesWithLockFile=true"),
-                new ForwardedOption<bool>("--locked-mode")
+                new Option<bool>("--locked-mode")
                 {
                     Description = CliCommandStrings.CmdLockedModeOptionDescription,
                     Arity = ArgumentArity.Zero
                 }.ForwardAs("-property:RestoreLockedMode=true"),
-                new ForwardedOption<string>("--lock-file-path")
+                new Option<string>("--lock-file-path")
                 {
                     Description = CliCommandStrings.CmdLockFilePathOptionDescription,
                     HelpName = CliCommandStrings.CmdLockFilePathOption
                 }.ForwardAsSingle(o => $"-property:NuGetLockFilePath={o}"),
-                new ForwardedOption<bool>("--force-evaluate")
+                new Option<bool>("--force-evaluate")
                 {
                     Description = CliCommandStrings.CmdReevaluateOptionDescription,
                     Arity = ArgumentArity.Zero
@@ -118,7 +118,7 @@ internal static class RestoreCommandParser
         }
         else
         {
-            Option<IEnumerable<string>> sourceOption = new ForwardedOption<IEnumerable<string>>("--source")
+            Option<IEnumerable<string>> sourceOption = new Option<IEnumerable<string>>("--source")
             {
                 Description = showHelp ? CliCommandStrings.CmdSourceOptionDescription : string.Empty,
                 HelpName = CliCommandStrings.CmdSourceOption,
@@ -134,7 +134,7 @@ internal static class RestoreCommandParser
             yield return sourceOption;
         }
 
-        yield return new ForwardedOption<string>("--packages")
+        yield return new Option<string>("--packages")
         {
             Description = showHelp ? CliCommandStrings.CmdPackagesOptionDescription : string.Empty,
             HelpName = CliCommandStrings.CmdPackagesOption,
@@ -143,42 +143,42 @@ internal static class RestoreCommandParser
 
         yield return CommonOptions.CurrentRuntimeOption(CliCommandStrings.CmdCurrentRuntimeOptionDescription);
 
-        yield return new ForwardedOption<bool>("--disable-parallel")
+        yield return new Option<bool>("--disable-parallel")
         {
             Description = showHelp ? CliCommandStrings.CmdDisableParallelOptionDescription : string.Empty,
             Hidden = !showHelp,
             Arity = ArgumentArity.Zero
         }.ForwardAs("-property:RestoreDisableParallel=true");
 
-        yield return new ForwardedOption<string>("--configfile")
+        yield return new Option<string>("--configfile")
         {
             Description = showHelp ? CliCommandStrings.CmdConfigFileOptionDescription : string.Empty,
             HelpName = CliCommandStrings.CmdConfigFileOption,
             Hidden = !showHelp
         }.ForwardAsSingle(o => $"-property:RestoreConfigFile={CommandDirectoryContext.GetFullPath(o)}");
 
-        yield return new ForwardedOption<bool>("--no-cache")
+        yield return new Option<bool>("--no-cache")
         {
             Description = string.Empty,
             Hidden = true,
             Arity = ArgumentArity.Zero
         }.ForwardAs("-property:RestoreNoCache=true");
 
-        yield return new ForwardedOption<bool>("--no-http-cache")
+        yield return new Option<bool>("--no-http-cache")
         {
             Description = showHelp ? CliCommandStrings.CmdNoHttpCacheOptionDescription : string.Empty,
             Hidden = !showHelp,
             Arity = ArgumentArity.Zero
         }.ForwardAs("-property:RestoreNoHttpCache=true");
 
-        yield return new ForwardedOption<bool>("--ignore-failed-sources")
+        yield return new Option<bool>("--ignore-failed-sources")
         {
             Description = showHelp ? CliCommandStrings.CmdIgnoreFailedSourcesOptionDescription : string.Empty,
             Hidden = !showHelp,
             Arity = ArgumentArity.Zero
         }.ForwardAs("-property:RestoreIgnoreFailedSources=true");
 
-        ForwardedOption<bool> forceOption = new ForwardedOption<bool>("--force")
+        Option<bool> forceOption = new Option<bool>("--force")
         {
             Description = CliCommandStrings.CmdForceRestoreOptionDescription,
             Hidden = !showHelp,
@@ -195,7 +195,7 @@ internal static class RestoreCommandParser
 
         if (includeRuntimeOption)
         {
-            Option<IEnumerable<string>> runtimeOption = new ForwardedOption<IEnumerable<string>>("--runtime")
+            Option<IEnumerable<string>> runtimeOption = new Option<IEnumerable<string>>("--runtime")
             {
                 Description = CliCommandStrings.CmdRuntimeOptionDescription,
                 HelpName = CliCommandStrings.CmdRuntimeOption,
@@ -215,7 +215,7 @@ internal static class RestoreCommandParser
 
         if (includeNoDependenciesOption)
         {
-            yield return new ForwardedOption<bool>("--no-dependencies")
+            yield return new Option<bool>("--no-dependencies")
             {
                 Description = CliCommandStrings.CmdNoDependenciesOptionDescription,
                 Arity = ArgumentArity.Zero,

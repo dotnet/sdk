@@ -24,7 +24,7 @@ internal static class CommonOptions
 
     public static Option<ReadOnlyDictionary<string, string>?> PropertiesOption =
         // these are all of the forms that the property switch can be understood by in MSBuild
-        new ForwardedOption<ReadOnlyDictionary<string, string>?>("--property", "-property", "/property", "/p", "-p", "--p")
+        new Option<ReadOnlyDictionary<string, string>?>("--property", "-property", "/property", "/p", "-p", "--p")
         {
             Hidden = true,
             Arity = ArgumentArity.ZeroOrMore,
@@ -39,7 +39,7 @@ internal static class CommonOptions
     /// </remarks>
     public static Option<ReadOnlyDictionary<string, string>?> RestorePropertiesOption =
         // these are all of the forms that the property switch can be understood by in MSBuild
-        new ForwardedOption<ReadOnlyDictionary<string, string>?>("--restoreProperty", "-restoreProperty", "/restoreProperty", "-rp", "--rp", "/rp")
+        new Option<ReadOnlyDictionary<string, string>?>("--restoreProperty", "-restoreProperty", "/restoreProperty", "-rp", "--rp", "/rp")
         {
             Hidden = true,
             Arity = ArgumentArity.ZeroOrMore,
@@ -68,7 +68,7 @@ internal static class CommonOptions
     }
 
     public static Option<string[]?> MSBuildTargetOption(string? defaultTargetName = null, (string key, string value)[]? additionalProperties = null) =>
-        new ForwardedOption<string[]?>("--target", "/target", "-target", "-t", "--t", "/t")
+        new Option<string[]?>("--target", "/target", "-target", "-t", "--t", "/t")
         {
             Description = "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
             HelpName = "TARGET",
@@ -81,7 +81,7 @@ internal static class CommonOptions
         .AllowSingleArgPerToken();
 
     public static Option<string[]> RequiredMSBuildTargetOption(string defaultTargetName, (string key, string value)[]? additionalProperties = null) =>
-        new ForwardedOption<string[]>("--target", "/target", "-target", "-t", "--t", "/t")
+        new Option<string[]>("--target", "/target", "-target", "-t", "--t", "/t")
         {
             Description = "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
             HelpName = "TARGET",
@@ -141,7 +141,7 @@ internal static class CommonOptions
     }
 
     public static Option<VerbosityOptions> VerbosityOption(VerbosityOptions defaultVerbosity) =>
-        new ForwardedOption<VerbosityOptions>("--verbosity", "-v")
+        new Option<VerbosityOptions>("--verbosity", "-v")
         {
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName,
@@ -151,7 +151,7 @@ internal static class CommonOptions
         .AggregateRepeatedTokens();
 
     public static Option<VerbosityOptions?> VerbosityOption() =>
-        new ForwardedOption<VerbosityOptions?>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
+        new Option<VerbosityOptions?>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
         {
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName
@@ -160,7 +160,7 @@ internal static class CommonOptions
         .AggregateRepeatedTokens();
 
     public static Option<VerbosityOptions> HiddenVerbosityOption =
-        new ForwardedOption<VerbosityOptions>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
+        new Option<VerbosityOptions>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
         {
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName,
@@ -170,7 +170,7 @@ internal static class CommonOptions
         .AggregateRepeatedTokens();
 
     public static Option<string> FrameworkOption(string description) =>
-        new ForwardedOption<string>("--framework", "-f")
+        new Option<string>("--framework", "-f")
         {
             Description = description,
             HelpName = CliStrings.FrameworkArgumentName
@@ -179,7 +179,7 @@ internal static class CommonOptions
         .AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
 
     public static Option<string> ArtifactsPathOption =
-        new ForwardedOption<string>(
+        new Option<string>(
             //  --artifacts-path is pretty verbose, should we use --artifacts instead (or possibly support both)?
             "--artifacts-path")
         {
@@ -200,7 +200,7 @@ internal static class CommonOptions
     public const string RuntimeOptionName = "--runtime";
 
     public static Option<string> RuntimeOption(string description) =>
-        new ForwardedOption<string>(RuntimeOptionName, "-r")
+        new Option<string>(RuntimeOptionName, "-r")
         {
             HelpName = RuntimeArgName,
             Description = description,
@@ -209,7 +209,7 @@ internal static class CommonOptions
         .AddCompletions(CliCompletion.RunTimesFromProjectFile);
 
     public static Option<string> LongFormRuntimeOption =
-        new ForwardedOption<string>(RuntimeOptionName)
+        new Option<string>(RuntimeOptionName)
         {
             HelpName = RuntimeArgName,
             IsDynamic = true,
@@ -217,14 +217,14 @@ internal static class CommonOptions
         .AddCompletions(CliCompletion.RunTimesFromProjectFile);
 
     public static Option<bool> CurrentRuntimeOption(string description) =>
-        new ForwardedOption<bool>("--use-current-runtime", "--ucr")
+        new Option<bool>("--use-current-runtime", "--ucr")
         {
             Description = description,
             Arity = ArgumentArity.Zero
         }.ForwardAs("--property:UseCurrentRuntimeIdentifier=True");
 
     public static Option<string?> ConfigurationOption(string description) =>
-        new ForwardedOption<string?>("--configuration", "-c")
+        new Option<string?>("--configuration", "-c")
         {
             Description = description,
             HelpName = CliStrings.ConfigurationArgumentName,
@@ -233,7 +233,7 @@ internal static class CommonOptions
         .AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
 
     public static Option<string> VersionSuffixOption =
-        new ForwardedOption<string>("--version-suffix")
+        new Option<string>("--version-suffix")
         {
             Description = CliStrings.CmdVersionSuffixDescription,
             HelpName = CliStrings.VersionSuffixArgumentName
@@ -249,14 +249,14 @@ internal static class CommonOptions
         return arg;
     }
 
-    public static Option<bool> NoRestoreOption = new ForwardedOption<bool>("--no-restore")
+    public static Option<bool> NoRestoreOption = new Option<bool>("--no-restore")
     {
         Description = CliStrings.NoRestoreDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-restore:false");
 
 
-    public static Option<bool> RestoreOption = new ForwardedOption<bool>("--restore", "-restore")
+    public static Option<bool> RestoreOption = new Option<bool>("--restore", "-restore")
     {
         Description = "Restore the project before building it. This is the default behavior.",
         Arity = ArgumentArity.Zero,
@@ -277,7 +277,7 @@ internal static class CommonOptions
     /// If not set by a user, this will default to true if the user is not in a CI environment as detected by <see cref="Telemetry.CIEnvironmentDetectorForTelemetry.IsCIEnvironment"/>.
     /// If this is set to function as a flag, then there is no simple user-provided way to circumvent the behavior.
     /// </remarks>
-    public static ForwardedOption<bool> InteractiveOption(bool acceptArgument = false) =>
+    public static Option<bool> InteractiveOption(bool acceptArgument = false) =>
         new(InteractiveOptionName)
         {
             Description = CliStrings.CommandInteractiveOptionDescription,
@@ -289,7 +289,7 @@ internal static class CommonOptions
     public static Option<bool> InteractiveMsBuildForwardOption = InteractiveOption(acceptArgument: true).ForwardAsSingle(b => $"--property:NuGetInteractive={(b ? "true" : "false")}");
 
     public static Option<bool> DisableBuildServersOption =
-        new ForwardedOption<bool>("--disable-build-servers")
+        new Option<bool>("--disable-build-servers")
         {
             Description = CliStrings.DisableBuildServersOptionDescription,
             Arity = ArgumentArity.Zero
@@ -297,14 +297,14 @@ internal static class CommonOptions
         .ForwardIfEnabled(["--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false"]);
 
     public static Option<string> ArchitectureOption =
-        new ForwardedOption<string>("--arch", "-a")
+        new Option<string>("--arch", "-a")
         {
             Description = CliStrings.ArchitectureOptionDescription,
             HelpName = CliStrings.ArchArgumentName
         }.SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
 
     public static Option<string> LongFormArchitectureOption =
-        new ForwardedOption<string>("--arch")
+        new Option<string>("--arch")
         {
             Description = CliStrings.ArchitectureOptionDescription,
             HelpName = CliStrings.ArchArgumentName
@@ -316,7 +316,7 @@ internal static class CommonOptions
             parseResult.GetValue(ArchitectureOption);
 
     public static Option<string> OperatingSystemOption =
-        new ForwardedOption<string>("--os")
+        new Option<string>("--os")
         {
             Description = CliStrings.OperatingSystemOptionDescription,
             HelpName = CliStrings.OSArgumentName
@@ -328,14 +328,14 @@ internal static class CommonOptions
     };
 
     public static Option<bool> SelfContainedOption =
-        new ForwardedOption<bool>("--self-contained", "--sc")
+        new Option<bool>("--self-contained", "--sc")
         {
             Description = CliStrings.SelfContainedOptionDescription
         }
         .ForwardIfEnabled([$"--property:SelfContained=true", "--property:_CommandLineDefinedSelfContained=true"]);
 
     public static Option<bool> NoSelfContainedOption =
-        new ForwardedOption<bool>("--no-self-contained")
+        new Option<bool>("--no-self-contained")
         {
             Description = CliStrings.FrameworkDependentOptionDescription,
             Arity = ArgumentArity.Zero
@@ -470,24 +470,6 @@ internal static class CommonOptions
     private static string GetOsFromRid(string rid) => rid.Substring(0, rid.LastIndexOf("-", StringComparison.InvariantCulture));
 
     private static string GetArchFromRid(string rid) => rid.Substring(rid.LastIndexOf("-", StringComparison.InvariantCulture) + 1, rid.Length - rid.LastIndexOf("-", StringComparison.InvariantCulture) - 1);
-
-    extension<T>(Option<T> option)
-    {
-        public Option<T> AddCompletions(Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
-        {
-            option.CompletionSources.Add(completionSource);
-            return option;
-        }
-    }
-
-    extension<T>(Argument<T> argument)
-    {
-        public Argument<T> AddCompletions(Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
-        {
-            argument.CompletionSources.Add(completionSource);
-            return argument;
-        }
-    }
 }
 
 

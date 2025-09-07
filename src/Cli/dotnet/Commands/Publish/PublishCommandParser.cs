@@ -19,26 +19,26 @@ internal static class PublishCommandParser
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static readonly Option<string> OutputOption = new ForwardedOption<string>("--output", "-o")
+    public static readonly Option<string> OutputOption = new Option<string>("--output", "-o")
     {
         Description = CliCommandStrings.PublishOutputOptionDescription,
         HelpName = CliCommandStrings.PublishOutputOption
     }.ForwardAsOutputPath("PublishDir");
 
-    public static readonly Option<IEnumerable<string>> ManifestOption = new ForwardedOption<IEnumerable<string>>("--manifest")
+    public static readonly Option<IEnumerable<string>> ManifestOption = new Option<IEnumerable<string>>("--manifest")
     {
         Description = CliCommandStrings.ManifestOptionDescription,
         HelpName = CliCommandStrings.ManifestOption
     }.ForwardAsSingle(o => $"-property:TargetManifestFiles={string.Join("%3B", o.Select(CommandDirectoryContext.GetFullPath))}")
     .AllowSingleArgPerToken();
 
-    public static readonly Option<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
+    public static readonly Option<bool> NoBuildOption = new Option<bool>("--no-build")
     {
         Description = CliCommandStrings.NoBuildOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:NoBuild=true");
 
-    public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
+    public static readonly Option<bool> NoLogoOption = new Option<bool>("--nologo")
     {
         Description = CliCommandStrings.PublishCmdNoLogo,
         Arity = ArgumentArity.Zero

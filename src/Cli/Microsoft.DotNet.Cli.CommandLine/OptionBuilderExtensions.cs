@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.CommandLine.Completions;
 
 namespace Microsoft.DotNet.Cli.CommandLine;
 
@@ -34,6 +35,11 @@ public static class OptionBuilderExtensions
         public T Hide()
         {
             option.Hidden = true;
+            return option;
+        }
+        public T AddCompletions(Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
+        {
+            option.CompletionSources.Add(completionSource);
             return option;
         }
     }

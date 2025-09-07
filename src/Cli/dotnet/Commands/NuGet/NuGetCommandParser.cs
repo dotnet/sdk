@@ -149,7 +149,7 @@ internal static class NuGetCommandParser
         {
             Arity = ArgumentArity.Zero
         });
-        verifyCommand.Options.Add(new ForwardedOption<IEnumerable<string>>(fingerprint)
+        verifyCommand.Options.Add(new Option<IEnumerable<string>>(fingerprint)
             .ForwardAsManyArgumentsEachPrefixedByOption(fingerprint)
             .AllowSingleArgPerToken());
         verifyCommand.Options.Add(CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal));

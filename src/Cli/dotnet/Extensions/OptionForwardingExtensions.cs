@@ -17,7 +17,7 @@ public static class OptionForwardingExtensions
     /// <param name="outputPropertyName">The property name for the output path (such as OutputPath or PublishDir)</param>
     /// <param name="surroundWithDoubleQuotes">Whether the path should be surrounded with double quotes.  This may not be necessary but preserves the previous behavior of "dotnet test"</param>
     /// <returns>The option</returns>
-    public static ForwardedOption<string> ForwardAsOutputPath(this ForwardedOption<string> option, string outputPropertyName, bool surroundWithDoubleQuotes = false)
+    public static Option<string> ForwardAsOutputPath(this Option<string> option, string outputPropertyName, bool surroundWithDoubleQuotes = false)
     {
         return option.SetForwardingFunction((string? o) =>
         {
@@ -46,7 +46,7 @@ public static class OptionForwardingExtensions
     /// <c>--property:A=B --property:C=D</c>.
     /// This is useful for options that can take multiple key-value pairs, such as --property.
     /// </summary>
-    public static ForwardedOption<ReadOnlyDictionary<string, string>?> ForwardAsMSBuildProperty(this ForwardedOption<ReadOnlyDictionary<string, string>?> option) =>
+    public static Option<ReadOnlyDictionary<string, string>?> ForwardAsMSBuildProperty(this Option<ReadOnlyDictionary<string, string>?> option) =>
         option.SetForwardingFunction(propertyDict => ForwardedMSBuildPropertyValues(propertyDict, option.Name));
 
     private static IEnumerable<string> ForwardedMSBuildPropertyValues(ReadOnlyDictionary<string, string>? properties, string optionName)
