@@ -3155,6 +3155,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         string artifactsPath = OperatingSystem.IsWindows() ? @"C:\artifacts" : "/artifacts";
         string executablePath = OperatingSystem.IsWindows() ? @"C:\artifacts\bin\debug\Program.exe" : "/artifacts/bin/debug/Program";
         new DotnetCommand(Log, "run-api")
+            // The command outputs only _custom_ environment variables (not inherited ones),
+            // so make sure we don't pass DOTNET_ROOT_* so we can assert that it is set by the run command.
+            .WithEnvironmentVariable("DOTNET_ROOT", string.Empty)
+            .WithEnvironmentVariable($"DOTNET_ROOT_{RuntimeInformation.OSArchitecture.ToString().ToUpperInvariant()}", string.Empty)
             .WithStandardInput($$"""
                 {"$type":"GetRunCommand","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":{{ToJson(artifactsPath)}}}
                 """)

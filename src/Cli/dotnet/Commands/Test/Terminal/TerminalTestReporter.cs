@@ -62,63 +62,12 @@ internal sealed partial class TerminalTestReporter : IDisposable
     private bool? _shouldShowPassedTests;
 
     public bool HasHandshakeFailure => _handshakeFailuresCount > 0;
+    public int TotalTests => _assemblies.Values.Sum(a => a.TotalTests);
 
-#if NET7_0_OR_GREATER
     // Specifying no timeout, the regex is linear. And the timeout does not measure the regex only, but measures also any
     // thread suspends, so the regex gets blamed incorrectly.
     [GeneratedRegex(@$"^   at ((?<code>.+) in (?<file>.+):line (?<line>\d+)|(?<code1>.+))$", RegexOptions.ExplicitCapture)]
     private static partial Regex GetFrameRegex();
-#else
-    private static Regex? s_regex;
-
-    [MemberNotNull(nameof(s_regex))]
-    private static Regex GetFrameRegex()
-    {
-        if (s_regex != null)
-        {
-            return s_regex;
-        }
-
-        string atResourceName = "Word_At";
-        string inResourceName = "StackTrace_InFileLineNumber";
-
-        string? atString = null;
-        string? inString = null;
-
-        // Grab words from localized resource, in case the stack trace is localized.
-        try
-        {
-            // Get these resources: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/Resources/Strings.resx
-#pragma warning disable RS0030 // Do not use banned APIs
-            MethodInfo? getResourceStringMethod = typeof(Environment).GetMethod(
-                "GetResourceString",
-                BindingFlags.Static | BindingFlags.NonPublic, null, [typeof(string)], null);
-#pragma warning restore RS0030 // Do not use banned APIs
-            if (getResourceStringMethod is not null)
-            {
-                // <value>at</value>
-                atString = (string?)getResourceStringMethod.Invoke(null, [atResourceName]);
-
-                // <value>in {0}:line {1}</value>
-                inString = (string?)getResourceStringMethod.Invoke(null, [inResourceName]);
-            }
-        }
-        catch
-        {
-            // If we fail, populate the defaults below.
-        }
-
-        atString = atString == null || atString == atResourceName ? "at" : atString;
-        inString = inString == null || inString == inResourceName ? "in {0}:line {1}" : inString;
-
-        string inPattern = string.Format(CultureInfo.InvariantCulture, inString, "(?<file>.+)", @"(?<line>\d+)");
-
-        // Specifying no timeout, the regex is linear. And the timeout does not measure the regex only, but measures also any
-        // thread suspends, so the regex gets blamed incorrectly.
-        s_regex = new Regex(@$"^   {atString} ((?<code>.+) {inPattern}|(?<code1>.+))$", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
-        return s_regex;
-    }
-#endif
 
     private int _counter;
     private bool _disableTestRunSummary;
@@ -261,7 +210,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             {
                 terminal.Append(DoubleIndentation);
                 terminal.Append("- ");
-                if (!String.IsNullOrWhiteSpace(artifact.TestName))
+                if (!string.IsNullOrWhiteSpace(artifact.TestName))
                 {
                     terminal.Append(CliCommandStrings.ForTest);
                     terminal.Append(" '");
@@ -415,7 +364,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         AppendExitCodeAndUrl(terminal, exitCode, isRun: true);
     }
 
-    private void AppendExitCodeAndUrl(ITerminal terminal, int? exitCode, bool isRun)
+    private static void AppendExitCodeAndUrl(ITerminal terminal, int? exitCode, bool isRun)
     {
         // When we crash with exception we don't have any predetermined exit code, and won't write our helper message to point users to exit code overview.
         // When we succeed we also don't point users to exit code overview.
@@ -619,7 +568,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? firstErrorMessage = GetStringFromIndexOrDefault(exceptions, e => e.ErrorMessage, index);
         string? firstErrorType = GetStringFromIndexOrDefault(exceptions, e => e.ErrorType, index);
         string? firstStackTrace = GetStringFromIndexOrDefault(exceptions, e => e.StackTrace, index);
-        if (String.IsNullOrWhiteSpace(firstErrorMessage) && String.IsNullOrWhiteSpace(firstErrorType) && String.IsNullOrWhiteSpace(firstStackTrace))
+        if (string.IsNullOrWhiteSpace(firstErrorMessage) && string.IsNullOrWhiteSpace(firstErrorType) && string.IsNullOrWhiteSpace(firstStackTrace))
         {
             return;
         }
@@ -648,7 +597,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private static void FormatExpectedAndActual(ITerminal terminal, string? expected, string? actual)
     {
-        if (String.IsNullOrWhiteSpace(expected) && String.IsNullOrWhiteSpace(actual))
+        if (string.IsNullOrWhiteSpace(expected) && string.IsNullOrWhiteSpace(actual))
         {
             return;
         }
@@ -666,7 +615,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
     private static void FormatStackTrace(ITerminal terminal, FlatException[] exceptions, int index)
     {
         string? stackTrace = GetStringFromIndexOrDefault(exceptions, e => e.StackTrace, index);
-        if (String.IsNullOrWhiteSpace(stackTrace))
+        if (string.IsNullOrWhiteSpace(stackTrace))
         {
             return;
         }
@@ -684,7 +633,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private static void FormatStandardAndErrorOutput(ITerminal terminal, string? standardOutput, string? standardError)
     {
-        if (String.IsNullOrWhiteSpace(standardOutput) && String.IsNullOrWhiteSpace(standardError))
+        if (string.IsNullOrWhiteSpace(standardOutput) && string.IsNullOrWhiteSpace(standardError))
         {
             return;
         }
@@ -710,7 +659,10 @@ internal sealed partial class TerminalTestReporter : IDisposable
             if (targetFramework != null)
             {
                 terminal.Append(targetFramework);
-                terminal.Append('|');
+                if (architecture != null)
+                {
+                    terminal.Append('|');
+                }
             }
 
             if (architecture != null)
@@ -728,7 +680,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         Match match = GetFrameRegex().Match(stackTraceLine);
         if (match.Success)
         {
-            bool weHaveFilePathAndCodeLine = !String.IsNullOrWhiteSpace(match.Groups["code"].Value);
+            bool weHaveFilePathAndCodeLine = !string.IsNullOrWhiteSpace(match.Groups["code"].Value);
             terminal.Append(CliCommandStrings.StackFrameAt);
             terminal.Append(' ');
 
@@ -746,7 +698,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 terminal.Append(' ');
                 terminal.Append(CliCommandStrings.StackFrameIn);
                 terminal.Append(' ');
-                if (!String.IsNullOrWhiteSpace(match.Groups["file"].Value))
+                if (!string.IsNullOrWhiteSpace(match.Groups["file"].Value))
                 {
                     int line = int.TryParse(match.Groups["line"].Value, out int value) ? value : 0;
                     terminal.AppendLink(match.Groups["file"].Value, line);
@@ -766,7 +718,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private static void AppendIndentedLine(ITerminal terminal, string? message, string indent)
     {
-        if (String.IsNullOrWhiteSpace(message))
+        if (string.IsNullOrWhiteSpace(message))
         {
             return;
         }
@@ -822,6 +774,15 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     internal void HandshakeFailure(string assemblyPath, string targetFramework, int exitCode, string outputData, string errorData)
     {
+        if (_isHelp)
+        {
+            // Ignore handshake failures for help for now.
+            // So far, MTP doesn't handshake on help.
+            // MTP should be updated for that, however, but this workaround will likely need to stay
+            // here for a bit to keep compatibility with older MTP versions. It doesn't have to stay for too long though.
+            return;
+        }
+
         Interlocked.Increment(ref _handshakeFailuresCount);
         _terminalWithProgress.WriteToTerminal(terminal =>
         {
@@ -943,9 +904,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
     }
 
     internal void TestDiscovered(
-        string assembly,
-        string? targetFramework,
-        string? architecture,
         string executionId,
         string? displayName,
         string? uid)
@@ -1040,11 +998,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         };
 
     public void TestInProgress(
-        string assembly,
-        string? targetFramework,
-        string? architecture,
         string testNodeUid,
-        string instanceId,
         string displayName,
         string executionId)
     {
