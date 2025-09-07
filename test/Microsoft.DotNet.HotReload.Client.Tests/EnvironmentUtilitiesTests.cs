@@ -15,6 +15,19 @@ public class EnvironmentUtilitiesTests
         builder.InsertListItem("X", "b", separator: ';');
         builder.InsertListItem("X", "a", separator: ';');
 
-        AssertEx.SequenceEqual([KeyValuePair.Create("X", "b;a")], builder);
+        AssertEx.SequenceEqual([new KeyValuePair<string, string>("X", "b;a")], builder);
+    }
+
+    [Fact]
+    public void EmptyValue()
+    {
+        var builder = new Dictionary<string, string>();
+        builder["X"] = "";
+
+        builder.InsertListItem("X", "a", separator: ';');
+        builder.InsertListItem("X", "b", separator: ';');
+        builder.InsertListItem("X", "a", separator: ';');
+
+        AssertEx.SequenceEqual([new KeyValuePair<string, string>("X", "b;a")], builder);
     }
 }
