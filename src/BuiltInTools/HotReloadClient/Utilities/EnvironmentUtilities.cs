@@ -12,7 +12,7 @@ internal static class EnvironmentUtilities
 {
     public static void InsertListItem(this IDictionary<string, string> environment, string key, string value, char separator)
     {
-        if (!environment.TryGetValue(key, out var existingValue))
+        if (!environment.TryGetValue(key, out var existingValue) || existingValue is "")
         {
             environment[key] = value;
         }
