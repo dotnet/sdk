@@ -37,14 +37,6 @@ namespace Microsoft.DotNet.HotReload
         private static readonly ImmutableArray<string> s_defaultCapabilities90 =
             s_defaultCapabilities80;
 
-        private int _updateBatchId;
-
-        /// <summary>
-        /// Updates that were sent over to the agent while the process has been suspended.
-        /// </summary>
-        private readonly object _pendingUpdatesGate = new();
-        private Task _pendingUpdates = Task.CompletedTask;
-
         private readonly ImmutableArray<string> _capabilities = GetUpdateCapabilities(logger, projectHotReloadCapabilities, projectTargetFrameworkVersion);
 
         private static ImmutableArray<string> GetUpdateCapabilities(ILogger logger, ImmutableArray<string> projectHotReloadCapabilities, Version projectTargetFrameworkVersion)
@@ -76,10 +68,6 @@ namespace Microsoft.DotNet.HotReload
         {
             // Do nothing.
         }
-
-        // for testing
-        internal Task PendingUpdates
-            => _pendingUpdates;
 
         public override void ConfigureLaunchEnvironment(IDictionary<string, string> environmentBuilder)
         {
@@ -123,7 +111,11 @@ namespace Microsoft.DotNet.HotReload
 
             var loggingLevel = Logger.IsEnabled(LogLevel.Debug) ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
 
-            var (anySuccess, anyFailure) = await SendAndReceiveUpdateAsync(deltas, loggingLevel, isProcessSuspended, cancellationToken);
+            var (anySuccess, anyFailure) = await SendAndReceiveUpdateAsync(
+                send: SendAndReceiveAsync,
+                isProcessSuspended,
+                suspendedResult: (anySuccess: true, anyFailure: false),
+                cancellationToken);
 
             // If no browser is connected we assume the changes have been applied.
             // If at least one browser suceeds we consider the changes successfully applied.
@@ -132,29 +124,6 @@ namespace Microsoft.DotNet.HotReload
             // Currently the changes are remembered on the dev server and sent over there from the browser.
             // If no browser is connected the changes are not sent though.
             return (!anySuccess && anyFailure) ? ApplyStatus.Failed : (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
-        }
-
-        private async ValueTask<(bool anySuccess, bool anyFailure)> SendAndReceiveUpdateAsync(JsonDelta[] deltas, ResponseLoggingLevel loggingLevel, bool isProcessSuspended, CancellationToken cancellationToken)
-        {
-            var batchId = _updateBatchId++;
-
-            if (!isProcessSuspended)
-            {
-                return await SendAndReceiveAsync(batchId, cancellationToken);
-            }
-
-            lock (_pendingUpdatesGate)
-            {
-                var previous = _pendingUpdates;
-
-                _pendingUpdates = Task.Run(async () =>
-                {
-                    await previous;
-                    await SendAndReceiveAsync(batchId, cancellationToken);
-                }, cancellationToken);
-            }
-
-            return (anySuccess: true, anyFailure: false);
 
             async ValueTask<(bool anySuccess, bool anyFailure)> SendAndReceiveAsync(int batchId, CancellationToken cancellationToken)
             {

@@ -28,14 +28,6 @@ namespace Microsoft.DotNet.HotReload
         private NamedPipeServerStream? _pipe;
         private bool _managedCodeUpdateFailedOrCancelled;
 
-        private int _updateBatchId;
-
-        /// <summary>
-        /// Updates that were sent over to the agent while the process has been suspended.
-        /// </summary>
-        private readonly object _pendingUpdatesGate = new();
-        private Task _pendingUpdates = Task.CompletedTask;
-
         public override void Dispose()
         {
             DisposePipe();
@@ -47,10 +39,6 @@ namespace Microsoft.DotNet.HotReload
             _pipe?.Dispose();
             _pipe = null;
         }
-
-        // for testing
-        internal Task PendingUpdates
-            => _pendingUpdates;
 
         // for testing
         internal string NamedPipeName
@@ -225,31 +213,17 @@ namespace Microsoft.DotNet.HotReload
                 (appliedUpdateCount < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
         }
 
-        private async ValueTask<bool> SendAndReceiveUpdateAsync<TRequest>(TRequest request, bool isProcessSuspended, CancellationToken cancellationToken)
+        private ValueTask<bool> SendAndReceiveUpdateAsync<TRequest>(TRequest request, bool isProcessSuspended, CancellationToken cancellationToken)
             where TRequest : IUpdateRequest
         {
             // Should not be disposed:
             Debug.Assert(_pipe != null);
 
-            var batchId = _updateBatchId++;
-
-            if (!isProcessSuspended)
-            {
-                return await SendAndReceiveAsync(batchId, cancellationToken);
-            }
-
-            lock (_pendingUpdatesGate)
-            {
-                var previous = _pendingUpdates;
-
-                _pendingUpdates = Task.Run(async () =>
-                {
-                    await previous;
-                    await SendAndReceiveAsync(batchId, cancellationToken);
-                }, cancellationToken);
-            }
-
-            return true;
+            return SendAndReceiveUpdateAsync(
+                send: SendAndReceiveAsync,
+                isProcessSuspended,
+                suspendedResult: true,
+                cancellationToken);
 
             async ValueTask<bool> SendAndReceiveAsync(int batchId, CancellationToken cancellationToken)
             {
