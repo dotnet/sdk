@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.CommandLine.StaticCompletions;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
@@ -12,20 +13,22 @@ namespace Microsoft.DotNet.Cli
 {
     internal class CommonArguments
     {
-        public static DynamicArgument<PackageIdentityWithRange?> OptionalPackageIdentityArgument() =>
+        public static Argument<PackageIdentityWithRange?> OptionalPackageIdentityArgument() =>
             new("packageId")
             {
                 Description = CliStrings.PackageIdentityArgumentDescription,
                 CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value),
                 Arity = ArgumentArity.ZeroOrOne,
+                IsDynamic = true
             };
 
-        public static DynamicArgument<PackageIdentityWithRange> RequiredPackageIdentityArgument() =>
+        public static Argument<PackageIdentityWithRange> RequiredPackageIdentityArgument() =>
             new("packageId")
             {
                 Description = CliStrings.PackageIdentityArgumentDescription,
                 CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value)!.Value,
                 Arity = ArgumentArity.ExactlyOne,
+                IsDynamic = true
             };
 
         private static PackageIdentityWithRange? ParsePackageIdentityWithVersionSeparator(string? packageIdentity, char versionSeparator = '@')

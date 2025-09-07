@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.CommandLine;
+using System.CommandLine.StaticCompletions;
 using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Add;
@@ -22,11 +23,11 @@ internal static class ReferenceAddCommandParser
         }
     };
 
-    public static readonly Option<string> FrameworkOption = new DynamicOption<string>("--framework", "-f")
+    public static readonly Option<string> FrameworkOption = new Option<string>("--framework", "-f")
     {
         Description = CliCommandStrings.ReferenceAddCmdFrameworkDescription,
-        HelpName = CliStrings.CommonCmdFramework
-
+        HelpName = CliStrings.CommonCmdFramework,
+        IsDynamic = true
     }.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
 
     public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption();
