@@ -6,16 +6,11 @@ namespace Microsoft.DotNet.Cli.Utils;
 /// The odd naming is because we're currently leaning entirely on System.CommandLine's
 /// default enum parsing.
 /// </summary>
-public enum VerbosityOptions
+public enum Verbosity
 {
     quiet,
-    q,
     minimal,
-    m,
     normal,
-    n,
     detailed,
-    d,
-    diagnostic,
-    diag
+    diagnostic
 }

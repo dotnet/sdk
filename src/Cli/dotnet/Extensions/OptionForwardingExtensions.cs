@@ -134,7 +134,13 @@ public static class OptionForwardingExtensions
         return option;
     }
 
-
+    /// <summary>
+    /// Allows an option's parser to accept multiple tokens. This can be either multiple tokens on a single use of the option,
+    /// or multiple uses of the option. This is useful for collection-type options where the values are not easily
+    /// distinguishable from other. For single-value options, the behavior depends on the implementation of the parser.
+    /// Some primitives and S.CL built-ins should have a 'last one wins' behavior, while custom parsers may choose to
+    /// aggregate or error on multiple values.
+    /// </summary>
     public static T AggregateRepeatedTokens<T>(this T option) where T : Option
     {
         option.AllowMultipleArgumentsPerToken = true;

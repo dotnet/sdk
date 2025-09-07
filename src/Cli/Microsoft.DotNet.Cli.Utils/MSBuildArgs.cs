@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli.Utils;
 /// </summary>
 public sealed class MSBuildArgs
 {
-    private MSBuildArgs(ReadOnlyDictionary<string, string>? properties, ReadOnlyDictionary<string, string>? restoreProperties, string[]? targets, VerbosityOptions? verbosity, string[]? otherMSBuildArgs)
+    private MSBuildArgs(ReadOnlyDictionary<string, string>? properties, ReadOnlyDictionary<string, string>? restoreProperties, string[]? targets, Verbosity? verbosity, string[]? otherMSBuildArgs)
     {
         GlobalProperties = properties;
         RestoreGlobalProperties = restoreProperties;
@@ -37,7 +37,7 @@ public sealed class MSBuildArgs
     /// The ordered list of targets that should be passed to MSBuild.
     /// </summary>
     public string[]? RequestedTargets { get; }
-    public VerbosityOptions? Verbosity { get; }
+    public Verbosity? Verbosity { get; }
 
     /// <summary>
     /// All other arguments that aren't already explicitly modeled by this structure.
@@ -71,7 +71,7 @@ public sealed class MSBuildArgs
         var restoreProperties = parseResult.GetResult("--restoreProperty") is OptionResult restoreResult ? restoreResult.GetValueOrDefault<ReadOnlyDictionary<string, string>?>() : null;
         var requestedTargets = parseResult.GetResult("--target") is OptionResult targetResult ? targetResult.GetValueOrDefault<string[]?>() : null;
         var verbosity = parseResult.GetResult("--verbosity") is OptionResult verbosityResult
-            ? verbosityResult.GetValueOrDefault<VerbosityOptions?>()
+            ? verbosityResult.GetValueOrDefault<Verbosity?>()
             : null;
         var otherMSBuildArgs = parseResult.UnmatchedTokens.ToArray();
         return new MSBuildArgs(
@@ -92,7 +92,7 @@ public sealed class MSBuildArgs
     {
         return new MSBuildArgs(null, null, null, null, args.ToArray());
     }
-    public static MSBuildArgs FromVerbosity(VerbosityOptions verbosity)
+    public static MSBuildArgs FromVerbosity(Verbosity verbosity)
     {
         return new MSBuildArgs(null, null, null, verbosity, null);
     }
@@ -174,7 +174,7 @@ public sealed class MSBuildArgs
         return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, newTargets, Verbosity, OtherMSBuildArgs.ToArray());
     }
 
-    public MSBuildArgs CloneWithVerbosity(VerbosityOptions newVerbosity)
+    public MSBuildArgs CloneWithVerbosity(Verbosity newVerbosity)
     {
         return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, RequestedTargets, newVerbosity, OtherMSBuildArgs.ToArray());
     }

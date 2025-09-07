@@ -73,14 +73,14 @@ public class PackCommand(
             msbuildPath);
     }
 
-    private static LogLevel MappingVerbosityToNugetLogLevel(VerbosityOptions? verbosity)
+    private static LogLevel MappingVerbosityToNugetLogLevel(Verbosity? verbosity)
     {
         return verbosity switch
         {
-            VerbosityOptions.diagnostic or VerbosityOptions.diag => LogLevel.Debug,
-            VerbosityOptions.minimal or VerbosityOptions.m => LogLevel.Minimal,
-            VerbosityOptions.normal or VerbosityOptions.n => LogLevel.Information,
-            VerbosityOptions.detailed or VerbosityOptions.d => LogLevel.Verbose,
+            Verbosity.diagnostic => LogLevel.Debug,
+            Verbosity.minimal => LogLevel.Minimal,
+            Verbosity.normal => LogLevel.Information,
+            Verbosity.detailed => LogLevel.Verbose,
             _ => LogLevel.Minimal
         };
     }
@@ -91,14 +91,14 @@ public class PackCommand(
 
         if (args.Count != 1)
         {
-            Console.Error.WriteLine(CliStrings.PackCmd_OneNuspecAllowed); 
+            Console.Error.WriteLine(CliStrings.PackCmd_OneNuspecAllowed);
             return 1;
         }
 
         var nuspecPath = args[0];
 
         var packArgs = new PackArgs()
-        { 
+        {
             Logger = new NuGetConsoleLogger(),
             Exclude = new List<string>(),
             OutputDirectory = parseResult.GetValue(PackCommandParser.OutputOption),

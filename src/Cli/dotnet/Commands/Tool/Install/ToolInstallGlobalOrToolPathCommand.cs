@@ -39,7 +39,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
     private readonly string[]? _source;
     private readonly string[]? _addSource;
     private readonly bool _global;
-    private readonly VerbosityOptions _verbosity;
+    private readonly Verbosity _verbosity;
     private readonly string? _toolPath;
     private readonly string? _architectureOption;
     private readonly IEnumerable<string> _forwardRestoreArguments;
@@ -75,7 +75,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         _source = parseResult.GetValue(ToolInstallCommandParser.SourceOption);
         _addSource = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
         _global = parseResult.GetValue(ToolInstallCommandParser.GlobalOption);
-        _verbosity = GetValueOrDefault(ToolInstallCommandParser.VerbosityOption, VerbosityOptions.minimal, parseResult);
+        _verbosity = GetValueOrDefault(ToolInstallCommandParser.VerbosityOption, Verbosity.minimal, parseResult);
         _toolPath = parseResult.GetValue(ToolInstallCommandParser.ToolPathOption);
         _architectureOption = parseResult.GetValue(ToolInstallCommandParser.ArchitectureOption);
 

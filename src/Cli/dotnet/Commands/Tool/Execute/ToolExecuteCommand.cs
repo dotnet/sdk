@@ -29,7 +29,7 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
     private readonly string[] _sources = result.GetValue(ToolExecuteCommandParser.SourceOption) ?? [];
     private readonly string[] _addSource = result.GetValue(ToolExecuteCommandParser.AddSourceOption) ?? [];
     private readonly bool _interactive = result.GetValue(ToolExecuteCommandParser.InteractiveOption);
-    private readonly VerbosityOptions _verbosity = result.GetValue(ToolExecuteCommandParser.VerbosityOption);
+    private readonly Verbosity _verbosity = result.GetValue(ToolExecuteCommandParser.VerbosityOption);
     private readonly IToolPackageDownloader _toolPackageDownloader = ToolPackageFactory.CreateToolPackageStoresAndDownloader().downloader;
 
     private readonly RestoreActionConfig _restoreActionConfig = new RestoreActionConfig(DisableParallel: result.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),

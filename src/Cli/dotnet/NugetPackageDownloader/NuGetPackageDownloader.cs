@@ -43,10 +43,10 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
 
     /// <summary>
     /// If true, the package downloader will verify the signatures of the packages it downloads.
-    /// Temporarily disabled for macOS and Linux. 
+    /// Temporarily disabled for macOS and Linux.
     /// </summary>
     private readonly bool _verifySignatures;
-    private readonly VerbosityOptions _verbosityOptions;
+    private readonly Verbosity _verbosity;
     private readonly string _currentWorkingDirectory;
 
     public NuGetPackageDownloader(
@@ -59,7 +59,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         Func<IEnumerable<Task>> timer = null,
         bool verifySignatures = false,
         bool shouldUsePackageSourceMapping = false,
-        VerbosityOptions verbosityOptions = VerbosityOptions.normal,
+        Verbosity verbosityOptions = Verbosity.normal,
         string currentWorkingDirectory = null)
     {
         _currentWorkingDirectory = currentWorkingDirectory;
@@ -73,7 +73,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         _retryTimer = timer;
         _sourceRepositories = new();
         // If windows or env variable is set, verify signatures
-        _verifySignatures = verifySignatures && (OperatingSystem.IsWindows() ? true 
+        _verifySignatures = verifySignatures && (OperatingSystem.IsWindows() ? true
             : bool.TryParse(Environment.GetEnvironmentVariable(NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification), out var shouldVerifySignature) ? shouldVerifySignature : OperatingSystem.IsLinux());
 
         _cacheSettings = new SourceCacheContext
@@ -86,7 +86,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         DefaultCredentialServiceUtility.SetupDefaultCredentialService(new NuGetConsoleLogger(),
             !_restoreActionConfig.Interactive);
         _shouldUsePackageSourceMapping = shouldUsePackageSourceMapping;
-        _verbosityOptions = verbosityOptions;
+        _verbosity = verbosityOptions;
     }
 
     public async Task<string> DownloadPackageAsync(PackageId packageId,
@@ -120,7 +120,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             throw new ArgumentException($"Package download folder must be specified either via {nameof(NuGetPackageDownloader)} constructor or via {nameof(downloadFolder)} method argument.");
         }
         var pathResolver = new VersionFolderPathResolver(resolvedDownloadFolder);
-        
+
         string nupkgPath = pathResolver.GetPackageFilePath(packageId.ToString(), resolvedPackageVersion);
         Directory.CreateDirectory(Path.GetDirectoryName(nupkgPath));
 
@@ -155,11 +155,9 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         return nupkgPath;
     }
 
-    private bool VerbosityGreaterThanMinimal() =>
-        _verbosityOptions != VerbosityOptions.quiet && _verbosityOptions != VerbosityOptions.q &&
-        _verbosityOptions != VerbosityOptions.minimal && _verbosityOptions != VerbosityOptions.m;
+    private bool VerbosityGreaterThanMinimal() => _verbosity >= Verbosity.minimal;
 
-    private bool DiagnosticVerbosity() => _verbosityOptions == VerbosityOptions.diag || _verbosityOptions == VerbosityOptions.diagnostic;
+    private bool DiagnosticVerbosity() => _verbosity == Verbosity.diagnostic;
 
     private async Task VerifySigning(string nupkgPath, SourceRepository repository)
     {

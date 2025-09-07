@@ -21,7 +21,7 @@ internal class ToolInstallLocalInstaller
     private readonly IToolPackageDownloader _toolPackageDownloader;
     private readonly string _configFilePath;
     private readonly string[] _sources;
-    private readonly VerbosityOptions _verbosity;
+    private readonly Verbosity _verbosity;
     private readonly RestoreActionConfig _restoreActionConfig;
 
     public ToolInstallLocalInstaller(

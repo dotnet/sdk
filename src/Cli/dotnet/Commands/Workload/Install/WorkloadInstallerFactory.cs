@@ -16,7 +16,7 @@ internal class WorkloadInstallerFactory
         IReporter reporter,
         SdkFeatureBand sdkFeatureBand,
         IWorkloadResolver workloadResolver,
-        VerbosityOptions verbosity,
+        Verbosity verbosity,
         string userProfileDir,
         bool verifySignatures,
         INuGetPackageDownloader nugetPackageDownloader = null,

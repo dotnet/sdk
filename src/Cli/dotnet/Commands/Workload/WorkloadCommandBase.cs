@@ -59,7 +59,7 @@ internal abstract class WorkloadCommandBase : CommandBase
     /// <summary>
     /// The verbosity level to use when reporting output from the command.
     /// </summary>
-    protected VerbosityOptions Verbosity
+    protected Verbosity Verbosity
     {
         get;
     }
@@ -85,7 +85,7 @@ internal abstract class WorkloadCommandBase : CommandBase
     /// <param name="nugetPackageDownloader">The package downloader to use for acquiring NuGet packages.</param>
     public WorkloadCommandBase(
         ParseResult parseResult,
-        Option<VerbosityOptions>? verbosityOptions = null,
+        Option<Verbosity> verbosityOptions,
         IReporter? reporter = null,
         string? tempDirPath = null,
         INuGetPackageDownloader? nugetPackageDownloader = null) : base(parseResult)
@@ -94,9 +94,7 @@ internal abstract class WorkloadCommandBase : CommandBase
 
         RestoreActionConfiguration = _parseResult.ToRestoreActionConfig();
 
-        Verbosity = verbosityOptions == null
-            ? parseResult.GetValue(CommonOptions.VerbosityOption(VerbosityOptions.normal))
-            : parseResult.GetValue(verbosityOptions) ;
+        Verbosity = parseResult.GetValue(verbosityOptions);
 
         ILogger nugetLogger = Verbosity.IsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger();
 

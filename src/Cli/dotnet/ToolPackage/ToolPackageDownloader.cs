@@ -32,7 +32,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
 
     protected override INuGetPackageDownloader CreateNuGetPackageDownloader(
         bool verifySignatures,
-        VerbosityOptions verbosity,
+        Verbosity verbosity,
         RestoreActionConfig? restoreActionConfig)
     {
         ILogger verboseLogger = new NullLogger();
@@ -57,7 +57,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         string packagesRootPath,
         NuGetVersion packageVersion,
         PackageSourceLocation packageSourceLocation,
-        VerbosityOptions verbosity,
+        Verbosity verbosity,
         bool includeUnlisted = false
         )
     {
@@ -128,7 +128,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         DirectoryPath packagesRootPath,
         string assetFilePath,
         string runtimeJsonGraph,
-        VerbosityOptions verbosity,
+        Verbosity verbosity,
         string? targetFramework = null
         )
     {
