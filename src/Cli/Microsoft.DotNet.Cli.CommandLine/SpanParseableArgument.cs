@@ -3,27 +3,27 @@ using System.CommandLine;
 namespace Microsoft.DotNet.Cli.CommandLine;
 
 /// <summary>
-/// An option whose generic type parameter implements <see cref="ISpanParsable{T}"/>, allowing parsing from a single token with no additional customization
+/// An argument whose generic type parameter implements <see cref="ISpanParsable{T}"/>, allowing parsing from a single token with no additional customization
 /// </summary>
-public class SpanParsableOption<T> : Option<T> where T : ISpanParsable<T>
+public class SpanParsableArgument<T> : Argument<T> where T : ISpanParsable<T>
 {
-    public SpanParsableOption(string name, params string[] aliases) : base(name, aliases)
+    public SpanParsableArgument(string name) : base(name)
     {
         // because we know how to parse the T, we can create the custom parser easily
         CustomParser = SpanParserHelpers.StaticSingleItemParser<T>;
     }
-
 }
 
 /// <summary>
 /// An option that contains a collection of <see cref="ISpanParsable{T}"/> items.
 /// </summary>
-public class SpanParsableCollectionOption<TElem> : Option<IReadOnlyCollection<TElem>>
+public class SpanParsableCollectionArgument<TElem> : Argument<IReadOnlyCollection<TElem>>
     where TElem : ISpanParsable<TElem>
 {
-    public SpanParsableCollectionOption(string name, params string[] aliases) : base(name, aliases)
+    public SpanParsableCollectionArgument(string name) : base(name)
     {
         // because we know how to parse the T, we can create the custom parser easily
         CustomParser = SpanParserHelpers.StaticMultiItemItemParser<TElem>;
     }
+
 }
