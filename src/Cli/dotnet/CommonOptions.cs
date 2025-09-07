@@ -117,7 +117,7 @@ internal static class CommonOptions
     public static readonly Option<string[]?> GetResultOutputFileOption = MSBuildMultiOption("getResultOutputFile");
 
     private static Option<string[]?> MSBuildMultiOption(string name)
-        => new ForwardedOption<string[]?>($"--{name}", $"-{name}", $"/{name}")
+        => new Option<string[]?>($"--{name}", $"-{name}", $"/{name}")
         {
             Hidden = true,
             Arity = ArgumentArity.OneOrMore,
@@ -352,7 +352,7 @@ internal static class CommonOptions
     };
 
     public static readonly Option<IReadOnlyDictionary<string, string>> EnvOption = CreateEnvOption(CliStrings.CmdEnvironmentVariableDescription);
-    
+
     public static readonly Option<IReadOnlyDictionary<string, string>> TestEnvOption = CreateEnvOption(CliStrings.CmdTestEnvironmentVariableDescription);
 
     private static IReadOnlyDictionary<string, string> ParseEnvironmentVariables(ArgumentResult argumentResult)

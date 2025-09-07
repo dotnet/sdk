@@ -48,7 +48,10 @@ internal static class CleanCommandParser
 
     private static Command ConstructCommand()
     {
-        DocumentedCommand command = new("clean", DocsLink, CliCommandStrings.CleanAppFullName);
+        Command command = new("clean", CliCommandStrings.CleanAppFullName)
+        {
+            DocsLink = DocsLink
+        };
 
         command.Arguments.Add(SlnOrProjectOrFileArgument);
         command.Options.Add(FrameworkOption);

@@ -8,9 +8,9 @@ namespace Microsoft.DotNet.Cli.CommandLine;
 /// </summary>
 public static class ArgumentBuilderExtensions
 {
-    extension<T>(T argument) where T : Argument
+    extension<T>(Argument<T> argument)
     {
-        public T AddCompletions(Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
+        public Argument<T> AddCompletions(Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
         {
             argument.CompletionSources.Add(completionSource);
             return argument;

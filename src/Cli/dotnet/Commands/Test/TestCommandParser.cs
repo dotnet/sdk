@@ -269,9 +269,10 @@ internal static class TestCommandParser
 
     private static Command GetVSTestCliCommand()
     {
-        DocumentedCommand command = new("test", DocsLink, CliCommandStrings.TestAppFullName)
+        Command command = new("test", CliCommandStrings.TestAppFullName)
         {
-            TreatUnmatchedTokensAsErrors = false
+            TreatUnmatchedTokensAsErrors = false,
+            DocsLink = DocsLink
         };
 
         // We are on purpose not capturing the solution, project or directory here. We want to pass it to the

@@ -6,6 +6,8 @@
 using System.CommandLine;
 using System.CommandLine.StaticCompletions;
 
+using Microsoft.DotNet.Cli.CommandLine;
+
 namespace Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
 internal static class ReferenceRemoveCommandParser

@@ -68,7 +68,10 @@ internal static class PublishCommandParser
 
     private static Command ConstructCommand()
     {
-        var command = new DocumentedCommand("publish", DocsLink, CliCommandStrings.PublishAppDescription);
+        var command = new Command("publish", CliCommandStrings.PublishAppDescription)
+        {
+            DocsLink = DocsLink
+        };
 
         command.Arguments.Add(SlnOrProjectOrFileArgument);
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);

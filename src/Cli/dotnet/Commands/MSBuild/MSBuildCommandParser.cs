@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
@@ -21,10 +22,11 @@ internal static class MSBuildCommandParser
 
     private static Command ConstructCommand()
     {
-        var command = new DocumentedCommand("msbuild", DocsLink, CliCommandStrings.BuildAppFullName)
+        var command = new Command("msbuild", CliCommandStrings.BuildAppFullName)
         {
             Arguments
         };
+        command.DocsLink = DocsLink;
 
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(TargetOption);
