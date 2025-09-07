@@ -4,7 +4,7 @@
 #nullable disable
 
 using Microsoft.DotNet.Cli.Commands.NuGet;
-using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.CommandLine;
 using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Search;

@@ -4,7 +4,7 @@
 using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
-using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 
