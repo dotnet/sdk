@@ -168,7 +168,7 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
         Dictionary<string, double> measurements = null)
     {
         if (parseResult.IsDotnetBuiltInCommand() &&
-            parseResult.SafelyGetValueForOption<VerbosityOptions>("--verbosity") is VerbosityOptions verbosity)
+            parseResult.SafelyGetValueForOption<Verbosity>("--verbosity") is Verbosity verbosity)
         {
             result.Add(new ApplicationInsightsEntryFormat(
                 "sublevelparser/command",

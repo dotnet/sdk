@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.Restore;
 
 internal class WorkloadRestoreCommand(
     ParseResult result,
-    IReporter reporter = null) : WorkloadCommandBase(result, reporter: reporter)
+    IReporter reporter = null) : WorkloadCommandBase(result, CommonOptions.VerbosityOption(Verbosity.normal), reporter: reporter)
 {
     private readonly ParseResult _result = result;
     private readonly IEnumerable<string> _slnOrProjectArgument =
@@ -60,7 +60,7 @@ internal class WorkloadRestoreCommand(
         });
 
         workloadInstaller.Shutdown();
-        
+
         return 0;
     }
 

@@ -27,7 +27,7 @@ internal class ToolRestoreCommand : CommandBase
     private readonly IReporter _reporter;
     private readonly string[] _sources;
     private readonly IToolPackageDownloader _toolPackageDownloader;
-    private readonly VerbosityOptions _verbosity;
+    private readonly Verbosity _verbosity;
     private readonly RestoreActionConfig _restoreActionConfig;
 
     public ToolRestoreCommand(
@@ -67,7 +67,7 @@ internal class ToolRestoreCommand : CommandBase
         _verbosity = result.GetValue(ToolRestoreCommandParser.VerbosityOption);
         if (!result.HasOption(ToolRestoreCommandParser.VerbosityOption) && result.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption))
         {
-            _verbosity = VerbosityOptions.minimal;
+            _verbosity = Verbosity.minimal;
         }
 
         _restoreActionConfig = new RestoreActionConfig(DisableParallel: result.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),

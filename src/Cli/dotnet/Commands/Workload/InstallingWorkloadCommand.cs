@@ -89,7 +89,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
         INuGetPackageDownloader nugetPackageDownloader,
         IWorkloadManifestUpdater workloadManifestUpdater,
         string tempDirPath,
-        Option<VerbosityOptions> verbosityOptions = null,
+        Option<Verbosity> verbosityOptions = null,
         bool? shouldUseWorkloadSetsFromGlobalJson = null)
         : base(parseResult, reporter: reporter, tempDirPath: tempDirPath, nugetPackageDownloader: nugetPackageDownloader, verbosityOptions: verbosityOptions)
     {

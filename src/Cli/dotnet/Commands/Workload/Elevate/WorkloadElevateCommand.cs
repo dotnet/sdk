@@ -9,7 +9,7 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Elevate;
 
-internal class WorkloadElevateCommand(ParseResult parseResult) : WorkloadCommandBase(parseResult)
+internal class WorkloadElevateCommand(ParseResult parseResult) : WorkloadCommandBase(parseResult, CommonOptions.HiddenVerbosityOption)
 {
     private NetSdkMsiInstallerServer _server;
 

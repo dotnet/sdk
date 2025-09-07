@@ -122,7 +122,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         private readonly string _testTargetframework = BundledTargetFramework.GetTargetFrameworkMoniker();
         private const string TestPackageVersion = "1.0.4";
         private static readonly PackageId TestPackageId = new("global.tool.console.demo.with.shim");
-        private static readonly VerbosityOptions TestVerbosity = new VerbosityOptions();
+        private static readonly Verbosity TestVerbosity = new Verbosity();
         public ToolPackageUninstallerTests(ITestOutputHelper log) : base(log)
         {
         }

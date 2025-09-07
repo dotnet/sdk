@@ -72,7 +72,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
                                       reporter,
                                       verifySignatures: SignCheck.IsDotNetSigned());
         var installer = WorkloadInstallerFactory.GetWorkloadInstaller(reporter, new SdkFeatureBand(sdkVersion),
-            workloadResolver, VerbosityOptions.normal, userProfileDir, verifySignatures: false);
+            workloadResolver, Verbosity.normal, userProfileDir, verifySignatures: false);
         var workloadRecordRepo = installer.GetWorkloadInstallationRecordRepository();
 
         return new WorkloadManifestUpdater(reporter, workloadResolver, nugetPackageDownloader, userProfileDir, workloadRecordRepo, installer);

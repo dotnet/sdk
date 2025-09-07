@@ -55,7 +55,7 @@ internal static class BuildCommandParser
     /// </summary>
     public static readonly Option<string[]?> TargetOption = CommonOptions.MSBuildTargetOption();
 
-    public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.VerbosityOption();
+    public static readonly Option<Utils.Verbosity?> VerbosityOption = CommonOptions.VerbosityOption();
 
     private static readonly Command Command = ConstructCommand();
 

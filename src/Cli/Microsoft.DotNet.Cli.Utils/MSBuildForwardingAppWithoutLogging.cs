@@ -22,7 +22,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
 
     private const string SdksDirectoryName = "Sdks";
 
-    internal const VerbosityOptions DefaultVerbosity = VerbosityOptions.m;
+    internal const Verbosity DefaultVerbosity = Verbosity.minimal;
 
     // Null if we're running MSBuild in-proc.
     private ForwardingAppImplementation? _forwardingApp;

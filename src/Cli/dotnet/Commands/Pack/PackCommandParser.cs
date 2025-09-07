@@ -56,7 +56,7 @@ internal static class PackCommandParser
     public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.PackConfigurationOptionDescription);
 
     public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Pack", [("_IsPacking", "true")]);
-    public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = BuildCommandParser.VerbosityOption;
+    public static readonly Option<Utils.Verbosity?> VerbosityOption = BuildCommandParser.VerbosityOption;
 
     public static Option<NuGetVersion> VersionOption =
         new Option<NuGetVersion>("--version")

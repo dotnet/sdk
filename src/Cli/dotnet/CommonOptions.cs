@@ -140,34 +140,68 @@ internal static class CommonOptions
         return allValues.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
     }
 
-    public static Option<VerbosityOptions> VerbosityOption(VerbosityOptions defaultVerbosity) =>
-        new Option<VerbosityOptions>("--verbosity", "-v")
+    public static Option<Verbosity> VerbosityOption(Verbosity defaultVerbosity) =>
+        new Option<Verbosity>("--verbosity", "-v")
         {
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName,
-            DefaultValueFactory = _ => defaultVerbosity
+            DefaultValueFactory = _ => defaultVerbosity,
+            CustomParser = static r => ParseVerbosityEnum(r)!.Value
         }
         .ForwardAsSingle(o => $"--verbosity:{o}")
         .AggregateRepeatedTokens();
 
-    public static Option<VerbosityOptions?> VerbosityOption() =>
-        new Option<VerbosityOptions?>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
+    public static Option<Verbosity?> VerbosityOption() =>
+        new Option<Verbosity?>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
         {
             Description = CliStrings.VerbosityOptionDescription,
-            HelpName = CliStrings.LevelArgumentName
+            HelpName = CliStrings.LevelArgumentName,
+            CustomParser = ParseVerbosityEnum
         }
         .ForwardAsSingle(o => $"--verbosity:{o}")
         .AggregateRepeatedTokens();
 
-    public static Option<VerbosityOptions> HiddenVerbosityOption =
-        new Option<VerbosityOptions>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
+    public static Option<Verbosity> HiddenVerbosityOption = VerbosityOption(Verbosity.normal).Hide();
+    public static Verbosity? ParseVerbosityEnum(ArgumentResult result)
+    {
+        if (result.Tokens.Count == 0)
         {
-            Description = CliStrings.VerbosityOptionDescription,
-            HelpName = CliStrings.LevelArgumentName,
-            Hidden = true
+            return default;
         }
-        .ForwardAsSingle(o => $"--verbosity:{o}")
-        .AggregateRepeatedTokens();
+        var tokenToParse =
+            result.Tokens switch
+            {
+                [var single] => single.Value,
+                [.., var last] => last.Value,
+                _ => throw new InvalidOperationException("Unreachable")
+            };
+
+        // happy path: someone used the fully enum case name
+        if (Enum.TryParse<Verbosity>(tokenToParse, ignoreCase: false, out var verbosity))
+        {
+            return verbosity;
+        }
+        // support the common shorthand of using just the first letter/part as well
+        Verbosity? lowerCaseVerbosity =
+            tokenToParse switch
+            {
+                "q" => Verbosity.quiet,
+                "m" => Verbosity.minimal,
+                "n" => Verbosity.normal,
+                "d" => Verbosity.detailed,
+                "diag" => Verbosity.diagnostic,
+                _ => null
+            };
+        if (lowerCaseVerbosity is not null)
+        {
+            return lowerCaseVerbosity.Value;
+        }
+        else // we couldn't parse it, so report an error
+        {
+            result.AddError($"'{tokenToParse}' is not a valid value for --verbosity. Allowed values are: quiet (q), minimal (m), normal (n), detailed (d), diagnostic (diag).");
+            return default;
+        }
+    }
 
     public static Option<string> FrameworkOption(string description) =>
         new Option<string>("--framework", "-f")

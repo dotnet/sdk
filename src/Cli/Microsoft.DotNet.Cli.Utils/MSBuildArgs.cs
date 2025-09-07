@@ -20,10 +20,9 @@ public sealed class MSBuildArgs
         string[]? getItem,
         string[]? getTargetResult,
         string[]? getResultOutputFile,
-        VerbosityOptions? verbosity,
+        Verbosity? verbosity,
         bool noLogo,
-        string[]? otherMSBuildArgs
-        )
+        string[]? otherMSBuildArgs)
     {
         GlobalProperties = properties;
         RestoreGlobalProperties = restoreProperties;
@@ -74,7 +73,7 @@ public sealed class MSBuildArgs
     /// </summary>
     public string[]? GetResultOutputFile { get; }
 
-    public VerbosityOptions? Verbosity { get; }
+    public Verbosity? Verbosity { get; }
 
     /// <summary>
     /// Whether or not the MSBuild product header text should be emitted at the start of this build
@@ -116,7 +115,7 @@ public sealed class MSBuildArgs
         var getItem = TryGetValue<string[]?>("--getItem");
         var getTargetResult = TryGetValue<string[]?>("--getTargetResult");
         var getResultOutputFile = TryGetValue<string[]?>("--getResultOutputFile");
-        var verbosity = TryGetValue<VerbosityOptions?>("--verbosity");
+        var verbosity = TryGetValue<Verbosity?>("--verbosity");
         var nologo = TryGetValue<bool?>("--no-logo") ?? true; // Default to nologo if not specified
         var otherMSBuildArgs = parseResult.UnmatchedTokens.ToArray();
         return new MSBuildArgs(
@@ -150,7 +149,7 @@ public sealed class MSBuildArgs
     {
         return new MSBuildArgs(null, null, null, null, null, null, null, null, noLogo: false, args.ToArray());
     }
-    public static MSBuildArgs FromVerbosity(VerbosityOptions verbosity)
+    public static MSBuildArgs FromVerbosity(Verbosity verbosity)
     {
         return new MSBuildArgs(null, null, null, null, null, null, null, verbosity, noLogo: false, null);
     }
@@ -327,7 +326,7 @@ public sealed class MSBuildArgs
             OtherMSBuildArgs.ToArray());
     }
 
-    public MSBuildArgs CloneWithVerbosity(VerbosityOptions newVerbosity)
+    public MSBuildArgs CloneWithVerbosity(Verbosity newVerbosity)
     {
         return new MSBuildArgs(
             GlobalProperties,

@@ -187,11 +187,11 @@ internal static class CliSchema
 
     /// <summary>
     /// Maps some types that don't serialize well to more human-readable strings.
-    /// For example, <see cref="VerbosityOptions"/> is serialized as a string instead of an integer.
+    /// For example, <see cref="Verbosity"/> is serialized as a string instead of an integer.
     /// </summary>
     private static object? HumanizeValue(object? v) => v switch
     {
-        VerbosityOptions o => Enum.GetName(o),
+        Verbosity o => Enum.GetName(o),
         null => null,
         _ => v // For other types, return as is
     };

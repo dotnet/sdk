@@ -30,7 +30,7 @@ internal class WorkloadConfigCommand : WorkloadCommandBase
         ParseResult parseResult,
         IReporter? reporter = null,
         IWorkloadResolverFactory? workloadResolverFactory = null
-    ) : base(parseResult, CommonOptions.HiddenVerbosityOption, reporter)
+    ) : base(parseResult, CommonOptions.VerbosityOption(Verbosity.quiet), reporter)
     {
         _hasUpdateMode = parseResult.HasOption(WorkloadConfigCommandParser.UpdateMode);
         _updateMode = parseResult.GetValue(WorkloadConfigCommandParser.UpdateMode);

@@ -31,7 +31,7 @@ internal static class NewCommandParser
 
     private const string HostIdentifier = "dotnetcli";
 
-    private const VerbosityOptions DefaultVerbosity = VerbosityOptions.normal;
+    private const Verbosity DefaultVerbosity = Verbosity.normal;
 
     private static readonly Option<bool> s_disableSdkTemplatesOption = new Option<bool>("--debug:disable-sdk-templates")
     {
@@ -48,7 +48,7 @@ internal static class NewCommandParser
         Recursive = true
     }.Hide();
 
-    private static readonly Option<VerbosityOptions> s_verbosityOption = new("--verbosity", "-v")
+    private static readonly Option<Verbosity> s_verbosityOption = new("--verbosity", "-v")
     {
         DefaultValueFactory = _ => DefaultVerbosity,
         Description = CliCommandStrings.Verbosity_OptionDescription,
@@ -82,14 +82,14 @@ internal static class NewCommandParser
             FileInfo? outputPath = parseResult.GetValue(SharedOptions.OutputOption);
 
             OptionResult? verbosityOptionResult = parseResult.GetResult(s_verbosityOption);
-            VerbosityOptions verbosity = DefaultVerbosity;
+            Verbosity verbosity = DefaultVerbosity;
 
             if (diagnosticMode || CommandLoggingContext.IsVerbose)
             {
                 CommandLoggingContext.SetError(true);
                 CommandLoggingContext.SetOutput(true);
                 CommandLoggingContext.SetVerbose(true);
-                verbosity = VerbosityOptions.diagnostic;
+                verbosity = Verbosity.diagnostic;
             }
             else if (verbosityOptionResult != null
                 && !verbosityOptionResult.Implicit
@@ -97,7 +97,7 @@ internal static class NewCommandParser
                 // and callstack is pushed to process output
                 && !parseResult.Errors.Any(error => error.SymbolResult == verbosityOptionResult))
             {
-                VerbosityOptions userSetVerbosity = verbosityOptionResult.GetValueOrDefault<VerbosityOptions>();
+                Verbosity userSetVerbosity = verbosityOptionResult.GetValueOrDefault<Verbosity>();
                 if (userSetVerbosity.IsQuiet())
                 {
                     CommandLoggingContext.SetError(false);

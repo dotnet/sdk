@@ -258,7 +258,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             BufferedReporter bufferedReporter = new BufferedReporter();
             NuGetPackageDownloader nuGetPackageDownloader = new NuGetPackageDownloader(_tempDirectory, null,
                 new MockFirstPartyNuGetPackageSigningVerifier(),
-                _logger, bufferedReporter, restoreActionConfig: new RestoreActionConfig(NoCache: true), verbosityOptions: VerbosityOptions.quiet);
+                _logger, bufferedReporter, restoreActionConfig: new RestoreActionConfig(NoCache: true), verbosityOptions: Verbosity.quiet);
             await nuGetPackageDownloader.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),

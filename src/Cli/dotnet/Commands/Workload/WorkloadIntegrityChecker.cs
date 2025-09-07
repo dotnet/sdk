@@ -28,7 +28,7 @@ internal static class WorkloadIntegrityChecker
             reporter,
             sdkFeatureBand,
             creationResult.WorkloadResolver,
-            VerbosityOptions.normal,
+            Verbosity.normal,
             creationResult.UserProfileDir,
             verifySignatures,
             packageDownloader,

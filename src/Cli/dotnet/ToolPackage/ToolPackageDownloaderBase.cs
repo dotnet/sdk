@@ -59,7 +59,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 
     protected abstract INuGetPackageDownloader CreateNuGetPackageDownloader(
         bool verifySignatures,
-        VerbosityOptions verbosity,
+        Verbosity verbosity,
         RestoreActionConfig? restoreActionConfig);
 
     protected abstract NuGetVersion DownloadAndExtractPackage(
@@ -68,7 +68,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         string packagesRootPath,
         NuGetVersion packageVersion,
         PackageSourceLocation packageSourceLocation,
-        VerbosityOptions verbosity,
+        Verbosity verbosity,
         bool includeUnlisted = false
     );
 
@@ -83,7 +83,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         DirectoryPath packagesRootPath,
         string assetFilePath,
         string runtimeJsonGraph,
-        VerbosityOptions verbosity,
+        Verbosity verbosity,
         string? targetFramework = null);
 
     protected abstract ToolConfiguration GetToolConfiguration(PackageId id,
@@ -91,7 +91,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         DirectoryPath assetsJsonParentDirectory);
 
     public IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
-        VerbosityOptions verbosity = VerbosityOptions.normal,
+        Verbosity verbosity = Verbosity.normal,
         VersionRange? versionRange = null,
         string? targetFramework = null,
         bool isGlobalTool = false,
@@ -153,7 +153,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         bool givenSpecificVersion,
         string? targetFramework,
         bool isGlobalToolRollForward,
-        VerbosityOptions verbosity)
+        Verbosity verbosity)
     {
         // Check if package already exists in global tools location
         var nugetPackageRootDirectory = new VersionFolderPathResolver(_toolPackageStore.Root.Value).GetInstallPath(packageId.ToString(), packageVersion);
@@ -233,7 +233,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         NuGetVersion packageVersion,
         bool givenSpecificVersion,
         string? targetFramework,
-        VerbosityOptions verbosity)
+        Verbosity verbosity)
     {
         return TransactionalAction.Run<IToolPackage>(
             action: () =>
@@ -268,7 +268,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         bool givenSpecificVersion,
         DirectoryPath assetFileDirectory,
         string? targetFramework,
-        VerbosityOptions verbosity)
+        Verbosity verbosity)
     {
 
         if (!IsPackageInstalled(packageId, packageVersion, packageDownloadDir.Value))
@@ -294,7 +294,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         PackageId packageId,
         NuGetVersion packageVersion,
         string? targetFramework,
-        VerbosityOptions verbosity,
+        Verbosity verbosity,
         [NotNullWhen(true)]
         out IToolPackage? toolPackage)
     {
@@ -329,7 +329,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         NuGetVersion packageVersion,
         DirectoryPath packageDownloadDir,
         DirectoryPath assetFileDirectory,
-        VerbosityOptions verbosity)
+        Verbosity verbosity)
     {
         var toolConfiguration = GetToolConfiguration(packageId, packageDownloadDir, assetFileDirectory);
 
@@ -394,7 +394,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
     public virtual (NuGetVersion version, PackageSource source) GetNuGetVersion(
         PackageLocation packageLocation,
         PackageId packageId,
-        VerbosityOptions verbosity,
+        Verbosity verbosity,
         VersionRange? versionRange = null,
         RestoreActionConfig? restoreActionConfig = null)
     {

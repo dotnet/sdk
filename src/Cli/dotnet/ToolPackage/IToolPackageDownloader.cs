@@ -13,7 +13,7 @@ internal interface IToolPackageDownloader
 {
     IToolPackage InstallPackage(PackageLocation packageLocation,
         PackageId packageId,
-        VerbosityOptions verbosity,
+        Verbosity verbosity,
         VersionRange? versionRange = null,
         string? targetFramework = null,
         bool isGlobalTool = false,
@@ -25,7 +25,7 @@ internal interface IToolPackageDownloader
     (NuGetVersion version, PackageSource source) GetNuGetVersion(
         PackageLocation packageLocation,
         PackageId packageId,
-        VerbosityOptions verbosity,
+        Verbosity verbosity,
         VersionRange? versionRange = null,
         RestoreActionConfig? restoreActionConfig = null
     );
@@ -34,7 +34,7 @@ internal interface IToolPackageDownloader
         PackageId packageId,
         NuGetVersion packageVersion,
         string? targetFramework,
-        VerbosityOptions verbosity,
+        Verbosity verbosity,
         [NotNullWhen(true)]
         out IToolPackage? toolPackage);
 }

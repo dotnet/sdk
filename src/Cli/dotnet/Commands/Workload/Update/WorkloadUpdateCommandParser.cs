@@ -37,7 +37,7 @@ internal static class WorkloadUpdateCommandParser
         Description = CliCommandStrings.HistoryManifestOnlyOptionDescription
     };
 
-    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal);
+    public static readonly Option<Utils.Verbosity> VerbosityOption = CommonOptions.VerbosityOption(Utils.Verbosity.normal);
 
     private static readonly Command Command = ConstructCommand();
 
