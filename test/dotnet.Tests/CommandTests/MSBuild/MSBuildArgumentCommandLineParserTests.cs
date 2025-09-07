@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
         [InlineData(new string[] { "-p:RuntimeIdentifiers=linux-x64;linux-arm64" }, new string[] { "--property:RuntimeIdentifiers=linux-x64;linux-arm64" })]
         public void Can_pass_msbuild_properties_safely(string[] tokens, string[] forwardedTokens)
         {
-            var forwardingFunction = (CommonOptions.PropertiesOption as ForwardedOption<ReadOnlyDictionary<string,string>?>)!.GetForwardingFunction();
+            var forwardingFunction = CommonOptions.PropertiesOption.ForwardingFunction!;
             var result = new RootCommand() { CommonOptions.PropertiesOption }.Parse(tokens);
             var parsedTokens = forwardingFunction(result);
             parsedTokens.Should().BeEquivalentTo(forwardedTokens);

@@ -7,6 +7,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Reference.Add;
 using Microsoft.DotNet.Cli.Commands.Reference.List;
 using Microsoft.DotNet.Cli.Commands.Reference.Remove;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference;
@@ -30,7 +31,10 @@ internal static class ReferenceCommandParser
 
     private static Command ConstructCommand()
     {
-        var command = new DocumentedCommand("reference", DocsLink, CliCommandStrings.NetRemoveCommand);
+        var command = new Command("reference", CliCommandStrings.NetRemoveCommand)
+        {
+            DocsLink = DocsLink
+        };
 
         command.Subcommands.Add(ReferenceAddCommandParser.GetCommand());
         command.Subcommands.Add(ReferenceListCommandParser.GetCommand());

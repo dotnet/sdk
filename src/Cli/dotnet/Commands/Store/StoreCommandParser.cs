@@ -76,7 +76,10 @@ internal static class StoreCommandParser
 
     private static Command ConstructCommand()
     {
-        DocumentedCommand command = new("store", DocsLink, CliCommandStrings.StoreAppDescription);
+        Command command = new("store", CliCommandStrings.StoreAppDescription)
+        {
+            DocsLink = DocsLink
+        };
 
         command.Arguments.Add(Argument);
         command.Options.Add(ManifestOption);

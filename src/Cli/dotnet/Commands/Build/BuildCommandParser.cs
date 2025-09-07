@@ -70,7 +70,10 @@ internal static class BuildCommandParser
 
     private static Command ConstructCommand()
     {
-        DocumentedCommand command = new("build", DocsLink, CliCommandStrings.BuildAppFullName);
+        Command command = new("build", CliCommandStrings.BuildAppFullName)
+        {
+            DocsLink = DocsLink
+        };
 
         command.Arguments.Add(SlnOrProjectOrFileArgument);
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: false);

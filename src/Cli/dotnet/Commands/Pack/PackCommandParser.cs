@@ -90,7 +90,10 @@ internal static class PackCommandParser
 
     private static Command ConstructCommand()
     {
-        var command = new DocumentedCommand("pack", DocsLink, CliCommandStrings.PackAppFullName);
+        var command = new Command("pack", CliCommandStrings.PackAppFullName)
+        {
+            DocsLink = DocsLink
+        };
 
         command.Arguments.Add(SlnOrProjectOrFileArgument);
         command.Options.Add(OutputOption);

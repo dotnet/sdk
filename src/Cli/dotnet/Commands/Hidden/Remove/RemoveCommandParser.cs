@@ -5,6 +5,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Hidden.Remove.Package;
 using Microsoft.DotNet.Cli.Commands.Hidden.Remove.Reference;
 using Microsoft.DotNet.Cli.Commands.Package;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Remove;
@@ -22,9 +23,10 @@ internal static class RemoveCommandParser
 
     private static Command ConstructCommand()
     {
-        var command = new DocumentedCommand("remove", DocsLink, CliCommandStrings.NetRemoveCommand)
+        var command = new Command("remove", CliCommandStrings.NetRemoveCommand)
         {
-            Hidden = true
+            Hidden = true,
+            DocsLink = DocsLink
         };
 
         command.Arguments.Add(PackageCommandParser.ProjectOrFileArgument);

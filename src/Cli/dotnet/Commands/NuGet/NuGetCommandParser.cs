@@ -22,10 +22,11 @@ internal static class NuGetCommandParser
 
     private static Command ConstructCommand()
     {
-        var command = new DocumentedCommand("nuget", DocsLink)
+        var command = new Command("nuget")
         {
             // some subcommands are not defined here and just forwarded to NuGet app
-            TreatUnmatchedTokensAsErrors = false
+            TreatUnmatchedTokensAsErrors = false,
+            DocsLink = DocsLink
         };
 
         command.Options.Add(new Option<bool>("--version")
