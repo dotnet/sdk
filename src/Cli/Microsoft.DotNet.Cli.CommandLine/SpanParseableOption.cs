@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Cli.CommandLine;
 /// <summary>
 /// An option whose generic type parameter implements <see cref="ISpanParsable{T}"/>, allowing parsing from a single token with no additional customization
 /// </summary>
-public class SpanParseableOption<T> : Option<T> where T : ISpanParsable<T>
+public class SpanParsableOption<T> : Option<T> where T : ISpanParsable<T>
 {
     public SpanParseableOption(string name, params string[] aliases) : base(name, aliases)
     {
