@@ -8,6 +8,7 @@ using System.Data;
 using System.Diagnostics;
 using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.Extensions.Logging;

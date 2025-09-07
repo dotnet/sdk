@@ -1,12 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Frozen;
 using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
-using System.CommandLine.StaticCompletions;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -492,10 +491,4 @@ internal static class CommonOptions
     }
 }
 
-public class DynamicOption<T>(string name, params string[] aliases) : Option<T>(name, aliases), IDynamicOption
-{
-}
 
-public class DynamicArgument<T>(string name) : Argument<T>(name), IDynamicArgument
-{
-}

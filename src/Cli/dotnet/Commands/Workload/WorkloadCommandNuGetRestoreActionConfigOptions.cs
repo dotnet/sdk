@@ -4,7 +4,7 @@
 #nullable disable
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload;
