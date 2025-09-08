@@ -366,15 +366,12 @@ namespace Microsoft.NET.Build.Tasks
                         }
                     }
 
-                    if (EffectiveRuntimeIdentifier != null)
-                    {
-                        //  Process primary runtime identifier
-                        ProcessRuntimeIdentifier(EffectiveRuntimeIdentifier, runtimePackForRuntimeIDProcessing, runtimePackVersion, additionalFrameworkReferencesForRuntimePack,
-                            unrecognizedRuntimeIdentifiers, unavailableRuntimePacks, runtimePacks, packagesToDownload, isTrimmable, useRuntimePackAndDownloadIfNecessary,
-                            wasReferencedDirectly: frameworkReference != null);
+                    //  Process primary runtime identifier
+                    ProcessRuntimeIdentifier(EffectiveRuntimeIdentifier ?? "any", runtimePackForRuntimeIDProcessing, runtimePackVersion, additionalFrameworkReferencesForRuntimePack,
+                        unrecognizedRuntimeIdentifiers, unavailableRuntimePacks, runtimePacks, packagesToDownload, isTrimmable, useRuntimePackAndDownloadIfNecessary,
+                        wasReferencedDirectly: frameworkReference != null);
 
-                        processedPrimaryRuntimeIdentifier = true;
-                    }
+                    processedPrimaryRuntimeIdentifier = true;
                 }
 
                 if (RuntimeIdentifiers != null)

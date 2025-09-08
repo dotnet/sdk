@@ -45,6 +45,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
             var task = new ProcessFrameworkReferences
             {
+                BuildEngine = new MockBuildEngine(),
                 EnableTargetingPackDownload = true,
                 TargetFrameworkIdentifier = ".NETCoreApp",
                 TargetFrameworkVersion = ToolsetInfo.CurrentTargetFrameworkVersion,
@@ -79,6 +80,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
             var task = new ProcessFrameworkReferences
             {
+                BuildEngine = new MockBuildEngine(),
                 EnableTargetingPackDownload = true,
                 TargetFrameworkIdentifier = ".NETCoreApp",
                 TargetFrameworkVersion = ToolsetInfo.CurrentTargetFrameworkVersion,
@@ -116,6 +118,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
             var task = new ProcessFrameworkReferences
             {
+                BuildEngine = new MockBuildEngine(),
                 TargetFrameworkIdentifier = ".NETCoreApp",
                 TargetFrameworkVersion = "2.0",
                 FrameworkReferences = new[]
@@ -304,7 +307,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 task.Execute().Should().BeFalse("IsWindowsOnly=true");
                 return;
             }
-
             task.Execute().Should().BeTrue();
 
             task.TargetingPacks.Should().NotBeNull().And.HaveCount(2);
