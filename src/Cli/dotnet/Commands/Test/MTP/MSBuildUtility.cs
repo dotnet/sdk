@@ -66,27 +66,27 @@ internal static class MSBuildUtility
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
             .Concat(binLogArgs);
 
-        string? resultsDirectory = parseResult.GetValue(TestingPlatformOptions.ResultsDirectoryOption);
+        string? resultsDirectory = parseResult.GetValue(MicrosoftTestingPlatformOptions.ResultsDirectoryOption);
         if (resultsDirectory is not null)
         {
             resultsDirectory = Path.GetFullPath(resultsDirectory);
         }
 
-        string? configFile = parseResult.GetValue(TestingPlatformOptions.ConfigFileOption);
+        string? configFile = parseResult.GetValue(MicrosoftTestingPlatformOptions.ConfigFileOption);
         if (configFile is not null)
         {
             configFile = Path.GetFullPath(configFile);
         }
 
-        string? diagnosticOutputDirectory = parseResult.GetValue(TestingPlatformOptions.DiagnosticOutputDirectoryOption);
+        string? diagnosticOutputDirectory = parseResult.GetValue(MicrosoftTestingPlatformOptions.DiagnosticOutputDirectoryOption);
         if (diagnosticOutputDirectory is not null)
         {
             diagnosticOutputDirectory = Path.GetFullPath(diagnosticOutputDirectory);
         }
 
         PathOptions pathOptions = new(
-            parseResult.GetValue(TestingPlatformOptions.ProjectOption),
-            parseResult.GetValue(TestingPlatformOptions.SolutionOption),
+            parseResult.GetValue(MicrosoftTestingPlatformOptions.ProjectOption),
+            parseResult.GetValue(MicrosoftTestingPlatformOptions.SolutionOption),
             resultsDirectory,
             configFile,
             diagnosticOutputDirectory);
@@ -94,10 +94,10 @@ internal static class MSBuildUtility
         return new BuildOptions(
             pathOptions,
             parseResult.GetValue(CommonOptions.NoRestoreOption),
-            parseResult.GetValue(TestingPlatformOptions.NoBuildOption),
+            parseResult.GetValue(MicrosoftTestingPlatformOptions.NoBuildOption),
             parseResult.HasOption(TestCommandParser.VerbosityOption) ? parseResult.GetValue(TestCommandParser.VerbosityOption) : null,
-            parseResult.GetValue(TestingPlatformOptions.NoLaunchProfileOption),
-            parseResult.GetValue(TestingPlatformOptions.NoLaunchProfileArgumentsOption),
+            parseResult.GetValue(MicrosoftTestingPlatformOptions.NoLaunchProfileOption),
+            parseResult.GetValue(MicrosoftTestingPlatformOptions.NoLaunchProfileArgumentsOption),
             degreeOfParallelism,
             otherArgs,
             msbuildArgs);

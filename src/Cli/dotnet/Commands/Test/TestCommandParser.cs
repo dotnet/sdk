@@ -227,31 +227,32 @@ internal static class TestCommandParser
 
     private static Command GetTestingPlatformCliCommand()
     {
-        var command = new TestingPlatformCommand("test", CliCommandStrings.DotnetTestCommand);
+        var command = new MicrosoftTestingPlatformTestCommand("test", CliCommandStrings.DotnetTestCommand);
         command.SetAction(parseResult => command.Run(parseResult));
-        command.Options.Add(TestingPlatformOptions.ProjectOption);
-        command.Options.Add(TestingPlatformOptions.SolutionOption);
-        command.Options.Add(TestingPlatformOptions.TestModulesFilterOption);
-        command.Options.Add(TestingPlatformOptions.TestModulesRootDirectoryOption);
-        command.Options.Add(TestingPlatformOptions.ResultsDirectoryOption);
-        command.Options.Add(TestingPlatformOptions.ConfigFileOption);
-        command.Options.Add(TestingPlatformOptions.DiagnosticOutputDirectoryOption);
-        command.Options.Add(TestingPlatformOptions.MaxParallelTestModulesOption);
-        command.Options.Add(TestingPlatformOptions.MinimumExpectedTestsOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.ProjectOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.SolutionOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.TestModulesFilterOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.TestModulesRootDirectoryOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.ResultsDirectoryOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.ConfigFileOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.DiagnosticOutputDirectoryOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.MaxParallelTestModulesOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.MinimumExpectedTestsOption);
         command.Options.Add(CommonOptions.ArchitectureOption);
         command.Options.Add(CommonOptions.PropertiesOption);
-        command.Options.Add(TestingPlatformOptions.ConfigurationOption);
-        command.Options.Add(TestingPlatformOptions.FrameworkOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.ConfigurationOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.FrameworkOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
         command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
         command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.NoRestoreOption);
-        command.Options.Add(TestingPlatformOptions.NoBuildOption);
-        command.Options.Add(TestingPlatformOptions.NoAnsiOption);
-        command.Options.Add(TestingPlatformOptions.NoProgressOption);
-        command.Options.Add(TestingPlatformOptions.OutputOption);
-        command.Options.Add(TestingPlatformOptions.NoLaunchProfileOption);
-        command.Options.Add(TestingPlatformOptions.NoLaunchProfileArgumentsOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.NoBuildOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.NoAnsiOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.NoProgressOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.OutputOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.ListTestsOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.NoLaunchProfileOption);
+        command.Options.Add(MicrosoftTestingPlatformOptions.NoLaunchProfileArgumentsOption);
         command.Options.Add(MTPTargetOption);
 
         return command;

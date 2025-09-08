@@ -205,7 +205,7 @@ internal static class SolutionAndProjectUtility
         var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
         var targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
 
-        Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' with TargetFramework '{targetFramework}', TargetFrameworks '{targetFrameworks}', IsTestProject '{projectInstance.GetPropertyValue(ProjectProperties.IsTestProject)}', and '{ProjectProperties.IsTestingPlatformApplication}' is '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
+        Logger.LogTrace($"Loaded project '{Path.GetFileName(projectFilePath)}' with TargetFramework '{targetFramework}', TargetFrameworks '{targetFrameworks}', IsTestProject '{projectInstance.GetPropertyValue(ProjectProperties.IsTestProject)}', and '{ProjectProperties.IsTestingPlatformApplication}' is '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
 
         if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
         {
@@ -235,7 +235,7 @@ internal static class SolutionAndProjectUtility
                 foreach (var framework in frameworks)
                 {
                     projectInstance = EvaluateProject(projectCollection, projectFilePath, framework);
-                    Logger.LogTrace(() => $"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
+                    Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
                     if (GetModuleFromProject(projectInstance, projectCollection.Loggers, buildOptions) is { } module)
                     {
@@ -249,7 +249,7 @@ internal static class SolutionAndProjectUtility
                 foreach (var framework in frameworks)
                 {
                     projectInstance = EvaluateProject(projectCollection, projectFilePath, framework);
-                    Logger.LogTrace(() => $"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
+                    Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
                     if (GetModuleFromProject(projectInstance, projectCollection.Loggers, buildOptions) is { } module)
                     {

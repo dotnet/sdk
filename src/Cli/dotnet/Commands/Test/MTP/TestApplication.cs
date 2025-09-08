@@ -4,17 +4,24 @@
 #nullable disable
 
 using System.Diagnostics;
+using System.Globalization;
 using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal sealed class TestApplication(TestModule module, BuildOptions buildOptions) : IDisposable
+internal sealed class TestApplication(
+    TestModule module,
+    BuildOptions buildOptions,
+    TestOptions testOptions,
+    TerminalTestReporter output) : IDisposable
 {
     private readonly BuildOptions _buildOptions = buildOptions;
+    private readonly TestApplicationHandler _handler = new(output, module, testOptions);
 
     private readonly List<string> _outputData = [];
     private readonly List<string> _errorData = [];
@@ -23,26 +30,25 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
 
     private Task _testAppPipeConnectionLoop;
     private readonly List<NamedPipeServer> _testAppPipeConnections = [];
+    private readonly Dictionary<NamedPipeServer, HandshakeMessage> _handshakes = new();
 
-    public event EventHandler<HandshakeArgs> HandshakeReceived;
     public event EventHandler<HelpEventArgs> HelpRequested;
-    public event EventHandler<DiscoveredTestEventArgs> DiscoveredTestsReceived;
-    public event EventHandler<TestResultEventArgs> TestResultsReceived;
-    public event EventHandler<FileArtifactEventArgs> FileArtifactsReceived;
-    public event EventHandler<SessionEventArgs> SessionEventReceived;
-    public event EventHandler<ErrorEventArgs> ErrorReceived;
-    public event EventHandler<TestProcessExitEventArgs> TestProcessExited;
 
     public TestModule Module { get; } = module;
+    public TestOptions TestOptions { get; } = testOptions;
 
-    public async Task<int> RunAsync(TestOptions testOptions)
+    public bool HasFailureDuringDispose { get; private set; }
+
+    public async Task<int> RunAsync()
     {
-        if (testOptions.HasFilterMode && !ModulePathExists())
+        // TODO: RunAsync is probably expected to be executed exactly once on each TestApplication instance.
+        // Consider throwing an exception if it's called more than once.
+        if (TestOptions.HasFilterMode && !ModulePathExists())
         {
             return ExitCode.GenericFailure;
         }
 
-        var processStartInfo = CreateProcessStartInfo(testOptions);
+        var processStartInfo = CreateProcessStartInfo();
 
         _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
         var testProcessResult = await StartProcess(processStartInfo);
@@ -52,7 +58,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         return testProcessResult;
     }
 
-    private ProcessStartInfo CreateProcessStartInfo(TestOptions testOptions)
+    private ProcessStartInfo CreateProcessStartInfo()
     {
         var processStartInfo = new ProcessStartInfo
         {
@@ -60,7 +66,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             // For the case of dotnet test --test-modules path/to/dll, the TestModulesFilterHandler is responsible
             // for providing the dotnet muxer as RunCommand, and `exec "path/to/dll"` as RunArguments.
             FileName = Module.RunProperties.Command,
-            Arguments = GetArguments(testOptions),
+            Arguments = GetArguments(),
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
@@ -93,7 +99,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         return processStartInfo;
     }
 
-    private string GetArguments(TestOptions testOptions)
+    private string GetArguments()
     {
         // Keep RunArguments first.
         // In the case of UseAppHost=false, RunArguments is set to `exec $(TargetPath)`:
@@ -104,24 +110,29 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         // In short, it's expected to already be escaped properly.
         StringBuilder builder = new(Module.RunProperties.Arguments);
 
-        if (testOptions.IsHelp)
+        if (TestOptions.IsHelp)
         {
-            builder.Append($" {TestingPlatformOptions.HelpOption.Name}");
+            builder.Append($" {CliConstants.HelpOptionKey}");
+        }
+
+        if (TestOptions.IsDiscovery)
+        {
+            builder.Append($" {MicrosoftTestingPlatformOptions.ListTestsOption.Name}");
         }
 
         if (_buildOptions.PathOptions.ResultsDirectoryPath is { } resultsDirectoryPath)
         {
-            builder.Append($" {TestingPlatformOptions.ResultsDirectoryOption.Name} {ArgumentEscaper.EscapeSingleArg(resultsDirectoryPath)}");
+            builder.Append($" {MicrosoftTestingPlatformOptions.ResultsDirectoryOption.Name} {ArgumentEscaper.EscapeSingleArg(resultsDirectoryPath)}");
         }
 
         if (_buildOptions.PathOptions.ConfigFilePath is { } configFilePath)
         {
-            builder.Append($" {TestingPlatformOptions.ConfigFileOption.Name} {ArgumentEscaper.EscapeSingleArg(configFilePath)}");
+            builder.Append($" {MicrosoftTestingPlatformOptions.ConfigFileOption.Name} {ArgumentEscaper.EscapeSingleArg(configFilePath)}");
         }
 
         if (_buildOptions.PathOptions.DiagnosticOutputDirectoryPath is { } diagnosticOutputDirectoryPath)
         {
-            builder.Append($" {TestingPlatformOptions.DiagnosticOutputDirectoryOption.Name} {ArgumentEscaper.EscapeSingleArg(diagnosticOutputDirectoryPath)}");
+            builder.Append($" {MicrosoftTestingPlatformOptions.DiagnosticOutputDirectoryOption.Name} {ArgumentEscaper.EscapeSingleArg(diagnosticOutputDirectoryPath)}");
         }
 
         foreach (var arg in _buildOptions.UnmatchedTokens)
@@ -146,7 +157,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         {
             while (!token.IsCancellationRequested)
             {
-                NamedPipeServer pipeConnection = new(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
+                var pipeConnection = new NamedPipeServer(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
                 pipeConnection.RegisterAllSerializers();
 
                 await pipeConnection.WaitConnectionAsync(token);
@@ -156,37 +167,27 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         catch (OperationCanceledException ex)
         {
             // We are exiting
-            if (Logger.TraceEnabled)
-            {
-                string tokenType = ex.CancellationToken == token ? "internal token" : "external token";
-                Logger.LogTrace(() => $"WaitConnectionAsync() throws OperationCanceledException with {tokenType}");
-            }
+            Logger.LogTrace($"WaitConnectionAsync() throws OperationCanceledException with {(ex.CancellationToken == token ? "internal token" : "external token")}");
         }
         catch (Exception ex)
         {
-            if (Logger.TraceEnabled)
-            {
-                Logger.LogTrace(() => ex.ToString());
-            }
-
-            Environment.FailFast(ex.ToString());
+            var exAsString = ex.ToString();
+            Logger.LogTrace(exAsString);
+            Environment.FailFast(exAsString);
         }
     }
 
-    private Task<IResponse> OnRequest(IRequest request)
+    private Task<IResponse> OnRequest(NamedPipeServer server, IRequest request)
     {
         try
         {
             switch (request)
             {
                 case HandshakeMessage handshakeMessage:
-                    if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ModulePath, out string value))
-                    {
-                        OnHandshakeMessage(handshakeMessage);
-
-                        return Task.FromResult((IResponse)CreateHandshakeMessage(GetSupportedProtocolVersion(handshakeMessage)));
-                    }
-                    break;
+                    _handshakes.Add(server, handshakeMessage);
+                    string negotiatedVersion = GetSupportedProtocolVersion(handshakeMessage);
+                    OnHandshakeMessage(handshakeMessage, negotiatedVersion.Length > 0);
+                    return Task.FromResult((IResponse)CreateHandshakeMessage(negotiatedVersion));
 
                 case CommandLineOptionMessages commandLineOptionMessages:
                     OnCommandLineOptionMessages(commandLineOptionMessages);
@@ -210,10 +211,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
 
                 // If we don't recognize the message, log and skip it
                 case UnknownMessage unknownMessage:
-                    if (Logger.TraceEnabled)
-                    {
-                        Logger.LogTrace(() => $"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
-                    }
+                    Logger.LogTrace($"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
                     return Task.FromResult((IResponse)VoidResponse.CachedInstance);
 
                 default:
@@ -223,12 +221,9 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         }
         catch (Exception ex)
         {
-            if (Logger.TraceEnabled)
-            {
-                Logger.LogTrace(() => ex.ToString());
-            }
-
-            Environment.FailFast(ex.ToString());
+            string exAsString = ex.ToString();
+            Logger.LogTrace(exAsString);
+            Environment.FailFast(exAsString);
         }
 
         return Task.FromResult((IResponse)VoidResponse.CachedInstance);
@@ -236,21 +231,32 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
 
     private static string GetSupportedProtocolVersion(HandshakeMessage handshakeMessage)
     {
-        handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.SupportedProtocolVersions, out string protocolVersions);
-
-        string version = string.Empty;
-        if (protocolVersions is not null && protocolVersions.Split(";").Contains(ProtocolConstants.Version))
+        if (!handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.SupportedProtocolVersions, out string protocolVersions) ||
+            protocolVersions is null)
         {
-            version = ProtocolConstants.Version;
+            // It's not expected we hit this.
+            // TODO: Maybe we should fail more hard?
+            return string.Empty;
         }
 
-        return version;
+        // NOTE: Today, ProtocolConstants.Version is only 1.0.0 (i.e, SDK supports only a single version).
+        // Whenever we support multiple versions in SDK, we should do intersection
+        // between protocolVersions given by MTP, and the versions supported by SDK.
+        // Then we return the "highest" version from the intersection.
+        // The current logic **assumes** that ProtocolConstants.SupportedVersions is a single version.
+        if (protocolVersions.Split(";").Contains(ProtocolConstants.SupportedVersions))
+        {
+            return ProtocolConstants.SupportedVersions;
+        }
+
+        // The version given by MTP is not supported by SDK.
+        return string.Empty;
     }
 
     private static HandshakeMessage CreateHandshakeMessage(string version) =>
-        new(new Dictionary<byte, string>
+        new(new Dictionary<byte, string>(capacity: 5)
         {
-            { HandshakeMessagePropertyNames.PID, Process.GetCurrentProcess().Id.ToString() },
+            { HandshakeMessagePropertyNames.PID, Environment.ProcessId.ToString(CultureInfo.InvariantCulture) },
             { HandshakeMessagePropertyNames.Architecture, RuntimeInformation.ProcessArchitecture.ToString() },
             { HandshakeMessagePropertyNames.Framework, RuntimeInformation.FrameworkDescription },
             { HandshakeMessagePropertyNames.OS, RuntimeInformation.OSDescription },
@@ -259,16 +265,13 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
 
     private async Task<int> StartProcess(ProcessStartInfo processStartInfo)
     {
-        if (Logger.TraceEnabled)
-        {
-            Logger.LogTrace(() => $"Test application arguments: {processStartInfo.Arguments}");
-        }
+        Logger.LogTrace($"Test application arguments: {processStartInfo.Arguments}");
 
-        var process = Process.Start(processStartInfo);
+        using var process = Process.Start(processStartInfo);
         StoreOutputAndErrorData(process);
         await process.WaitForExitAsync();
 
-        TestProcessExited?.Invoke(this, new TestProcessExitEventArgs { OutputData = _outputData, ErrorData = _errorData, ExitCode = process.ExitCode });
+        _handler.OnTestProcessExited(process.ExitCode, _outputData, _errorData);
 
         return process.ExitCode;
     }
@@ -299,57 +302,33 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
     {
         if (!File.Exists(Module.RunProperties.Command))
         {
-            ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{Module.RunProperties.Command}' not found. Build the test application before or run 'dotnet test'." });
+            // TODO: The error should be shown to the user, not just logged to trace.
+            Logger.LogTrace($"Test module '{Module.RunProperties.Command}' not found. Build the test application before or run 'dotnet test'.");
+
             return false;
         }
         return true;
     }
 
-    public void OnHandshakeMessage(HandshakeMessage handshakeMessage)
-    {
-        HandshakeReceived?.Invoke(this, new HandshakeArgs { Handshake = new Handshake(handshakeMessage.Properties) });
-    }
+    public void OnHandshakeMessage(HandshakeMessage handshakeMessage, bool gotSupportedVersion)
+        => _handler.OnHandshakeReceived(handshakeMessage, gotSupportedVersion);
 
-    public void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
+    private void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
     {
         HelpRequested?.Invoke(this, new HelpEventArgs { ModulePath = commandLineOptionMessages.ModulePath, CommandLineOptions = [.. commandLineOptionMessages.CommandLineOptionMessageList.Select(message => new CommandLineOption(message.Name, message.Description, message.IsHidden, message.IsBuiltIn))] });
     }
 
-    internal void OnDiscoveredTestMessages(DiscoveredTestMessages discoveredTestMessages)
-    {
-        DiscoveredTestsReceived?.Invoke(this, new DiscoveredTestEventArgs
-        {
-            ExecutionId = discoveredTestMessages.ExecutionId,
-            InstanceId = discoveredTestMessages.InstanceId,
-            DiscoveredTests = [.. discoveredTestMessages.DiscoveredMessages.Select(message => new DiscoveredTest(message.Uid, message.DisplayName))]
-        });
-    }
+    private void OnDiscoveredTestMessages(DiscoveredTestMessages discoveredTestMessages)
+        => _handler.OnDiscoveredTestsReceived(discoveredTestMessages);
 
-    internal void OnTestResultMessages(TestResultMessages testResultMessage)
-    {
-        TestResultsReceived?.Invoke(this, new TestResultEventArgs
-        {
-            ExecutionId = testResultMessage.ExecutionId,
-            InstanceId = testResultMessage.InstanceId,
-            SuccessfulTestResults = [.. testResultMessage.SuccessfulTestMessages.Select(message => new SuccessfulTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.StandardOutput, message.ErrorOutput, message.SessionUid))],
-            FailedTestResults = [.. testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, [.. message.Exceptions.Select(e => new FlatException(e.ErrorMessage, e.ErrorType, e.StackTrace))], message.StandardOutput, message.ErrorOutput, message.SessionUid))]
-        });
-    }
+    private void OnTestResultMessages(TestResultMessages testResultMessage)
+        => _handler.OnTestResultsReceived(testResultMessage);
 
     internal void OnFileArtifactMessages(FileArtifactMessages fileArtifactMessages)
-    {
-        FileArtifactsReceived?.Invoke(this, new FileArtifactEventArgs
-        {
-            ExecutionId = fileArtifactMessages.ExecutionId,
-            InstanceId = fileArtifactMessages.InstanceId,
-            FileArtifacts = [.. fileArtifactMessages.FileArtifacts.Select(message => new FileArtifact(message.FullPath, message.DisplayName, message.Description, message.TestUid, message.TestDisplayName, message.SessionUid))]
-        });
-    }
+        => _handler.OnFileArtifactsReceived(fileArtifactMessages);
 
-    internal void OnSessionEvent(TestSessionEvent sessionEvent)
-    {
-        SessionEventReceived?.Invoke(this, new SessionEventArgs { SessionEvent = new TestSession(sessionEvent.SessionType, sessionEvent.SessionUid, sessionEvent.ExecutionId) });
-    }
+    private void OnSessionEvent(TestSessionEvent sessionEvent)
+        => _handler.OnSessionEventReceived(sessionEvent);
 
     public override string ToString()
     {
@@ -387,7 +366,35 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
     {
         foreach (var namedPipeServer in _testAppPipeConnections)
         {
-            namedPipeServer.Dispose();
+            try
+            {
+                namedPipeServer.Dispose();
+            }
+            catch (Exception ex)
+            {
+                StringBuilder messageBuilder;
+                if (_handshakes.TryGetValue(namedPipeServer, out var handshake))
+                {
+                    messageBuilder = new StringBuilder(CliCommandStrings.DotnetTestPipeFailureHasHandshake);
+                    messageBuilder.AppendLine();
+                    foreach (var kvp in handshake.Properties)
+                    {
+                        messageBuilder.AppendLine($"{kvp.Key}: {kvp.Value}");
+                    }
+                }
+                else
+                {
+                    messageBuilder = new StringBuilder(CliCommandStrings.DotnetTestPipeFailureWithoutHandshake);
+                    messageBuilder.AppendLine();
+                }
+
+                messageBuilder.AppendLine($"RunCommand: {Module.RunProperties.Command}");
+                messageBuilder.AppendLine($"RunArguments: {Module.RunProperties.Arguments}");
+                messageBuilder.AppendLine(ex.ToString());
+
+                HasFailureDuringDispose = true;
+                Reporter.Error.WriteLine(messageBuilder.ToString());
+            }
         }
 
         WaitOnTestApplicationPipeConnectionLoop();
