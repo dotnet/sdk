@@ -24,7 +24,8 @@ internal static partial class WebServerProcessStateObserver
     public static void Observe(ProjectGraphNode serverProject, ProcessSpec serverProcessSpec, Action<string> onServerListening)
     {
         // Workaround for Aspire dashboard launching: scan for "Login to the dashboard at " prefix in the output and use the URL.
-        // TODO: Share launch profile processing logic as implemented in VS with dotnet-run and implement browser launching there.
+        // TODO: https://github.com/dotnet/sdk/issues/9038
+        // Share launch profile processing logic as implemented in VS with dotnet-run and implement browser launching there.
         bool isAspireHost = serverProject.GetCapabilities().Contains(AspireServiceFactory.AppHostProjectCapability);
 
         var _notified = false;

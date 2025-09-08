@@ -70,11 +70,8 @@ internal readonly struct BrowserConnection : IDisposable
 
     internal async ValueTask<bool> TryReceiveMessageAsync(ResponseAction receiver, CancellationToken cancellationToken)
     {
-#if NET
-        var writer = new System.Buffers.ArrayBufferWriter<byte>(initialCapacity: 1024);
-#else
         var writer = new ArrayBufferWriter<byte>(initialCapacity: 1024);
-#endif
+
         while (true)
         {
 #if NET

@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+// Based on https://github.com/dotnet/runtime/blob/5d98ad82efb25c1489c6d8f8e8e3daac56f404ec/src/libraries/Common/src/System/Buffers/ArrayBufferWriter.cs
+
 #if !NET
 
 #nullable enable
@@ -62,11 +64,6 @@ internal sealed class ArrayBufferWriter<T> : IBufferWriter<T>
     /// Returns the data written to the underlying buffer so far, as a <see cref="ReadOnlySpan{T}"/>.
     /// </summary>
     public ReadOnlySpan<T> WrittenSpan => _buffer.AsSpan(0, _index);
-
-    /// <summary>
-    /// Returns the data written to the underlying buffer so far, as a <see cref="ArraySegment{T}"/>.
-    /// </summary>
-    public ArraySegment<T> WrittenSegment => new(_buffer, 0, _index);
 
     /// <summary>
     /// Returns the amount of data written to the underlying buffer so far.

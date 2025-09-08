@@ -3,4 +3,4 @@
 
 namespace Microsoft.DotNet.Watch;
 
-internal readonly record struct ProjectInstanceId(string projectPath, string targetFramework);
+internal readonly record struct ProjectInstanceId(string ProjectPath, string TargetFramework);
