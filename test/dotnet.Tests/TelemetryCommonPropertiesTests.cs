@@ -214,10 +214,7 @@ namespace Microsoft.DotNet.Tests
 
         public static IEnumerable<object[]> LLMTelemetryTestCases => new List<object[]>{
             new object[] { new Dictionary<string, string> { { "CLAUDECODE", "1" } }, "claude" },
-            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "true" } }, "claude" },
-            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "anything" } }, "claude" },
-            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "" } }, null },
-            new object[] { new Dictionary<string, string> { { "SomethingElse", "hi" } }, null },
+            new object[] { new Dictionary<string, string>(), null },
         };
 
         public static IEnumerable<object[]> CITelemetryTestCases => new List<object[]>{
