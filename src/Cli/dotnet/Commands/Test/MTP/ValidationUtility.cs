@@ -20,13 +20,13 @@ internal static class ValidationUtility
         static void ValidatePathOptions(ParseResult parseResult)
         {
             var count = 0;
-            if (parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption))
+            if (parseResult.HasOption(MicrosoftTestingPlatformOptions.TestModulesFilterOption))
                 count++;
 
-            if (parseResult.HasOption(TestingPlatformOptions.SolutionOption))
+            if (parseResult.HasOption(MicrosoftTestingPlatformOptions.SolutionOption))
                 count++;
 
-            if (parseResult.HasOption(TestingPlatformOptions.ProjectOption))
+            if (parseResult.HasOption(MicrosoftTestingPlatformOptions.ProjectOption))
                 count++;
 
             if (count > 1)
@@ -35,14 +35,14 @@ internal static class ValidationUtility
 
         static void ValidateOptionsIrrelevantToModulesFilter(ParseResult parseResult)
         {
-            if (!parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption))
+            if (!parseResult.HasOption(MicrosoftTestingPlatformOptions.TestModulesFilterOption))
             {
                 return;
             }
 
             if (parseResult.HasOption(CommonOptions.ArchitectureOption) ||
-                parseResult.HasOption(TestingPlatformOptions.ConfigurationOption) ||
-                parseResult.HasOption(TestingPlatformOptions.FrameworkOption) ||
+                parseResult.HasOption(MicrosoftTestingPlatformOptions.ConfigurationOption) ||
+                parseResult.HasOption(MicrosoftTestingPlatformOptions.FrameworkOption) ||
                 parseResult.HasOption(CommonOptions.OperatingSystemOption) ||
                 parseResult.HasOption(CommonOptions.RuntimeOptionName))
             {

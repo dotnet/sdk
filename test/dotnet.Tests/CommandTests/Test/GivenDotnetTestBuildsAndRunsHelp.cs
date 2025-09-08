@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.HelpOption.Name, TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(CliConstants.HelpOptionKey, MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.HelpOption.Name, TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(CliConstants.HelpOptionKey, MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -72,14 +72,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.HelpOption.Name, TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(CliConstants.HelpOptionKey, MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             // Parse the help output to extract option names
             var helpOutput = result.StdOut;
 
             // Check for specific options we care about
-            string outputOptionName = TestingPlatformOptions.OutputOption.Name; // --output
-            string noAnsiOptionName = TestingPlatformOptions.NoAnsiOption.Name; // --no-ansi
+            string outputOptionName = MicrosoftTestingPlatformOptions.OutputOption.Name; // --output
+            string noAnsiOptionName = MicrosoftTestingPlatformOptions.NoAnsiOption.Name; // --no-ansi
 
             // Count occurrences of each option in the help output
             int outputOptionCount = CountOptionOccurrences(helpOutput!, outputOptionName);
