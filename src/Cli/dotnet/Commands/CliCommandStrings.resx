@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -2628,6 +2628,9 @@ Proceed?</value>
     <value>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</value>
     <comment>{Locked="--yes"}</comment>
   </data>
+  <data name="ToolInstallPackageIdMissing" xml:space="preserve">
+    <value>A package ID was not specified for tool installation.</value>
+  </data>
   <data name="TestCommandUseSolution" xml:space="preserve">
     <value>Specifying a solution for 'dotnet test' should be via '--solution'.</value>
   </data>
@@ -2648,5 +2651,23 @@ Proceed?</value>
   </data>
   <data name="CmdMinimumExpectedTestsDescription" xml:space="preserve">
     <value>Specifies the minimum number of tests that are expected to run.</value>
+  </data>
+  <data name="DotnetTestPipeOverlapping" xml:space="preserve">
+    <value>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</value>
+  </data>
+  <data name="DotnetTestPipeIncompleteSize" xml:space="preserve">
+    <value>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</value>
+  </data>
+  <data name="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage" xml:space="preserve">
+    <value>Method '{0}' did not exit successfully</value>
+  </data>
+  <data name="DotnetTestPipeFailureHasHandshake" xml:space="preserve">
+    <value>Error disposing 'NamedPipeServer' corresponding to handshake:</value>
+  </data>
+  <data name="DotnetTestPipeFailureWithoutHandshake" xml:space="preserve">
+    <value>Error disposing 'NamedPipeServer', and no handshake was found.</value>
+  </data>
+  <data name="DotnetTestIncompatibleHandshakeVersion" xml:space="preserve">
+    <value>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</value>
   </data>
 </root>

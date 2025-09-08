@@ -1163,6 +1163,31 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">Testovací příkaz .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
+        <source>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</source>
+        <target state="new">Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeFailureHasHandshake">
+        <source>Error disposing 'NamedPipeServer' corresponding to handshake:</source>
+        <target state="new">Error disposing 'NamedPipeServer' corresponding to handshake:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeFailureWithoutHandshake">
+        <source>Error disposing 'NamedPipeServer', and no handshake was found.</source>
+        <target state="new">Error disposing 'NamedPipeServer', and no handshake was found.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeIncompleteSize">
+        <source>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</source>
+        <target state="new">'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeOverlapping">
+        <source>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</source>
+        <target state="new">'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
         <source>DIRECTORY</source>
         <target state="translated">ADRESÁŘ</target>
@@ -1520,6 +1545,11 @@ Nastavte odlišné názvy profilů.</target>
       <trans-unit id="IntermediateWorkingDirOptionDescription">
         <source>The working directory used by the command to execute.</source>
         <target state="translated">Pracovní adresář použitý příkazem, který se má spustit</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage">
+        <source>Method '{0}' did not exit successfully</source>
+        <target state="new">Method '{0}' did not exit successfully</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
@@ -3059,7 +3089,7 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
       </trans-unit>
       <trans-unit id="TestCommandUseDirectoryWithSwitch">
         <source>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</source>
-        <target state="new">Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</target>
+        <target state="translated">Zadání adresáře pro dotnet test by mělo být prostřednictvím --project nebo --solution.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseProject">
@@ -3244,6 +3274,11 @@ Nástroj {1} (verze {2}) byl úspěšně nainstalován.</target>
       <trans-unit id="ToolInstallPackageIdArgumentName">
         <source>PACKAGE_ID</source>
         <target state="translated">PACKAGE_ID</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallPackageIdMissing">
+        <source>A package ID was not specified for tool installation.</source>
+        <target state="new">A package ID was not specified for tool installation.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallSourceOptionDescription">

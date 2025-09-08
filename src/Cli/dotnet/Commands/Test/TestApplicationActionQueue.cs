@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Threading.Channels;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -16,14 +17,14 @@ internal class TestApplicationActionQueue
 
     private static readonly Lock _lock = new();
 
-    public TestApplicationActionQueue(int degreeOfParallelism, BuildOptions buildOptions, Func<TestApplication, Task<int>> action)
+    public TestApplicationActionQueue(int degreeOfParallelism, BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Func<TestApplication, Task<int>> action)
     {
         _channel = Channel.CreateUnbounded<ParallelizableTestModuleGroupWithSequentialInnerModules>(new UnboundedChannelOptions { SingleReader = false, SingleWriter = false });
         _readers = [];
 
         for (int i = 0; i < degreeOfParallelism; i++)
         {
-            _readers.Add(Task.Run(async () => await Read(action, buildOptions)));
+            _readers.Add(Task.Run(async () => await Read(action, buildOptions, testOptions, output)));
         }
     }
 
@@ -50,15 +51,24 @@ internal class TestApplicationActionQueue
         _channel.Writer.Complete();
     }
 
-    private async Task Read(Func<TestApplication, Task<int>> action, BuildOptions buildOptions)
+    private async Task Read(Func<TestApplication, Task<int>> action, BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output)
     {
         await foreach (var nonParallelizedGroup in _channel.Reader.ReadAllAsync())
         {
             foreach (var module in nonParallelizedGroup)
             {
-                var testApp = new TestApplication(module, buildOptions);
-                int result = await action(testApp);
-                testApp.Dispose();
+                int result = ExitCode.GenericFailure;
+                var testApp = new TestApplication(module, buildOptions, testOptions, output);
+                using (testApp)
+                {
+                    result = await action(testApp);
+                }
+
+                if (result == ExitCode.Success && testApp.HasFailureDuringDispose)
+                {
+                    result = ExitCode.GenericFailure;
+                }
+                
                 lock (_lock)
                 {
                     if (_aggregateExitCode is null)
