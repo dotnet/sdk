@@ -32,12 +32,15 @@ internal sealed class HandshakeMessageSerializer : BaseSerializer, INamedPipeSer
 
         var handshakeMessage = (HandshakeMessage)objectToSerialize;
 
-        if (handshakeMessage.Properties is null || handshakeMessage.Properties.Count == 0)
+        // Deserializer always expected fieldCount to be present.
+        // We must write the count even if Properties is null or empty.
+        WriteUShort(stream, (ushort)(handshakeMessage.Properties?.Count ?? 0));
+
+        if (handshakeMessage.Properties is null)
         {
             return;
         }
 
-        WriteUShort(stream, (ushort)handshakeMessage.Properties.Count);
         foreach (KeyValuePair<byte, string> property in handshakeMessage.Properties)
         {
             WriteField(stream, property.Key);
