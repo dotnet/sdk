@@ -1163,6 +1163,31 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">Polecenie testowe platformy .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
+        <source>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</source>
+        <target state="new">Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeFailureHasHandshake">
+        <source>Error disposing 'NamedPipeServer' corresponding to handshake:</source>
+        <target state="new">Error disposing 'NamedPipeServer' corresponding to handshake:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeFailureWithoutHandshake">
+        <source>Error disposing 'NamedPipeServer', and no handshake was found.</source>
+        <target state="new">Error disposing 'NamedPipeServer', and no handshake was found.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeIncompleteSize">
+        <source>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</source>
+        <target state="new">'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeOverlapping">
+        <source>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</source>
+        <target state="new">'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
         <source>DIRECTORY</source>
         <target state="translated">KATALOG</target>
@@ -1520,6 +1545,11 @@ Rozróżnij nazwy profilów.</target>
       <trans-unit id="IntermediateWorkingDirOptionDescription">
         <source>The working directory used by the command to execute.</source>
         <target state="translated">Katalog roboczy używany do wykonania polecenia.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage">
+        <source>Method '{0}' did not exit successfully</source>
+        <target state="new">Method '{0}' did not exit successfully</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
@@ -2687,10 +2717,10 @@ Domyślnie publikowana jest aplikacja zależna od struktury.</target>
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="new">Unable to proceed with project '{0}'.
-Ensure you have a runnable project type.
-A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
-The current OutputType is '{2}'.</target>
+        <target state="translated">Nie można kontynuować pracy z projektem „{0}”.
+Upewnij się, że masz typ projektu, który można uruchomić.
+Projekt, który można uruchomić, powinien być przeznaczony dla możliwego do uruchomienia monikera platformy docelowej (na przykład net{1}) i mieć typ OutputType „Exe”.
+Bieżący typ OutputType to „{2}”.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -3059,7 +3089,7 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
       </trans-unit>
       <trans-unit id="TestCommandUseDirectoryWithSwitch">
         <source>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</source>
-        <target state="new">Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</target>
+        <target state="translated">Określenie katalogu dla elementu „dotnet test” powinno być za pośrednictwem polecenia „--project” lub „--solution”.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseProject">

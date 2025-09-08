@@ -179,6 +179,6 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
             }
         }
 
-        Logger.LogTrace(() => logMessageBuilder.ToString());
+        Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
     }
 }

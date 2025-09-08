@@ -832,22 +832,22 @@ The header is followed by the list of parameters and their errors (might be seve
       </trans-unit>
       <trans-unit id="PostAction_CreateDotnetConfig_CreatedNewSection">
         <source>Created new section in 'dotnet.config' file</source>
-        <target state="new">Created new section in 'dotnet.config' file</target>
+        <target state="translated">'dotnet.config' 파일에 새 섹션을 만들었습니다.</target>
         <note>{Locked="dotnet.config"}</note>
       </trans-unit>
       <trans-unit id="PostAction_CreateDotnetConfig_ManuallyUpdate">
         <source>Updating existing values in 'dotnet.config' is not yet supported. Please, manually update 'dotnet.config' to have '{0}' under section '{1}'.</source>
-        <target state="new">Updating existing values in 'dotnet.config' is not yet supported. Please, manually update 'dotnet.config' to have '{0}' under section '{1}'.</target>
+        <target state="translated">'dotnet.config'의 기존 값 업데이트는 아직 지원되지 않습니다. 'dotnet.config'를 수동으로 업데이트하여 '{0}' 섹션의 '{1}'을(를) 갖도록 하세요.</target>
         <note>{Locked="dotnet.config"}</note>
       </trans-unit>
       <trans-unit id="PostAction_CreateDotnetConfig_Succeeded">
         <source>Successfully created 'dotnet.config' file.</source>
-        <target state="new">Successfully created 'dotnet.config' file.</target>
+        <target state="translated">'dotnet.config' 파일을 만들었습니다.</target>
         <note>{Locked="dotnet.config"}</note>
       </trans-unit>
       <trans-unit id="PostAction_CreateDotnetConfig_ValueAlreadyExist">
         <source>The required value in 'dotnet.config' is already set.</source>
-        <target state="new">The required value in 'dotnet.config' is already set.</target>
+        <target state="translated">'dotnet.config'의 필수 값이 이미 설정되어 있습니다.</target>
         <note>{Locked="dotnet.config"}</note>
       </trans-unit>
       <trans-unit id="PostAction_DotnetConfig_Error_ArgumentNotConfigured">
