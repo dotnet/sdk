@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using NuGet.Frameworks;
 using NuGet.RuntimeModel;
 
@@ -27,7 +25,7 @@ namespace Microsoft.NET.Build.Tasks
             return separator == '\\' || separator == '/';
         }
 
-        public static string GetLockFileLanguageName(string projectLanguage)
+        public static string? GetLockFileLanguageName(string? projectLanguage)
         {
             switch (projectLanguage)
             {
@@ -37,7 +35,7 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        public static NuGetFramework ParseFrameworkName(string frameworkName)
+        public static NuGetFramework? ParseFrameworkName(string? frameworkName)
         {
             return frameworkName == null ? null : NuGetFramework.Parse(frameworkName);
         }
@@ -75,7 +73,7 @@ namespace Microsoft.NET.Build.Tasks
             return IsAnalyzer() && FileMatchesProjectLanguage();
         }
 
-        public static string GetBestMatchingRid(RuntimeGraph runtimeGraph, string runtimeIdentifier,
+        public static string? GetBestMatchingRid(RuntimeGraph runtimeGraph, string? runtimeIdentifier,
             IEnumerable<string> availableRuntimeIdentifiers, out bool wasInGraph)
         {
             return GetBestMatchingRidWithExclusion(runtimeGraph, runtimeIdentifier,
@@ -83,16 +81,22 @@ namespace Microsoft.NET.Build.Tasks
                 availableRuntimeIdentifiers, out wasInGraph);
         }
 
-        public static string GetBestMatchingRidWithExclusion(RuntimeGraph runtimeGraph, string runtimeIdentifier,
-            IEnumerable<string> runtimeIdentifiersToExclude,
+        public static string? GetBestMatchingRidWithExclusion(RuntimeGraph runtimeGraph, string? runtimeIdentifier,
+            IEnumerable<string>? runtimeIdentifiersToExclude,
             IEnumerable<string> availableRuntimeIdentifiers, out bool wasInGraph)
         {
+            if (string.IsNullOrEmpty(runtimeIdentifier))
+            {
+                wasInGraph = false;
+                return null;
+            }
+
             wasInGraph = runtimeGraph.Runtimes.ContainsKey(runtimeIdentifier);
 
-            string bestMatch = null;
+            string? bestMatch = null;
 
             HashSet<string> availableRids = new(availableRuntimeIdentifiers, StringComparer.Ordinal);
-            HashSet<string> excludedRids = runtimeIdentifiersToExclude switch { null => null, _ => new HashSet<string>(runtimeIdentifiersToExclude, StringComparer.Ordinal) };
+            HashSet<string>? excludedRids = runtimeIdentifiersToExclude switch { null => null, _ => new HashSet<string>(runtimeIdentifiersToExclude, StringComparer.Ordinal) };
             foreach (var candidateRuntimeIdentifier in runtimeGraph.ExpandRuntime(runtimeIdentifier))
             {
                 if (bestMatch == null && availableRids.Contains(candidateRuntimeIdentifier))
