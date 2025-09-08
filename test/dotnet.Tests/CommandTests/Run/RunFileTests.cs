@@ -1497,6 +1497,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         new DirectoryInfo(publishDir).Sub("Program")
             .Should().Exist()
             .And.NotHaveFilesMatching("*.deps.json", SearchOption.TopDirectoryOnly); // no deps.json file for AOT-published app
+
+        new RunExeCommand(Log, Path.Join(publishDir, "Program", $"Program{Constants.ExeSuffix}"))
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                Hello from Program
+                Release config
+                """);
     }
 
     [Fact]
@@ -1682,6 +1690,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programFile, """
             #:property PackAsTool=true
             Console.WriteLine($"Hello; EntryPointFilePath set? {AppContext.GetData("EntryPointFilePath") is string}");
+            #if !DEBUG
+            Console.WriteLine("Release config");
+            #endif
             """);
 
         // Run unpacked.
@@ -1712,7 +1723,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOutContaining("Hello; EntryPointFilePath set? False");
+            .And.HaveStdOutContaining("""
+                Hello; EntryPointFilePath set? False
+                Release config
+                """);
     }
 
     [Fact]
