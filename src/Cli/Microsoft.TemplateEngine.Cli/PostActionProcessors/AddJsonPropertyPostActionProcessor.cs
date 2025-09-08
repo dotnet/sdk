@@ -19,6 +19,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
         private const string ParentPropertyPathArgument = "parentPropertyPath";
         private const string NewJsonPropertyNameArgument = "newJsonPropertyName";
         private const string NewJsonPropertyValueArgument = "newJsonPropertyValue";
+        private const string DetectRepoRootForFileCreation = "detectRepositoryRootForFileCreation";
 
         private static readonly JsonSerializerOptions SerializerOptions = new()
         {
@@ -65,7 +66,13 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                     return false;
                 }
 
-                string newJsonFilePath = Path.Combine(outputBasePath, jsonFileName);
+                if (!bool.TryParse(action.Args.GetValueOrDefault(DetectRepoRootForFileCreation, "false"), out bool detectRepoRoot))
+                {
+                    Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotBoolean, DetectRepoRootForFileCreation));
+                    return false;
+                }
+
+                string newJsonFilePath = Path.Combine(detectRepoRoot ? GetRootDirectory(environment.Host.FileSystem, outputBasePath) : outputBasePath, jsonFileName);
                 environment.Host.FileSystem.WriteAllText(newJsonFilePath, "{}");
                 jsonFiles = new List<string> { newJsonFilePath };
             }
@@ -199,6 +206,37 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             while (directory != null && numberOfUpLevels <= 1);
 
             return Array.Empty<string>();
+        }
+
+        private static string GetRootDirectory(IPhysicalFileSystem fileSystem, string outputBasePath)
+        {
+            string? currentDirectory = outputBasePath;
+            string? directoryWithSln = null;
+            while (currentDirectory is not null)
+            {
+                if (fileSystem.FileExists(Path.Combine(currentDirectory, "global.json")) ||
+                    fileSystem.FileExists(Path.Combine(currentDirectory, ".git")) ||
+                    fileSystem.DirectoryExists(Path.Combine(currentDirectory, ".git")))
+                {
+                    return currentDirectory;
+                }
+
+                // DirectoryExists here should always be true in practice, but for the way tests are mocking the file system, it's not.
+                // The check was added to prevent test failures similar to:
+                // System.IO.DirectoryNotFoundException : Could not find a part of the path '/Users/runner/work/1/s/artifacts/bin/Microsoft.TemplateEngine.Cli.UnitTests/Release/sandbox'.
+                // We get to this exception when doing `EnumerateFiles` on a directory that was virtually created in memory (not really available on disk).
+                // EnumerateFiles tries to access the physical file system, which then fails.
+                if (fileSystem.DirectoryExists(currentDirectory) &&
+                    (fileSystem.EnumerateFiles(currentDirectory, "*.sln", SearchOption.TopDirectoryOnly).Any() ||
+                    fileSystem.EnumerateFiles(currentDirectory, "*.slnx", SearchOption.TopDirectoryOnly).Any()))
+                {
+                    directoryWithSln = currentDirectory;
+                }
+
+                currentDirectory = Directory.GetParent(currentDirectory)?.FullName;
+            }
+
+            return directoryWithSln ?? outputBasePath;
         }
 
         private class JsonContentParameters
