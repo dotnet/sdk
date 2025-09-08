@@ -68,10 +68,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             };
 
             task.Execute().Should().BeTrue();
-
-            task.PackagesToDownload.Length.Should().Be(1);
-
-            task.RuntimeFrameworks.Length.Should().Be(1);
+            task.PackagesToDownload.Should().NotBeNull().And.HaveCount(1);
+            task.RuntimeFrameworks.Should().NotBeNull().And.HaveCount(1);
             task.RuntimeFrameworks[0].ItemSpec.Should().Be("Microsoft.AspNetCore.App");
             task.RuntimeFrameworks[0].GetMetadata(MetadataKeys.Version).Should().Be("1.9.5");
         }
@@ -107,9 +105,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             task.Execute().Should().BeTrue();
 
-            task.PackagesToDownload.Length.Should().Be(1);
-
-            task.RuntimeFrameworks.Length.Should().Be(1);
+            task.PackagesToDownload.Should().NotBeNull().And.HaveCount(1);
+            task.RuntimeFrameworks.Should().NotBeNull().And.HaveCount(1);
             task.RuntimeFrameworks[0].ItemSpec.Should().Be("Microsoft.AspNetCore.App");
             task.RuntimeFrameworks[0].GetMetadata(MetadataKeys.Version).Should().Be("1.9.5");
         }
@@ -195,12 +192,12 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             task.Execute().Should().BeTrue();
 
-            task.PackagesToDownload.Length.Should().Be(1);
+            task.PackagesToDownload.Should().NotBeNull().And.HaveCount(1);
 
             task.RuntimeFrameworks.Should().BeNullOrEmpty(
                 "Should not contain RuntimePackAlwaysCopyLocal framework, or it will be put into runtimeconfig.json");
 
-            task.TargetingPacks.Length.Should().Be(1);
+            task.TargetingPacks.Should().NotBeNull().And.HaveCount(1);
             task.TargetingPacks[0].ItemSpec.Should().Be("Microsoft.Windows.SDK.NET.Ref");
             task.TargetingPacks[0].GetMetadata(MetadataKeys.NuGetPackageId).Should()
                 .Be("Microsoft.Windows.SDK.NET.Ref");
@@ -211,7 +208,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Be("Microsoft.Windows.SDK.NET.Ref");
             task.TargetingPacks[0].GetMetadata(MetadataKeys.RuntimeIdentifier).Should().Be("");
 
-            task.RuntimePacks.Length.Should().Be(1);
+            task.RuntimePacks.Should().NotBeNull().And.HaveCount(1);
             task.RuntimePacks[0].ItemSpec.Should().Be("Microsoft.Windows.SDK.NET.Ref");
             task.RuntimePacks[0].GetMetadata(MetadataKeys.FrameworkName).Should().Be("Microsoft.Windows.SDK.NET.Ref");
             task.RuntimePacks[0].GetMetadata(MetadataKeys.NuGetPackageVersion).Should().Be("10.0.18362.1-preview");
@@ -257,7 +254,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             {
                 task.Execute().Should().BeTrue();
 
-                task.PackagesToDownload.Length.Should().Be(3);
+                task.PackagesToDownload.Should().NotBeNull().And.HaveCount(3);
                 task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.Windows.SDK.NET.Ref");
                 task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Ref");
                 task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.win-x64");
@@ -310,13 +307,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             task.Execute().Should().BeTrue();
 
-            task.TargetingPacks.Length.Should().Be(2);
+            task.TargetingPacks.Should().NotBeNull().And.HaveCount(2);
             task.TargetingPacks.Should().Contain(p =>
                 p.GetMetadata(MetadataKeys.NuGetPackageId) == "Microsoft.Windows.SDK.NET.Ref");
             task.TargetingPacks.Should()
                 .Contain(p => p.GetMetadata(MetadataKeys.NuGetPackageId) == "Microsoft.NETCore.App.Ref");
 
-            task.RuntimePacks.Length.Should().Be(1);
+            task.RuntimePacks.Should().NotBeNull().And.HaveCount(1);
             task.RuntimePacks[0].ItemSpec.Should().Be("Microsoft.Windows.SDK.NET.Ref",
                 "it should not resolve runtime pack for Microsoft.NETCore.App");
         }

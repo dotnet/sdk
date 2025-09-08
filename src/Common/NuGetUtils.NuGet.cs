@@ -73,7 +73,7 @@ namespace Microsoft.NET.Build.Tasks
             return IsAnalyzer() && FileMatchesProjectLanguage();
         }
 
-        public static string? GetBestMatchingRid(RuntimeGraph runtimeGraph, string? runtimeIdentifier,
+        public static string? GetBestMatchingRid(RuntimeGraph runtimeGraph, string runtimeIdentifier,
             IEnumerable<string> availableRuntimeIdentifiers, out bool wasInGraph)
         {
             return GetBestMatchingRidWithExclusion(runtimeGraph, runtimeIdentifier,
@@ -81,16 +81,10 @@ namespace Microsoft.NET.Build.Tasks
                 availableRuntimeIdentifiers, out wasInGraph);
         }
 
-        public static string? GetBestMatchingRidWithExclusion(RuntimeGraph runtimeGraph, string? runtimeIdentifier,
+        public static string? GetBestMatchingRidWithExclusion(RuntimeGraph runtimeGraph, string runtimeIdentifier,
             IEnumerable<string>? runtimeIdentifiersToExclude,
             IEnumerable<string> availableRuntimeIdentifiers, out bool wasInGraph)
         {
-            if (string.IsNullOrEmpty(runtimeIdentifier))
-            {
-                wasInGraph = false;
-                return null;
-            }
-
             wasInGraph = runtimeGraph.Runtimes.ContainsKey(runtimeIdentifier);
 
             string? bestMatch = null;
