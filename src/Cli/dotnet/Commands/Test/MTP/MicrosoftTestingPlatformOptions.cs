@@ -7,7 +7,7 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal static class TestingPlatformOptions
+internal static class MicrosoftTestingPlatformOptions
 {
     public static readonly Option<string> ProjectOption = new("--project")
     {
@@ -109,11 +109,6 @@ internal static class TestingPlatformOptions
     public static readonly Option<string> ListTestsOption = new("--list-tests")
     {
         Description = CliCommandStrings.CmdListTestsDescription,
-        Arity = ArgumentArity.Zero
-    };
-
-    public static readonly Option<string> HelpOption = new("--help", ["-h", "-?"])
-    {
         Arity = ArgumentArity.Zero
     };
 }
