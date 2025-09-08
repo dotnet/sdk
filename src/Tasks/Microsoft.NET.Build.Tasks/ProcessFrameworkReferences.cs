@@ -240,6 +240,10 @@ namespace Microsoft.NET.Build.Tasks
                     }
                     Log.LogMessage(MessageImportance.Low, $"Selected {selectedPack.Name} with RIDs '{selectedPack.RuntimePackRuntimeIdentifiers}'");
                 }
+                else
+                {
+                    Log.LogMessage(MessageImportance.Low, $"No runtime pack found for {knownFrameworkReference.Name}.");
+                }
 
                 TaskItem targetingPack = new(knownFrameworkReference.Name);
                 targetingPack.SetMetadata(MetadataKeys.NuGetPackageId, knownFrameworkReference.TargetingPackName);
@@ -466,7 +470,7 @@ namespace Microsoft.NET.Build.Tasks
                         Log.LogError(Strings.AotUnsupportedHostRuntimeIdentifier, NETCoreSdkRuntimeIdentifier);
                         return;
                     case ToolPackSupport.UnsupportedForTargetRuntimeIdentifier when EffectiveRuntimeIdentifier != null:
-                        Log.LogError(Strings.AotUnsupportedTargetRuntimeIdentifier, EffectiveRuntimeIdentifier ?? "<unspecified runtime identifier>");
+                        Log.LogError(Strings.AotUnsupportedTargetRuntimeIdentifier, EffectiveRuntimeIdentifier!);
                         return;
                     case ToolPackSupport.Supported:
                         break;
@@ -488,7 +492,7 @@ namespace Microsoft.NET.Build.Tasks
                     else if (IsAotCompatible || EnableAotAnalyzer)
                     {
                         if (!SilenceIsAotCompatibleUnsupportedWarning)
-                            Log.LogWarning(Strings.IsAotCompatibleUnsupported, MinNonEolTargetFrameworkForAot ?? "<missing target framework version>");
+                            Log.LogWarning(Strings.IsAotCompatibleUnsupported, MinNonEolTargetFrameworkForAot!);
                     }
                     else if (PublishTrimmed)
                     {
@@ -497,14 +501,14 @@ namespace Microsoft.NET.Build.Tasks
                     else if (IsTrimmable || EnableTrimAnalyzer)
                     {
                         if (!SilenceIsTrimmableUnsupportedWarning)
-                            Log.LogWarning(Strings.IsTrimmableUnsupported, MinNonEolTargetFrameworkForTrimming ?? "<missing target framework version>");
+                            Log.LogWarning(Strings.IsTrimmableUnsupported, MinNonEolTargetFrameworkForTrimming!);
                     }
                     else if (EnableSingleFileAnalyzer)
                     {
                         // There's no IsSingleFileCompatible setting. EnableSingleFileAnalyzer is the
                         // recommended way to ensure single-file compatibility for libraries.
                         if (!SilenceEnableSingleFileAnalyzerUnsupportedWarning)
-                            Log.LogWarning(Strings.EnableSingleFileAnalyzerUnsupported, MinNonEolTargetFrameworkForSingleFile ?? "<missing target framework version>");
+                            Log.LogWarning(Strings.EnableSingleFileAnalyzerUnsupported, MinNonEolTargetFrameworkForSingleFile!);
                     }
                     else
                     {
