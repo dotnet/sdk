@@ -311,23 +311,10 @@ internal class ReleaseManifest : IDisposable
         // Get all products
         var allProducts = index.ToList();
 
-        // LTS versions typically have even minor versions (e.g., 6.0, 8.0, 10.0)
-        // STS versions typically have odd minor versions (e.g., 7.0, 9.0, 11.0)
-        var filteredProducts = allProducts.Where(p =>
-        {
-            var productParts = p.ProductVersion.Split('.');
-            if (productParts.Length > 1 && int.TryParse(productParts[1], out var minorVersion))
-            {
-                // For LTS, we want even minor versions (0, 2, 4, etc.)
-                // For STS, we want odd minor versions (1, 3, 5, etc.)
-                bool isEvenMinor = minorVersion % 2 == 0;
-                return isLts ? isEvenMinor : !isEvenMinor;
-            }
-            return false;
-        }).ToList();
-
-        // Order by major and minor version (descending) to get the most recent first
-        filteredProducts = filteredProducts
+        // Use ReleaseType from manifest (dotnetreleases library)
+        var targetType = isLts ? ReleaseType.LTS : ReleaseType.STS;
+        var filteredProducts = allProducts
+            .Where(p => p.ReleaseType == targetType)
             .OrderByDescending(p =>
             {
                 var productParts = p.ProductVersion.Split('.');
