@@ -932,19 +932,25 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     var firstTargetFrameworkVersionToSupportAotAnalyzer = NormalizeVersion(new Version(FirstTargetFrameworkVersionToSupportAotAnalyzer));
                     if ((IsAotCompatible || EnableAotAnalyzer) && normalizedTargetFrameworkVersion < firstTargetFrameworkVersionToSupportAotAnalyzer)
+                    {
                         return ToolPackSupport.UnsupportedForTargetFramework;
+                    }
                 }
                 if (FirstTargetFrameworkVersionToSupportSingleFileAnalyzer != null)
                 {
                     var firstTargetFrameworkVersionToSupportSingleFileAnalyzer = NormalizeVersion(new Version(FirstTargetFrameworkVersionToSupportSingleFileAnalyzer));
                     if (EnableSingleFileAnalyzer && normalizedTargetFrameworkVersion < firstTargetFrameworkVersionToSupportSingleFileAnalyzer)
+                    {
                         return ToolPackSupport.UnsupportedForTargetFramework;
+                    }
                 }
                 if (FirstTargetFrameworkVersionToSupportTrimAnalyzer != null)
                 {
                     var firstTargetFrameworkVersionToSupportTrimAnalyzer = NormalizeVersion(new Version(FirstTargetFrameworkVersionToSupportTrimAnalyzer));
                     if ((IsTrimmable || EnableTrimAnalyzer) && normalizedTargetFrameworkVersion < firstTargetFrameworkVersionToSupportTrimAnalyzer)
+                    {
                         return ToolPackSupport.UnsupportedForTargetFramework;
+                    }
                 }
             }
 
