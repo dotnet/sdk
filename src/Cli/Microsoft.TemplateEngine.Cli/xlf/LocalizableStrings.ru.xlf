@@ -832,22 +832,22 @@ The header is followed by the list of parameters and their errors (might be seve
       </trans-unit>
       <trans-unit id="PostAction_CreateDotnetConfig_CreatedNewSection">
         <source>Created new section in 'dotnet.config' file</source>
-        <target state="new">Created new section in 'dotnet.config' file</target>
+        <target state="translated">Создан новый раздел в файле "dotnet.config"</target>
         <note>{Locked="dotnet.config"}</note>
       </trans-unit>
       <trans-unit id="PostAction_CreateDotnetConfig_ManuallyUpdate">
         <source>Updating existing values in 'dotnet.config' is not yet supported. Please, manually update 'dotnet.config' to have '{0}' under section '{1}'.</source>
-        <target state="new">Updating existing values in 'dotnet.config' is not yet supported. Please, manually update 'dotnet.config' to have '{0}' under section '{1}'.</target>
+        <target state="translated">Изменение существующих значений в "dotnet.config" пока не поддерживается. Отредактируйте "dotnet.config" вручную, чтобы значение "{0}" находилось в разделе "{1}".</target>
         <note>{Locked="dotnet.config"}</note>
       </trans-unit>
       <trans-unit id="PostAction_CreateDotnetConfig_Succeeded">
         <source>Successfully created 'dotnet.config' file.</source>
-        <target state="new">Successfully created 'dotnet.config' file.</target>
+        <target state="translated">Файл "dotnet.config" успешно создан.</target>
         <note>{Locked="dotnet.config"}</note>
       </trans-unit>
       <trans-unit id="PostAction_CreateDotnetConfig_ValueAlreadyExist">
         <source>The required value in 'dotnet.config' is already set.</source>
-        <target state="new">The required value in 'dotnet.config' is already set.</target>
+        <target state="translated">Обязательное значение в "dotnet.config" уже установлено.</target>
         <note>{Locked="dotnet.config"}</note>
       </trans-unit>
       <trans-unit id="PostAction_DotnetConfig_Error_ArgumentNotConfigured">
