@@ -218,6 +218,8 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                     fileSystem.FileExists(Path.Combine(currentDirectory, ".git")) ||
                     fileSystem.DirectoryExists(Path.Combine(currentDirectory, ".git")))
                 {
+                    // If we found global.json or .git, we immediately return the directory as the repo root.
+                    // We won't go up any further.
                     return currentDirectory;
                 }
 
@@ -236,6 +238,10 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 currentDirectory = Directory.GetParent(currentDirectory)?.FullName;
             }
 
+            // If we reach here, that means we didn't find .git or global.json.
+            // So, we return the directory where we found a .sln/.slnx file, if any.
+            // Note that when we keep track of directoryWithSln, we keep updating it from sln/slnx from parent directories, if found.
+            // This means that if there are multiple .sln/.slnx files in the parent directories, we will return the top-most one.
             return directoryWithSln ?? outputBasePath;
         }
 
