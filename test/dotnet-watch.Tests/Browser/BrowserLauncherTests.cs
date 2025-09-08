@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class BrowserConnectorTests
+public class BrowserLauncherTests
 {
     [Theory]
     [InlineData(null, "https://localhost:1234", "https://localhost:1234")]
@@ -18,6 +18,6 @@ public class BrowserConnectorTests
     [InlineData("https://localhost:1000/x/y?z=u", "https://localhost:1234/a?b=c", "https://localhost:1000/x/y?z=u")]
     public void GetLaunchUrl(string? profileLaunchUrl, string outputLaunchUrl, string expected)
     {
-        Assert.Equal(expected, BrowserConnector.GetLaunchUrl(profileLaunchUrl, outputLaunchUrl));
+        Assert.Equal(expected, BrowserLauncher.GetLaunchUrl(profileLaunchUrl, outputLaunchUrl));
     }
 }
