@@ -4,12 +4,17 @@
 
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public class StaticWebAssetEndpointSelector : IEquatable<StaticWebAssetEndpointSelector>, IComparable<StaticWebAssetEndpointSelector>
 {
+    private static readonly JsonTypeInfo<StaticWebAssetEndpointSelector[]> _jsonTypeInfo =
+        StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetEndpointSelectorArray;
+
     public string Name { get; set; }
 
     public string Value { get; set; }
@@ -18,7 +23,7 @@ public class StaticWebAssetEndpointSelector : IEquatable<StaticWebAssetEndpointS
 
     public static StaticWebAssetEndpointSelector[] FromMetadataValue(string value)
     {
-        return string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize<StaticWebAssetEndpointSelector[]>(value);
+        return string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize(value, _jsonTypeInfo);
     }
 
     public static string ToMetadataValue(StaticWebAssetEndpointSelector[] selectors)

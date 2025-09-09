@@ -1,7 +1,9 @@
 {
   "profiles": {
     "dotnet": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "run -e MyCoolEnvironmentVariableKey=OverriddenEnvironmentVariableValue",
+      "workingDirectory": "C:\\sdk5\\artifacts\\tmp\\Debug\\EnvOptionLaun---86C8BD0D"
     }
   }
 }
