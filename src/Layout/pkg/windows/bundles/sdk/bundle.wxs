@@ -159,23 +159,22 @@
     <Chain DisableSystemRestore="yes" ParallelCache="yes">
 
       <!--
-        The finalizer is not an installation package. It's detected based on the bundle's installation state (WixBundleInstalled).
-        
-        User action        | Install | Repair  | Modify  | Uninstall | Uninstall (Upgrade)
-        WixBundleInstalled | FALSE   | TRUE    | TRUE    | TRUE      | TRUE 
-        WixBundleAction    | 6       | 8       | 7       | 4         | 4
-        Finalizer (Plan)   | None    | Execute | Execute | Execute   | Execute
-        
-        Setting an InstallCondition will cause Burn to remove the package if it evaluates to FALSE and
-        the bundle is being installed, repaired, or modified. This breaks upgrades. We cannot use
-        WixBundleAction in the DetectCondition because it's not finalized until the planning phase completes (after
-        the detect phase). See https://github.com/orgs/wixtoolset/discussions/9017 for more detail.
-        
-        The finalizer also takes the bundle action as a parameter to ensure it no-ops, but logs the action. -->
+        The finalizer is not an installation package (ExePackage@Bundle="no"). For an install, the finalizer has no
+        effect, but must be detected as absent. When an install is cancelled, the engine re-eavaluates package state. If
+        a package is detected as present the resume mode is set to BURN_RESUME_MODE_ARP and causes the bundle registration
+        to remain. When the bundle is removed, it finalizer must be detected as installed to ensure it executes.
+
+        Setting the detect condition to WixBundleInstalled causes the finalzier state to track the bundle state. This causes
+        the finalizer to run during install, repair and uninstall actions. We can't use WixBundleAction in 
+        ExePackage@DetectCondition because it's value is only final after planning completes after the detect phase.
+        See https://github.com/orgs/wixtoolset/discussions/9017 for more detail.
+
+        Instead, we pass WixBundleAction to the finalizer as parameter when the package is applied. This allows the finalizer
+        to no-op during an install and repair, but clean up when the bundle is being remvoed. -->
       <ExePackage SourceFile="$(FinalizerExeSourceFile)"
                   Bundle="no"
                   Cache="keep"
-                  DetectCondition="1=1"
+                  DetectCondition="WixBundleInstalled"
                   Id="Finalizer"
                   InstallArguments="&quot;[WixBundleLog_Finalizer]&quot; $(Version) $(TargetArchitecture) [WixBundleAction]"
                   UninstallArguments="&quot;[WixBundleLog_Finalizer]&quot; $(Version) $(TargetArchitecture) [WixBundleAction]"

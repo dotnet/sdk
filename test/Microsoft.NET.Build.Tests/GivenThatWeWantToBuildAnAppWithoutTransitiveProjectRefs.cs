@@ -13,19 +13,19 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.15")]
         public void It_builds_the_project_successfully_when_RAR_finds_all_references()
         {
             BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new[] { "/p:DisableTransitiveProjectReferences=true" });
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.15")]
         public void It_builds_the_project_successfully_with_static_graph_and_isolation()
         {
             BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new[] { "/graph" });
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.15")]
         public void It_cleans_the_project_successfully_with_static_graph_and_isolation()
         {
             var (testAsset, outputDirectories) = BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new[] { "/graph", "/bl:build-{}.binlog" });
@@ -79,7 +79,6 @@ namespace Microsoft.NET.Build.Tests
                 "1.exe",
                 "1.pdb",
                 "1.exe.config",
-                "System.Diagnostics.DiagnosticSource.dll"
             };
 
             foreach (var targetFramework in targetFrameworks)
@@ -180,6 +179,7 @@ namespace Microsoft.NET.Build.Tests
             )
         {
             var buildCommand = new BuildCommand(testAsset, "1");
+            buildCommand.WithWorkingDirectory(testAsset.TestRoot);
             var buildResult = buildCommand.ExecuteWithoutRestore(msbuildArguments);
 
             var outputDirectories = targetFrameworks.ToImmutableDictionary(tf => tf, tf => buildCommand.GetOutputDirectory(tf));

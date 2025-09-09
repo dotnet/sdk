@@ -3551,4 +3551,91 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Pass()
             .And.HaveStdOut($"EntryPointFilePath: {filePath}");
     }
+
+    [Fact]
+    public void MSBuildGet_Simple()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        new DotnetCommand(Log, "build", "Program.cs", "-getProperty:TargetFramework")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(ToolsetInfo.CurrentTargetFramework);
+    }
+
+    /// <summary>
+    /// Check that <c>-get</c> commands work the same in project-based and file-based apps.
+    /// </summary>
+    [Theory]
+    [InlineData(true, "build", "--getProperty:TargetFramework;Configuration")]
+    [InlineData(true, "build", "--getItem:MyItem", "--getProperty:MyProperty")]
+    [InlineData(true, "build", "--getItem:MyItem", "--getProperty:MyProperty", "-t:MyTarget")]
+    [InlineData(true, "build", "--getItem:MyItem", "--getProperty:MyProperty", "--getTargetResult:MyTarget")]
+    [InlineData(true, "build", "/getProperty:TargetFramework")]
+    [InlineData(true, "build", "/getProperty:TargetFramework", "-p:LangVersion=wrong")] // evaluated only, so no failure
+    [InlineData(false, "build", "/getProperty:TargetFramework", "-t:Build", "-p:LangVersion=wrong")] // fails with build error but still outputs info
+    [InlineData(true, "build", "-getProperty:Configuration", "-getResultOutputFile:out.txt")]
+    [InlineData(true, "build", "-getProperty:OutputType,Configuration", "-getResultOutputFile:out1.txt", "-getResultOutputFile:out2.txt")]
+    [InlineData(true, "run", "-getProperty:Configuration")] // not supported, the arg is passed through to the app
+    [InlineData(true, "restore", "-getProperty:Configuration")]
+    [InlineData(true, "publish", "-getProperty:OutputType", "-p:PublishAot=false")]
+    [InlineData(true, "pack", "-getProperty:OutputType", "-p:PublishAot=false")]
+    [InlineData(true, "clean", "-getProperty:Configuration")]
+    public void MSBuildGet_Consistent(bool success, string subcommand, params string[] args)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+                <Target Name="MyTarget" Returns="MyTargetReturn">
+                    <ItemGroup>
+                        <MyItem Include="item.txt" />
+                        <MyTargetReturn Include="return.txt" />
+                    </ItemGroup>
+                    <PropertyGroup>
+                        <MyProperty>MyValue</MyProperty>
+                    </PropertyGroup>
+                </Target>
+            </Project>
+            """);
+
+        var fileBasedResult = new DotnetCommand(Log, [subcommand, "Program.cs", .. args])
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute();
+
+        var fileBasedFiles = ReadFiles();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.csproj"), s_consoleProject);
+
+        var projectBasedResult = new DotnetCommand(Log, [subcommand, .. args])
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute();
+
+        var projectBasedFiles = ReadFiles();
+
+        fileBasedResult.StdOut.Should().Be(projectBasedResult.StdOut);
+        fileBasedResult.StdErr.Should().Be(projectBasedResult.StdErr);
+        fileBasedResult.ExitCode.Should().Be(projectBasedResult.ExitCode).And.Be(success ? 0 : 1);
+        fileBasedFiles.Should().Equal(projectBasedFiles);
+
+        Dictionary<string, string> ReadFiles()
+        {
+            var result = new DirectoryInfo(testInstance.Path)
+                .EnumerateFiles()
+                .ExceptBy(["Program.cs", "Directory.Build.props", "Program.csproj"], f => f.Name)
+                .ToDictionary(f => f.Name, f => File.ReadAllText(f.FullName));
+
+            foreach (var (file, text) in result)
+            {
+                Log.WriteLine($"File '{file}':");
+                Log.WriteLine(text);
+                File.Delete(Path.Join(testInstance.Path, file));
+            }
+
+            return result;
+        }
+    }
 }

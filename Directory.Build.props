@@ -49,7 +49,8 @@
     <NetCurrent>net10.0</NetCurrent>
     <NetToolMinimum Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetCurrent)</NetToolMinimum>
     <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
-    <VisualStudioServiceTargetFramework>net8.0</VisualStudioServiceTargetFramework>
+    <VisualStudioServiceTargetFramework>net9.0</VisualStudioServiceTargetFramework>
+    <VisualStudioTargetFramework>net472</VisualStudioTargetFramework>
 
     <!-- We used to have scenarios where the MSBuild host (VSMac) had an older .NET, but don't any more. -->
     <ResolverTargetFramework>$(SdkTargetFramework)</ResolverTargetFramework>
@@ -108,6 +109,9 @@
 
     <HostFxrVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</HostFxrVersion>
     <SharedHostVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedHostVersion>
+
+    <MicrosoftCodeAnalysisVersionForNetAnalyzers Condition="'$(DotNetBuildSourceOnly)' != 'true'">3.11.0</MicrosoftCodeAnalysisVersionForNetAnalyzers>
+    <MicrosoftCodeAnalysisVersionForNetAnalyzers Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(MicrosoftCodeAnalysisVersion)</MicrosoftCodeAnalysisVersionForNetAnalyzers>
   </PropertyGroup>
 
   <Import Project="build/GenerateResxSource.targets" />
