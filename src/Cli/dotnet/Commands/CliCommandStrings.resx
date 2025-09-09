@@ -2673,4 +2673,10 @@ Proceed?</value>
     <comment>{Locked="RunCommand"}{Locked="RunArguments"}
 {2} is the exception that occurred.</comment>
   </data>
+  <data name="UnexpectedTestSessionEnd" xml:space="preserve">
+    <value>A test session end event was received without a corresponding test session start.</value>
+  </data>
+  <data name="MissingTestSessionEnd" xml:space="preserve">
+    <value>A test session start event was received without a corresponding test session end.</value>
+  </data>
 </root>

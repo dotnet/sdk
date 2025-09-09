@@ -13,6 +13,10 @@ internal sealed class TestApplicationHandler
     private readonly TerminalTestReporter _output;
     private readonly TestModule _module;
     private readonly TestOptions _options;
+    private readonly Lock _lock = new();
+
+    internal int TestSessionStartCount { get; private set; }
+    internal int TestSessionEndCount { get; private set; }
 
     private (string TargetFramework, string Architecture, string ExecutionId)? _handshakeInfo;
 
@@ -177,14 +181,26 @@ internal sealed class TestApplicationHandler
 
     internal void OnSessionEventReceived(TestSessionEvent sessionEvent)
     {
-        LogSessionEvent(sessionEvent);
+        lock (_lock)
+        {
+            LogSessionEvent(sessionEvent);
 
-        // TODO: If _handshakeInfo is null, we should error.
-        // We shouldn't be getting any session event messages without a previous handshake.
+            // TODO: If _handshakeInfo is null, we should error.
+            // We shouldn't be getting any session event messages without a previous handshake.
 
-        // TODO: We shouldn't only log here!
-        // We should use it in a more meaningful way. e.g, ensure we received session start/end events.
-        Logger.LogTrace($"TestSessionEvent: {sessionEvent.SessionType}, {sessionEvent.SessionUid}, {sessionEvent.ExecutionId}");
+            if (sessionEvent.SessionType == SessionEventTypes.TestSessionStart)
+            {
+                TestSessionStartCount++;
+            }
+            else if (sessionEvent.SessionType == SessionEventTypes.TestSessionEnd)
+            {
+                TestSessionEndCount++;
+                if (TestSessionEndCount > TestSessionStartCount)
+                {
+                    throw new InvalidOperationException(CliCommandStrings.UnexpectedTestSessionEnd);
+                }
+            }
+        }
     }
 
     internal void OnTestProcessExited(int exitCode, List<string> outputData, List<string> errorData)

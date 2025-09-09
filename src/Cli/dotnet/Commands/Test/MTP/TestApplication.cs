@@ -50,6 +50,11 @@ internal sealed class TestApplication(
 
         WaitOnTestApplicationPipeConnectionLoop();
 
+        if (_handler.TestSessionStartCount != _handler.TestSessionEndCount)
+        {
+            throw new InvalidOperationException(CliCommandStrings.MissingTestSessionEnd);
+        }
+
         return testProcessExitCode;
     }
 
