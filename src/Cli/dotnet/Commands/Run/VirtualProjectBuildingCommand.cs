@@ -109,7 +109,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         Debug.Assert(Path.IsPathFullyQualified(entryPointFileFullPath));
 
         EntryPointFileFullPath = entryPointFileFullPath;
-        MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(new Dictionary<string, string>(2, StringComparer.OrdinalIgnoreCase)
+        MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             // See https://github.com/dotnet/msbuild/blob/main/documentation/specs/build-nonexistent-projects-by-default.md.
             { "_BuildNonexistentProjectsByDefault", bool.TrueString },
@@ -319,7 +319,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 // Cache run info (to avoid re-evaluating the project instance).
                 cache.CurrentEntry.Run = RunProperties.FromProject(buildRequest.ProjectInstance);
 
-                GetCscArguments(cache, buildResult, buildRequest.ProjectInstance);
+                TryCacheCscArguments(cache, buildResult, buildRequest.ProjectInstance);
 
                 MarkBuildSuccess(cache);
             }
@@ -397,7 +397,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return null;
         }
 
-        void GetCscArguments(CacheInfo cache, BuildResult result, ProjectInstance projectInstance)
+        void TryCacheCscArguments(CacheInfo cache, BuildResult result, ProjectInstance projectInstance)
         {
             if (!MSBuildUtilities.ConvertStringToBool(projectInstance.GetPropertyValue(FileBasedProgramCanSkipMSBuild), defaultValue: true))
             {
@@ -483,7 +483,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         /// We cannot reuse auxiliary files like <c>csc.rsp</c> for example when SDK version changes.
         /// </summary>
         /// <remarks>
-        /// Only set during <see cref="NeedsToBuild"/>.
+        /// Only set during <see cref="NeedsToBuild"/> or <see cref="GetBuildLevel"/>.
         /// </remarks>
         public bool InitialCanReuseAuxiliaryFiles { get; set; } = true;
 
@@ -749,8 +749,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             {
                 Reporter.Verbose.WriteLine("We have CSC arguments but not build result file. That's unexpected.");
             }
-            else if (cache.PreviousEntry.Directives.Length != cache.CurrentEntry.Directives.Length ||
-                !cache.PreviousEntry.Directives.SequenceEqual(cache.CurrentEntry.Directives))
+            else if (!cache.PreviousEntry.Directives.SequenceEqual(cache.CurrentEntry.Directives))
             {
                 Reporter.Verbose.WriteLine("Cannot use CSC arguments from previous run because directives changed.");
             }
@@ -802,9 +801,17 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         Reporter.Verbose.WriteLine("Skipping MSBuild and using CSC only.");
 
-        // Don't reuse CSC arguments, this is the "simple" CSC-only build.
-        if (cache.PreviousEntry?.CscArguments.IsDefaultOrEmpty == false)
+        // Don't reuse CSC arguments, this is the "simple" CSC-only build (the one where we use hard-coded CSC arguments).
+        if (cache.PreviousEntry != null)
         {
+            // If we re-used CSC arguments in previous run and
+            // want to use hard-coded CSC arguments in this run,
+            // we cannot reuse the csc.rsp file.
+            if (!cache.PreviousEntry.CscArguments.IsDefaultOrEmpty)
+            {
+                cache.InitialCanReuseAuxiliaryFiles = false;
+            }
+
             cache.PreviousEntry.CscArguments = [];
             cache.PreviousEntry.BuildResultFile = null;
             cache.PreviousEntry.Run = null;

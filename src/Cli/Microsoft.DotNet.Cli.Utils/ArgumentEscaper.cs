@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
-
 namespace Microsoft.DotNet.Cli.Utils;
 
 public static class ArgumentEscaper
@@ -190,109 +188,4 @@ public static class ArgumentEscaper
 
     internal static bool ArgumentContainsWhitespace(string argument) =>
         argument.Contains(" ") || argument.Contains("\t") || argument.Contains("\n");
-
-    // Taken from Roslyn's CommandLineParser.
-    internal static ReadOnlyMemory<char> RemoveQuotesAndSlashes(ReadOnlyMemory<char> argMemory)
-    {
-        if (RemoveFastPath(argMemory) is { } m)
-        {
-            return m;
-        }
-
-        var builder = new StringBuilder();
-        var arg = argMemory.Span;
-        var i = 0;
-        while (i < arg.Length)
-        {
-            var cur = arg[i];
-            switch (cur)
-            {
-                case '\\':
-                    ProcessSlashes(builder, arg, ref i);
-                    break;
-                case '"':
-                    // Intentionally dropping quotes that don't have explicit escaping.
-                    i++;
-                    break;
-                default:
-                    builder.Append(cur);
-                    i++;
-                    break;
-            }
-        }
-
-        return builder.ToString().AsMemory();
-
-        static void ProcessSlashes(StringBuilder builder, ReadOnlySpan<char> arg, ref int i)
-        {
-            Debug.Assert(i < arg.Length);
-
-            var slashCount = 0;
-            while (i < arg.Length && arg[i] == '\\')
-            {
-                slashCount++;
-                i++;
-            }
-
-            if (i < arg.Length && arg[i] == '"')
-            {
-                // Before a quote slashes are interpretted as escape sequences for other slashes so
-                // output one for every two.
-                while (slashCount >= 2)
-                {
-                    builder.Append('\\');
-                    slashCount -= 2;
-                }
-
-                Debug.Assert(slashCount >= 0);
-
-                // If there is an odd number of slashes then the quote is escaped and hence a part
-                // of the output.  Otherwise it is a normal quote and can be ignored. 
-                if (slashCount == 1)
-                {
-                    // The quote is escaped so eat it.
-                    builder.Append('"');
-                }
-
-                i++;
-            }
-            else
-            {
-                // Slashes that aren't followed by quotes are simply slashes.
-                while (slashCount > 0)
-                {
-                    builder.Append('\\');
-                    slashCount--;
-                }
-            }
-        }
-
-        // Avoids allocation when an arg has quotes at the start and end of the string but no where else.
-        static ReadOnlyMemory<char>? RemoveFastPath(ReadOnlyMemory<char> arg)
-        {
-            int start = 0;
-            int end = arg.Length;
-            var span = arg.Span;
-
-            while (end > 0 && span[end - 1] == '"')
-            {
-                end--;
-            }
-
-            while (start < end && span[start] == '"')
-            {
-                start++;
-            }
-
-            for (int i = start; i < end; i++)
-            {
-                if (span[i] == '"')
-                {
-                    return null;
-                }
-            }
-
-            return arg.Slice(start, end - start);
-        }
-    }
 }

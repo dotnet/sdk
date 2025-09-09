@@ -2660,14 +2660,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.Csc);
     }
 
-    private void Build(TestDirectory testInstance, BuildLevel level, ReadOnlySpan<string> args = default, string expectedOutput = "Hello from Program", string programFileName = "Program.cs")
+    private void Build(TestDirectory testInstance, BuildLevel expectedLevel, ReadOnlySpan<string> args = default, string expectedOutput = "Hello from Program", string programFileName = "Program.cs")
     {
-        string prefix = level switch
+        string prefix = expectedLevel switch
         {
             BuildLevel.None => CliCommandStrings.NoBinaryLogBecauseUpToDate + Environment.NewLine,
             BuildLevel.Csc => CliCommandStrings.NoBinaryLogBecauseRunningJustCsc + Environment.NewLine,
             BuildLevel.All => string.Empty,
-            _ => throw new ArgumentOutOfRangeException(paramName: nameof(level)),
+            _ => throw new ArgumentOutOfRangeException(paramName: nameof(expectedLevel)),
         };
 
         new DotnetCommand(Log, ["run", programFileName, "-bl", .. args])
@@ -2681,11 +2681,11 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         binlogs.Select(f => f.Name)
             .Should().BeEquivalentTo(
-                level switch
+                expectedLevel switch
                 {
                     BuildLevel.None or BuildLevel.Csc => [],
                     BuildLevel.All => ["msbuild.binlog"],
-                    _ => throw new ArgumentOutOfRangeException(paramName: nameof(level), message: level.ToString()),
+                    _ => throw new ArgumentOutOfRangeException(paramName: nameof(expectedLevel), message: expectedLevel.ToString()),
                 });
 
         foreach (var binlog in binlogs)
@@ -3139,6 +3139,42 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programPath, code);
 
         Build(testInstance, canSkipMSBuild ? BuildLevel.Csc : BuildLevel.All, expectedOutput: "v2 Release");
+    }
+
+    [Fact]
+    public void CscOnly_AfterMSBuild_AuxiliaryFilesNotReused()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+
+        var code = """
+            #:property Configuration=Release
+            Console.Write("v1 ");
+            #if !DEBUG
+            Console.Write("Release");
+            #endif
+            """;
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, code);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1 Release");
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(programPath, code);
+
+        // Reusing CSC args from previous run here.
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "v2 Release");
+
+        code = code.Replace("v2", "v3");
+        code = code.Replace("#:property Configuration=Release", "");
+        File.WriteAllText(programPath, code);
+
+        // Using built-in CSC args here (cannot reuse auxiliary files like csc.rsp here).
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "v3 ");
     }
 
     private static string ToJson(string s) => JsonSerializer.Serialize(s);

@@ -50,6 +50,8 @@ internal sealed partial class CSharpCompilerCommand
     public required string ArtifactsPath { get; init; }
     public required bool CanReuseAuxiliaryFiles { get; init; }
 
+    public string BaseDirectory => field ??= Path.GetDirectoryName(EntryPointFileFullPath)!;
+
     /// <summary>
     /// Compiler command line arguments to use. If empty, default arguments are used.
     /// These should be already properly escaped.
@@ -76,7 +78,7 @@ internal sealed partial class CSharpCompilerCommand
             requestId: EntryPointFileFullPath,
             language: RequestLanguage.CSharpCompile,
             arguments: ["/noconfig", "/nologo", $"@{EscapeSingleArg(rspPath)}"],
-            workingDirectory: Environment.CurrentDirectory,
+            workingDirectory: BaseDirectory,
             tempDirectory: Path.GetTempPath(),
             keepAlive: null,
             libDirectory: null,
@@ -102,8 +104,10 @@ internal sealed partial class CSharpCompilerCommand
         var exitCode = ProcessBuildResponse(responseTask.Result, out fallbackToNormalBuild);
 
         // Copy from obj to bin.
-        if (BuildResultFile != null && FindOutputFile() is { } objFile)
+        if (BuildResultFile != null &&
+            CSharpCommandLineParser.Default.Parse(CscArguments, BaseDirectory, sdkDirectory: null) is { OutputFileName: { } outputFileName } parsedArgs)
         {
+            var objFile = parsedArgs.GetOutputFilePath(outputFileName);
             Reporter.Verbose.WriteLine($"Copying '{objFile}' to '{BuildResultFile}'.");
             File.Copy(objFile, BuildResultFile, overwrite: true);
         }
@@ -145,22 +149,6 @@ internal sealed partial class CSharpCompilerCommand
                     fallbackToNormalBuild = true;
                     return 1;
             }
-        }
-
-        // Finds /out: argument and extract the file path from it.
-        string? FindOutputFile()
-        {
-            const string outPrefix = "/out:";
-
-            foreach (var arg in CscArguments)
-            {
-                if (arg.StartsWith(outPrefix, StringComparison.OrdinalIgnoreCase) && arg.Length > outPrefix.Length)
-                {
-                    return ArgumentEscaper.RemoveQuotesAndSlashes(arg.AsMemory(outPrefix.Length..)).ToString();
-                }
-            }
-
-            return null;
         }
     }
 
