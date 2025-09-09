@@ -93,11 +93,7 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
 
     private TestApplicationActionQueue InitializeActionQueue(int degreeOfParallelism, TestOptions testOptions, BuildOptions buildOptions)
     {
-        return new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, async (TestApplication testApp) =>
-        {
-            testApp.HelpRequested += OnHelpRequested;
-            return await testApp.RunAsync();
-        });
+        return new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, OnHelpRequested);
     }
 
     private void SetupCancelKeyPressHandler()

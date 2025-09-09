@@ -18,9 +18,11 @@ internal sealed class TestApplication(
     TestModule module,
     BuildOptions buildOptions,
     TestOptions testOptions,
-    TerminalTestReporter output) : IDisposable
+    TerminalTestReporter output,
+    Action<CommandLineOptionMessages> onHelpRequested) : IDisposable
 {
     private readonly BuildOptions _buildOptions = buildOptions;
+    private readonly Action<CommandLineOptionMessages> _onHelpRequested = onHelpRequested;
     private readonly TestApplicationHandler _handler = new(output, module, testOptions);
 
     private readonly List<string> _outputData = [];
@@ -31,8 +33,6 @@ internal sealed class TestApplication(
     private Task _testAppPipeConnectionLoop;
     private readonly List<NamedPipeServer> _testAppPipeConnections = [];
     private readonly Dictionary<NamedPipeServer, HandshakeMessage> _handshakes = new();
-
-    public event EventHandler<HelpEventArgs> HelpRequested;
 
     public TestModule Module { get; } = module;
     public TestOptions TestOptions { get; } = testOptions;
@@ -312,7 +312,12 @@ internal sealed class TestApplication(
 
     private void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
     {
-        HelpRequested?.Invoke(this, new HelpEventArgs { ModulePath = commandLineOptionMessages.ModulePath, CommandLineOptions = [.. commandLineOptionMessages.CommandLineOptionMessageList.Select(message => new CommandLineOption(message.Name, message.Description, message.IsHidden, message.IsBuiltIn))] });
+        if (!TestOptions.IsHelp)
+        {
+            throw new InvalidOperationException(CliCommandStrings.UnexpectedHelpMessage);
+        }
+
+        _onHelpRequested(commandLineOptionMessages);
     }
 
     private void OnDiscoveredTestMessages(DiscoveredTestMessages discoveredTestMessages)
