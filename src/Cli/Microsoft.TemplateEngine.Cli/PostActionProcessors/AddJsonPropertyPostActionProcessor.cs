@@ -37,6 +37,43 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
 
         internal static Guid ActionProcessorId { get; } = new Guid("695A3659-EB40-4FF5-A6A6-C9C4E629FCB0");
 
+        internal static string GetRootDirectory(IPhysicalFileSystem fileSystem, string outputBasePath)
+        {
+            string? currentDirectory = outputBasePath;
+            string? directoryWithSln = null;
+            while (currentDirectory is not null)
+            {
+                if (fileSystem.FileExists(Path.Combine(currentDirectory, "global.json")) ||
+                    fileSystem.FileExists(Path.Combine(currentDirectory, ".git")) ||
+                    fileSystem.DirectoryExists(Path.Combine(currentDirectory, ".git")))
+                {
+                    // If we found global.json or .git, we immediately return the directory as the repo root.
+                    // We won't go up any further.
+                    return currentDirectory;
+                }
+
+                // DirectoryExists here should always be true in practice, but for the way tests are mocking the file system, it's not.
+                // The check was added to prevent test failures similar to:
+                // System.IO.DirectoryNotFoundException : Could not find a part of the path '/Users/runner/work/1/s/artifacts/bin/Microsoft.TemplateEngine.Cli.UnitTests/Release/sandbox'.
+                // We get to this exception when doing `EnumerateFiles` on a directory that was virtually created in memory (not really available on disk).
+                // EnumerateFiles tries to access the physical file system, which then fails.
+                if (fileSystem.DirectoryExists(currentDirectory) &&
+                    (fileSystem.EnumerateFiles(currentDirectory, "*.sln", SearchOption.TopDirectoryOnly).Any() ||
+                    fileSystem.EnumerateFiles(currentDirectory, "*.slnx", SearchOption.TopDirectoryOnly).Any()))
+                {
+                    directoryWithSln = currentDirectory;
+                }
+
+                currentDirectory = Directory.GetParent(currentDirectory)?.FullName;
+            }
+
+            // If we reach here, that means we didn't find .git or global.json.
+            // So, we return the directory where we found a .sln/.slnx file, if any.
+            // Note that when we keep track of directoryWithSln, we keep updating it from sln/slnx from parent directories, if found.
+            // This means that if there are multiple .sln/.slnx files in the parent directories, we will return the top-most one.
+            return directoryWithSln ?? outputBasePath;
+        }
+
         protected override bool ProcessInternal(
             IEngineEnvironmentSettings environment,
             IPostAction action,
@@ -206,43 +243,6 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             while (directory != null && numberOfUpLevels <= 1);
 
             return Array.Empty<string>();
-        }
-
-        private static string GetRootDirectory(IPhysicalFileSystem fileSystem, string outputBasePath)
-        {
-            string? currentDirectory = outputBasePath;
-            string? directoryWithSln = null;
-            while (currentDirectory is not null)
-            {
-                if (fileSystem.FileExists(Path.Combine(currentDirectory, "global.json")) ||
-                    fileSystem.FileExists(Path.Combine(currentDirectory, ".git")) ||
-                    fileSystem.DirectoryExists(Path.Combine(currentDirectory, ".git")))
-                {
-                    // If we found global.json or .git, we immediately return the directory as the repo root.
-                    // We won't go up any further.
-                    return currentDirectory;
-                }
-
-                // DirectoryExists here should always be true in practice, but for the way tests are mocking the file system, it's not.
-                // The check was added to prevent test failures similar to:
-                // System.IO.DirectoryNotFoundException : Could not find a part of the path '/Users/runner/work/1/s/artifacts/bin/Microsoft.TemplateEngine.Cli.UnitTests/Release/sandbox'.
-                // We get to this exception when doing `EnumerateFiles` on a directory that was virtually created in memory (not really available on disk).
-                // EnumerateFiles tries to access the physical file system, which then fails.
-                if (fileSystem.DirectoryExists(currentDirectory) &&
-                    (fileSystem.EnumerateFiles(currentDirectory, "*.sln", SearchOption.TopDirectoryOnly).Any() ||
-                    fileSystem.EnumerateFiles(currentDirectory, "*.slnx", SearchOption.TopDirectoryOnly).Any()))
-                {
-                    directoryWithSln = currentDirectory;
-                }
-
-                currentDirectory = Directory.GetParent(currentDirectory)?.FullName;
-            }
-
-            // If we reach here, that means we didn't find .git or global.json.
-            // So, we return the directory where we found a .sln/.slnx file, if any.
-            // Note that when we keep track of directoryWithSln, we keep updating it from sln/slnx from parent directories, if found.
-            // This means that if there are multiple .sln/.slnx files in the parent directories, we will return the top-most one.
-            return directoryWithSln ?? outputBasePath;
         }
 
         private class JsonContentParameters
