@@ -1880,8 +1880,8 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">Nejsou nainstalované žádné úlohy, nic se nedá opravit. Pokud chcete najít úlohy, které se mají nainstalovat, spusťte vyhledávání úloh dotnet.</target>
-        <note />
+        <target state="needs-review-translation">Nejsou nainstalované žádné úlohy, nic se nedá opravit. Pokud chcete najít úlohy, které se mají nainstalovat, spusťte vyhledávání úloh dotnet.</target>
+        <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
@@ -2717,10 +2717,10 @@ Ve výchozím nastavení je publikována aplikace závislá na architektuře.</t
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="translated">V projektu {0} nelze pokračovat.
-Ujistěte se, že máte spustitelný typ projektu.
-Spustitelný projekt by měl cílit na spustitelný TFM (například net{1}) a mít OutputType Exe.
-Aktuální OutputType je {2}.</target>
+        <target state="needs-review-translation">Projekt se nedá spustit.
+Ověřte prosím, že máte spustitelný typ projektu, a zajistěte, aby tento projekt podporoval {0}.
+Cílem spustitelného projektu by mělo být TFM (například net5.0) a jeho OutputType by měl být Exe.
+Aktuální {1} je {2}.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -3274,6 +3274,11 @@ Nástroj {1} (verze {2}) byl úspěšně nainstalován.</target>
       <trans-unit id="ToolInstallPackageIdArgumentName">
         <source>PACKAGE_ID</source>
         <target state="translated">PACKAGE_ID</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallPackageIdMissing">
+        <source>A package ID was not specified for tool installation.</source>
+        <target state="new">A package ID was not specified for tool installation.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallSourceOptionDescription">
