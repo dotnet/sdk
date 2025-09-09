@@ -35,7 +35,7 @@ parameters:
     # See: https://github.com/dotnet/sdk/issues/40935
     runTests: false
   - categoryName: ContainerBased
-    container: fedora39
+    container: fedora41
     # No fedora Helix container is available, so use the ubuntu one instead.
     helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-22.04-helix-amd64
     osProperties: $(linuxOsPortableProperties)
@@ -57,7 +57,7 @@ parameters:
     # See: https://github.com/dotnet/sdk/issues/40935
     runTests: false
   - categoryName: ContainerBased
-    container: alpine319WithNode
+    container: alpine322
     helixTargetContainer: $(helixTargetContainerPrefix)alpine-3.18-helix-amd64
     runtimeIdentifier: linux-musl-x64
     # Use HostOSName when running on alpine.
