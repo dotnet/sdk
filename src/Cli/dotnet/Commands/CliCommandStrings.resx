@@ -2666,4 +2666,11 @@ Proceed?</value>
   <data name="DotnetTestIncompatibleHandshakeVersion" xml:space="preserve">
     <value>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</value>
   </data>
+  <data name="ErrorRunningTestModule" xml:space="preserve">
+    <value>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
+
+{2}</value>
+    <comment>{Locked="RunCommand"}{Locked="RunArguments"}
+{2} is the exception that occurred.</comment>
+  </data>
 </root>

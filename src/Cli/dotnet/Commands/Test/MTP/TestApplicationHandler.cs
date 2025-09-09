@@ -3,8 +3,6 @@
 
 #nullable disable
 
-using System.Diagnostics;
-using System.Reflection;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 

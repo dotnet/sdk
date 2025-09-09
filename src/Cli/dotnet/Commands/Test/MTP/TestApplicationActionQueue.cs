@@ -5,6 +5,7 @@
 
 using System.Threading.Channels;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -59,15 +60,19 @@ internal class TestApplicationActionQueue
             {
                 int result = ExitCode.GenericFailure;
                 var testApp = new TestApplication(module, buildOptions, testOptions, output);
-                using (testApp)
+                try
                 {
-                    // TODO: If this throws, we will loose "one" degree of parallelism.
-                    // Then, if we ended up losing all degree of parallelisms, we will not be able to process all test apps.
-                    // At the end, WaitAllActions will likely just throw this exception wrapped in AggregateException, and
-                    // it will bubble up to CLI Main and crash the process.
-                    // We should try to work on a better handling for this, and better understand what are the possibilities for this to throw.
-                    // e.g, RunCommand pointing out to some file that doesn't exist? Process.Start failing for some reason?
-                    result = await action(testApp);
+                    using (testApp)
+                    {
+                        result = await action(testApp);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var exAsString = ex.ToString();
+                    Logger.LogTrace($"Exception running test module {module.RunProperties?.Command} {module.RunProperties?.Arguments}: {exAsString}");
+                    Reporter.Error.WriteLine(string.Format(CliCommandStrings.ErrorRunningTestModule, module.RunProperties?.Command, module.RunProperties?.Arguments, exAsString));
+                    result = ExitCode.GenericFailure;
                 }
 
                 if (result == ExitCode.Success && testApp.HasFailureDuringDispose)

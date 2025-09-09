@@ -43,19 +43,14 @@ internal sealed class TestApplication(
     {
         // TODO: RunAsync is probably expected to be executed exactly once on each TestApplication instance.
         // Consider throwing an exception if it's called more than once.
-        if (TestOptions.HasFilterMode && !ModulePathExists())
-        {
-            return ExitCode.GenericFailure;
-        }
-
         var processStartInfo = CreateProcessStartInfo();
 
         _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
-        var testProcessResult = await StartProcess(processStartInfo);
+        var testProcessExitCode = await StartProcess(processStartInfo);
 
         WaitOnTestApplicationPipeConnectionLoop();
 
-        return testProcessResult;
+        return testProcessExitCode;
     }
 
     private ProcessStartInfo CreateProcessStartInfo()
@@ -296,18 +291,6 @@ internal sealed class TestApplication(
         };
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
-    }
-
-    private bool ModulePathExists()
-    {
-        if (!File.Exists(Module.RunProperties.Command))
-        {
-            // TODO: The error should be shown to the user, not just logged to trace.
-            Logger.LogTrace($"Test module '{Module.RunProperties.Command}' not found. Build the test application before or run 'dotnet test'.");
-
-            return false;
-        }
-        return true;
     }
 
     public void OnHandshakeMessage(HandshakeMessage handshakeMessage, bool gotSupportedVersion)
