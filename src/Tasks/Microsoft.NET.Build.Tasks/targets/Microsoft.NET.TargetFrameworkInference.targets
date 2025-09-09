@@ -134,6 +134,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       <TFTelemetry Include="OutputType" Value="$(OutputType)" />
       <TFTelemetry Include="UseArtifactsOutput" Value="$(UseArtifactsOutput)" />
       <TFTelemetry Include="ArtifactsPathLocationType" Value="$(_ArtifactsPathLocationType)" />
+      <TFTelemetry Include="TargetPlatformIdentifier" Value="$(TargetPlatformIdentifier)" />
+      <TFTelemetry Include="UseMonoRuntime" Value="$(UseMonoRuntime)" />
+      <TFTelemetry Include="PublishAot" Value="$(PublishAot)" />
+
     </ItemGroup>
     <AllowEmptyTelemetry EventName="targetframeworkeval" EventData="@(TFTelemetry)" />
   </Target>
