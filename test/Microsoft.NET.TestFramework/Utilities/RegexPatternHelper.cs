@@ -26,7 +26,7 @@ namespace Microsoft.NET.TestFramework.Utilities
 
             if (addVersionAndArchPattern)
             {
-                pattern += @$"\s+\({version}\|[a-zA-Z][1-9]+\)";
+                pattern += @$"\s+\({version}\|[a-zA-Z]+[1-9]+\)";
             }
 
             if (suffix == null)
