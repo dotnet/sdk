@@ -50,7 +50,7 @@ internal sealed class TestApplication(
 
         WaitOnTestApplicationPipeConnectionLoop();
 
-        if (_handler.TestSessionStartCount != _handler.TestSessionEndCount)
+        if (_handler.HasMismatchingTestSessionEventCount())
         {
             throw new InvalidOperationException(CliCommandStrings.MissingTestSessionEnd);
         }
@@ -221,6 +221,14 @@ internal sealed class TestApplication(
         }
         catch (Exception ex)
         {
+            // BE CAREFUL:
+            // When handling some of the messages, we may throw an exception in unexpected state.
+            // (e.g, OnSessionEvent may throw if we receive TestSessionEnd without TestSessionStart).
+            // In that case, we FailFast.
+            // The lack of FailFast *might* have unintended consequences, such as breaking the internal loop of pipe server.
+            // In that case, maybe MTP app will continue waiting for response, but we don't send the response and are waiting for
+            // MTP app process exit (which doesn't happen).
+            // So, we explicitly FailFast here.
             string exAsString = ex.ToString();
             Logger.LogTrace(exAsString);
             Environment.FailFast(exAsString);
@@ -312,7 +320,7 @@ internal sealed class TestApplication(
     private void OnTestResultMessages(TestResultMessages testResultMessage)
         => _handler.OnTestResultsReceived(testResultMessage);
 
-    internal void OnFileArtifactMessages(FileArtifactMessages fileArtifactMessages)
+    private void OnFileArtifactMessages(FileArtifactMessages fileArtifactMessages)
         => _handler.OnFileArtifactsReceived(fileArtifactMessages);
 
     private void OnSessionEvent(TestSessionEvent sessionEvent)

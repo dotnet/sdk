@@ -14,9 +14,7 @@ internal sealed class TestApplicationHandler
     private readonly TestModule _module;
     private readonly TestOptions _options;
     private readonly Lock _lock = new();
-
-    internal int TestSessionStartCount { get; private set; }
-    internal int TestSessionEndCount { get; private set; }
+    private readonly Dictionary<string, (int TestSessionStartCount, int TestSessionEndCount)> _testSessionEventCountPerSessionUid = new();
 
     private (string TargetFramework, string Architecture, string ExecutionId)? _handshakeInfo;
 
@@ -190,17 +188,46 @@ internal sealed class TestApplicationHandler
 
             if (sessionEvent.SessionType == SessionEventTypes.TestSessionStart)
             {
-                TestSessionStartCount++;
+                IncreaseTestSessionStart(sessionEvent.SessionUid);
             }
             else if (sessionEvent.SessionType == SessionEventTypes.TestSessionEnd)
             {
-                TestSessionEndCount++;
-                if (TestSessionEndCount > TestSessionStartCount)
+                var (testSessionStartCount, testSessionEndCount) = IncreaseTestSessionEnd(sessionEvent.SessionUid);
+                if (testSessionEndCount > testSessionStartCount)
                 {
                     throw new InvalidOperationException(CliCommandStrings.UnexpectedTestSessionEnd);
                 }
             }
         }
+    }
+
+    private (int TestSessionStartCount, int TestSessionEndCount) IncreaseTestSessionStart(string sessionUid)
+    {
+        _ = _testSessionEventCountPerSessionUid.TryGetValue(sessionUid, out var count);
+        count = (count.TestSessionStartCount + 1, count.TestSessionEndCount);
+        _testSessionEventCountPerSessionUid[sessionUid] = count;
+        return count;
+    }
+
+    private (int TestSessionStartCount, int TestSessionEndCount) IncreaseTestSessionEnd(string sessionUid)
+    {
+        _ = _testSessionEventCountPerSessionUid.TryGetValue(sessionUid, out var count);
+        count = (count.TestSessionStartCount, count.TestSessionEndCount + 1);
+        _testSessionEventCountPerSessionUid[sessionUid] = count;
+        return count;
+    }
+
+    internal bool HasMismatchingTestSessionEventCount()
+    {
+        foreach (var (testSessionStartCount, testSessionEndCount) in _testSessionEventCountPerSessionUid.Values)
+        {
+            if (testSessionStartCount != testSessionEndCount)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     internal void OnTestProcessExited(int exitCode, List<string> outputData, List<string> errorData)
