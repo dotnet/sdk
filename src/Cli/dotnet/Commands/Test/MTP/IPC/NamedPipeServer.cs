@@ -12,6 +12,8 @@ namespace Microsoft.DotNet.Cli.Commands.Test.IPC;
 
 internal sealed class NamedPipeServer : NamedPipeBase
 {
+    private static bool IsUnix => Path.DirectorySeparatorChar == '/';
+
     private readonly Func<NamedPipeServer, IRequest, Task<IResponse>> _callback;
     private readonly NamedPipeServerStream _namedPipeServerStream;
     private readonly CancellationToken _cancellationToken;
@@ -24,19 +26,17 @@ internal sealed class NamedPipeServer : NamedPipeBase
     private bool _disposed;
 
     public NamedPipeServer(
-        PipeNameDescription pipeNameDescription,
+        string pipeName,
         Func<NamedPipeServer, IRequest, Task<IResponse>> callback,
         int maxNumberOfServerInstances,
         CancellationToken cancellationToken,
         bool skipUnknownMessages)
     {
-        _namedPipeServerStream = new((PipeName = pipeNameDescription).Name, PipeDirection.InOut, maxNumberOfServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
+        _namedPipeServerStream = new(pipeName, PipeDirection.InOut, maxNumberOfServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
         _callback = callback;
         _cancellationToken = cancellationToken;
         _skipUnknownMessages = skipUnknownMessages;
     }
-
-    public PipeNameDescription PipeName { get; private set; }
 
     public bool WasConnected { get; private set; }
 
@@ -183,22 +183,15 @@ internal sealed class NamedPipeServer : NamedPipeBase
         }
     }
 
-    public static PipeNameDescription GetPipeName(string name)
+    public static string GetPipeName(string name)
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (!IsUnix)
         {
-            return new PipeNameDescription($"testingplatform.pipe.{name.Replace('\\', '.')}", false);
+            return $"testingplatform.pipe.{name.Replace('\\', '.')}";
         }
 
-        string directoryId = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), name);
-        Directory.CreateDirectory(directoryId);
-        return new PipeNameDescription(
-            !Directory.Exists(directoryId)
-                ? throw new DirectoryNotFoundException(string.Format(
-                    CultureInfo.InvariantCulture,
-                    $"Directory: {directoryId} doesn't exist.",
-                    directoryId))
-                : Path.Combine(directoryId, ".p"), true);
+        // Similar to https://github.com/dotnet/roslyn/blob/99bf83c7bc52fa1ff27cf792db38755d5767c004/src/Compilers/Shared/NamedPipeUtil.cs#L26-L42
+        return Path.Combine("/tmp", name);
     }
 
     public void Dispose()
@@ -227,8 +220,6 @@ internal sealed class NamedPipeServer : NamedPipeBase
             // Ensure we are still disposing the resouces correctly, even if _loopTask completes with
             // an exception, or if the task doesn't complete within the 90 seconds limit.
             _namedPipeServerStream.Dispose();
-            PipeName.Dispose();
-
             _disposed = true;
         }
     }

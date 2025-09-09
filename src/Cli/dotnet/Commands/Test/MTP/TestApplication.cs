@@ -25,7 +25,7 @@ internal sealed class TestApplication(
 
     private readonly List<string> _outputData = [];
     private readonly List<string> _errorData = [];
-    private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
+    private readonly string _pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
     private readonly CancellationTokenSource _cancellationToken = new();
 
     private Task _testAppPipeConnectionLoop;
@@ -140,7 +140,7 @@ internal sealed class TestApplication(
             builder.Append($" {ArgumentEscaper.EscapeSingleArg(arg)}");
         }
 
-        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(_pipeNameDescription.Name)}");
+        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(_pipeName)}");
 
         return builder.ToString();
     }
@@ -157,7 +157,7 @@ internal sealed class TestApplication(
         {
             while (!token.IsCancellationRequested)
             {
-                var pipeConnection = new NamedPipeServer(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
+                var pipeConnection = new NamedPipeServer(_pipeName, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
                 pipeConnection.RegisterAllSerializers();
 
                 await pipeConnection.WaitConnectionAsync(token);
