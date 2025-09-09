@@ -241,15 +241,15 @@ namespace Microsoft.NET.Build.Tasks
 
                 LogLevel? logLevel = null;
 
-                foreach(var message in LockFile.LogMessages)
+                foreach (var message in LockFile.LogMessages)
                 {
                     if (message.LibraryId == package.Name)
                     {
-                        foreach(var tg in message.TargetGraphs)
+                        foreach (var tg in message.TargetGraphs)
                         {
-                            if(tg == target)
+                            if (tg == target)
                             {
-                                if(logLevel == null || message.Level > logLevel)
+                                if (logLevel == null || message.Level > logLevel)
                                 {
                                     logLevel = message.Level;
                                 }
