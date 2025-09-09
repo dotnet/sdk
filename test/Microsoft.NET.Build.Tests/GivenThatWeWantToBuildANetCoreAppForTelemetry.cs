@@ -32,7 +32,7 @@ namespace Microsoft.NET.Build.Tests
             buildCommand
                 .Execute(TelemetryTestLogger)
                 .StdOut.Should()
-                .Contain($"{{\"EventName\":\"targetframeworkeval\",\"Properties\":{{\"TargetFrameworkVersion\":\".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}\",\"RuntimeIdentifier\":\"null\",\"SelfContained\":\"null\",\"UseApphost\":\"null\",\"OutputType\":\"Library\",\"UseArtifactsOutput\":\"null\",\"ArtifactsPathLocationType\":\"null\",\"TargetPlatformIdentifier\":\"null\",\"UseMonoRuntime\":\"null\",\"PublishAot\":\"null\"}}");
+                .Contain($"{{\"EventName\":\"targetframeworkeval\",\"Properties\":{{\"TargetFrameworkVersion\":\".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}\",\"RuntimeIdentifier\":\"null\",\"SelfContained\":\"null\",\"UseApphost\":\"null\",\"OutputType\":\"Library\",\"UseArtifactsOutput\":\"null\",\"ArtifactsPathLocationType\":\"null\",\"TargetPlatformIdentifier\":\"null\",\"UseMonoRuntime\":\"null\",\"PublishAot\":\"null\",\"Configuration\":\"Debug\"}}");
         }
 
         [CoreMSBuildOnlyFact]
@@ -60,10 +60,10 @@ namespace Microsoft.NET.Build.Tests
             result
                 .StdOut.Should()
                 .Contain(
-                    "{\"EventName\":\"targetframeworkeval\",\"Properties\":{\"TargetFrameworkVersion\":\".NETFramework,Version=v4.6\",\"RuntimeIdentifier\":\"null\",\"SelfContained\":\"null\",\"UseApphost\":\"null\",\"OutputType\":\"Library\",\"UseArtifactsOutput\":\"null\",\"ArtifactsPathLocationType\":\"null\",\"TargetPlatformIdentifier\":\"null\",\"UseMonoRuntime\":\"null\",\"PublishAot\":\"null\"}}")
+                    "{\"EventName\":\"targetframeworkeval\",\"Properties\":{\"TargetFrameworkVersion\":\".NETFramework,Version=v4.6\",\"RuntimeIdentifier\":\"null\",\"SelfContained\":\"null\",\"UseApphost\":\"null\",\"OutputType\":\"Library\",\"UseArtifactsOutput\":\"null\",\"ArtifactsPathLocationType\":\"null\",\"TargetPlatformIdentifier\":\"Windows\",\"UseMonoRuntime\":\"null\",\"PublishAot\":\"null\",\"Configuration\":\"Debug\"}")
                 .And
                 .Contain(
-                    $"{{\"EventName\":\"targetframeworkeval\",\"Properties\":{{\"TargetFrameworkVersion\":\".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}\",\"RuntimeIdentifier\":\"null\",\"SelfContained\":\"null\",\"UseApphost\":\"null\",\"OutputType\":\"Library\",\"UseArtifactsOutput\":\"null\",\"ArtifactsPathLocationType\":\"null\",\"TargetPlatformIdentifier\":\"null\",\"UseMonoRuntime\":\"null\",\"PublishAot\":\"null\"}}");
+                    $"{{\"EventName\":\"targetframeworkeval\",\"Properties\":{{\"TargetFrameworkVersion\":\".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}\",\"RuntimeIdentifier\":\"null\",\"SelfContained\":\"null\",\"UseApphost\":\"null\",\"OutputType\":\"Library\",\"UseArtifactsOutput\":\"null\",\"ArtifactsPathLocationType\":\"null\",\"TargetPlatformIdentifier\":\"null\",\"UseMonoRuntime\":\"null\",\"PublishAot\":\"null\",\"Configuration\":\"Debug\"}}");
         }
     }
 }

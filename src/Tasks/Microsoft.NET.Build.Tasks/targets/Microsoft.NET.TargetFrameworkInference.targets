@@ -137,7 +137,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <TFTelemetry Include="TargetPlatformIdentifier" Value="$(TargetPlatformIdentifier)" />
       <TFTelemetry Include="UseMonoRuntime" Value="$(UseMonoRuntime)" />
       <TFTelemetry Include="PublishAot" Value="$(PublishAot)" />
-
+      <TFTelemetry Include="Configuration" Value="$(Configuration)" />
     </ItemGroup>
     <AllowEmptyTelemetry EventName="targetframeworkeval" EventData="@(TFTelemetry)" />
   </Target>
