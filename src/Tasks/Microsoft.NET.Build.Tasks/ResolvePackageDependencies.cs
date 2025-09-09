@@ -259,7 +259,7 @@ namespace Microsoft.NET.Build.Tasks
                             var parsedTargetGraph = NuGetFramework.Parse(tg);
                             var alias = _lockFile.PackageSpec.TargetFrameworks.FirstOrDefault(tf => tf.FrameworkName == parsedTargetGraph)?.TargetAlias;
 
-                            if (tg == target)
+                            if (alias == target)
                             {
                                 if (logLevel == null || message.Level > logLevel)
                                 {
