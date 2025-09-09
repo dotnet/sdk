@@ -26,7 +26,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(TargetPlatformIdentifier)' == 'Windows'">
 
     <!-- Remove Windows SDK KnownFrameworkReference items from BundledVersions.props (they will eventually be removed, but that is in a different repo so
-         we can't do the change atomically -->
+         we can't do the change atomically). -->
     <ItemGroup>
       <KnownFrameworkReference Remove="Microsoft.Windows.SDK.NET.Ref" />
     </ItemGroup>
@@ -105,12 +105,15 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 SilenceIsAotCompatibleUnsupportedWarning="$(_SilenceIsAotCompatibleUnsupportedWarning)"
                                 MinNonEolTargetFrameworkForAot="$(_MinNonEolTargetFrameworkForAot)"
                                 EnableAotAnalyzer="$(EnableAotAnalyzer)"
+                                FirstTargetFrameworkVersionToSupportAotAnalyzer="$(_FirstTargetFrameworkVersionToSupportAotAnalyzer)"
                                 PublishTrimmed="$(PublishTrimmed)"
                                 IsTrimmable="$(IsTrimmable)"
+                                FirstTargetFrameworkVersionToSupportTrimAnalyzer="$(_FirstTargetFrameworkVersionToSupportTrimAnalyzer)"
                                 SilenceIsTrimmableUnsupportedWarning="$(_SilenceIsTrimmableUnsupportedWarning)"
                                 MinNonEolTargetFrameworkForTrimming="$(_MinNonEolTargetFrameworkForTrimming)"
                                 EnableTrimAnalyzer="$(EnableTrimAnalyzer)"
                                 EnableSingleFileAnalyzer="$(EnableSingleFileAnalyzer)"
+                                FirstTargetFrameworkVersionToSupportSingleFileAnalyzer="$(_FirstTargetFrameworkVersionToSupportSingleFileAnalyzer)"
                                 SilenceEnableSingleFileAnalyzerUnsupportedWarning="$(_SilenceEnableSingleFileAnalyzerUnsupportedWarning)"
                                 MinNonEolTargetFrameworkForSingleFile="$(_MinNonEolTargetFrameworkForSingleFile)"
                                 AotUseKnownRuntimePackForTarget="$(PublishAotUsingRuntimePack)"
@@ -129,6 +132,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 KnownWebAssemblySdkPacks="@(KnownWebAssemblySdkPack)"
                                 UsingMicrosoftNETSdkWebAssembly="$(UsingMicrosoftNETSdkWebAssembly)"
                                 NETCoreSdkRuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)"
+                                NETCoreSdkPortableRuntimeIdentifier="$(NETCoreSdkPortableRuntimeIdentifier)"
                                 NetCoreRoot="$(NetCoreRoot)"
                                 NETCoreSdkVersion="$(NETCoreSdkVersion)">
 
@@ -489,6 +493,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="'@(RuntimePack)' != ''">
 
     <ResolveRuntimePackAssets FrameworkReferences="@(FrameworkReference)"
+                              RuntimeFrameworks="@(RuntimeFramework)"
                               ResolvedRuntimePacks="@(ResolvedRuntimePack)"
                               UnavailableRuntimePacks="@(UnavailableRuntimePack)"
                               SatelliteResourceLanguages="$(SatelliteResourceLanguages)"
