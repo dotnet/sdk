@@ -245,21 +245,17 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     if (message.LibraryId == package.Name)
                     {
-                        foreach (var tg in message.TargetGraphs)
+                        foreach (var targetGraph in message.TargetGraphs)
                         {
-                            if (tg == target)
+                            string effectiveTargetGraphName = targetGraph;
+                            // If the target graph is not in the map, then very likely aliases are being used.
+                            if (!_targetNameToAliasMap.ContainsKey(targetGraph))
                             {
-                                if (logLevel == null || message.Level > logLevel)
-                                {
-                                    logLevel = message.Level;
-                                }
-                                break;
+                                var parsedTargetGraph = NuGetFramework.Parse(targetGraph);
+                                effectiveTargetGraphName = _lockFile.PackageSpec.TargetFrameworks.FirstOrDefault(tf => tf.FrameworkName == parsedTargetGraph)?.TargetAlias;
                             }
 
-                            var parsedTargetGraph = NuGetFramework.Parse(tg);
-                            var alias = _lockFile.PackageSpec.TargetFrameworks.FirstOrDefault(tf => tf.FrameworkName == parsedTargetGraph)?.TargetAlias;
-
-                            if (alias == target)
+                            if (effectiveTargetGraphName == target)
                             {
                                 if (logLevel == null || message.Level > logLevel)
                                 {
