@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-Hant" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="CommandDescription">
+        <source>Modify or display workload configuration values.
+To display a value, specify the corresponding command-line option without providing a value.  For example: "dotnet workload config --update-mode"</source>
+        <target state="translated">修改或顯示工作負載設定值。
+若要顯示值，請指定對應的命令列選項而不提供值。例如: "dotnet workload config --update-mode"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateModeDescription">
+        <source>Controls whether updates should look for workload sets or the latest version of each individual manifest.</source>
+        <target state="translated">控制更新是否應尋找工作負載集或每個單獨資訊清單的最新版本。</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
