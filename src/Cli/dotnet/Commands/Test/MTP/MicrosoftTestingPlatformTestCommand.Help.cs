@@ -97,8 +97,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
         var testApp = (TestApplication)sender;
         if (!testApp.TestOptions.IsHelp)
         {
-            // TODO: Better to throw exception?
-            return;
+            throw new InvalidOperationException(CliCommandStrings.UnexpectedHelpMessage);
         }
         
         CommandLineOption[] commandLineOptionMessages = args.CommandLineOptions;

@@ -224,6 +224,7 @@ internal sealed class TestApplication(
             // BE CAREFUL:
             // When handling some of the messages, we may throw an exception in unexpected state.
             // (e.g, OnSessionEvent may throw if we receive TestSessionEnd without TestSessionStart).
+            // (or if we receive help-related messages when not in help mode)
             // In that case, we FailFast.
             // The lack of FailFast *might* have unintended consequences, such as breaking the internal loop of pipe server.
             // In that case, maybe MTP app will continue waiting for response, but we don't send the response and are waiting for

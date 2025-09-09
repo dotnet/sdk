@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Aborted" xml:space="preserve">
-    <value>Aborted</value>
-  </data>
   <data name="ActiveTestsRunning_FullTestsCount" xml:space="preserve">
     <value>{0} tests running</value>
   </data>
@@ -2678,5 +2675,11 @@ Proceed?</value>
   </data>
   <data name="MissingTestSessionEnd" xml:space="preserve">
     <value>A test session start event was received without a corresponding test session end.</value>
+  </data>
+  <data name="Aborted" xml:space="preserve">
+    <value>Aborted</value>
+  </data>
+  <data name="UnexpectedHelpMessage" xml:space="preserve">
+    <value>An unexpected help-related message was received when `--help` wasn't used.</value>
   </data>
 </root>

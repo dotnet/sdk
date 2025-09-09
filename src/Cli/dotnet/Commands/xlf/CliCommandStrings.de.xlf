@@ -3543,6 +3543,11 @@ und die zugehörigen Paket-IDs für installierte Tools über den Befehl
         <target state="translated">{0} testen</target>
         <note>number or tries of the current test assembly when test assembly is being retried. {0} is number that starts at 1</note>
       </trans-unit>
+      <trans-unit id="UnexpectedHelpMessage">
+        <source>An unexpected help-related message was received when `--help` wasn't used.</source>
+        <target state="new">An unexpected help-related message was received when `--help` wasn't used.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnexpectedTestSessionEnd">
         <source>A test session end event was received without a corresponding test session start.</source>
         <target state="new">A test session end event was received without a corresponding test session start.</target>
