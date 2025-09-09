@@ -79,11 +79,6 @@ where `metadata.json` has `"SDKAnalyzers": "9.0.100-dev"`, because
 Analyzers that cannot be matched will continue to be loaded from the SDK
 (and will fail to load if they reference Roslyn that is newer than is in VS).
 
-### NGEN
-
-Note that these analyzers will have NGEN enabled for them when inserted to VS, which needs all the folders containing DLLs hard-coded in probing paths configuration file.
-That is also why the versions are part of a separate metadata file instead of the directory layout.
-
 ### Implementation
 
 Analyzer DLLs are contained in transport package `VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers`.
