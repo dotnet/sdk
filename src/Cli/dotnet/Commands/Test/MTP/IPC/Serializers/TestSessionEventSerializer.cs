@@ -34,11 +34,11 @@ internal sealed class TestSessionEventSerializer : BaseSerializer, INamedPipeSer
         string? sessionUid = null;
         string? executionId = null;
 
-        ushort fieldCount = ReadShort(stream);
+        ushort fieldCount = ReadUShort(stream);
 
         for (int i = 0; i < fieldCount; i++)
         {
-            ushort fieldId = ReadShort(stream);
+            ushort fieldId = ReadUShort(stream);
             int fieldSize = ReadInt(stream);
 
             switch (fieldId)
@@ -71,7 +71,7 @@ internal sealed class TestSessionEventSerializer : BaseSerializer, INamedPipeSer
 
         var testSessionEvent = (TestSessionEvent)objectToSerialize;
 
-        WriteShort(stream, GetFieldCount(testSessionEvent));
+        WriteUShort(stream, GetFieldCount(testSessionEvent));
 
         WriteField(stream, TestSessionEventFieldsId.SessionType, testSessionEvent.SessionType);
         WriteField(stream, TestSessionEventFieldsId.SessionUid, testSessionEvent.SessionUid);

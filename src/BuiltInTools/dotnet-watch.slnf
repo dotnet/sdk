@@ -21,6 +21,7 @@
       "test\\Microsoft.Extensions.DotNetDeltaApplier.Tests\\Microsoft.Extensions.DotNetDeltaApplier.Tests.csproj",
       "test\\Microsoft.NET.TestFramework\\Microsoft.NET.TestFramework.csproj",
       "test\\Microsoft.WebTools.AspireService.Tests\\Microsoft.WebTools.AspireService.Tests.csproj",
+      "test\\Microsoft.DotNet.HotReload.Client.Tests\\Microsoft.DotNet.HotReload.Client.Tests.csproj",
       "test\\dotnet-watch.Tests\\dotnet-watch.Tests.csproj"
     ]
   }

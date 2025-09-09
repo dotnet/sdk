@@ -17,15 +17,14 @@ public class HotReloadClientTests(ITestOutputHelper output)
 
         public Test(ITestOutputHelper output, TestHotReloadAgent agent)
         {
-            var pipeName = Guid.NewGuid().ToString();
             Logger = new TestLogger(output);
             AgentLogger = new TestLogger(output);
-            Client = new DefaultHotReloadClient(Logger, AgentLogger, enableStaticAssetUpdates: true);
+            Client = new DefaultHotReloadClient(Logger, AgentLogger, startupHookPath: "", enableStaticAssetUpdates: true);
 
             _cancellationSource = new CancellationTokenSource();
 
-            Client.InitiateConnection(pipeName, CancellationToken.None);
-            var listener = new PipeListener(pipeName, agent, log: _ => { }, connectionTimeoutMS: Timeout.Infinite);
+            Client.InitiateConnection(CancellationToken.None);
+            var listener = new PipeListener(Client.NamedPipeName, agent, log: _ => { }, connectionTimeoutMS: Timeout.Infinite);
             _listenerTaskFactory = Task.Run<Task>(() => listener.Listen(_cancellationSource.Token));
         }
 

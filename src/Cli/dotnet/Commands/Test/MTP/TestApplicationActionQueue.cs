@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 internal class TestApplicationActionQueue
 {
     private readonly Channel<ParallelizableTestModuleGroupWithSequentialInnerModules> _channel;
-    private readonly List<Task> _readers;
+    private readonly Task[] _readers;
 
     private int? _aggregateExitCode;
 
@@ -20,11 +20,11 @@ internal class TestApplicationActionQueue
     public TestApplicationActionQueue(int degreeOfParallelism, BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Func<TestApplication, Task<int>> action)
     {
         _channel = Channel.CreateUnbounded<ParallelizableTestModuleGroupWithSequentialInnerModules>(new UnboundedChannelOptions { SingleReader = false, SingleWriter = false });
-        _readers = [];
+        _readers = new Task[degreeOfParallelism];
 
         for (int i = 0; i < degreeOfParallelism; i++)
         {
-            _readers.Add(Task.Run(async () => await Read(action, buildOptions, testOptions, output)));
+            _readers[i] = Task.Run(async () => await Read(action, buildOptions, testOptions, output));
         }
     }
 
@@ -38,7 +38,7 @@ internal class TestApplicationActionQueue
 
     public int WaitAllActions()
     {
-        Task.WaitAll([.. _readers]);
+        Task.WaitAll(_readers);
 
         // If _aggregateExitCode is null, that means we didn't get any results.
         // So, we exit with "zero tests".
@@ -61,6 +61,12 @@ internal class TestApplicationActionQueue
                 var testApp = new TestApplication(module, buildOptions, testOptions, output);
                 using (testApp)
                 {
+                    // TODO: If this throws, we will loose "one" degree of parallelism.
+                    // Then, if we ended up losing all degree of parallelisms, we will not be able to process all test apps.
+                    // At the end, WaitAllActions will likely just throw this exception wrapped in AggregateException, and
+                    // it will bubble up to CLI Main and crash the process.
+                    // We should try to work on a better handling for this, and better understand what are the possibilities for this to throw.
+                    // e.g, RunCommand pointing out to some file that doesn't exist? Process.Start failing for some reason?
                     result = await action(testApp);
                 }
 
