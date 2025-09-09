@@ -16,7 +16,7 @@ namespace Microsoft.NET.TestFramework.Utilities
                 string.Empty;
 
             string exitCodePattern = exitCode == null ? string.Empty : $@"[\s\S]*?Exit\s+code: {exitCode}";
-            return $@".+{configuration}{PathUtility.GetDirectorySeparatorChar()}{version}{PathUtility.GetDirectorySeparatorChar()}{runtimeIdentifier}{projectName}(\.dll|\.exe)?\s+\({version}\|[a-zA-Z][1-9]+\)\s{result}{exitCodePattern}";
+            return $@".+{configuration}{PathUtility.GetDirectorySeparatorChar()}{version}{PathUtility.GetDirectorySeparatorChar()}{runtimeIdentifier}{projectName}(\.dll|\.exe)?\s+\({version}\|[a-zA-Z]+[1-9]+\)\s{result}{exitCodePattern}";
         }
 
         public static string GenerateProjectRegexPattern(string projectName, bool useCurrentVersion, string configuration, string prefix, List<string>? suffix = null, bool addVersionAndArchPattern = true)
