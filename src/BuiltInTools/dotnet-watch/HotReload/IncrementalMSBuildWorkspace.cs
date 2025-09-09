@@ -8,26 +8,29 @@ using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
-internal class IncrementalMSBuildWorkspace : Workspace
+internal sealed class IncrementalMSBuildWorkspace : Workspace
 {
-    private readonly IReporter _reporter;
+    private readonly ILogger _logger;
 
-    public IncrementalMSBuildWorkspace(IReporter reporter)
+    public IncrementalMSBuildWorkspace(ILogger logger)
         : base(MSBuildMefHostServices.DefaultServices, WorkspaceKind.MSBuild)
     {
+#pragma warning disable CS0618 // https://github.com/dotnet/sdk/issues/49725
         WorkspaceFailed += (_sender, diag) =>
         {
             // Report both Warning and Failure as warnings.
             // MSBuildProjectLoader reports Failures for cases where we can safely continue loading projects
             // (e.g. non-C#/VB project is ignored).
             // https://github.com/dotnet/roslyn/issues/75170
-            reporter.Warn($"msbuild: {diag.Diagnostic}", "⚠");
+            logger.LogWarning($"msbuild: {diag.Diagnostic}");
         };
+#pragma warning restore CS0618
 
-        _reporter = reporter;
+        _logger = logger;
     }
 
     public async Task UpdateProjectConeAsync(string rootProjectPath, CancellationToken cancellationToken)
@@ -95,8 +98,9 @@ internal class IncrementalMSBuildWorkspace : Workspace
         UpdateReferencesAfterAdd();
 
         ProjectReference MapProjectReference(ProjectReference pr)
-            // Only C# and VB projects are loaded by the MSBuildProjectLoader, so some references might be missing:
-            => new(projectIdMap.TryGetValue(pr.ProjectId, out var mappedId) ? mappedId : pr.ProjectId, pr.Aliases, pr.EmbedInteropTypes);
+            // Only C# and VB projects are loaded by the MSBuildProjectLoader, so some references might be missing.
+            // When a new project is added along with a new project reference the old project id is also null.
+            => new(projectIdMap.TryGetValue(pr.ProjectId, out var oldProjectId) && oldProjectId != null ? oldProjectId : pr.ProjectId, pr.Aliases, pr.EmbedInteropTypes);
 
         ImmutableArray<DocumentInfo> MapDocuments(ProjectId mappedProjectId, IReadOnlyList<DocumentInfo> documents)
             => documents.Select(docInfo =>
@@ -138,20 +142,23 @@ internal class IncrementalMSBuildWorkspace : Workspace
 
                 if (textDocument == null)
                 {
-                    _reporter.Verbose($"Could not find document with path '{changedFile.FilePath}' in the workspace.");
+                    _logger.LogDebug("Could not find document with path '{FilePath}' in the workspace.", changedFile.FilePath);
                     continue;
                 }
 
                 var project = updatedSolution.GetProject(documentId.ProjectId);
                 Debug.Assert(project?.FilePath != null);
 
-                var sourceText = await GetSourceTextAsync(changedFile.FilePath, cancellationToken);
+                var oldText = await textDocument.GetTextAsync(cancellationToken);
+                Debug.Assert(oldText.Encoding != null);
+
+                var newText = await GetSourceTextAsync(changedFile.FilePath, oldText.Encoding, oldText.ChecksumAlgorithm, cancellationToken);
 
                 updatedSolution = textDocument switch
                 {
-                    Document document => document.WithText(sourceText).Project.Solution,
-                    AdditionalDocument ad => updatedSolution.WithAdditionalDocumentText(textDocument.Id, sourceText, PreservationMode.PreserveValue),
-                    AnalyzerConfigDocument acd => updatedSolution.WithAnalyzerConfigDocumentText(textDocument.Id, sourceText, PreservationMode.PreserveValue),
+                    Document document => document.WithText(newText).Project.Solution,
+                    AdditionalDocument ad => updatedSolution.WithAdditionalDocumentText(textDocument.Id, newText, PreservationMode.PreserveValue),
+                    AnalyzerConfigDocument acd => updatedSolution.WithAnalyzerConfigDocumentText(textDocument.Id, newText, PreservationMode.PreserveValue),
                     _ => throw new InvalidOperationException()
                 };
             }
@@ -164,11 +171,11 @@ internal class IncrementalMSBuildWorkspace : Workspace
 
     private static Solution RemoveDocuments(Solution solution, IEnumerable<DocumentId> ids)
         => solution
-        .RemoveDocuments(ids.Where(id => solution.GetDocument(id) != null).ToImmutableArray())
-        .RemoveAdditionalDocuments(ids.Where(id => solution.GetAdditionalDocument(id) != null).ToImmutableArray())
-        .RemoveAnalyzerConfigDocuments(ids.Where(id => solution.GetAnalyzerConfigDocument(id) != null).ToImmutableArray());
+        .RemoveDocuments([.. ids.Where(id => solution.GetDocument(id) != null)])
+        .RemoveAdditionalDocuments([.. ids.Where(id => solution.GetAdditionalDocument(id) != null)])
+        .RemoveAnalyzerConfigDocuments([.. ids.Where(id => solution.GetAnalyzerConfigDocument(id) != null)]);
 
-    private static async ValueTask<SourceText> GetSourceTextAsync(string filePath, CancellationToken cancellationToken)
+    private static async ValueTask<SourceText> GetSourceTextAsync(string filePath, Encoding encoding, SourceHashAlgorithm checksumAlgorithm, CancellationToken cancellationToken)
     {
         var zeroLengthRetryPerformed = false;
         for (var attemptIndex = 0; attemptIndex < 6; attemptIndex++)
@@ -180,7 +187,7 @@ internal class IncrementalMSBuildWorkspace : Workspace
                 SourceText sourceText;
                 using (var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
-                    sourceText = SourceText.From(stream, Encoding.UTF8);
+                    sourceText = SourceText.From(stream, encoding, checksumAlgorithm);
                 }
 
                 if (!zeroLengthRetryPerformed && sourceText.Length == 0)
@@ -195,7 +202,7 @@ internal class IncrementalMSBuildWorkspace : Workspace
                     await Task.Delay(20, cancellationToken);
 
                     using var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                    sourceText = SourceText.From(stream, Encoding.UTF8);
+                    sourceText = SourceText.From(stream, encoding, checksumAlgorithm);
                 }
 
                 return sourceText;
@@ -212,10 +219,10 @@ internal class IncrementalMSBuildWorkspace : Workspace
 
     public async Task ReportSolutionFilesAsync(Solution solution, CancellationToken cancellationToken)
     {
-        _reporter.Verbose($"Solution: {solution.FilePath}");
+        _logger.LogDebug("Solution: {Path}", solution.FilePath);
         foreach (var project in solution.Projects)
         {
-            _reporter.Verbose($"  Project: {project.FilePath}");
+            _logger.LogDebug("  Project: {Path}", project.FilePath);
 
             foreach (var document in project.Documents)
             {
@@ -236,7 +243,7 @@ internal class IncrementalMSBuildWorkspace : Workspace
         async ValueTask InspectDocumentAsync(TextDocument document, string kind)
         {
             var text = await document.GetTextAsync(cancellationToken);
-            _reporter.Verbose($"    {kind}: {document.FilePath} [{Convert.ToBase64String(text.GetChecksum().ToArray())}]");
+            _logger.LogDebug("    {Kind}: {FilePath} [{Checksum}]", kind, document.FilePath, Convert.ToBase64String(text.GetChecksum().ToArray()));
         }
     }
 }

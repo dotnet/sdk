@@ -228,6 +228,11 @@ Run 'dotnet {1} --show-aliases' with no args to show all aliases.</source>
         <target state="translated">Поиск шаблонов...</target>
         <note />
       </trans-unit>
+      <trans-unit id="Colon_Separator_Deprecated">
+        <source>The colon separator "::" has been deprecated in favor of the at symbol "@" for separating the package from the version in dotnet new install. In your case, this means {0}@{1} instead of {0}::{1}.</source>
+        <target state="translated">Разделитель-двоеточие "::" является нерекомендуемым и заменен на символ "@" для разделения пакета и версии в команде dotnet new install. В вашем случае это означает использование {0}@{1} вместо {0}::{1}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ColumnNameAuthor">
         <source>Author</source>
         <target state="translated">Автор</target>
@@ -825,6 +830,31 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">Вы хотите выполнить это действие [{0}(да)|{1}(нет)]?</target>
         <note />
       </trans-unit>
+      <trans-unit id="PostAction_CreateDotnetConfig_CreatedNewSection">
+        <source>Created new section in 'dotnet.config' file</source>
+        <target state="translated">Создан новый раздел в файле "dotnet.config"</target>
+        <note>{Locked="dotnet.config"}</note>
+      </trans-unit>
+      <trans-unit id="PostAction_CreateDotnetConfig_ManuallyUpdate">
+        <source>Updating existing values in 'dotnet.config' is not yet supported. Please, manually update 'dotnet.config' to have '{0}' under section '{1}'.</source>
+        <target state="translated">Изменение существующих значений в "dotnet.config" пока не поддерживается. Отредактируйте "dotnet.config" вручную, чтобы значение "{0}" находилось в разделе "{1}".</target>
+        <note>{Locked="dotnet.config"}</note>
+      </trans-unit>
+      <trans-unit id="PostAction_CreateDotnetConfig_Succeeded">
+        <source>Successfully created 'dotnet.config' file.</source>
+        <target state="translated">Файл "dotnet.config" успешно создан.</target>
+        <note>{Locked="dotnet.config"}</note>
+      </trans-unit>
+      <trans-unit id="PostAction_CreateDotnetConfig_ValueAlreadyExist">
+        <source>The required value in 'dotnet.config' is already set.</source>
+        <target state="translated">Обязательное значение в "dotnet.config" уже установлено.</target>
+        <note>{Locked="dotnet.config"}</note>
+      </trans-unit>
+      <trans-unit id="PostAction_DotnetConfig_Error_ArgumentNotConfigured">
+        <source>Post action argument '{0}' is mandatory, but not configured.</source>
+        <target state="translated">Аргумент после действия "{0}" является обязательным, но не настроен.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotBoolean">
         <source>Post action argument '{0}' is not a valid boolean value.</source>
         <target state="translated">Аргумент после действия "{0}" не является допустимым логическим значением.</target>
@@ -901,8 +931,8 @@ The header is followed by the list of parameters and their errors (might be seve
         <note />
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Error">
-        <source>Failed to instatiate template '{0}', the following constraints are not met:</source>
-        <target state="translated">Не удалось создать экземпляр шаблона «{0}», не соблюдены следующие ограничения:</target>
+        <source>Failed to instantiate template '{0}', the following constraints are not met:</source>
+        <target state="translated">Не удалось создать экземпляр шаблона "{0}", не соблюдены следующие ограничения:</target>
         <note>{0} - template name (user friendly)</note>
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Hint">

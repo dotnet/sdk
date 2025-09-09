@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.Extensions.DependencyModel;
@@ -29,6 +31,11 @@ namespace Microsoft.NET.Build.Tasks
 
         public string RuntimeIdentifier { get; set; }
 
+        /// <summary>
+        /// Strips the RID if it's any, because that's not reasonable
+        /// </summary>
+        private string EffectiveRuntimeIdentifier => string.IsNullOrEmpty(RuntimeIdentifier) ? null : RuntimeIdentifier == "any" ? null : RuntimeIdentifier;
+
         public string PlatformLibraryName { get; set; }
 
         public ITaskItem[] RuntimeFrameworks { get; set; }
@@ -46,6 +53,8 @@ namespace Microsoft.NET.Build.Tasks
 
         [Required]
         public bool IncludeMainProject { get; set; }
+
+        public bool TrimDepsJsonLibrariesWithoutAssets { get; set; }
 
         // @(ReferencePath) that will be passed to
         public ITaskItem[] ReferencePaths { get; set; } = Array.Empty<ITaskItem>();
@@ -91,7 +100,7 @@ namespace Microsoft.NET.Build.Tasks
 
         public bool IncludeProjectsNotInAssetsFile { get; set; }
 
-        // List of runtime identifer (platform part only) to validate for runtime assets
+        // List of runtime identifier (platform part only) to validate for runtime assets
         // If set, the task will warn on any RIDs that aren't in the list
         public string[] ValidRuntimeIdentifierPlatformsForAssets { get; set; }
 
@@ -133,7 +142,7 @@ namespace Microsoft.NET.Build.Tasks
                 LockFile lockFile = new LockFileCache(this).GetLockFile(AssetsFilePath);
                 projectContext = lockFile.CreateProjectContext(
                     TargetFramework,
-                    RuntimeIdentifier,
+                    EffectiveRuntimeIdentifier,
                     PlatformLibraryName,
                     RuntimeFrameworks,
                     IsSelfContained);
@@ -222,12 +231,13 @@ namespace Microsoft.NET.Build.Tasks
                     RuntimeFrameworks,
                     isSelfContained: IsSelfContained,
                     platformLibraryName: PlatformLibraryName,
-                    runtimeIdentifier: RuntimeIdentifier,
+                    runtimeIdentifier: EffectiveRuntimeIdentifier,
                     targetFramework: TargetFramework);
             }
 
             builder = builder
                 .WithMainProjectInDepsFile(IncludeMainProject)
+                .WithTrimLibrariesWithoutAssets(TrimDepsJsonLibrariesWithoutAssets)
                 .WithReferenceAssemblies(referenceAssemblyInfos)
                 .WithDirectReferences(directReferences)
                 .WithDependencyReferences(dependencyReferences)

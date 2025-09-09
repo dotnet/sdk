@@ -228,6 +228,11 @@ Run 'dotnet {1} --show-aliases' with no args to show all aliases.</source>
         <target state="translated">템플릿 검색 중...</target>
         <note />
       </trans-unit>
+      <trans-unit id="Colon_Separator_Deprecated">
+        <source>The colon separator "::" has been deprecated in favor of the at symbol "@" for separating the package from the version in dotnet new install. In your case, this means {0}@{1} instead of {0}::{1}.</source>
+        <target state="translated">dotnet 신규 설치에서 패키지와 버전을 구분하기 위해 "::" 콜론 구분 기호를 "@" 기호로 대체했습니다. 따라서 이 경우 {0}::{1} 대신 {0}@{1} 기호를 사용해야 합니다.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ColumnNameAuthor">
         <source>Author</source>
         <target state="translated">만든 사람</target>
@@ -825,6 +830,31 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">이 작업을 실행하시겠어요 [{0} (예) |{1} (아니요)]?</target>
         <note />
       </trans-unit>
+      <trans-unit id="PostAction_CreateDotnetConfig_CreatedNewSection">
+        <source>Created new section in 'dotnet.config' file</source>
+        <target state="translated">'dotnet.config' 파일에 새 섹션을 만들었습니다.</target>
+        <note>{Locked="dotnet.config"}</note>
+      </trans-unit>
+      <trans-unit id="PostAction_CreateDotnetConfig_ManuallyUpdate">
+        <source>Updating existing values in 'dotnet.config' is not yet supported. Please, manually update 'dotnet.config' to have '{0}' under section '{1}'.</source>
+        <target state="translated">'dotnet.config'의 기존 값 업데이트는 아직 지원되지 않습니다. 'dotnet.config'를 수동으로 업데이트하여 '{0}' 섹션의 '{1}'을(를) 갖도록 하세요.</target>
+        <note>{Locked="dotnet.config"}</note>
+      </trans-unit>
+      <trans-unit id="PostAction_CreateDotnetConfig_Succeeded">
+        <source>Successfully created 'dotnet.config' file.</source>
+        <target state="translated">'dotnet.config' 파일을 만들었습니다.</target>
+        <note>{Locked="dotnet.config"}</note>
+      </trans-unit>
+      <trans-unit id="PostAction_CreateDotnetConfig_ValueAlreadyExist">
+        <source>The required value in 'dotnet.config' is already set.</source>
+        <target state="translated">'dotnet.config'의 필수 값이 이미 설정되어 있습니다.</target>
+        <note>{Locked="dotnet.config"}</note>
+      </trans-unit>
+      <trans-unit id="PostAction_DotnetConfig_Error_ArgumentNotConfigured">
+        <source>Post action argument '{0}' is mandatory, but not configured.</source>
+        <target state="translated">'{0}' 게시물 매크로 함수 인수가 필수이지만 구성되지 않았습니다.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotBoolean">
         <source>Post action argument '{0}' is not a valid boolean value.</source>
         <target state="translated">사후 작업 인수 '{0}'은(는) 올바른 부울 값이 아닙니다.</target>
@@ -901,8 +931,8 @@ The header is followed by the list of parameters and their errors (might be seve
         <note />
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Error">
-        <source>Failed to instatiate template '{0}', the following constraints are not met:</source>
-        <target state="translated">'{0}' 템플릿을 예로 들지 못했습니다. 다음 제약 조건이 충족되지 않습니다.</target>
+        <source>Failed to instantiate template '{0}', the following constraints are not met:</source>
+        <target state="translated">'{0}' 템플릿을 인스턴스화하지 못했습니다. 다음 제약 조건이 충족되지 않습니다.</target>
         <note>{0} - template name (user friendly)</note>
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Hint">

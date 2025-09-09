@@ -1,62 +1,63 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 using System.Text.Json;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
+
+public class StaticWebAssetsReadPackManifest : Task
 {
-    public class StaticWebAssetsReadPackManifest : Task
+    [Required]
+    public string ManifestPath { get; set; }
+
+    [Output] public ITaskItem[] Files { get; set; }
+
+    [Output] public ITaskItem[] AdditionalElementsToRemoveFromPacking { get; set; }
+
+    public override bool Execute()
     {
-        [Required]
-        public string ManifestPath { get; set; }
-
-        [Output] public ITaskItem[] Files { get; set; }
-
-        [Output] public ITaskItem[] AdditionalElementsToRemoveFromPacking { get; set; }
-
-        public override bool Execute()
+        if (!File.Exists(ManifestPath))
         {
-            if (!File.Exists(ManifestPath))
-            {
-                Log.LogError($"Manifest file at '{ManifestPath}' not found.");
-                return false;
-            }
-
-            try
-            {
-                var manifest = JsonSerializer.Deserialize<StaticWebAssetsPackManifest>(File.ReadAllBytes(ManifestPath));
-                Files = manifest.Files.Select(ToTaskItem).ToArray();
-                AdditionalElementsToRemoveFromPacking = manifest.ElementsToRemove?.Select(e => new TaskItem(e)).ToArray() ?? Array.Empty<ITaskItem>();
-            }
-            catch (Exception ex)
-            {
-                Log.LogErrorFromException(ex, showStackTrace: true, showDetail: true, file: ManifestPath);
-            }
-
-            return !Log.HasLoggedErrors;
-
-            static ITaskItem ToTaskItem(StaticWebAssetPackageFile file)
-            {
-                var result = new TaskItem(file.Id);
-                result.SetMetadata(nameof(StaticWebAssetPackageFile.PackagePath), file.PackagePath);
-                return result;
-            }
+            Log.LogError($"Manifest file at '{ManifestPath}' not found.");
+            return false;
         }
 
-        private class StaticWebAssetPackageFile
+        try
         {
-            public string Id { get; set; }
-
-            public string PackagePath { get; set; }
+            var manifest = JsonSerializer.Deserialize<StaticWebAssetsPackManifest>(File.ReadAllBytes(ManifestPath));
+            Files = manifest.Files.Select(ToTaskItem).ToArray();
+            AdditionalElementsToRemoveFromPacking = manifest.ElementsToRemove?.Select(e => new TaskItem(e)).ToArray() ?? Array.Empty<ITaskItem>();
+        }
+        catch (Exception ex)
+        {
+            Log.LogErrorFromException(ex, showStackTrace: true, showDetail: true, file: ManifestPath);
         }
 
-        private class StaticWebAssetsPackManifest
-        {
-            public StaticWebAssetPackageFile[] Files { get; set; }
+        return !Log.HasLoggedErrors;
 
-            public string[] ElementsToRemove { get; set; }
+        static ITaskItem ToTaskItem(StaticWebAssetPackageFile file)
+        {
+            var result = new TaskItem(file.Id);
+            result.SetMetadata(nameof(StaticWebAssetPackageFile.PackagePath), file.PackagePath);
+            return result;
         }
+    }
+
+    private sealed class StaticWebAssetPackageFile
+    {
+        public string Id { get; set; }
+
+        public string PackagePath { get; set; }
+    }
+
+    private sealed class StaticWebAssetsPackManifest
+    {
+        public StaticWebAssetPackageFile[] Files { get; set; }
+
+        public string[] ElementsToRemove { get; set; }
     }
 }
