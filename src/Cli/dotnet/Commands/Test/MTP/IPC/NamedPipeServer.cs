@@ -32,7 +32,15 @@ internal sealed class NamedPipeServer : NamedPipeBase
         CancellationToken cancellationToken,
         bool skipUnknownMessages)
     {
-        _namedPipeServerStream = new(pipeName, PipeDirection.InOut, maxNumberOfServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
+        _namedPipeServerStream = new NamedPipeServerStream(
+            pipeName,
+            PipeDirection.InOut,
+            maxNumberOfServerInstances,
+            PipeTransmissionMode.Byte,
+            PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly,
+            inBufferSize: 0,
+            outBufferSize: 0);
+
         _callback = callback;
         _cancellationToken = cancellationToken;
         _skipUnknownMessages = skipUnknownMessages;
@@ -68,10 +76,10 @@ internal sealed class NamedPipeServer : NamedPipeBase
     private async Task InternalLoopAsync(CancellationToken cancellationToken)
     {
         int currentMessageSize = 0;
-        int missingBytesToReadOfWholeMessage = 0;
+        int remainingBytesToReadOfWholeMessage = 0;
         while (!cancellationToken.IsCancellationRequested)
         {
-            int missingBytesToReadOfCurrentChunk = 0;
+            int remainingBytesToReadOfCurrentChunk = 0;
             int currentReadIndex = 0;
             int currentReadBytes = await _namedPipeServerStream.ReadAsync(_readBuffer.AsMemory(currentReadIndex, _readBuffer.Length), cancellationToken);
             if (currentReadBytes == 0)
@@ -81,7 +89,7 @@ internal sealed class NamedPipeServer : NamedPipeBase
             }
 
             // Reset the current chunk size
-            missingBytesToReadOfCurrentChunk = currentReadBytes;
+            remainingBytesToReadOfCurrentChunk = currentReadBytes;
 
             // If currentRequestSize is 0, we need to read the message size
             if (currentMessageSize == 0)
@@ -93,25 +101,25 @@ internal sealed class NamedPipeServer : NamedPipeBase
                 }
 
                 currentMessageSize = BitConverter.ToInt32(_readBuffer, 0);
-                missingBytesToReadOfCurrentChunk = currentReadBytes - sizeof(int);
-                missingBytesToReadOfWholeMessage = currentMessageSize;
+                remainingBytesToReadOfCurrentChunk = currentReadBytes - sizeof(int);
+                remainingBytesToReadOfWholeMessage = currentMessageSize;
                 currentReadIndex = sizeof(int);
             }
 
-            if (missingBytesToReadOfCurrentChunk > 0)
+            if (remainingBytesToReadOfCurrentChunk > 0)
             {
                 // We need to read the rest of the message
-                await _messageBuffer.WriteAsync(_readBuffer.AsMemory(currentReadIndex, missingBytesToReadOfCurrentChunk), cancellationToken);
-                missingBytesToReadOfWholeMessage -= missingBytesToReadOfCurrentChunk;
+                await _messageBuffer.WriteAsync(_readBuffer.AsMemory(currentReadIndex, remainingBytesToReadOfCurrentChunk), cancellationToken);
+                remainingBytesToReadOfWholeMessage -= remainingBytesToReadOfCurrentChunk;
             }
 
-            if (missingBytesToReadOfWholeMessage < 0)
+            if (remainingBytesToReadOfWholeMessage < 0)
             {
                 throw new UnreachableException(CliCommandStrings.DotnetTestPipeOverlapping);
             }
 
             // If we have read all the message, we can deserialize it
-            if (missingBytesToReadOfWholeMessage == 0)
+            if (remainingBytesToReadOfWholeMessage == 0)
             {
                 // Deserialize the message
                 _messageBuffer.Position = 0;
@@ -178,7 +186,7 @@ internal sealed class NamedPipeServer : NamedPipeBase
 
                 // Reset the control variables
                 currentMessageSize = 0;
-                missingBytesToReadOfWholeMessage = 0;
+                remainingBytesToReadOfWholeMessage = 0;
             }
         }
     }
