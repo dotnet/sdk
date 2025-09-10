@@ -5,13 +5,14 @@
 
 using System.Collections.Concurrent;
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.TemplateEngine.Cli.Help;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal partial class MicrosoftTestingPlatformTestCommand
 {
-    private readonly ConcurrentDictionary<string, CommandLineOption> _commandLineOptionNameToModuleNames = [];
+    private readonly ConcurrentDictionary<string, CommandLineOptionMessage> _commandLineOptionNameToModuleNames = [];
     private readonly ConcurrentDictionary<bool, List<(string, string[])>> _moduleNamesToCommandLineOptions = [];
     private static readonly string Indent = "  ";
 
@@ -29,9 +30,9 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 return;
             }
 
-            Dictionary<bool, List<CommandLineOption>> allOptions = GetAllOptions(context.Command.Options);
-            allOptions.TryGetValue(true, out List<CommandLineOption> builtInOptions);
-            allOptions.TryGetValue(false, out List<CommandLineOption> nonBuiltInOptions);
+            Dictionary<bool, List<CommandLineOptionMessage>> allOptions = GetAllOptions(context.Command.Options);
+            allOptions.TryGetValue(true, out List<CommandLineOptionMessage> builtInOptions);
+            allOptions.TryGetValue(false, out List<CommandLineOptionMessage> nonBuiltInOptions);
 
             Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions = GetModulesToMissingOptions(_moduleNamesToCommandLineOptions, builtInOptions.Select(option => option.Name), nonBuiltInOptions.Select(option => option.Name));
 
@@ -92,22 +93,14 @@ internal partial class MicrosoftTestingPlatformTestCommand
         return $"[{option.Trim(':').ToLower()}]";
     }
 
-    private void OnHelpRequested(object sender, HelpEventArgs args)
+    private void OnHelpRequested(CommandLineOptionMessages commandLineOptionMessages)
     {
-        var testApp = (TestApplication)sender;
-        if (!testApp.TestOptions.IsHelp)
-        {
-            // TODO: Better to throw exception?
-            return;
-        }
-        
-        CommandLineOption[] commandLineOptionMessages = args.CommandLineOptions;
-        string moduleName = args.ModulePath;
+        string moduleName = commandLineOptionMessages.ModulePath;
 
         List<string> builtInOptions = [];
         List<string> nonBuiltInOptions = [];
 
-        foreach (CommandLineOption commandLineOption in commandLineOptionMessages)
+        foreach (CommandLineOptionMessage commandLineOption in commandLineOptionMessages.CommandLineOptionMessageList)
         {
             if (commandLineOption.IsHidden.HasValue && commandLineOption.IsHidden.Value) continue;
 
@@ -135,19 +128,19 @@ internal partial class MicrosoftTestingPlatformTestCommand
            (isBuiltIn, value) => [.. value, (moduleName, nonBuiltInOptions.ToArray())]);
     }
 
-    private Dictionary<bool, List<CommandLineOption>> GetAllOptions(IList<Option> commandOptions)
+    private Dictionary<bool, List<CommandLineOptionMessage>> GetAllOptions(IList<Option> commandOptions)
     {
-        Dictionary<bool, List<CommandLineOption>> filteredOptions = [];
+        Dictionary<bool, List<CommandLineOptionMessage>> filteredOptions = [];
 
         // Create a set of option names from the command's options for efficient lookup
         var commandOptionNames = commandOptions.Select(o => o.Name.TrimStart('-')).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        foreach (KeyValuePair<string, CommandLineOption> option in _commandLineOptionNameToModuleNames)
+        foreach (KeyValuePair<string, CommandLineOptionMessage> option in _commandLineOptionNameToModuleNames)
         {
             // Only include options that are NOT already present in the command's options
             if (!commandOptionNames.Contains(option.Value.Name))
             {
-                if (!filteredOptions.TryGetValue(option.Value.IsBuiltIn.Value, out List<CommandLineOption> value))
+                if (!filteredOptions.TryGetValue(option.Value.IsBuiltIn.Value, out List<CommandLineOptionMessage> value))
                 {
                     filteredOptions.Add(option.Value.IsBuiltIn.Value, [option.Value]);
                 }

@@ -18,9 +18,11 @@ internal sealed class TestApplication(
     TestModule module,
     BuildOptions buildOptions,
     TestOptions testOptions,
-    TerminalTestReporter output) : IDisposable
+    TerminalTestReporter output,
+    Action<CommandLineOptionMessages> onHelpRequested) : IDisposable
 {
     private readonly BuildOptions _buildOptions = buildOptions;
+    private readonly Action<CommandLineOptionMessages> _onHelpRequested = onHelpRequested;
     private readonly TestApplicationHandler _handler = new(output, module, testOptions);
 
     private readonly List<string> _outputData = [];
@@ -32,8 +34,6 @@ internal sealed class TestApplication(
     private readonly List<NamedPipeServer> _testAppPipeConnections = [];
     private readonly Dictionary<NamedPipeServer, HandshakeMessage> _handshakes = new();
 
-    public event EventHandler<HelpEventArgs> HelpRequested;
-
     public TestModule Module { get; } = module;
     public TestOptions TestOptions { get; } = testOptions;
 
@@ -43,19 +43,19 @@ internal sealed class TestApplication(
     {
         // TODO: RunAsync is probably expected to be executed exactly once on each TestApplication instance.
         // Consider throwing an exception if it's called more than once.
-        if (TestOptions.HasFilterMode && !ModulePathExists())
-        {
-            return ExitCode.GenericFailure;
-        }
-
         var processStartInfo = CreateProcessStartInfo();
 
         _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
-        var testProcessResult = await StartProcess(processStartInfo);
+        var testProcessExitCode = await StartProcess(processStartInfo);
 
         WaitOnTestApplicationPipeConnectionLoop();
 
-        return testProcessResult;
+        if (_handler.HasMismatchingTestSessionEventCount())
+        {
+            throw new InvalidOperationException(CliCommandStrings.MissingTestSessionEnd);
+        }
+
+        return testProcessExitCode;
     }
 
     private ProcessStartInfo CreateProcessStartInfo()
@@ -221,6 +221,15 @@ internal sealed class TestApplication(
         }
         catch (Exception ex)
         {
+            // BE CAREFUL:
+            // When handling some of the messages, we may throw an exception in unexpected state.
+            // (e.g, OnSessionEvent may throw if we receive TestSessionEnd without TestSessionStart).
+            // (or if we receive help-related messages when not in help mode)
+            // In that case, we FailFast.
+            // The lack of FailFast *might* have unintended consequences, such as breaking the internal loop of pipe server.
+            // In that case, maybe MTP app will continue waiting for response, but we don't send the response and are waiting for
+            // MTP app process exit (which doesn't happen).
+            // So, we explicitly FailFast here.
             string exAsString = ex.ToString();
             Logger.LogTrace(exAsString);
             Environment.FailFast(exAsString);
@@ -298,24 +307,17 @@ internal sealed class TestApplication(
         process.BeginErrorReadLine();
     }
 
-    private bool ModulePathExists()
-    {
-        if (!File.Exists(Module.RunProperties.Command))
-        {
-            // TODO: The error should be shown to the user, not just logged to trace.
-            Logger.LogTrace($"Test module '{Module.RunProperties.Command}' not found. Build the test application before or run 'dotnet test'.");
-
-            return false;
-        }
-        return true;
-    }
-
     public void OnHandshakeMessage(HandshakeMessage handshakeMessage, bool gotSupportedVersion)
         => _handler.OnHandshakeReceived(handshakeMessage, gotSupportedVersion);
 
     private void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
     {
-        HelpRequested?.Invoke(this, new HelpEventArgs { ModulePath = commandLineOptionMessages.ModulePath, CommandLineOptions = [.. commandLineOptionMessages.CommandLineOptionMessageList.Select(message => new CommandLineOption(message.Name, message.Description, message.IsHidden, message.IsBuiltIn))] });
+        if (!TestOptions.IsHelp)
+        {
+            throw new InvalidOperationException(CliCommandStrings.UnexpectedHelpMessage);
+        }
+
+        _onHelpRequested(commandLineOptionMessages);
     }
 
     private void OnDiscoveredTestMessages(DiscoveredTestMessages discoveredTestMessages)
@@ -324,7 +326,7 @@ internal sealed class TestApplication(
     private void OnTestResultMessages(TestResultMessages testResultMessage)
         => _handler.OnTestResultsReceived(testResultMessage);
 
-    internal void OnFileArtifactMessages(FileArtifactMessages fileArtifactMessages)
+    private void OnFileArtifactMessages(FileArtifactMessages fileArtifactMessages)
         => _handler.OnFileArtifactsReceived(fileArtifactMessages);
 
     private void OnSessionEvent(TestSessionEvent sessionEvent)
