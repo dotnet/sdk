@@ -28,12 +28,9 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 return;
             }
 
-            Dictionary<bool, List<CommandLineOptionMessage>> allOptions = GetAllOptions(context.Command.Options);
-            allOptions.TryGetValue(true, out List<CommandLineOptionMessage>? builtInOptions);
-            allOptions.TryGetValue(false, out List<CommandLineOptionMessage>? nonBuiltInOptions);
+            var (builtInOptions, nonBuiltInOptions) = GetAllOptions(context.Command.Options);
 
-            // TODO: Null suppression here looks like a bug!
-            Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions = GetModulesToMissingOptions(_moduleNamesToCommandLineOptions, builtInOptions!.Select(option => option.Name!), nonBuiltInOptions!.Select(option => option.Name!));
+            Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions = GetModulesToMissingOptions(_moduleNamesToCommandLineOptions, builtInOptions.Select(option => option.Name!), nonBuiltInOptions.Select(option => option.Name!));
 
             _output!.WritePlatformAndExtensionOptions(context, builtInOptions!, nonBuiltInOptions!, moduleToMissingOptions);
         };
@@ -127,9 +124,10 @@ internal partial class MicrosoftTestingPlatformTestCommand
            (isBuiltIn, value) => [.. value, (moduleName, nonBuiltInOptions.ToArray())]);
     }
 
-    private Dictionary<bool, List<CommandLineOptionMessage>> GetAllOptions(IList<Option> commandOptions)
+    private (List<CommandLineOptionMessage> BuiltInOptions, List<CommandLineOptionMessage> NonBuiltInOptions) GetAllOptions(IList<Option> commandOptions)
     {
-        Dictionary<bool, List<CommandLineOptionMessage>> filteredOptions = [];
+        List<CommandLineOptionMessage> builtInOptions = [];
+        List<CommandLineOptionMessage> nonBuiltInOptions = [];
 
         // Create a set of option names from the command's options for efficient lookup
         var commandOptionNames = commandOptions.Select(o => o.Name.TrimStart('-')).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -139,24 +137,22 @@ internal partial class MicrosoftTestingPlatformTestCommand
             // Only include options that are NOT already present in the command's options
             if (!commandOptionNames.Contains(option.Value.Name!))
             {
-                if (!filteredOptions.TryGetValue(option.Value.IsBuiltIn!.Value, out List<CommandLineOptionMessage>? value))
+                if (option.Value.IsBuiltIn!.Value)
                 {
-                    filteredOptions.Add(option.Value.IsBuiltIn.Value, [option.Value]);
+                    builtInOptions.Add(option.Value);
                 }
                 else
                 {
-                    value.Add(option.Value);
+                    nonBuiltInOptions.Add(option.Value);
                 }
             }
         }
 
         // Sort options alphabetically by name
-        foreach (var optionsList in filteredOptions.Values)
-        {
-            optionsList.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase));
-        }
+        builtInOptions.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase));
+        nonBuiltInOptions.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase));
 
-        return filteredOptions;
+        return (builtInOptions, nonBuiltInOptions);
     }
 
     private static Dictionary<bool, List<(string[], string[])>> GetModulesToMissingOptions(
