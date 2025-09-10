@@ -62,6 +62,7 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
                 ));
 
                 LogVerbosityForAllTopLevelCommand(result, parseResult, topLevelCommandName, measurements);
+                LogVulnerableOptionForPackageUpdateCommand(result, parseResult, topLevelCommandName, measurements);
 
                 foreach (IParseResultLogRule rule in ParseResultLogRules)
                 {
@@ -137,6 +138,27 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
         ),
         new AllowListToSendVerbSecondVerbFirstArgument(["workload", "tool", "new"]),
     ];
+
+    private static void LogVulnerableOptionForPackageUpdateCommand(
+        ICollection<ApplicationInsightsEntryFormat> result,
+        ParseResult parseResult,
+        string topLevelCommandName,
+        Dictionary<string, double> measurements = null)
+    {
+        if (topLevelCommandName == "package" && parseResult.CommandResult.Command != null && parseResult.CommandResult.Command.Name == "update")
+        {
+            var hasVulnerableOption = parseResult.HasOption("--vulnerable");
+
+            result.Add(new ApplicationInsightsEntryFormat(
+                "sublevelparser/command",
+                new Dictionary<string, string>()
+                {
+                    { "verb", topLevelCommandName + " update" },
+                    { "vulnerable", hasVulnerableOption.ToString()}
+                },
+                measurements));
+        }
+    }
 
     private static void LogVerbosityForAllTopLevelCommand(
         ICollection<ApplicationInsightsEntryFormat> result,
