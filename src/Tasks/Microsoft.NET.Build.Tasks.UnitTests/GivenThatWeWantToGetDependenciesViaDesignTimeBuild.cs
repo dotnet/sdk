@@ -352,9 +352,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [WindowsOnlyTheory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void ItShouldOnlyReturnTopLevelPackages(bool useAlias)
+        [InlineData("latestNet")]
+        [InlineData("net6.0")]
+        public void ItShouldOnlyReturnTopLevelPackages(string alias)
         {
             var testRoot = _testAssetsManager.CreateTestDirectory().Path;
             Log.WriteLine("Test root: " + testRoot);
@@ -362,11 +362,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             string projectAssetsJsonPath = Path.Combine(testRoot, "project.assets.json");
             string projectCacheAssetsJsonPath = Path.Combine(testRoot, "projectassets.cache");
             // project.assets.json
-            File.WriteAllText(projectAssetsJsonPath, CreateBasicProjectAssetsFile(testRoot, useAlias: useAlias));
+            File.WriteAllText(projectAssetsJsonPath, CreateBasicProjectAssetsFile(testRoot, alias: alias));
             var task = InitializeTask(testRoot, out _);
             task.ProjectAssetsFile = projectAssetsJsonPath;
             task.ProjectAssetsCacheFile = projectCacheAssetsJsonPath;
-            task.TargetFramework = "net6.0";
+            task.TargetFramework = alias;
             task.Execute();
 
             // Verify all top packages are listed here
@@ -406,7 +406,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         /// </c>
         /// dependent.package2 has an error message, and dependent.package3 has a warning.
         /// </remarks>
-        private string CreateBasicProjectAssetsFile(string testRoot, string package2Type = "package", string package3Type = "package", bool useAlias = false)
+        private string CreateBasicProjectAssetsFile(string testRoot, string package2Type = "package", string package3Type = "package", string alias = "net6.0")
         {
             var json =
 """
@@ -638,7 +638,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
   ]
 }
 """;
-            var alias = useAlias ? "latestNet" : "net6.0";
             return json.Replace("PACKAGE2_TYPE", package2Type)
                        .Replace("PACKAGE3_TYPE", package3Type)
                        .Replace("TFM_ALIAS", alias)
