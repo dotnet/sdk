@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Collections.Concurrent;
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
@@ -31,12 +29,13 @@ internal partial class MicrosoftTestingPlatformTestCommand
             }
 
             Dictionary<bool, List<CommandLineOptionMessage>> allOptions = GetAllOptions(context.Command.Options);
-            allOptions.TryGetValue(true, out List<CommandLineOptionMessage> builtInOptions);
-            allOptions.TryGetValue(false, out List<CommandLineOptionMessage> nonBuiltInOptions);
+            allOptions.TryGetValue(true, out List<CommandLineOptionMessage>? builtInOptions);
+            allOptions.TryGetValue(false, out List<CommandLineOptionMessage>? nonBuiltInOptions);
 
-            Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions = GetModulesToMissingOptions(_moduleNamesToCommandLineOptions, builtInOptions.Select(option => option.Name), nonBuiltInOptions.Select(option => option.Name));
+            // TODO: Null suppression here looks like a bug!
+            Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions = GetModulesToMissingOptions(_moduleNamesToCommandLineOptions, builtInOptions!.Select(option => option.Name!), nonBuiltInOptions!.Select(option => option.Name!));
 
-            _output.WritePlatformAndExtensionOptions(context, builtInOptions, nonBuiltInOptions, moduleToMissingOptions);
+            _output!.WritePlatformAndExtensionOptions(context, builtInOptions!, nonBuiltInOptions!, moduleToMissingOptions);
         };
     }
 
@@ -95,26 +94,26 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
     private void OnHelpRequested(CommandLineOptionMessages commandLineOptionMessages)
     {
-        string moduleName = commandLineOptionMessages.ModulePath;
+        string moduleName = commandLineOptionMessages.ModulePath!;
 
         List<string> builtInOptions = [];
         List<string> nonBuiltInOptions = [];
 
-        foreach (CommandLineOptionMessage commandLineOption in commandLineOptionMessages.CommandLineOptionMessageList)
+        foreach (CommandLineOptionMessage commandLineOption in commandLineOptionMessages.CommandLineOptionMessageList!)
         {
             if (commandLineOption.IsHidden.HasValue && commandLineOption.IsHidden.Value) continue;
 
             if (commandLineOption.IsBuiltIn.HasValue && commandLineOption.IsBuiltIn.Value)
             {
-                builtInOptions.Add(commandLineOption.Name);
+                builtInOptions.Add(commandLineOption.Name!);
             }
             else
             {
-                nonBuiltInOptions.Add(commandLineOption.Name);
+                nonBuiltInOptions.Add(commandLineOption.Name!);
             }
 
             _commandLineOptionNameToModuleNames.AddOrUpdate(
-                commandLineOption.Name,
+                commandLineOption.Name!,
                 commandLineOption,
                 (optionName, value) => (value));
         }
@@ -138,9 +137,9 @@ internal partial class MicrosoftTestingPlatformTestCommand
         foreach (KeyValuePair<string, CommandLineOptionMessage> option in _commandLineOptionNameToModuleNames)
         {
             // Only include options that are NOT already present in the command's options
-            if (!commandOptionNames.Contains(option.Value.Name))
+            if (!commandOptionNames.Contains(option.Value.Name!))
             {
-                if (!filteredOptions.TryGetValue(option.Value.IsBuiltIn.Value, out List<CommandLineOptionMessage> value))
+                if (!filteredOptions.TryGetValue(option.Value.IsBuiltIn!.Value, out List<CommandLineOptionMessage>? value))
                 {
                     filteredOptions.Add(option.Value.IsBuiltIn.Value, [option.Value]);
                 }

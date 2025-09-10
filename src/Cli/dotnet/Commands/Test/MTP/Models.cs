@@ -111,5 +111,4 @@ internal sealed class ParallelizableTestModuleGroupWithSequentialInnerModules : 
     }
 }
 
-
-internal sealed record TestModule(RunProperties RunProperties, string? ProjectFullPath, string? TargetFramework, bool IsTestingPlatformApplication, bool IsTestProject, ProjectLaunchSettingsModel? LaunchSettings, string TargetPath, string? DotnetRootArchVariableName);
+internal sealed record TestModule(RunProperties RunProperties, string? ProjectFullPath, string? TargetFramework, bool IsTestingPlatformApplication, ProjectLaunchSettingsModel? LaunchSettings, string TargetPath, string? DotnetRootArchVariableName);

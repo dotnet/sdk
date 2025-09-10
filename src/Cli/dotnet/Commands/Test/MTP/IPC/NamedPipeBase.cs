@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Globalization;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 
@@ -21,7 +19,7 @@ internal abstract class NamedPipeBase
 
     protected INamedPipeSerializer GetSerializer(int id, bool skipUnknownMessages = false)
     {
-        if (_idSerializer.TryGetValue(id, out INamedPipeSerializer serializer))
+        if (_idSerializer.TryGetValue(id, out INamedPipeSerializer? serializer))
         {
             return serializer;
         }
@@ -38,7 +36,7 @@ internal abstract class NamedPipeBase
 
 
     protected INamedPipeSerializer GetSerializer(Type type)
-        => _typeSerializer.TryGetValue(type, out INamedPipeSerializer serializer)
+        => _typeSerializer.TryGetValue(type, out INamedPipeSerializer? serializer)
             ? serializer
             : throw new ArgumentException(string.Format(
                 CultureInfo.InvariantCulture,

@@ -324,7 +324,7 @@ internal static class SolutionAndProjectUtility
             rootVariableName = null;
         }
 
-        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, isTestProject, launchSettings, project.GetPropertyValue(ProjectProperties.TargetPath), rootVariableName);
+        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, launchSettings, project.GetPropertyValue(ProjectProperties.TargetPath), rootVariableName);
 
         static RunProperties GetRunProperties(ProjectInstance project, ICollection<ILogger>? loggers)
         {
