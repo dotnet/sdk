@@ -883,11 +883,11 @@ The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="needs-review-translation">dotnet.config, test çalıştırıcısını Microsoft.Testing.Platform olarak tanımlar. Tüm projelerin bu test çalıştırıcısını kullanması gereklidir.
-Aşağıdaki test projeleri VSTest test çalıştırıcısını kullanıyor:
+        <target state="new">global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+The following test projects are using VSTest test runner:
 {0}
 
-Daha fazla bilgi için https://aka.ms/dotnet-test/mtp adresine bakın.</target>
+See https://aka.ms/dotnet-test/mtp for more information.</target>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
 {0} is one or more project names.</note>
       </trans-unit>
