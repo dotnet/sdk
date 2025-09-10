@@ -94,10 +94,7 @@ namespace Microsoft.DotNet.Build.Tasks
 
                                     CheckDestinationPath(destinationPath, fullDestDirPath);
 
-                                    if (!Directory.Exists(Path.Combine(DestinationDirectory, Path.GetDirectoryName(entry.FullName))))
-                                    {
-                                        Directory.CreateDirectory(Path.Combine(DestinationDirectory, Path.GetDirectoryName(entry.FullName)));
-                                    }
+                                    Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
 
                                     Log.LogMessage(Path.GetDirectoryName(entry.FullName));
                                     entry.ExtractToFile(destinationPath);
@@ -131,10 +128,9 @@ namespace Microsoft.DotNet.Build.Tasks
                                         string destinationPath = Path.GetFullPath(Path.Combine(DestinationDirectory, entryName));
 
                                         CheckDestinationPath(destinationPath, fullDestDirPath);
+                                        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
 
                                         Log.LogMessage(entryName);
-
-                                        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
                                         tarEntry.ExtractToFile(destinationPath, overwrite: true);
                                     }
                                 }
