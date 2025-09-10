@@ -1,11 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipes;
+using System.Threading;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
@@ -28,9 +27,7 @@ internal sealed class TestApplication(
     private readonly List<string> _outputData = [];
     private readonly List<string> _errorData = [];
     private readonly string _pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
-    private readonly CancellationTokenSource _cancellationToken = new();
 
-    private Task _testAppPipeConnectionLoop;
     private readonly List<NamedPipeServer> _testAppPipeConnections = [];
     private readonly Dictionary<NamedPipeServer, HandshakeMessage> _handshakes = new();
 
@@ -45,17 +42,26 @@ internal sealed class TestApplication(
         // Consider throwing an exception if it's called more than once.
         var processStartInfo = CreateProcessStartInfo();
 
-        _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
-        var testProcessExitCode = await StartProcess(processStartInfo);
+        var cancellationTokenSource = new CancellationTokenSource();
+        var cancellationToken = cancellationTokenSource.Token;
+        Task? testAppPipeConnectionLoop = null;
 
-        WaitOnTestApplicationPipeConnectionLoop();
-
-        if (_handler.HasMismatchingTestSessionEventCount())
+        try
         {
-            throw new InvalidOperationException(CliCommandStrings.MissingTestSessionEnd);
-        }
+            testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(cancellationToken), cancellationToken);
+            var testProcessExitCode = await StartProcess(processStartInfo);
+            if (_handler.HasMismatchingTestSessionEventCount())
+            {
+                throw new InvalidOperationException(CliCommandStrings.MissingTestSessionEnd);
+            }
 
-        return testProcessExitCode;
+            return testProcessExitCode;
+        }
+        finally
+        {
+            cancellationTokenSource.Cancel();
+            testAppPipeConnectionLoop?.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
+        }
     }
 
     private ProcessStartInfo CreateProcessStartInfo()
@@ -147,12 +153,6 @@ internal sealed class TestApplication(
         return builder.ToString();
     }
 
-    private void WaitOnTestApplicationPipeConnectionLoop()
-    {
-        _cancellationToken.Cancel();
-        _testAppPipeConnectionLoop?.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
-    }
-
     private async Task WaitConnectionAsync(CancellationToken token)
     {
         try
@@ -242,7 +242,7 @@ internal sealed class TestApplication(
 
     private static string GetSupportedProtocolVersion(HandshakeMessage handshakeMessage)
     {
-        if (!handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.SupportedProtocolVersions, out string protocolVersions) ||
+        if (!handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.SupportedProtocolVersions, out string? protocolVersions) ||
             protocolVersions is null)
         {
             // It's not expected we hit this.
@@ -265,7 +265,7 @@ internal sealed class TestApplication(
     }
 
     private static HandshakeMessage CreateHandshakeMessage(string version) =>
-        new(new Dictionary<byte, string>(capacity: 5)
+        new HandshakeMessage(new Dictionary<byte, string>(capacity: 5)
         {
             { HandshakeMessagePropertyNames.PID, Environment.ProcessId.ToString(CultureInfo.InvariantCulture) },
             { HandshakeMessagePropertyNames.Architecture, RuntimeInformation.ProcessArchitecture.ToString() },
@@ -278,7 +278,7 @@ internal sealed class TestApplication(
     {
         Logger.LogTrace($"Starting test process with command '{processStartInfo.FileName}' and arguments '{processStartInfo.Arguments}'.");
 
-        using var process = Process.Start(processStartInfo);
+        using var process = Process.Start(processStartInfo)!;
         StoreOutputAndErrorData(process);
         await process.WaitForExitAsync();
 
@@ -400,7 +400,5 @@ internal sealed class TestApplication(
                 Reporter.Error.WriteLine(messageBuilder.ToString());
             }
         }
-
-        WaitOnTestApplicationPipeConnectionLoop();
     }
 }
