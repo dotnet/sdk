@@ -123,24 +123,32 @@ public class IPCTests
 
         for (int i = 0; i < 100; i++)
         {
-            string currentString = RandomString(Random.Shared.Next(1024, 1024 * 1024 * 2));
-            await namedPipeClient.RequestReplyAsync<TextMessage, VoidResponse>(new TextMessage(currentString), CancellationToken.None);
-            Assert.Single(receivedMessages);
-            Assert.Equal(new TextMessage(currentString), receivedMessages.Dequeue());
+            await AssertWithLengthAsync(Random.Shared.Next(1024, 1024 * 1024 * 2));
         }
 
         // NOTE: 250000 is the buffer size of NamedPipeServer.
-        // We explicitly test around this size as most potential bugs can be around it.
-        for (int randomLength = 250000 - 1000; randomLength < 250000 + 1000; randomLength++)
+        // We explicitly test around this size (and multiple of it) as most potential bugs can be around it.
+        for (int multiple = 1; multiple <= 3; multiple++)
         {
-            string currentString = RandomString(randomLength);
-            await namedPipeClient.RequestReplyAsync<TextMessage, VoidResponse>(new TextMessage(currentString), CancellationToken.None);
-            Assert.Single(receivedMessages);
-            Assert.Equal(new TextMessage(currentString), receivedMessages.Dequeue());
+            const int namedPipeServerBufferSize = 250000;
+            int minLength = namedPipeServerBufferSize * multiple - 1000;
+            int maxLength = namedPipeServerBufferSize * multiple + 1000;
+            for (int randomLength = minLength; randomLength <= maxLength; randomLength++)
+            {
+                await AssertWithLengthAsync(randomLength);
+            }
         }
 
         namedPipeClient.Dispose();
         singleConnectionNamedPipeServer.Dispose();
+
+        async Task AssertWithLengthAsync(int length)
+        {
+            string currentString = RandomString(length);
+            await namedPipeClient.RequestReplyAsync<TextMessage, VoidResponse>(new TextMessage(currentString), CancellationToken.None);
+            Assert.Single(receivedMessages);
+            Assert.Equal(new TextMessage(currentString), receivedMessages.Dequeue());
+        }
     }
 
     [Fact]
