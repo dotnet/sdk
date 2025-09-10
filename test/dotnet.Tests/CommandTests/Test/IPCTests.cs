@@ -129,6 +129,16 @@ public class IPCTests
             Assert.Equal(new TextMessage(currentString), receivedMessages.Dequeue());
         }
 
+        // NOTE: 250000 is the buffer size of NamedPipeServer.
+        // We explicitly test around this size as most potential bugs can be around it.
+        for (int randomLength = 250000 - 1000; randomLength < 250000 + 1000; randomLength++)
+        {
+            string currentString = RandomString(randomLength);
+            await namedPipeClient.RequestReplyAsync<TextMessage, VoidResponse>(new TextMessage(currentString), CancellationToken.None);
+            Assert.Single(receivedMessages);
+            Assert.Equal(new TextMessage(currentString), receivedMessages.Dequeue());
+        }
+
         namedPipeClient.Dispose();
         singleConnectionNamedPipeServer.Dispose();
     }
