@@ -190,10 +190,6 @@ internal sealed class NamedPipeServer : NamedPipeBase
                 {
                     await _namedPipeServerStream.WriteAsync(_messageBuffer.GetBuffer().AsMemory(0, (int)_messageBuffer.Position), cancellationToken);
                     await _namedPipeServerStream.FlushAsync(cancellationToken);
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    {
-                        _namedPipeServerStream.WaitForPipeDrain();
-                    }
                 }
                 finally
                 {
