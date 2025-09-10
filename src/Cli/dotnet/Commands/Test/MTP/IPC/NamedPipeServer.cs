@@ -173,12 +173,19 @@ internal sealed class NamedPipeServer : NamedPipeBase
 
                 // Write the message size
                 byte[] bytes = _sizeOfIntArray;
-                BitConverter.TryWriteBytes(bytes, sizeOfTheWholeMessage);
+                if (!BitConverter.TryWriteBytes(bytes, sizeOfTheWholeMessage))
+                {
+                    throw new UnreachableException();
+                }
+
                 await _messageBuffer.WriteAsync(bytes, cancellationToken);
 
                 // Write the serializer id
                 bytes = _sizeOfIntArray;
-                BitConverter.TryWriteBytes(bytes, responseNamedPipeSerializer.Id);
+                if (!BitConverter.TryWriteBytes(bytes, responseNamedPipeSerializer.Id))
+                {
+                    throw new UnreachableException();
+                }
 
                 await _messageBuffer.WriteAsync(bytes.AsMemory(0, sizeof(int)), cancellationToken);
 
