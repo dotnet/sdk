@@ -256,9 +256,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
+        //  https://github.com/dotnet/sdk/issues/49665
+        // Failed to load /private/tmp/helix/working/A83B08FB/p/d/host/fxr/10.0.0-rc.2.25427.104/libhostfxr.dylib, error: dlopen(/private/tmp/helix/working/A83B08FB/p/d/host/fxr/10.0.0-rc.2.25427.104/libhostfxr.dylib, 0x0001): tried: '/private/tmp/helix/working/A83B08FB/p/d/host/fxr/10.0.0-rc.2.25427.104/libhostfxr.dylib' (mach-o file, but is an incompatible architecture (have 'arm64', need 'x86_64')), '/System/Volumes/Preboot/Cryptexes/OS/private/tmp/helix/working/A83B08FB/p/d/host/fxr/10.0.0-rc.2.25427.104/libhostfxr.dylib' (no such file), '/private/tmp/helix/working/A83B08FB/p/d/host/fxr/10.0.0-rc.2.25427.104/libhostfxr.dylib' (mach-o file, but is an incompatible architecture (have 'arm64', need 'x86_64'))
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RunTestProjectSolutionWithRuntimeOption_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
