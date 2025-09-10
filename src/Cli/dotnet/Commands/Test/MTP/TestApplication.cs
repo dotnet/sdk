@@ -69,6 +69,8 @@ internal sealed class TestApplication(
             Arguments = GetArguments(),
             RedirectStandardOutput = true,
             RedirectStandardError = true,
+            // False is already the default on .NET Core, but prefer to be explicit.
+            UseShellExecute = false,
         };
 
         if (!string.IsNullOrEmpty(Module.RunProperties.WorkingDirectory))
@@ -274,7 +276,7 @@ internal sealed class TestApplication(
 
     private async Task<int> StartProcess(ProcessStartInfo processStartInfo)
     {
-        Logger.LogTrace($"Test application arguments: {processStartInfo.Arguments}");
+        Logger.LogTrace($"Starting test process with command '{processStartInfo.FileName}' and arguments '{processStartInfo.Arguments}'.");
 
         using var process = Process.Start(processStartInfo);
         StoreOutputAndErrorData(process);
