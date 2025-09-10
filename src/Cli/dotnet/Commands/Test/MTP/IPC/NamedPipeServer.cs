@@ -75,41 +75,60 @@ internal sealed class NamedPipeServer : NamedPipeBase
     /// </summary>
     private async Task InternalLoopAsync(CancellationToken cancellationToken)
     {
-        int currentMessageSize = 0;
+        // This is an indicator when reading from the pipe whether we are at the start of a new message (i.e, we should read 4 bytes as message size)
+        // Note that the implementation assumes no overlapping messages in the pipe.
+        // The flow goes like:
+        // 1. MTP sends a request (and acquires lock).
+        // 2. SDK reads the request.
+        // 3. SDK sends a response.
+        // 4. MTP reads the response (and releases lock).
+        // This means that no two requests can be in the pipe at the same time.
+        bool isStartOfNewMessage = true;
         int remainingBytesToReadOfWholeMessage = 0;
         while (!cancellationToken.IsCancellationRequested)
         {
-            int currentReadIndex = 0;
-            int currentReadBytes = await _namedPipeServerStream.ReadAsync(_readBuffer.AsMemory(currentReadIndex, _readBuffer.Length), cancellationToken);
-            if (currentReadBytes == 0)
+            // If we are at the start of a new message, we need to read at least the message size.
+            int currentReadBytes = isStartOfNewMessage
+                ? await _namedPipeServerStream.ReadAtLeastAsync(_readBuffer, minimumBytes: sizeof(int), throwOnEndOfStream: false, cancellationToken)
+                : await _namedPipeServerStream.ReadAsync(_readBuffer, cancellationToken);
+
+            if (currentReadBytes == 0 || (isStartOfNewMessage && currentReadBytes < sizeof(int)))
             {
                 // The client has disconnected
                 return;
             }
 
-            // Reset the current chunk size
-            int remainingBytesToReadOfCurrentChunk = currentReadBytes;
+            // The local remainingBytesToProcess tracks the remaining bytes of what we have read from the pipe but not yet processed.
+            // At the beginning here, it contains everything we have read from the pipe.
+            // As we are processing the data in it, we continue to slice it.
+            Memory<byte> remainingBytesToProcess = _readBuffer.AsMemory(0, currentReadBytes);
 
-            // If currentRequestSize is 0, we need to read the message size
-            if (currentMessageSize == 0)
+            // If the current read is the start of a new message, we need to read the message size first.
+            if (isStartOfNewMessage)
             {
                 // We need to read the message size, first 4 bytes
-                if (currentReadBytes < sizeof(int))
-                {
-                    throw new UnreachableException(CliCommandStrings.DotnetTestPipeIncompleteSize);
-                }
+                remainingBytesToReadOfWholeMessage = BitConverter.ToInt32(remainingBytesToProcess.Span);
 
-                currentMessageSize = BitConverter.ToInt32(_readBuffer, 0);
-                remainingBytesToReadOfCurrentChunk = currentReadBytes - sizeof(int);
-                remainingBytesToReadOfWholeMessage = currentMessageSize;
-                currentReadIndex = sizeof(int);
+                // Now that we have read the size, we slice the remainingBytesToProcess.
+                remainingBytesToProcess = remainingBytesToProcess.Slice(sizeof(int));
+
+                // Now that we have read the size, we are no longer at the start of a new message.
+                // If the current chunk ended up to be the full message, we will set this back to true later.
+                isStartOfNewMessage = false;
             }
 
-            if (remainingBytesToReadOfCurrentChunk > 0)
+            // We read the rest of the message.
+            // Note that this assumes that no messages are overlapping in the pipe.
+            if (remainingBytesToProcess.Length > 0)
             {
                 // We need to read the rest of the message
-                await _messageBuffer.WriteAsync(_readBuffer.AsMemory(currentReadIndex, remainingBytesToReadOfCurrentChunk), cancellationToken);
-                remainingBytesToReadOfWholeMessage -= remainingBytesToReadOfCurrentChunk;
+                await _messageBuffer.WriteAsync(remainingBytesToProcess, cancellationToken);
+                remainingBytesToReadOfWholeMessage -= remainingBytesToProcess.Length;
+
+                // At this point, we have read everything in the remainingBytesToProcess.
+                // Note that while remainingBytesToProcess isn't accessed after this point, we still maintain the
+                // invariant that it tracks what we have read from the pipe but not yet processed.
+                remainingBytesToProcess = Memory<byte>.Empty;
             }
 
             if (remainingBytesToReadOfWholeMessage < 0)
@@ -184,7 +203,7 @@ internal sealed class NamedPipeServer : NamedPipeBase
                 }
 
                 // Reset the control variables
-                currentMessageSize = 0;
+                isStartOfNewMessage = true;
                 remainingBytesToReadOfWholeMessage = 0;
             }
         }
