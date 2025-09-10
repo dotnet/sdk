@@ -2682,4 +2682,13 @@ Proceed?</value>
   <data name="UnexpectedHelpMessage" xml:space="preserve">
     <value>An unexpected help-related message was received when `--help` wasn't used.</value>
   </data>
+  <data name="MismatchingHandshakeInfo" xml:space="preserve">
+    <value>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</value>
+  </data>
+  <data name="UnexpectedMessageInHelpMode" xml:space="preserve">
+    <value>A message of type '{0}' was received in help mode, which is not expected.</value>
+  </data>
+  <data name="UnexpectedMessageWithoutHandshake" xml:space="preserve">
+    <value>A message of type '{0}' was received before we got any handshakes, which is unexpected.</value>
+  </data>
 </root>

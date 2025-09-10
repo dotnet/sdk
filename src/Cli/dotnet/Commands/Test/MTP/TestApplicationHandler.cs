@@ -46,17 +46,18 @@ internal sealed class TestApplicationHandler
             return;
         }
 
+        var executionId = handshakeMessage.Properties[HandshakeMessagePropertyNames.ExecutionId];
+        var arch = handshakeMessage.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
+        var tfm = TargetFrameworkParser.GetShortTargetFramework(handshakeMessage.Properties[HandshakeMessagePropertyNames.Framework]);
+        var currentHandshakeInfo = (tfm, arch, executionId);
+
         if (!_handshakeInfo.HasValue)
         {
-            var executionId = handshakeMessage.Properties[HandshakeMessagePropertyNames.ExecutionId];
-            var arch = handshakeMessage.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
-            var tfm = TargetFrameworkParser.GetShortTargetFramework(handshakeMessage.Properties[HandshakeMessagePropertyNames.Framework]);
-
-            _handshakeInfo = (tfm, arch, executionId);
+            _handshakeInfo = currentHandshakeInfo;
         }
-        else
+        else if (_handshakeInfo.Value != currentHandshakeInfo)
         {
-            // TODO: Verify we get the same info.
+            throw new InvalidOperationException(string.Format(CliCommandStrings.MismatchingHandshakeInfo, currentHandshakeInfo, _handshakeInfo.Value));
         }
 
         var hostType = handshakeMessage.Properties[HandshakeMessagePropertyNames.HostType];
@@ -91,13 +92,14 @@ internal sealed class TestApplicationHandler
     {
         LogDiscoveredTests(discoveredTestMessages);
 
-        // TODO: If _handshakeInfo is null, we should error.
-        // We shouldn't be getting any discovered test messages without a previous handshake.
-
         if (_options.IsHelp)
         {
-            // TODO: Better to throw exception?
-            return;
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageInHelpMode, nameof(DiscoveredTestMessages)));
+        }
+
+        if (!_handshakeInfo.HasValue)
+        {
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(DiscoveredTestMessages)));
         }
 
         foreach (var test in discoveredTestMessages.DiscoveredMessages)
@@ -112,13 +114,14 @@ internal sealed class TestApplicationHandler
     {
         LogTestResults(testResultMessage);
 
-        // TODO: If _handshakeInfo is null, we should error.
-        // We shouldn't be getting any test result messages without a previous handshake.
-
         if (_options.IsHelp)
         {
-            // TODO: Better to throw exception?
-            return;
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageInHelpMode, nameof(TestResultMessages)));
+        }
+
+        if (!_handshakeInfo.HasValue)
+        {
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(TestResultMessages)));
         }
 
         var handshakeInfo = _handshakeInfo.Value;
@@ -158,13 +161,14 @@ internal sealed class TestApplicationHandler
     {
         LogFileArtifacts(fileArtifactMessages);
 
-        // TODO: If _handshakeInfo is null, we should error.
-        // We shouldn't be getting any file artifact messages without a previous handshake.
-
         if (_options.IsHelp)
         {
-            // TODO: Better to throw exception?
-            return;
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageInHelpMode, nameof(FileArtifactMessages)));
+        }
+
+        if (!_handshakeInfo.HasValue)
+        {
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(FileArtifactMessages)));
         }
 
         var handshakeInfo = _handshakeInfo.Value;
@@ -183,8 +187,12 @@ internal sealed class TestApplicationHandler
         {
             LogSessionEvent(sessionEvent);
 
-            // TODO: If _handshakeInfo is null, we should error.
-            // We shouldn't be getting any session event messages without a previous handshake.
+            // TODO: Validate if we should get this message in help mode or not.
+
+            if (!_handshakeInfo.HasValue)
+            {
+                throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(DiscoveredTestMessages)));
+            }
 
             if (sessionEvent.SessionType == SessionEventTypes.TestSessionStart)
             {
