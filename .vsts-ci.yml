@@ -67,18 +67,20 @@ extends:
     template: v1/1ES.Unofficial.PipelineTemplate.yml@1esPipelines
   parameters:
     containers:
-      alpine319WithNode:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
-      cblMariner20Fpm:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-fpm
+      alpine322:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.22-amd64
+      azureLinux30:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-build-amd64
+      azureLinux30fpm:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-fpm-amd64
       centosStream9:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
       debian12Amd64:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc14-amd64
-      fedora39:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
-      mariner20CrossArm:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-arm
+      fedora41:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-41
+      azureLinux30CrossArm:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm-alpine
       ubuntu2204DebPkg:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-debpkg
     sdl:
@@ -211,14 +213,14 @@ extends:
               osProperties: $(linuxOsPortableProperties) /p:BuildSdkDeb=true
               runTests: false
             - categoryName: Portable
-              container: cblMariner20Fpm
+              container: azureLinux30fpm
               # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: $(linuxOsPortableProperties) /p:IsRPMBasedDistro=true
               runTests: false
             - categoryName: Portable
-              container: cblMariner20Fpm
+              container: azureLinux30fpm
               buildArchitecture: arm64
               runtimeIdentifier: linux-arm64
               # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
@@ -228,7 +230,7 @@ extends:
               runTests: false
             ### MUSL ###
             - categoryName: Musl
-              container: alpine319WithNode
+              container: alpine322
               runtimeIdentifier: linux-musl-x64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
@@ -238,7 +240,7 @@ extends:
               enableSbom: false
               runTests: false
             - categoryName: Musl
-              container: mariner20CrossArm
+              container: azureLinux30CrossArm
               buildArchitecture: arm
               runtimeIdentifier: linux-musl-arm
               publishArgument: $(_publishArgument)
