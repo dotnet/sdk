@@ -315,6 +315,13 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     .Where(analyzer => DoesAnalyzerSupportLanguage(analyzer, project.Language));
                 foreach (var analyzer in filteredAnalyzer)
                 {
+                    // Allow suppressors unconditionally
+                    if (analyzer is DiagnosticSuppressor suppressor)
+                    {
+                        analyzers.Add(suppressor);
+                        continue;
+                    }
+
                     // Filter by excluded diagnostics
                     if (!excludeDiagnostics.IsEmpty &&
                         analyzer.SupportedDiagnostics.All(descriptor => excludeDiagnostics.Contains(descriptor.Id)))

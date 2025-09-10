@@ -1880,8 +1880,8 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">No hay cargas de trabajo instaladas, no hay nada que reparar. Ejecute "dotnet workload search" para buscar las cargas de trabajo que se van a instalar.</target>
-        <note />
+        <target state="needs-review-translation">No hay cargas de trabajo instaladas, no hay nada que reparar. Ejecute "dotnet workload search" para buscar las cargas de trabajo que se van a instalar.</target>
+        <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
@@ -2717,10 +2717,10 @@ El valor predeterminado es publicar una aplicación dependiente del marco.</targ
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="translated">No se puede continuar con el proyecto '{0}'.
-Asegúrese de que tiene un tipo de proyecto que se puede ejecutar.
-Un proyecto ejecutable debe tener como destino un TFM ejecutable (por ejemplo, net{1}) y tener OutputType 'Exe'.
-El OutputType actual es '{2}'.</target>
+        <target state="needs-review-translation">No se puede ejecutar el proyecto.
+Asegúrese de tener un tipo de proyecto ejecutable y asegúrese de que "{0}" admita este proyecto.
+Un proyecto ejecutable debe tener como destino un TFM ejecutable (por ejemplo, net5.0) y tener como OutputType "Exe".
+El valor actual de {1} es "{2}".</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -3274,6 +3274,11 @@ La herramienta "{1}" (versión '{2}') se instaló correctamente.</target>
       <trans-unit id="ToolInstallPackageIdArgumentName">
         <source>PACKAGE_ID</source>
         <target state="translated">PACKAGE_ID</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallPackageIdMissing">
+        <source>A package ID was not specified for tool installation.</source>
+        <target state="new">A package ID was not specified for tool installation.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallSourceOptionDescription">

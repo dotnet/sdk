@@ -1880,8 +1880,8 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">워크로드가 설치되어 있지 않고 복구할 것도 없습니다. ‘dotnet 워크로드 검색’을 실행하여 설치할 워크로드를 찾으세요.</target>
-        <note />
+        <target state="needs-review-translation">워크로드가 설치되어 있지 않고 복구할 것도 없습니다. ‘dotnet 워크로드 검색’을 실행하여 설치할 워크로드를 찾으세요.</target>
+        <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
@@ -2717,10 +2717,10 @@ The default is to publish a framework-dependent application.</source>
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="translated">프로젝트 '{0}'을(를) 진행할 수 없습니다.
-실행 가능한 프로젝트 형식이 있는지 확인하세요.
-실행 가능한 프로젝트는 실행 가능한 TFM(예: net{1})을(를) 대상으로 하고 OutputType 'Exe'가 있어야 합니다.
-현재 OutputType은(는) '{2}'입니다.</target>
+        <target state="needs-review-translation">프로젝트를 실행할 수 없습니다.
+실행 가능한 프로젝트 형식이 있고 '{0}'에서 이 프로젝트를 지원하는지 확인하세요.
+실행 가능한 프로젝트는 실행 가능한 TFM(예: net5.0)을 대상으로 하고 OutputType 'Exe'가 있어야 합니다.
+현재 {1}은(는) '{2}'입니다.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -3274,6 +3274,11 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
       <trans-unit id="ToolInstallPackageIdArgumentName">
         <source>PACKAGE_ID</source>
         <target state="translated">PACKAGE_ID</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallPackageIdMissing">
+        <source>A package ID was not specified for tool installation.</source>
+        <target state="new">A package ID was not specified for tool installation.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallSourceOptionDescription">
