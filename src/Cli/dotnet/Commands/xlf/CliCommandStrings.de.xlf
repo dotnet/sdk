@@ -878,19 +878,18 @@ Das angegebene Verzeichnis wird erstellt, wenn es nicht vorhanden ist.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
-        <source>dotnet.config defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+        <source>global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
 The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="translated">dotnet.config definiert den Test Runner als Microsoft.Testing.Platform. Alle Projekte müssen diesen Test Runner verwenden.
+        <target state="needs-review-translation">dotnet.config definiert den Test Runner als Microsoft.Testing.Platform. Alle Projekte müssen diesen Test Runner verwenden.
 Die folgenden Testprojekte verwenden den VSTest-Test Runner:
 {0}
 
 Weitere Informationen finden Sie unter https://aka.ms/dotnet-test/mtp.</target>
-        <note>{0} is one or more project names.
-Microsoft.Testing.Platform is a name, don't translate.
-dotnet.config is a name don't translate.</note>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
+{0} is one or more project names.</note>
       </trans-unit>
       <trans-unit id="CmdUseLockFileOptionDescription">
         <source>Enables project lock file to be generated and used with restore.</source>

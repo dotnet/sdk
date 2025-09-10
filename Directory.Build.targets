@@ -97,8 +97,9 @@
   <!-- Include SourcePackage.editorconfig in all source packages. -->
   <Target Name="_AddEditorConfigToSourcePackage">
     <ItemGroup>
-      <TfmSpecificPackageFile Include="$(MSBuildThisFileDirectory)eng\SourcePackage.editorconfig" PackagePath="contentFiles/cs/$(TargetFramework)/.editorconfig" Condition="'$(TargetFrameworkIdentifier)' != '.NETStandard'"  />
+      <TfmSpecificPackageFile Include="$(MSBuildThisFileDirectory)eng\SourcePackage.editorconfig" PackagePath="contentFiles/cs/$(TargetFramework)/.editorconfig" Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'"  />
       <TfmSpecificPackageFile Include="$(MSBuildThisFileDirectory)eng\SourcePackage.netstandard.editorconfig" PackagePath="contentFiles/cs/$(TargetFramework)/.editorconfig" Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard'" />
+      <TfmSpecificPackageFile Include="$(MSBuildThisFileDirectory)eng\SourcePackage.netframework.editorconfig" PackagePath="contentFiles/cs/$(TargetFramework)/.editorconfig" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
     </ItemGroup>
   </Target>
 
