@@ -3,8 +3,6 @@
 
 #nullable disable
 
-using System.Diagnostics;
-using System.Reflection;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
@@ -15,6 +13,8 @@ internal sealed class TestApplicationHandler
     private readonly TerminalTestReporter _output;
     private readonly TestModule _module;
     private readonly TestOptions _options;
+    private readonly Lock _lock = new();
+    private readonly Dictionary<string, (int TestSessionStartCount, int TestSessionEndCount)> _testSessionEventCountPerSessionUid = new();
 
     private (string TargetFramework, string Architecture, string ExecutionId)? _handshakeInfo;
 
@@ -27,6 +27,8 @@ internal sealed class TestApplicationHandler
 
     internal void OnHandshakeReceived(HandshakeMessage handshakeMessage, bool gotSupportedVersion)
     {
+        LogHandshake(handshakeMessage);
+
         if (!gotSupportedVersion)
         {
             _output.HandshakeFailure(
@@ -38,6 +40,10 @@ internal sealed class TestApplicationHandler
                     handshakeMessage.Properties[HandshakeMessagePropertyNames.SupportedProtocolVersions],
                     ProtocolConstants.SupportedVersions),
                 string.Empty);
+
+            // Protocol version is not supported.
+            // We don't attempt to do anything else.
+            return;
         }
 
         if (!_handshakeInfo.HasValue)
@@ -64,8 +70,6 @@ internal sealed class TestApplicationHandler
             var handshakeInfo = _handshakeInfo.Value;
             _output.AssemblyRunStarted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, instanceId);
         }
-
-        LogHandshake(handshakeMessage);
     }
 
     private static string GetHandshakePropertyName(byte propertyId) =>
@@ -85,6 +89,11 @@ internal sealed class TestApplicationHandler
 
     internal void OnDiscoveredTestsReceived(DiscoveredTestMessages discoveredTestMessages)
     {
+        LogDiscoveredTests(discoveredTestMessages);
+
+        // TODO: If _handshakeInfo is null, we should error.
+        // We shouldn't be getting any discovered test messages without a previous handshake.
+
         if (_options.IsHelp)
         {
             // TODO: Better to throw exception?
@@ -97,12 +106,15 @@ internal sealed class TestApplicationHandler
                 test.DisplayName,
                 test.Uid);
         }
-
-        LogDiscoveredTests(discoveredTestMessages);
     }
 
     internal void OnTestResultsReceived(TestResultMessages testResultMessage)
     {
+        LogTestResults(testResultMessage);
+
+        // TODO: If _handshakeInfo is null, we should error.
+        // We shouldn't be getting any test result messages without a previous handshake.
+
         if (_options.IsHelp)
         {
             // TODO: Better to throw exception?
@@ -140,12 +152,15 @@ internal sealed class TestApplicationHandler
                 standardOutput: testResult.StandardOutput,
                 errorOutput: testResult.ErrorOutput);
         }
-
-        LogTestResults(testResultMessage);
     }
 
     internal void OnFileArtifactsReceived(FileArtifactMessages fileArtifactMessages)
     {
+        LogFileArtifacts(fileArtifactMessages);
+
+        // TODO: If _handshakeInfo is null, we should error.
+        // We shouldn't be getting any file artifact messages without a previous handshake.
+
         if (_options.IsHelp)
         {
             // TODO: Better to throw exception?
@@ -160,15 +175,59 @@ internal sealed class TestApplicationHandler
                 _module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
                 artifact.TestDisplayName, artifact.FullPath);
         }
-
-        LogFileArtifacts(fileArtifactMessages);
     }
 
     internal void OnSessionEventReceived(TestSessionEvent sessionEvent)
     {
-        // TODO: We shouldn't only log here!
-        // We should use it in a more meaningful way. e.g, ensure we received session start/end events.
-        Logger.LogTrace($"TestSessionEvent: {sessionEvent.SessionType}, {sessionEvent.SessionUid}, {sessionEvent.ExecutionId}");
+        lock (_lock)
+        {
+            LogSessionEvent(sessionEvent);
+
+            // TODO: If _handshakeInfo is null, we should error.
+            // We shouldn't be getting any session event messages without a previous handshake.
+
+            if (sessionEvent.SessionType == SessionEventTypes.TestSessionStart)
+            {
+                IncreaseTestSessionStart(sessionEvent.SessionUid);
+            }
+            else if (sessionEvent.SessionType == SessionEventTypes.TestSessionEnd)
+            {
+                var (testSessionStartCount, testSessionEndCount) = IncreaseTestSessionEnd(sessionEvent.SessionUid);
+                if (testSessionEndCount > testSessionStartCount)
+                {
+                    throw new InvalidOperationException(CliCommandStrings.UnexpectedTestSessionEnd);
+                }
+            }
+        }
+    }
+
+    private (int TestSessionStartCount, int TestSessionEndCount) IncreaseTestSessionStart(string sessionUid)
+    {
+        _ = _testSessionEventCountPerSessionUid.TryGetValue(sessionUid, out var count);
+        count = (count.TestSessionStartCount + 1, count.TestSessionEndCount);
+        _testSessionEventCountPerSessionUid[sessionUid] = count;
+        return count;
+    }
+
+    private (int TestSessionStartCount, int TestSessionEndCount) IncreaseTestSessionEnd(string sessionUid)
+    {
+        _ = _testSessionEventCountPerSessionUid.TryGetValue(sessionUid, out var count);
+        count = (count.TestSessionStartCount, count.TestSessionEndCount + 1);
+        _testSessionEventCountPerSessionUid[sessionUid] = count;
+        return count;
+    }
+
+    internal bool HasMismatchingTestSessionEventCount()
+    {
+        foreach (var (testSessionStartCount, testSessionEndCount) in _testSessionEventCountPerSessionUid.Values)
+        {
+            if (testSessionStartCount != testSessionEndCount)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     internal void OnTestProcessExited(int exitCode, List<string> outputData, List<string> errorData)
@@ -310,6 +369,21 @@ internal sealed class TestApplicationHandler
             logMessageBuilder.AppendLine($"Error Data: {errorData}");
         }
 
+        Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
+    }
+
+    private static void LogSessionEvent(TestSessionEvent testSessionEvent)
+    {
+        if (!Logger.TraceEnabled)
+        {
+            return;
+        }
+
+        var logMessageBuilder = new StringBuilder();
+
+        logMessageBuilder.AppendLine($"TestSessionEvent.SessionType: {testSessionEvent.SessionType}");
+        logMessageBuilder.AppendLine($"TestSessionEvent.SessionUid: {testSessionEvent.SessionUid}");
+        logMessageBuilder.AppendLine($"TestSessionEvent.ExecutionId: {testSessionEvent.ExecutionId}");
         Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
     }
 }

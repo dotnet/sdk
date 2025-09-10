@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
+using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
@@ -24,18 +25,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
     internal const string DoubleIndentation = $"{SingleIndentation}{SingleIndentation}";
 
     internal Func<IStopwatch> CreateStopwatch { get; set; } = SystemStopwatch.StartNew;
-
-    internal event EventHandler OnProgressStartUpdate
-    {
-        add => _terminalWithProgress.OnProgressStartUpdate += value;
-        remove => _terminalWithProgress.OnProgressStartUpdate -= value;
-    }
-
-    internal event EventHandler OnProgressStopUpdate
-    {
-        add => _terminalWithProgress.OnProgressStopUpdate += value;
-        remove => _terminalWithProgress.OnProgressStopUpdate -= value;
-    }
 
     private readonly ConcurrentDictionary<string, TestProgressState> _assemblies = new();
 
@@ -59,8 +48,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private bool _wasCancelled;
 
-    private bool? _shouldShowPassedTests;
-
     public bool HasHandshakeFailure => _handshakeFailuresCount > 0;
     public int TotalTests => _assemblies.Values.Sum(a => a.TotalTests);
 
@@ -78,24 +65,22 @@ internal sealed partial class TerminalTestReporter : IDisposable
     public TerminalTestReporter(IConsole console, TerminalTestReporterOptions options)
     {
         _options = options;
-
-        Func<bool?> showProgress = _options.ShowProgress;
         TestProgressStateAwareTerminal terminalWithProgress;
 
         // When not writing to ANSI we write the progress to screen and leave it there so we don't want to write it more often than every few seconds.
         int nonAnsiUpdateCadenceInMs = 3_000;
         // When writing to ANSI we update the progress in place and it should look responsive so we update every half second, because we only show seconds on the screen, so it is good enough.
         int ansiUpdateCadenceInMs = 500;
-        if (!_options.UseAnsi || _options.ForceAnsi is false)
+        if (!_options.UseAnsi)
         {
-            terminalWithProgress = new TestProgressStateAwareTerminal(new NonAnsiTerminal(console), showProgress, writeProgressImmediatelyAfterOutput: false, updateEvery: nonAnsiUpdateCadenceInMs);
+            terminalWithProgress = new TestProgressStateAwareTerminal(new NonAnsiTerminal(console), _options.ShowProgress, writeProgressImmediatelyAfterOutput: false, updateEvery: nonAnsiUpdateCadenceInMs);
         }
         else
         {
             if (_options.UseCIAnsi)
             {
                 // We are told externally that we are in CI, use simplified ANSI mode.
-                terminalWithProgress = new TestProgressStateAwareTerminal(new SimpleAnsiTerminal(console), showProgress, writeProgressImmediatelyAfterOutput: true, updateEvery: nonAnsiUpdateCadenceInMs);
+                terminalWithProgress = new TestProgressStateAwareTerminal(new SimpleAnsiTerminal(console), _options.ShowProgress, writeProgressImmediatelyAfterOutput: true, updateEvery: nonAnsiUpdateCadenceInMs);
             }
             else
             {
@@ -103,9 +88,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 // Autodetect.
                 (bool consoleAcceptsAnsiCodes, bool _, uint? originalConsoleMode) = NativeMethods.QueryIsScreenAndTryEnableAnsiColorCodes();
                 _originalConsoleMode = originalConsoleMode;
-                terminalWithProgress = consoleAcceptsAnsiCodes || _options.ForceAnsi is true
-                    ? new TestProgressStateAwareTerminal(new AnsiTerminal(console, _options.BaseDirectory), showProgress, writeProgressImmediatelyAfterOutput: true, updateEvery: ansiUpdateCadenceInMs)
-                    : new TestProgressStateAwareTerminal(new NonAnsiTerminal(console), showProgress, writeProgressImmediatelyAfterOutput: false, updateEvery: nonAnsiUpdateCadenceInMs);
+                terminalWithProgress = consoleAcceptsAnsiCodes
+                    ? new TestProgressStateAwareTerminal(new AnsiTerminal(console, _options.BaseDirectory), _options.ShowProgress, writeProgressImmediatelyAfterOutput: true, updateEvery: ansiUpdateCadenceInMs)
+                    : new TestProgressStateAwareTerminal(new NonAnsiTerminal(console), _options.ShowProgress, writeProgressImmediatelyAfterOutput: false, updateEvery: nonAnsiUpdateCadenceInMs);
             }
         }
 
@@ -287,7 +272,13 @@ internal sealed partial class TerminalTestReporter : IDisposable
         int passed = _assemblies.Values.Sum(t => t.PassedTests);
         int skipped = _assemblies.Values.Sum(t => t.SkippedTests);
         int retried = _assemblies.Values.Sum(t => t.RetriedFailedTests);
-        int error = _assemblies.Values.Sum(t => !t.Success && (t.TotalTests == 0 || t.FailedTests == 0) ? 1 : 0) + _handshakeFailuresCount;
+
+        // If the process exited with non-zero exit code (t.Success is false)
+        // And also we didn't receive any failed tests, we consider these as errors.
+        // In addition, failing to handshake is also considered as an error.
+        // Note: In case of handshake failure, we shouldn't add any entries to _assemblies dictionary.
+        // So, this line cannot be double-counting handshake failures twice.
+        int error = _assemblies.Values.Count(t => !t.Success && t.FailedTests == 0) + _handshakeFailuresCount;
         TimeSpan runDuration = _testExecutionStartTime != null && _testExecutionEndTime != null ? (_testExecutionEndTime - _testExecutionStartTime).Value : TimeSpan.Zero;
 
         bool colorizeFailed = failed > 0;
@@ -444,7 +435,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
 
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
-        if (outcome != TestOutcome.Passed || GetShowPassedTests())
+        if (outcome != TestOutcome.Passed || _options.ShowPassedTests)
         {
             _terminalWithProgress.WriteToTerminal(terminal => RenderTestCompleted(
                 terminal,
@@ -464,12 +455,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
     }
 
-    private bool GetShowPassedTests()
-    {
-        _shouldShowPassedTests ??= _options.ShowPassedTests();
-        return _shouldShowPassedTests.Value;
-    }
-
     internal /* for testing */ void RenderTestCompleted(
         ITerminal terminal,
         string assembly,
@@ -486,7 +471,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? standardOutput,
         string? errorOutput)
     {
-        if (outcome == TestOutcome.Passed && !GetShowPassedTests())
+        if (outcome == TestOutcome.Passed && !_options.ShowPassedTests)
         {
             return;
         }
@@ -1015,8 +1000,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
     }
 
     public void WritePlatformAndExtensionOptions(HelpContext context,
-        IEnumerable<CommandLineOption> builtInOptions,
-        IEnumerable<CommandLineOption> nonBuiltInOptions,
+        IEnumerable<CommandLineOptionMessage> builtInOptions,
+        IEnumerable<CommandLineOptionMessage> nonBuiltInOptions,
         Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions)
     {
         if (_wasCancelled)
@@ -1038,7 +1023,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         WriteModulesToMissingOptionsToConsole(moduleToMissingOptions);
     }
 
-    private void WriteOtherOptionsSection(HelpContext context, string title, IEnumerable<CommandLineOption> options)
+    private void WriteOtherOptionsSection(HelpContext context, string title, IEnumerable<CommandLineOptionMessage> options)
     {
         List<TwoColumnHelpRow> optionRows = [];
 
@@ -1046,7 +1031,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         {
             if (option.IsHidden != true)
             {
-                optionRows.Add(new TwoColumnHelpRow($"--{option.Name}", option.Description));
+                optionRows.Add(new TwoColumnHelpRow($"--{option.Name}", option.Description ?? string.Empty));
             }
         }
 

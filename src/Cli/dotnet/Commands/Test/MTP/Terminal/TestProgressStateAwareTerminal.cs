@@ -6,7 +6,7 @@ namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 /// <summary>
 /// Terminal that updates the progress in place when progress reporting is enabled.
 /// </summary>
-internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal, Func<bool?> showProgress, bool writeProgressImmediatelyAfterOutput, int updateEvery) : IDisposable
+internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal, bool showProgress, bool writeProgressImmediatelyAfterOutput, int updateEvery) : IDisposable
 {
     /// <summary>
     /// A cancellation token to signal the rendering thread that it should exit.
@@ -19,21 +19,16 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
     private readonly object _lock = Console.Out;
 
     private readonly ITerminal _terminal = terminal;
-    private readonly Func<bool?> _showProgress = showProgress;
+    private readonly bool _showProgress = showProgress;
     private readonly bool _writeProgressImmediatelyAfterOutput = writeProgressImmediatelyAfterOutput;
     private readonly int _updateEvery = updateEvery;
     private TestProgressState?[] _progressItems = [];
-    private bool? _showProgressCached;
 
     /// <summary>
     /// The thread that performs periodic refresh of the console output.
     /// </summary>
     private Thread? _refresher;
     private long _counter;
-
-    public event EventHandler? OnProgressStartUpdate;
-
-    public event EventHandler? OnProgressStopUpdate;
 
     /// <summary>
     /// The <see cref="_refresher"/> thread proc.
@@ -46,7 +41,6 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
             {
                 lock (_lock)
                 {
-                    OnProgressStartUpdate?.Invoke(this, EventArgs.Empty);
                     _terminal.StartUpdate();
                     try
                     {
@@ -55,7 +49,6 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
                     finally
                     {
                         _terminal.StopUpdate();
-                        OnProgressStopUpdate?.Invoke(this, EventArgs.Empty);
                     }
                 }
             }
@@ -70,7 +63,7 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
 
     public int AddWorker(TestProgressState testWorker)
     {
-        if (GetShowProgress())
+        if (_showProgress)
         {
             for (int i = 0; i < _progressItems.Length; i++)
             {
@@ -89,7 +82,7 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
 
     public void StartShowingProgress(int workerCount)
     {
-        if (GetShowProgress())
+        if (_showProgress)
         {
             _progressItems = new TestProgressState[workerCount];
             _terminal.StartBusyIndicator();
@@ -101,7 +94,7 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
 
     internal void StopShowingProgress()
     {
-        if (GetShowProgress())
+        if (_showProgress)
         {
             _cts.Cancel();
             _refresher?.Join();
@@ -116,7 +109,7 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
 
     internal void WriteToTerminal(Action<ITerminal> write)
     {
-        if (GetShowProgress())
+        if (_showProgress)
         {
             lock (_lock)
             {
@@ -155,7 +148,7 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
 
     internal void RemoveWorker(int slotIndex)
     {
-        if (GetShowProgress())
+        if (_showProgress)
         {
             _progressItems[slotIndex] = null;
         }
@@ -163,7 +156,7 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
 
     internal void UpdateWorker(int slotIndex)
     {
-        if (GetShowProgress())
+        if (_showProgress)
         {
             // We increase the counter to say that this version of data is newer than what we had before and
             // it should be completely re-rendered. Another approach would be to use timestamps, or to replace the
@@ -176,22 +169,5 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
                 progress.Version = _counter;
             }
         }
-    }
-
-    private bool GetShowProgress()
-    {
-        if (_showProgressCached != null)
-        {
-            return _showProgressCached.Value;
-        }
-
-        // Get the value from the func until we get the first non-null value.
-        bool? showProgress = _showProgress();
-        if (showProgress != null)
-        {
-            _showProgressCached = showProgress;
-        }
-
-        return showProgress == true;
     }
 }
