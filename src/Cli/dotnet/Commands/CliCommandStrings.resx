@@ -643,14 +643,13 @@ If not specified the file will be generated inside the default 'TestResults' dir
     <value>Test runner '{0}' is not supported.</value>
   </data>
   <data name="CmdUnsupportedVSTestTestApplicationsDescription" xml:space="preserve">
-    <value>dotnet.config defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+    <value>global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
 The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</value>
-    <comment>{0} is one or more project names.
-Microsoft.Testing.Platform is a name, don't translate.
-dotnet.config is a name don't translate.</comment>
+    <comment>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
+{0} is one or more project names.</comment>
   </data>
   <data name="CmdUseLockFileOptionDescription" xml:space="preserve">
     <value>Enables project lock file to be generated and used with restore.</value>

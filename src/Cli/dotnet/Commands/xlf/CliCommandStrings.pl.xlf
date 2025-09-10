@@ -878,19 +878,18 @@ Jeśli określony katalog nie istnieje, zostanie utworzony.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
-        <source>dotnet.config defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+        <source>global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
 The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="translated">Plik dotnet.config definiuje moduł uruchamiający testy jako Microsoft.Testing.Platform. Wszystkie projekty muszą używać tego modułu uruchamiającego testy.
+        <target state="needs-review-translation">Plik dotnet.config definiuje moduł uruchamiający testy jako Microsoft.Testing.Platform. Wszystkie projekty muszą używać tego modułu uruchamiającego testy.
 Następujące projekty testowe używają modułu uruchamiającego testy VSTest:
 {0}
 
 Aby uzyskać więcej informacji, zobacz https://aka.ms/dotnet-test/mtp.</target>
-        <note>{0} is one or more project names.
-Microsoft.Testing.Platform is a name, don't translate.
-dotnet.config is a name don't translate.</note>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
+{0} is one or more project names.</note>
       </trans-unit>
       <trans-unit id="CmdUseLockFileOptionDescription">
         <source>Enables project lock file to be generated and used with restore.</source>
