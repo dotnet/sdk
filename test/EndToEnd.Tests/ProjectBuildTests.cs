@@ -81,7 +81,7 @@ namespace EndToEnd.Tests
                 .Execute().Should().Pass().And.HaveStdOutContaining("Hello, World!");
         }
 
-        [WindowsOnlyTheory]
+        [Theory]
         [InlineData("current", true)]
         [InlineData("current", false)]
         public void ItCanPublishArm64Winforms(string targetFramework, bool selfContained)
@@ -197,13 +197,11 @@ namespace EndToEnd.Tests
 [\w \.\(\)]+mstest\s+\[C#\],F#,VB[\w\ \/]+
 ";
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                expectedOutput +=
+            expectedOutput +=
 @"[\w \.\(\)]+winforms\s+\[C#\],VB[\w\ \/]+
 [\w \.\(\)]+\wpf\s+\[C#\],VB[\w\ \/]+
 ";
-            }
+
             //list should end with new line
             expectedOutput += Environment.NewLine;
 
@@ -288,12 +286,12 @@ namespace EndToEnd.Tests
             Assert.True(directoryInfo.File($"{expectedItemName}.{languageExtensionMap[language]}") != null);
         }
 
-        [WindowsOnlyTheory]
+        [Theory]
         [InlineData("wpf")]
         [InlineData("winforms")]
         public void ItCanBuildDesktopTemplates(string templateName) => TestTemplateCreateAndBuild(templateName);
 
-        [WindowsOnlyTheory]
+        [Theory]
         [InlineData("wpf")]
         public void ItCanBuildDesktopTemplatesSelfContained(string templateName) => TestTemplateCreateAndBuild(templateName, selfContained: true);
 
@@ -349,11 +347,10 @@ namespace EndToEnd.Tests
         }
 
         /// <summary>
-        /// [Windows only tests]
         /// The test checks if the template creates the template for correct framework by default.
         /// For .NET 6 the templates should create the projects targeting net6.0.
         /// </summary>
-        [WindowsOnlyTheory]
+        [Theory]
         [InlineData("wpf")]
         [InlineData("wpf", "C#")]
         [InlineData("wpf", "VB")]
