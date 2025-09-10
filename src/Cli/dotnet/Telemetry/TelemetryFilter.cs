@@ -153,7 +153,7 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
                 "sublevelparser/command",
                 new Dictionary<string, string>()
                 {
-                    { "verb", topLevelCommandName + " update" },
+                    { "verb", "package update" },
                     { "vulnerable", hasVulnerableOption.ToString()}
                 },
                 measurements));
