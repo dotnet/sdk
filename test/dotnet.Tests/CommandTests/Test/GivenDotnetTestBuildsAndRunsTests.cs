@@ -214,10 +214,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
-        //  https://github.com/dotnet/sdk/issues/49665
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [Theory]
         public void RunMultipleTestProjectsWithDifferentFailures_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDifferentFailures", Guid.NewGuid().ToString())
