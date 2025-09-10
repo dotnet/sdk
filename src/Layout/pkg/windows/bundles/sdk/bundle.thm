@@ -81,7 +81,7 @@
       </Button>
     </Page>
     <Page Name="Success">
-      <Label Name="SuccessHeader" X="148" Y="80" Width="-12" Height="32" HexStyle="00000000" FontId="PageHeaderFont">
+      <Label Name="SuccessHeader" X="148" Y="80" Width="-12" Height="32" HexStyle="00000000" FontId="PageHeaderFont" TabStop="yes">
         <!-- Default text to display if none of the conditions are true. -->
         <Text>#(loc.SuccessHeader)</Text>
         <Text Condition="WixBundleAction = 2">#(loc.SuccessLayoutHeader)</Text>
@@ -116,7 +116,7 @@
       </Button>
     </Page>
     <Page Name="Failure">
-      <Label Name="FailureHeader" X="148" Y="80" Width="-12" Height="32" HexStyle="00000000" FontId="PageHeaderFont">
+      <Label Name="FailureHeader" X="148" Y="80" Width="-12" Height="32" HexStyle="00000000" FontId="PageHeaderFont" TabStop="yes">
         <Text>#(loc.FailureHeader)</Text>
         <Text Condition="WixBundleAction = 2">#(loc.FailureLayoutHeader)</Text>
         <Text Condition="WixBundleAction = 3">#(loc.FailureUnsafeUninstallHeader)</Text>
