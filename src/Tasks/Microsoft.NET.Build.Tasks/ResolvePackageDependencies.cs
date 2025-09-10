@@ -249,7 +249,7 @@ namespace Microsoft.NET.Build.Tasks
                         {
                             string effectiveTargetGraphName = targetGraph;
                             // If the target graph is not in the map, then very likely aliases are being used.
-                            if (!_targetNameToAliasMap.ContainsKey(targetGraph))
+                            if (_targetNameToAliasMap.ContainsKey(targetGraph))
                             {
                                 var parsedTargetGraph = NuGetFramework.Parse(targetGraph);
                                 effectiveTargetGraphName = _lockFile.PackageSpec.TargetFrameworks.FirstOrDefault(tf => tf.FrameworkName == parsedTargetGraph)?.TargetAlias;
