@@ -451,9 +451,9 @@
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.25412.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.25452.2">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>debb7d95fdef37a06bee91a09b5246a690b76087</Sha>
+      <Sha>745de7d839fdd3b5884d72e953badcfb15493d13</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-rtm.1.25059.4">
