@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 using Newtonsoft.Json.Linq;
@@ -301,8 +303,10 @@ namespace Microsoft.NET.Build.Tests
 
         [Theory]
         [InlineData(".NETStandard,Version=v2.0", new[] { "NETSTANDARD", "NETSTANDARD2_0", "NETSTANDARD1_0_OR_GREATER", "NETSTANDARD1_1_OR_GREATER", "NETSTANDARD1_2_OR_GREATER", "NETSTANDARD1_3_OR_GREATER", "NETSTANDARD1_4_OR_GREATER", "NETSTANDARD1_5_OR_GREATER", "NETSTANDARD1_6_OR_GREATER", "NETSTANDARD2_0_OR_GREATER" })]
+        [InlineData(".NETStandard,Version=v2.0", new[] { "NETSTANDARD", "NETSTANDARD2_0", "NETSTANDARD1_0_OR_GREATER", "NETSTANDARD1_1_OR_GREATER", "NETSTANDARD1_2_OR_GREATER", "NETSTANDARD1_3_OR_GREATER", "NETSTANDARD1_4_OR_GREATER", "NETSTANDARD1_5_OR_GREATER", "NETSTANDARD1_6_OR_GREATER", "NETSTANDARD2_0_OR_GREATER" }, true)]
         [InlineData("netstandard2.0", new[] { "NETSTANDARD", "NETSTANDARD2_0", "NETSTANDARD1_0_OR_GREATER", "NETSTANDARD1_1_OR_GREATER", "NETSTANDARD1_2_OR_GREATER", "NETSTANDARD1_3_OR_GREATER", "NETSTANDARD1_4_OR_GREATER", "NETSTANDARD1_5_OR_GREATER", "NETSTANDARD1_6_OR_GREATER", "NETSTANDARD2_0_OR_GREATER" })]
         [InlineData("net45", new[] { "NETFRAMEWORK", "NET45", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER" })]
+        [InlineData("net45", new[] { "NETFRAMEWORK", "NET45", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER" }, true)]
         [InlineData("net461", new[] { "NETFRAMEWORK", "NET461", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER",
             "NET451_OR_GREATER", "NET452_OR_GREATER", "NET46_OR_GREATER", "NET461_OR_GREATER" })]
         [InlineData("net48", new[] { "NETFRAMEWORK", "NET48", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER",
@@ -314,11 +318,13 @@ namespace Microsoft.NET.Build.Tests
             "NETCOREAPP2_1_OR_GREATER", "NETCOREAPP2_2_OR_GREATER", "NETCOREAPP3_0_OR_GREATER" })]
         [InlineData("net5.0", new[] { "NETCOREAPP", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER", "NETCOREAPP2_1_OR_GREATER",
             "NETCOREAPP2_2_OR_GREATER", "NETCOREAPP3_0_OR_GREATER", "NETCOREAPP3_1_OR_GREATER", "NET", "NET5_0", "NET5_0_OR_GREATER" })]
+        [InlineData("net5.0", new[] { "NETCOREAPP", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER", "NETCOREAPP2_1_OR_GREATER",
+            "NETCOREAPP2_2_OR_GREATER", "NETCOREAPP3_0_OR_GREATER", "NETCOREAPP3_1_OR_GREATER", "NET", "NET5_0", "NET5_0_OR_GREATER" }, true)]
         [InlineData(".NETPortable,Version=v4.5,Profile=Profile78", new string[] { })]
         [InlineData(".NETFramework,Version=v4.0,Profile=Client", new string[] { "NETFRAMEWORK", "NET40", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER" })]
         [InlineData("Xamarin.iOS,Version=v1.0", new string[] { "XAMARINIOS", "XAMARINIOS1_0" })]
         [InlineData("UnknownFramework,Version=v3.14", new string[] { "UNKNOWNFRAMEWORK", "UNKNOWNFRAMEWORK3_14" })]
-        public void It_implicitly_defines_compilation_constants_for_the_target_framework(string targetFramework, string[] expectedDefines)
+        public void It_implicitly_defines_compilation_constants_for_the_target_framework(string targetFramework, string[] expectedDefines, bool addDefineFromCli = false)
         {
             var testAsset = _testAssetsManager
                 .CopyTestAsset("AppWithLibrary", "ImplicitFrameworkConstants", targetFramework, identifier: expectedDefines.GetHashCode().ToString())
@@ -365,13 +371,14 @@ namespace Microsoft.NET.Build.Tests
             };
 
             getValuesCommand
-                .Execute()
+                .Execute(addDefineFromCli ? ["/p:DefineConstants=HELLOWORLD"] : [])
                 .Should()
                 .Pass();
 
             var definedConstants = getValuesCommand.GetValues();
+            var expectedConstants = expectedDefines.Concat(addDefineFromCli ? ["HELLOWORLD"] : ["DEBUG", "TRACE"]);
 
-            definedConstants.Should().BeEquivalentTo(new[] { "DEBUG", "TRACE" }.Concat(expectedDefines).ToArray());
+            definedConstants.Should().BeEquivalentTo(expectedConstants.ToArray());
         }
 
         [Theory]
@@ -469,9 +476,9 @@ namespace Microsoft.NET.Build.Tests
             definedConstants.Should().BeEquivalentTo(new[] { "DEBUG", "TRACE" }.Concat(expectedDefines).ToArray());
         }
 
-        [WindowsOnlyTheory]
-        [InlineData("netcoreapp3.1", new[] { "NETCOREAPP", "NETCOREAPP3_1", "NETCOREAPP3_1_OR_GREATER" })]
-        [InlineData("net5.0", new[] { "NETCOREAPP", "NET", "NETCOREAPP3_1_OR_GREATER", "NET5_0_OR_GREATER", "NET5_0", "WINDOWS", "WINDOWS7_0", "WINDOWS7_0_OR_GREATER" }, "windows", "7.0")]
+        [WindowsOnlyRequiresMSBuildVersionTheory("17.12.0")]
+        [InlineData("net8.0", new[] { "NETCOREAPP", "NET", "NET8_0", "NET8_0_OR_GREATER" })]
+        [InlineData("net9.0", new[] { "NETCOREAPP", "NET", "NET8_0_OR_GREATER", "NET9_0_OR_GREATER", "NET9_0", "WINDOWS", "WINDOWS7_0", "WINDOWS7_0_OR_GREATER" }, "windows", "7.0")]
         public void It_can_use_implicitly_defined_compilation_constants(string targetFramework, string[] expectedOutput, string targetPlatformIdentifier = null, string targetPlatformVersion = null)
         {
             var testProj = new TestProject()
@@ -501,17 +508,20 @@ class Program
         #if NETCOREAPP3_1
             Console.WriteLine(""NETCOREAPP3_1"");
         #endif
-        #if NETCOREAPP3_1_OR_GREATER
-            Console.WriteLine(""NETCOREAPP3_1_OR_GREATER"");
-        #endif
         #if NET
             Console.WriteLine(""NET"");
         #endif
-        #if NET5_0
-            Console.WriteLine(""NET5_0"");
+        #if NET8_0
+            Console.WriteLine(""NET8_0"");
         #endif
-        #if NET5_0_OR_GREATER
-            Console.WriteLine(""NET5_0_OR_GREATER"");
+        #if NET8_0_OR_GREATER
+            Console.WriteLine(""NET8_0_OR_GREATER"");
+        #endif
+        #if NET9_0
+            Console.WriteLine(""NET9_0"");
+        #endif
+        #if NET9_0_OR_GREATER
+            Console.WriteLine(""NET9_0_OR_GREATER"");
         #endif
         #if WINDOWS
             Console.WriteLine(""WINDOWS"");
@@ -663,7 +673,7 @@ class Program
                 new DotnetNewCommand(Log)
                     .WithVirtualHive()
                     .WithWorkingDirectory(testAsset.TestRoot)
-                    .Execute("sln")
+                    .Execute("sln", "--format", "sln")
                     .Should()
                     .Pass();
 
@@ -703,7 +713,7 @@ class Program
         }
 
         [Theory]
-        [InlineData("netcoreapp9.1")]
+        [InlineData("netcoreapp10.1")]
         [InlineData("netstandard2.2")]
         public void It_fails_to_build_if_targeting_a_higher_framework_than_is_supported(string targetFramework)
         {

@@ -1,7 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli;
+#nullable disable
+
+using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -233,7 +235,7 @@ namespace Microsoft.DotNet.Tests
                               e.Properties["verb"] == Sha256Hasher.Hash("NUGET"));
         }
 
-        [Fact(Skip = "dotnet new sends the telemetry inside own commands")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/47862")]
         public void DotnetNewCommandLanguageOpinionShouldBeSentToTelemetry()
         {
             const string optionKey = "language";
@@ -362,7 +364,7 @@ namespace Microsoft.DotNet.Tests
             FakeRecordEventNameTelemetry fakeTelemetry = new();
             string[] args = { "c:\\mypath\\dotnet-sdk-latest-win-x64.exe" };
 
-            InternalReportinstallsuccess.ProcessInputAndSendTelemetry(args, fakeTelemetry);
+            InternalReportInstallSuccessCommand.ProcessInputAndSendTelemetry(args, fakeTelemetry);
 
             fakeTelemetry
                 .LogEntries.Should()

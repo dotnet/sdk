@@ -228,6 +228,11 @@ Uruchom polecenie "dotnet {1}--show-aliases" bez argumentów, aby wyświetlić w
         <target state="translated">Trwa wyszukiwanie szablonów...</target>
         <note />
       </trans-unit>
+      <trans-unit id="Colon_Separator_Deprecated">
+        <source>The colon separator "::" has been deprecated in favor of the at symbol "@" for separating the package from the version in dotnet new install. In your case, this means {0}@{1} instead of {0}::{1}.</source>
+        <target state="translated">Separator dwukropka „::” jest przestarzały i został zastąpiony symbolem „@” w celu oddzielenia pakietu od wersji w nowej instalacji dotnet. W Twoim przypadku oznacza to znak {0}@{1} zamiast {0}::{1}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ColumnNameAuthor">
         <source>Author</source>
         <target state="translated">Autor</target>
@@ -901,8 +906,8 @@ The header is followed by the list of parameters and their errors (might be seve
         <note />
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Error">
-        <source>Failed to instatiate template '{0}', the following constraints are not met:</source>
-        <target state="translated">Nie można zainicjować szablonu „{0}”, ponieważ następujące ograniczenia nie są spełnione:</target>
+        <source>Failed to instantiate template '{0}', the following constraints are not met:</source>
+        <target state="translated">Nie udało się utworzyć wystąpienia szablonu „{0}”. Następujące ograniczenia nie są spełnione:</target>
         <note>{0} - template name (user friendly)</note>
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Hint">

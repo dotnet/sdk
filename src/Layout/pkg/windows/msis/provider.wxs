@@ -1,0 +1,24 @@
+<!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:dep="http://wixtoolset.org/schemas/v4/wxs/dependency">
+  <Fragment>
+    <!-- Dependency providers are used to reference count MSIs by registering parent installations like bundles as dependents against the provider key. Provider
+         keys for per-machine installations are stored under HKLM\SOFTWARE\Classes\Installer\Dependencies\{ProductCode} -->
+    <Feature Id="F_DependencyProvider" AllowAbsent="no" AllowAdvertise="no"
+             Description="Support for package reference counting." Display="hidden" Level="1"
+             InstallDefault="local" Title="RefCounting" TypicalDefault="install">
+      <Component Id="C_DependencyKey" Directory="TARGETDIR" Bitness="always32" Guid="*">
+        <!-- dep:Check attribute will trigger a UI prompt warning the user if there are registered dependents. For quiet installations, the action simply
+             fails the install. The check can be bypassed by setting a public property on the commandline:
+
+             msiexec /x {07A199C7-DB0A-4747-8DF8-CA2DE3DB4BF8} IGNOREDEPENDENCIES=ALL
+
+             The provider key name for SDK MSIs is composed from multiple elements:
+
+             SDK Placeholder: NetCore_SdkPlaceholder_6.1.21.45832_x64
+                 SDK Toolset: Dotnet_CLI_9.3.25.17705_x64
+                   Templates: NetCore_Templates_8.0_32.7.63663_x64 -->
+        <Provides Key="$(DependencyKeyName)_$(BundleVersion)_$(InstallerPlatform)" dep:Check="yes" />
+      </Component>
+    </Feature>
+  </Fragment>
+</Wix>

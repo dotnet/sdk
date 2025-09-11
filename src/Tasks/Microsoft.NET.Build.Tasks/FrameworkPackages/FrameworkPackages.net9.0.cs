@@ -1,5 +1,7 @@
 namespace Microsoft.ComponentDetection.Detectors.NuGet;
 
+#nullable disable
+
 using System;
 using global::NuGet.Frameworks;
 
@@ -178,6 +180,8 @@ internal partial class FrameworkPackages
             { "System.Security.Cryptography.Pkcs", "8.0.1" },
             { "System.Security.Cryptography.Xml", "9.0.0" },
             { "System.Threading.RateLimiting", "9.0.0" },
+            // removed packages
+            { "System.IO.Pipelines", null },
         };
 
         internal static FrameworkPackages WindowsDesktop { get; } = new(Net90, FrameworkNames.WindowsDesktopApp, NETCoreApp80.WindowsDesktop)
