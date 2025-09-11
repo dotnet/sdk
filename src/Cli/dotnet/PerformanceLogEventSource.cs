@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Reflection;
@@ -21,7 +19,7 @@ internal sealed class PerformanceLogEventSource : EventSource
     }
 
     [NonEvent]
-    internal void LogStartUpInformation(PerformanceLogStartupInformation startupInfo)
+    internal void LogStartUpInformation(PerformanceLogStartupInformation? startupInfo)
     {
         if (!IsEnabled())
         {
@@ -33,7 +31,7 @@ internal sealed class PerformanceLogEventSource : EventSource
 
         LogMachineConfiguration();
         OSInfo(RuntimeEnvironment.OperatingSystem, RuntimeEnvironment.OperatingSystemVersion, RuntimeEnvironment.OperatingSystemPlatform.ToString());
-        SDKInfo(Product.Version, commitSha, RuntimeInformation.RuntimeIdentifier, versionFile.BuildRid, AppContext.BaseDirectory);
+        SDKInfo(Product.Version, commitSha, RuntimeInformation.RuntimeIdentifier, versionFile.BuildRid!, AppContext.BaseDirectory);
         EnvironmentInfo(Environment.CommandLine);
         LogMemoryConfiguration();
         LogDrives();
@@ -44,7 +42,7 @@ internal sealed class PerformanceLogEventSource : EventSource
         {
             if (startupInfo.TimedAssembly != null)
             {
-                AssemblyLoad(startupInfo.TimedAssembly.GetName().Name, startupInfo.AssemblyLoadTime.TotalMilliseconds);
+                AssemblyLoad(startupInfo.TimedAssembly.GetName().Name!, startupInfo.AssemblyLoadTime.TotalMilliseconds);
             }
 
             Process currentProcess = Process.GetCurrentProcess();
@@ -312,7 +310,7 @@ internal class PerformanceLogStartupInformation
     }
 
     internal DateTime MainTimeStamp { get; private set; }
-    internal Assembly TimedAssembly { get; private set; }
+    internal Assembly? TimedAssembly { get; private set; }
     internal TimeSpan AssemblyLoadTime { get; private set; }
 
     private void MeasureModuleLoad()
@@ -323,7 +321,7 @@ internal class PerformanceLogStartupInformation
         {
             foreach (Assembly loadedAssembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                if (loadedAssembly.GetName().Name.Equals(assemblyName))
+                if (loadedAssembly.GetName().Name is string n && n.Equals(assemblyName))
                 {
                     // If the assembly is already loaded, then bail.
                     return;
@@ -426,7 +424,7 @@ internal sealed class ProcMemInfo
         {
             using (StreamReader reader = new(File.OpenRead("/proc/meminfo")))
             {
-                string line;
+                string? line;
                 while (!Valid && ((line = reader.ReadLine()) != null))
                 {
                     if (line.StartsWith(MemTotal) || line.StartsWith(MemAvailable))
