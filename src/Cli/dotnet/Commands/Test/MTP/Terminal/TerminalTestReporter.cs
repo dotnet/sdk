@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
+using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
@@ -999,8 +1000,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
     }
 
     public void WritePlatformAndExtensionOptions(HelpContext context,
-        IEnumerable<CommandLineOption> builtInOptions,
-        IEnumerable<CommandLineOption> nonBuiltInOptions,
+        IEnumerable<CommandLineOptionMessage> builtInOptions,
+        IEnumerable<CommandLineOptionMessage> nonBuiltInOptions,
         Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions)
     {
         if (_wasCancelled)
@@ -1022,7 +1023,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         WriteModulesToMissingOptionsToConsole(moduleToMissingOptions);
     }
 
-    private void WriteOtherOptionsSection(HelpContext context, string title, IEnumerable<CommandLineOption> options)
+    private void WriteOtherOptionsSection(HelpContext context, string title, IEnumerable<CommandLineOptionMessage> options)
     {
         List<TwoColumnHelpRow> optionRows = [];
 
@@ -1030,7 +1031,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         {
             if (option.IsHidden != true)
             {
-                optionRows.Add(new TwoColumnHelpRow($"--{option.Name}", option.Description));
+                optionRows.Add(new TwoColumnHelpRow($"--{option.Name}", option.Description ?? string.Empty));
             }
         }
 

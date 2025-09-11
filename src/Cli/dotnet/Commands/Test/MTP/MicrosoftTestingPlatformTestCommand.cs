@@ -42,8 +42,7 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
         ValidationUtility.ValidateSolutionOrProjectOrDirectoryOrModulesArePassedCorrectly(parseResult);
 
         int degreeOfParallelism = GetDegreeOfParallelism(parseResult);
-        bool filterModeEnabled = parseResult.HasOption(MicrosoftTestingPlatformOptions.TestModulesFilterOption);
-        var testOptions = new TestOptions(filterModeEnabled, IsHelp: isHelp, IsDiscovery: parseResult.HasOption(MicrosoftTestingPlatformOptions.ListTestsOption));
+        var testOptions = new TestOptions(IsHelp: isHelp, IsDiscovery: parseResult.HasOption(MicrosoftTestingPlatformOptions.ListTestsOption));
 
         InitializeOutput(degreeOfParallelism, parseResult, testOptions);
 
@@ -55,7 +54,8 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
 
         var msBuildHandler = new MSBuildHandler(buildOptions, actionQueue, _output);
 
-        if (testOptions.HasFilterMode)
+        bool filterModeEnabled = parseResult.HasOption(MicrosoftTestingPlatformOptions.TestModulesFilterOption);
+        if (filterModeEnabled)
         {
             var testModulesFilterHandler = new TestModulesFilterHandler(actionQueue, _output);
             if (!testModulesFilterHandler.RunWithTestModulesFilter(parseResult))
@@ -93,11 +93,7 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
 
     private TestApplicationActionQueue InitializeActionQueue(int degreeOfParallelism, TestOptions testOptions, BuildOptions buildOptions)
     {
-        return new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, async (TestApplication testApp) =>
-        {
-            testApp.HelpRequested += OnHelpRequested;
-            return await testApp.RunAsync();
-        });
+        return new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, OnHelpRequested);
     }
 
     private void SetupCancelKeyPressHandler()

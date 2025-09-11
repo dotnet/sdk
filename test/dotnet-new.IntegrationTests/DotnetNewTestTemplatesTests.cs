@@ -181,7 +181,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string testProjectName = GenerateTestProjectName();
             string outputDirectory = CreateTemporaryFolder(folderName: "Home");
 
-            // Prevent the dotnet.config post action from walking up the directory parents up to our own solution root, which would affect other tests.
+            // Prevent the global.json post action from walking up the directory parents up to our own solution root, which would affect other tests.
             Directory.CreateDirectory(Path.Combine(outputDirectory, ".git"));
 
             string workingDirectory = CreateTemporaryFolder();
@@ -200,7 +200,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 var isMTP = testRunner == "Microsoft.Testing.Platform";
                 if (isMTP)
                 {
-                    File.Exists(Path.Combine(outputDirectory, "dotnet.config")).Should().BeTrue();
+                    File.Exists(Path.Combine(outputDirectory, "global.json")).Should().BeTrue();
                 }
 
                 var result = new DotnetTestCommand(_log, false)
