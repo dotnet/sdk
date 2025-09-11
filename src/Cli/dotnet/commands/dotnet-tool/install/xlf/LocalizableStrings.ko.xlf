@@ -58,9 +58,9 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoManifestGuide">
         <source>If you intended to install a global tool, add `--global` to the command.
-If you would like to create a manifest, use `dotnet new tool-manifest`, usually in the repo root directory.</source>
-        <target state="translated">전역 도구를 설치하려고 한 경우 명령에 `--global`을 추가하세요.
-매니페스트를 만들려면 일반적으로 리포지토리 루트 디렉터리에서 `dotnet new tool-manifest`를 사용하세요.</target>
+If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</source>
+        <target state="translated">전역 도구를 설치하려면 명령에 '--global'을 추가합니다.
+매니페스트를 만들려면 'dotnet tool install' 명령과 함께 '--create-manifest-if-needed' 플래그를 사용하거나 일반적으로 리포지토리 루트 디렉터리에서 'dotnet new tool-manifest'를 사용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdArgumentDescription">
