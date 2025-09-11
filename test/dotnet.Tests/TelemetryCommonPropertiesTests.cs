@@ -184,14 +184,16 @@ namespace Microsoft.DotNet.Tests
             }
         }
 
-        [Fact]
-        public void TelemetryCommonPropertiesShouldContainSessionId()
+        [Theory]
+        [InlineData("dummySessionId")]
+        [InlineData(null)]
+        public void TelemetryCommonPropertiesShouldContainSessionId(string sessionId)
         {
             var unitUnderTest = new TelemetryCommonProperties(userLevelCacheWriter: new NothingCache());
-            var commonProperties = unitUnderTest.GetTelemetryCommonProperties("dummySessionId");
+            var commonProperties = unitUnderTest.GetTelemetryCommonProperties(sessionId);
 
             commonProperties.Should().ContainKey("SessionId");
-            commonProperties["SessionId"].Should().Be("dummySessionId");
+            commonProperties["SessionId"].Should().Be(sessionId);
         }
 
         public static IEnumerable<object[]> CITelemetryTestCases => new List<object[]>{
