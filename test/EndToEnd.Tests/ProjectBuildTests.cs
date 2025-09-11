@@ -418,9 +418,8 @@ namespace EndToEnd.Tests
             var directory = InstantiateProjectTemplate(templateName, language);
             string projectDirectory = directory.Path;
 
-            if (!string.IsNullOrWhiteSpace(framework))
+            XDocument GetProjectXml()
             {
-                //check if MSBuild TargetFramework property for *proj is set to expected framework
                 string expectedExtension = language switch
                 {
                     "C#" => "*.csproj",
@@ -430,8 +429,32 @@ namespace EndToEnd.Tests
                 };
                 string projectFile = Directory.GetFiles(projectDirectory, expectedExtension).Single();
                 XDocument projectXml = XDocument.Load(projectFile);
+                return projectXml;
+            }
+
+            if (!string.IsNullOrWhiteSpace(framework))
+            {
+                //check if MSBuild TargetFramework property for *proj is set to expected framework
+                var projectXml = GetProjectXml();
                 XNamespace ns = projectXml.Root.Name.Namespace;
                 Assert.Equal(framework, projectXml.Root.Element(ns + "PropertyGroup").Element(ns + "TargetFramework").Value);
+            }
+
+            bool needsEnableWindowsTargeting = false;
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                string effectiveFramework = framework;
+                if (string.IsNullOrEmpty(effectiveFramework))
+                {
+                    var projectXml = GetProjectXml();
+                    XNamespace ns = projectXml.Root.Name.Namespace;
+                    effectiveFramework = projectXml.Root.Element(ns + "PropertyGroup").Element(ns + "TargetFramework").Value;
+                }
+
+                if (effectiveFramework.Contains("windows"))
+                {
+                    needsEnableWindowsTargeting = true;
+                }
             }
 
             if (build)
@@ -441,7 +464,7 @@ namespace EndToEnd.Tests
                     .. !string.IsNullOrWhiteSpace(framework) ? ["--framework", framework] : Array.Empty<string>(),
                     // Remove this (or formalize it) after https://github.com/dotnet/installer/issues/12479 is resolved.
                     .. language == "F#" ? ["/p:_NETCoreSdkIsPreview=true"] : Array.Empty<string>(),
-                    .. framework.Contains("windows") && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ["/p:EnableWindowsTargeting=true"] : Array.Empty<string>(),
+                    .. needsEnableWindowsTargeting ? ["/p:EnableWindowsTargeting=true"] : Array.Empty<string>(),
                     $"/bl:{templateName}-{(selfContained ? "selfcontained" : "fdd")}-{language}-{framework}-{{}}.binlog"
                 ];
 
