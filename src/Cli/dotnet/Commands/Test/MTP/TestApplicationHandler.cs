@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
@@ -16,7 +14,7 @@ internal sealed class TestApplicationHandler
     private readonly Lock _lock = new();
     private readonly Dictionary<string, (int TestSessionStartCount, int TestSessionEndCount)> _testSessionEventCountPerSessionUid = new();
 
-    private (string TargetFramework, string Architecture, string ExecutionId)? _handshakeInfo;
+    private (string? TargetFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
 
     public TestApplicationHandler(TerminalTestReporter output, TestModule module, TestOptions options)
     {
@@ -128,9 +126,9 @@ internal sealed class TestApplicationHandler
         foreach (var testResult in testResultMessage.SuccessfulTestMessages)
         {
             _output.TestCompleted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
-                testResultMessage.InstanceId,
-                testResult.Uid,
-                testResult.DisplayName,
+                testResultMessage.InstanceId!,
+                testResult.Uid!,
+                testResult.DisplayName!,
                 testResult.Reason,
                 ToOutcome(testResult.State),
                 TimeSpan.FromTicks(testResult.Duration ?? 0),
@@ -143,13 +141,13 @@ internal sealed class TestApplicationHandler
 
         foreach (var testResult in testResultMessage.FailedTestMessages)
         {
-            _output.TestCompleted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, testResultMessage.InstanceId,
-                testResult.Uid,
-                testResult.DisplayName,
+            _output.TestCompleted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, testResultMessage.InstanceId!,
+                testResult.Uid!,
+                testResult.DisplayName!,
                 testResult.Reason,
                 ToOutcome(testResult.State),
                 TimeSpan.FromTicks(testResult.Duration ?? 0),
-                exceptions: [.. testResult.Exceptions.Select(fe => new Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace))],
+                exceptions: [.. testResult.Exceptions!.Select(fe => new Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace))],
                 expected: null,
                 actual: null,
                 standardOutput: testResult.StandardOutput,
@@ -177,7 +175,8 @@ internal sealed class TestApplicationHandler
             _output.ArtifactAdded(
                 outOfProcess: false,
                 _module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
-                artifact.TestDisplayName, artifact.FullPath);
+                // TODO: Revise null suppression here.
+                artifact.TestDisplayName, artifact.FullPath!);
         }
     }
 
@@ -196,11 +195,11 @@ internal sealed class TestApplicationHandler
 
             if (sessionEvent.SessionType == SessionEventTypes.TestSessionStart)
             {
-                IncreaseTestSessionStart(sessionEvent.SessionUid);
+                IncreaseTestSessionStart(sessionEvent.SessionUid!);
             }
             else if (sessionEvent.SessionType == SessionEventTypes.TestSessionEnd)
             {
-                var (testSessionStartCount, testSessionEndCount) = IncreaseTestSessionEnd(sessionEvent.SessionUid);
+                var (testSessionStartCount, testSessionEndCount) = IncreaseTestSessionEnd(sessionEvent.SessionUid!);
                 if (testSessionEndCount > testSessionStartCount)
                 {
                     throw new InvalidOperationException(CliCommandStrings.UnexpectedTestSessionEnd);
@@ -248,7 +247,7 @@ internal sealed class TestApplicationHandler
         }
         else
         {
-            _output.HandshakeFailure(_module.TargetPath ?? _module.ProjectFullPath, _module.TargetFramework, exitCode, outputDataString, errorDataString);
+            _output.HandshakeFailure(_module.TargetPath ?? _module.ProjectFullPath ?? string.Empty, _module.TargetFramework, exitCode, outputDataString, errorDataString);
         }
 
         LogTestProcessExit(exitCode, outputDataString, errorDataString);
@@ -324,7 +323,7 @@ internal sealed class TestApplicationHandler
         foreach (FailedTestResultMessage failedTestResult in testResultMessages.FailedTestMessages)
         {
             logMessageBuilder.AppendLine($"FailedTestResult: {failedTestResult.Uid}, {failedTestResult.DisplayName}, " +
-                $"{failedTestResult.State}, {failedTestResult.Duration}, {failedTestResult.Reason}, {string.Join(", ", failedTestResult.Exceptions?.Select(e => $"{e.ErrorMessage}, {e.ErrorType}, {e.StackTrace}"))}" +
+                $"{failedTestResult.State}, {failedTestResult.Duration}, {failedTestResult.Reason}, {string.Join(", ", (failedTestResult.Exceptions ?? Array.Empty<ExceptionMessage>()).Select(e => $"{e.ErrorMessage}, {e.ErrorType}, {e.StackTrace}"))}" +
                 $"{failedTestResult.StandardOutput}, {failedTestResult.ErrorOutput}, {failedTestResult.SessionUid}");
         }
 

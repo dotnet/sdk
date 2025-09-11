@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Collections.Concurrent;
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
@@ -30,13 +28,11 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 return;
             }
 
-            Dictionary<bool, List<CommandLineOptionMessage>> allOptions = GetAllOptions(context.Command.Options);
-            allOptions.TryGetValue(true, out List<CommandLineOptionMessage> builtInOptions);
-            allOptions.TryGetValue(false, out List<CommandLineOptionMessage> nonBuiltInOptions);
+            var (builtInOptions, nonBuiltInOptions) = GetAllOptions(context.Command.Options);
 
-            Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions = GetModulesToMissingOptions(_moduleNamesToCommandLineOptions, builtInOptions.Select(option => option.Name), nonBuiltInOptions.Select(option => option.Name));
+            Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions = GetModulesToMissingOptions(_moduleNamesToCommandLineOptions, builtInOptions.Select(option => option.Name!), nonBuiltInOptions.Select(option => option.Name!));
 
-            _output.WritePlatformAndExtensionOptions(context, builtInOptions, nonBuiltInOptions, moduleToMissingOptions);
+            _output!.WritePlatformAndExtensionOptions(context, builtInOptions!, nonBuiltInOptions!, moduleToMissingOptions);
         };
     }
 
@@ -95,26 +91,26 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
     private void OnHelpRequested(CommandLineOptionMessages commandLineOptionMessages)
     {
-        string moduleName = commandLineOptionMessages.ModulePath;
+        string moduleName = commandLineOptionMessages.ModulePath!;
 
         List<string> builtInOptions = [];
         List<string> nonBuiltInOptions = [];
 
-        foreach (CommandLineOptionMessage commandLineOption in commandLineOptionMessages.CommandLineOptionMessageList)
+        foreach (CommandLineOptionMessage commandLineOption in commandLineOptionMessages.CommandLineOptionMessageList!)
         {
             if (commandLineOption.IsHidden.HasValue && commandLineOption.IsHidden.Value) continue;
 
             if (commandLineOption.IsBuiltIn.HasValue && commandLineOption.IsBuiltIn.Value)
             {
-                builtInOptions.Add(commandLineOption.Name);
+                builtInOptions.Add(commandLineOption.Name!);
             }
             else
             {
-                nonBuiltInOptions.Add(commandLineOption.Name);
+                nonBuiltInOptions.Add(commandLineOption.Name!);
             }
 
             _commandLineOptionNameToModuleNames.AddOrUpdate(
-                commandLineOption.Name,
+                commandLineOption.Name!,
                 commandLineOption,
                 (optionName, value) => (value));
         }
@@ -128,9 +124,10 @@ internal partial class MicrosoftTestingPlatformTestCommand
            (isBuiltIn, value) => [.. value, (moduleName, nonBuiltInOptions.ToArray())]);
     }
 
-    private Dictionary<bool, List<CommandLineOptionMessage>> GetAllOptions(IList<Option> commandOptions)
+    private (List<CommandLineOptionMessage> BuiltInOptions, List<CommandLineOptionMessage> NonBuiltInOptions) GetAllOptions(IList<Option> commandOptions)
     {
-        Dictionary<bool, List<CommandLineOptionMessage>> filteredOptions = [];
+        List<CommandLineOptionMessage> builtInOptions = [];
+        List<CommandLineOptionMessage> nonBuiltInOptions = [];
 
         // Create a set of option names from the command's options for efficient lookup
         var commandOptionNames = commandOptions.Select(o => o.Name.TrimStart('-')).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -138,26 +135,24 @@ internal partial class MicrosoftTestingPlatformTestCommand
         foreach (KeyValuePair<string, CommandLineOptionMessage> option in _commandLineOptionNameToModuleNames)
         {
             // Only include options that are NOT already present in the command's options
-            if (!commandOptionNames.Contains(option.Value.Name))
+            if (!commandOptionNames.Contains(option.Value.Name!))
             {
-                if (!filteredOptions.TryGetValue(option.Value.IsBuiltIn.Value, out List<CommandLineOptionMessage> value))
+                if (option.Value.IsBuiltIn!.Value)
                 {
-                    filteredOptions.Add(option.Value.IsBuiltIn.Value, [option.Value]);
+                    builtInOptions.Add(option.Value);
                 }
                 else
                 {
-                    value.Add(option.Value);
+                    nonBuiltInOptions.Add(option.Value);
                 }
             }
         }
 
         // Sort options alphabetically by name
-        foreach (var optionsList in filteredOptions.Values)
-        {
-            optionsList.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase));
-        }
+        builtInOptions.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase));
+        nonBuiltInOptions.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase));
 
-        return filteredOptions;
+        return (builtInOptions, nonBuiltInOptions);
     }
 
     private static Dictionary<bool, List<(string[], string[])>> GetModulesToMissingOptions(
