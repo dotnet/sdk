@@ -42,11 +42,10 @@ internal sealed class TestApplication(
 
         var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
-        Task? testAppPipeConnectionLoop = null;
+        var testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(cancellationToken));
 
         try
         {
-            testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(cancellationToken), cancellationToken);
             var testProcessExitCode = await StartProcess(processStartInfo);
             if (_handler.HasMismatchingTestSessionEventCount())
             {
@@ -58,7 +57,7 @@ internal sealed class TestApplication(
         finally
         {
             cancellationTokenSource.Cancel();
-            testAppPipeConnectionLoop?.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
+            await testAppPipeConnectionLoop;
         }
     }
 
@@ -287,7 +286,7 @@ internal sealed class TestApplication(
             // So, we avoid reading them unnecessarily.
             outputData = await process.StandardOutput.ReadToEndAsync();
             errorData = await process.StandardError.ReadToEndAsync();
-    }
+        }
 
         _handler.OnTestProcessExited(process.ExitCode, outputData, errorData);
 
