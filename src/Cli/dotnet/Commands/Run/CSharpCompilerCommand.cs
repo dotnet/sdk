@@ -50,6 +50,20 @@ internal sealed partial class CSharpCompilerCommand
     public required string ArtifactsPath { get; init; }
     public required bool CanReuseAuxiliaryFiles { get; init; }
 
+    public string BaseDirectory => field ??= Path.GetDirectoryName(EntryPointFileFullPath)!;
+
+    /// <summary>
+    /// Compiler command line arguments to use. If empty, default arguments are used.
+    /// These should be already properly escaped.
+    /// </summary>
+    public required ImmutableArray<string> CscArguments { get; init; }
+
+    /// <summary>
+    /// Path to the <c>bin/Program.dll</c> file. If specified,
+    /// the compiled output (<c>obj/Program.dll</c>) will be copied to this location.
+    /// </summary>
+    public required string? BuildResultFile { get; init; }
+
     /// <param name="fallbackToNormalBuild">
     /// Whether the returned error code should not cause the build to fail but instead fallback to full MSBuild.
     /// </param>
@@ -64,7 +78,7 @@ internal sealed partial class CSharpCompilerCommand
             requestId: EntryPointFileFullPath,
             language: RequestLanguage.CSharpCompile,
             arguments: ["/noconfig", "/nologo", $"@{EscapeSingleArg(rspPath)}"],
-            workingDirectory: Environment.CurrentDirectory,
+            workingDirectory: BaseDirectory,
             tempDirectory: Path.GetTempPath(),
             keepAlive: null,
             libDirectory: null,
@@ -87,7 +101,18 @@ internal sealed partial class CSharpCompilerCommand
             cancellationToken: default);
 
         // Process the response.
-        return ProcessBuildResponse(responseTask.Result, out fallbackToNormalBuild);
+        var exitCode = ProcessBuildResponse(responseTask.Result, out fallbackToNormalBuild);
+
+        // Copy from obj to bin.
+        if (BuildResultFile != null &&
+            CSharpCommandLineParser.Default.Parse(CscArguments, BaseDirectory, sdkDirectory: null) is { OutputFileName: { } outputFileName } parsedArgs)
+        {
+            var objFile = parsedArgs.GetOutputFilePath(outputFileName);
+            Reporter.Verbose.WriteLine($"Copying '{objFile}' to '{BuildResultFile}'.");
+            File.Copy(objFile, BuildResultFile, overwrite: true);
+        }
+
+        return exitCode;
 
         static string GetCompilerCommitHash()
         {
@@ -129,6 +154,14 @@ internal sealed partial class CSharpCompilerCommand
 
     private void PrepareAuxiliaryFiles(out string rspPath)
     {
+        rspPath = Path.Join(ArtifactsPath, "csc.rsp");
+
+        if (!CscArguments.IsDefaultOrEmpty)
+        {
+            File.WriteAllLines(rspPath, CscArguments);
+            return;
+        }
+
         string fileDirectory = Path.GetDirectoryName(EntryPointFileFullPath) ?? string.Empty;
         string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(EntryPointFileFullPath);
 
@@ -283,7 +316,6 @@ internal sealed partial class CSharpCompilerCommand
                 """);
         }
 
-        rspPath = Path.Join(ArtifactsPath, "csc.rsp");
         if (ShouldEmit(rspPath))
         {
             IEnumerable<string> args = GetCscArguments(
@@ -315,18 +347,18 @@ internal sealed partial class CSharpCompilerCommand
     {
         if (IsPathOption(arg, out var colonIndex))
         {
-            return arg[..(colonIndex + 1)] + EscapeCore(arg[(colonIndex + 1)..]);
+            return arg[..(colonIndex + 1)] + EscapePathArgument(arg[(colonIndex + 1)..]);
         }
 
-        return EscapeCore(arg);
+        return EscapePathArgument(arg);
+    }
 
-        static string EscapeCore(string arg)
+    internal static string EscapePathArgument(string arg)
+    {
+        return ArgumentEscaper.EscapeSingleArg(arg, additionalShouldSurroundWithQuotes: static (string arg) =>
         {
-            return ArgumentEscaper.EscapeSingleArg(arg, additionalShouldSurroundWithQuotes: static (string arg) =>
-            {
-                return arg.ContainsAny(s_additionalShouldSurroundWithQuotes);
-            });
-        }
+            return arg.ContainsAny(s_additionalShouldSurroundWithQuotes);
+        });
     }
 
     public static bool IsPathOption(string arg, out int colonIndex)
