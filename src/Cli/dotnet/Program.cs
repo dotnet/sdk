@@ -287,7 +287,7 @@ public class Program
 
         TelemetryClient.TrackEvent("command/finish", properties: new Dictionary<string, string>
                     {
-                        { "command", parseResult.ToString() },
+                        { "command", string.Join(" ", args) },
                         { "exitCode", exitCode.ToString() }
                     },
             measurements: new Dictionary<string, double>());
