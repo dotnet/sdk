@@ -982,7 +982,7 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1225: Native compilation is not supported when invoking the Publish target directly. Try running dotnet publish.</value>
     <comment>{StrBegins="NETSDK1225: "}</comment>
   </data>
-  <!-- The latest message added is Net10NotCompatibleWithVS1713. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <!-- The latest message added is Net10NotCompatibleWithVS17. Please update this value with each PR to catch parallel PRs both adding a new message -->
   <data name="PrunePackageDataNotFound" xml:space="preserve">
     <value>NETSDK1226: Prune Package data not found {0} {1} {2}.  To ignore this error, set the AllowMissingPrunePackageData to true.</value>
     <comment>{StrBegins="NETSDK1226: "}</comment>
@@ -995,7 +995,7 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1228: This project depends on the Aspire Workload which has been deprecated. Aspire now ships via NuGet packages and no longer requires a workload. Please visit {0} for upgrade guidance.</value>
     <comment>{StrBegins="NETSDK1228: "}</comment>
   </data>
-  <data name="Net10NotCompatibleWithVS1713" xml:space="preserve">
+  <data name="Net10NotCompatibleWithVS17" xml:space="preserve">
     <value>NETSDK1229: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported.</value>
     <comment>{StrBegins="NETSDK1229: "}</comment>
   </data>

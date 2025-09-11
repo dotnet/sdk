@@ -656,7 +656,7 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1225: la compilazione nativa non è supportata quando si richiama direttamente la destinazione di pubblicazione. Provare a eseguire dotnet publish.</target>
         <note>{StrBegins="NETSDK1225: "}</note>
       </trans-unit>
-      <trans-unit id="Net10NotCompatibleWithVS1713">
+      <trans-unit id="Net10NotCompatibleWithVS17">
         <source>NETSDK1229: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported.</source>
         <target state="new">NETSDK1229: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported.</target>
         <note>{StrBegins="NETSDK1229: "}</note>

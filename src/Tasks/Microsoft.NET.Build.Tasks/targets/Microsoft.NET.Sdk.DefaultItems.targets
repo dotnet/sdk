@@ -138,10 +138,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                  FormatArguments="$(SdkResolverGlobalJsonPath)" />
   </Target>
 
-  <Target Name="_WarnWhenUsingNET10AndVSPriorTo1714"
+  <Target Name="_WarnWhenUsingNET10AndVSPriorTo18"
         BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
-        Condition="$([MSBuild]::VersionLessThan($(MSBuildVersion), '17.14.0')) and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '10.0'))">
-    <NetSdkWarning ResourceName="Net10NotCompatibleWithVS1713"/>
+        Condition="$([MSBuild]::VersionLessThan($(MSBuildVersion), '18.0.0')) and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '10.0'))">
+    <NetSdkWarning ResourceName="Net10NotCompatibleWithVS17"/>
   </Target>
 
   <Target Name="_CheckForInvalidWindowsDesktopTargetingConfiguration"
