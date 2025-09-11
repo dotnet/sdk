@@ -89,7 +89,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             var parseResult = Parser.Parse($"dotnet tool install -g {PackageId} --ignore-failed-sources");
             var toolInstallCommand = new ToolInstallGlobalOrToolPathCommand(parseResult);
-            toolInstallCommand.restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
+            toolInstallCommand._restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
         }
 
         [Fact]

@@ -8,6 +8,7 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 internal static class CliConstants
 {
     public const string ServerOptionKey = "--server";
+    public const string HelpOptionKey = "--help";
     public const string DotNetTestPipeOptionKey = "--dotnet-test-pipe";
 
     public const string ServerOptionValue = "dotnettestcli";
@@ -65,7 +66,10 @@ internal static class HandshakeMessagePropertyNames
 
 internal static class ProtocolConstants
 {
-    internal const string Version = "1.0.0";
+    /// <summary>
+    /// The protocol versions that are supported by the current SDK. Multiple versions can be present and be semicolon separated.
+    /// </summary>
+    internal const string SupportedVersions = "1.0.0";
 }
 
 internal static class ProjectProperties

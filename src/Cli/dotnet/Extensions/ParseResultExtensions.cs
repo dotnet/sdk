@@ -175,19 +175,6 @@ public static class ParseResultExtensions
         parseResult.HasOption(CommonOptions.LongFormArchitectureOption)) &&
         parseResult.HasOption(CommonOptions.OperatingSystemOption);
 
-    internal static string? GetCommandLineRuntimeIdentifier(this ParseResult parseResult)
-    {
-        return parseResult.HasOption(CommonOptions.RuntimeOptionName) ?
-            parseResult.GetValue<string>(CommonOptions.RuntimeOptionName) :
-            parseResult.HasOption(CommonOptions.OperatingSystemOption) ||
-            parseResult.HasOption(CommonOptions.ArchitectureOption) ||
-            parseResult.HasOption(CommonOptions.LongFormArchitectureOption) ?
-            CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(
-                parseResult.GetValue(CommonOptions.OperatingSystemOption),
-                CommonOptions.ArchOptionValue(parseResult)) :
-            null;
-    }
-
     public static bool UsingRunCommandShorthandProjectOption(this ParseResult parseResult)
     {
         if (parseResult.HasOption(RunCommandParser.PropertyOption) && parseResult.GetValue(RunCommandParser.PropertyOption)!.Any())
@@ -271,10 +258,20 @@ public static class ParseResultExtensions
     }
     public static T? SafelyGetValueForOption<T>(this ParseResult parseResult, string name)
     {
-        if (parseResult.GetResult(name) is OptionResult optionResult &&
-            !parseResult.Errors.Any(e => e.SymbolResult == optionResult))
+        if (parseResult.GetResult(name) is OptionResult optionResult && // only return a value if there _is_ a value - default or otherwise
+            !parseResult.Errors.Any(e => e.SymbolResult == optionResult) // only return a value if this isn't a parsing error
+            && optionResult.Option.ValueType.IsAssignableTo(typeof(T))) // only return a value if coercing the type won't error
         {
-            return optionResult.GetValue<T>(name);
+            // shouldn't happen because of the above checks, but we can be safe since this is only used in telemetry, and should
+            // be resistant to errors
+            try
+            {
+                return optionResult.GetValue<T>(name);
+            }
+            catch
+            {
+                return default;
+            }
         }
         else
         {

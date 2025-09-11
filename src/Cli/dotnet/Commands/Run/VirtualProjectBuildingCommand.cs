@@ -16,6 +16,7 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
+using Microsoft.Build.Logging.SimpleErrorLogger;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -90,61 +91,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </remarks>
     private static readonly IEnumerable<string> s_ignorableProperties =
     [
-        // This is set by default by `dotnet run`, so it must be ignored otherwise the CSC optimization would not kick in by default.
+        // These are set by default by `dotnet run`, so at least these must be ignored otherwise the CSC optimization would not kick in by default.
         "NuGetInteractive",
+        "_BuildNonexistentProjectsByDefault",
+        "RestoreUseSkipNonexistentTargets",
     ];
 
     public static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
-
-    internal static readonly string TargetOverrides = """
-          <!--
-            Override targets which don't work with project files that are not present on disk.
-            See https://github.com/NuGet/Home/issues/14148.
-          -->
-
-          <Target Name="_FilterRestoreGraphProjectInputItems"
-                  DependsOnTargets="_LoadRestoreGraphEntryPoints">
-            <!-- No-op, the original output is not needed by the overwritten targets. -->
-          </Target>
-
-          <Target Name="_GetAllRestoreProjectPathItems"
-                  DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GenerateRestoreProjectPathWalk"
-                  Returns="@(_RestoreProjectPathItems)">
-            <!-- Output from dependency _GenerateRestoreProjectPathWalk. -->
-          </Target>
-
-          <Target Name="_GenerateRestoreGraph"
-                  DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
-                  Returns="@(_RestoreGraphEntry)">
-            <!-- Output partly from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph. -->
-
-            <ItemGroup>
-              <_GenerateRestoreGraphProjectEntryInput Include="@(_RestoreProjectPathItems)" Exclude="$(MSBuildProjectFullPath)" />
-            </ItemGroup>
-
-            <MSBuild
-                BuildInParallel="$(RestoreBuildInParallel)"
-                Projects="@(_GenerateRestoreGraphProjectEntryInput)"
-                Targets="_GenerateRestoreGraphProjectEntry"
-                Properties="$(_GenerateRestoreGraphProjectEntryInputProperties)">
-
-              <Output
-                  TaskParameter="TargetOutputs"
-                  ItemName="_RestoreGraphEntry" />
-            </MSBuild>
-
-            <MSBuild
-                BuildInParallel="$(RestoreBuildInParallel)"
-                Projects="@(_GenerateRestoreGraphProjectEntryInput)"
-                Targets="_GenerateProjectRestoreGraph"
-                Properties="$(_GenerateRestoreGraphProjectEntryInputProperties)">
-
-              <Output
-                  TaskParameter="TargetOutputs"
-                  ItemName="_RestoreGraphEntry" />
-            </MSBuild>
-          </Target>
-        """;
 
     public VirtualProjectBuildingCommand(
         string entryPointFileFullPath,
@@ -153,11 +106,33 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         Debug.Assert(Path.IsPathFullyQualified(entryPointFileFullPath));
 
         EntryPointFileFullPath = entryPointFileFullPath;
-        MSBuildArgs = msbuildArgs;
+        MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(new Dictionary<string, string>(2, StringComparer.OrdinalIgnoreCase)
+        {
+            // See https://github.com/dotnet/msbuild/blob/main/documentation/specs/build-nonexistent-projects-by-default.md.
+            { "_BuildNonexistentProjectsByDefault", bool.TrueString },
+            { "RestoreUseSkipNonexistentTargets", bool.FalseString },
+        }
+        .AsReadOnly());
+
+        if (MSBuildArgs.RequestedTargets is null or [])
+        {
+            RequestedTargets = MSBuildArgs.GetTargetResult;
+        }
+        else if (MSBuildArgs.GetTargetResult is null or [])
+        {
+            RequestedTargets = MSBuildArgs.RequestedTargets;
+        }
+        else
+        {
+            RequestedTargets = MSBuildArgs.RequestedTargets
+                .Union(MSBuildArgs.GetTargetResult, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
     }
 
     public string EntryPointFileFullPath { get; }
     public MSBuildArgs MSBuildArgs { get; }
+    private string[]? RequestedTargets { get; }
     public string? CustomArtifactsPath { get; init; }
     public string ArtifactsPath => field ??= CustomArtifactsPath ?? GetArtifactsPath(EntryPointFileFullPath);
     public bool NoRestore { get; init; }
@@ -169,7 +144,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public bool NoCache { get; init; }
 
     public bool NoBuild { get; init; }
-    public BuildLevel LastBuildLevel { get; private set; } = BuildLevel.None;
+
+    /// <summary>
+    /// Filled during <see cref="Execute"/>.
+    /// </summary>
+    public (BuildLevel Level, CacheInfo? Cache) LastBuild { get; private set; }
 
     /// <summary>
     /// If <see langword="true"/>, no build markers are written
@@ -198,24 +177,49 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public override int Execute()
     {
-        Debug.Assert(!(NoRestore && NoBuild));
-        var verbosity = MSBuildArgs.Verbosity ?? VerbosityOptions.quiet;
-        var consoleLogger = TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]);
+        bool msbuildGet = MSBuildArgs.GetProperty is [_, ..] || MSBuildArgs.GetItem is [_, ..] || MSBuildArgs.GetTargetResult is [_, ..];
+        bool evalOnly = msbuildGet && RequestedTargets is null or [];
+        bool minimizeStdOut = msbuildGet && MSBuildArgs.GetResultOutputFile is null or [];
+
+        var verbosity = MSBuildArgs.Verbosity ?? MSBuildForwardingAppWithoutLogging.DefaultVerbosity;
+        var consoleLogger = minimizeStdOut
+            ? new SimpleErrorLogger()
+            : TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]);
         var binaryLogger = GetBinaryLogger(MSBuildArgs.OtherMSBuildArgs);
 
         CacheInfo? cache = null;
 
-        if (!NoBuild)
+        if (msbuildGet)
+        {
+            LastBuild = (BuildLevel.None, Cache: null);
+        }
+        else if (NoBuild)
+        {
+            // This is reached only during `restore`, not `run --no-build`
+            // (in the latter case, this virtual building command is not executed at all).
+            Debug.Assert(!NoRestore);
+
+            LastBuild = (BuildLevel.None, Cache: null);
+
+            if (!NoWriteBuildMarkers)
+            {
+                CreateTempSubdirectory(ArtifactsPath);
+                MarkArtifactsFolderUsed();
+            }
+        }
+        else
         {
             if (NoCache)
             {
                 cache = ComputeCacheEntry();
-                LastBuildLevel = BuildLevel.All;
+                cache.CurrentEntry.BuildLevel = BuildLevel.All;
+                LastBuild = (BuildLevel.All, cache);
             }
             else
             {
                 var buildLevel = GetBuildLevel(out cache);
-                LastBuildLevel = buildLevel;
+                cache.CurrentEntry.BuildLevel = buildLevel;
+                LastBuild = (buildLevel, cache);
 
                 if (buildLevel is BuildLevel.None)
                 {
@@ -223,6 +227,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     {
                         Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseUpToDate.Yellow());
                     }
+
+                    // No rebuild, can reuse run properties.
+                    cache.CurrentEntry.Run = cache.PreviousEntry?.Run;
 
                     MarkArtifactsFolderUsed();
                     return 0;
@@ -242,8 +249,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     {
                         EntryPointFileFullPath = EntryPointFileFullPath,
                         ArtifactsPath = ArtifactsPath,
-                        // We can reuse auxiliary files if we previously built using csc.
-                        CanReuseAuxiliaryFiles = cache.CanReuseAuxiliaryFiles && cache.PreviousEntry?.BuildLevel is BuildLevel.Csc,
+                        CanReuseAuxiliaryFiles = cache.DetermineFinalCanReuseAuxiliaryFiles(),
                     }
                     .Execute(out bool fallbackToNormalBuild);
 
@@ -259,22 +265,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                     Debug.Assert(result != 0);
                 }
+
+                Debug.Assert(buildLevel is BuildLevel.All or BuildLevel.Csc);
             }
 
             MarkBuildStart();
         }
-        else
-        {
-            LastBuildLevel = BuildLevel.None;
 
-            if (!NoWriteBuildMarkers)
-            {
-                CreateTempSubdirectory(ArtifactsPath);
-                MarkArtifactsFolderUsed();
-            }
-        }
-
-        if (!NoWriteBuildMarkers)
+        if (!NoWriteBuildMarkers && !msbuildGet)
         {
             CleanFileBasedAppArtifactsCommand.StartAutomaticCleanupIfNeeded();
         }
@@ -304,10 +302,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             BuildManager.DefaultBuildManager.BeginBuild(parameters);
 
+            int exitCode = 0;
+            ProjectInstance? projectInstance = null;
+            BuildResult? buildOrRestoreResult = null;
+
             // Do a restore first (equivalent to MSBuild's "implicit restore", i.e., `/restore`).
             // See https://github.com/dotnet/msbuild/blob/a1c2e7402ef0abe36bf493e395b04dd2cb1b3540/src/MSBuild/XMake.cs#L1838
             // and https://github.com/dotnet/msbuild/issues/11519.
-            if (!NoRestore)
+            if (!NoRestore && !evalOnly)
             {
                 var restoreRequest = new BuildRequestData(
                     CreateProjectInstance(projectCollection, addGlobalProperties: AddRestoreGlobalProperties(MSBuildArgs.RestoreGlobalProperties)),
@@ -318,31 +320,52 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 var restoreResult = BuildManager.DefaultBuildManager.BuildRequest(restoreRequest);
                 if (restoreResult.OverallResult != BuildResultCode.Success)
                 {
-                    return 1;
+                    exitCode = 1;
                 }
+
+                projectInstance = restoreRequest.ProjectInstance;
+                buildOrRestoreResult = restoreResult;
             }
 
             // Then do a build.
-            if (!NoBuild)
+            if (exitCode == 0 && !NoBuild && !evalOnly)
             {
                 var buildRequest = new BuildRequestData(
                     CreateProjectInstance(projectCollection),
-                    targetsToBuild: MSBuildArgs.RequestedTargets ?? ["Build"]);
+                    targetsToBuild: RequestedTargets ?? []);
 
                 var buildResult = BuildManager.DefaultBuildManager.BuildRequest(buildRequest);
                 if (buildResult.OverallResult != BuildResultCode.Success)
                 {
-                    return 1;
+                    exitCode = 1;
                 }
 
-                Debug.Assert(cache != null);
-                MarkBuildSuccess(cache);
+                if (exitCode == 0 && !msbuildGet)
+                {
+                    Debug.Assert(cache != null);
+                    Debug.Assert(buildRequest.ProjectInstance != null);
+
+                    // Cache run info (to avoid re-evaluating the project instance).
+                    cache.CurrentEntry.Run = RunProperties.FromProject(buildRequest.ProjectInstance);
+
+                    MarkBuildSuccess(cache);
+                }
+
+                projectInstance = buildRequest.ProjectInstance;
+                buildOrRestoreResult = buildResult;
+            }
+
+            // Print build information.
+            if (msbuildGet)
+            {
+                projectInstance ??= CreateProjectInstance(projectCollection);
+                PrintBuildInformation(projectCollection, projectInstance, buildOrRestoreResult);
             }
 
             BuildManager.DefaultBuildManager.EndBuild();
             consoleLogger = null; // avoid double disposal which would throw
 
-            return 0;
+            return exitCode;
         }
         catch (Exception e)
         {
@@ -409,21 +432,169 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             return null;
         }
+
+        void PrintBuildInformation(ProjectCollection projectCollection, ProjectInstance projectInstance, BuildResult? buildOrRestoreResult)
+        {
+            var resultOutputFile = MSBuildArgs.GetResultOutputFile is [{ } file, ..] ? file : null;
+
+            // If a single property is requested, don't print as JSON.
+            if (MSBuildArgs is { GetProperty: [{ } singlePropertyName], GetItem: null or [], GetTargetResult: null or [] })
+            {
+                var result = projectInstance.GetPropertyValue(singlePropertyName);
+                if (resultOutputFile == null)
+                {
+                    Console.WriteLine(result);
+                }
+                else
+                {
+                    File.WriteAllText(path: resultOutputFile, contents: result + Environment.NewLine);
+                }
+            }
+            else
+            {
+                using var stream = resultOutputFile == null
+                   ? Console.OpenStandardOutput()
+                   : new FileStream(resultOutputFile, FileMode.Create, FileAccess.Write, FileShare.Read);
+                using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
+                writer.WriteStartObject();
+
+                if (MSBuildArgs.GetProperty is [_, ..])
+                {
+                    writer.WritePropertyName("Properties");
+                    writer.WriteStartObject();
+
+                    foreach (var propertyName in MSBuildArgs.GetProperty)
+                    {
+                        writer.WriteString(propertyName, projectInstance.GetPropertyValue(propertyName));
+                    }
+
+                    writer.WriteEndObject();
+                }
+
+                if (MSBuildArgs.GetItem is [_, ..])
+                {
+                    writer.WritePropertyName("Items");
+                    writer.WriteStartObject();
+
+                    foreach (var itemName in MSBuildArgs.GetItem)
+                    {
+                        writer.WritePropertyName(itemName);
+                        writer.WriteStartArray();
+
+                        foreach (var item in projectInstance.GetItems(itemName))
+                        {
+                            writer.WriteStartObject();
+                            writer.WriteString("Identity", item.GetMetadataValue("Identity"));
+
+                            foreach (var metadatumName in item.MetadataNames)
+                            {
+                                if (metadatumName.Equals("Identity", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    continue;
+                                }
+
+                                writer.WriteString(metadatumName, item.GetMetadataValue(metadatumName));
+                            }
+
+                            writer.WriteEndObject();
+                        }
+
+                        writer.WriteEndArray();
+                    }
+
+                    writer.WriteEndObject();
+                }
+
+                if (MSBuildArgs.GetTargetResult is [_, ..])
+                {
+                    Debug.Assert(buildOrRestoreResult != null);
+
+                    writer.WritePropertyName("TargetResults");
+                    writer.WriteStartObject();
+
+                    foreach (var targetName in MSBuildArgs.GetTargetResult)
+                    {
+                        var targetResult = buildOrRestoreResult.ResultsByTarget[targetName];
+
+                        writer.WritePropertyName(targetName);
+                        writer.WriteStartObject();
+                        writer.WriteString("Result", targetResult.TargetResultCodeToString());
+                        writer.WritePropertyName("Items");
+                        writer.WriteStartArray();
+
+                        foreach (var item in targetResult.Items)
+                        {
+                            writer.WriteStartObject();
+                            writer.WriteString("Identity", item.GetMetadata("Identity"));
+
+                            foreach (string metadatumName in item.MetadataNames)
+                            {
+                                if (metadatumName.Equals("Identity", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    continue;
+                                }
+
+                                writer.WriteString(metadatumName, item.GetMetadata(metadatumName));
+                            }
+
+                            writer.WriteEndObject();
+                        }
+
+                        writer.WriteEndArray();
+                        writer.WriteEndObject();
+                    }
+
+                    writer.WriteEndObject();
+                }
+
+                writer.WriteEndObject();
+                writer.Flush();
+                stream.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
+            }
+        }
     }
 
     /// <summary>
     /// Common info needed by <see cref="ComputeCacheEntry"/> but also later stages.
     /// </summary>
-    private sealed class CacheInfo
+    public sealed class CacheInfo
     {
         public required FileInfo EntryPointFile { get; init; }
         public RunFileBuildCacheEntry? PreviousEntry { get; set; }
         public required RunFileBuildCacheEntry CurrentEntry { get; init; }
 
         /// <summary>
+        /// The first of <see cref="CurrentEntry"/>'s <see cref="RunFileBuildCacheEntry.ImplicitBuildFiles"/>
+        /// which is from the set of MSBuild <see cref="s_implicitBuildFiles"/>.
+        /// </summary>
+        public string? ExampleMSBuildFile { get; set; }
+
+        /// <summary>
         /// We cannot reuse auxiliary files like <c>csc.rsp</c> for example when SDK version changes.
         /// </summary>
-        public bool CanReuseAuxiliaryFiles { get; set; } = true;
+        /// <remarks>
+        /// Only set during <see cref="NeedsToBuild"/>.
+        /// </remarks>
+        public bool InitialCanReuseAuxiliaryFiles { get; set; } = true;
+
+        public bool DetermineFinalCanReuseAuxiliaryFiles()
+        {
+            if (!InitialCanReuseAuxiliaryFiles)
+            {
+                Reporter.Verbose.WriteLine("CSC auxiliary files can NOT be reused due to the same reason build is needed.");
+                return false;
+            }
+
+            if (PreviousEntry?.BuildLevel != BuildLevel.Csc)
+            {
+                Reporter.Verbose.WriteLine($"CSC auxiliary files can NOT be reused because previous build level was not CSC " +
+                    $"(it was {PreviousEntry?.BuildLevel.ToString() ?? "N/A"}).");
+                return false;
+            }
+
+            Reporter.Verbose.WriteLine("CSC auxiliary files can be reused.");
+            return true;
+        }
     }
 
     /// <summary>
@@ -446,12 +617,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         // Collect current implicit build files.
         CollectImplicitBuildFiles(entryPointFile.Directory, cacheEntry.ImplicitBuildFiles, out var exampleMSBuildFile);
-        cacheEntry.ExampleMSBuildFile = exampleMSBuildFile;
 
         return new CacheInfo
         {
             EntryPointFile = entryPointFile,
             CurrentEntry = cacheEntry,
+            ExampleMSBuildFile = exampleMSBuildFile,
         };
     }
 
@@ -508,10 +679,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return true;
         }
 
-        var previousCacheEntry = DeserializeCacheEntry(successCacheFile);
+        var previousCacheEntry = DeserializeCacheEntry(successCacheFile.FullName);
         if (previousCacheEntry is null)
         {
-            cache.CanReuseAuxiliaryFiles = false;
+            cache.InitialCanReuseAuxiliaryFiles = false;
             Reporter.Verbose.WriteLine("Building because previous cache entry could not be deserialized: " + successCacheFile.FullName);
             return true;
         }
@@ -523,7 +694,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         if (previousCacheEntry.SdkVersion != cacheEntry.SdkVersion)
         {
-            cache.CanReuseAuxiliaryFiles = false;
+            cache.InitialCanReuseAuxiliaryFiles = false;
             Reporter.Verbose.WriteLine($"""
                 Building because previous SDK version ({previousCacheEntry.SdkVersion}) does not match current ({cacheEntry.SdkVersion}): {successCacheFile.FullName}
                 """);
@@ -532,7 +703,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         if (previousCacheEntry.RuntimeVersion != cacheEntry.RuntimeVersion)
         {
-            cache.CanReuseAuxiliaryFiles = false;
+            cache.InitialCanReuseAuxiliaryFiles = false;
             Reporter.Verbose.WriteLine($"""
                 Building because previous runtime version ({previousCacheEntry.RuntimeVersion}) does not match current ({cacheEntry.RuntimeVersion}): {successCacheFile.FullName}
                 """);
@@ -599,26 +770,32 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
 
         return false;
+    }
 
-        static RunFileBuildCacheEntry? DeserializeCacheEntry(FileInfo cacheFile)
+    private static RunFileBuildCacheEntry? DeserializeCacheEntry(string path)
+    {
+        try
         {
-            try
-            {
-                using var stream = File.Open(cacheFile.FullName, FileMode.Open, FileAccess.Read, FileShare.Read);
-                return JsonSerializer.Deserialize(stream, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
-            }
-            catch (Exception e)
-            {
-                Reporter.Verbose.WriteLine($"Failed to deserialize cache entry ({cacheFile.FullName}): {e.GetType().FullName}: {e.Message}");
-                return null;
-            }
+            using var stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            return JsonSerializer.Deserialize(stream, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
         }
+        catch (Exception e)
+        {
+            Reporter.Verbose.WriteLine($"Failed to deserialize cache entry ({path}): {e.GetType().FullName}: {e.Message}");
+            return null;
+        }
+    }
+
+    public RunFileBuildCacheEntry? GetPreviousCacheEntry()
+    {
+        return DeserializeCacheEntry(Path.Join(ArtifactsPath, BuildSuccessCacheFileName));
     }
 
     private BuildLevel GetBuildLevel(out CacheInfo cache)
     {
         if (!NeedsToBuild(out cache))
         {
+            Reporter.Verbose.WriteLine("No need to build, the output is up to date.");
             return BuildLevel.None;
         }
 
@@ -631,15 +808,17 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return BuildLevel.All;
         }
 
-        if (cacheEntry.GlobalProperties.Keys.Except(s_ignorableProperties, cacheEntry.GlobalProperties.Comparer).Any())
+        var globalProperties = cacheEntry.GlobalProperties.Keys.Except(s_ignorableProperties, cacheEntry.GlobalProperties.Comparer);
+        if (globalProperties.FirstOrDefault() is { } exampleKey)
         {
-            var example = cacheEntry.GlobalProperties.First();
-            Reporter.Verbose.WriteLine($"Using MSBuild because there are global properties, for example '{example.Key}={example.Value}'.");
+            var exampleValue = cacheEntry.GlobalProperties[exampleKey];
+            Reporter.Verbose.WriteLine($"Using MSBuild because there are global properties, for example '{exampleKey}={exampleValue}'.");
             return BuildLevel.All;
         }
 
-        if (cacheEntry.ExampleMSBuildFile is { } exampleMSBuildFile)
+        if (cache.ExampleMSBuildFile is { } exampleMSBuildFile)
         {
+            Debug.Assert(cacheEntry.ImplicitBuildFiles.Count != 0);
             Reporter.Verbose.WriteLine($"Using MSBuild because there are implicit build files, for example '{exampleMSBuildFile}'.");
             return BuildLevel.All;
         }
@@ -702,9 +881,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return;
         }
 
-        Debug.Assert(LastBuildLevel != BuildLevel.None);
-        cache.CurrentEntry.BuildLevel = LastBuildLevel;
-
         string successCacheFile = Path.Join(ArtifactsPath, BuildSuccessCacheFileName);
         using var stream = File.Open(successCacheFile, FileMode.Create, FileAccess.Write, FileShare.None);
         JsonSerializer.Serialize(stream, cache.CurrentEntry, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
@@ -744,7 +920,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 isVirtualProject: true,
                 targetFilePath: EntryPointFileFullPath,
                 artifactsPath: ArtifactsPath,
-                includeRuntimeConfigInformation: !MSBuildArgs.RequestedTargets?.Contains("Publish") ?? true);
+                includeRuntimeConfigInformation: RequestedTargets?.ContainsAny("Publish", "Pack") != true);
             var projectFileText = projectFileWriter.ToString();
 
             using var reader = new StringReader(projectFileText);
@@ -849,6 +1025,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                     <ArtifactsPath>{EscapeValue(artifactsPath)}</ArtifactsPath>
                     <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
+                    <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
                     <FileBasedProgram>true</FileBasedProgram>
                   </PropertyGroup>
 
@@ -856,7 +1033,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     <Clean Include="{EscapeValue(artifactsPath)}/*" />
                   </ItemGroup>
 
-                  <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                 """);
 
             if (firstSdkVersion is null)
@@ -933,6 +1109,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             {
                 writer.WriteLine("""
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                        <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
                     """);
             }
 
@@ -1049,11 +1227,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     """);
             }
 
-            writer.WriteLine($"""
-
-                {TargetOverrides}
-
-                """);
+            writer.WriteLine();
         }
 
         writer.WriteLine("""
@@ -1474,7 +1648,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
             if (propertyValue is null)
             {
-                return context.Diagnostics.AddError<Property?>(context.SourceFile, context.Info.Span, location => string.Format(CliCommandStrings.PropertyDirectiveMissingParts, location));
+                return context.Diagnostics.AddError<Property?>(context.SourceFile, context.Info.Span, static location => string.Format(CliCommandStrings.PropertyDirectiveMissingParts, location));
             }
 
             try
@@ -1484,6 +1658,12 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             catch (XmlException ex)
             {
                 return context.Diagnostics.AddError<Property?>(context.SourceFile, context.Info.Span, location => string.Format(CliCommandStrings.PropertyDirectiveInvalidName, location, ex.Message), ex);
+            }
+
+            if (propertyName.Equals("RestoreUseStaticGraphEvaluation", StringComparison.OrdinalIgnoreCase) &&
+                MSBuildUtilities.ConvertStringToBool(propertyValue))
+            {
+                context.Diagnostics.AddError(context.SourceFile, context.Info.Span, static location => string.Format(CliCommandStrings.StaticGraphRestoreNotSupported, location));
             }
 
             return new Property(context.Info)
@@ -1676,8 +1856,7 @@ internal sealed class RunFileBuildCacheEntry
 
     public string? RuntimeVersion { get; set; } // should be required and init-only but https://github.com/dotnet/runtime/issues/92877
 
-    [JsonIgnore]
-    public string? ExampleMSBuildFile { get; set; }
+    public RunProperties? Run { get; set; }
 
     [JsonConstructor]
     public RunFileBuildCacheEntry()

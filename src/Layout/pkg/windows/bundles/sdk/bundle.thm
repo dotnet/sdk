@@ -18,7 +18,8 @@
   <!-- In v5, Window@Width and Window@Height refers to the client area, not the window area. wixstdba calls 
        AdjustWindowRectEx or AdjustWindowRectExForDpi (if supported) to produce a window with the desired client area. -->
   <Window Width="644" Height="460" HexStyle="100a0000" FontId="DefaultFont" Caption="#(loc.Caption)" IconFile="dotnet.ico">
-    <ImageControl Name="DotNetLogo" X="12" Y="-48" Width="124" Height="124" ImageFile="DotNetLogo_124x.png" Visible="yes" />
+    <!-- Use the 256x256 logo as that displays better at 200% scaling for high DPI -->
+    <ImageControl Name="DotNetLogo" X="12" Y="-48" Width="124" Height="124" ImageFile="DotNetLogo_256x.png" Visible="yes" />
 
     <!-- A width of 0 extends the control to the right of the window. The first label will render an opaque rectangle using
          the background color of the specified font. The second label overlays the title text. This is necessary since
@@ -80,7 +81,7 @@
       </Button>
     </Page>
     <Page Name="Success">
-      <Label Name="SuccessHeader" X="148" Y="80" Width="-12" Height="32" HexStyle="00000000" FontId="PageHeaderFont">
+      <Label Name="SuccessHeader" X="148" Y="80" Width="-12" Height="32" HexStyle="00000000" FontId="PageHeaderFont" TabStop="yes">
         <!-- Default text to display if none of the conditions are true. -->
         <Text>#(loc.SuccessHeader)</Text>
         <Text Condition="WixBundleAction = 2">#(loc.SuccessLayoutHeader)</Text>
@@ -94,11 +95,11 @@
 
       <!-- Only display the welcome message when an installation was performed. Message is broken up to
            ensure tab order is correct. -->
-      <Hypertext HexStyle="00000000" EnableCondition="WixBundleAction = 6" Name="SuccessInstallHeader" X="148" Y="124" Width="-12" Height="128" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.FirstTimeWelcomeMessage)</Hypertext>
-      <Hypertext HexStyle="00000000" EnableCondition="WixBundleAction = 6" Name="SuccessInstallHeader" X="148" Y="252" Width="-12" Height="32" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.NetDocumentationLinkText)</Hypertext>
-      <Hypertext HexStyle="00000000" EnableCondition="WixBundleAction = 6" Name="SuccessInstallHeader" X="148" Y="284" Width="-12" Height="16" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.SdkDocumentationLinkText)</Hypertext>
-      <Hypertext HexStyle="00000000" EnableCondition="WixBundleAction = 6" Name="SuccessInstallHeader" X="148" Y="300" Width="-12" Height="16" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.ReleaseNotesLinkText)</Hypertext>
-      <Hypertext HexStyle="00000000" EnableCondition="WixBundleAction = 6" Name="SuccessInstallHeader" X="148" Y="316" Width="-12" Height="16" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.TutorialsLinkText)</Hypertext>
+      <Hypertext HexStyle="00000000" EnableCondition="WixBundleAction = 6" TabStop="yes" Name="FirstTimeWelcomeMessage" X="148" Y="124" Width="-12" Height="128" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.FirstTimeWelcomeMessage)</Hypertext>
+      <Hypertext HexStyle="00000000" EnableCondition="WixBundleAction = 6" TabStop="yes" Name="NetDocumentationLinkText" X="148" Y="252" Width="-12" Height="32" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.NetDocumentationLinkText)</Hypertext>
+      <Hypertext HexStyle="00000000" EnableCondition="WixBundleAction = 6" TabStop="yes" Name="SdkDocumentationLinkText" X="148" Y="284" Width="-12" Height="16" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.SdkDocumentationLinkText)</Hypertext>
+      <Hypertext HexStyle="00000000" EnableCondition="WixBundleAction = 6" TabStop="yes" Name="ReleaseNotesLinkText" X="148" Y="300" Width="-12" Height="16" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.ReleaseNotesLinkText)</Hypertext>
+      <Hypertext HexStyle="00000000" EnableCondition="WixBundleAction = 6" TabStop="yes" Name="TutorialsLinkText" X="148" Y="316" Width="-12" Height="16" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.TutorialsLinkText)</Hypertext>
 
       <Label X="148" Y="-48" Width="-12" Height="34" FontId="DefaultFont" DisablePrefix="yes" VisibleCondition="WixStdBARestartRequired">
         <Text>#(loc.SuccessRestartText)</Text>
@@ -115,7 +116,7 @@
       </Button>
     </Page>
     <Page Name="Failure">
-      <Label Name="FailureHeader" X="148" Y="80" Width="-12" Height="32" HexStyle="00000000" FontId="PageHeaderFont">
+      <Label Name="FailureHeader" X="148" Y="80" Width="-12" Height="32" HexStyle="00000000" FontId="PageHeaderFont" TabStop="yes">
         <Text>#(loc.FailureHeader)</Text>
         <Text Condition="WixBundleAction = 2">#(loc.FailureLayoutHeader)</Text>
         <Text Condition="WixBundleAction = 3">#(loc.FailureUnsafeUninstallHeader)</Text>

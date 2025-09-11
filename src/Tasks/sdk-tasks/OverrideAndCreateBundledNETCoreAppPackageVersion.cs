@@ -3,7 +3,12 @@
 
 #nullable disable
 
+using System;
+using System.IO;
+using System.Linq;
+using System.Xml.Linq;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Build.Tasks
@@ -15,6 +20,7 @@ namespace Microsoft.DotNet.Build.Tasks
     /// and then update the stage 0 back.
     ///
     /// Override NETCoreSdkVersion to stage 0 sdk version like 6.0.100-dev
+    /// Override NETCoreSdkRuntimeIdentifier and NETCoreSdkPortableRuntimeIdentifier to match the target RID
     ///
     /// Use a task to override since it was generated as a string literal replace anyway.
     /// And using C# can have better error when anything goes wrong.
@@ -32,6 +38,8 @@ namespace Microsoft.DotNet.Build.Tasks
 
         [Required] public string NewSDKVersion { get; set; }
 
+        [Required] public string TargetRid { get; set; }
+
         [Required] public string OutputPath { get; set; }
 
         public override bool Execute()
@@ -40,14 +48,18 @@ namespace Microsoft.DotNet.Build.Tasks
                 ExecuteInternal(
                     File.ReadAllText(Stage0MicrosoftNETCoreAppRefPackageVersionPath),
                     MicrosoftNETCoreAppRefPackageVersion,
-                    NewSDKVersion));
+                    NewSDKVersion,
+                    TargetRid,
+                    Log));
             return true;
         }
 
         public static string ExecuteInternal(
             string stage0MicrosoftNETCoreAppRefPackageVersionContent,
             string microsoftNETCoreAppRefPackageVersion,
-            string newSDKVersion)
+            string newSDKVersion,
+            string targetRid,
+            TaskLoggingHelper log)
         {
             var projectXml = XDocument.Parse(stage0MicrosoftNETCoreAppRefPackageVersionContent);
 
@@ -56,6 +68,8 @@ namespace Microsoft.DotNet.Build.Tasks
             var propertyGroup = projectXml.Root.Elements(ns + "PropertyGroup").First();            
 
             propertyGroup.Element(ns + "NETCoreSdkVersion").Value = newSDKVersion;
+            propertyGroup.Element(ns + "NETCoreSdkRuntimeIdentifier").Value = targetRid;
+            propertyGroup.Element(ns + "NETCoreSdkPortableRuntimeIdentifier").Value = targetRid;
 
 
             var originalBundledNETCoreAppPackageVersion = propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value;
@@ -77,6 +91,7 @@ namespace Microsoft.DotNet.Build.Tasks
             propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value = newBundledPackageVersion;
 
             var isNETServicing = IsNETServicing(originalBundledNETCoreAppPackageVersion);
+            var currentTargetFramework = $"net{parsedMicrosoftNETCoreAppRefPackageVersion.Major}.0";
 
             void CheckAndReplaceElement(XElement element)
             {
@@ -87,6 +102,8 @@ namespace Microsoft.DotNet.Build.Tasks
                         element.ToString(), element.Value, originalBundledNETCoreAppPackageVersion));
                 }
 
+                log.LogMessage(MessageImportance.High,
+                    $"Replacing element {element.Name} value '{element.Value}' with '{newBundledPackageVersion}'");
                 element.Value = newBundledPackageVersion;
             }
 
@@ -100,6 +117,8 @@ namespace Microsoft.DotNet.Build.Tasks
                         originalBundledNETCoreAppPackageVersion));
                 }
 
+                log.LogMessage(MessageImportance.High,
+                    $"Replacing attribute {attribute.Name} value '{attribute.Value}' with '{newBundledPackageVersion}' in element {attribute.Parent.Name}");
                 attribute.Value = newBundledPackageVersion;
             }
 
@@ -112,25 +131,60 @@ namespace Microsoft.DotNet.Build.Tasks
 
             if (!isNETServicing)
             {
-                CheckAndReplaceAttribute(itemGroup
-                    .Elements(ns + "KnownFrameworkReference").First().Attribute("DefaultRuntimeFrameworkVersion"));
-                CheckAndReplaceAttribute(itemGroup
-                    .Elements(ns + "KnownFrameworkReference").First().Attribute("TargetingPackVersion"));
+                foreach (var element in itemGroup.Elements(ns + "KnownFrameworkReference")
+                    .Where(e => e.Attribute("TargetFramework")?.Value == currentTargetFramework))
+                {
+                    CheckAndReplaceAttribute(element.Attribute("DefaultRuntimeFrameworkVersion"));
+                    CheckAndReplaceAttribute(element.Attribute("TargetingPackVersion"));
+                }
             }
 
-            CheckAndReplaceAttribute(itemGroup
-                .Elements(ns + "KnownFrameworkReference").First().Attribute("LatestRuntimeFrameworkVersion"));
-            CheckAndReplaceAttribute(itemGroup
-                .Elements(ns + "KnownAppHostPack").First().Attribute("AppHostPackVersion"));
-            CheckAndReplaceAttribute(itemGroup
-                .Elements(ns + "KnownCrossgen2Pack").First().Attribute("Crossgen2PackVersion"));
-            CheckAndReplaceAttribute(itemGroup
-                .Elements(ns + "KnownILCompilerPack").First().Attribute("ILCompilerPackVersion"));
-            CheckAndReplaceAttribute(itemGroup
-                .Elements(ns + "KnownILLinkPack").First().Attribute("ILLinkPackVersion"));
+            foreach (var element in itemGroup.Elements(ns + "KnownFrameworkReference")
+                .Where(e => e.Attribute("TargetFramework")?.Value == currentTargetFramework))
+            {
+                CheckAndReplaceAttribute(element.Attribute("LatestRuntimeFrameworkVersion"));
+            }
+            foreach (var element in itemGroup.Elements(ns + "KnownAppHostPack")
+                .Where(e => e.Attribute("TargetFramework")?.Value == currentTargetFramework))
+            {
+                CheckAndReplaceAttribute(element.Attribute("AppHostPackVersion"));
+            }
+            
+            foreach (var element in itemGroup.Elements(ns + "KnownCrossgen2Pack")
+                .Where(e => e.Attribute("TargetFramework")?.Value == currentTargetFramework))
+            {
+                CheckAndReplaceAttribute(element.Attribute("Crossgen2PackVersion"));
+            }
+            
+            foreach (var element in itemGroup.Elements(ns + "KnownILCompilerPack")
+                .Where(e => e.Attribute("TargetFramework")?.Value == currentTargetFramework))
+            {
+                CheckAndReplaceAttribute(element.Attribute("ILCompilerPackVersion"));
+            }
+            
+            foreach (var element in itemGroup.Elements(ns + "KnownILLinkPack")
+                .Where(e => e.Attribute("TargetFramework")?.Value == currentTargetFramework))
+            {
+                CheckAndReplaceAttribute(element.Attribute("ILLinkPackVersion"));
+            }
+            
+            // web assembly packs always use the latest regardless of the TFM
+            foreach (var element in itemGroup.Elements(ns + "KnownWebAssemblySdkPack"))
+            {
+                CheckAndReplaceAttribute(element.Attribute("WebAssemblySdkPackVersion"));
+            }
+            
+            foreach (var element in itemGroup.Elements(ns + "KnownAspNetCorePack")
+                .Where(e => e.Attribute("TargetFramework")?.Value == currentTargetFramework))
+            {
+                CheckAndReplaceAttribute(element.Attribute("AspNetCorePackVersion"));
+            }
 
-            CheckAndReplaceAttribute(itemGroup
-                .Elements(ns + "KnownRuntimePack").First().Attribute("LatestRuntimeFrameworkVersion"));
+            foreach (var element in itemGroup.Elements(ns + "KnownRuntimePack")
+                .Where(e => e.Attribute("TargetFramework")?.Value == currentTargetFramework))
+            {
+                CheckAndReplaceAttribute(element.Attribute("LatestRuntimeFrameworkVersion"));
+            }
 
             return projectXml.ToString();
         }

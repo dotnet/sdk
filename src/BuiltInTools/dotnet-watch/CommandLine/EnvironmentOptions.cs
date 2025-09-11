@@ -27,13 +27,16 @@ namespace Microsoft.DotNet.Watch
     internal sealed record EnvironmentOptions(
         string WorkingDirectory,
         string MuxerPath,
-        TimeSpan ProcessCleanupTimeout,
+        TimeSpan? ProcessCleanupTimeout,
         bool IsPollingEnabled = false,
         bool SuppressHandlingStaticContentFiles = false,
         bool SuppressMSBuildIncrementalism = false,
         bool SuppressLaunchBrowser = false,
         bool SuppressBrowserRefresh = false,
         bool SuppressEmojis = false,
+        bool RestartOnRudeEdit = false,
+        string? AutoReloadWebSocketHostName = null,
+        string? BrowserPath = null,
         TestFlags TestFlags = TestFlags.None,
         string TestOutput = "")
     {
@@ -48,11 +51,19 @@ namespace Microsoft.DotNet.Watch
             SuppressLaunchBrowser: EnvironmentVariables.SuppressLaunchBrowser,
             SuppressBrowserRefresh: EnvironmentVariables.SuppressBrowserRefresh,
             SuppressEmojis: EnvironmentVariables.SuppressEmojis,
+            RestartOnRudeEdit: EnvironmentVariables.RestartOnRudeEdit,
+            AutoReloadWebSocketHostName: EnvironmentVariables.AutoReloadWSHostName,
+            BrowserPath: EnvironmentVariables.BrowserPath,
             TestFlags: EnvironmentVariables.TestFlags,
             TestOutput: EnvironmentVariables.TestOutputDir
         );
 
-        private static int s_uniqueLogId;
+        public TimeSpan GetProcessCleanupTimeout(bool isHotReloadEnabled)
+            // If Hot Reload mode is disabled the process is restarted on every file change.
+            // Waiting for graceful termination would slow down the turn around.
+            => ProcessCleanupTimeout ?? (isHotReloadEnabled ? TimeSpan.FromSeconds(5) : TimeSpan.FromSeconds(0));
+
+        private int _uniqueLogId;
 
         public bool RunningAsTest { get => (TestFlags & TestFlags.RunningAsTest) != TestFlags.None; }
 
@@ -64,9 +75,9 @@ namespace Microsoft.DotNet.Watch
             return muxerPath;
         }
 
-        public string? GetTestBinLogPath(string projectPath, string operationName)
-            => TestFlags.HasFlag(TestFlags.RunningAsTest)
-                ? Path.Combine(TestOutput, $"Watch.{operationName}.{Path.GetFileName(projectPath)}.{Interlocked.Increment(ref s_uniqueLogId)}.binlog")
-                : null;
+        public string? GetBinLogPath(string projectPath, string operationName, GlobalOptions options)
+            => options.BinaryLogPath != null
+               ? $"{Path.Combine(WorkingDirectory, options.BinaryLogPath)[..^".binlog".Length]}-dotnet-watch.{operationName}.{Path.GetFileName(projectPath)}.{Interlocked.Increment(ref _uniqueLogId)}.binlog"
+               : null;
     }
 }

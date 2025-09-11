@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Aborted" xml:space="preserve">
-    <value>Aborted</value>
-  </data>
   <data name="ActiveTestsRunning_FullTestsCount" xml:space="preserve">
     <value>{0} tests running</value>
   </data>
@@ -565,6 +562,19 @@ This is equivalent to deleting project.assets.json.</value>
     <value>The directory where the test results will be placed.
 The specified directory will be created if it does not exist.</value>
   </data>
+  <data name="CmdConfigFileDescription" xml:space="preserve">
+    <value>Specifies a testconfig.json file.</value>
+  </data>
+  <data name="CmdConfigFilePath" xml:space="preserve">
+    <value>CONFIG_FILE</value>
+  </data>
+  <data name="CmdDiagnosticOutputDirectoryDescription" xml:space="preserve">
+    <value>Output directory of the diagnostic logging.
+If not specified the file will be generated inside the default 'TestResults' directory.</value>
+  </data>
+  <data name="CmdDiagnosticOutputDirectoryPath" xml:space="preserve">
+    <value>DIAGNOSTIC_DIR</value>
+  </data>
   <data name="CmdRootPathName" xml:space="preserve">
     <value>ROOT_PATH</value>
   </data>
@@ -633,14 +643,13 @@ The specified directory will be created if it does not exist.</value>
     <value>Test runner '{0}' is not supported.</value>
   </data>
   <data name="CmdUnsupportedVSTestTestApplicationsDescription" xml:space="preserve">
-    <value>dotnet.config defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+    <value>global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
 The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</value>
-    <comment>{0} is one or more project names.
-Microsoft.Testing.Platform is a name, don't translate.
-dotnet.config is a name don't translate.</comment>
+    <comment>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
+{0} is one or more project names.</comment>
   </data>
   <data name="CmdUseLockFileOptionDescription" xml:space="preserve">
     <value>Enables project lock file to be generated and used with restore.</value>
@@ -1201,6 +1210,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   </data>
   <data name="NoWorkloadsToRepair" xml:space="preserve">
     <value>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</value>
+    <comment>{Locked="dotnet workload search"}</comment>
   </data>
   <data name="NoWorkloadsToUpdate" xml:space="preserve">
     <value>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</value>
@@ -1588,7 +1598,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   </data>
   <data name="PropertyDirectiveMissingParts" xml:space="preserve">
     <value>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</value>
-    <comment>{0} is the file path and line number.</comment>
+    <comment>{0} is the file path and line number.{Locked="#:property"}</comment>
+  </data>
+  <data name="StaticGraphRestoreNotSupported" xml:space="preserve">
+    <value>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</value>
+    <comment>{0} is the file path and line number.{Locked="#:property"}</comment>
   </data>
   <data name="InvalidDirectiveName" xml:space="preserve">
     <value>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</value>
@@ -1762,10 +1776,11 @@ The default is to publish a framework-dependent application.</value>
     <value>Couldn't find a project to run. Ensure a project exists in {0}, or pass the path to the project using {1}.</value>
   </data>
   <data name="RunCommandExceptionUnableToRun" xml:space="preserve">
-    <value>Unable to run your project.
-Ensure you have a runnable project type and ensure '{0}' supports this project.
-A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
-The current {1} is '{2}'.</value>
+    <value>Unable to proceed with project '{0}'.
+Ensure you have a runnable project type.
+A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
+The current OutputType is '{2}'.</value>
+    <comment>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</comment>
   </data>
   <data name="RunCommandExceptionUnableToRunSpecifyFramework" xml:space="preserve">
     <value>Unable to run your project
@@ -1852,7 +1867,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
     <comment>{Locked="--sdk-version"}</comment>
   </data>
   <data name="ShouldInstallAWorkloadSet" xml:space="preserve">
-    <value>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</value>
+    <value>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</value>
     <comment>{Locked="dotnet workload restore"}</comment>
   </data>
   <data name="ShutDownFailed" xml:space="preserve">
@@ -2468,8 +2483,12 @@ To display a value, specify the corresponding command-line option without provid
   <data name="WorkloadManifestIdColumn" xml:space="preserve">
     <value>Workload manifest ID</value>
   </data>
-  <data name="WorkloadManifestInstallationConfiguration" xml:space="preserve">
-    <value>Configured to use {0} when installing new manifests.</value>
+  <data name="WorkloadManifestInstallationConfigurationWorkloadSets" xml:space="preserve">
+    <value>Configured to use workload sets when installing new manifests.</value>
+    <comment>{Locked="workload sets"}</comment>
+  </data>
+  <data name="WorkloadManifestInstallationConfigurationLooseManifests" xml:space="preserve">
+    <value>Configured to use loose manifests when installing new manifests.</value>
   </data>
   <data name="WorkloadManifestPathColumn" xml:space="preserve">
     <value>Manifest Path</value>
@@ -2604,5 +2623,75 @@ Proceed?</value>
   <data name="ToolDownloadNeedsConfirmation" xml:space="preserve">
     <value>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</value>
     <comment>{Locked="--yes"}</comment>
+  </data>
+  <data name="ToolInstallPackageIdMissing" xml:space="preserve">
+    <value>A package ID was not specified for tool installation.</value>
+  </data>
+  <data name="TestCommandUseSolution" xml:space="preserve">
+    <value>Specifying a solution for 'dotnet test' should be via '--solution'.</value>
+  </data>
+  <data name="TestCommandUseProject" xml:space="preserve">
+    <value>Specifying a project for 'dotnet test' should be via '--project'.</value>
+  </data>
+  <data name="TestCommandUseTestModules" xml:space="preserve">
+    <value>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</value>
+  </data>
+  <data name="TestCommandUseDirectoryWithSwitch" xml:space="preserve">
+    <value>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</value>
+  </data>
+  <data name="PackCmdVersionDescription" xml:space="preserve">
+    <value>The version of the package to create</value>
+  </data>
+  <data name="PackCmdVersion" xml:space="preserve">
+    <value>VERSION</value>
+  </data>
+  <data name="CmdMinimumExpectedTestsDescription" xml:space="preserve">
+    <value>Specifies the minimum number of tests that are expected to run.</value>
+  </data>
+  <data name="DotnetTestPipeOverlapping" xml:space="preserve">
+    <value>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</value>
+  </data>
+  <data name="DotnetTestPipeIncompleteSize" xml:space="preserve">
+    <value>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</value>
+  </data>
+  <data name="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage" xml:space="preserve">
+    <value>Method '{0}' did not exit successfully</value>
+  </data>
+  <data name="DotnetTestPipeFailureHasHandshake" xml:space="preserve">
+    <value>Error disposing 'NamedPipeServer' corresponding to handshake:</value>
+  </data>
+  <data name="DotnetTestPipeFailureWithoutHandshake" xml:space="preserve">
+    <value>Error disposing 'NamedPipeServer', and no handshake was found.</value>
+  </data>
+  <data name="DotnetTestIncompatibleHandshakeVersion" xml:space="preserve">
+    <value>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</value>
+  </data>
+  <data name="ErrorRunningTestModule" xml:space="preserve">
+    <value>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
+
+{2}</value>
+    <comment>{Locked="RunCommand"}{Locked="RunArguments"}
+{2} is the exception that occurred.</comment>
+  </data>
+  <data name="UnexpectedTestSessionEnd" xml:space="preserve">
+    <value>A test session end event was received without a corresponding test session start.</value>
+  </data>
+  <data name="MissingTestSessionEnd" xml:space="preserve">
+    <value>A test session start event was received without a corresponding test session end.</value>
+  </data>
+  <data name="Aborted" xml:space="preserve">
+    <value>Aborted</value>
+  </data>
+  <data name="UnexpectedHelpMessage" xml:space="preserve">
+    <value>An unexpected help-related message was received when `--help` wasn't used.</value>
+  </data>
+  <data name="MismatchingHandshakeInfo" xml:space="preserve">
+    <value>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</value>
+  </data>
+  <data name="UnexpectedMessageInHelpMode" xml:space="preserve">
+    <value>A message of type '{0}' was received in help mode, which is not expected.</value>
+  </data>
+  <data name="UnexpectedMessageWithoutHandshake" xml:space="preserve">
+    <value>A message of type '{0}' was received before we got any handshakes, which is unexpected.</value>
   </data>
 </root>

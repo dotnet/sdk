@@ -17,9 +17,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.FSharp.Compiler" ExcludeAssets="contentFiles" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.Build.Framework" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    <PackageReference Include="Microsoft.Build.Framework" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)" />
+    <PackageReference Include="Microsoft.NET.StringTools" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)" />
   </ItemGroup>
 
   <!-- MIBC don't work for SB yet: https://github.com/dotnet/source-build/issues/247 -->
@@ -33,7 +34,7 @@
       <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'==''">Shipping</FSharpCorePath>
       <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'=='prerelease'">PreRelease</FSharpCorePath>
       <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'=='release'">Release</FSharpCorePath>
-      <FSharpTfm>net9.0</FSharpTfm>
+      <FSharpTfm>net10.0</FSharpTfm>
       <FSharpTfm Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildFromVMR)' == 'true'">$(NetCurrent)</FSharpTfm>
     </PropertyGroup>
 

@@ -25,14 +25,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         public AwaitableProcess Process { get; private set; }
 
-        public List<string> DotnetWatchArgs { get; } = ["--verbose", "/bl:DotnetRun.binlog"];
+        public List<string> DotnetWatchArgs { get; } = ["--verbose", "-bl"];
 
         public Dictionary<string, string> EnvironmentVariables { get; } = [];
-
-        public bool UsePollingWatcher { get; set; }
-
-        public static string GetLinePrefix(MessageDescriptor descriptor, string projectDisplay = null)
-            => $"dotnet watch {descriptor.Emoji}{(projectDisplay != null ? $" [{projectDisplay}]" : "")} {descriptor.Format}";
 
         public void AssertOutputContains(string message)
             => AssertEx.ContainsSubstring(message, Process.Output);
@@ -44,28 +39,73 @@ namespace Microsoft.DotNet.Watch.UnitTests
             => AssertEx.ContainsPattern(pattern, Process.Output);
 
         public void AssertOutputContains(MessageDescriptor descriptor, string projectDisplay = null)
-            => AssertOutputContains(GetLinePrefix(descriptor, projectDisplay));
+            => AssertOutputContains(GetPattern(descriptor, projectDisplay));
 
-        public async ValueTask WaitUntilOutputContains(string message, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
+        private static Regex GetPattern(MessageDescriptor descriptor, string projectDisplay = null)
+            => new Regex(Regex.Replace(Regex.Escape((projectDisplay != null ? $"[{projectDisplay}] " : "") + descriptor.Format), @"\\\{[0-9]+\}", ".*"));
+
+        public async ValueTask WaitUntilOutputContains(string text, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
         {
-            if (!Process.Output.Any(line => line.Contains(message)))
+            if (Process.Output.Any(line => line.Contains(text)))
             {
-                Logger.Log($"Test waiting for output: '{message}'", testPath, testLine);
-                _ = await AssertOutputLine(line => line.Contains(message));
+                Logger.Log($"Test found output: '{text}'", testPath, testLine);
+            }
+            else   
+            {
+                Logger.Log($"Test waiting for output: '{text}'", testPath, testLine);
+                _ = await WaitForOutputLineMatching(line => line.Contains(text));
             }
         }
 
         public async ValueTask WaitUntilOutputContains(Regex pattern, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
         {
-            if (!Process.Output.Any(line => pattern.IsMatch(line)))
+            if (Process.Output.Any(line => pattern.IsMatch(line)))
+            {
+                Logger.Log($"Test found output pattern: '{pattern}'", testPath, testLine);
+            }
+            else
             {
                 Logger.Log($"Test waiting for output pattern: '{pattern}'", testPath, testLine);
-                _ = await AssertOutputLine(line => pattern.IsMatch(line));
+                _ = await WaitForOutputLineMatching(line => pattern.IsMatch(line));
             }
         }
 
-        public Task<string> AssertOutputLineStartsWith(MessageDescriptor descriptor, string projectDisplay = null, Predicate<string> failure = null, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
-            => AssertOutputLineStartsWith(GetLinePrefix(descriptor, projectDisplay), failure, testPath, testLine);
+        public async ValueTask WaitUntilOutputContains(MessageDescriptor descriptor, string projectDisplay = null, [CallerLineNumber] int testLine = 0, [CallerFilePath] string testPath = null)
+        {
+            var pattern = GetPattern(descriptor, projectDisplay);
+            if (Process.Output.Any(line => pattern.IsMatch(line)))
+            {
+                Logger.Log($"Test found output text format: '{descriptor.Format}'", testPath, testLine);
+            }
+            else
+            {
+                Logger.Log($"Test waiting for output text format: '{descriptor.Format}'", testPath, testLine);
+                _ = await WaitForOutputLineMatching(line => pattern.IsMatch(line));
+            }
+        }
+
+        public Task<string> WaitForOutputLineContaining(string text, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
+        {
+            Logger.Log($"Test waiting for output: '{text}'", testPath, testLine);
+            return Process.GetOutputLineAsync(success: line => line.Contains(text), failure: _ => false);
+        }
+
+        public Task<string> WaitForOutputLineContaining(MessageDescriptor descriptor, string projectDisplay = null, [CallerLineNumber] int testLine = 0, [CallerFilePath] string testPath = null)
+        {
+            Logger.Log($"Test waiting for text format: '{descriptor.Format}'", testPath, testLine);
+
+            var pattern = GetPattern(descriptor, projectDisplay);
+            return Process.GetOutputLineAsync(success: line => pattern.IsMatch(line), failure: _ => false);
+        }
+
+        public Task<string> WaitForOutputLineContaining(Regex pattern, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
+        {
+            Logger.Log($"Test waiting for output pattern: '{pattern}'", testPath, testLine);
+            return Process.GetOutputLineAsync(success: line => pattern.IsMatch(line), failure: _ => false);
+        }
+
+        private Task<string> WaitForOutputLineMatching(Predicate<string> predicate)
+            => Process.GetOutputLineAsync(success: predicate, failure: _ => false);
 
         /// <summary>
         /// Asserts that the watched process outputs a line starting with <paramref name="expectedPrefix"/> and returns the remainder of that line.
@@ -92,29 +132,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             return line.Substring(expectedPrefix.Length);
         }
 
-        public Task<string> AssertOutputLine(Predicate<string> predicate)
-            => Process.GetOutputLineAsync(success: predicate, failure: _ => false);
-
         public async Task AssertOutputLineEquals(string expectedLine)
             => Assert.Equal("", await AssertOutputLineStartsWith(expectedLine));
 
         public Task AssertStarted()
             => AssertOutputLineEquals(StartedMessage);
-
-        /// <summary>
-        /// Wait till file watcher starts watching for file changes.
-        /// </summary>
-        public Task AssertWaitingForChanges([CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
-            => AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, testPath: testPath, testLine: testLine);
-
-        public async Task AssertWaitingForFileChangeBeforeRestarting()
-        {
-            // wait for user facing message:
-            await AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
-
-            // wait for the file watcher to start watching for changes:
-            await AssertWaitingForChanges();
-        }
 
         public Task AssertFileChanged()
             => AssertOutputLineStartsWith(WatchFileChanged);
@@ -122,9 +144,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public Task AssertExiting()
             => AssertOutputLineStartsWith(ExitingMessage);
 
-        public void Start(TestAsset asset, IEnumerable<string> arguments, string relativeProjectDirectory = null, string workingDirectory = null, TestFlags testFlags = TestFlags.None)
+        public void Start(TestAsset asset, IEnumerable<string> arguments, string relativeProjectDirectory = null, string workingDirectory = null, TestFlags testFlags = TestFlags.RunningAsTest)
         {
-            testFlags |= TestFlags.RunningAsTest;
+            if (testFlags != TestFlags.None)
+            {
+                testFlags |= TestFlags.RunningAsTest;
+            }
 
             var projectDirectory = (relativeProjectDirectory != null) ? Path.Combine(asset.Path, relativeProjectDirectory) : asset.Path;
 
@@ -147,7 +172,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             commandSpec.WithEnvironmentVariable("DCP_IDE_REQUEST_TIMEOUT_SECONDS", "100000");
             commandSpec.WithEnvironmentVariable("DCP_IDE_NOTIFICATION_TIMEOUT_SECONDS", "100000");
             commandSpec.WithEnvironmentVariable("DCP_IDE_NOTIFICATION_KEEPALIVE_SECONDS", "100000");
-            commandSpec.WithEnvironmentVariable("DOTNET_WATCH_PROCESS_CLEANUP_TIMEOUT_MS", "100000");
             commandSpec.WithEnvironmentVariable("ASPIRE_ALLOW_UNSECURED_TRANSPORT", "1");
 
             foreach (var env in EnvironmentVariables)

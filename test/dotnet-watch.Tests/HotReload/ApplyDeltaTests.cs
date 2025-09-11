@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, [], "AppWithDeps");
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             // add a new file:
             UpdateSourceFile(Path.Combine(dependencyDir, "AnotherLib.cs"), """
@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 }
                 """);
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.ReEvaluationCompleted);
+            await App.WaitForOutputLineContaining(MessageDescriptor.ReEvaluationCompleted);
 
             // update existing file:
             UpdateSourceFile(Path.Combine(dependencyDir, "Foo.cs"), """
@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, [], "AppWithDeps");
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             var newSrc = """
                 public class Lib
@@ -81,13 +81,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, [], "AppWithDeps");
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             UpdateSourceFile(
                 Path.Combine(testAsset.Path, "Directory.Build.props"),
                 src => src.Replace("<AllowUnsafeBlocks>false</AllowUnsafeBlocks>", "<AllowUnsafeBlocks>true</AllowUnsafeBlocks>"));
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.NoCSharpChangesToApply);
+            await App.WaitForOutputLineContaining(MessageDescriptor.NoCSharpChangesToApply);
             App.AssertOutputContains(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
             App.Process.ClearOutput();
 
@@ -138,13 +138,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, ["--non-interactive"], "AppWithDeps");
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
             await App.WaitUntilOutputContains($"{symbolName} set");
             App.Process.ClearOutput();
 
             UpdateSourceFile(buildFilePath, src => src.Replace(symbolName, ""));
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
             App.AssertOutputContains(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
             App.AssertOutputContains("dotnet watch ⌚ [auto-restart] error ENC1102: Changing project setting 'DefineConstants'");
 
@@ -180,7 +180,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, [], "AppWithDeps");
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
             await App.WaitUntilOutputContains("BUILD_CONST_IN_PROPS set");
             App.Process.ClearOutput();
 
@@ -220,13 +220,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, [], "AppWithDeps");
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
             await App.WaitUntilOutputContains("BUILD_CONST_IN_PROPS set");
 
             Log($"Deleting {directoryBuildProps}");
             File.Delete(directoryBuildProps);
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.NoCSharpChangesToApply);
+            await App.WaitForOutputLineContaining(MessageDescriptor.NoCSharpChangesToApply);
             App.AssertOutputContains(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
             App.Process.ClearOutput();
 
@@ -254,7 +254,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, []);
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
             App.AssertOutputContains(new Regex(@"dotnet watch ⌚ Exclusion glob: 'AppData/[*][*]/[*][.][*];bin[/\\]+Debug[/\\]+[*][*];obj[/\\]+Debug[/\\]+[*][*];bin[/\\]+[*][*];obj[/\\]+[*][*]"));
             App.Process.ClearOutput();
 
@@ -295,7 +295,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, []);
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
             App.AssertOutputContains($"dotnet watch ⌚ Excluded directory: '{binDir}'");
             App.AssertOutputContains($"dotnet watch ⌚ Excluded directory: '{objDir}'");
             App.Process.ClearOutput();
@@ -318,7 +318,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, []);
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             // missing System.Linq import:
             UpdateSourceFile(programPath, content => content.Replace("""
@@ -328,7 +328,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 Console.WriteLine($">>> {typeof(XDocument)}");
                 """));
 
-            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Unable to apply hot reload due to compilation errors.", failure: _ => false);
+            await App.WaitForOutputLineContaining(MessageDescriptor.UnableToApplyChanges);
 
             UpdateSourceFile(projectPath, content => content.Replace("""
                 <!-- items placeholder -->
@@ -337,11 +337,64 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 <Using Include="System.Xml.Linq" />
                 """));
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded, $"WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})", failure: _ => false);
+            await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadSucceeded, $"WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})");
 
             await App.WaitUntilOutputContains(">>> System.Xml.Linq.XDocument");
 
             App.AssertOutputContains(MessageDescriptor.ReEvaluationCompleted);
+        }
+
+        [Fact]
+        public async Task BinaryLogs()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+                .WithSource();
+
+            var projectPath = Path.Combine(testAsset.Path, "WatchHotReloadApp.csproj");
+            var logDir = Path.Combine(testAsset.Path, "logs");
+            var binLogPath = Path.Combine(logDir, "Test.binlog");
+            var binLogPathBase = Path.ChangeExtension(binLogPath, "").TrimEnd('.');
+
+            Assert.False(Directory.Exists(logDir));
+
+            App.DotnetWatchArgs.Clear();
+            App.Start(testAsset, ["--verbose", $"-bl:{binLogPath}"], testFlags: TestFlags.None);
+
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
+
+            var expectedLogs = new List<string>()
+            {
+                // dotnet build log
+                binLogPath,
+                // dotnet run log
+                binLogPathBase + "-dotnet-run.binlog",
+                // initial DTB:
+                binLogPathBase + "-dotnet-watch.DesignTimeBuild.WatchHotReloadApp.csproj.1.binlog"
+            };
+
+            VerifyExpectedLogFiles();
+
+            UpdateSourceFile(projectPath, content => content.Replace("""
+                <!-- items placeholder -->
+                """,
+                """
+                <Using Include="System.Xml.Linq" />
+                """));
+
+            await App.WaitForOutputLineContaining(MessageDescriptor.ReEvaluationCompleted);
+
+            // project update triggered restore and DTB:
+            expectedLogs.Add(binLogPathBase + "-dotnet-watch.Restore.WatchHotReloadApp.csproj.2.binlog");
+            expectedLogs.Add(binLogPathBase + "-dotnet-watch.DesignTimeBuild.WatchHotReloadApp.csproj.3.binlog");
+
+            VerifyExpectedLogFiles();
+
+            void VerifyExpectedLogFiles()
+            {
+                AssertEx.SequenceEqual(
+                    expectedLogs.Order(),
+                    Directory.EnumerateFileSystemEntries(logDir, "*.*", SearchOption.AllDirectories).Order());
+            }
         }
 
         [Theory]
@@ -368,15 +421,14 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, nonInteractive ? ["--non-interactive"] : []);
 
-            await App.AssertWaitingForChanges();
-            App.Process.ClearOutput();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             // rude edit: adding virtual method
             UpdateSourceFile(programPath, src => src.Replace("/* member placeholder */", "public virtual void F() {}"));
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
-            App.AssertOutputContains("⌚ Restart is needed to apply the changes");
+            App.AssertOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
             App.AssertOutputContains($"⌚ [auto-restart] {programPath}(38,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
@@ -385,7 +437,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // valid edit:
             UpdateSourceFile(programPath, src => src.Replace("public virtual void F() {}", "public virtual void F() { Console.WriteLine(1); }"));
 
-            await App.AssertOutputLineStartsWith($"dotnet watch 🔥 [WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Hot reload succeeded.");
+            await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadSucceeded);
         }
 
         [Fact]
@@ -398,7 +450,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, [], testFlags: TestFlags.ReadKeyFromStdin);
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
             App.Process.ClearOutput();
 
             // rude edit: adding virtual method
@@ -406,13 +458,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.AssertOutputLineStartsWith("  ❔ Do you want to restart your app? Yes (y) / No (n) / Always (a) / Never (v)", failure: _ => false);
 
-            App.AssertOutputContains("⌚ Restart is needed to apply the changes.");
+            App.AssertOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
             App.AssertOutputContains($"❌ {programPath}(38,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
             App.Process.ClearOutput();
 
             App.SendKey('a');
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
@@ -421,9 +473,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // rude edit: deleting virtual method
             UpdateSourceFile(programPath, src => src.Replace("public virtual void F() {}", ""));
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
-            App.AssertOutputContains("⌚ Restart is needed to apply the changes");
+            App.AssertOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
             App.AssertOutputContains($"⌚ [auto-restart] {programPath}(38,1): error ENC0033: Deleting method 'F()' requires restarting the application.");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
@@ -453,15 +505,15 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, nonInteractive ? ["--non-interactive"] : []);
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
             App.Process.ClearOutput();
 
             // top-level code change:
             UpdateSourceFile(programPath, src => src.Replace("Started", "<Updated>"));
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
-            App.AssertOutputContains("⌚ Restart is needed to apply the changes");
+            App.AssertOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
             App.AssertOutputContains($"⌚ [auto-restart] {programPath}(16,19): warning ENC0118: Changing 'top-level code' might not have any effect until the application is restarted.");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
@@ -471,7 +523,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // valid edit:
             UpdateSourceFile(programPath, src => src.Replace("/* member placeholder */", "public void F() {}"));
 
-            await App.AssertOutputLineStartsWith($"dotnet watch 🔥 [WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Hot reload succeeded.");
+            await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadSucceeded);
         }
 
         /// <summary>
@@ -491,13 +543,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, []);
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting, failure: _ => false);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
             UpdateSourceFile(programPath, """
                 System.Console.WriteLine("<Updated>");
                 """);
 
-            await App.AssertOutputLineStartsWith("<Updated>", failure: _ => false);
+            await App.WaitUntilOutputContains("<Updated>");
         }
 
         [Fact]
@@ -508,11 +560,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, []);
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
             UpdateSourceFile(Path.Combine(testAsset.Path, "Program.fs"), content => content.Replace("Hello World!", "<Updated>"));
 
-            await App.AssertOutputLineStartsWith("<Updated>");
+            await App.WaitUntilOutputContains("<Updated>");
         }
 
         [Fact]
@@ -541,16 +593,16 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, []);
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             UpdateSourceFile(sourcePath, content => content.Replace("Waiting", "<Updated>"));
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
             await App.AssertOutputLineStartsWith("<Updated>");
 
             UpdateSourceFile(sourcePath, content => content.Replace("<Updated>", "<Updated2>"));
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
             await App.AssertOutputLineStartsWith("<Updated2>");
         }
 
@@ -563,7 +615,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, [], "App");
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             var newSrc = """
                 class DepSubType : Dep
@@ -607,11 +659,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, []);
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
-            UpdateSourceFile(sourcePath, source.Replace("Console.WriteLine(\".\");", "Console.WriteLine(\"Updated\");"));
+            UpdateSourceFile(sourcePath, source.Replace("Console.WriteLine(\".\");", "Console.WriteLine(\"<Updated>\");"));
 
-            await App.AssertOutputLineStartsWith("Updated");
+            await App.WaitForOutputLineContaining("<Updated>");
 
             await App.WaitUntilOutputContains(
                 $"dotnet watch ⚠ [WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Expected to find a static method 'ClearCache', 'UpdateApplication' or 'UpdateContent' on type 'AppUpdateHandler, WatchHotReloadApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' but neither exists.");
@@ -647,17 +699,17 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, [], testFlags: TestFlags.ElevateWaitingForChangesMessageSeverity);
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
-            UpdateSourceFile(sourcePath, source.Replace("Console.WriteLine(\".\");", "Console.WriteLine(\"Updated\");"));
+            UpdateSourceFile(sourcePath, source.Replace("Console.WriteLine(\".\");", "Console.WriteLine(\"<Updated>\");"));
 
-            await App.AssertOutputLineStartsWith("Updated");
+            await App.WaitForOutputLineContaining("<Updated>");
 
             await App.WaitUntilOutputContains($"dotnet watch ⚠ [WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exception from 'AppUpdateHandler.ClearCache': System.InvalidOperationException: Bug!");
 
             if (verbose)
             {
-                await App.WaitUntilOutputContains($"dotnet watch 🕵️ [WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Deltas applied.");
+                await App.WaitUntilOutputContains(MessageDescriptor.UpdatesApplied);
             }
             else
             {
@@ -685,7 +737,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, [], testFlags: TestFlags.ReadKeyFromStdin);
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges);
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             await App.WaitUntilOutputContains(new Regex(@"dotnet watch 🕵️ \[.*\] Windows Ctrl\+C handling enabled."));
 
@@ -693,7 +745,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.SendControlC();
 
-            await App.AssertOutputLineStartsWith("Ctrl+C detected! Performing cleanup...");
+            await App.WaitForOutputLineContaining("Ctrl+C detected! Performing cleanup...");
             await App.WaitUntilOutputContains("exited with exit code 0.");
         }
 
@@ -719,7 +771,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var port = TestOptions.GetTestPort();
             App.Start(testAsset, ["--urls", "http://localhost:" + port], testFlags: TestFlags.MockBrowser);
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
             App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
@@ -744,7 +796,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 """;
 
             UpdateSourceFile(Path.Combine(testAsset.Path, "Pages", "Index.razor"), newSource);
-            await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded, $"blazorwasm ({ToolsetInfo.CurrentTargetFramework})");
+            await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadSucceeded, $"blazorwasm ({ToolsetInfo.CurrentTargetFramework})");
 
             // check project specified capapabilities:
             if (projectSpecifiesCapabilities)
@@ -776,7 +828,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.Start(testAsset, ["--urls", "http://localhost:" + port], testFlags: TestFlags.MockBrowser);
 
             await App.AssertOutputLineStartsWith("dotnet watch ⚠ msbuild: [Warning] Duplicate source file");
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
         }
 
         [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
@@ -788,7 +840,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var port = TestOptions.GetTestPort();
             App.Start(testAsset, ["--urls", "http://localhost:" + port], testFlags: TestFlags.ReadKeyFromStdin | TestFlags.MockBrowser);
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
             App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
@@ -798,7 +850,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.SendControlR();
 
-            await App.WaitUntilOutputContains($"dotnet watch ⌚ Reloading browser.");
+            await App.WaitUntilOutputContains(MessageDescriptor.ReloadingBrowser);
         }
 
         [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/49928")] // "https://github.com/dotnet/sdk/issues/49307")
@@ -812,11 +864,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var port = TestOptions.GetTestPort();
             App.Start(testAsset, ["--urls", "http://localhost:" + port], "blazorhosted", testFlags: TestFlags.MockBrowser);
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
             App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
-            App.AssertOutputContains("dotnet watch 🔥 HotReloadProfile: BlazorHosted");
+            App.AssertOutputContains(MessageDescriptor.ApplicationKind_BlazorHosted);
 
             // client capabilities:
             App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Project 'blazorwasm ({tfm})' specifies capabilities: 'Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType'");
@@ -834,7 +886,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var port = TestOptions.GetTestPort();
             App.Start(testAsset, ["--urls", "http://localhost:" + port], relativeProjectDirectory: "RazorApp", testFlags: TestFlags.MockBrowser);
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
             App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
@@ -850,21 +902,21 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 """;
 
             UpdateSourceFile(scopedCssPath, newCss);
-            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
+            await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadChangeHandled);
 
-            App.AssertOutputContains($"dotnet watch ⌚ Sending static asset update request to browser: 'RazorApp.css'.");
-            App.AssertOutputContains($"dotnet watch 🔥 Hot reload of scoped css succeeded.");
+            App.AssertOutputContains(MessageDescriptor.SendingStaticAssetUpdateRequest.GetMessage("RazorApp.css"));
+            App.AssertOutputContains(MessageDescriptor.HotReloadOfScopedCssSucceeded);
             App.AssertOutputContains(MessageDescriptor.NoCSharpChangesToApply);
             App.Process.ClearOutput();
 
             var cssPath = Path.Combine(testAsset.Path, "RazorApp", "wwwroot", "app.css");
             UpdateSourceFile(cssPath, content => content.Replace("background-color: white;", "background-color: red;"));
 
-            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
+            await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadChangeHandled);
 
             // "wwwroot" directory is required for MAUI. Web sites work with or without it.
-            App.AssertOutputContains($"dotnet watch ⌚ Sending static asset update request to browser: 'wwwroot/app.css'.");
-            App.AssertOutputContains($"dotnet watch 🔥 Hot reload of static files succeeded.");
+            App.AssertOutputContains(MessageDescriptor.SendingStaticAssetUpdateRequest.GetMessage("wwwroot/app.css"));
+            App.AssertOutputContains(MessageDescriptor.HotReloadOfStaticAssetsSucceeded);
             App.AssertOutputContains(MessageDescriptor.NoCSharpChangesToApply);
             App.Process.ClearOutput();
         }
@@ -891,13 +943,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var tfm = $"{ToolsetInfo.CurrentTargetFramework}-{platform}";
             App.Start(testAsset, ["-f", tfm]);
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             // update code file:
             var razorPath = Path.Combine(testAsset.Path, "Components", "Pages", "Home.razor");
             UpdateSourceFile(razorPath, content => content.Replace("Hello, world!", "Updated"));
 
-            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
+            await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadChangeHandled);
 
             // TODO: Warning is currently reported because UpdateContent is not recognized
             App.AssertOutputContains("Updates applied: 1 out of 1.");
@@ -908,7 +960,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var cssPath = Path.Combine(testAsset.Path, "wwwroot", "css", "app.css");
             UpdateSourceFile(cssPath, content => content.Replace("background-color: white;", "background-color: red;"));
 
-            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
+            await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadChangeHandled);
             App.AssertOutputContains("Updates applied: 1 out of 1.");
             App.AssertOutputContains("Microsoft.AspNetCore.Components.WebView.StaticContentHotReloadManager.UpdateContent");
             App.AssertOutputContains("No C# changes to apply.");
@@ -923,7 +975,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, [], "App");
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             var newSrc = /* lang=c#-test */"""
                 using System;
@@ -985,7 +1037,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, [], "AppWithDeps");
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             // rename the file:
             if (useMove)
@@ -1039,7 +1091,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, ["--non-interactive"], "AppWithDeps");
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             // rename the directory:
             if (useMove)
@@ -1077,7 +1129,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, ["-lp", "http"], relativeProjectDirectory: "WatchAspire.AppHost", testFlags: TestFlags.ReadKeyFromStdin);
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             // check that Aspire server output is logged via dotnet-watch reporter:
             await App.WaitUntilOutputContains("dotnet watch ⭐ Now listening on:");
@@ -1093,7 +1145,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 serviceSourcePath,
                 serviceSource.Replace("Enumerable.Range(1, 5)", "Enumerable.Range(1, 10)"));
 
-            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
+            await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadChangeHandled);
 
             App.AssertOutputContains("Using Aspire process launcher.");
             App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, $"WatchAspire.AppHost ({tfm})");
@@ -1109,9 +1161,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 serviceSourcePath,
                 serviceSource.Replace("record WeatherForecast", "record WeatherForecast2"));
 
-            await App.AssertOutputLineStartsWith("  ❔ Do you want to restart these projects? Yes (y) / No (n) / Always (a) / Never (v)");
+            await App.WaitForOutputLineContaining("  ❔ Do you want to restart these projects? Yes (y) / No (n) / Always (a) / Never (v)");
 
-            App.AssertOutputContains("dotnet watch ⌚ Restart is needed to apply the changes.");
+            App.AssertOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
             App.AssertOutputContains($"dotnet watch ❌ {serviceSourcePath}(40,1): error ENC0020: Renaming record 'WeatherForecast' requires restarting the application.");
             App.AssertOutputContains("dotnet watch ⌚ Affected projects:");
             App.AssertOutputContains("dotnet watch ⌚   WatchAspire.ApiService");
@@ -1119,7 +1171,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.SendKey('y');
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.FixBuildError, failure: _ => false);
+            await App.WaitForOutputLineContaining(MessageDescriptor.FixBuildError);
 
             App.AssertOutputContains("Application is shutting down...");
 
@@ -1127,7 +1179,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains($"[WatchAspire.ApiService ({tfm})] Exited");
             App.AssertOutputContains(new Regex(@"dotnet watch ⌚ \[WatchAspire.ApiService \(net.*\)\] Process id [0-9]+ ran for [0-9]+ms and exited with exit code 0"));
 
-            App.AssertOutputContains($"dotnet watch ⌚ Building {serviceProjectPath} ...");
+            App.AssertOutputContains(MessageDescriptor.Building.GetMessage(serviceProjectPath));
             App.AssertOutputContains("error CS0246: The type or namespace name 'WeatherForecast' could not be found");
             App.Process.ClearOutput();
 
@@ -1136,15 +1188,15 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 serviceSourcePath,
                 serviceSource.Replace("WeatherForecast", "WeatherForecast2"));
 
-            await App.AssertOutputLineStartsWith($"dotnet watch ⌚ [WatchAspire.ApiService ({tfm})] Capabilities");
+            await App.WaitForOutputLineContaining(MessageDescriptor.Capabilities, $"WatchAspire.ApiService ({tfm})");
 
-            App.AssertOutputContains($"dotnet watch 🔨 Build succeeded: {serviceProjectPath}");
-            App.AssertOutputContains("dotnet watch 🔥 Projects rebuilt");
+            App.AssertOutputContains(MessageDescriptor.BuildSucceeded.GetMessage(serviceProjectPath));
+            App.AssertOutputContains(MessageDescriptor.ProjectsRebuilt);
             App.AssertOutputContains($"dotnet watch ⭐ Starting project: {serviceProjectPath}");
 
             App.SendControlC();
 
-            await App.AssertOutputLineStartsWith("dotnet watch 🛑 Shutdown requested. Press Ctrl+C again to force exit.");
+            await App.WaitForOutputLineContaining(MessageDescriptor.ShutdownRequested);
 
             await App.WaitUntilOutputContains($"[WatchAspire.ApiService ({tfm})] Exited");
             await App.WaitUntilOutputContains($"[WatchAspire.AppHost ({tfm})] Exited");
@@ -1170,7 +1222,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, ["-lp", "http", "--non-interactive"], relativeProjectDirectory: "WatchAspire.AppHost");
 
-            await App.AssertWaitingForChanges();
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             // wait until after DCP sessions have been started for all projects:
             await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #2");
@@ -1179,10 +1231,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // no-effect edit:
             UpdateSourceFile(webSourcePath, src => src.Replace("/* top-level placeholder */", "builder.Services.AddRazorComponents();"));
 
-            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled", _ => false);
+            await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadChangeHandled);
             await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #2");
 
-            App.AssertOutputContains("dotnet watch 🔥 Projects restarted (1)");
+            App.AssertOutputContains(MessageDescriptor.ProjectsRestarted.GetMessage(1));
             App.AssertOutputDoesNotContain("⚠");
 
             App.Process.ClearOutput();
@@ -1190,8 +1242,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // lambda body edit:
             UpdateSourceFile(webSourcePath, src => src.Replace("Hello world!", "<Updated>"));
 
-            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
-            App.AssertOutputContains($"dotnet watch 🕵️ [WatchAspire.Web ({tfm})] Deltas applied.");
+            await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadChangeHandled);
+            App.AssertOutputContains($"dotnet watch 🕵️ [WatchAspire.Web ({tfm})] Updates applied.");
             App.AssertOutputDoesNotContain("Projects rebuilt");
             App.AssertOutputDoesNotContain("Projects restarted");
             App.AssertOutputDoesNotContain("⚠");

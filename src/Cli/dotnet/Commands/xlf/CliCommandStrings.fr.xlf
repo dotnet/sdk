@@ -406,6 +406,11 @@ Pour MSTest avant la version 2.2.4, le délai d’expiration est utilisé pour 
         <target state="translated">Chemin du fichier config NuGet à utiliser. Nécessite l'option '--outdated', '--deprecated' ou '--vulnerable'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdConfigFileDescription">
+        <source>Specifies a testconfig.json file.</source>
+        <target state="translated">Spécifie un fichier testconfig.json.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdConfigFileOption">
         <source>FILE</source>
         <target state="translated">FILE</target>
@@ -414,6 +419,11 @@ Pour MSTest avant la version 2.2.4, le délai d’expiration est utilisé pour 
       <trans-unit id="CmdConfigFileOptionDescription">
         <source>The NuGet configuration file to use.</source>
         <target state="translated">Fichier de configuration NuGet à utiliser.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdConfigFilePath">
+        <source>CONFIG_FILE</source>
+        <target state="translated">CONFIG_FILE</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdCurrentRuntimeOptionDescription">
@@ -434,6 +444,18 @@ Pour MSTest avant la version 2.2.4, le délai d’expiration est utilisé pour 
       <trans-unit id="CmdDeprecatedDescription">
         <source>Lists packages that have been deprecated. Cannot be combined with '--vulnerable' or '--outdated' options.</source>
         <target state="translated">Liste les packages qui ont été dépréciés. Impossible à combiner avec les options '--vulnerable' ou '--outdated'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDiagnosticOutputDirectoryDescription">
+        <source>Output directory of the diagnostic logging.
+If not specified the file will be generated inside the default 'TestResults' directory.</source>
+        <target state="translated">Répertoire de sortie de la journalisation des diagnostics.
+S’il n’est pas spécifié, le fichier est généré dans le répertoire « TestResults » par défaut.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDiagnosticOutputDirectoryPath">
+        <source>DIAGNOSTIC_DIR</source>
+        <target state="translated">DIAGNOSTIC_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDirectoryDescription">
@@ -559,6 +581,11 @@ Cela équivaut à supprimer project.assets.json.</target>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
         <source>The max number of test modules that can run in parallel.</source>
         <target state="translated">Nombre maximal de modules de test qui peuvent s’exécuter en parallèle.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMinimumExpectedTestsDescription">
+        <source>Specifies the minimum number of tests that are expected to run.</source>
+        <target state="new">Specifies the minimum number of tests that are expected to run.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
@@ -851,19 +878,18 @@ Le répertoire spécifié est créé, s'il n'existe pas déjà.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
-        <source>dotnet.config defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+        <source>global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
 The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="translated">dotnet.config définit le test runner comme Microsoft.Testing.Platform. Tous les projets doivent utiliser ce test runner.
+        <target state="needs-review-translation">dotnet.config définit le test runner comme Microsoft.Testing.Platform. Tous les projets doivent utiliser ce test runner.
 Les projets de test suivants utilisent le test runner VSTest :
 {0}
 
 Pour plus d’informations, consultez https://aka.ms/dotnet-test/mtp.</target>
-        <note>{0} is one or more project names.
-Microsoft.Testing.Platform is a name, don't translate.
-dotnet.config is a name don't translate.</note>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
+{0} is one or more project names.</note>
       </trans-unit>
       <trans-unit id="CmdUseLockFileOptionDescription">
         <source>Enables project lock file to be generated and used with restore.</source>
@@ -1136,6 +1162,31 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">Commande de test .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
+        <source>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</source>
+        <target state="new">Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeFailureHasHandshake">
+        <source>Error disposing 'NamedPipeServer' corresponding to handshake:</source>
+        <target state="new">Error disposing 'NamedPipeServer' corresponding to handshake:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeFailureWithoutHandshake">
+        <source>Error disposing 'NamedPipeServer', and no handshake was found.</source>
+        <target state="new">Error disposing 'NamedPipeServer', and no handshake was found.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeIncompleteSize">
+        <source>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</source>
+        <target state="new">'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeOverlapping">
+        <source>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</source>
+        <target state="new">'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
         <source>DIRECTORY</source>
         <target state="translated">RÉPERTOIRE</target>
@@ -1169,6 +1220,16 @@ Faites en sorte que les noms de profil soient distincts.</target>
         <source>Duplicate directives are not supported: {0} at {1}</source>
         <target state="translated">Les directives dupliquées ne sont pas prises en charge : {0} au {1}</target>
         <note>{0} is the directive type and name. {1} is the file path and line number.</note>
+      </trans-unit>
+      <trans-unit id="ErrorRunningTestModule">
+        <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
+
+{2}</source>
+        <target state="new">The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
+
+{2}</target>
+        <note>{Locked="RunCommand"}{Locked="RunArguments"}
+{2} is the exception that occurred.</note>
       </trans-unit>
       <trans-unit id="Error_restore">
         <source>Restore failed. Run `dotnet restore` for more details on the issue.</source>
@@ -1495,6 +1556,11 @@ Faites en sorte que les noms de profil soient distincts.</target>
         <target state="translated">Répertoire de travail utilisé par la commande pour s'exécuter.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage">
+        <source>Method '{0}' did not exit successfully</source>
+        <target state="new">Method '{0}' did not exit successfully</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidDirectiveName">
         <source>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
         <target state="translated">La directive dans « {2} » doit contenir un nom sans caractères spéciaux et une valeur facultative séparée par « {1} » comme « # :{0} Nom{1}Valeur ».</target>
@@ -1652,10 +1718,20 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
         <target state="translated">Violation de stratégie de tests minimale attendue, tests exécutés {0}, minimum attendu {1}</target>
         <note>{0}, {1} number of tests</note>
       </trans-unit>
+      <trans-unit id="MismatchingHandshakeInfo">
+        <source>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</source>
+        <target state="new">A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MissingDirectiveName">
         <source>Missing name of '{0}' at {1}.</source>
         <target state="translated">Nom manquant pour « {0} » à {1}.</target>
         <note>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</note>
+      </trans-unit>
+      <trans-unit id="MissingTestSessionEnd">
+        <source>A test session start event was received without a corresponding test session end.</source>
+        <target state="new">A test session start event was received without a corresponding test session end.</target>
+        <note />
       </trans-unit>
       <trans-unit id="MsBuildDefinition">
         <source>Run Microsoft Build Engine (MSBuild) commands.</source>
@@ -1823,8 +1899,8 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">Aucune charge de travail n’est installée, rien à réparer. Exécutez « recherche de charge de travail dotnet » pour trouver les charges de travail à installer.</target>
-        <note />
+        <target state="needs-review-translation">Aucune charge de travail n’est installée, rien à réparer. Exécutez « recherche de charge de travail dotnet » pour trouver les charges de travail à installer.</target>
+        <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
@@ -1884,6 +1960,16 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
       <trans-unit id="PackCmdOutputDirDescription">
         <source>The output directory to place built packages in.</source>
         <target state="translated">Répertoire de sortie dans lequel placer les packages générés.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersion">
+        <source>VERSION</source>
+        <target state="translated">VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersionDescription">
+        <source>The version of the package to create</source>
+        <target state="translated">Version du package à créer</target>
         <note />
       </trans-unit>
       <trans-unit id="PackConfigurationOptionDescription">
@@ -2412,7 +2498,7 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
       <trans-unit id="PropertyDirectiveMissingParts">
         <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
         <target state="translated">La directive de propriété doit avoir deux parties séparées par '=' comme '#:property PropertyName=PropertyValue' : {0}</target>
-        <note>{0} is the file path and line number.</note>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
@@ -2646,15 +2732,15 @@ La valeur par défaut est de publier une application dépendante du framework.</
         <note />
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRun">
-        <source>Unable to run your project.
-Ensure you have a runnable project type and ensure '{0}' supports this project.
-A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
-The current {1} is '{2}'.</source>
-        <target state="translated">Impossible d'exécuter votre projet.
+        <source>Unable to proceed with project '{0}'.
+Ensure you have a runnable project type.
+A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
+The current OutputType is '{2}'.</source>
+        <target state="needs-review-translation">Impossible d'exécuter votre projet.
 Vérifiez que vous avez un type de projet exécutable et que '{0}' prend en charge ce projet.
 Un projet exécutable doit cibler un TFM exécutable (par exemple, net5.0) et avoir OutputType 'Exe'.
 Le {1} actuel est '{2}'.</target>
-        <note />
+        <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
         <source>Unable to run your project
@@ -2796,8 +2882,8 @@ Votre projet cible plusieurs frameworks. Spécifiez le framework à exécuter à
         <note>{Locked="--sdk-version"}</note>
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
-        <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
-        <target state="translated">Les charges de travail sont configurées pour installer et mettre à jour à l’aide des versions de charge de travail, mais aucune n’a été trouvée. Exécutez « dotnet workload restore » pour installer une version de charge de travail.</target>
+        <source>No workload sets are installed. Run "dotnet workload restore" to install a workload set.</source>
+        <target state="translated">Aucun ensemble de charges de travail n’est installé. Exécutez « dotnet workload restore » pour installer un ensemble de charge de travail.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
       <trans-unit id="ShutDownFailed">
@@ -2950,6 +3036,11 @@ Votre projet cible plusieurs frameworks. Spécifiez le framework à exécuter à
         <target state="translated">Sortie standard</target>
         <note />
       </trans-unit>
+      <trans-unit id="StaticGraphRestoreNotSupported">
+        <source>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</source>
+        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</target>
+        <note>{0} is the file path and line number.{Locked="#:property"}</note>
+      </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
         <target state="translated">État</target>
@@ -3013,6 +3104,26 @@ Votre projet cible plusieurs frameworks. Spécifiez le framework à exécuter à
       <trans-unit id="TestCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseDirectoryWithSwitch">
+        <source>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</source>
+        <target state="translated">La spécification d’un répertoire pour « dotnet test » doit se faire via « --project » ou « --solution ».</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseProject">
+        <source>Specifying a project for 'dotnet test' should be via '--project'.</source>
+        <target state="translated">La spécification d’un projet pour « dotnet test » doit se faire via « --project ».</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseSolution">
+        <source>Specifying a solution for 'dotnet test' should be via '--solution'.</source>
+        <target state="translated">La spécification d’une solution pour « dotnet test » doit se faire via « --solution ».</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCommandUseTestModules">
+        <source>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</source>
+        <target state="translated">La spécification de DLL ou d’exécutables pour « dotnet test » doit se faire via « --test-modules ».</target>
         <note />
       </trans-unit>
       <trans-unit id="TestConfigurationOptionDescription">
@@ -3182,6 +3293,11 @@ L'outil '{1}' (version '{2}') a été installé correctement.</target>
       <trans-unit id="ToolInstallPackageIdArgumentName">
         <source>PACKAGE_ID</source>
         <target state="translated">PACKAGE_ID</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallPackageIdMissing">
+        <source>A package ID was not specified for tool installation.</source>
+        <target state="new">A package ID was not specified for tool installation.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallSourceOptionDescription">
@@ -3435,6 +3551,26 @@ et les ID de package correspondants aux outils installés, utilisez la commande
         <source>try {0}</source>
         <target state="translated">essayer {0}</target>
         <note>number or tries of the current test assembly when test assembly is being retried. {0} is number that starts at 1</note>
+      </trans-unit>
+      <trans-unit id="UnexpectedHelpMessage">
+        <source>An unexpected help-related message was received when `--help` wasn't used.</source>
+        <target state="new">An unexpected help-related message was received when `--help` wasn't used.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedMessageInHelpMode">
+        <source>A message of type '{0}' was received in help mode, which is not expected.</source>
+        <target state="new">A message of type '{0}' was received in help mode, which is not expected.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedMessageWithoutHandshake">
+        <source>A message of type '{0}' was received before we got any handshakes, which is unexpected.</source>
+        <target state="new">A message of type '{0}' was received before we got any handshakes, which is unexpected.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedTestSessionEnd">
+        <source>A test session end event was received without a corresponding test session start.</source>
+        <target state="new">A test session end event was received without a corresponding test session start.</target>
+        <note />
       </trans-unit>
       <trans-unit id="UninstallLocalToolSucceeded">
         <source>Tool '{0}' was successfully uninstalled and removed from manifest file {1}.</source>
@@ -3823,10 +3959,15 @@ Pour afficher une valeur, spécifiez l’option de ligne de commande corresponda
         <target state="translated">ID du manifeste de charge de travail</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadManifestInstallationConfiguration">
-        <source>Configured to use {0} when installing new manifests.</source>
-        <target state="translated">Configuré pour utiliser {0} lors de l’installation de nouveaux manifestes.</target>
+      <trans-unit id="WorkloadManifestInstallationConfigurationLooseManifests">
+        <source>Configured to use loose manifests when installing new manifests.</source>
+        <target state="translated">Configuré pour utiliser des manifestes non liés lors de l’installation de nouveaux manifestes.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestInstallationConfigurationWorkloadSets">
+        <source>Configured to use workload sets when installing new manifests.</source>
+        <target state="translated">Configuré pour utiliser desworkload sets lors de l’installation de nouveaux manifestes.</target>
+        <note>{Locked="workload sets"}</note>
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">
         <source>Manifest Path</source>

@@ -5,6 +5,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
@@ -12,9 +13,9 @@ internal static class PackCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-pack";
 
-    public static readonly Argument<IEnumerable<string>> SlnOrProjectArgument = new(CliStrings.SolutionOrProjectArgumentName)
+    public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
     {
-        Description = CliStrings.SolutionOrProjectArgumentDescription,
+        Description = CliStrings.SolutionOrProjectOrFileArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
@@ -61,6 +62,25 @@ internal static class PackCommandParser
     public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Pack", [("_IsPacking", "true")]);
     public static readonly Option<Utils.VerbosityOptions?> VerbosityOption = BuildCommandParser.VerbosityOption;
 
+    public static Option<NuGetVersion> VersionOption =
+        new ForwardedOption<NuGetVersion>("--version")
+        {
+            Description = CliCommandStrings.PackCmdVersionDescription,
+            HelpName = CliCommandStrings.PackCmdVersion,
+            Arity = ArgumentArity.ExactlyOne,
+            CustomParser = r =>
+            {
+                if (r.Tokens.Count == 0)
+                    return null;
+                var value = r.Tokens[0].Value;
+                if (NuGetVersion.TryParse(value, out var version))
+                    return version;
+                r.AddError(string.Format(CliStrings.InvalidVersion, value));
+                return null;
+
+            }
+        }.ForwardAsSingle(o => $"--property:PackageVersion={o}");
+
     private static readonly Command Command = ConstructCommand();
 
     public static Command GetCommand()
@@ -72,7 +92,7 @@ internal static class PackCommandParser
     {
         var command = new DocumentedCommand("pack", DocsLink, CliCommandStrings.PackAppFullName);
 
-        command.Arguments.Add(SlnOrProjectArgument);
+        command.Arguments.Add(SlnOrProjectOrFileArgument);
         command.Options.Add(OutputOption);
         command.Options.Add(CommonOptions.ArtifactsPathOption);
         command.Options.Add(NoBuildOption);
@@ -84,9 +104,14 @@ internal static class PackCommandParser
         command.Options.Add(NoRestoreOption);
         command.Options.Add(VerbosityOption);
         command.Options.Add(CommonOptions.VersionSuffixOption);
+        command.Options.Add(VersionOption);
         command.Options.Add(ConfigurationOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(TargetOption);
+        command.Options.Add(CommonOptions.GetPropertyOption);
+        command.Options.Add(CommonOptions.GetItemOption);
+        command.Options.Add(CommonOptions.GetTargetResultOption);
+        command.Options.Add(CommonOptions.GetResultOutputFileOption);
 
         // Don't include runtime option because we want to include it specifically and allow the short version ("-r") to be used
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);

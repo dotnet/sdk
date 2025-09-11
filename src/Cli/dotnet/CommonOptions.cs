@@ -72,13 +72,12 @@ internal static class CommonOptions
             Description = "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
             HelpName = "TARGET",
             DefaultValueFactory = _ => defaultTargetName is not null ? [defaultTargetName] : null,
-            CustomParser = r => SplitMSBuildTargets(defaultTargetName, r),
+            CustomParser = r => SplitMSBuildValues(defaultTargetName, r),
             Hidden = true,
             Arity = ArgumentArity.ZeroOrMore
         }
         .ForwardAsMany(targets => ForwardTargetsAndAdditionalProperties(targets, additionalProperties))
         .AllowSingleArgPerToken();
-
 
     public static Option<string[]> RequiredMSBuildTargetOption(string defaultTargetName, (string key, string value)[]? additionalProperties = null) =>
         new ForwardedOption<string[]>("--target", "/target", "-target", "-t", "--t", "/t")
@@ -86,7 +85,7 @@ internal static class CommonOptions
             Description = "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
             HelpName = "TARGET",
             DefaultValueFactory = _ => [defaultTargetName],
-            CustomParser = r => SplitMSBuildTargets(defaultTargetName, r),
+            CustomParser = r => SplitMSBuildValues(defaultTargetName, r),
             Hidden = true,
             Arity = ArgumentArity.ZeroOrMore
         }
@@ -108,18 +107,36 @@ internal static class CommonOptions
         return argsToReturn;
     }
 
-    public static string[] SplitMSBuildTargets(string? defaultTargetName, ArgumentResult argumentResult)
+    public static readonly Option<string[]?> GetPropertyOption = MSBuildMultiOption("getProperty");
+
+    public static readonly Option<string[]?> GetItemOption = MSBuildMultiOption("getItem");
+
+    public static readonly Option<string[]?> GetTargetResultOption = MSBuildMultiOption("getTargetResult");
+
+    public static readonly Option<string[]?> GetResultOutputFileOption = MSBuildMultiOption("getResultOutputFile");
+
+    private static Option<string[]?> MSBuildMultiOption(string name)
+        => new ForwardedOption<string[]?>($"--{name}", $"-{name}", $"/{name}")
+        {
+            Hidden = true,
+            Arity = ArgumentArity.OneOrMore,
+            CustomParser = static r => SplitMSBuildValues(null, r),
+        }
+        .ForwardAsMany(xs => (xs ?? []).Select(x => $"--{name}:{x}"))
+        .AllowSingleArgPerToken();
+
+    public static string[] SplitMSBuildValues(string? defaultValue, ArgumentResult argumentResult)
     {
         if (argumentResult.Tokens.Count == 0)
         {
-            return defaultTargetName is not null ? [defaultTargetName] : [];
+            return defaultValue is not null ? [defaultValue] : [];
         }
-        var userTargets =
+        var userValues =
             argumentResult.Tokens.Select(t => t.Value)
             .SelectMany(t => t.Split([';', ','], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             .Where(t => !string.IsNullOrEmpty(t));
-        var allTargets = defaultTargetName is null ? userTargets : [defaultTargetName, .. userTargets];
-        return allTargets.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        var allValues = defaultValue is null ? userValues : [defaultValue, .. userValues];
+        return allValues.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
     }
 
     public static Option<VerbosityOptions> VerbosityOption(VerbosityOptions defaultVerbosity) =>
