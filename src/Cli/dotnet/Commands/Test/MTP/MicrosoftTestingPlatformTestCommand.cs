@@ -49,11 +49,11 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
 
         BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult, degreeOfParallelism);
 
-        var actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, OnHelpRequested);
-
         bool filterModeEnabled = parseResult.HasOption(MicrosoftTestingPlatformOptions.TestModulesFilterOption);
+        TestApplicationActionQueue actionQueue;
         if (filterModeEnabled)
         {
+            actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, OnHelpRequested);
             var testModulesFilterHandler = new TestModulesFilterHandler(actionQueue, _output);
             if (!testModulesFilterHandler.RunWithTestModulesFilter(parseResult))
             {
@@ -62,13 +62,17 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
         }
         else
         {
-            var msBuildHandler = new MSBuildHandler(buildOptions, actionQueue, _output);
+            var msBuildHandler = new MSBuildHandler(buildOptions, _output);
             if (!msBuildHandler.RunMSBuild())
             {
                 return ExitCode.GenericFailure;
             }
 
-            if (!msBuildHandler.EnqueueTestApplications())
+            // NOTE: Don't create TestApplicationActionQueue before RunMSBuild.
+            // The constructor will do Task.Run calls matching the degree of parallelism, and if we did that before the build, that can
+            // be slowing us down unnecessarily.
+            actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, OnHelpRequested);
+            if (!msBuildHandler.EnqueueTestApplications(actionQueue))
             {
                 return ExitCode.GenericFailure;
             }
