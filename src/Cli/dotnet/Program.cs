@@ -275,6 +275,13 @@ public class Program
                     PerformanceLogEventSource.Log.ExtensibleCommandStop();
 
                     exitCode = result.ExitCode;
+
+                    TelemetryClient.TrackEvent("command/finish", properties: new Dictionary<string, string>
+                    {
+                        { "command", commandName },
+                        { "exitCode", exitCode.ToString() }
+                    },
+                    measurements: new Dictionary<string, double>());
                 }
             }
             catch (CommandUnknownException e)
