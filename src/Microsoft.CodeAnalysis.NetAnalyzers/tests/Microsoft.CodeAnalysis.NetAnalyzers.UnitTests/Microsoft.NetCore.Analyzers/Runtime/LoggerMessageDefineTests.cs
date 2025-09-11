@@ -70,6 +70,52 @@ namespace Microsoft.Extensions.Logging.Analyzer
             await TriggerCodeAsync(format);
         }
 
+        [Fact]
+        public async Task CA1727IsProducedForCamelCasedFormatArgumentInLoggerMessageAttributeAsync()
+        {
+            string code = @"
+using Microsoft.Extensions.Logging;
+public static partial class C
+{
+    [LoggerMessage(1, LogLevel.Error, ""Unsuccessful status code {|CA1727:{statusCode}|}"")]
+    static partial void LogUnsuccessfulStatusCode(HttpStatusCode statusCode);
+    
+    [LoggerMessage(2, LogLevel.Information, ""User {|CA1727:{userName}|} logged in"")]  
+    static partial void LogUserAction(string userName);
+    
+    // This should not trigger CA1727 - PascalCase is correct
+    [LoggerMessage(3, LogLevel.Debug, ""Processing {ItemCount} items"")]
+    static partial void LogProcessing(int itemCount);
+}";
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                TestCode = code,
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMELogging,
+            }.RunAsync();
+        }
+
+        [Fact]
+        public async Task CA1727IsProducedForCamelCasedFormatArgumentInLoggerMessageAttributeWithNamedArgumentAsync()
+        {
+            string code = @"
+using Microsoft.Extensions.Logging;
+public static partial class C
+{
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = ""Error occurred: {|CA1727:{errorMessage}|}"")] 
+    static partial void LogError(string errorMessage);
+    
+    [LoggerMessage(EventId = 2, Message = ""Processing {|CA1727:{itemName}|}"")] 
+    static partial void LogProcessingItem(LogLevel level, string itemName);
+}";
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                TestCode = code,
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMELogging,
+            }.RunAsync();
+        }
+
         [Theory]
         // Concat would be optimized by compiler
         [MemberData(nameof(GenerateTemplateAndDefineUsageIgnoresCA1848ForBeginScope), @"nameof(ILogger) + "" string""", "")]
