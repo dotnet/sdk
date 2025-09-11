@@ -102,7 +102,8 @@ namespace EndToEnd.Tests
             string[] publishArgs = [
                 "-r",
                 "win-arm64",
-                .. selfContained ? ["--self-contained"] : Array.Empty<string>()
+                .. selfContained ? ["--self-contained"] : Array.Empty<string>(),
+                .. RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Array.Empty<string>() : ["/p:EnableWindowsTargeting=true"],
             ];
             new DotnetPublishCommand(Log, publishArgs)
                 .WithWorkingDirectory(projectDirectory)
@@ -440,6 +441,7 @@ namespace EndToEnd.Tests
                     .. !string.IsNullOrWhiteSpace(framework) ? ["--framework", framework] : Array.Empty<string>(),
                     // Remove this (or formalize it) after https://github.com/dotnet/installer/issues/12479 is resolved.
                     .. language == "F#" ? ["/p:_NETCoreSdkIsPreview=true"] : Array.Empty<string>(),
+                    .. framework.Contains("windows") && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ["/p:EnableWindowsTargeting=true"] : Array.Empty<string>(),
                     $"/bl:{templateName}-{(selfContained ? "selfcontained" : "fdd")}-{language}-{framework}-{{}}.binlog"
                 ];
 
