@@ -24,8 +24,6 @@ internal sealed class TestApplication(
     private readonly Action<CommandLineOptionMessages> _onHelpRequested = onHelpRequested;
     private readonly TestApplicationHandler _handler = new(output, module, testOptions);
 
-    private readonly List<string> _outputData = [];
-    private readonly List<string> _errorData = [];
     private readonly string _pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
 
     private readonly List<NamedPipeServer> _testAppPipeConnections = [];
@@ -279,34 +277,21 @@ internal sealed class TestApplication(
         Logger.LogTrace($"Starting test process with command '{processStartInfo.FileName}' and arguments '{processStartInfo.Arguments}'.");
 
         using var process = Process.Start(processStartInfo)!;
-        StoreOutputAndErrorData(process);
         await process.WaitForExitAsync();
 
-        _handler.OnTestProcessExited(process.ExitCode, _outputData, _errorData);
-
-        return process.ExitCode;
+        string outputData = string.Empty;
+        string errorData = string.Empty;
+        if (process.ExitCode != 0)
+        {
+            // NOTE: outputData and errorData are only used by TerminalTestReporter when the process exit code is non-zero.
+            // So, we avoid reading them unnecessarily.
+            outputData = await process.StandardOutput.ReadToEndAsync();
+            errorData = await process.StandardError.ReadToEndAsync();
     }
 
-    private void StoreOutputAndErrorData(Process process)
-    {
-        process.EnableRaisingEvents = true;
+        _handler.OnTestProcessExited(process.ExitCode, outputData, errorData);
 
-        process.OutputDataReceived += (sender, e) =>
-        {
-            if (string.IsNullOrEmpty(e.Data))
-                return;
-
-            _outputData.Add(e.Data);
-        };
-        process.ErrorDataReceived += (sender, e) =>
-        {
-            if (string.IsNullOrEmpty(e.Data))
-                return;
-
-            _errorData.Add(e.Data);
-        };
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
+        return process.ExitCode;
     }
 
     public void OnHandshakeMessage(HandshakeMessage handshakeMessage, bool gotSupportedVersion)
