@@ -275,13 +275,6 @@ public class Program
                     PerformanceLogEventSource.Log.ExtensibleCommandStop();
 
                     exitCode = result.ExitCode;
-
-                    TelemetryClient.TrackEvent("command/finish", properties: new Dictionary<string, string>
-                    {
-                        { "command", commandName },
-                        { "exitCode", exitCode.ToString() }
-                    },
-                    measurements: new Dictionary<string, double>());
                 }
             }
             catch (CommandUnknownException e)
@@ -291,6 +284,13 @@ public class Program
                 exitCode = 1;
             }
         }
+
+        TelemetryClient.TrackEvent("command/finish", properties: new Dictionary<string, string>
+                    {
+                        { "command", parseResult.ToString() },
+                        { "exitCode", exitCode.ToString() }
+                    },
+            measurements: new Dictionary<string, double>());
 
         PerformanceLogEventSource.Log.TelemetryClientFlushStart();
         TelemetryClient.Flush();
