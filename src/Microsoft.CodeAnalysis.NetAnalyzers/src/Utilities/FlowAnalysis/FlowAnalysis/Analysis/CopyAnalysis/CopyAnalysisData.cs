@@ -195,7 +195,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.CopyAnalysis
 
         [Conditional("DEBUG")]
         internal static void AssertValidCopyAnalysisData(
-            IDictionary<AnalysisEntity, CopyAbstractValue> map,
+            CoreCopyAnalysisData map,
             Func<AnalysisEntity, CopyAbstractValue?>? tryGetDefaultCopyValue = null,
             bool initializingParameters = false)
         {
