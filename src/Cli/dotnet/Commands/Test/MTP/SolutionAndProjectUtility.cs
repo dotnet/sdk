@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Evaluation.Context;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -180,14 +182,22 @@ internal static class SolutionAndProjectUtility
     {
         Debug.Assert(projectFilePath is not null);
 
-        var project = collection.LoadProject(projectFilePath);
+        var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
+        Dictionary<string, string>? globalProperties = null;
         if (tfm is not null)
         {
-            project.SetGlobalProperty(ProjectProperties.TargetFramework, tfm);
-            project.ReevaluateIfNecessary();
+            globalProperties = new Dictionary<string, string>(capacity: 1)
+            {
+                { ProjectProperties.TargetFramework, tfm }
+            };
         }
 
-        return project.CreateProjectInstance();
+        return ProjectInstance.FromFile(projectFilePath, new ProjectOptions
+        {
+            GlobalProperties = globalProperties,
+            EvaluationContext = evaluationContext,
+            ProjectCollection = collection,
+        });
     }
 
     public static string GetRootDirectory(string solutionOrProjectFilePath)
