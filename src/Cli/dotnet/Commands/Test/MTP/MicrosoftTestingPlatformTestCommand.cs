@@ -71,6 +71,7 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
             // NOTE: Don't create TestApplicationActionQueue before RunMSBuild.
             // The constructor will do Task.Run calls matching the degree of parallelism, and if we did that before the build, that can
             // be slowing us down unnecessarily.
+            // Alternatively, if we can enqueue right after every project evaluation without waiting all evaluations to be done, we can enqueue early.
             actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, OnHelpRequested);
             if (!msBuildHandler.EnqueueTestApplications(actionQueue))
             {
