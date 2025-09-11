@@ -17,7 +17,5 @@ internal sealed class UnknownMessageSerializer(int SerializerId) : BaseSerialize
     }
 
     public void Serialize(object _, Stream stream)
-    {
-        WriteInt(stream, Id);
-    }
+        => Environment.FailFast("SDK never serializes UnknownMessage. This should never be hit.");
 }
