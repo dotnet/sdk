@@ -116,6 +116,7 @@
       </Button>
     </Page>
     <Page Name="Failure">
+      <!-- Reserve two lines of space to accommodate localized content. -->
       <Label Name="FailureRestartText" X="148" Y="-48" Width="-12" Height="32" FontId="DefaultFont" DisablePrefix="yes" VisibleCondition="WixStdBARestartRequired">#(loc.FailureRestartText)</Label>
       <Label Name="FailureHeader" X="148" Y="80" Width="-12" Height="32" HexStyle="00000000" FontId="PageHeaderFont" TabStop="yes">
         <Text>#(loc.FailureHeader)</Text>
@@ -133,9 +134,6 @@
 
       <!-- This element is updated by the bootstrapper application. Reserve 3 lines of space. -->
       <Hypertext HexStyle="000000" Name="FailureMessageText" X="148" Y="172" Width="-12" Height="48" FontId="ErrorFont" TabStop="yes" HideWhenDisabled="yes" />
-
-      <!-- Reserve two lines of space to accommodate localized content. -->
-
 
       <Button Name="FailureRestartButton" X="-124" Y="-12" Width="100" Height="24" TabStop="yes" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.FailureRestartButton)</Button>
       <Button Name="FailureCloseButton" X="-12" Y="-12" Width="100" Height="24" TabStop="yes" FontId="DefaultFont">
