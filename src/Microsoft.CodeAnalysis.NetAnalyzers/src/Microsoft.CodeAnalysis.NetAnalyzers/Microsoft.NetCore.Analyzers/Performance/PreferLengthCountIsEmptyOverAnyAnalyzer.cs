@@ -155,6 +155,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
         private static bool HasEligibleCountProperty(ITypeSymbol typeSymbol)
         {
             return typeSymbol.GetMembers(CountText)
+                // Include implemented interface members.
+                .Concat(typeSymbol.AllInterfaces.SelectMany(s => s.GetMembers(CountText)))
                 .OfType<IPropertySymbol>()
                 .Any(property => property.Type.SpecialType is SpecialType.System_Int32 or SpecialType.System_UInt32);
         }
