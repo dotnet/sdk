@@ -389,7 +389,7 @@ public partial class StaticWebAssetsBaselineFactory
 
         return file;
 
-        bool IsFramework(string segment)
+        static bool IsFramework(string segment)
         {
             try
             {
