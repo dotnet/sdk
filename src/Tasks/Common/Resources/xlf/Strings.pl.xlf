@@ -656,6 +656,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1225: kompilacja natywna nie jest obsługiwana podczas bezpośredniego wywoływania obiektu docelowego publikowania. Spróbuj uruchomić polecenie dotnet publish.</target>
         <note>{StrBegins="NETSDK1225: "}</note>
       </trans-unit>
+      <trans-unit id="Net10NotCompatibleWithVS1713">
+        <source>NETSDK1229: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported.</source>
+        <target state="new">NETSDK1229: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported.</target>
+        <note>{StrBegins="NETSDK1229: "}</note>
+      </trans-unit>
       <trans-unit id="Net9NotCompatibleWithDev1711">
         <source>NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</source>
         <target state="translated">NETSDK1223: platforma docelowa .NET 9.0 lub nowsza w programie Visual Studio 2022 17.11 nie jest obsługiwana.</target>

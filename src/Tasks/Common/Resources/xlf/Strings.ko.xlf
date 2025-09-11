@@ -656,6 +656,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1225: 게시 대상을 직접 호출할 때는 네이티브 컴파일이 지원되지 않습니다. dotnet publish를 실행해 보세요.</target>
         <note>{StrBegins="NETSDK1225: "}</note>
       </trans-unit>
+      <trans-unit id="Net10NotCompatibleWithVS1713">
+        <source>NETSDK1229: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported.</source>
+        <target state="new">NETSDK1229: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported.</target>
+        <note>{StrBegins="NETSDK1229: "}</note>
+      </trans-unit>
       <trans-unit id="Net9NotCompatibleWithDev1711">
         <source>NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</source>
         <target state="translated">NETSDK1223: Visual Studio 2022 17.11에서 .NET 9.0 이상을 대상으로 지정하는 것은 지원되지 않습니다.</target>
