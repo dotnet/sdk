@@ -16,6 +16,10 @@ public class DotnetCliSnapshotTests : SdkTest
     {
         var provider = CompletionsCommand.DefaultShells.Single(x => x.ArgumentName == shellName);
         var completions = provider.GenerateCompletions(Parser.RootCommand);
+        
+        // Post-process the completions to use "testhost" instead of the actual command name for consistency with historical snapshots
+        // This ensures the snapshots remain stable regardless of the test execution environment
+        completions = completions.Replace("dotnet.Tests", "testhost");
         var settings = new VerifySettings();
         if (Environment.GetEnvironmentVariable("USER") is string user && user.Contains("helix", StringComparison.OrdinalIgnoreCase)
             || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("USER")))
