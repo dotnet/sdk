@@ -392,7 +392,7 @@ public class RunCommand
             // So we can skip project evaluation to continue the optimized path.
             Debug.Assert(EntryPointFileFullPath is not null);
             Reporter.Verbose.WriteLine("Getting target command: for csc-built program.");
-            return CreateCommandForCscBuiltProgram(EntryPointFileFullPath);
+            return CreateCommandForCscBuiltProgram(EntryPointFileFullPath, ApplicationArgs);
         }
 
         Reporter.Verbose.WriteLine("Getting target command: evaluating project.");
@@ -460,11 +460,11 @@ public class RunCommand
             }
         }
 
-        static ICommand CreateCommandForCscBuiltProgram(string entryPointFileFullPath)
+        static ICommand CreateCommandForCscBuiltProgram(string entryPointFileFullPath, string[] args)
         {
             var artifactsPath = VirtualProjectBuildingCommand.GetArtifactsPath(entryPointFileFullPath);
             var exePath = Path.Join(artifactsPath, "bin", "debug", Path.GetFileNameWithoutExtension(entryPointFileFullPath) + FileNameSuffixes.CurrentPlatform.Exe);
-            var commandSpec = new CommandSpec(path: exePath, args: null);
+            var commandSpec = new CommandSpec(path: exePath, args: ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args));
             var command = CommandFactoryUsingResolver.Create(commandSpec)
                 .WorkingDirectory(Path.GetDirectoryName(entryPointFileFullPath));
 
