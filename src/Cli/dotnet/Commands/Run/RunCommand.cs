@@ -163,6 +163,9 @@ public class RunCommand
                 targetCommand.EnvironmentVariable(name, value);
             }
 
+            // Send telemetry about the run operation
+            SendRunTelemetry(launchSettings, projectFactory, cachedRunProperties);
+
             // Ignore Ctrl-C for the remainder of the command's execution
             Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
 
@@ -754,5 +757,156 @@ public class RunCommand
         var tokensToParse = tokensMinusProject.ToArray();
         var newParseResult = Parser.Parse(tokensToParse);
         return newParseResult;
+    }
+
+    /// <summary>
+    /// Sends telemetry about the run operation.
+    /// </summary>
+    /// <param name="launchSettings">Applied launch settings if any</param>
+    /// <param name="projectFactory">Project factory for file-based apps using MSBuild</param>
+    /// <param name="cachedRunProperties">Cached run properties if available</param>
+    private void SendRunTelemetry(
+        ProjectLaunchSettingsModel? launchSettings,
+        Func<ProjectCollection, ProjectInstance>? projectFactory,
+        RunProperties? cachedRunProperties)
+    {
+        try
+        {
+            bool isFileBased = EntryPointFileFullPath is not null;
+
+            if (isFileBased)
+            {
+                SendFileBasedTelemetry(launchSettings, projectFactory, cachedRunProperties);
+            }
+            else
+            {
+                SendProjectBasedTelemetry(launchSettings);
+            }
+        }
+        catch
+        {
+            // Silently ignore telemetry errors to not affect the run operation
+        }
+    }
+
+    /// <summary>
+    /// Builds and sends telemetry data for file-based app runs.
+    /// </summary>
+    private void SendFileBasedTelemetry(
+        ProjectLaunchSettingsModel? launchSettings,
+        Func<ProjectCollection, ProjectInstance>? projectFactory,
+        RunProperties? cachedRunProperties)
+    {
+        var projectIdentifier = RunTelemetry.GetFileBasedIdentifier(EntryPointFileFullPath!, Sha256Hasher.Hash);
+        
+        var virtualCommand = CreateVirtualCommand();
+        var directives = virtualCommand.Directives;
+        
+        var sdkCount = RunTelemetry.CountSdks(directives);
+        var packageReferenceCount = RunTelemetry.CountPackageReferences(directives);
+        var projectReferenceCount = RunTelemetry.CountProjectReferences(directives);
+        var additionalPropertiesCount = RunTelemetry.CountAdditionalProperties(directives);
+        
+        // Determine if MSBuild or Roslyn compiler was used
+        bool? usedMSBuild = null;
+        bool? usedRoslynCompiler = null;
+        
+        if (cachedRunProperties != null)
+        {
+            // If we have cached properties, we used the optimized path
+            usedRoslynCompiler = projectFactory == null;
+            usedMSBuild = projectFactory != null;
+        }
+        else if (ShouldBuild)
+        {
+            // Fresh build - check if we used MSBuild optimization
+            usedMSBuild = !directives.IsDefaultOrEmpty || projectFactory != null;
+            usedRoslynCompiler = directives.IsDefaultOrEmpty && projectFactory == null;
+        }
+
+        RunTelemetry.TrackRunEvent(
+            isFileBased: true,
+            projectIdentifier: projectIdentifier,
+            launchProfile: LaunchProfile,
+            noLaunchProfile: NoLaunchProfile,
+            launchSettings: launchSettings,
+            sdkCount: sdkCount,
+            packageReferenceCount: packageReferenceCount,
+            projectReferenceCount: projectReferenceCount,
+            additionalPropertiesCount: additionalPropertiesCount,
+            usedMSBuild: usedMSBuild,
+            usedRoslynCompiler: usedRoslynCompiler);
+    }
+
+    /// <summary>
+    /// Builds and sends telemetry data for project-based app runs.
+    /// </summary>
+    private void SendProjectBasedTelemetry(ProjectLaunchSettingsModel? launchSettings)
+    {
+        var projectIdentifier = RunTelemetry.GetProjectBasedIdentifier(ProjectFileFullPath!, GetRepositoryRoot(), Sha256Hasher.Hash);
+        
+        // Get package and project reference counts for project-based apps
+        int packageReferenceCount = 0;
+        int projectReferenceCount = 0;
+        
+        // Try to get project information for telemetry if we built the project
+        if (ShouldBuild)
+        {
+            try
+            {
+                var globalProperties = MSBuildArgs.GlobalProperties?.ToDictionary() ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                globalProperties[Constants.EnableDefaultItems] = "false";
+                globalProperties[Constants.MSBuildExtensionsPath] = AppContext.BaseDirectory;
+                
+                using var collection = new ProjectCollection(globalProperties: globalProperties);
+                var project = collection.LoadProject(ProjectFileFullPath!).CreateProjectInstance();
+                
+                packageReferenceCount = RunTelemetry.CountPackageReferences(project);
+                projectReferenceCount = RunTelemetry.CountProjectReferences(project);
+            }
+            catch
+            {
+                // If project evaluation fails for telemetry, use defaults
+                // We don't want telemetry collection to affect the run operation
+            }
+        }
+
+        RunTelemetry.TrackRunEvent(
+            isFileBased: false,
+            projectIdentifier: projectIdentifier,
+            launchProfile: LaunchProfile,
+            noLaunchProfile: NoLaunchProfile,
+            launchSettings: launchSettings,
+            packageReferenceCount: packageReferenceCount,
+            projectReferenceCount: projectReferenceCount);
+    }
+
+    /// <summary>
+    /// Attempts to find the repository root directory.
+    /// </summary>
+    /// <returns>Repository root path if found, null otherwise</returns>
+    private string? GetRepositoryRoot()
+    {
+        try
+        {
+            var currentDir = ProjectFileFullPath != null 
+                ? Path.GetDirectoryName(ProjectFileFullPath)
+                : Directory.GetCurrentDirectory();
+                
+            while (currentDir != null)
+            {
+                if (Directory.Exists(Path.Combine(currentDir, ".git")))
+                {
+                    return currentDir;
+                }
+                currentDir = Directory.GetParent(currentDir)?.FullName;
+            }
+        }
+        catch
+        {
+            // Ignore errors when trying to find repo root
+        }
+        
+        return null;
     }
 }
