@@ -883,11 +883,11 @@ The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="needs-review-translation">Plik dotnet.config definiuje moduł uruchamiający testy jako Microsoft.Testing.Platform. Wszystkie projekty muszą używać tego modułu uruchamiającego testy.
-Następujące projekty testowe używają modułu uruchamiającego testy VSTest:
+        <target state="new">global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+The following test projects are using VSTest test runner:
 {0}
 
-Aby uzyskać więcej informacji, zobacz https://aka.ms/dotnet-test/mtp.</target>
+See https://aka.ms/dotnet-test/mtp for more information.</target>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
 {0} is one or more project names.</note>
       </trans-unit>

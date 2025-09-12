@@ -883,11 +883,11 @@ The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="needs-review-translation">dotnet.config는 Test Runner를 Microsoft.Testing.Platform으로 정의합니다. 모든 프로젝트는 해당 Test Runner를 사용해야 합니다.
-다음 테스트 프로젝트에서 VSTest Test Runner를 사용하고 있습니다.
+        <target state="new">global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+The following test projects are using VSTest test runner:
 {0}
 
-자세한 내용은 https://aka.ms/dotnet-test/mtp를 참조하세요.</target>
+See https://aka.ms/dotnet-test/mtp for more information.</target>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
 {0} is one or more project names.</note>
       </trans-unit>

@@ -1,10 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Buffers;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO.Pipes;
 
@@ -22,7 +21,7 @@ internal sealed class NamedPipeServer : NamedPipeBase
     private readonly byte[] _readBuffer = new byte[250000];
     private readonly byte[] _sizeOfIntArray = new byte[sizeof(int)];
     private readonly bool _skipUnknownMessages;
-    private Task _loopTask;
+    private Task? _loopTask;
     private bool _disposed;
 
     public NamedPipeServer(
@@ -238,7 +237,7 @@ internal sealed class NamedPipeServer : NamedPipeBase
                 // This is unexpected and we throw an exception.
 
                 // To close gracefully we need to ensure that the client closed the stream line 103.
-                if (!_loopTask.Wait(TimeSpan.FromSeconds(90)))
+                if (!_loopTask!.Wait(TimeSpan.FromSeconds(90)))
                 {
                     throw new InvalidOperationException(CliCommandStrings.InternalLoopAsyncDidNotExitSuccessfullyErrorMessage);
                 }

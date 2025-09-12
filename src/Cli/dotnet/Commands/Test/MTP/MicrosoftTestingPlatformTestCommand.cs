@@ -1,9 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.TemplateEngine.Cli.Commands;
@@ -12,10 +11,10 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHelp, ICommandDocument
 {
-    private TerminalTestReporter _output;
+    private TerminalTestReporter? _output;
     private byte _cancelled;
 
-    public MicrosoftTestingPlatformTestCommand(string name, string description = null) : base(name, description)
+    public MicrosoftTestingPlatformTestCommand(string name, string? description = null) : base(name, description)
     {
         TreatUnmatchedTokensAsErrors = false;
     }
@@ -50,9 +49,7 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
 
         BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult, degreeOfParallelism);
 
-        var actionQueue = InitializeActionQueue(degreeOfParallelism, testOptions, buildOptions);
-
-        var msBuildHandler = new MSBuildHandler(buildOptions, actionQueue, _output);
+        var actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, OnHelpRequested);
 
         bool filterModeEnabled = parseResult.HasOption(MicrosoftTestingPlatformOptions.TestModulesFilterOption);
         if (filterModeEnabled)
@@ -65,6 +62,7 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
         }
         else
         {
+            var msBuildHandler = new MSBuildHandler(buildOptions, actionQueue, _output);
             if (!msBuildHandler.RunMSBuild())
             {
                 return ExitCode.GenericFailure;
@@ -91,11 +89,6 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
         return exitCode;
     }
 
-    private TestApplicationActionQueue InitializeActionQueue(int degreeOfParallelism, TestOptions testOptions, BuildOptions buildOptions)
-    {
-        return new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, OnHelpRequested);
-    }
-
     private void SetupCancelKeyPressHandler()
     {
         Console.CancelKeyPress += (s, e) =>
@@ -106,6 +99,7 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
         };
     }
 
+    [MemberNotNull(nameof(_output))]
     private void InitializeOutput(int degreeOfParallelism, ParseResult parseResult, TestOptions testOptions)
     {
         var console = new SystemConsole();
