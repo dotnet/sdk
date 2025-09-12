@@ -1,17 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Collections.Concurrent;
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.TemplateEngine.Cli.Help;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal partial class MicrosoftTestingPlatformTestCommand
 {
-    private readonly ConcurrentDictionary<string, CommandLineOption> _commandLineOptionNameToModuleNames = [];
+    private readonly ConcurrentDictionary<string, CommandLineOptionMessage> _commandLineOptionNameToModuleNames = [];
     private readonly ConcurrentDictionary<bool, List<(string, string[])>> _moduleNamesToCommandLineOptions = [];
     private static readonly string Indent = "  ";
 
@@ -29,13 +28,11 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 return;
             }
 
-            Dictionary<bool, List<CommandLineOption>> allOptions = GetAllOptions(context.Command.Options);
-            allOptions.TryGetValue(true, out List<CommandLineOption> builtInOptions);
-            allOptions.TryGetValue(false, out List<CommandLineOption> nonBuiltInOptions);
+            var (builtInOptions, nonBuiltInOptions) = GetAllOptions(context.Command.Options);
 
-            Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions = GetModulesToMissingOptions(_moduleNamesToCommandLineOptions, builtInOptions.Select(option => option.Name), nonBuiltInOptions.Select(option => option.Name));
+            Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions = GetModulesToMissingOptions(_moduleNamesToCommandLineOptions, builtInOptions.Select(option => option.Name!), nonBuiltInOptions.Select(option => option.Name!));
 
-            _output.WritePlatformAndExtensionOptions(context, builtInOptions, nonBuiltInOptions, moduleToMissingOptions);
+            _output!.WritePlatformAndExtensionOptions(context, builtInOptions!, nonBuiltInOptions!, moduleToMissingOptions);
         };
     }
 
@@ -92,36 +89,28 @@ internal partial class MicrosoftTestingPlatformTestCommand
         return $"[{option.Trim(':').ToLower()}]";
     }
 
-    private void OnHelpRequested(object sender, HelpEventArgs args)
+    private void OnHelpRequested(CommandLineOptionMessages commandLineOptionMessages)
     {
-        var testApp = (TestApplication)sender;
-        if (!testApp.TestOptions.IsHelp)
-        {
-            // TODO: Better to throw exception?
-            return;
-        }
-        
-        CommandLineOption[] commandLineOptionMessages = args.CommandLineOptions;
-        string moduleName = args.ModulePath;
+        string moduleName = commandLineOptionMessages.ModulePath!;
 
         List<string> builtInOptions = [];
         List<string> nonBuiltInOptions = [];
 
-        foreach (CommandLineOption commandLineOption in commandLineOptionMessages)
+        foreach (CommandLineOptionMessage commandLineOption in commandLineOptionMessages.CommandLineOptionMessageList!)
         {
             if (commandLineOption.IsHidden.HasValue && commandLineOption.IsHidden.Value) continue;
 
             if (commandLineOption.IsBuiltIn.HasValue && commandLineOption.IsBuiltIn.Value)
             {
-                builtInOptions.Add(commandLineOption.Name);
+                builtInOptions.Add(commandLineOption.Name!);
             }
             else
             {
-                nonBuiltInOptions.Add(commandLineOption.Name);
+                nonBuiltInOptions.Add(commandLineOption.Name!);
             }
 
             _commandLineOptionNameToModuleNames.AddOrUpdate(
-                commandLineOption.Name,
+                commandLineOption.Name!,
                 commandLineOption,
                 (optionName, value) => (value));
         }
@@ -135,36 +124,35 @@ internal partial class MicrosoftTestingPlatformTestCommand
            (isBuiltIn, value) => [.. value, (moduleName, nonBuiltInOptions.ToArray())]);
     }
 
-    private Dictionary<bool, List<CommandLineOption>> GetAllOptions(IList<Option> commandOptions)
+    private (List<CommandLineOptionMessage> BuiltInOptions, List<CommandLineOptionMessage> NonBuiltInOptions) GetAllOptions(IList<Option> commandOptions)
     {
-        Dictionary<bool, List<CommandLineOption>> filteredOptions = [];
+        List<CommandLineOptionMessage> builtInOptions = [];
+        List<CommandLineOptionMessage> nonBuiltInOptions = [];
 
         // Create a set of option names from the command's options for efficient lookup
         var commandOptionNames = commandOptions.Select(o => o.Name.TrimStart('-')).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        foreach (KeyValuePair<string, CommandLineOption> option in _commandLineOptionNameToModuleNames)
+        foreach (KeyValuePair<string, CommandLineOptionMessage> option in _commandLineOptionNameToModuleNames)
         {
             // Only include options that are NOT already present in the command's options
-            if (!commandOptionNames.Contains(option.Value.Name))
+            if (!commandOptionNames.Contains(option.Value.Name!))
             {
-                if (!filteredOptions.TryGetValue(option.Value.IsBuiltIn.Value, out List<CommandLineOption> value))
+                if (option.Value.IsBuiltIn!.Value)
                 {
-                    filteredOptions.Add(option.Value.IsBuiltIn.Value, [option.Value]);
+                    builtInOptions.Add(option.Value);
                 }
                 else
                 {
-                    value.Add(option.Value);
+                    nonBuiltInOptions.Add(option.Value);
                 }
             }
         }
 
         // Sort options alphabetically by name
-        foreach (var optionsList in filteredOptions.Values)
-        {
-            optionsList.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase));
-        }
+        builtInOptions.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase));
+        nonBuiltInOptions.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase));
 
-        return filteredOptions;
+        return (builtInOptions, nonBuiltInOptions);
     }
 
     private static Dictionary<bool, List<(string[], string[])>> GetModulesToMissingOptions(

@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
+using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
@@ -403,7 +404,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? informativeMessage,
         TestOutcome outcome,
         TimeSpan duration,
-        FlatException[] exceptions,
+        FlatException[]? exceptions,
         string? expected,
         string? actual,
         string? standardOutput,
@@ -464,7 +465,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? informativeMessage,
         TestOutcome outcome,
         TimeSpan duration,
-        FlatException[] flatExceptions,
+        FlatException[]? flatExceptions,
         string? expected,
         string? actual,
         string? standardOutput,
@@ -530,7 +531,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         FormatStandardAndErrorOutput(terminal, standardOutput, errorOutput);
     }
 
-    private static void FormatInnerExceptions(ITerminal terminal, FlatException[] exceptions)
+    private static void FormatInnerExceptions(ITerminal terminal, FlatException[]? exceptions)
     {
         if (exceptions is null || exceptions.Length == 0)
         {
@@ -547,7 +548,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
     }
 
-    private static void FormatErrorMessage(ITerminal terminal, FlatException[] exceptions, TestOutcome outcome, int index)
+    private static void FormatErrorMessage(ITerminal terminal, FlatException[]? exceptions, TestOutcome outcome, int index)
     {
         string? firstErrorMessage = GetStringFromIndexOrDefault(exceptions, e => e.ErrorMessage, index);
         string? firstErrorType = GetStringFromIndexOrDefault(exceptions, e => e.ErrorType, index);
@@ -576,7 +577,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.ResetColor();
     }
 
-    private static string? GetStringFromIndexOrDefault(FlatException[] exceptions, Func<FlatException, string?> property, int index) =>
+    private static string? GetStringFromIndexOrDefault(FlatException[]? exceptions, Func<FlatException, string?> property, int index) =>
         exceptions != null && exceptions.Length >= index + 1 ? property(exceptions[index]) : null;
 
     private static void FormatExpectedAndActual(ITerminal terminal, string? expected, string? actual)
@@ -596,7 +597,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.ResetColor();
     }
 
-    private static void FormatStackTrace(ITerminal terminal, FlatException[] exceptions, int index)
+    private static void FormatStackTrace(ITerminal terminal, FlatException[]? exceptions, int index)
     {
         string? stackTrace = GetStringFromIndexOrDefault(exceptions, e => e.StackTrace, index);
         if (string.IsNullOrWhiteSpace(stackTrace))
@@ -756,7 +757,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         });
     }
 
-    internal void HandshakeFailure(string assemblyPath, string targetFramework, int exitCode, string outputData, string errorData)
+    internal void HandshakeFailure(string assemblyPath, string? targetFramework, int exitCode, string outputData, string errorData)
     {
         if (_isHelp)
         {
@@ -999,8 +1000,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
     }
 
     public void WritePlatformAndExtensionOptions(HelpContext context,
-        IEnumerable<CommandLineOption> builtInOptions,
-        IEnumerable<CommandLineOption> nonBuiltInOptions,
+        IEnumerable<CommandLineOptionMessage> builtInOptions,
+        IEnumerable<CommandLineOptionMessage> nonBuiltInOptions,
         Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions)
     {
         if (_wasCancelled)
@@ -1022,7 +1023,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         WriteModulesToMissingOptionsToConsole(moduleToMissingOptions);
     }
 
-    private void WriteOtherOptionsSection(HelpContext context, string title, IEnumerable<CommandLineOption> options)
+    private void WriteOtherOptionsSection(HelpContext context, string title, IEnumerable<CommandLineOptionMessage> options)
     {
         List<TwoColumnHelpRow> optionRows = [];
 
@@ -1030,7 +1031,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         {
             if (option.IsHidden != true)
             {
-                optionRows.Add(new TwoColumnHelpRow($"--{option.Name}", option.Description));
+                optionRows.Add(new TwoColumnHelpRow($"--{option.Name}", option.Description ?? string.Empty));
             }
         }
 

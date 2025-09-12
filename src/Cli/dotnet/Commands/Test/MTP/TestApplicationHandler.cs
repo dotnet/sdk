@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
-using System.Diagnostics;
-using System.Reflection;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
@@ -15,8 +11,10 @@ internal sealed class TestApplicationHandler
     private readonly TerminalTestReporter _output;
     private readonly TestModule _module;
     private readonly TestOptions _options;
+    private readonly Lock _lock = new();
+    private readonly Dictionary<string, (int TestSessionStartCount, int TestSessionEndCount)> _testSessionEventCountPerSessionUid = new();
 
-    private (string TargetFramework, string Architecture, string ExecutionId)? _handshakeInfo;
+    private (string? TargetFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
 
     public TestApplicationHandler(TerminalTestReporter output, TestModule module, TestOptions options)
     {
@@ -46,17 +44,18 @@ internal sealed class TestApplicationHandler
             return;
         }
 
+        var executionId = handshakeMessage.Properties[HandshakeMessagePropertyNames.ExecutionId];
+        var arch = handshakeMessage.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
+        var tfm = TargetFrameworkParser.GetShortTargetFramework(handshakeMessage.Properties[HandshakeMessagePropertyNames.Framework]);
+        var currentHandshakeInfo = (tfm, arch, executionId);
+
         if (!_handshakeInfo.HasValue)
         {
-            var executionId = handshakeMessage.Properties[HandshakeMessagePropertyNames.ExecutionId];
-            var arch = handshakeMessage.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
-            var tfm = TargetFrameworkParser.GetShortTargetFramework(handshakeMessage.Properties[HandshakeMessagePropertyNames.Framework]);
-
-            _handshakeInfo = (tfm, arch, executionId);
+            _handshakeInfo = currentHandshakeInfo;
         }
-        else
+        else if (_handshakeInfo.Value != currentHandshakeInfo)
         {
-            // TODO: Verify we get the same info.
+            throw new InvalidOperationException(string.Format(CliCommandStrings.MismatchingHandshakeInfo, currentHandshakeInfo, _handshakeInfo.Value));
         }
 
         var hostType = handshakeMessage.Properties[HandshakeMessagePropertyNames.HostType];
@@ -91,13 +90,14 @@ internal sealed class TestApplicationHandler
     {
         LogDiscoveredTests(discoveredTestMessages);
 
-        // TODO: If _handshakeInfo is null, we should error.
-        // We shouldn't be getting any discovered test messages without a previous handshake.
-
         if (_options.IsHelp)
         {
-            // TODO: Better to throw exception?
-            return;
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageInHelpMode, nameof(DiscoveredTestMessages)));
+        }
+
+        if (!_handshakeInfo.HasValue)
+        {
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(DiscoveredTestMessages)));
         }
 
         foreach (var test in discoveredTestMessages.DiscoveredMessages)
@@ -112,22 +112,23 @@ internal sealed class TestApplicationHandler
     {
         LogTestResults(testResultMessage);
 
-        // TODO: If _handshakeInfo is null, we should error.
-        // We shouldn't be getting any test result messages without a previous handshake.
-
         if (_options.IsHelp)
         {
-            // TODO: Better to throw exception?
-            return;
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageInHelpMode, nameof(TestResultMessages)));
+        }
+
+        if (!_handshakeInfo.HasValue)
+        {
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(TestResultMessages)));
         }
 
         var handshakeInfo = _handshakeInfo.Value;
         foreach (var testResult in testResultMessage.SuccessfulTestMessages)
         {
             _output.TestCompleted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
-                testResultMessage.InstanceId,
-                testResult.Uid,
-                testResult.DisplayName,
+                testResultMessage.InstanceId!,
+                testResult.Uid!,
+                testResult.DisplayName!,
                 testResult.Reason,
                 ToOutcome(testResult.State),
                 TimeSpan.FromTicks(testResult.Duration ?? 0),
@@ -140,13 +141,13 @@ internal sealed class TestApplicationHandler
 
         foreach (var testResult in testResultMessage.FailedTestMessages)
         {
-            _output.TestCompleted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, testResultMessage.InstanceId,
-                testResult.Uid,
-                testResult.DisplayName,
+            _output.TestCompleted(_module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId, testResultMessage.InstanceId!,
+                testResult.Uid!,
+                testResult.DisplayName!,
                 testResult.Reason,
                 ToOutcome(testResult.State),
                 TimeSpan.FromTicks(testResult.Duration ?? 0),
-                exceptions: [.. testResult.Exceptions.Select(fe => new Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace))],
+                exceptions: [.. testResult.Exceptions!.Select(fe => new Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace))],
                 expected: null,
                 actual: null,
                 standardOutput: testResult.StandardOutput,
@@ -158,13 +159,14 @@ internal sealed class TestApplicationHandler
     {
         LogFileArtifacts(fileArtifactMessages);
 
-        // TODO: If _handshakeInfo is null, we should error.
-        // We shouldn't be getting any file artifact messages without a previous handshake.
-
         if (_options.IsHelp)
         {
-            // TODO: Better to throw exception?
-            return;
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageInHelpMode, nameof(FileArtifactMessages)));
+        }
+
+        if (!_handshakeInfo.HasValue)
+        {
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(FileArtifactMessages)));
         }
 
         var handshakeInfo = _handshakeInfo.Value;
@@ -173,20 +175,66 @@ internal sealed class TestApplicationHandler
             _output.ArtifactAdded(
                 outOfProcess: false,
                 _module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
-                artifact.TestDisplayName, artifact.FullPath);
+                // TODO: Revise null suppression here.
+                artifact.TestDisplayName, artifact.FullPath!);
         }
     }
 
     internal void OnSessionEventReceived(TestSessionEvent sessionEvent)
     {
-        LogSessionEvent(sessionEvent);
+        lock (_lock)
+        {
+            LogSessionEvent(sessionEvent);
 
-        // TODO: If _handshakeInfo is null, we should error.
-        // We shouldn't be getting any session event messages without a previous handshake.
+            // TODO: Validate if we should get this message in help mode or not.
 
-        // TODO: We shouldn't only log here!
-        // We should use it in a more meaningful way. e.g, ensure we received session start/end events.
-        Logger.LogTrace($"TestSessionEvent: {sessionEvent.SessionType}, {sessionEvent.SessionUid}, {sessionEvent.ExecutionId}");
+            if (!_handshakeInfo.HasValue)
+            {
+                throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(DiscoveredTestMessages)));
+            }
+
+            if (sessionEvent.SessionType == SessionEventTypes.TestSessionStart)
+            {
+                IncreaseTestSessionStart(sessionEvent.SessionUid!);
+            }
+            else if (sessionEvent.SessionType == SessionEventTypes.TestSessionEnd)
+            {
+                var (testSessionStartCount, testSessionEndCount) = IncreaseTestSessionEnd(sessionEvent.SessionUid!);
+                if (testSessionEndCount > testSessionStartCount)
+                {
+                    throw new InvalidOperationException(CliCommandStrings.UnexpectedTestSessionEnd);
+                }
+            }
+        }
+    }
+
+    private (int TestSessionStartCount, int TestSessionEndCount) IncreaseTestSessionStart(string sessionUid)
+    {
+        _ = _testSessionEventCountPerSessionUid.TryGetValue(sessionUid, out var count);
+        count = (count.TestSessionStartCount + 1, count.TestSessionEndCount);
+        _testSessionEventCountPerSessionUid[sessionUid] = count;
+        return count;
+    }
+
+    private (int TestSessionStartCount, int TestSessionEndCount) IncreaseTestSessionEnd(string sessionUid)
+    {
+        _ = _testSessionEventCountPerSessionUid.TryGetValue(sessionUid, out var count);
+        count = (count.TestSessionStartCount, count.TestSessionEndCount + 1);
+        _testSessionEventCountPerSessionUid[sessionUid] = count;
+        return count;
+    }
+
+    internal bool HasMismatchingTestSessionEventCount()
+    {
+        foreach (var (testSessionStartCount, testSessionEndCount) in _testSessionEventCountPerSessionUid.Values)
+        {
+            if (testSessionStartCount != testSessionEndCount)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     internal void OnTestProcessExited(int exitCode, List<string> outputData, List<string> errorData)
@@ -199,7 +247,7 @@ internal sealed class TestApplicationHandler
         }
         else
         {
-            _output.HandshakeFailure(_module.TargetPath ?? _module.ProjectFullPath, _module.TargetFramework, exitCode, outputDataString, errorDataString);
+            _output.HandshakeFailure(_module.TargetPath ?? _module.ProjectFullPath ?? string.Empty, _module.TargetFramework, exitCode, outputDataString, errorDataString);
         }
 
         LogTestProcessExit(exitCode, outputDataString, errorDataString);
@@ -275,7 +323,7 @@ internal sealed class TestApplicationHandler
         foreach (FailedTestResultMessage failedTestResult in testResultMessages.FailedTestMessages)
         {
             logMessageBuilder.AppendLine($"FailedTestResult: {failedTestResult.Uid}, {failedTestResult.DisplayName}, " +
-                $"{failedTestResult.State}, {failedTestResult.Duration}, {failedTestResult.Reason}, {string.Join(", ", failedTestResult.Exceptions?.Select(e => $"{e.ErrorMessage}, {e.ErrorType}, {e.StackTrace}"))}" +
+                $"{failedTestResult.State}, {failedTestResult.Duration}, {failedTestResult.Reason}, {string.Join(", ", (failedTestResult.Exceptions ?? Array.Empty<ExceptionMessage>()).Select(e => $"{e.ErrorMessage}, {e.ErrorType}, {e.StackTrace}"))}" +
                 $"{failedTestResult.StandardOutput}, {failedTestResult.ErrorOutput}, {failedTestResult.SessionUid}");
         }
 

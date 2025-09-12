@@ -1,11 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipes;
+using System.Threading;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
@@ -18,21 +17,19 @@ internal sealed class TestApplication(
     TestModule module,
     BuildOptions buildOptions,
     TestOptions testOptions,
-    TerminalTestReporter output) : IDisposable
+    TerminalTestReporter output,
+    Action<CommandLineOptionMessages> onHelpRequested) : IDisposable
 {
     private readonly BuildOptions _buildOptions = buildOptions;
+    private readonly Action<CommandLineOptionMessages> _onHelpRequested = onHelpRequested;
     private readonly TestApplicationHandler _handler = new(output, module, testOptions);
 
     private readonly List<string> _outputData = [];
     private readonly List<string> _errorData = [];
-    private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
-    private readonly CancellationTokenSource _cancellationToken = new();
+    private readonly string _pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
 
-    private Task _testAppPipeConnectionLoop;
     private readonly List<NamedPipeServer> _testAppPipeConnections = [];
     private readonly Dictionary<NamedPipeServer, HandshakeMessage> _handshakes = new();
-
-    public event EventHandler<HelpEventArgs> HelpRequested;
 
     public TestModule Module { get; } = module;
     public TestOptions TestOptions { get; } = testOptions;
@@ -43,19 +40,28 @@ internal sealed class TestApplication(
     {
         // TODO: RunAsync is probably expected to be executed exactly once on each TestApplication instance.
         // Consider throwing an exception if it's called more than once.
-        if (TestOptions.HasFilterMode && !ModulePathExists())
-        {
-            return ExitCode.GenericFailure;
-        }
-
         var processStartInfo = CreateProcessStartInfo();
 
-        _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
-        var testProcessResult = await StartProcess(processStartInfo);
+        var cancellationTokenSource = new CancellationTokenSource();
+        var cancellationToken = cancellationTokenSource.Token;
+        Task? testAppPipeConnectionLoop = null;
 
-        WaitOnTestApplicationPipeConnectionLoop();
+        try
+        {
+            testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(cancellationToken), cancellationToken);
+            var testProcessExitCode = await StartProcess(processStartInfo);
+            if (_handler.HasMismatchingTestSessionEventCount())
+            {
+                throw new InvalidOperationException(CliCommandStrings.MissingTestSessionEnd);
+            }
 
-        return testProcessResult;
+            return testProcessExitCode;
+        }
+        finally
+        {
+            cancellationTokenSource.Cancel();
+            testAppPipeConnectionLoop?.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
+        }
     }
 
     private ProcessStartInfo CreateProcessStartInfo()
@@ -69,6 +75,8 @@ internal sealed class TestApplication(
             Arguments = GetArguments(),
             RedirectStandardOutput = true,
             RedirectStandardError = true,
+            // False is already the default on .NET Core, but prefer to be explicit.
+            UseShellExecute = false,
         };
 
         if (!string.IsNullOrEmpty(Module.RunProperties.WorkingDirectory))
@@ -140,15 +148,9 @@ internal sealed class TestApplication(
             builder.Append($" {ArgumentEscaper.EscapeSingleArg(arg)}");
         }
 
-        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(_pipeNameDescription.Name)}");
+        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(_pipeName)}");
 
         return builder.ToString();
-    }
-
-    private void WaitOnTestApplicationPipeConnectionLoop()
-    {
-        _cancellationToken.Cancel();
-        _testAppPipeConnectionLoop?.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
     }
 
     private async Task WaitConnectionAsync(CancellationToken token)
@@ -157,7 +159,7 @@ internal sealed class TestApplication(
         {
             while (!token.IsCancellationRequested)
             {
-                var pipeConnection = new NamedPipeServer(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
+                var pipeConnection = new NamedPipeServer(_pipeName, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
                 pipeConnection.RegisterAllSerializers();
 
                 await pipeConnection.WaitConnectionAsync(token);
@@ -221,6 +223,15 @@ internal sealed class TestApplication(
         }
         catch (Exception ex)
         {
+            // BE CAREFUL:
+            // When handling some of the messages, we may throw an exception in unexpected state.
+            // (e.g, OnSessionEvent may throw if we receive TestSessionEnd without TestSessionStart).
+            // (or if we receive help-related messages when not in help mode)
+            // In that case, we FailFast.
+            // The lack of FailFast *might* have unintended consequences, such as breaking the internal loop of pipe server.
+            // In that case, maybe MTP app will continue waiting for response, but we don't send the response and are waiting for
+            // MTP app process exit (which doesn't happen).
+            // So, we explicitly FailFast here.
             string exAsString = ex.ToString();
             Logger.LogTrace(exAsString);
             Environment.FailFast(exAsString);
@@ -231,7 +242,7 @@ internal sealed class TestApplication(
 
     private static string GetSupportedProtocolVersion(HandshakeMessage handshakeMessage)
     {
-        if (!handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.SupportedProtocolVersions, out string protocolVersions) ||
+        if (!handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.SupportedProtocolVersions, out string? protocolVersions) ||
             protocolVersions is null)
         {
             // It's not expected we hit this.
@@ -254,7 +265,7 @@ internal sealed class TestApplication(
     }
 
     private static HandshakeMessage CreateHandshakeMessage(string version) =>
-        new(new Dictionary<byte, string>(capacity: 5)
+        new HandshakeMessage(new Dictionary<byte, string>(capacity: 5)
         {
             { HandshakeMessagePropertyNames.PID, Environment.ProcessId.ToString(CultureInfo.InvariantCulture) },
             { HandshakeMessagePropertyNames.Architecture, RuntimeInformation.ProcessArchitecture.ToString() },
@@ -265,9 +276,9 @@ internal sealed class TestApplication(
 
     private async Task<int> StartProcess(ProcessStartInfo processStartInfo)
     {
-        Logger.LogTrace($"Test application arguments: {processStartInfo.Arguments}");
+        Logger.LogTrace($"Starting test process with command '{processStartInfo.FileName}' and arguments '{processStartInfo.Arguments}'.");
 
-        using var process = Process.Start(processStartInfo);
+        using var process = Process.Start(processStartInfo)!;
         StoreOutputAndErrorData(process);
         await process.WaitForExitAsync();
 
@@ -298,24 +309,17 @@ internal sealed class TestApplication(
         process.BeginErrorReadLine();
     }
 
-    private bool ModulePathExists()
-    {
-        if (!File.Exists(Module.RunProperties.Command))
-        {
-            // TODO: The error should be shown to the user, not just logged to trace.
-            Logger.LogTrace($"Test module '{Module.RunProperties.Command}' not found. Build the test application before or run 'dotnet test'.");
-
-            return false;
-        }
-        return true;
-    }
-
     public void OnHandshakeMessage(HandshakeMessage handshakeMessage, bool gotSupportedVersion)
         => _handler.OnHandshakeReceived(handshakeMessage, gotSupportedVersion);
 
     private void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
     {
-        HelpRequested?.Invoke(this, new HelpEventArgs { ModulePath = commandLineOptionMessages.ModulePath, CommandLineOptions = [.. commandLineOptionMessages.CommandLineOptionMessageList.Select(message => new CommandLineOption(message.Name, message.Description, message.IsHidden, message.IsBuiltIn))] });
+        if (!TestOptions.IsHelp)
+        {
+            throw new InvalidOperationException(CliCommandStrings.UnexpectedHelpMessage);
+        }
+
+        _onHelpRequested(commandLineOptionMessages);
     }
 
     private void OnDiscoveredTestMessages(DiscoveredTestMessages discoveredTestMessages)
@@ -324,7 +328,7 @@ internal sealed class TestApplication(
     private void OnTestResultMessages(TestResultMessages testResultMessage)
         => _handler.OnTestResultsReceived(testResultMessage);
 
-    internal void OnFileArtifactMessages(FileArtifactMessages fileArtifactMessages)
+    private void OnFileArtifactMessages(FileArtifactMessages fileArtifactMessages)
         => _handler.OnFileArtifactsReceived(fileArtifactMessages);
 
     private void OnSessionEvent(TestSessionEvent sessionEvent)
@@ -396,7 +400,5 @@ internal sealed class TestApplication(
                 Reporter.Error.WriteLine(messageBuilder.ToString());
             }
         }
-
-        WaitOnTestApplicationPipeConnectionLoop();
     }
 }
