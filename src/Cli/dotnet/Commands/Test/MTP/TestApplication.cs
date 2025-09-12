@@ -276,19 +276,10 @@ internal sealed class TestApplication(
         Logger.LogTrace($"Starting test process with command '{processStartInfo.FileName}' and arguments '{processStartInfo.Arguments}'.");
 
         using var process = Process.Start(processStartInfo)!;
+        var outputAndError = await Task.WhenAll(process.StandardOutput.ReadToEndAsync(), process.StandardError.ReadToEndAsync());
         await process.WaitForExitAsync();
 
-        string outputData = string.Empty;
-        string errorData = string.Empty;
-        if (process.ExitCode != 0)
-        {
-            // NOTE: outputData and errorData are only used by TerminalTestReporter when the process exit code is non-zero.
-            // So, we avoid reading them unnecessarily.
-            outputData = await process.StandardOutput.ReadToEndAsync();
-            errorData = await process.StandardError.ReadToEndAsync();
-        }
-
-        _handler.OnTestProcessExited(process.ExitCode, outputData, errorData);
+        _handler.OnTestProcessExited(process.ExitCode, outputAndError[0], outputAndError[1]);
 
         return process.ExitCode;
     }
