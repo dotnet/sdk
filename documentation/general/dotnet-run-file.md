@@ -54,6 +54,8 @@ Additionally, the implicit project file has the following customizations:
     in case there is a project or solution in the same directory as the file-based app.
     This ensures that items from nested projects and artifacts are not included by the app.
 
+  - `UserSecretsId` is set implicitly to a hash of the entry point file path.
+
 ## Grow up
 
 When file-based programs reach an inflection point where build customizations in a project file are needed,
