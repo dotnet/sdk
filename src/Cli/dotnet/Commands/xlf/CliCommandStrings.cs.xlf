@@ -883,11 +883,11 @@ The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="needs-review-translation">Soubor dotnet.config definuje, že spouštěč testů bude Microsoft.Testing.Platform. Tento spouštěč testů musí používat všechny projekty.
-Následující testovací projekty používají spouštěč testů VSTest:
+        <target state="new">global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+The following test projects are using VSTest test runner:
 {0}
 
-Další informace najdete na https://aka.ms/dotnet-test/mtp.</target>
+See https://aka.ms/dotnet-test/mtp for more information.</target>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
 {0} is one or more project names.</note>
       </trans-unit>
