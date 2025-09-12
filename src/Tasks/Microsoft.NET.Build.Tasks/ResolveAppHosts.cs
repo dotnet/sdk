@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Frameworks;
@@ -186,6 +188,13 @@ namespace Microsoft.NET.Build.Tasks
             {
                 foreach (var otherRuntimeIdentifier in OtherRuntimeIdentifiers)
                 {
+                    // The 'any' RID represents a platform-agnostic platform. As such, it has no
+                    // apphost pack associated with it.
+                    if (otherRuntimeIdentifier == "any")
+                    {
+                        continue;
+                    }
+
                     //  Download any apphost packages for other runtime identifiers.
                     //  This allows you to specify the list of RIDs in RuntimeIdentifiers and only restore once,
                     //  and then build for each RuntimeIdentifier without restoring separately.

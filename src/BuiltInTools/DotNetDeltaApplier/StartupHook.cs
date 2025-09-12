@@ -3,17 +3,22 @@
 
 using System.Diagnostics;
 using System.IO.Pipes;
+using System.Reflection;
+using System.Runtime.Loader;
 using Microsoft.DotNet.HotReload;
+using Microsoft.DotNet.Watch;
 
 /// <summary>
 /// The runtime startup hook looks for top-level type named "StartupHook".
 /// </summary>
 internal sealed class StartupHook
 {
-    private const int ConnectionTimeoutMS = 5000;
+    private static readonly string? s_standardOutputLogPrefix = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.HotReloadDeltaClientLogMessages);
+    private static readonly string? s_namedPipeName = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName);
 
-    private static readonly bool s_logToStandardOutput = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.HotReloadDeltaClientLogMessages) == "1";
-    private static readonly string s_namedPipeName = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName);
+#if NET10_0_OR_GREATER
+    private static PosixSignalRegistration? s_signalRegistration;
+#endif
 
     /// <summary>
     /// Invoked by the runtime when the containing assembly is listed in DOTNET_STARTUP_HOOKS.
@@ -21,177 +26,70 @@ internal sealed class StartupHook
     public static void Initialize()
     {
         var processPath = Environment.GetCommandLineArgs().FirstOrDefault();
+        var processDir = Path.GetDirectoryName(processPath)!;
 
-        Log($"Loaded into process: {processPath}");
+        Log($"Loaded into process: {processPath} ({typeof(StartupHook).Assembly.Location})");
 
         HotReloadAgent.ClearHotReloadEnvironmentVariables(typeof(StartupHook));
 
-        Log($"Connecting to hot-reload server");
-
-        // Connect to the pipe synchronously.
-        //
-        // If a debugger is attached and there is a breakpoint in the startup code connecting asynchronously would
-        // set up a race between this code connecting to the server, and the breakpoint being hit. If the breakpoint
-        // hits first, applying changes will throw an error that the client is not connected.
-        //
-        // Updates made before the process is launched need to be applied before loading the affected modules. 
-
-        var pipeClient = new NamedPipeClientStream(".", s_namedPipeName, PipeDirection.InOut, PipeOptions.CurrentUserOnly | PipeOptions.Asynchronous);
-        try
+        if (s_namedPipeName == null)
         {
-            pipeClient.Connect(ConnectionTimeoutMS);
-            Log("Connected.");
-        }
-        catch (TimeoutException)
-        {
-            Log($"Failed to connect in {ConnectionTimeoutMS}ms.");
+            Log($"Environment variable {AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName} has no value");
             return;
         }
 
-        var agent = new HotReloadAgent();
-        try
-        {
-            // block until initialization completes:
-            InitializeAsync(pipeClient, agent, CancellationToken.None).GetAwaiter().GetResult();
+        RegisterSignalHandlers();
 
-            // fire and forget:
-            _ = ReceiveAndApplyUpdatesAsync(pipeClient, agent, initialUpdates: false, CancellationToken.None);
-        }
-        catch (Exception ex)
+        var agent = new HotReloadAgent(assemblyResolvingHandler: (_, args) =>
         {
-            Log(ex.Message);
-            pipeClient.Dispose();
-        }
+            Log($"Resolving '{args.Name}, Version={args.Version}'");
+            var path = Path.Combine(processDir, args.Name + ".dll");
+            return File.Exists(path) ? AssemblyLoadContext.Default.LoadFromAssemblyPath(path) : null;
+        });
+
+        var listener = new PipeListener(s_namedPipeName, agent, Log);
+
+        // fire and forget:
+        _ = listener.Listen(CancellationToken.None);
     }
 
-    private static async ValueTask InitializeAsync(NamedPipeClientStream pipeClient, HotReloadAgent agent, CancellationToken cancellationToken)
+    private static void RegisterSignalHandlers()
     {
-        agent.Reporter.Report("Writing capabilities: " + agent.Capabilities, AgentMessageSeverity.Verbose);
-
-        var initPayload = new ClientInitializationResponse(agent.Capabilities);
-        await initPayload.WriteAsync(pipeClient, cancellationToken);
-
-        // Apply updates made before this process was launched to avoid executing unupdated versions of the affected modules.
-        await ReceiveAndApplyUpdatesAsync(pipeClient, agent, initialUpdates: true, cancellationToken);
-    }
-
-    private static async Task ReceiveAndApplyUpdatesAsync(NamedPipeClientStream pipeClient, HotReloadAgent agent, bool initialUpdates, CancellationToken cancellationToken)
-    {
-        try
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            while (pipeClient.IsConnected)
+            ProcessUtilities.EnableWindowsCtrlCHandling(Log);
+        }
+        else
+        {
+#if NET10_0_OR_GREATER
+            // Register a handler for SIGTERM to allow graceful shutdown of the application on Unix.
+            // See https://github.com/dotnet/docs/issues/46226.
+
+            // Note: registered handlers are executed in reverse order of their registration.
+            // Since the startup hook is executed before any code of the application, it is the first handler registered and thus the last to run.
+
+            s_signalRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, context =>
             {
-                var payloadType = (RequestType)await pipeClient.ReadByteAsync(cancellationToken);
-                switch (payloadType)
+                Log($"SIGTERM received. Cancel={context.Cancel}");
+
+                if (!context.Cancel)
                 {
-                    case RequestType.ManagedCodeUpdate:
-                        // Shouldn't get initial managed code updates when the debugger is attached.
-                        // The debugger itself applies these updates when launching process with the debugger attached.
-                        Debug.Assert(!Debugger.IsAttached);
-                        await ReadAndApplyManagedCodeUpdateAsync(pipeClient, agent, cancellationToken);
-                        break;
-
-                    case RequestType.StaticAssetUpdate:
-                        await ReadAndApplyStaticAssetUpdateAsync(pipeClient, agent, cancellationToken);
-                        break;
-
-                    case RequestType.InitialUpdatesCompleted when initialUpdates:
-                        return;
-
-                    default:
-                        // can't continue, the pipe content is in an unknown state
-                        Log($"Unexpected payload type: {payloadType}. Terminating agent.");
-                        return;
+                    Environment.Exit(0);
                 }
-            }
+            });
+
+            Log("Posix signal handlers registered.");
+#endif
         }
-        catch (Exception ex)
-        {
-            Log(ex.Message);
-        }
-        finally
-        {
-            if (!pipeClient.IsConnected)
-            {
-                await pipeClient.DisposeAsync();
-            }
-
-            if (!initialUpdates)
-            {
-                agent.Dispose();
-            }
-        }
-    }
-
-    private static async ValueTask ReadAndApplyManagedCodeUpdateAsync(
-        NamedPipeClientStream pipeClient,
-        HotReloadAgent agent,
-        CancellationToken cancellationToken)
-    {
-        var request = await ManagedCodeUpdateRequest.ReadAsync(pipeClient, cancellationToken);
-
-        bool success;
-        try
-        {
-            agent.ApplyDeltas(request.Deltas);
-            success = true;
-        }
-        catch (Exception e)
-        {
-            agent.Reporter.Report($"The runtime failed to applying the change: {e.Message}", AgentMessageSeverity.Error);
-            agent.Reporter.Report("Further changes won't be applied to this process.", AgentMessageSeverity.Warning);
-            success = false;
-        }
-
-        var logEntries = agent.GetAndClearLogEntries(request.ResponseLoggingLevel);
-
-        var response = new UpdateResponse(logEntries, success);
-        await response.WriteAsync(pipeClient, cancellationToken);
-    }
-
-    private static async ValueTask ReadAndApplyStaticAssetUpdateAsync(
-        NamedPipeClientStream pipeClient,
-        HotReloadAgent agent,
-        CancellationToken cancellationToken)
-    {
-        var request = await StaticAssetUpdateRequest.ReadAsync(pipeClient, cancellationToken);
-
-        agent.ApplyStaticAssetUpdate(new StaticAssetUpdate(request.AssemblyName, request.RelativePath, request.Contents, request.IsApplicationProject));
-
-        var logEntries = agent.GetAndClearLogEntries(request.ResponseLoggingLevel);
-
-        // Updating static asset only invokes ContentUpdate metadata update handlers.
-        // Failures of these handlers are reported to the log and ignored.
-        // Therefore, this request always succeeds.
-        var response = new UpdateResponse(logEntries, success: true);
-
-        await response.WriteAsync(pipeClient, cancellationToken);
-    }
-
-    public static bool IsMatchingProcess(string processPath, string targetProcessPath)
-    {
-        var comparison = Path.DirectorySeparatorChar == '\\' ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-        var (shorter, longer) = (processPath.Length > targetProcessPath.Length) ? (targetProcessPath, processPath) : (processPath, targetProcessPath);
-
-        // one or both have no extension, or they have the same extension
-        if (longer.StartsWith(shorter, comparison))
-        {
-            var suffix = longer[shorter.Length..];
-            return suffix is "" || suffix.Equals(".exe", comparison) || suffix.Equals(".dll", comparison);
-        }
-
-        // different extension:
-        return (processPath.EndsWith(".exe", comparison) || processPath.EndsWith(".dll", comparison)) &&
-               (targetProcessPath.EndsWith(".exe", comparison) || targetProcessPath.EndsWith(".dll", comparison)) &&
-               string.Equals(processPath[..^4], targetProcessPath[..^4], comparison);
     }
 
     private static void Log(string message)
     {
-        if (s_logToStandardOutput)
+        var prefix = s_standardOutputLogPrefix;
+        if (prefix != null)
         {
             Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.WriteLine($"dotnet watch 🕵️ [{s_namedPipeName}] {message}");
+            Console.WriteLine($"{prefix} {message}");
             Console.ResetColor();
         }
     }

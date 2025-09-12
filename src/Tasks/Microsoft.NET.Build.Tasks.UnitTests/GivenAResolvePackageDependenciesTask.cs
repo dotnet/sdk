@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using NuGet.Common;
@@ -139,11 +141,16 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 });
         }
 
-        [Fact]
-        public void ItAssignsDiagnosticLevel()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void ItAssignsDiagnosticLevel(bool useAlias)
         {
             const string target1 = ".NETCoreApp,Version=v1.0";
             const string target2 = ".NETCoreApp,Version=v2.0";
+
+            string alias1 = useAlias ? "netcoreapp1.0" : target1;
+            string alias2 = useAlias ? "netcoreapp2.0" : target2;
 
             string lockFileContent = CreateLockFileSnippet(
                 targets: new string[] {
@@ -155,15 +162,15 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 logs: new[]
                 {
                     // LibA
-                    CreateLog(NuGetLogCode.NU1000, LogLevel.Information, "", libraryId: "LibA", targetGraphs: new[] { target1 }),
-                    CreateLog(NuGetLogCode.NU1000, LogLevel.Warning,     "", libraryId: "LibA", targetGraphs: new[] { target1 }),
-                    CreateLog(NuGetLogCode.NU1000, LogLevel.Error,       "", libraryId: "LibA", targetGraphs: new[] { target1 }),
+                    CreateLog(NuGetLogCode.NU1000, LogLevel.Information, "", libraryId: "LibA", targetGraphs: new[] { alias1 }),
+                    CreateLog(NuGetLogCode.NU1000, LogLevel.Warning,     "", libraryId: "LibA", targetGraphs: new[] { alias1 }),
+                    CreateLog(NuGetLogCode.NU1000, LogLevel.Error,       "", libraryId: "LibA", targetGraphs: new[] { alias1 }),
                     // LibB
-                    CreateLog(NuGetLogCode.NU1000, LogLevel.Information, "", libraryId: "LibB", targetGraphs: new[] { target1, target2 }),
-                    CreateLog(NuGetLogCode.NU1000, LogLevel.Warning,     "", libraryId: "LibB", targetGraphs: new[] { target1, target2 }),
+                    CreateLog(NuGetLogCode.NU1000, LogLevel.Information, "", libraryId: "LibB", targetGraphs: new[] { alias1, alias2 }),
+                    CreateLog(NuGetLogCode.NU1000, LogLevel.Warning,     "", libraryId: "LibB", targetGraphs: new[] { alias1, alias2 }),
                     // LibC (wrong target)
-                    CreateLog(NuGetLogCode.NU1000, LogLevel.Information, "", libraryId: "LibB", targetGraphs: new[] { target2 }),
-                    CreateLog(NuGetLogCode.NU1000, LogLevel.Warning,     "", libraryId: "LibB", targetGraphs: new[] { target2 })
+                    CreateLog(NuGetLogCode.NU1000, LogLevel.Information, "", libraryId: "LibB", targetGraphs: new[] { alias2 }),
+                    CreateLog(NuGetLogCode.NU1000, LogLevel.Warning,     "", libraryId: "LibB", targetGraphs: new[] { alias2 })
                 }
             );
 
