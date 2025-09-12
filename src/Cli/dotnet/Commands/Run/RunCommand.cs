@@ -409,9 +409,7 @@ public class RunCommand
         {
             Debug.Assert(projectFilePath is not null || projectFactory is not null);
 
-            var globalProperties = msbuildArgs.GlobalProperties?.ToDictionary() ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            globalProperties[Constants.EnableDefaultItems] = "false"; // Disable default item globbing to improve performance
-            globalProperties[Constants.MSBuildExtensionsPath] = AppContext.BaseDirectory;
+            var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
 
             var collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
 

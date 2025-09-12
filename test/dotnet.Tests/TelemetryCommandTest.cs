@@ -358,6 +358,20 @@ namespace Microsoft.DotNet.Tests
                               e.Properties["verb"] == Sha256Hasher.Hash("CLEAN"));
         }
 
+        [Fact]
+        public void DotnetUpdatePackageVulnerableOptionShouldBeSentToTelemetry()
+        {
+            const string optionKey = "vulnerable";
+            string[] args = { "package", "update", "--vulnerable" };
+            Cli.Program.ProcessArgs(args);
+            _fakeTelemetry
+                .LogEntries.Should()
+                .Contain(e => e.EventName == "sublevelparser/command" &&
+                              e.Properties.ContainsKey(optionKey) &&
+                              e.Properties.ContainsKey("verb") &&
+                              e.Properties["verb"] == Sha256Hasher.Hash("PACKAGE UPDATE"));
+        }
+
         [WindowsOnlyFact]
         public void InternalreportinstallsuccessCommandCollectExeNameWithEventname()
         {

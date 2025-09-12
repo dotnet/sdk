@@ -237,20 +237,18 @@ internal sealed class TestApplicationHandler
         return false;
     }
 
-    internal void OnTestProcessExited(int exitCode, List<string> outputData, List<string> errorData)
+    internal void OnTestProcessExited(int exitCode, string outputData, string errorData)
     {
-        string outputDataString = string.Join(Environment.NewLine, outputData);
-        string errorDataString = string.Join(Environment.NewLine, errorData);
         if (_handshakeInfo.HasValue)
         {
-            _output.AssemblyRunCompleted(_handshakeInfo.Value.ExecutionId, exitCode, outputDataString, errorDataString);
+            _output.AssemblyRunCompleted(_handshakeInfo.Value.ExecutionId, exitCode, outputData, errorData);
         }
         else
         {
-            _output.HandshakeFailure(_module.TargetPath ?? _module.ProjectFullPath ?? string.Empty, _module.TargetFramework, exitCode, outputDataString, errorDataString);
+            _output.HandshakeFailure(_module.TargetPath ?? _module.ProjectFullPath ?? string.Empty, _module.TargetFramework, exitCode, outputData, errorData);
         }
 
-        LogTestProcessExit(exitCode, outputDataString, errorDataString);
+        LogTestProcessExit(exitCode, outputData, errorData);
     }
 
     private static TestOutcome ToOutcome(byte? testState) => testState switch

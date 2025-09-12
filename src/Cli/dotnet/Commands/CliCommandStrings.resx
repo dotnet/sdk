@@ -1098,12 +1098,12 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <comment>{0}, {1} number of tests</comment>
   </data>
   <data name="InvalidProjectDirective" xml:space="preserve">
-    <value>The '#:project' directive at '{0}' is invalid: {1}</value>
-    <comment>{0} is the file path and line number. {1} is the inner error message.</comment>
+    <value>The '#:project' directive is invalid: {0}</value>
+    <comment>{0} is the inner error message.</comment>
   </data>
   <data name="MissingDirectiveName" xml:space="preserve">
-    <value>Missing name of '{0}' at {1}.</value>
-    <comment>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</comment>
+    <value>Missing name of '{0}'.</value>
+    <comment>{0} is the directive name like 'package' or 'sdk'.</comment>
   </data>
   <data name="MsBuildDefinition" xml:space="preserve">
     <value>Run Microsoft Build Engine (MSBuild) commands.</value>
@@ -1593,28 +1593,32 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <value>Project(s)</value>
   </data>
   <data name="PropertyDirectiveInvalidName" xml:space="preserve">
-    <value>Invalid property name at {0}. {1}</value>
-    <comment>{0} is the file path and line number. {1} is an inner exception message.</comment>
+    <value>Invalid property name: {0}</value>
+    <comment>{0} is an inner exception message.</comment>
   </data>
   <data name="PropertyDirectiveMissingParts" xml:space="preserve">
-    <value>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</value>
-    <comment>{0} is the file path and line number.{Locked="#:property"}</comment>
+    <value>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</value>
+    <comment>{Locked="#:property"}</comment>
   </data>
   <data name="StaticGraphRestoreNotSupported" xml:space="preserve">
-    <value>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</value>
-    <comment>{0} is the file path and line number.{Locked="#:property"}</comment>
+    <value>Static graph restore is not supported for file-based apps. Remove the '#:property'.</value>
+    <comment>{Locked="#:property"}</comment>
+  </data>
+  <data name="DirectiveError" xml:space="preserve">
+    <value>error</value>
+    <comment>Used when reporting directive errors like "file(location): error: message".</comment>
   </data>
   <data name="InvalidDirectiveName" xml:space="preserve">
-    <value>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</value>
-    <comment>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</comment>
+    <value>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</value>
+    <comment>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</comment>
   </data>
   <data name="CannotConvertDirective" xml:space="preserve">
-    <value>Some directives cannot be converted: the first error is at {0}. Run the file to see all compilation errors. Specify '--force' to convert anyway.</value>
-    <comment>{Locked="--force"}. {0} is the file path and line number.</comment>
+    <value>Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</value>
+    <comment>{Locked="--force"}</comment>
   </data>
   <data name="DuplicateDirective" xml:space="preserve">
-    <value>Duplicate directives are not supported: {0} at {1}</value>
-    <comment>{0} is the directive type and name. {1} is the file path and line number.</comment>
+    <value>Duplicate directives are not supported: {0}</value>
+    <comment>{0} is the directive type and name.</comment>
   </data>
   <data name="InvalidOptionForStdin" xml:space="preserve">
     <value>Cannot specify option '{0}' when also using '-' to read the file from standard input.</value>
@@ -2253,8 +2257,8 @@ and the corresponding package Ids for installed tools using the command
     <value>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</value>
   </data>
   <data name="UnrecognizedDirective" xml:space="preserve">
-    <value>Unrecognized directive '{0}' at {1}.</value>
-    <comment>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</comment>
+    <value>Unrecognized directive '{0}'.</value>
+    <comment>{0} is the directive name like 'package' or 'sdk'.</comment>
   </data>
   <data name="UpdateAllOptionDescription" xml:space="preserve">
     <value>Update all tools.</value>
