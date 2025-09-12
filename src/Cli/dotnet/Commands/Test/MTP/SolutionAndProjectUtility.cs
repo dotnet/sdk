@@ -192,6 +192,17 @@ internal static class SolutionAndProjectUtility
             };
         }
 
+        // Merge the global properties from the project collection.
+        // It's unclear why MSBuild isn't considering the global properties defined in the ProjectCollection when
+        // the collection is passed in ProjectOptions below.
+        foreach (var property in collection.GlobalProperties)
+        {
+            if (!(globalProperties ??= new Dictionary<string, string>()).ContainsKey(property.Key))
+            {
+                globalProperties.Add(property.Key, property.Value);
+            }
+        }
+
         return ProjectInstance.FromFile(projectFilePath, new ProjectOptions
         {
             GlobalProperties = globalProperties,
