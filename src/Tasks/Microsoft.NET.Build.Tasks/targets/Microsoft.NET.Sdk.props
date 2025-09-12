@@ -116,6 +116,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PreferNativeArm64 Condition="'$(PreferNativeArm64)'==''">false</PreferNativeArm64>
     <SignAssembly Condition="'$(SignAssembly)'==''">false</SignAssembly>
     <DelaySign Condition="'$(DelaySign)'==''">false</DelaySign>
+    <!-- TODO: should we set _IsPacking=true on the NuGet Pack targets when they hook up the 'generate package on build' stuff -->
     <GeneratePackageOnBuild Condition="'$(GeneratePackageOnBuild)'==''">false</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance Condition="'$(PackageRequireLicenseAcceptance)'==''">false</PackageRequireLicenseAcceptance>
     <DebugSymbols Condition="'$(DebugSymbols)'==''">false</DebugSymbols>
