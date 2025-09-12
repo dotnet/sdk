@@ -17,7 +17,6 @@ internal static class SolutionAndProjectUtility
 {
     private static readonly string[] s_computeRunArgumentsTarget = [Constants.ComputeRunArguments];
     private static readonly Lock s_buildLock = new();
-    private static readonly EvaluationContext s_evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
 
     public static (bool SolutionOrProjectFileFound, string Message) TryGetProjectOrSolutionFilePath(string directory, out string projectOrSolutionFilePath, out bool isSolution)
     {
@@ -178,7 +177,7 @@ internal static class SolutionAndProjectUtility
 
     private static string[] GetProjectFilePaths(string directory) => Directory.GetFiles(directory, CliConstants.ProjectExtensionPattern, SearchOption.TopDirectoryOnly);
 
-    private static ProjectInstance EvaluateProject(ProjectCollection collection, string projectFilePath, string? tfm)
+    private static ProjectInstance EvaluateProject(ProjectCollection collection, EvaluationContext evaluationContext, string projectFilePath, string? tfm)
     {
         Debug.Assert(projectFilePath is not null);
 
@@ -205,7 +204,7 @@ internal static class SolutionAndProjectUtility
         return ProjectInstance.FromFile(projectFilePath, new ProjectOptions
         {
             GlobalProperties = globalProperties,
-            EvaluationContext = s_evaluationContext,
+            EvaluationContext = evaluationContext,
             ProjectCollection = collection,
         });
     }
@@ -217,10 +216,10 @@ internal static class SolutionAndProjectUtility
         return string.IsNullOrEmpty(fileDirectory) ? Directory.GetCurrentDirectory() : fileDirectory;
     }
 
-    public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties(string projectFilePath, ProjectCollection projectCollection, BuildOptions buildOptions)
+    public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties(string projectFilePath, ProjectCollection projectCollection, EvaluationContext evaluationContext, BuildOptions buildOptions)
     {
         var projects = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
-        ProjectInstance projectInstance = EvaluateProject(projectCollection, projectFilePath, null);
+        ProjectInstance projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, null);
 
         var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
         var targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
@@ -254,7 +253,7 @@ internal static class SolutionAndProjectUtility
             {
                 foreach (var framework in frameworks)
                 {
-                    projectInstance = EvaluateProject(projectCollection, projectFilePath, framework);
+                    projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
                     if (GetModuleFromProject(projectInstance, buildOptions) is { } module)
@@ -268,7 +267,7 @@ internal static class SolutionAndProjectUtility
                 List<TestModule>? innerModules = null;
                 foreach (var framework in frameworks)
                 {
-                    projectInstance = EvaluateProject(projectCollection, projectFilePath, framework);
+                    projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
                     if (GetModuleFromProject(projectInstance, buildOptions) is { } module)
