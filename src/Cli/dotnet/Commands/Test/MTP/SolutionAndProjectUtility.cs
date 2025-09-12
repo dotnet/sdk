@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class SolutionAndProjectUtility
 {
-    private static readonly string[] s_computeRunArgumentsTarget = ["ComputeRunArguments"];
+    private static readonly string[] s_computeRunArgumentsTarget = [Constants.ComputeRunArguments];
     private static readonly Lock s_buildLock = new();
     private static readonly EvaluationContext s_evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
 
