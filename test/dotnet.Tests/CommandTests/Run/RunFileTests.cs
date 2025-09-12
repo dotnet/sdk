@@ -2178,13 +2178,16 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     [Theory] // https://github.com/dotnet/aspnetcore/issues/63440
-    [InlineData(true)]
-    [InlineData(false, Skip = "Needs https://github.com/dotnet/aspnetcore/pull/63496")]
-    public void UserSecrets(bool getId)
+    [InlineData(true, null)]
+    [InlineData(false, null, Skip = "Needs https://github.com/dotnet/aspnetcore/pull/63496")]
+    [InlineData(true, "test-id")]
+    [InlineData(false, "test-id", Skip = "Needs https://github.com/dotnet/aspnetcore/pull/63496")]
+    public void UserSecrets(bool useIdArg, string? userSecretsId)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
             #:package Microsoft.Extensions.Configuration.UserSecrets@*-*
+            {(userSecretsId is null ? "" : $"#:property UserSecretsId={userSecretsId}")}
 
             using Microsoft.Extensions.Configuration;
 
@@ -2195,13 +2198,16 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             Console.WriteLine(config.GetDebugView());
             """);
 
-        if (getId)
+        if (useIdArg)
         {
-            var result = new DotnetCommand(Log, "build", "--no-restore", "-getProperty:UserSecretsId", "Program.cs")
-                .WithWorkingDirectory(testInstance.Path)
-                .Execute();
-            result.Should().Pass();
-            var userSecretsId = result.StdOut!.Trim();
+            if (userSecretsId == null)
+            {
+                var result = new DotnetCommand(Log, "build", "-getProperty:UserSecretsId", "Program.cs")
+                    .WithWorkingDirectory(testInstance.Path)
+                    .Execute();
+                result.Should().Pass();
+                userSecretsId = result.StdOut!.Trim();
+            }
 
             new DotnetCommand(Log, "user-secrets", "set", "MySecret", "MyValue", "--id", userSecretsId)
                 .WithWorkingDirectory(testInstance.Path)
