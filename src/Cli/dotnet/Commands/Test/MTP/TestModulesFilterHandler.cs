@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
@@ -20,11 +18,11 @@ internal sealed class TestModulesFilterHandler(TestApplicationActionQueue action
     public bool RunWithTestModulesFilter(ParseResult parseResult)
     {
         // If the module path pattern(s) was provided, we will use that to filter the test modules
-        string testModules = parseResult.GetValue(MicrosoftTestingPlatformOptions.TestModulesFilterOption);
+        string testModules = parseResult.GetValue(MicrosoftTestingPlatformOptions.TestModulesFilterOption)!;
 
         // If the root directory was provided, we will use that to search for the test modules
         // Otherwise, we will use the current directory
-        string rootDirectory = Directory.GetCurrentDirectory();
+        string? rootDirectory = Directory.GetCurrentDirectory();
         if (parseResult.HasOption(MicrosoftTestingPlatformOptions.TestModulesRootDirectoryOption))
         {
             rootDirectory = parseResult.GetValue(MicrosoftTestingPlatformOptions.TestModulesRootDirectoryOption);
@@ -58,7 +56,7 @@ internal sealed class TestModulesFilterHandler(TestApplicationActionQueue action
                 ? new RunProperties(muxerPath, $@"exec ""{testModule}""", null)
                 : new RunProperties(testModule, null, null);
 
-            var testApp = new ParallelizableTestModuleGroupWithSequentialInnerModules(new TestModule(runProperties, null, null, true, true, null, testModule, DotnetRootArchVariableName: null));
+            var testApp = new ParallelizableTestModuleGroupWithSequentialInnerModules(new TestModule(runProperties, null, null, true, null, testModule, DotnetRootArchVariableName: null));
             // Write the test application to the channel
             _actionQueue.Enqueue(testApp);
         }

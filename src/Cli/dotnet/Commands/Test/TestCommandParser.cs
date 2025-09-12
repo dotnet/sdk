@@ -2,13 +2,28 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.Extensions.Configuration;
+using Microsoft.DotNet.Cli.Utils;
+using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class TestCommandParser
 {
+    private sealed class GlobalJsonModel
+    {
+        [JsonPropertyName("test")]
+        public GlobalJsonTestNode Test { get; set; } = null!;
+    }
+
+    private sealed class GlobalJsonTestNode
+    {
+        [JsonPropertyName("runner")]
+        public string RunnerName { get; set; } = null!;
+    }
+
     public static readonly string DocsLink = "https://aka.ms/dotnet-test";
 
     public static readonly Option<string> SettingsOption = new ForwardedOption<string>("--settings", "-s")
@@ -163,45 +178,37 @@ internal static class TestCommandParser
         return Command;
     }
 
-    public static string GetTestRunnerName()
+    private static string GetTestRunnerName()
     {
-        var builder = new ConfigurationBuilder();
-
-        string? dotnetConfigPath = GetDotnetConfigPath(Environment.CurrentDirectory);
-        if (!File.Exists(dotnetConfigPath))
+        string? globalJsonPath = GetGlobalJsonPath(Environment.CurrentDirectory);
+        if (!File.Exists(globalJsonPath))
         {
             return CliConstants.VSTest;
         }
 
-        builder.AddIniFile(dotnetConfigPath);
+        string jsonText = File.ReadAllText(globalJsonPath);
 
-        IConfigurationRoot config = builder.Build();
-        var testSection = config.GetSection("dotnet.test.runner");
-
-        if (!testSection.Exists())
+        // This code path is hit exactly once during the whole life of the dotnet process.
+        // So, no concern about caching JsonSerializerOptions.
+        var globalJson = JsonSerializer.Deserialize<GlobalJsonModel>(jsonText, new JsonSerializerOptions()
         {
-            return CliConstants.VSTest;
-        }
+            AllowDuplicateProperties = false,
+            AllowTrailingCommas = false,
+            ReadCommentHandling = JsonCommentHandling.Skip,
+        });
 
-        string? runnerNameSection = testSection["name"];
-
-        if (string.IsNullOrEmpty(runnerNameSection))
-        {
-            return CliConstants.VSTest;
-        }
-
-        return runnerNameSection;
+        return globalJson?.Test?.RunnerName ?? CliConstants.VSTest;
     }
 
-    private static string? GetDotnetConfigPath(string? startDir)
+    private static string? GetGlobalJsonPath(string? startDir)
     {
         string? directory = startDir;
         while (directory != null)
         {
-            string dotnetConfigPath = Path.Combine(directory, "dotnet.config");
-            if (File.Exists(dotnetConfigPath))
+            string globalJsonPath = Path.Combine(directory, "global.json");
+            if (File.Exists(globalJsonPath))
             {
-                return dotnetConfigPath;
+                return globalJsonPath;
             }
 
             directory = Path.GetDirectoryName(directory);

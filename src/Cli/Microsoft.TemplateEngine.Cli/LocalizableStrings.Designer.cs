@@ -1404,51 +1404,6 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Created new section in &apos;dotnet.config&apos; file.
-        /// </summary>
-        internal static string PostAction_CreateDotnetConfig_CreatedNewSection {
-            get {
-                return ResourceManager.GetString("PostAction_CreateDotnetConfig_CreatedNewSection", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Updating existing values in &apos;dotnet.config&apos; is not yet supported. Please, manually update &apos;dotnet.config&apos; to have &apos;{0}&apos; under section &apos;{1}&apos;..
-        /// </summary>
-        internal static string PostAction_CreateDotnetConfig_ManuallyUpdate {
-            get {
-                return ResourceManager.GetString("PostAction_CreateDotnetConfig_ManuallyUpdate", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Successfully created &apos;dotnet.config&apos; file..
-        /// </summary>
-        internal static string PostAction_CreateDotnetConfig_Succeeded {
-            get {
-                return ResourceManager.GetString("PostAction_CreateDotnetConfig_Succeeded", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The required value in &apos;dotnet.config&apos; is already set..
-        /// </summary>
-        internal static string PostAction_CreateDotnetConfig_ValueAlreadyExist {
-            get {
-                return ResourceManager.GetString("PostAction_CreateDotnetConfig_ValueAlreadyExist", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Post action argument &apos;{0}&apos; is mandatory, but not configured..
-        /// </summary>
-        internal static string PostAction_DotnetConfig_Error_ArgumentNotConfigured {
-            get {
-                return ResourceManager.GetString("PostAction_DotnetConfig_Error_ArgumentNotConfigured", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Post action argument &apos;{0}&apos; is not a valid boolean value..
         /// </summary>
         internal static string PostAction_ModifyJson_Error_ArgumentNotBoolean {

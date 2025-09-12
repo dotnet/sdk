@@ -295,7 +295,8 @@ We always need to re-run MSBuild if implicit build files like `Directory.Build.p
 from `.cs` files, the only relevant MSBuild inputs are the `#:` directives,
 hence we can first check the `.cs` file timestamps and for those that have changed, compare the sets of `#:` directives.
 If only `.cs` files change, it is enough to invoke `csc.exe` (directly or via a build server)
-re-using command-line arguments that the last MSBuild invocation passed to the compiler.
+re-using command-line arguments that the last MSBuild invocation passed to the compiler
+(you can opt out of this via an MSBuild property `FileBasedProgramCanSkipMSBuild=false`).
 If no inputs change, it is enough to start the target executable without invoking the build at all.
 
 ## Alternatives and future work

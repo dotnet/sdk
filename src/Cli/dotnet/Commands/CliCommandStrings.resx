@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Aborted" xml:space="preserve">
-    <value>Aborted</value>
-  </data>
   <data name="ActiveTestsRunning_FullTestsCount" xml:space="preserve">
     <value>{0} tests running</value>
   </data>
@@ -646,14 +643,13 @@ If not specified the file will be generated inside the default 'TestResults' dir
     <value>Test runner '{0}' is not supported.</value>
   </data>
   <data name="CmdUnsupportedVSTestTestApplicationsDescription" xml:space="preserve">
-    <value>dotnet.config defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+    <value>global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
 The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</value>
-    <comment>{0} is one or more project names.
-Microsoft.Testing.Platform is a name, don't translate.
-dotnet.config is a name don't translate.</comment>
+    <comment>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
+{0} is one or more project names.</comment>
   </data>
   <data name="CmdUseLockFileOptionDescription" xml:space="preserve">
     <value>Enables project lock file to be generated and used with restore.</value>
@@ -2669,5 +2665,33 @@ Proceed?</value>
   </data>
   <data name="DotnetTestIncompatibleHandshakeVersion" xml:space="preserve">
     <value>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</value>
+  </data>
+  <data name="ErrorRunningTestModule" xml:space="preserve">
+    <value>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
+
+{2}</value>
+    <comment>{Locked="RunCommand"}{Locked="RunArguments"}
+{2} is the exception that occurred.</comment>
+  </data>
+  <data name="UnexpectedTestSessionEnd" xml:space="preserve">
+    <value>A test session end event was received without a corresponding test session start.</value>
+  </data>
+  <data name="MissingTestSessionEnd" xml:space="preserve">
+    <value>A test session start event was received without a corresponding test session end.</value>
+  </data>
+  <data name="Aborted" xml:space="preserve">
+    <value>Aborted</value>
+  </data>
+  <data name="UnexpectedHelpMessage" xml:space="preserve">
+    <value>An unexpected help-related message was received when `--help` wasn't used.</value>
+  </data>
+  <data name="MismatchingHandshakeInfo" xml:space="preserve">
+    <value>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</value>
+  </data>
+  <data name="UnexpectedMessageInHelpMode" xml:space="preserve">
+    <value>A message of type '{0}' was received in help mode, which is not expected.</value>
+  </data>
+  <data name="UnexpectedMessageWithoutHandshake" xml:space="preserve">
+    <value>A message of type '{0}' was received before we got any handshakes, which is unexpected.</value>
   </data>
 </root>
