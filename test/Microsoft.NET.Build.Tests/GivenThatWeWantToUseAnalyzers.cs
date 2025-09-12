@@ -222,25 +222,6 @@ namespace Microsoft.NET.Build.Tests
                 $"Expected InterceptorsPreviewNamespaces to contain 'Microsoft.Extensions.Configuration.Binder.SourceGeneration' but got: [{string.Join(", ", namespaces)}]");
         }
 
-        private void VerifyInterceptorsFeaturePropertiesForProject(TestAsset asset, string projectName, bool? expectEnabled, params string[] expectedNamespaces)
-        {
-            var command = new GetValuesCommand(
-                Log,
-                Path.Combine(asset.Path, projectName),
-                ToolsetInfo.CurrentTargetFramework,
-                "InterceptorsPreviewNamespaces",
-                GetValuesCommand.ValueType.Property);
-
-            command
-                .WithWorkingDirectory(asset.Path)
-                .Execute()
-                .Should().Pass();
-
-            var namespaces = command.GetValues();
-
-            Assert.Equal(expectEnabled ?? false, expectedNamespaces.All(expectedNamespace => namespaces.Contains(expectedNamespace)));
-        }
-
         [Theory]
         [InlineData("C#", "AppWithLibrary")]
         [InlineData("VB", "AppWithLibraryVB")]
