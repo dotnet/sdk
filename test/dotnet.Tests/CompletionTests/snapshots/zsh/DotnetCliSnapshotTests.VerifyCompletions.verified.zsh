@@ -1,8 +1,8 @@
-﻿#compdef testhost
+﻿#compdef dotnet.Tests
 
 autoload -U is-at-least
 
-_testhost() {
+_dotnet.Tests() {
     typeset -A opt_args
     typeset -a _arguments_options
     local ret=1
@@ -23,15 +23,15 @@ _testhost() {
         '--info[]' \
         '--list-sdks[]' \
         '--list-runtimes[]' \
-        ":: :_testhost_commands" \
-        "*::: :->testhost" \
+        ":: :_dotnet.Tests_commands" \
+        "*::: :->dotnet.Tests" \
         && ret=0
-    local original_args="testhost ${line[@]}" 
+    local original_args="dotnet.Tests ${line[@]}" 
     case $state in
-        (testhost)
+        (dotnet.Tests)
             words=($line[1] "${words[@]}")
             (( CURRENT += 1 ))
-            curcontext="${curcontext%:*:*}:testhost-command-$line[1]:"
+            curcontext="${curcontext%:*:*}:dotnet.Tests-command-$line[1]:"
             case $line[1] in
                 (build)
                     _arguments "${_arguments_options[@]}" : \
@@ -88,14 +88,14 @@ _testhost() {
                     _arguments "${_arguments_options[@]}" : \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
-                        ":: :_testhost__build-server_commands" \
+                        ":: :_dotnet.Tests__build-server_commands" \
                         "*::: :->build-server" \
                         && ret=0
                         case $state in
                             (build-server)
                                 words=($line[1] "${words[@]}")
                                 (( CURRENT += 1 ))
-                                curcontext="${curcontext%:*:*}:testhost-build-server-command-$line[1]:"
+                                curcontext="${curcontext%:*:*}:dotnet.Tests-build-server-command-$line[1]:"
                                 case $line[1] in
                                     (shutdown)
                                         _arguments "${_arguments_options[@]}" : \
@@ -147,7 +147,7 @@ _testhost() {
                             (clean)
                                 words=($line[2] "${words[@]}")
                                 (( CURRENT += 1 ))
-                                curcontext="${curcontext%:*:*}:testhost-clean-command-$line[2]:"
+                                curcontext="${curcontext%:*:*}:dotnet.Tests-clean-command-$line[2]:"
                                 case $line[2] in
                                 esac
                             ;;
@@ -191,14 +191,14 @@ _testhost() {
                         '-d[Enables diagnostic output.]' \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
-                        ":: :_testhost__new_commands" \
+                        ":: :_dotnet.Tests__new_commands" \
                         "*::: :->new" \
                         && ret=0
                         case $state in
                             (new)
                                 words=($line[1] "${words[@]}")
                                 (( CURRENT += 1 ))
-                                curcontext="${curcontext%:*:*}:testhost-new-command-$line[1]:"
+                                curcontext="${curcontext%:*:*}:dotnet.Tests-new-command-$line[1]:"
                                 case $line[1] in
                                     (create)
                                         _arguments "${_arguments_options[@]}" : \
@@ -327,14 +327,14 @@ _testhost() {
                         '-v=[]: : ' \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
-                        ":: :_testhost__nuget_commands" \
+                        ":: :_dotnet.Tests__nuget_commands" \
                         "*::: :->nuget" \
                         && ret=0
                         case $state in
                             (nuget)
                                 words=($line[1] "${words[@]}")
                                 (( CURRENT += 1 ))
-                                curcontext="${curcontext%:*:*}:testhost-nuget-command-$line[1]:"
+                                curcontext="${curcontext%:*:*}:dotnet.Tests-nuget-command-$line[1]:"
                                 case $line[1] in
                                     (delete)
                                         _arguments "${_arguments_options[@]}" : \
@@ -407,14 +407,14 @@ _testhost() {
                                             '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            ":: :_testhost__nuget__trust_commands" \
+                                            ":: :_dotnet.Tests__nuget__trust_commands" \
                                             "*::: :->trust" \
                                             && ret=0
                                             case $state in
                                                 (trust)
                                                     words=($line[1] "${words[@]}")
                                                     (( CURRENT += 1 ))
-                                                    curcontext="${curcontext%:*:*}:testhost-nuget-trust-command-$line[1]:"
+                                                    curcontext="${curcontext%:*:*}:dotnet.Tests-nuget-trust-command-$line[1]:"
                                                     case $line[1] in
                                                         (list)
                                                             _arguments "${_arguments_options[@]}" : \
@@ -584,14 +584,14 @@ _testhost() {
                     _arguments "${_arguments_options[@]}" : \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
-                        ":: :_testhost__package_commands" \
+                        ":: :_dotnet.Tests__package_commands" \
                         "*::: :->package" \
                         && ret=0
                         case $state in
                             (package)
                                 words=($line[1] "${words[@]}")
                                 (( CURRENT += 1 ))
-                                curcontext="${curcontext%:*:*}:testhost-package-command-$line[1]:"
+                                curcontext="${curcontext%:*:*}:dotnet.Tests-package-command-$line[1]:"
                                 case $line[1] in
                                     (search)
                                         _arguments "${_arguments_options[@]}" : \
@@ -695,14 +695,14 @@ _testhost() {
                     _arguments "${_arguments_options[@]}" : \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
-                        ":: :_testhost__project_commands" \
+                        ":: :_dotnet.Tests__project_commands" \
                         "*::: :->project" \
                         && ret=0
                         case $state in
                             (project)
                                 words=($line[1] "${words[@]}")
                                 (( CURRENT += 1 ))
-                                curcontext="${curcontext%:*:*}:testhost-project-command-$line[1]:"
+                                curcontext="${curcontext%:*:*}:dotnet.Tests-project-command-$line[1]:"
                                 case $line[1] in
                                     (convert)
                                         _arguments "${_arguments_options[@]}" : \
@@ -775,14 +775,14 @@ _testhost() {
                         '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]: : ' \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
-                        ":: :_testhost__reference_commands" \
+                        ":: :_dotnet.Tests__reference_commands" \
                         "*::: :->reference" \
                         && ret=0
                         case $state in
                             (reference)
                                 words=($line[1] "${words[@]}")
                                 (( CURRENT += 1 ))
-                                curcontext="${curcontext%:*:*}:testhost-reference-command-$line[1]:"
+                                curcontext="${curcontext%:*:*}:dotnet.Tests-reference-command-$line[1]:"
                                 case $line[1] in
                                     (add)
                                         _arguments "${_arguments_options[@]}" : \
@@ -936,14 +936,14 @@ _testhost() {
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
                         '::SLN_FILE -- The solution file to operate on. If not specified, the command will search the current directory for one.: ' \
-                        ":: :_testhost__solution_commands" \
+                        ":: :_dotnet.Tests__solution_commands" \
                         "*::: :->solution" \
                         && ret=0
                         case $state in
                             (solution)
                                 words=($line[2] "${words[@]}")
                                 (( CURRENT += 1 ))
-                                curcontext="${curcontext%:*:*}:testhost-solution-command-$line[2]:"
+                                curcontext="${curcontext%:*:*}:dotnet.Tests-solution-command-$line[2]:"
                                 case $line[2] in
                                     (add)
                                         _arguments "${_arguments_options[@]}" : \
@@ -1091,14 +1091,14 @@ _testhost() {
                     _arguments "${_arguments_options[@]}" : \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
-                        ":: :_testhost__tool_commands" \
+                        ":: :_dotnet.Tests__tool_commands" \
                         "*::: :->tool" \
                         && ret=0
                         case $state in
                             (tool)
                                 words=($line[1] "${words[@]}")
                                 (( CURRENT += 1 ))
-                                curcontext="${curcontext%:*:*}:testhost-tool-command-$line[1]:"
+                                curcontext="${curcontext%:*:*}:dotnet.Tests-tool-command-$line[1]:"
                                 case $line[1] in
                                     (install)
                                         _arguments "${_arguments_options[@]}" : \
@@ -1290,14 +1290,14 @@ _testhost() {
                     _arguments "${_arguments_options[@]}" : \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
-                        ":: :_testhost__sdk_commands" \
+                        ":: :_dotnet.Tests__sdk_commands" \
                         "*::: :->sdk" \
                         && ret=0
                         case $state in
                             (sdk)
                                 words=($line[1] "${words[@]}")
                                 (( CURRENT += 1 ))
-                                curcontext="${curcontext%:*:*}:testhost-sdk-command-$line[1]:"
+                                curcontext="${curcontext%:*:*}:dotnet.Tests-sdk-command-$line[1]:"
                                 case $line[1] in
                                     (check)
                                         _arguments "${_arguments_options[@]}" : \
@@ -1315,14 +1315,14 @@ _testhost() {
                         '--version[Display the currently installed workload version.]' \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
-                        ":: :_testhost__workload_commands" \
+                        ":: :_dotnet.Tests__workload_commands" \
                         "*::: :->workload" \
                         && ret=0
                         case $state in
                             (workload)
                                 words=($line[1] "${words[@]}")
                                 (( CURRENT += 1 ))
-                                curcontext="${curcontext%:*:*}:testhost-workload-command-$line[1]:"
+                                curcontext="${curcontext%:*:*}:dotnet.Tests-workload-command-$line[1]:"
                                 case $line[1] in
                                     (install)
                                         _arguments "${_arguments_options[@]}" : \
@@ -1377,14 +1377,14 @@ _testhost() {
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             '::SEARCH_STRING -- The text to search for in the IDs and descriptions of available workloads.: ' \
-                                            ":: :_testhost__workload__search_commands" \
+                                            ":: :_dotnet.Tests__workload__search_commands" \
                                             "*::: :->search" \
                                             && ret=0
                                             case $state in
                                                 (search)
                                                     words=($line[2] "${words[@]}")
                                                     (( CURRENT += 1 ))
-                                                    curcontext="${curcontext%:*:*}:testhost-workload-search-command-$line[2]:"
+                                                    curcontext="${curcontext%:*:*}:dotnet.Tests-workload-search-command-$line[2]:"
                                                     case $line[2] in
                                                         (version)
                                                             _arguments "${_arguments_options[@]}" : \
@@ -1472,14 +1472,14 @@ _testhost() {
                     _arguments "${_arguments_options[@]}" : \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
-                        ":: :_testhost__completions_commands" \
+                        ":: :_dotnet.Tests__completions_commands" \
                         "*::: :->completions" \
                         && ret=0
                         case $state in
                             (completions)
                                 words=($line[1] "${words[@]}")
                                 (( CURRENT += 1 ))
-                                curcontext="${curcontext%:*:*}:testhost-completions-command-$line[1]:"
+                                curcontext="${curcontext%:*:*}:dotnet.Tests-completions-command-$line[1]:"
                                 case $line[1] in
                                     (script)
                                         _arguments "${_arguments_options[@]}" : \
@@ -1497,8 +1497,8 @@ _testhost() {
     esac
 }
 
-(( $+functions[_testhost_commands] )) ||
-_testhost_commands() {
+(( $+functions[_dotnet.Tests_commands] )) ||
+_dotnet.Tests_commands() {
     local commands; commands=(
         'build:.NET Builder' \
         'build-server:Interact with servers started from a build.' \
@@ -1525,55 +1525,55 @@ _testhost_commands() {
         'workload:Install or work with workloads that extend the .NET experience.' \
         'completions:Commands for generating and registering completions for supported shells' \
     )
-    _describe -t commands 'testhost commands' commands "$@"
+    _describe -t commands 'dotnet.Tests commands' commands "$@"
 }
 
-(( $+functions[_testhost__build_commands] )) ||
-_testhost__build_commands() {
+(( $+functions[_dotnet.Tests__build_commands] )) ||
+_dotnet.Tests__build_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost build commands' commands "$@"
+    _describe -t commands 'dotnet.Tests build commands' commands "$@"
 }
 
-(( $+functions[_testhost__build-server_commands] )) ||
-_testhost__build-server_commands() {
+(( $+functions[_dotnet.Tests__build-server_commands] )) ||
+_dotnet.Tests__build-server_commands() {
     local commands; commands=(
         'shutdown:Shuts down build servers that are started from dotnet. By default, all servers are shut down.' \
     )
-    _describe -t commands 'testhost build-server commands' commands "$@"
+    _describe -t commands 'dotnet.Tests build-server commands' commands "$@"
 }
 
-(( $+functions[_testhost__build-server__shutdown_commands] )) ||
-_testhost__build-server__shutdown_commands() {
+(( $+functions[_dotnet.Tests__build-server__shutdown_commands] )) ||
+_dotnet.Tests__build-server__shutdown_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost build-server shutdown commands' commands "$@"
+    _describe -t commands 'dotnet.Tests build-server shutdown commands' commands "$@"
 }
 
-(( $+functions[_testhost__clean_commands] )) ||
-_testhost__clean_commands() {
+(( $+functions[_dotnet.Tests__clean_commands] )) ||
+_dotnet.Tests__clean_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost clean commands' commands "$@"
+    _describe -t commands 'dotnet.Tests clean commands' commands "$@"
 }
 
-(( $+functions[_testhost__format_commands] )) ||
-_testhost__format_commands() {
+(( $+functions[_dotnet.Tests__format_commands] )) ||
+_dotnet.Tests__format_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost format commands' commands "$@"
+    _describe -t commands 'dotnet.Tests format commands' commands "$@"
 }
 
-(( $+functions[_testhost__fsi_commands] )) ||
-_testhost__fsi_commands() {
+(( $+functions[_dotnet.Tests__fsi_commands] )) ||
+_dotnet.Tests__fsi_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost fsi commands' commands "$@"
+    _describe -t commands 'dotnet.Tests fsi commands' commands "$@"
 }
 
-(( $+functions[_testhost__msbuild_commands] )) ||
-_testhost__msbuild_commands() {
+(( $+functions[_dotnet.Tests__msbuild_commands] )) ||
+_dotnet.Tests__msbuild_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost msbuild commands' commands "$@"
+    _describe -t commands 'dotnet.Tests msbuild commands' commands "$@"
 }
 
-(( $+functions[_testhost__new_commands] )) ||
-_testhost__new_commands() {
+(( $+functions[_dotnet.Tests__new_commands] )) ||
+_dotnet.Tests__new_commands() {
     local commands; commands=(
         'create:Instantiates a template with given short name. An alias of '\''dotnet new <template name>'\''.' \
         'install:Installs a template package.' \
@@ -1583,53 +1583,53 @@ _testhost__new_commands() {
         'list:Lists templates containing the specified template name. If no name is specified, lists all templates.' \
         'details:       Provides the details for specified template package.       The command checks if the package is installed locally, if it was not found, it searches the configured NuGet feeds.' \
     )
-    _describe -t commands 'testhost new commands' commands "$@"
+    _describe -t commands 'dotnet.Tests new commands' commands "$@"
 }
 
-(( $+functions[_testhost__new__create_commands] )) ||
-_testhost__new__create_commands() {
+(( $+functions[_dotnet.Tests__new__create_commands] )) ||
+_dotnet.Tests__new__create_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost new create commands' commands "$@"
+    _describe -t commands 'dotnet.Tests new create commands' commands "$@"
 }
 
-(( $+functions[_testhost__new__install_commands] )) ||
-_testhost__new__install_commands() {
+(( $+functions[_dotnet.Tests__new__install_commands] )) ||
+_dotnet.Tests__new__install_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost new install commands' commands "$@"
+    _describe -t commands 'dotnet.Tests new install commands' commands "$@"
 }
 
-(( $+functions[_testhost__new__uninstall_commands] )) ||
-_testhost__new__uninstall_commands() {
+(( $+functions[_dotnet.Tests__new__uninstall_commands] )) ||
+_dotnet.Tests__new__uninstall_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost new uninstall commands' commands "$@"
+    _describe -t commands 'dotnet.Tests new uninstall commands' commands "$@"
 }
 
-(( $+functions[_testhost__new__update_commands] )) ||
-_testhost__new__update_commands() {
+(( $+functions[_dotnet.Tests__new__update_commands] )) ||
+_dotnet.Tests__new__update_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost new update commands' commands "$@"
+    _describe -t commands 'dotnet.Tests new update commands' commands "$@"
 }
 
-(( $+functions[_testhost__new__search_commands] )) ||
-_testhost__new__search_commands() {
+(( $+functions[_dotnet.Tests__new__search_commands] )) ||
+_dotnet.Tests__new__search_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost new search commands' commands "$@"
+    _describe -t commands 'dotnet.Tests new search commands' commands "$@"
 }
 
-(( $+functions[_testhost__new__list_commands] )) ||
-_testhost__new__list_commands() {
+(( $+functions[_dotnet.Tests__new__list_commands] )) ||
+_dotnet.Tests__new__list_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost new list commands' commands "$@"
+    _describe -t commands 'dotnet.Tests new list commands' commands "$@"
 }
 
-(( $+functions[_testhost__new__details_commands] )) ||
-_testhost__new__details_commands() {
+(( $+functions[_dotnet.Tests__new__details_commands] )) ||
+_dotnet.Tests__new__details_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost new details commands' commands "$@"
+    _describe -t commands 'dotnet.Tests new details commands' commands "$@"
 }
 
-(( $+functions[_testhost__nuget_commands] )) ||
-_testhost__nuget_commands() {
+(( $+functions[_dotnet.Tests__nuget_commands] )) ||
+_dotnet.Tests__nuget_commands() {
     local commands; commands=(
         'delete:' \
         'locals:' \
@@ -1639,35 +1639,35 @@ _testhost__nuget_commands() {
         'sign:' \
         'why:Shows the dependency graph for a particular package for a given project or solution.' \
     )
-    _describe -t commands 'testhost nuget commands' commands "$@"
+    _describe -t commands 'dotnet.Tests nuget commands' commands "$@"
 }
 
-(( $+functions[_testhost__nuget__delete_commands] )) ||
-_testhost__nuget__delete_commands() {
+(( $+functions[_dotnet.Tests__nuget__delete_commands] )) ||
+_dotnet.Tests__nuget__delete_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost nuget delete commands' commands "$@"
+    _describe -t commands 'dotnet.Tests nuget delete commands' commands "$@"
 }
 
-(( $+functions[_testhost__nuget__locals_commands] )) ||
-_testhost__nuget__locals_commands() {
+(( $+functions[_dotnet.Tests__nuget__locals_commands] )) ||
+_dotnet.Tests__nuget__locals_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost nuget locals commands' commands "$@"
+    _describe -t commands 'dotnet.Tests nuget locals commands' commands "$@"
 }
 
-(( $+functions[_testhost__nuget__push_commands] )) ||
-_testhost__nuget__push_commands() {
+(( $+functions[_dotnet.Tests__nuget__push_commands] )) ||
+_dotnet.Tests__nuget__push_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost nuget push commands' commands "$@"
+    _describe -t commands 'dotnet.Tests nuget push commands' commands "$@"
 }
 
-(( $+functions[_testhost__nuget__verify_commands] )) ||
-_testhost__nuget__verify_commands() {
+(( $+functions[_dotnet.Tests__nuget__verify_commands] )) ||
+_dotnet.Tests__nuget__verify_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost nuget verify commands' commands "$@"
+    _describe -t commands 'dotnet.Tests nuget verify commands' commands "$@"
 }
 
-(( $+functions[_testhost__nuget__trust_commands] )) ||
-_testhost__nuget__trust_commands() {
+(( $+functions[_dotnet.Tests__nuget__trust_commands] )) ||
+_dotnet.Tests__nuget__trust_commands() {
     local commands; commands=(
         'list:' \
         'author:' \
@@ -1677,71 +1677,71 @@ _testhost__nuget__trust_commands() {
         'remove:' \
         'sync:' \
     )
-    _describe -t commands 'testhost nuget trust commands' commands "$@"
+    _describe -t commands 'dotnet.Tests nuget trust commands' commands "$@"
 }
 
-(( $+functions[_testhost__nuget__trust__list_commands] )) ||
-_testhost__nuget__trust__list_commands() {
+(( $+functions[_dotnet.Tests__nuget__trust__list_commands] )) ||
+_dotnet.Tests__nuget__trust__list_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost nuget trust list commands' commands "$@"
+    _describe -t commands 'dotnet.Tests nuget trust list commands' commands "$@"
 }
 
-(( $+functions[_testhost__nuget__trust__author_commands] )) ||
-_testhost__nuget__trust__author_commands() {
+(( $+functions[_dotnet.Tests__nuget__trust__author_commands] )) ||
+_dotnet.Tests__nuget__trust__author_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost nuget trust author commands' commands "$@"
+    _describe -t commands 'dotnet.Tests nuget trust author commands' commands "$@"
 }
 
-(( $+functions[_testhost__nuget__trust__repository_commands] )) ||
-_testhost__nuget__trust__repository_commands() {
+(( $+functions[_dotnet.Tests__nuget__trust__repository_commands] )) ||
+_dotnet.Tests__nuget__trust__repository_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost nuget trust repository commands' commands "$@"
+    _describe -t commands 'dotnet.Tests nuget trust repository commands' commands "$@"
 }
 
-(( $+functions[_testhost__nuget__trust__source_commands] )) ||
-_testhost__nuget__trust__source_commands() {
+(( $+functions[_dotnet.Tests__nuget__trust__source_commands] )) ||
+_dotnet.Tests__nuget__trust__source_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost nuget trust source commands' commands "$@"
+    _describe -t commands 'dotnet.Tests nuget trust source commands' commands "$@"
 }
 
-(( $+functions[_testhost__nuget__trust__certificate_commands] )) ||
-_testhost__nuget__trust__certificate_commands() {
+(( $+functions[_dotnet.Tests__nuget__trust__certificate_commands] )) ||
+_dotnet.Tests__nuget__trust__certificate_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost nuget trust certificate commands' commands "$@"
+    _describe -t commands 'dotnet.Tests nuget trust certificate commands' commands "$@"
 }
 
-(( $+functions[_testhost__nuget__trust__remove_commands] )) ||
-_testhost__nuget__trust__remove_commands() {
+(( $+functions[_dotnet.Tests__nuget__trust__remove_commands] )) ||
+_dotnet.Tests__nuget__trust__remove_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost nuget trust remove commands' commands "$@"
+    _describe -t commands 'dotnet.Tests nuget trust remove commands' commands "$@"
 }
 
-(( $+functions[_testhost__nuget__trust__sync_commands] )) ||
-_testhost__nuget__trust__sync_commands() {
+(( $+functions[_dotnet.Tests__nuget__trust__sync_commands] )) ||
+_dotnet.Tests__nuget__trust__sync_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost nuget trust sync commands' commands "$@"
+    _describe -t commands 'dotnet.Tests nuget trust sync commands' commands "$@"
 }
 
-(( $+functions[_testhost__nuget__sign_commands] )) ||
-_testhost__nuget__sign_commands() {
+(( $+functions[_dotnet.Tests__nuget__sign_commands] )) ||
+_dotnet.Tests__nuget__sign_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost nuget sign commands' commands "$@"
+    _describe -t commands 'dotnet.Tests nuget sign commands' commands "$@"
 }
 
-(( $+functions[_testhost__nuget__why_commands] )) ||
-_testhost__nuget__why_commands() {
+(( $+functions[_dotnet.Tests__nuget__why_commands] )) ||
+_dotnet.Tests__nuget__why_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost nuget why commands' commands "$@"
+    _describe -t commands 'dotnet.Tests nuget why commands' commands "$@"
 }
 
-(( $+functions[_testhost__pack_commands] )) ||
-_testhost__pack_commands() {
+(( $+functions[_dotnet.Tests__pack_commands] )) ||
+_dotnet.Tests__pack_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost pack commands' commands "$@"
+    _describe -t commands 'dotnet.Tests pack commands' commands "$@"
 }
 
-(( $+functions[_testhost__package_commands] )) ||
-_testhost__package_commands() {
+(( $+functions[_dotnet.Tests__package_commands] )) ||
+_dotnet.Tests__package_commands() {
     local commands; commands=(
         'search:Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.' \
         'add:Add a NuGet package reference to the project.' \
@@ -1749,148 +1749,148 @@ _testhost__package_commands() {
         'remove:Remove a NuGet package reference from the project.' \
         'update:Update referenced packages in a project or solution.' \
     )
-    _describe -t commands 'testhost package commands' commands "$@"
+    _describe -t commands 'dotnet.Tests package commands' commands "$@"
 }
 
-(( $+functions[_testhost__package__search_commands] )) ||
-_testhost__package__search_commands() {
+(( $+functions[_dotnet.Tests__package__search_commands] )) ||
+_dotnet.Tests__package__search_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost package search commands' commands "$@"
+    _describe -t commands 'dotnet.Tests package search commands' commands "$@"
 }
 
-(( $+functions[_testhost__package__add_commands] )) ||
-_testhost__package__add_commands() {
+(( $+functions[_dotnet.Tests__package__add_commands] )) ||
+_dotnet.Tests__package__add_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost package add commands' commands "$@"
+    _describe -t commands 'dotnet.Tests package add commands' commands "$@"
 }
 
-(( $+functions[_testhost__package__list_commands] )) ||
-_testhost__package__list_commands() {
+(( $+functions[_dotnet.Tests__package__list_commands] )) ||
+_dotnet.Tests__package__list_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost package list commands' commands "$@"
+    _describe -t commands 'dotnet.Tests package list commands' commands "$@"
 }
 
-(( $+functions[_testhost__package__remove_commands] )) ||
-_testhost__package__remove_commands() {
+(( $+functions[_dotnet.Tests__package__remove_commands] )) ||
+_dotnet.Tests__package__remove_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost package remove commands' commands "$@"
+    _describe -t commands 'dotnet.Tests package remove commands' commands "$@"
 }
 
-(( $+functions[_testhost__package__update_commands] )) ||
-_testhost__package__update_commands() {
+(( $+functions[_dotnet.Tests__package__update_commands] )) ||
+_dotnet.Tests__package__update_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost package update commands' commands "$@"
+    _describe -t commands 'dotnet.Tests package update commands' commands "$@"
 }
 
-(( $+functions[_testhost__project_commands] )) ||
-_testhost__project_commands() {
+(( $+functions[_dotnet.Tests__project_commands] )) ||
+_dotnet.Tests__project_commands() {
     local commands; commands=(
         'convert:Convert a file-based program to a project-based program.' \
     )
-    _describe -t commands 'testhost project commands' commands "$@"
+    _describe -t commands 'dotnet.Tests project commands' commands "$@"
 }
 
-(( $+functions[_testhost__project__convert_commands] )) ||
-_testhost__project__convert_commands() {
+(( $+functions[_dotnet.Tests__project__convert_commands] )) ||
+_dotnet.Tests__project__convert_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost project convert commands' commands "$@"
+    _describe -t commands 'dotnet.Tests project convert commands' commands "$@"
 }
 
-(( $+functions[_testhost__publish_commands] )) ||
-_testhost__publish_commands() {
+(( $+functions[_dotnet.Tests__publish_commands] )) ||
+_dotnet.Tests__publish_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost publish commands' commands "$@"
+    _describe -t commands 'dotnet.Tests publish commands' commands "$@"
 }
 
-(( $+functions[_testhost__reference_commands] )) ||
-_testhost__reference_commands() {
+(( $+functions[_dotnet.Tests__reference_commands] )) ||
+_dotnet.Tests__reference_commands() {
     local commands; commands=(
         'add:Add a project-to-project reference to the project.' \
         'list:List all project-to-project references of the project.' \
         'remove:Remove a project-to-project reference from the project.' \
     )
-    _describe -t commands 'testhost reference commands' commands "$@"
+    _describe -t commands 'dotnet.Tests reference commands' commands "$@"
 }
 
-(( $+functions[_testhost__reference__add_commands] )) ||
-_testhost__reference__add_commands() {
+(( $+functions[_dotnet.Tests__reference__add_commands] )) ||
+_dotnet.Tests__reference__add_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost reference add commands' commands "$@"
+    _describe -t commands 'dotnet.Tests reference add commands' commands "$@"
 }
 
-(( $+functions[_testhost__reference__list_commands] )) ||
-_testhost__reference__list_commands() {
+(( $+functions[_dotnet.Tests__reference__list_commands] )) ||
+_dotnet.Tests__reference__list_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost reference list commands' commands "$@"
+    _describe -t commands 'dotnet.Tests reference list commands' commands "$@"
 }
 
-(( $+functions[_testhost__reference__remove_commands] )) ||
-_testhost__reference__remove_commands() {
+(( $+functions[_dotnet.Tests__reference__remove_commands] )) ||
+_dotnet.Tests__reference__remove_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost reference remove commands' commands "$@"
+    _describe -t commands 'dotnet.Tests reference remove commands' commands "$@"
 }
 
-(( $+functions[_testhost__restore_commands] )) ||
-_testhost__restore_commands() {
+(( $+functions[_dotnet.Tests__restore_commands] )) ||
+_dotnet.Tests__restore_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost restore commands' commands "$@"
+    _describe -t commands 'dotnet.Tests restore commands' commands "$@"
 }
 
-(( $+functions[_testhost__run_commands] )) ||
-_testhost__run_commands() {
+(( $+functions[_dotnet.Tests__run_commands] )) ||
+_dotnet.Tests__run_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost run commands' commands "$@"
+    _describe -t commands 'dotnet.Tests run commands' commands "$@"
 }
 
-(( $+functions[_testhost__solution_commands] )) ||
-_testhost__solution_commands() {
+(( $+functions[_dotnet.Tests__solution_commands] )) ||
+_dotnet.Tests__solution_commands() {
     local commands; commands=(
         'add:Add one or more projects to a solution file.' \
         'list:List all projects in a solution file.' \
         'remove:Remove one or more projects from a solution file.' \
         'migrate:Generate a .slnx file from a .sln file.' \
     )
-    _describe -t commands 'testhost solution commands' commands "$@"
+    _describe -t commands 'dotnet.Tests solution commands' commands "$@"
 }
 
-(( $+functions[_testhost__solution__add_commands] )) ||
-_testhost__solution__add_commands() {
+(( $+functions[_dotnet.Tests__solution__add_commands] )) ||
+_dotnet.Tests__solution__add_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost solution add commands' commands "$@"
+    _describe -t commands 'dotnet.Tests solution add commands' commands "$@"
 }
 
-(( $+functions[_testhost__solution__list_commands] )) ||
-_testhost__solution__list_commands() {
+(( $+functions[_dotnet.Tests__solution__list_commands] )) ||
+_dotnet.Tests__solution__list_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost solution list commands' commands "$@"
+    _describe -t commands 'dotnet.Tests solution list commands' commands "$@"
 }
 
-(( $+functions[_testhost__solution__remove_commands] )) ||
-_testhost__solution__remove_commands() {
+(( $+functions[_dotnet.Tests__solution__remove_commands] )) ||
+_dotnet.Tests__solution__remove_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost solution remove commands' commands "$@"
+    _describe -t commands 'dotnet.Tests solution remove commands' commands "$@"
 }
 
-(( $+functions[_testhost__solution__migrate_commands] )) ||
-_testhost__solution__migrate_commands() {
+(( $+functions[_dotnet.Tests__solution__migrate_commands] )) ||
+_dotnet.Tests__solution__migrate_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost solution migrate commands' commands "$@"
+    _describe -t commands 'dotnet.Tests solution migrate commands' commands "$@"
 }
 
-(( $+functions[_testhost__store_commands] )) ||
-_testhost__store_commands() {
+(( $+functions[_dotnet.Tests__store_commands] )) ||
+_dotnet.Tests__store_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost store commands' commands "$@"
+    _describe -t commands 'dotnet.Tests store commands' commands "$@"
 }
 
-(( $+functions[_testhost__test_commands] )) ||
-_testhost__test_commands() {
+(( $+functions[_dotnet.Tests__test_commands] )) ||
+_dotnet.Tests__test_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost test commands' commands "$@"
+    _describe -t commands 'dotnet.Tests test commands' commands "$@"
 }
 
-(( $+functions[_testhost__tool_commands] )) ||
-_testhost__tool_commands() {
+(( $+functions[_dotnet.Tests__tool_commands] )) ||
+_dotnet.Tests__tool_commands() {
     local commands; commands=(
         'install:Install global or local tool. Local tools are added to manifest and restored.' \
         'uninstall:Uninstall a global tool or local tool.' \
@@ -1901,85 +1901,85 @@ _testhost__tool_commands() {
         'restore:Restore tools defined in the local tool manifest.' \
         'execute:Executes a tool from source without permanently installing it.' \
     )
-    _describe -t commands 'testhost tool commands' commands "$@"
+    _describe -t commands 'dotnet.Tests tool commands' commands "$@"
 }
 
-(( $+functions[_testhost__tool__install_commands] )) ||
-_testhost__tool__install_commands() {
+(( $+functions[_dotnet.Tests__tool__install_commands] )) ||
+_dotnet.Tests__tool__install_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost tool install commands' commands "$@"
+    _describe -t commands 'dotnet.Tests tool install commands' commands "$@"
 }
 
-(( $+functions[_testhost__tool__uninstall_commands] )) ||
-_testhost__tool__uninstall_commands() {
+(( $+functions[_dotnet.Tests__tool__uninstall_commands] )) ||
+_dotnet.Tests__tool__uninstall_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost tool uninstall commands' commands "$@"
+    _describe -t commands 'dotnet.Tests tool uninstall commands' commands "$@"
 }
 
-(( $+functions[_testhost__tool__update_commands] )) ||
-_testhost__tool__update_commands() {
+(( $+functions[_dotnet.Tests__tool__update_commands] )) ||
+_dotnet.Tests__tool__update_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost tool update commands' commands "$@"
+    _describe -t commands 'dotnet.Tests tool update commands' commands "$@"
 }
 
-(( $+functions[_testhost__tool__list_commands] )) ||
-_testhost__tool__list_commands() {
+(( $+functions[_dotnet.Tests__tool__list_commands] )) ||
+_dotnet.Tests__tool__list_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost tool list commands' commands "$@"
+    _describe -t commands 'dotnet.Tests tool list commands' commands "$@"
 }
 
-(( $+functions[_testhost__tool__run_commands] )) ||
-_testhost__tool__run_commands() {
+(( $+functions[_dotnet.Tests__tool__run_commands] )) ||
+_dotnet.Tests__tool__run_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost tool run commands' commands "$@"
+    _describe -t commands 'dotnet.Tests tool run commands' commands "$@"
 }
 
-(( $+functions[_testhost__tool__search_commands] )) ||
-_testhost__tool__search_commands() {
+(( $+functions[_dotnet.Tests__tool__search_commands] )) ||
+_dotnet.Tests__tool__search_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost tool search commands' commands "$@"
+    _describe -t commands 'dotnet.Tests tool search commands' commands "$@"
 }
 
-(( $+functions[_testhost__tool__restore_commands] )) ||
-_testhost__tool__restore_commands() {
+(( $+functions[_dotnet.Tests__tool__restore_commands] )) ||
+_dotnet.Tests__tool__restore_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost tool restore commands' commands "$@"
+    _describe -t commands 'dotnet.Tests tool restore commands' commands "$@"
 }
 
-(( $+functions[_testhost__tool__execute_commands] )) ||
-_testhost__tool__execute_commands() {
+(( $+functions[_dotnet.Tests__tool__execute_commands] )) ||
+_dotnet.Tests__tool__execute_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost tool execute commands' commands "$@"
+    _describe -t commands 'dotnet.Tests tool execute commands' commands "$@"
 }
 
-(( $+functions[_testhost__vstest_commands] )) ||
-_testhost__vstest_commands() {
+(( $+functions[_dotnet.Tests__vstest_commands] )) ||
+_dotnet.Tests__vstest_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost vstest commands' commands "$@"
+    _describe -t commands 'dotnet.Tests vstest commands' commands "$@"
 }
 
-(( $+functions[_testhost__help_commands] )) ||
-_testhost__help_commands() {
+(( $+functions[_dotnet.Tests__help_commands] )) ||
+_dotnet.Tests__help_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost help commands' commands "$@"
+    _describe -t commands 'dotnet.Tests help commands' commands "$@"
 }
 
-(( $+functions[_testhost__sdk_commands] )) ||
-_testhost__sdk_commands() {
+(( $+functions[_dotnet.Tests__sdk_commands] )) ||
+_dotnet.Tests__sdk_commands() {
     local commands; commands=(
         'check:.NET SDK Check Command' \
     )
-    _describe -t commands 'testhost sdk commands' commands "$@"
+    _describe -t commands 'dotnet.Tests sdk commands' commands "$@"
 }
 
-(( $+functions[_testhost__sdk__check_commands] )) ||
-_testhost__sdk__check_commands() {
+(( $+functions[_dotnet.Tests__sdk__check_commands] )) ||
+_dotnet.Tests__sdk__check_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost sdk check commands' commands "$@"
+    _describe -t commands 'dotnet.Tests sdk check commands' commands "$@"
 }
 
-(( $+functions[_testhost__workload_commands] )) ||
-_testhost__workload_commands() {
+(( $+functions[_dotnet.Tests__workload_commands] )) ||
+_dotnet.Tests__workload_commands() {
     local commands; commands=(
         'install:Install one or more workloads.' \
         'update:Update all installed workloads.' \
@@ -1992,93 +1992,93 @@ _testhost__workload_commands() {
         'config:Modify or display workload configuration values. To display a value, specify the corresponding command-line option without providing a value.  For example\: \"dotnet workload config --update-mode\"' \
         'history:Shows a history of workload installation actions.' \
     )
-    _describe -t commands 'testhost workload commands' commands "$@"
+    _describe -t commands 'dotnet.Tests workload commands' commands "$@"
 }
 
-(( $+functions[_testhost__workload__install_commands] )) ||
-_testhost__workload__install_commands() {
+(( $+functions[_dotnet.Tests__workload__install_commands] )) ||
+_dotnet.Tests__workload__install_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost workload install commands' commands "$@"
+    _describe -t commands 'dotnet.Tests workload install commands' commands "$@"
 }
 
-(( $+functions[_testhost__workload__update_commands] )) ||
-_testhost__workload__update_commands() {
+(( $+functions[_dotnet.Tests__workload__update_commands] )) ||
+_dotnet.Tests__workload__update_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost workload update commands' commands "$@"
+    _describe -t commands 'dotnet.Tests workload update commands' commands "$@"
 }
 
-(( $+functions[_testhost__workload__list_commands] )) ||
-_testhost__workload__list_commands() {
+(( $+functions[_dotnet.Tests__workload__list_commands] )) ||
+_dotnet.Tests__workload__list_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost workload list commands' commands "$@"
+    _describe -t commands 'dotnet.Tests workload list commands' commands "$@"
 }
 
-(( $+functions[_testhost__workload__search_commands] )) ||
-_testhost__workload__search_commands() {
+(( $+functions[_dotnet.Tests__workload__search_commands] )) ||
+_dotnet.Tests__workload__search_commands() {
     local commands; commands=(
         'version:'\''dotnet workload search version'\'' has three functions depending on its argument\:       1. If no argument is specified, it outputs a list of the latest released workload versions from this feature band. Takes the --take option to specify how many to provide and --format to alter the format.          Example\:            dotnet workload search version --take 2 --format json            \[{\"workloadVersion\"\:\"9.0.201\"},{\"workloadVersion\"\:\"9.0.200.1\"}\]       2. If a workload version is provided as an argument, it outputs a table of various workloads and their versions for the specified workload version. Takes the --format option to alter the output format.          Example\:            dotnet workload search version 9.0.201            Workload manifest ID                               Manifest feature band      Manifest Version            ------------------------------------------------------------------------------------------------            microsoft.net.workload.emscripten.current          9.0.100-rc.1               9.0.0-rc.1.24430.3            microsoft.net.workload.emscripten.net6             9.0.100-rc.1               9.0.0-rc.1.24430.3            microsoft.net.workload.emscripten.net7             9.0.100-rc.1               9.0.0-rc.1.24430.3            microsoft.net.workload.emscripten.net8             9.0.100-rc.1               9.0.0-rc.1.24430.3            microsoft.net.sdk.android                          9.0.100-rc.1               35.0.0-rc.1.80            microsoft.net.sdk.ios                              9.0.100-rc.1               17.5.9270-net9-rc1            microsoft.net.sdk.maccatalyst                      9.0.100-rc.1               17.5.9270-net9-rc1            microsoft.net.sdk.macos                            9.0.100-rc.1               14.5.9270-net9-rc1            microsoft.net.sdk.maui                             9.0.100-rc.1               9.0.0-rc.1.24453.9            microsoft.net.sdk.tvos                             9.0.100-rc.1               17.5.9270-net9-rc1            microsoft.net.workload.mono.toolchain.current      9.0.100-rc.1               9.0.0-rc.1.24431.7            microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7       3. If one or more workloads are provided along with their versions (by joining them with the '\''@'\'' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.          Example\:            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1            9.0.201     ' \
     )
-    _describe -t commands 'testhost workload search commands' commands "$@"
+    _describe -t commands 'dotnet.Tests workload search commands' commands "$@"
 }
 
-(( $+functions[_testhost__workload__search__version_commands] )) ||
-_testhost__workload__search__version_commands() {
+(( $+functions[_dotnet.Tests__workload__search__version_commands] )) ||
+_dotnet.Tests__workload__search__version_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost workload search version commands' commands "$@"
+    _describe -t commands 'dotnet.Tests workload search version commands' commands "$@"
 }
 
-(( $+functions[_testhost__workload__uninstall_commands] )) ||
-_testhost__workload__uninstall_commands() {
+(( $+functions[_dotnet.Tests__workload__uninstall_commands] )) ||
+_dotnet.Tests__workload__uninstall_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost workload uninstall commands' commands "$@"
+    _describe -t commands 'dotnet.Tests workload uninstall commands' commands "$@"
 }
 
-(( $+functions[_testhost__workload__repair_commands] )) ||
-_testhost__workload__repair_commands() {
+(( $+functions[_dotnet.Tests__workload__repair_commands] )) ||
+_dotnet.Tests__workload__repair_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost workload repair commands' commands "$@"
+    _describe -t commands 'dotnet.Tests workload repair commands' commands "$@"
 }
 
-(( $+functions[_testhost__workload__restore_commands] )) ||
-_testhost__workload__restore_commands() {
+(( $+functions[_dotnet.Tests__workload__restore_commands] )) ||
+_dotnet.Tests__workload__restore_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost workload restore commands' commands "$@"
+    _describe -t commands 'dotnet.Tests workload restore commands' commands "$@"
 }
 
-(( $+functions[_testhost__workload__clean_commands] )) ||
-_testhost__workload__clean_commands() {
+(( $+functions[_dotnet.Tests__workload__clean_commands] )) ||
+_dotnet.Tests__workload__clean_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost workload clean commands' commands "$@"
+    _describe -t commands 'dotnet.Tests workload clean commands' commands "$@"
 }
 
-(( $+functions[_testhost__workload__config_commands] )) ||
-_testhost__workload__config_commands() {
+(( $+functions[_dotnet.Tests__workload__config_commands] )) ||
+_dotnet.Tests__workload__config_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost workload config commands' commands "$@"
+    _describe -t commands 'dotnet.Tests workload config commands' commands "$@"
 }
 
-(( $+functions[_testhost__workload__history_commands] )) ||
-_testhost__workload__history_commands() {
+(( $+functions[_dotnet.Tests__workload__history_commands] )) ||
+_dotnet.Tests__workload__history_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost workload history commands' commands "$@"
+    _describe -t commands 'dotnet.Tests workload history commands' commands "$@"
 }
 
-(( $+functions[_testhost__completions_commands] )) ||
-_testhost__completions_commands() {
+(( $+functions[_dotnet.Tests__completions_commands] )) ||
+_dotnet.Tests__completions_commands() {
     local commands; commands=(
         'script:Generate the completion script for a supported shell' \
     )
-    _describe -t commands 'testhost completions commands' commands "$@"
+    _describe -t commands 'dotnet.Tests completions commands' commands "$@"
 }
 
-(( $+functions[_testhost__completions__script_commands] )) ||
-_testhost__completions__script_commands() {
+(( $+functions[_dotnet.Tests__completions__script_commands] )) ||
+_dotnet.Tests__completions__script_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost completions script commands' commands "$@"
+    _describe -t commands 'dotnet.Tests completions script commands' commands "$@"
 }
 
-if [ "$funcstack[1]" = "_testhost" ]; then
-    _testhost "$@"
+if [ "$funcstack[1]" = "_dotnet.Tests" ]; then
+    _dotnet.Tests "$@"
 else
-    compdef _testhost testhost
+    compdef _dotnet.Tests dotnet.Tests
 fi
