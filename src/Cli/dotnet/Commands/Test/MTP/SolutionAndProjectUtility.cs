@@ -6,7 +6,6 @@ using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
 using Microsoft.Build.Execution;
-using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 using Microsoft.DotNet.Cli.Utils;
@@ -16,7 +15,7 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class SolutionAndProjectUtility
 {
-    private static readonly string s_computeRunArgumentsTarget = "ComputeRunArguments";
+    private static readonly string[] s_computeRunArgumentsTarget = ["ComputeRunArguments"];
     private static readonly Lock s_buildLock = new();
     private static readonly EvaluationContext s_evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
 
@@ -357,7 +356,7 @@ internal static class SolutionAndProjectUtility
             {
                 if (!project.Build(s_computeRunArgumentsTarget, loggers: null))
                 {
-                    throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, s_computeRunArgumentsTarget);
+                    throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, s_computeRunArgumentsTarget[0]);
                 }
             }
 
