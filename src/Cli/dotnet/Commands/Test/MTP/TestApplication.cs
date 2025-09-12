@@ -24,8 +24,6 @@ internal sealed class TestApplication(
     private readonly Action<CommandLineOptionMessages> _onHelpRequested = onHelpRequested;
     private readonly TestApplicationHandler _handler = new(output, module, testOptions);
 
-    private readonly List<string> _outputData = [];
-    private readonly List<string> _errorData = [];
     private readonly string _pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
 
     private readonly List<NamedPipeServer> _testAppPipeConnections = [];
@@ -44,23 +42,73 @@ internal sealed class TestApplication(
 
         var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
-        Task? testAppPipeConnectionLoop = null;
+        var testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(cancellationToken));
 
         try
         {
-            testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(cancellationToken), cancellationToken);
-            var testProcessExitCode = await StartProcess(processStartInfo);
+            Logger.LogTrace($"Starting test process with command '{processStartInfo.FileName}' and arguments '{processStartInfo.Arguments}'.");
+
+            using var process = Process.Start(processStartInfo)!;
+            var standardOutput = process.StandardOutput;
+            var standardError = process.StandardError;
+
+            var tcsStdOutput = new TaskCompletionSource<string>();
+            var tcsStdError = new TaskCompletionSource<string>();
+
+            // Reading from process stdout/stderr is done on separate threads to avoid blocking IO on the threadpool.
+            // Note: even with 'process.StandardOutput.ReadToEndAsync()' or 'process.BeginOutputReadLine()', we ended up with
+            // many TP threads just doing synchronous IO, slowing down the progress of the test run.
+            // We want to read requests coming through the pipe and sending responses back to the test app as fast as possible.
+            var tStdOut = new Thread(() =>
+            {
+                StringBuilder? builder = null;
+                while (true)
+                {
+                    if (standardOutput.ReadLine() is not { } line)
+                    {
+                        tcsStdOutput.SetResult(builder?.ToString() ?? string.Empty);
+                        return;
+                    }
+
+                    (builder ??= new()).AppendLine(line);
+                }
+            });
+            tStdOut.Name = "TestApp StdOut read";
+            tStdOut.Start();
+
+            var tStdErr = new Thread(() =>
+            {
+                StringBuilder? builder = null;
+                while (true)
+                {
+                    if (standardError.ReadLine() is not { } line)
+                    {
+                        tcsStdError.SetResult(builder?.ToString() ?? string.Empty);
+                        return;
+                    }
+
+                    (builder ??= new()).AppendLine(line);
+                }
+            });
+            tStdErr.Name = "TestApp StdErr read";
+            tStdErr.Start();
+
+            var outputAndError = await Task.WhenAll(tcsStdOutput.Task, tcsStdError.Task);
+            await process.WaitForExitAsync();
+
+            _handler.OnTestProcessExited(process.ExitCode, outputAndError[0], outputAndError[1]);
+
             if (_handler.HasMismatchingTestSessionEventCount())
             {
                 throw new InvalidOperationException(CliCommandStrings.MissingTestSessionEnd);
             }
 
-            return testProcessExitCode;
+            return process.ExitCode;
         }
         finally
         {
             cancellationTokenSource.Cancel();
-            testAppPipeConnectionLoop?.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
+            await testAppPipeConnectionLoop;
         }
     }
 
@@ -273,41 +321,6 @@ internal sealed class TestApplication(
             { HandshakeMessagePropertyNames.OS, RuntimeInformation.OSDescription },
             { HandshakeMessagePropertyNames.SupportedProtocolVersions, version }
         });
-
-    private async Task<int> StartProcess(ProcessStartInfo processStartInfo)
-    {
-        Logger.LogTrace($"Starting test process with command '{processStartInfo.FileName}' and arguments '{processStartInfo.Arguments}'.");
-
-        using var process = Process.Start(processStartInfo)!;
-        StoreOutputAndErrorData(process);
-        await process.WaitForExitAsync();
-
-        _handler.OnTestProcessExited(process.ExitCode, _outputData, _errorData);
-
-        return process.ExitCode;
-    }
-
-    private void StoreOutputAndErrorData(Process process)
-    {
-        process.EnableRaisingEvents = true;
-
-        process.OutputDataReceived += (sender, e) =>
-        {
-            if (string.IsNullOrEmpty(e.Data))
-                return;
-
-            _outputData.Add(e.Data);
-        };
-        process.ErrorDataReceived += (sender, e) =>
-        {
-            if (string.IsNullOrEmpty(e.Data))
-                return;
-
-            _errorData.Add(e.Data);
-        };
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
-    }
 
     public void OnHandshakeMessage(HandshakeMessage handshakeMessage, bool gotSupportedVersion)
         => _handler.OnHandshakeReceived(handshakeMessage, gotSupportedVersion);
