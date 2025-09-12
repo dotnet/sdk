@@ -183,7 +183,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <param name="sdkFeatureBand">The SDK feature band of the install state file to write</param>
         /// <param name="newMode">Whether to use workload sets or not</param>
         /// <returns></returns>
-        public InstallResponseMessage SendUpdateWorkloadModeRequest(SdkFeatureBand sdkFeatureBand, bool newMode)
+        public InstallResponseMessage SendUpdateWorkloadModeRequest(SdkFeatureBand sdkFeatureBand, bool? newMode)
         {
             return Send(new InstallRequestMessage
             {

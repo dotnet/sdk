@@ -197,6 +197,11 @@ internal class ContainerizeCommand : CliRootCommand
         Arity = ArgumentArity.Zero
     };
 
+    internal CliOption<KnownImageFormats?> ImageFormatOption { get; } = new("--image-format")
+    {
+        Description = "If set to OCI or Docker will force the generated image to be that format. If unset, the base images format will be used."
+    };
+
     internal ContainerizeCommand() : base("Containerize an application without Docker.")
     {
         PublishDirectoryArgument.AcceptLegalFilePathsOnly();
@@ -225,6 +230,7 @@ internal class ContainerizeCommand : CliRootCommand
         this.Options.Add(ContainerUserOption);
         this.Options.Add(GenerateLabelsOption);
         this.Options.Add(GenerateDigestLabelOption);
+        this.Options.Add(ImageFormatOption);
 
         this.SetAction(async (parseResult, cancellationToken) =>
         {
@@ -252,6 +258,7 @@ internal class ContainerizeCommand : CliRootCommand
             string? _containerUser = parseResult.GetValue(ContainerUserOption);
             bool _generateLabels = parseResult.GetValue(GenerateLabelsOption);
             bool _generateDigestLabel = parseResult.GetValue(GenerateDigestLabelOption);
+            KnownImageFormats? _imageFormat = parseResult.GetValue(ImageFormatOption);
 
             //setup basic logging
             bool traceEnabled = Env.GetEnvironmentVariableAsBool("CONTAINERIZE_TRACE_LOGGING_ENABLED");
@@ -283,6 +290,7 @@ internal class ContainerizeCommand : CliRootCommand
                 _archiveOutputPath,
                 _generateLabels,
                 _generateDigestLabel,
+                _imageFormat,
                 loggerFactory,
                 cancellationToken).ConfigureAwait(false);
         });
