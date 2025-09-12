@@ -382,7 +382,7 @@
     <comment/>
   </data>
   <data name="InvalidImageMetadata" xml:space="preserve">
-    <value>Cannot create image index because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</value>
+    <value>Cannot create image index because provided images are invalid. Items must have 'ConfigurationPath' and 'ManifestPath' metadata.</value>
     <comment/>
   </data>
   <data name="InvalidImageManifest" xml:space="preserve">

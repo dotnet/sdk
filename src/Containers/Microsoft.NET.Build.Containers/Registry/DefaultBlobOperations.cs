@@ -28,10 +28,10 @@ internal class DefaultBlobOperations : IBlobOperations
 
     public IBlobUploadOperations Upload { get; }
 
-    public async Task<bool> ExistsAsync(string repositoryName, string digest, CancellationToken cancellationToken)
+    public async Task<bool> ExistsAsync(string repositoryName, Digest digest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using HttpResponseMessage response = await _client.SendAsync(new HttpRequestMessage(HttpMethod.Head, new Uri(_baseUri, $"/v2/{repositoryName}/blobs/{digest}")), cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await _client.SendAsync(new HttpRequestMessage(HttpMethod.Head, new Uri(_baseUri, $"/v2/{repositoryName}/blobs/{digest.ToUriString()}")), cancellationToken).ConfigureAwait(false);
         return response.StatusCode switch
         {
             HttpStatusCode.OK => true,
@@ -41,7 +41,7 @@ internal class DefaultBlobOperations : IBlobOperations
         };
     }
 
-    public async Task<JsonNode> GetJsonAsync(string repositoryName, string digest, CancellationToken cancellationToken)
+    public async Task<JsonNode> GetJsonAsync(string repositoryName, Digest digest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         HttpResponseMessage response = await GetAsync(repositoryName, digest, cancellationToken).ConfigureAwait(false);
@@ -52,7 +52,7 @@ internal class DefaultBlobOperations : IBlobOperations
         return configDoc;
     }
 
-    public async Task<Stream> GetStreamAsync(string repositoryName, string digest, CancellationToken cancellationToken)
+    public async Task<Stream> GetStreamAsync(string repositoryName, Digest digest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         HttpResponseMessage response = await GetAsync(repositoryName, digest, cancellationToken).ConfigureAwait(false);
@@ -60,10 +60,10 @@ internal class DefaultBlobOperations : IBlobOperations
         return await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<HttpResponseMessage> GetAsync(string repositoryName, string digest, CancellationToken cancellationToken)
+    private async Task<HttpResponseMessage> GetAsync(string repositoryName, Digest digest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, new Uri(_baseUri, $"/v2/{repositoryName}/blobs/{digest}")).AcceptManifestFormats();
+        using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, new Uri(_baseUri, $"/v2/{repositoryName}/blobs/{digest.ToUriString()}")).AcceptManifestFormats();
         HttpResponseMessage response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         return response.StatusCode switch
         {

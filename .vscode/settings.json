@@ -1,4 +1,6 @@
 {
     "dotnet.testWindow.disableAutoDiscovery": true,
+    "dotnet.testWindow.disableBuildOnRun": true,
+    "dotnet.testWindow.useTestingPlatformProtocol": true,
     "dotnet.defaultSolution": "sdk.slnx"
 }

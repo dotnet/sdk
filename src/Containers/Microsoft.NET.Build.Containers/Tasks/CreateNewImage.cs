@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.MSBuild;
@@ -12,16 +14,6 @@ namespace Microsoft.NET.Build.Containers.Tasks;
 public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
 {
     private readonly CancellationTokenSource _cancellationTokenSource = new();
-
-    /// <summary>
-    /// Unused. For interface parity with the ToolTask implementation of the task.
-    /// </summary>
-    public string ToolExe { get; set; }
-
-    /// <summary>
-    /// Unused. For interface parity with the ToolTask implementation of the task.
-    /// </summary>
-    public string ToolPath { get; set; }
 
     private bool IsLocalPull => string.IsNullOrWhiteSpace(BaseRegistry);
 
@@ -52,12 +44,6 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         ILoggerFactory msbuildLoggerFactory = new LoggerFactory(new[] { loggerProvider });
         ILogger logger = msbuildLoggerFactory.CreateLogger<CreateNewImage>();
 
-        if (!Directory.Exists(PublishDirectory))
-        {
-            Log.LogErrorWithCodeFromResources(nameof(Strings.PublishDirectoryDoesntExist), nameof(PublishDirectory), PublishDirectory);
-            return !Log.HasLoggedErrors;
-        }
-
         RegistryMode sourceRegistryMode = BaseRegistry.Equals(OutputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
         Registry? sourceRegistry = IsLocalPull ? null : new Registry(BaseRegistry, logger, sourceRegistryMode);
         SourceImageReference sourceImageReference = new(sourceRegistry, BaseImageName, BaseImageTag, BaseImageDigest);
@@ -72,100 +58,47 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
 
+        KnownImageFormats? format = null;
+        if (ImageFormat is not null)
+        {
+            if (Enum.TryParse(ImageFormat, out KnownImageFormats knownFormat))
+            {
+                format = knownFormat;
+            }
+            else
+            {
+                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetNames(typeof(KnownImageFormats))));
+                return false;
+            }
+        }
+
         ImageBuilder? imageBuilder;
         if (sourceRegistry is { } registry)
         {
-            try
-            {
-                var picker = new RidGraphManifestPicker(RuntimeIdentifierGraphPath);
-                imageBuilder = await registry.GetImageManifestAsync(
-                    BaseImageName,
-                    sourceImageReference.Reference,
-                    ContainerRuntimeIdentifier,
-                    picker,
-                    cancellationToken).ConfigureAwait(false);
-            }
-            catch (RepositoryNotFoundException)
-            {
-                telemetry.LogUnknownRepository();
-                Log.LogErrorWithCodeFromResources(nameof(Strings.RepositoryNotFound), BaseImageName, BaseImageTag, BaseImageDigest, registry.RegistryName);
-                return !Log.HasLoggedErrors;
-            }
-            catch (UnableToAccessRepositoryException)
-            {
-                telemetry.LogCredentialFailure(sourceImageReference);
-                Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToAccessRepository), BaseImageName, registry.RegistryName);
-                return !Log.HasLoggedErrors;
-            }
-            catch (ContainerHttpException e)
-            {
-                Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
-                return !Log.HasLoggedErrors;
-            }
-            catch (BaseImageNotFoundException e)
-            {
-                telemetry.LogRidMismatch(e.RequestedRuntimeIdentifier, e.AvailableRuntimeIdentifiers.ToArray());
-                Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
-                return !Log.HasLoggedErrors;
-            }
+            imageBuilder = await ContainerBuilder.LoadFromManifestAndConfig(BaseImageManifestPath.ItemSpec, format, BaseImageConfigurationPath.ItemSpec, logger, cancellationToken);
         }
         else
         {
             throw new NotSupportedException(Resource.GetString(nameof(Strings.ImagePullNotSupported)));
         }
 
-        if (imageBuilder is null)
-        {
-            Log.LogErrorWithCodeFromResources(nameof(Strings.BaseImageNotFound), sourceImageReference, ContainerRuntimeIdentifier);
-            return !Log.HasLoggedErrors;
-        }
-
-        (string message, object[] parameters) = SkipPublishing ?
-            (Strings.ContainerBuilder_StartBuildingImageForRid, new object[] { Repository, ContainerRuntimeIdentifier, sourceImageReference }) :
+        (string message, object[] parameters) =
             (Strings.ContainerBuilder_StartBuildingImage, new object[] { Repository, String.Join(",", ImageTags), sourceImageReference });
         Log.LogMessage(MessageImportance.High, message, parameters);
 
-        // forcibly change the media type if required
-        if (ImageFormat is not null)
+        var storePath = new DirectoryInfo(ContentStoreRoot);
+        if (!storePath.Exists)
         {
-            if (Enum.TryParse<KnownImageFormats>(ImageFormat, out var imageFormat))
-            {
-                imageBuilder.ManifestMediaType = imageFormat switch
-                {
-                    KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
-                    KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
-                    _ => imageBuilder.ManifestMediaType // should be impossible unless we add to the enum
-                };
-            }
-            else
-            {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
-            }
+            throw new ArgumentException($"The content store path '{ContentStoreRoot}' does not exist.");
         }
+        var store = new ContentStore(storePath);
 
-        // forcibly change the media type if required
-        if (ImageFormat is not null)
-        {
-            if (Enum.TryParse<KnownImageFormats>(ImageFormat, out var imageFormat))
-            {
-                imageBuilder.ManifestMediaType = imageFormat switch
-                {
-                    KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
-                    KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
-                    _ => imageBuilder.ManifestMediaType // should be impossible unless we add to the enum
-                };
-            }
-            else
-            {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
-            }
-        }
-        var userId = imageBuilder.IsWindows ? null : ContainerBuilder.TryParseUserId(ContainerUser);
-        Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, userId);
-        imageBuilder.AddLayer(newLayer);
+        var descriptor = GetDescriptor(GeneratedApplicationLayer);
+        var appLayer = Layer.FromBackingFile(new(GeneratedApplicationLayer.ItemSpec), descriptor);
+        await imageBuilder.AddLayer(appLayer, store);
         imageBuilder.SetWorkingDirectory(WorkingDirectory);
 
-        (string[] entrypoint, string[] cmd) = DetermineEntrypointAndCmd(baseImageEntrypoint: imageBuilder.BaseImageConfig.GetEntrypoint());
+        (string[] entrypoint, string[] cmd) = DetermineEntrypointAndCmd(baseImageEntrypoint: imageBuilder.BaseImageConfig.Entrypoint);
         imageBuilder.SetEntrypointAndCmd(entrypoint, cmd);
 
         string? baseImageLabel = null;
@@ -209,12 +142,36 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         cancellationToken.ThrowIfCancellationRequested();
 
         // at this point we're done with modifications and are just pushing the data other places
-        GeneratedContainerManifest = builtImage.Manifest;
-        GeneratedContainerConfiguration = builtImage.Config;
-        GeneratedContainerDigest = builtImage.ManifestDigest;
+
+        var serializedManifest = Json.Serialize(builtImage.Manifest);
+        var manifestWriteTask = File.WriteAllTextAsync(GeneratedManifestPath, serializedManifest, DigestAlgorithmExtensions.UTF8NoBom, cancellationToken: cancellationToken);
+
+        var serializedConfig = Json.Serialize(builtImage.Image);
+        var configWriteTask = File.WriteAllTextAsync(GeneratedConfigurationPath, serializedConfig, DigestAlgorithmExtensions.UTF8NoBom, cancellationToken: cancellationToken);
+
+        await Task.WhenAll(manifestWriteTask, configWriteTask).ConfigureAwait(false);
+
+        GeneratedContainerManifest = serializedManifest;
+        GeneratedContainerConfiguration = serializedConfig;
+        GeneratedContainerDigest = builtImage.ManifestDigest.ToString();
         GeneratedArchiveOutputPath = ArchiveOutputPath;
         GeneratedContainerMediaType = builtImage.ManifestMediaType;
         GeneratedContainerNames = destinationImageReference.FullyQualifiedImageNames().Select(name => new Microsoft.Build.Utilities.TaskItem(name)).ToArray();
+
+        GeneratedAppContainerConfig = new Microsoft.Build.Utilities.TaskItem(GeneratedConfigurationPath, new Dictionary<string, string>(2)
+        {
+            ["Size"] = builtImage.Manifest.Config.Size.ToString(),
+            ["MediaType"] = builtImage.Manifest.Config.MediaType,
+            ["Digest"] = builtImage.Manifest.Config.Digest.ToString(),
+        });
+
+        GeneratedAppContainerManifest = new Microsoft.Build.Utilities.TaskItem(GeneratedManifestPath, new Dictionary<string, string>(2)
+        {
+            ["Size"] = new FileInfo(GeneratedManifestPath).Length.ToString(),
+            ["MediaType"] = builtImage.Manifest.MediaType!,
+            ["Digest"] = builtImage.Manifest.GetDigest().ToString(),
+        });
+
         if (baseImageLabel is not null && baseImageDigest is not null)
         {
             var labelItem = new Microsoft.Build.Utilities.TaskItem(baseImageLabel);
@@ -222,14 +179,15 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             GeneratedDigestLabel = labelItem;
         }
 
-        if (!SkipPublishing)
-        {
-            await ImagePublisher.PublishImageAsync(builtImage, sourceImageReference, destinationImageReference, Log, telemetry, cancellationToken)
-                .ConfigureAwait(false);
-        }
-
         return !Log.HasLoggedErrors;
     }
+
+    private static Descriptor GetDescriptor(ITaskItem generatedApplicationLayer) => new Descriptor
+    {
+        Size = generatedApplicationLayer.GetMetadata("Size") is string sizeStr && long.TryParse(sizeStr, out long size) ? size : throw new ArgumentException($"Invalid size for layer '{generatedApplicationLayer.ItemSpec}'."),
+        MediaType = generatedApplicationLayer.GetMetadata("MediaType"),
+        Digest = generatedApplicationLayer.GetMetadata("Digest") is string digestStr ? Digest.Parse(digestStr) : throw new ArgumentException($"Invalid digest for layer '{generatedApplicationLayer.ItemSpec}'.")
+    };
 
     private void SetPorts(ImageBuilder image, ITaskItem[] exposedPorts)
     {

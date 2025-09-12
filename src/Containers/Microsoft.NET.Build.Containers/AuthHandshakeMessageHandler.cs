@@ -296,7 +296,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             return null; // try next method
         }
         _logger.LogTrace("Received '{statuscode}'.", postResponse.StatusCode);
-        TokenResponse? tokenResponse = JsonSerializer.Deserialize<TokenResponse>(postResponse.Content.ReadAsStream(cancellationToken));
+        TokenResponse? tokenResponse = Json.Deserialize<TokenResponse>(postResponse.Content.ReadAsStream(cancellationToken));
         if (tokenResponse is { } tokenEnvelope)
         {
             var authValue = new AuthenticationHeaderValue(BearerAuthScheme, tokenResponse.ResolvedToken);
@@ -340,7 +340,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             return null; // try next method
         }
 
-        TokenResponse? token = JsonSerializer.Deserialize<TokenResponse>(tokenResponse.Content.ReadAsStream(cancellationToken));
+        TokenResponse? token = Json.Deserialize<TokenResponse>(tokenResponse.Content.ReadAsStream(cancellationToken));
         if (token is null)
         {
             throw new ArgumentException(Resource.GetString(nameof(Strings.CouldntDeserializeJsonToken)));
