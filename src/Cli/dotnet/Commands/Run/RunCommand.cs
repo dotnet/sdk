@@ -338,8 +338,8 @@ public class RunCommand
         Debug.Assert(EntryPointFileFullPath != null);
 
         var args = MSBuildArgs.RequestedTargets is null or []
-            ? MSBuildArgs.CloneWithAdditionalTargets("Build", ComputeRunArgumentsTarget)
-            : MSBuildArgs.CloneWithAdditionalTargets(ComputeRunArgumentsTarget);
+            ? MSBuildArgs.CloneWithAdditionalTargets(Constants.Build, Constants.ComputeRunArguments, Constants.CoreCompile)
+            : MSBuildArgs.CloneWithAdditionalTargets(Constants.ComputeRunArguments, Constants.CoreCompile);
 
         return new(
             entryPointFileFullPath: EntryPointFileFullPath,
@@ -378,6 +378,14 @@ public class RunCommand
 
     internal ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties)
     {
+        if (cachedRunProperties != null)
+        {
+            // We can skip project evaluation if we already evaluated the project during virtual build
+            // or we have cached run properties in previous run (and this is a --no-build or skip-msbuild run).
+            Reporter.Verbose.WriteLine("Getting target command: from cache.");
+            return CreateCommandFromRunProperties(cachedRunProperties.WithApplicationArguments(ApplicationArgs));
+        }
+
         if (projectFactory is null && ProjectFileFullPath is null)
         {
             // If we are running a file-based app and projectFactory is null, it means csc was used instead of full msbuild.
@@ -385,14 +393,6 @@ public class RunCommand
             Debug.Assert(EntryPointFileFullPath is not null);
             Reporter.Verbose.WriteLine("Getting target command: for csc-built program.");
             return CreateCommandForCscBuiltProgram(EntryPointFileFullPath);
-        }
-
-        if (cachedRunProperties != null)
-        {
-            // We can also skip project evaluation if we already evaluated the project during virtual build
-            // or we have cached run properties in previous run (and this is a --no-build run).
-            Reporter.Verbose.WriteLine("Getting target command: from cache.");
-            return CreateCommandFromRunProperties(cachedRunProperties.WithApplicationArguments(ApplicationArgs));
         }
 
         Reporter.Verbose.WriteLine("Getting target command: evaluating project.");
@@ -485,14 +485,12 @@ public class RunCommand
                 loggersForBuild.Add(binaryLogger);
             }
 
-            if (!project.Build([ComputeRunArgumentsTarget], loggers: loggersForBuild, remoteLoggers: null, out _))
+            if (!project.Build([Constants.ComputeRunArguments], loggers: loggersForBuild, remoteLoggers: null, out _))
             {
-                throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, ComputeRunArgumentsTarget);
+                throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, Constants.ComputeRunArguments);
             }
         }
     }
-
-    static readonly string ComputeRunArgumentsTarget = "ComputeRunArguments";
 
     internal static void ThrowUnableToRunError(ProjectInstance project)
     {
