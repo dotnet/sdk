@@ -1899,8 +1899,8 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
-        <target state="translated">İş yükü yüklenmediğinden onarılacak iş yükü yok. Yüklenecek iş yüklerini bulmak için `dotnet workload search` çalıştırın.</target>
-        <note />
+        <target state="needs-review-translation">İş yükü yüklenmediğinden onarılacak iş yükü yok. Yüklenecek iş yüklerini bulmak için `dotnet workload search` çalıştırın.</target>
+        <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
@@ -2736,10 +2736,10 @@ Varsayılan durum, çerçeveye bağımlı bir uygulama yayımlamaktır.</target>
 Ensure you have a runnable project type.
 A runnable project should target a runnable TFM (for instance, net{1}) and have OutputType 'Exe'.
 The current OutputType is '{2}'.</source>
-        <target state="translated">'{0}' projesine devam edilemiyor.
-Çalıştırılabilir bir proje türüne sahip olduğunuzdan emin olun.
-Çalıştırılabilir bir proje, çalıştırılabilir bir TFM'yi (örneğin, net{1}) hedeflemeli ve OutputType ‘Exe’ değerine sahip olmalıdır.
-Geçerli OutputType '{2}'.</target>
+        <target state="needs-review-translation">Projeniz çalıştırılamıyor.
+Çalıştırılabilir bir proje türüne sahip olduğunuzdan ve bu projenin '{0}' tarafından desteklendiğinden emin olun.
+Çalıştırılabilir proje, çalıştırılabilir bir TFM’yi (örneğin, net5.0) hedeflemeli ve OutputType değeri 'Exe' olmalıdır.
+Geçerli {1}: '{2}'.</target>
         <note>{0} is project file path. {1} is dotnet framework version. {2} is the project output type.{Locked="OutputType"}{Locked="Exe"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -3293,6 +3293,11 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
       <trans-unit id="ToolInstallPackageIdArgumentName">
         <source>PACKAGE_ID</source>
         <target state="translated">PACKAGE_ID</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallPackageIdMissing">
+        <source>A package ID was not specified for tool installation.</source>
+        <target state="new">A package ID was not specified for tool installation.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallSourceOptionDescription">
