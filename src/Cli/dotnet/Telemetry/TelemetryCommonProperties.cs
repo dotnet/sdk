@@ -46,6 +46,7 @@ internal class TelemetryCommonProperties(
     private const string ProductType = "Product Type";
     private const string LibcRelease = "Libc Release";
     private const string LibcVersion = "Libc Version";
+    private const string SessionId = "SessionId";
 
     private const string CI = "Continuous Integration";
     private const string LLM = "llm";
@@ -56,7 +57,7 @@ internal class TelemetryCommonProperties(
     private const string MachineIdCacheKey = "MachineId";
     private const string IsDockerContainerCacheKey = "IsDockerContainer";
 
-    public FrozenDictionary<string, string> GetTelemetryCommonProperties()
+    public FrozenDictionary<string, string> GetTelemetryCommonProperties(string currentSessionId)
     {
         return new Dictionary<string, string>
         {
@@ -86,7 +87,8 @@ internal class TelemetryCommonProperties(
             {InstallationType, ExternalTelemetryProperties.GetInstallationType()},
             {ProductType, ExternalTelemetryProperties.GetProductType()},
             {LibcRelease, ExternalTelemetryProperties.GetLibcRelease()},
-            {LibcVersion, ExternalTelemetryProperties.GetLibcVersion()}
+            {LibcVersion, ExternalTelemetryProperties.GetLibcVersion()},
+            {SessionId, currentSessionId}
         }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
     }
 

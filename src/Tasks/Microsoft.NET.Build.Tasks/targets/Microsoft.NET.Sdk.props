@@ -39,13 +39,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <FileAlignment Condition=" '$(FileAlignment)' == '' ">512</FileAlignment>
     <ErrorReport Condition=" '$(ErrorReport)' == '' ">prompt</ErrorReport>
     <AssemblyName Condition=" '$(AssemblyName)' == '' ">$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace Condition=" '$(RootNamespace)' == '' ">$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
     <Deterministic Condition=" '$(Deterministic)' == '' ">true</Deterministic>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(RootNamespace)' == '' ">
-    <!-- Transform project name for RootNamespace: replace spaces and dashes with underscores, prefix with underscore if starts with digit -->
-    <RootNamespace>$(MSBuildProjectName.Replace(" ", "_").Replace("-", "_"))</RootNamespace>
-    <RootNamespace Condition=" $([System.Char]::IsDigit($(RootNamespace), 0)) ">_$(RootNamespace)</RootNamespace>
   </PropertyGroup>
 
   <!-- User-facing configuration-specific defaults -->

@@ -878,19 +878,18 @@ The specified directory will be created if it does not exist.</source>
         <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
-        <source>dotnet.config defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+        <source>global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
 The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="translated">dotnet.config では、テスト ランナーを Microsoft.Testing.Platform と定義します。すべてのプロジェクトで、そのテスト ランナーを使用する必要があります。
-次のテスト プロジェクトでは、VSTest テスト ランナーを使用しています:
+        <target state="new">global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+The following test projects are using VSTest test runner:
 {0}
 
-詳細については、https://aka.ms/dotnet-test/mtp を参照してください。</target>
-        <note>{0} is one or more project names.
-Microsoft.Testing.Platform is a name, don't translate.
-dotnet.config is a name don't translate.</note>
+See https://aka.ms/dotnet-test/mtp for more information.</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
+{0} is one or more project names.</note>
       </trans-unit>
       <trans-unit id="CmdUseLockFileOptionDescription">
         <source>Enables project lock file to be generated and used with restore.</source>
@@ -1221,6 +1220,16 @@ Make the profile names distinct.</source>
         <source>Duplicate directives are not supported: {0} at {1}</source>
         <target state="translated">重複するディレクティブはサポートされていません: {1} の {0}</target>
         <note>{0} is the directive type and name. {1} is the file path and line number.</note>
+      </trans-unit>
+      <trans-unit id="ErrorRunningTestModule">
+        <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
+
+{2}</source>
+        <target state="new">The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
+
+{2}</target>
+        <note>{Locked="RunCommand"}{Locked="RunArguments"}
+{2} is the exception that occurred.</note>
       </trans-unit>
       <trans-unit id="Error_restore">
         <source>Restore failed. Run `dotnet restore` for more details on the issue.</source>
@@ -1709,10 +1718,20 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">予想されるテストの最小ポリシー違反、テストの実行数 {0} 件、予想される最小数 {1} 件</target>
         <note>{0}, {1} number of tests</note>
       </trans-unit>
+      <trans-unit id="MismatchingHandshakeInfo">
+        <source>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</source>
+        <target state="new">A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MissingDirectiveName">
         <source>Missing name of '{0}' at {1}.</source>
         <target state="translated">{1} に ' {0}' の名前がありません。</target>
         <note>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</note>
+      </trans-unit>
+      <trans-unit id="MissingTestSessionEnd">
+        <source>A test session start event was received without a corresponding test session end.</source>
+        <target state="new">A test session start event was received without a corresponding test session end.</target>
+        <note />
       </trans-unit>
       <trans-unit id="MsBuildDefinition">
         <source>Run Microsoft Build Engine (MSBuild) commands.</source>
@@ -3276,6 +3295,11 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
         <target state="translated">PACKAGE_ID</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolInstallPackageIdMissing">
+        <source>A package ID was not specified for tool installation.</source>
+        <target state="new">A package ID was not specified for tool installation.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolInstallSourceOptionDescription">
         <source>Replace all NuGet package sources to use during installation with these.</source>
         <target state="translated">インストール中に使用するすべての NuGet パッケージ ソースをこれらに置き換えます。</target>
@@ -3527,6 +3551,26 @@ and the corresponding package Ids for installed tools using the command
         <source>try {0}</source>
         <target state="translated">{0} を試す</target>
         <note>number or tries of the current test assembly when test assembly is being retried. {0} is number that starts at 1</note>
+      </trans-unit>
+      <trans-unit id="UnexpectedHelpMessage">
+        <source>An unexpected help-related message was received when `--help` wasn't used.</source>
+        <target state="new">An unexpected help-related message was received when `--help` wasn't used.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedMessageInHelpMode">
+        <source>A message of type '{0}' was received in help mode, which is not expected.</source>
+        <target state="new">A message of type '{0}' was received in help mode, which is not expected.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedMessageWithoutHandshake">
+        <source>A message of type '{0}' was received before we got any handshakes, which is unexpected.</source>
+        <target state="new">A message of type '{0}' was received before we got any handshakes, which is unexpected.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedTestSessionEnd">
+        <source>A test session end event was received without a corresponding test session start.</source>
+        <target state="new">A test session end event was received without a corresponding test session start.</target>
+        <note />
       </trans-unit>
       <trans-unit id="UninstallLocalToolSucceeded">
         <source>Tool '{0}' was successfully uninstalled and removed from manifest file {1}.</source>
