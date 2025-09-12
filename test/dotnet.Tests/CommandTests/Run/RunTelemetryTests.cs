@@ -74,7 +74,7 @@ public class RunTelemetryTests : SdkTest
         );
 
         // Act
-        var count = RunTelemetry.CountSdks(directives: directives);
+        var count = RunTelemetry.CountSdks(directives);
 
         // Assert
         count.Should().Be(2);
@@ -87,7 +87,7 @@ public class RunTelemetryTests : SdkTest
         var directives = ImmutableArray<CSharpDirective>.Empty;
 
         // Act
-        var count = RunTelemetry.CountSdks(directives: directives);
+        var count = RunTelemetry.CountSdks(directives);
 
         // Assert
         count.Should().Be(1); // Default Microsoft.NET.Sdk
@@ -103,7 +103,7 @@ public class RunTelemetryTests : SdkTest
         );
 
         // Act
-        var count = RunTelemetry.CountPackageReferences(directives: directives);
+        var count = RunTelemetry.CountPackageReferences(directives);
 
         // Assert
         count.Should().Be(2);
@@ -119,7 +119,7 @@ public class RunTelemetryTests : SdkTest
         );
 
         // Act
-        var count = RunTelemetry.CountProjectReferences(directives: directives);
+        var count = RunTelemetry.CountProjectReferences(directives);
 
         // Assert
         count.Should().Be(2);
@@ -156,10 +156,10 @@ public class RunTelemetryTests : SdkTest
             // Act
             RunTelemetry.TrackRunEvent(
                 isFileBased: true,
-                launchProfile: "Development",
+                projectIdentifier: "test-hash",
+                launchProfile: "(Default)",
                 noLaunchProfile: false,
                 launchSettings: null,
-                projectIdentifier: "test-hash",
                 sdkCount: 2,
                 packageReferenceCount: 3,
                 projectReferenceCount: 1,
@@ -207,10 +207,10 @@ public class RunTelemetryTests : SdkTest
             // Act
             RunTelemetry.TrackRunEvent(
                 isFileBased: false,
+                projectIdentifier: "project-hash",
                 launchProfile: null,
                 noLaunchProfile: true,
                 launchSettings: null,
-                projectIdentifier: "project-hash",
                 sdkCount: 1,
                 packageReferenceCount: 5,
                 projectReferenceCount: 2);
@@ -251,7 +251,7 @@ public class RunTelemetryTests : SdkTest
 
         var launchSettings = new ProjectLaunchSettingsModel
         {
-            LaunchProfileName = "Development"
+            LaunchProfileName = "(Default)"
         };
 
         try
@@ -259,10 +259,10 @@ public class RunTelemetryTests : SdkTest
             // Act
             RunTelemetry.TrackRunEvent(
                 isFileBased: false,
+                projectIdentifier: "test-hash",
                 launchProfile: null,
                 noLaunchProfile: false,
                 launchSettings: launchSettings,
-                projectIdentifier: "test-hash",
                 sdkCount: 1,
                 packageReferenceCount: 0,
                 projectReferenceCount: 0);

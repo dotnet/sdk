@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
-using System.Security.Cryptography;
-using System.Text;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
@@ -22,25 +20,25 @@ internal static class RunTelemetry
     /// Sends telemetry for a dotnet run operation.
     /// </summary>
     /// <param name="isFileBased">True if this is a file-based app run, false for project-based</param>
+    /// <param name="projectIdentifier">Obfuscated unique project identifier</param>
     /// <param name="launchProfile">The launch profile name if specified</param>
     /// <param name="noLaunchProfile">True if --no-launch-profile was specified</param>
     /// <param name="launchSettings">The applied launch settings model if any</param>
-    /// <param name="projectIdentifier">Obfuscated unique project identifier</param>
-    /// <param name="sdkCount">Number of SDKs used</param>
-    /// <param name="packageReferenceCount">Number of PackageReferences</param>
-    /// <param name="projectReferenceCount">Number of ProjectReferences</param>
-    /// <param name="additionalPropertiesCount">Number of additional properties (file-based only)</param>
+    /// <param name="sdkCount">Number of SDKs used (defaults to 1)</param>
+    /// <param name="packageReferenceCount">Number of PackageReferences (defaults to 0)</param>
+    /// <param name="projectReferenceCount">Number of ProjectReferences (defaults to 0)</param>
+    /// <param name="additionalPropertiesCount">Number of additional properties (file-based only, defaults to 0)</param>
     /// <param name="usedMSBuild">Whether MSBuild was used (file-based only)</param>
     /// <param name="usedRoslynCompiler">Whether Roslyn compiler was used directly (file-based only)</param>
     public static void TrackRunEvent(
         bool isFileBased,
-        string? launchProfile,
-        bool noLaunchProfile,
-        ProjectLaunchSettingsModel? launchSettings,
         string projectIdentifier,
-        int sdkCount,
-        int packageReferenceCount,
-        int projectReferenceCount,
+        string? launchProfile = null,
+        bool noLaunchProfile = false,
+        ProjectLaunchSettingsModel? launchSettings = null,
+        int sdkCount = 1,
+        int packageReferenceCount = 0,
+        int projectReferenceCount = 0,
         int additionalPropertiesCount = 0,
         bool? usedMSBuild = null,
         bool? usedRoslynCompiler = null)
@@ -96,15 +94,16 @@ internal static class RunTelemetry
     /// </summary>
     /// <param name="projectFilePath">Full path to the project file</param>
     /// <param name="repoRoot">Repository root path if available</param>
+    /// <param name="hasher">Optional hasher function, defaults to Sha256Hasher.Hash</param>
     /// <returns>Hashed project identifier</returns>
-    public static string GetProjectBasedIdentifier(string projectFilePath, string? repoRoot = null)
+    public static string GetProjectBasedIdentifier(string projectFilePath, string? repoRoot = null, Func<string, string>? hasher = null)
     {
         // Use relative path from repo root if available, otherwise use full path
         string pathToHash = repoRoot != null && projectFilePath.StartsWith(repoRoot, StringComparison.OrdinalIgnoreCase)
             ? Path.GetRelativePath(repoRoot, projectFilePath)
             : projectFilePath;
 
-        return ComputeHash(pathToHash);
+        return (hasher ?? Sha256Hasher.Hash)(pathToHash.ToLowerInvariant());
     }
 
     /// <summary>
@@ -112,95 +111,82 @@ internal static class RunTelemetry
     /// This leverages the same caching infrastructure identifier already used.
     /// </summary>
     /// <param name="entryPointFilePath">Full path to the entry point file</param>
+    /// <param name="hasher">Optional hasher function, defaults to Sha256Hasher.Hash</param>
     /// <returns>Hashed file identifier</returns>
-    public static string GetFileBasedIdentifier(string entryPointFilePath)
+    public static string GetFileBasedIdentifier(string entryPointFilePath, Func<string, string>? hasher = null)
     {
-        // Use the same hash computation as the caching infrastructure
-        return ComputeHash(entryPointFilePath);
+        // Use the configured telemetry hasher
+        return (hasher ?? Sha256Hasher.Hash)(entryPointFilePath.ToLowerInvariant());
     }
 
     /// <summary>
-    /// Counts the number of SDKs used in a project.
+    /// Counts the number of SDKs used in a file-based app.
     /// </summary>
-    /// <param name="project">Project instance for project-based apps</param>
     /// <param name="directives">Directives for file-based apps</param>
     /// <returns>Number of SDKs</returns>
-    public static int CountSdks(ProjectInstance? project = null, ImmutableArray<CSharpDirective> directives = default)
+    public static int CountSdks(ImmutableArray<CSharpDirective> directives)
     {
-        if (!directives.IsDefaultOrEmpty)
+        if (directives.IsDefaultOrEmpty)
         {
-            // File-based: count SDK directives
-            var sdkDirectives = directives.OfType<CSharpDirective.Sdk>().Count();
-            // If no explicit SDK directives, there's still the default Microsoft.NET.Sdk
-            return sdkDirectives > 0 ? sdkDirectives : 1;
+            return 1; // Default assumption - Microsoft.NET.Sdk
         }
 
-        if (project != null)
-        {
-            // Project-based: look for Sdk attributes and Import nodes
-            var sdkCount = 0;
-
-            // Count main project SDK
-            var projectSdk = project.GetPropertyValue("MSBuildProjectSdk");
-            if (!string.IsNullOrEmpty(projectSdk))
-            {
-                sdkCount++;
-            }
-
-            // Count additional SDK imports
-            var imports = project.GetItems("_SdkImport");
-            sdkCount += imports.Count;
-
-            return Math.Max(1, sdkCount); // At least 1 for Microsoft.NET.Sdk
-        }
-
-        return 1; // Default assumption for project-based apps
+        // File-based: count SDK directives
+        var sdkDirectives = directives.OfType<CSharpDirective.Sdk>().Count();
+        // If no explicit SDK directives, there's still the default Microsoft.NET.Sdk
+        return sdkDirectives > 0 ? sdkDirectives : 1;
     }
 
     /// <summary>
-    /// Counts the number of PackageReferences in a project.
+    /// Counts the number of PackageReferences in a file-based app.
     /// </summary>
-    /// <param name="project">Project instance for project-based apps</param>
     /// <param name="directives">Directives for file-based apps</param>
     /// <returns>Number of package references</returns>
-    public static int CountPackageReferences(ProjectInstance? project = null, ImmutableArray<CSharpDirective> directives = default)
+    public static int CountPackageReferences(ImmutableArray<CSharpDirective> directives)
     {
-        if (!directives.IsDefaultOrEmpty)
+        if (directives.IsDefaultOrEmpty)
         {
-            // File-based: count package directives
-            return directives.OfType<CSharpDirective.Package>().Count();
+            return 0;
         }
 
-        if (project != null)
-        {
-            // Project-based: count PackageReference items
-            return project.GetItems("PackageReference").Count;
-        }
-
-        return 0;
+        // File-based: count package directives
+        return directives.OfType<CSharpDirective.Package>().Count();
     }
 
     /// <summary>
-    /// Counts the number of direct ProjectReferences in a project.
+    /// Counts the number of direct ProjectReferences in a file-based app.
     /// </summary>
-    /// <param name="project">Project instance for project-based apps</param>
     /// <param name="directives">Directives for file-based apps</param>
     /// <returns>Number of project references</returns>
-    public static int CountProjectReferences(ProjectInstance? project = null, ImmutableArray<CSharpDirective> directives = default)
+    public static int CountProjectReferences(ImmutableArray<CSharpDirective> directives)
     {
-        if (!directives.IsDefaultOrEmpty)
+        if (directives.IsDefaultOrEmpty)
         {
-            // File-based: count project directives
-            return directives.OfType<CSharpDirective.Project>().Count();
+            return 0;
         }
 
-        if (project != null)
-        {
-            // Project-based: count ProjectReference items
-            return project.GetItems("ProjectReference").Count;
-        }
+        // File-based: count project directives
+        return directives.OfType<CSharpDirective.Project>().Count();
+    }
 
-        return 0;
+    /// <summary>
+    /// Counts the number of PackageReferences in a project-based app.
+    /// </summary>
+    /// <param name="project">Project instance for project-based apps</param>
+    /// <returns>Number of package references</returns>
+    public static int CountPackageReferences(ProjectInstance project)
+    {
+        return project.GetItems("PackageReference").Count;
+    }
+
+    /// <summary>
+    /// Counts the number of direct ProjectReferences in a project-based app.
+    /// </summary>
+    /// <param name="project">Project instance for project-based apps</param>
+    /// <returns>Number of project references</returns>
+    public static int CountProjectReferences(ProjectInstance project)
+    {
+        return project.GetItems("ProjectReference").Count;
     }
 
     /// <summary>
@@ -230,22 +216,7 @@ internal static class RunTelemetry
             return false;
         }
 
-        // Common default profile names
-        return profileName.Equals("Default", StringComparison.OrdinalIgnoreCase) ||
-               profileName.Equals("Development", StringComparison.OrdinalIgnoreCase) ||
-               profileName.Equals("Production", StringComparison.OrdinalIgnoreCase) ||
-               profileName.Equals("Staging", StringComparison.OrdinalIgnoreCase);
-    }
-
-    /// <summary>
-    /// Computes a hash for the given input string.
-    /// </summary>
-    /// <param name="input">String to hash</param>
-    /// <returns>Hex-encoded hash</returns>
-    private static string ComputeHash(string input)
-    {
-        var inputBytes = Encoding.UTF8.GetBytes(input.ToLowerInvariant());
-        var hashBytes = SHA256.HashData(inputBytes);
-        return Convert.ToHexString(hashBytes).ToLowerInvariant();
+        // The default profile name at this point is "(Default)"
+        return profileName.Equals("(Default)", StringComparison.OrdinalIgnoreCase);
     }
 }
