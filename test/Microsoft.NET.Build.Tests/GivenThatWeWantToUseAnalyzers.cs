@@ -155,27 +155,51 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_enables_aspnet_generators_for_non_web_projects_with_framework_reference()
         {
+            var testProject = new TestProject()
+            {
+                Name = "NonWebAppWithAspNet",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsSdkProject = true,
+                IsExe = true,
+            };
+
+            testProject.AdditionalProperties["ImplicitUsings"] = "Enable";
+
+            testProject.ProjectChanges.Add(project =>
+                 {
+                     var ns = project.Root.Name.Namespace;
+
+                     // Add FrameworkReference to ASP.NET Core (this is key to reproducing the issue)
+                     project.Root.Add(new XElement(ns + "ItemGroup",
+                         new XElement(ns + "FrameworkReference", new XAttribute("Include", "Microsoft.AspNetCore.App"))));
+
+                     // Enable configuration binding generator explicitly (like the repro in the issue)
+                     project.Root.Add(new XElement(ns + "PropertyGroup",
+                         new XElement(ns + "EnableConfigurationBindingGenerator", "true")));
+                 });
+
+            testProject.SourceFiles["Program.cs"] = """
+                using Microsoft.Extensions.Configuration;
+
+                var c = new ConfigurationBuilder()
+                    .AddInMemoryCollection(new Dictionary<string,string?>()
+                    {
+                        ["Value"] = "42",
+                    })
+                    .Build();
+                C value = new();
+                c.Bind(value);
+
+                class C { public int Value { get; set; } }
+                """;
+
             // Create a simple non-web project with ASP.NET FrameworkReference 
             var asset = _testAssetsManager
-                .CreateTestProject(new TestProject()
-                {
-                    Name = "NonWebAppWithAspNet",
-                    TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
-                    IsSdkProject = true,
-                    IsExe = true
-                })
-                .WithProjectChanges(project =>
-                {
-                    var ns = project.Root.Name.Namespace;
-                    
-                    // Add FrameworkReference to ASP.NET Core (this is key to reproducing the issue)
-                    project.Root.Add(new XElement(ns + "ItemGroup",
-                        new XElement(ns + "FrameworkReference", new XAttribute("Include", "Microsoft.AspNetCore.App"))));
-                    
-                    // Enable configuration binding generator explicitly (like the repro in the issue)
-                    project.Root.Add(new XElement(ns + "PropertyGroup",
-                        new XElement(ns + "EnableConfigurationBindingGenerator", "true")));
-                });
+                .CreateTestProject(testProject);
+
+            new BuildCommand(asset)
+                .Execute()
+                .Should().Pass();
 
             // Get the actual values to see what's happening
             var command = new GetValuesCommand(
