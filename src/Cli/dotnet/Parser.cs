@@ -427,10 +427,11 @@ public static class Parser
 
     private class PrintCliSchemaAction : SynchronousCommandLineAction
     {
-        internal PrintCliSchemaAction()
+        public PrintCliSchemaAction()
         {
             Terminating = true;
         }
+
         public override int Invoke(ParseResult parseResult)
         {
             CliSchema.PrintCliSchema(parseResult.CommandResult, parseResult.InvocationConfiguration.Output, Program.TelemetryClient);
