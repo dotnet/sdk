@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             var parseResult = Parser.Instance.Parse($"dotnet tool update {_packageIdA.ToString()} --ignore-failed-sources");
             var command = new ToolUpdateLocalCommand(parseResult);
-            command._restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
+            command._toolInstallLocalCommand.Value._restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
         }
 
         [Fact]
@@ -332,10 +332,33 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Clear();
             Action a = () => _defaultToolUpdateLocalCommand.Execute();
             a.Should().Throw<GracefulException>().And.Message.Should().Contain(string.Format(
-                LocalizableStrings.UpdateLocaToolToLowerVersion,
+                LocalizableStrings.UpdateLocalToolToLowerVersion,
                 "0.9.0",
                 _packageOriginalVersionA.ToNormalizedString(),
                 _manifestFilePath));
+        }
+
+        [Fact]
+        public void GivenFeedVersionIsLowerWithDowngradeFlagRunPackageIdItShouldSucceeds()
+        {
+            _reporter.Clear();
+
+            ParseResult parseResult
+                = Parser.Instance.Parse(
+                    $"dotnet tool update {_packageIdA.ToString()} --version 0.9.0 --allow-downgrade");
+
+            _toolRestoreCommand.Execute();
+            _mockFeed.Packages.Single().Version = "0.9.0";
+
+            ToolUpdateLocalCommand toolUpdateLocalCommand = new ToolUpdateLocalCommand(
+                parseResult,
+                _toolPackageDownloaderMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
+
+            toolUpdateLocalCommand.Execute().Should().Be(0);
         }
 
         private void AssertUpdateSuccess(FilePath? manifestFile = null, NuGetVersion packageVersion = null)

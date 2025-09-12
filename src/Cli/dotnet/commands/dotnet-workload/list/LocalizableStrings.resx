@@ -128,4 +128,13 @@
     <value>Use `dotnet workload search` to find additional workloads to install.</value>
     <comment>{Locked="dotnet workload search"}</comment>
   </data>
+  <data name="WorkloadSetVersion" xml:space="preserve">
+    <value>Workload version: {0}</value>
+  </data>
+  <data name="WorkloadSetFromGlobalJsonInstalled" xml:space="preserve">
+    <value>Found workload version {0} pinned in the global.json file at {1}.</value>
+  </data>
+  <data name="WorkloadSetFromGlobalJsonNotInstalled" xml:space="preserve">
+    <value>Found workload version {0} pinned in the global.json file at {1}, but it was not installed. Running `dotnet workload install`, `dotnet workload update`, or `dotnet workload restore` may fix this.</value>
+  </data>
 </root>
