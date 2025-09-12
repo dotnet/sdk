@@ -18,6 +18,7 @@ internal static class SolutionAndProjectUtility
 {
     private static readonly string s_computeRunArgumentsTarget = "ComputeRunArguments";
     private static readonly Lock s_buildLock = new();
+    private static readonly EvaluationContext s_evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
 
     public static (bool SolutionOrProjectFileFound, string Message) TryGetProjectOrSolutionFilePath(string directory, out string projectOrSolutionFilePath, out bool isSolution)
     {
@@ -182,7 +183,6 @@ internal static class SolutionAndProjectUtility
     {
         Debug.Assert(projectFilePath is not null);
 
-        var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
         Dictionary<string, string>? globalProperties = null;
         if (tfm is not null)
         {
@@ -195,7 +195,7 @@ internal static class SolutionAndProjectUtility
         return ProjectInstance.FromFile(projectFilePath, new ProjectOptions
         {
             GlobalProperties = globalProperties,
-            EvaluationContext = evaluationContext,
+            EvaluationContext = s_evaluationContext,
             ProjectCollection = collection,
         });
     }
