@@ -1,28 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
+using System;
+using System.Linq;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
 internal class LLMEnvironmentDetectorForTelemetry : ILLMEnvironmentDetector
 {
-    // Systems where the variable must be present and not-null
-    private static readonly string[] _claudeVariables = [
+    private static readonly EnvironmentDetectionRuleWithResult<string>[] _detectionRules = [
         // Claude Code
-        "CLAUDECODE"
+        new EnvironmentDetectionRuleWithResult<string>("claude", "CLAUDECODE")
     ];
 
-    public string GetLLMEnvironment()
+    public string? GetLLMEnvironment()
     {
-        foreach (var variable in _claudeVariables)
-        {
-            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable(variable)))
-            {
-                return "claude";
-            }
-        }
-
-        return null;
+        return _detectionRules.Select(rule => rule.GetResult()).FirstOrDefault(result => result != null);
     }
 }

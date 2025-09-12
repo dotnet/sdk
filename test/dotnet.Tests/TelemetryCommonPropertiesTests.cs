@@ -167,7 +167,7 @@ namespace Microsoft.DotNet.Tests
         public void TelemetryCommonPropertiesShouldReturnIsLLMDetection()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["llm"].Should().BeOneOf("claude", null);
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["llm"].Should().BeOneOf("claude", null);
         }
 
         [Theory]
@@ -212,6 +212,7 @@ namespace Microsoft.DotNet.Tests
             }
         }
         
+        [Theory]
         [InlineData("dummySessionId")]
         [InlineData(null)]
         public void TelemetryCommonPropertiesShouldContainSessionId(string sessionId)
