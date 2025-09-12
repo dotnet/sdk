@@ -1,0 +1,20 @@
+{
+  "name": "dotnet-sdk",
+  "devDependencies": {
+    "@nx/jest": "21.3.8",
+    "@nx/js": "^21.3.8",
+    "@nx/plugin": "^21.3.8",
+    "@swc-node/register": "~1.9.1",
+    "@swc/cli": "~0.6.0",
+    "@swc/core": "~1.5.7",
+    "@swc/helpers": "~0.5.11",
+    "@types/node": "18.16.9",
+    "nx": "21.3.8",
+    "prettier": "^2.6.2",
+    "tslib": "^2.3.0",
+    "typescript": "~5.8.2"
+  },
+  "dependencies": {
+    "@nx/devkit": "21.3.8"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "Bash(NX_DAEMON=false nx show projects)",
+      "Bash(NX_DAEMON=false nx show projects --json)"
+    ],
+    "deny": []
+  }
+}
