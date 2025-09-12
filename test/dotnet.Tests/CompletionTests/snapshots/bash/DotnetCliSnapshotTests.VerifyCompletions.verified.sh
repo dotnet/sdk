@@ -1,5 +1,5 @@
 ﻿#!/usr/bin/env bash
-_dotnet.Tests() {
+_testhost() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -14,122 +14,122 @@ _dotnet.Tests() {
     
     case ${COMP_WORDS[1]} in
         (build)
-            _dotnet.Tests_build 2
+            _testhost_build 2
             return
             ;;
             
         (build-server)
-            _dotnet.Tests_build-server 2
+            _testhost_build-server 2
             return
             ;;
             
         (clean)
-            _dotnet.Tests_clean 2
+            _testhost_clean 2
             return
             ;;
             
         (format)
-            _dotnet.Tests_format 2
+            _testhost_format 2
             return
             ;;
             
         (fsi)
-            _dotnet.Tests_fsi 2
+            _testhost_fsi 2
             return
             ;;
             
         (msbuild)
-            _dotnet.Tests_msbuild 2
+            _testhost_msbuild 2
             return
             ;;
             
         (new)
-            _dotnet.Tests_new 2
+            _testhost_new 2
             return
             ;;
             
         (nuget)
-            _dotnet.Tests_nuget 2
+            _testhost_nuget 2
             return
             ;;
             
         (pack)
-            _dotnet.Tests_pack 2
+            _testhost_pack 2
             return
             ;;
             
         (package)
-            _dotnet.Tests_package 2
+            _testhost_package 2
             return
             ;;
             
         (project)
-            _dotnet.Tests_project 2
+            _testhost_project 2
             return
             ;;
             
         (publish)
-            _dotnet.Tests_publish 2
+            _testhost_publish 2
             return
             ;;
             
         (reference)
-            _dotnet.Tests_reference 2
+            _testhost_reference 2
             return
             ;;
             
         (restore)
-            _dotnet.Tests_restore 2
+            _testhost_restore 2
             return
             ;;
             
         (run)
-            _dotnet.Tests_run 2
+            _testhost_run 2
             return
             ;;
             
         (solution)
-            _dotnet.Tests_solution 2
+            _testhost_solution 2
             return
             ;;
             
         (store)
-            _dotnet.Tests_store 2
+            _testhost_store 2
             return
             ;;
             
         (test)
-            _dotnet.Tests_test 2
+            _testhost_test 2
             return
             ;;
             
         (tool)
-            _dotnet.Tests_tool 2
+            _testhost_tool 2
             return
             ;;
             
         (vstest)
-            _dotnet.Tests_vstest 2
+            _testhost_vstest 2
             return
             ;;
             
         (help)
-            _dotnet.Tests_help 2
+            _testhost_help 2
             return
             ;;
             
         (sdk)
-            _dotnet.Tests_sdk 2
+            _testhost_sdk 2
             return
             ;;
             
         (workload)
-            _dotnet.Tests_workload 2
+            _testhost_workload 2
             return
             ;;
             
         (completions)
-            _dotnet.Tests_completions 2
+            _testhost_completions 2
             return
             ;;
             
@@ -138,7 +138,7 @@ _dotnet.Tests() {
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
 
-_dotnet.Tests_build() {
+_testhost_build() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -182,7 +182,7 @@ _dotnet.Tests_build() {
 }
 
 
-_dotnet.Tests_build_server() {
+_testhost_build_server() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -197,7 +197,7 @@ _dotnet.Tests_build_server() {
     
     case ${COMP_WORDS[$1]} in
         (shutdown)
-            _dotnet.Tests_build_server_shutdown $(($1+1))
+            _testhost_build_server_shutdown $(($1+1))
             return
             ;;
             
@@ -206,7 +206,7 @@ _dotnet.Tests_build_server() {
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
 
-_dotnet.Tests_build_server_shutdown() {
+_testhost_build_server_shutdown() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -223,7 +223,7 @@ _dotnet.Tests_build_server_shutdown() {
 }
 
 
-_dotnet.Tests_clean() {
+_testhost_clean() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -263,7 +263,7 @@ _dotnet.Tests_clean() {
 }
 
 
-_dotnet.Tests_format() {
+_testhost_format() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -280,7 +280,7 @@ _dotnet.Tests_format() {
 }
 
 
-_dotnet.Tests_fsi() {
+_testhost_fsi() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -297,7 +297,7 @@ _dotnet.Tests_fsi() {
 }
 
 
-_dotnet.Tests_msbuild() {
+_testhost_msbuild() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -314,7 +314,7 @@ _dotnet.Tests_msbuild() {
 }
 
 
-_dotnet.Tests_new() {
+_testhost_new() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -348,37 +348,37 @@ _dotnet.Tests_new() {
     
     case ${COMP_WORDS[$1]} in
         (create)
-            _dotnet.Tests_new_create $(($1+1))
+            _testhost_new_create $(($1+1))
             return
             ;;
             
         (install)
-            _dotnet.Tests_new_install $(($1+1))
+            _testhost_new_install $(($1+1))
             return
             ;;
             
         (uninstall)
-            _dotnet.Tests_new_uninstall $(($1+1))
+            _testhost_new_uninstall $(($1+1))
             return
             ;;
             
         (update)
-            _dotnet.Tests_new_update $(($1+1))
+            _testhost_new_update $(($1+1))
             return
             ;;
             
         (search)
-            _dotnet.Tests_new_search $(($1+1))
+            _testhost_new_search $(($1+1))
             return
             ;;
             
         (list)
-            _dotnet.Tests_new_list $(($1+1))
+            _testhost_new_list $(($1+1))
             return
             ;;
             
         (details)
-            _dotnet.Tests_new_details $(($1+1))
+            _testhost_new_details $(($1+1))
             return
             ;;
             
@@ -387,7 +387,7 @@ _dotnet.Tests_new() {
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
 
-_dotnet.Tests_new_create() {
+_testhost_new_create() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -419,7 +419,7 @@ _dotnet.Tests_new_create() {
 }
 
 
-_dotnet.Tests_new_install() {
+_testhost_new_install() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -447,7 +447,7 @@ _dotnet.Tests_new_install() {
 }
 
 
-_dotnet.Tests_new_uninstall() {
+_testhost_new_uninstall() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -464,7 +464,7 @@ _dotnet.Tests_new_uninstall() {
 }
 
 
-_dotnet.Tests_new_update() {
+_testhost_new_update() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -488,7 +488,7 @@ _dotnet.Tests_new_update() {
 }
 
 
-_dotnet.Tests_new_search() {
+_testhost_new_search() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -512,7 +512,7 @@ _dotnet.Tests_new_search() {
 }
 
 
-_dotnet.Tests_new_list() {
+_testhost_new_list() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -536,7 +536,7 @@ _dotnet.Tests_new_list() {
 }
 
 
-_dotnet.Tests_new_details() {
+_testhost_new_details() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -560,7 +560,7 @@ _dotnet.Tests_new_details() {
 }
 
 
-_dotnet.Tests_nuget() {
+_testhost_nuget() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -575,37 +575,37 @@ _dotnet.Tests_nuget() {
     
     case ${COMP_WORDS[$1]} in
         (delete)
-            _dotnet.Tests_nuget_delete $(($1+1))
+            _testhost_nuget_delete $(($1+1))
             return
             ;;
             
         (locals)
-            _dotnet.Tests_nuget_locals $(($1+1))
+            _testhost_nuget_locals $(($1+1))
             return
             ;;
             
         (push)
-            _dotnet.Tests_nuget_push $(($1+1))
+            _testhost_nuget_push $(($1+1))
             return
             ;;
             
         (verify)
-            _dotnet.Tests_nuget_verify $(($1+1))
+            _testhost_nuget_verify $(($1+1))
             return
             ;;
             
         (trust)
-            _dotnet.Tests_nuget_trust $(($1+1))
+            _testhost_nuget_trust $(($1+1))
             return
             ;;
             
         (sign)
-            _dotnet.Tests_nuget_sign $(($1+1))
+            _testhost_nuget_sign $(($1+1))
             return
             ;;
             
         (why)
-            _dotnet.Tests_nuget_why $(($1+1))
+            _testhost_nuget_why $(($1+1))
             return
             ;;
             
@@ -614,7 +614,7 @@ _dotnet.Tests_nuget() {
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
 
-_dotnet.Tests_nuget_delete() {
+_testhost_nuget_delete() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -631,7 +631,7 @@ _dotnet.Tests_nuget_delete() {
 }
 
 
-_dotnet.Tests_nuget_locals() {
+_testhost_nuget_locals() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -649,7 +649,7 @@ _dotnet.Tests_nuget_locals() {
 }
 
 
-_dotnet.Tests_nuget_push() {
+_testhost_nuget_push() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -666,7 +666,7 @@ _dotnet.Tests_nuget_push() {
 }
 
 
-_dotnet.Tests_nuget_verify() {
+_testhost_nuget_verify() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -690,7 +690,7 @@ _dotnet.Tests_nuget_verify() {
 }
 
 
-_dotnet.Tests_nuget_trust() {
+_testhost_nuget_trust() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -712,37 +712,37 @@ _dotnet.Tests_nuget_trust() {
     
     case ${COMP_WORDS[$1]} in
         (list)
-            _dotnet.Tests_nuget_trust_list $(($1+1))
+            _testhost_nuget_trust_list $(($1+1))
             return
             ;;
             
         (author)
-            _dotnet.Tests_nuget_trust_author $(($1+1))
+            _testhost_nuget_trust_author $(($1+1))
             return
             ;;
             
         (repository)
-            _dotnet.Tests_nuget_trust_repository $(($1+1))
+            _testhost_nuget_trust_repository $(($1+1))
             return
             ;;
             
         (source)
-            _dotnet.Tests_nuget_trust_source $(($1+1))
+            _testhost_nuget_trust_source $(($1+1))
             return
             ;;
             
         (certificate)
-            _dotnet.Tests_nuget_trust_certificate $(($1+1))
+            _testhost_nuget_trust_certificate $(($1+1))
             return
             ;;
             
         (remove)
-            _dotnet.Tests_nuget_trust_remove $(($1+1))
+            _testhost_nuget_trust_remove $(($1+1))
             return
             ;;
             
         (sync)
-            _dotnet.Tests_nuget_trust_sync $(($1+1))
+            _testhost_nuget_trust_sync $(($1+1))
             return
             ;;
             
@@ -751,7 +751,7 @@ _dotnet.Tests_nuget_trust() {
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
 
-_dotnet.Tests_nuget_trust_list() {
+_testhost_nuget_trust_list() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -775,7 +775,7 @@ _dotnet.Tests_nuget_trust_list() {
 }
 
 
-_dotnet.Tests_nuget_trust_author() {
+_testhost_nuget_trust_author() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -799,7 +799,7 @@ _dotnet.Tests_nuget_trust_author() {
 }
 
 
-_dotnet.Tests_nuget_trust_repository() {
+_testhost_nuget_trust_repository() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -823,7 +823,7 @@ _dotnet.Tests_nuget_trust_repository() {
 }
 
 
-_dotnet.Tests_nuget_trust_source() {
+_testhost_nuget_trust_source() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -847,7 +847,7 @@ _dotnet.Tests_nuget_trust_source() {
 }
 
 
-_dotnet.Tests_nuget_trust_certificate() {
+_testhost_nuget_trust_certificate() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -875,7 +875,7 @@ _dotnet.Tests_nuget_trust_certificate() {
 }
 
 
-_dotnet.Tests_nuget_trust_remove() {
+_testhost_nuget_trust_remove() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -899,7 +899,7 @@ _dotnet.Tests_nuget_trust_remove() {
 }
 
 
-_dotnet.Tests_nuget_trust_sync() {
+_testhost_nuget_trust_sync() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -923,7 +923,7 @@ _dotnet.Tests_nuget_trust_sync() {
 }
 
 
-_dotnet.Tests_nuget_sign() {
+_testhost_nuget_sign() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -947,7 +947,7 @@ _dotnet.Tests_nuget_sign() {
 }
 
 
-_dotnet.Tests_nuget_why() {
+_testhost_nuget_why() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -964,7 +964,7 @@ _dotnet.Tests_nuget_why() {
 }
 
 
-_dotnet.Tests_pack() {
+_testhost_pack() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1000,7 +1000,7 @@ _dotnet.Tests_pack() {
 }
 
 
-_dotnet.Tests_package() {
+_testhost_package() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1015,27 +1015,27 @@ _dotnet.Tests_package() {
     
     case ${COMP_WORDS[$1]} in
         (search)
-            _dotnet.Tests_package_search $(($1+1))
+            _testhost_package_search $(($1+1))
             return
             ;;
             
         (add)
-            _dotnet.Tests_package_add $(($1+1))
+            _testhost_package_add $(($1+1))
             return
             ;;
             
         (list)
-            _dotnet.Tests_package_list $(($1+1))
+            _testhost_package_list $(($1+1))
             return
             ;;
             
         (remove)
-            _dotnet.Tests_package_remove $(($1+1))
+            _testhost_package_remove $(($1+1))
             return
             ;;
             
         (update)
-            _dotnet.Tests_package_update $(($1+1))
+            _testhost_package_update $(($1+1))
             return
             ;;
             
@@ -1044,7 +1044,7 @@ _dotnet.Tests_package() {
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
 
-_dotnet.Tests_package_search() {
+_testhost_package_search() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1061,7 +1061,7 @@ _dotnet.Tests_package_search() {
 }
 
 
-_dotnet.Tests_package_add() {
+_testhost_package_add() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1086,7 +1086,7 @@ _dotnet.Tests_package_add() {
 }
 
 
-_dotnet.Tests_package_list() {
+_testhost_package_list() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1114,7 +1114,7 @@ _dotnet.Tests_package_list() {
 }
 
 
-_dotnet.Tests_package_remove() {
+_testhost_package_remove() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1131,7 +1131,7 @@ _dotnet.Tests_package_remove() {
 }
 
 
-_dotnet.Tests_package_update() {
+_testhost_package_update() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1163,7 +1163,7 @@ _dotnet.Tests_package_update() {
 }
 
 
-_dotnet.Tests_project() {
+_testhost_project() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1178,7 +1178,7 @@ _dotnet.Tests_project() {
     
     case ${COMP_WORDS[$1]} in
         (convert)
-            _dotnet.Tests_project_convert $(($1+1))
+            _testhost_project_convert $(($1+1))
             return
             ;;
             
@@ -1187,7 +1187,7 @@ _dotnet.Tests_project() {
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
 
-_dotnet.Tests_project_convert() {
+_testhost_project_convert() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1204,7 +1204,7 @@ _dotnet.Tests_project_convert() {
 }
 
 
-_dotnet.Tests_publish() {
+_testhost_publish() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1248,7 +1248,7 @@ _dotnet.Tests_publish() {
 }
 
 
-_dotnet.Tests_reference() {
+_testhost_reference() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1263,17 +1263,17 @@ _dotnet.Tests_reference() {
     
     case ${COMP_WORDS[$1]} in
         (add)
-            _dotnet.Tests_reference_add $(($1+1))
+            _testhost_reference_add $(($1+1))
             return
             ;;
             
         (list)
-            _dotnet.Tests_reference_list $(($1+1))
+            _testhost_reference_list $(($1+1))
             return
             ;;
             
         (remove)
-            _dotnet.Tests_reference_remove $(($1+1))
+            _testhost_reference_remove $(($1+1))
             return
             ;;
             
@@ -1282,7 +1282,7 @@ _dotnet.Tests_reference() {
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
 
-_dotnet.Tests_reference_add() {
+_testhost_reference_add() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1306,7 +1306,7 @@ _dotnet.Tests_reference_add() {
 }
 
 
-_dotnet.Tests_reference_list() {
+_testhost_reference_list() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1323,7 +1323,7 @@ _dotnet.Tests_reference_list() {
 }
 
 
-_dotnet.Tests_reference_remove() {
+_testhost_reference_remove() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1341,7 +1341,7 @@ _dotnet.Tests_reference_remove() {
 }
 
 
-_dotnet.Tests_restore() {
+_testhost_restore() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1373,7 +1373,7 @@ _dotnet.Tests_restore() {
 }
 
 
-_dotnet.Tests_run() {
+_testhost_run() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1417,7 +1417,7 @@ _dotnet.Tests_run() {
 }
 
 
-_dotnet.Tests_solution() {
+_testhost_solution() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1432,22 +1432,22 @@ _dotnet.Tests_solution() {
     
     case ${COMP_WORDS[$1]} in
         (add)
-            _dotnet.Tests_solution_add $(($1+1))
+            _testhost_solution_add $(($1+1))
             return
             ;;
             
         (list)
-            _dotnet.Tests_solution_list $(($1+1))
+            _testhost_solution_list $(($1+1))
             return
             ;;
             
         (remove)
-            _dotnet.Tests_solution_remove $(($1+1))
+            _testhost_solution_remove $(($1+1))
             return
             ;;
             
         (migrate)
-            _dotnet.Tests_solution_migrate $(($1+1))
+            _testhost_solution_migrate $(($1+1))
             return
             ;;
             
@@ -1456,7 +1456,7 @@ _dotnet.Tests_solution() {
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
 
-_dotnet.Tests_solution_add() {
+_testhost_solution_add() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1484,7 +1484,7 @@ _dotnet.Tests_solution_add() {
 }
 
 
-_dotnet.Tests_solution_list() {
+_testhost_solution_list() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1501,7 +1501,7 @@ _dotnet.Tests_solution_list() {
 }
 
 
-_dotnet.Tests_solution_remove() {
+_testhost_solution_remove() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1518,7 +1518,7 @@ _dotnet.Tests_solution_remove() {
 }
 
 
-_dotnet.Tests_solution_migrate() {
+_testhost_solution_migrate() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1535,7 +1535,7 @@ _dotnet.Tests_solution_migrate() {
 }
 
 
-_dotnet.Tests_store() {
+_testhost_store() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1567,7 +1567,7 @@ _dotnet.Tests_store() {
 }
 
 
-_dotnet.Tests_test() {
+_testhost_test() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1615,7 +1615,7 @@ _dotnet.Tests_test() {
 }
 
 
-_dotnet.Tests_tool() {
+_testhost_tool() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1630,42 +1630,42 @@ _dotnet.Tests_tool() {
     
     case ${COMP_WORDS[$1]} in
         (install)
-            _dotnet.Tests_tool_install $(($1+1))
+            _testhost_tool_install $(($1+1))
             return
             ;;
             
         (uninstall)
-            _dotnet.Tests_tool_uninstall $(($1+1))
+            _testhost_tool_uninstall $(($1+1))
             return
             ;;
             
         (update)
-            _dotnet.Tests_tool_update $(($1+1))
+            _testhost_tool_update $(($1+1))
             return
             ;;
             
         (list)
-            _dotnet.Tests_tool_list $(($1+1))
+            _testhost_tool_list $(($1+1))
             return
             ;;
             
         (run)
-            _dotnet.Tests_tool_run $(($1+1))
+            _testhost_tool_run $(($1+1))
             return
             ;;
             
         (search)
-            _dotnet.Tests_tool_search $(($1+1))
+            _testhost_tool_search $(($1+1))
             return
             ;;
             
         (restore)
-            _dotnet.Tests_tool_restore $(($1+1))
+            _testhost_tool_restore $(($1+1))
             return
             ;;
             
         (execute)
-            _dotnet.Tests_tool_execute $(($1+1))
+            _testhost_tool_execute $(($1+1))
             return
             ;;
             
@@ -1674,7 +1674,7 @@ _dotnet.Tests_tool() {
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
 
-_dotnet.Tests_tool_install() {
+_testhost_tool_install() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1703,7 +1703,7 @@ _dotnet.Tests_tool_install() {
 }
 
 
-_dotnet.Tests_tool_uninstall() {
+_testhost_tool_uninstall() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1720,7 +1720,7 @@ _dotnet.Tests_tool_uninstall() {
 }
 
 
-_dotnet.Tests_tool_update() {
+_testhost_tool_update() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1745,7 +1745,7 @@ _dotnet.Tests_tool_update() {
 }
 
 
-_dotnet.Tests_tool_list() {
+_testhost_tool_list() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1769,7 +1769,7 @@ _dotnet.Tests_tool_list() {
 }
 
 
-_dotnet.Tests_tool_run() {
+_testhost_tool_run() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1786,7 +1786,7 @@ _dotnet.Tests_tool_run() {
 }
 
 
-_dotnet.Tests_tool_search() {
+_testhost_tool_search() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1803,7 +1803,7 @@ _dotnet.Tests_tool_search() {
 }
 
 
-_dotnet.Tests_tool_restore() {
+_testhost_tool_restore() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1827,7 +1827,7 @@ _dotnet.Tests_tool_restore() {
 }
 
 
-_dotnet.Tests_tool_execute() {
+_testhost_tool_execute() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1856,7 +1856,7 @@ _dotnet.Tests_tool_execute() {
 }
 
 
-_dotnet.Tests_vstest() {
+_testhost_vstest() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1873,7 +1873,7 @@ _dotnet.Tests_vstest() {
 }
 
 
-_dotnet.Tests_help() {
+_testhost_help() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1890,7 +1890,7 @@ _dotnet.Tests_help() {
 }
 
 
-_dotnet.Tests_sdk() {
+_testhost_sdk() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1905,7 +1905,7 @@ _dotnet.Tests_sdk() {
     
     case ${COMP_WORDS[$1]} in
         (check)
-            _dotnet.Tests_sdk_check $(($1+1))
+            _testhost_sdk_check $(($1+1))
             return
             ;;
             
@@ -1914,7 +1914,7 @@ _dotnet.Tests_sdk() {
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
 
-_dotnet.Tests_sdk_check() {
+_testhost_sdk_check() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1931,7 +1931,7 @@ _dotnet.Tests_sdk_check() {
 }
 
 
-_dotnet.Tests_workload() {
+_testhost_workload() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -1946,52 +1946,52 @@ _dotnet.Tests_workload() {
     
     case ${COMP_WORDS[$1]} in
         (install)
-            _dotnet.Tests_workload_install $(($1+1))
+            _testhost_workload_install $(($1+1))
             return
             ;;
             
         (update)
-            _dotnet.Tests_workload_update $(($1+1))
+            _testhost_workload_update $(($1+1))
             return
             ;;
             
         (list)
-            _dotnet.Tests_workload_list $(($1+1))
+            _testhost_workload_list $(($1+1))
             return
             ;;
             
         (search)
-            _dotnet.Tests_workload_search $(($1+1))
+            _testhost_workload_search $(($1+1))
             return
             ;;
             
         (uninstall)
-            _dotnet.Tests_workload_uninstall $(($1+1))
+            _testhost_workload_uninstall $(($1+1))
             return
             ;;
             
         (repair)
-            _dotnet.Tests_workload_repair $(($1+1))
+            _testhost_workload_repair $(($1+1))
             return
             ;;
             
         (restore)
-            _dotnet.Tests_workload_restore $(($1+1))
+            _testhost_workload_restore $(($1+1))
             return
             ;;
             
         (clean)
-            _dotnet.Tests_workload_clean $(($1+1))
+            _testhost_workload_clean $(($1+1))
             return
             ;;
             
         (config)
-            _dotnet.Tests_workload_config $(($1+1))
+            _testhost_workload_config $(($1+1))
             return
             ;;
             
         (history)
-            _dotnet.Tests_workload_history $(($1+1))
+            _testhost_workload_history $(($1+1))
             return
             ;;
             
@@ -2000,7 +2000,7 @@ _dotnet.Tests_workload() {
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
 
-_dotnet.Tests_workload_install() {
+_testhost_workload_install() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -2028,7 +2028,7 @@ _dotnet.Tests_workload_install() {
 }
 
 
-_dotnet.Tests_workload_update() {
+_testhost_workload_update() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -2060,7 +2060,7 @@ _dotnet.Tests_workload_update() {
 }
 
 
-_dotnet.Tests_workload_list() {
+_testhost_workload_list() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -2077,7 +2077,7 @@ _dotnet.Tests_workload_list() {
 }
 
 
-_dotnet.Tests_workload_search() {
+_testhost_workload_search() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -2092,7 +2092,7 @@ _dotnet.Tests_workload_search() {
     
     case ${COMP_WORDS[$1]} in
         (version)
-            _dotnet.Tests_workload_search_version $(($1+1))
+            _testhost_workload_search_version $(($1+1))
             return
             ;;
             
@@ -2101,7 +2101,7 @@ _dotnet.Tests_workload_search() {
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
 
-_dotnet.Tests_workload_search_version() {
+_testhost_workload_search_version() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -2125,7 +2125,7 @@ _dotnet.Tests_workload_search_version() {
 }
 
 
-_dotnet.Tests_workload_uninstall() {
+_testhost_workload_uninstall() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -2149,7 +2149,7 @@ _dotnet.Tests_workload_uninstall() {
 }
 
 
-_dotnet.Tests_workload_repair() {
+_testhost_workload_repair() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -2173,7 +2173,7 @@ _dotnet.Tests_workload_repair() {
 }
 
 
-_dotnet.Tests_workload_restore() {
+_testhost_workload_restore() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -2201,7 +2201,7 @@ _dotnet.Tests_workload_restore() {
 }
 
 
-_dotnet.Tests_workload_clean() {
+_testhost_workload_clean() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -2225,7 +2225,7 @@ _dotnet.Tests_workload_clean() {
 }
 
 
-_dotnet.Tests_workload_config() {
+_testhost_workload_config() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -2249,7 +2249,7 @@ _dotnet.Tests_workload_config() {
 }
 
 
-_dotnet.Tests_workload_history() {
+_testhost_workload_history() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -2266,7 +2266,7 @@ _dotnet.Tests_workload_history() {
 }
 
 
-_dotnet.Tests_completions() {
+_testhost_completions() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -2281,7 +2281,7 @@ _dotnet.Tests_completions() {
     
     case ${COMP_WORDS[$1]} in
         (script)
-            _dotnet.Tests_completions_script $(($1+1))
+            _testhost_completions_script $(($1+1))
             return
             ;;
             
@@ -2290,7 +2290,7 @@ _dotnet.Tests_completions() {
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
 
-_dotnet.Tests_completions_script() {
+_testhost_completions_script() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -2309,4 +2309,4 @@ _dotnet.Tests_completions_script() {
 
 
 
-complete -F _dotnet.Tests dotnet.Tests
+complete -F _testhost testhost
