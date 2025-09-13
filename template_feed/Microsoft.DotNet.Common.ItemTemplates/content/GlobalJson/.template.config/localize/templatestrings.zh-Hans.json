@@ -25,5 +25,11 @@
   "symbols/RollForward/choices/latestMajor/displayName": "最新主要版本",
   "symbols/RollForward/choices/disable/description": "不要前滚。需要完全匹配。",
   "symbols/RollForward/choices/disable/displayName": "禁用前滚",
+  "symbols/TestRunner/description": "The test runner to use.",
+  "symbols/TestRunner/displayName": "Test runner",
+  "symbols/TestRunner/choices/VSTest/description": "Use the VSTest test runner",
+  "symbols/TestRunner/choices/VSTest/displayName": "VSTest",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/description": "Use the Microsoft Testing Platform test runner",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/displayName": "Microsoft Testing Platform",
   "postActions/open-file/description": "在编辑器中打开 global.json"
 }

@@ -25,5 +25,11 @@
   "symbols/RollForward/choices/latestMajor/displayName": "Valore principale più recente",
   "symbols/RollForward/choices/disable/description": "Non esegue il roll-forward. Corrispondenza esatta richiesta.",
   "symbols/RollForward/choices/disable/displayName": "Disabilita roll-forward",
+  "symbols/TestRunner/description": "The test runner to use.",
+  "symbols/TestRunner/displayName": "Test runner",
+  "symbols/TestRunner/choices/VSTest/description": "Use the VSTest test runner",
+  "symbols/TestRunner/choices/VSTest/displayName": "VSTest",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/description": "Use the Microsoft Testing Platform test runner",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/displayName": "Microsoft Testing Platform",
   "postActions/open-file/description": "Apre global.json nell'editor"
 }

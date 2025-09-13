@@ -25,5 +25,11 @@
   "symbols/RollForward/choices/latestMajor/displayName": "Последняя основная версия",
   "symbols/RollForward/choices/disable/description": "Накат не выполняется. Требуется точное совпадение.",
   "symbols/RollForward/choices/disable/displayName": "Отключить накат",
+  "symbols/TestRunner/description": "The test runner to use.",
+  "symbols/TestRunner/displayName": "Test runner",
+  "symbols/TestRunner/choices/VSTest/description": "Use the VSTest test runner",
+  "symbols/TestRunner/choices/VSTest/displayName": "VSTest",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/description": "Use the Microsoft Testing Platform test runner",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/displayName": "Microsoft Testing Platform",
   "postActions/open-file/description": "Открывает файл global.json в редакторе"
 }
