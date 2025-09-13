@@ -14,6 +14,5 @@ internal record BuildOptions(
     Utils.VerbosityOptions? Verbosity,
     bool NoLaunchProfile,
     bool NoLaunchProfileArguments,
-    int DegreeOfParallelism,
     List<string> UnmatchedTokens,
     IEnumerable<string> MSBuildArgs);
