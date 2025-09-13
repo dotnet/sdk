@@ -52,44 +52,18 @@ internal sealed class TestApplication(
             var standardOutput = process.StandardOutput;
             var standardError = process.StandardError;
 
-            var tcsStdOutput = new TaskCompletionSource<string>();
-            var tcsStdError = new TaskCompletionSource<string>();
 
             // Reading from process stdout/stderr is done on separate threads to avoid blocking IO on the threadpool.
             // Note: even with 'process.StandardOutput.ReadToEndAsync()' or 'process.BeginOutputReadLine()', we ended up with
             // many TP threads just doing synchronous IO, slowing down the progress of the test run.
             // We want to read requests coming through the pipe and sending responses back to the test app as fast as possible.
-            var tStdOut = new Thread(() =>
-            {
-                StringBuilder? builder = null;
-                while (true)
-                {
-                    if (standardOutput.ReadLine() is not { } line)
-                    {
-                        tcsStdOutput.SetResult(builder?.ToString() ?? string.Empty);
-                        return;
-                    }
-
-                    (builder ??= new()).AppendLine(line);
-                }
-            });
+            var tcsStdOutput = new TaskCompletionSource<string>();
+            var tStdOut = new Thread(() => tcsStdOutput.SetResult(standardOutput.ReadToEnd()));
             tStdOut.Name = "TestApp StdOut read";
             tStdOut.Start();
 
-            var tStdErr = new Thread(() =>
-            {
-                StringBuilder? builder = null;
-                while (true)
-                {
-                    if (standardError.ReadLine() is not { } line)
-                    {
-                        tcsStdError.SetResult(builder?.ToString() ?? string.Empty);
-                        return;
-                    }
-
-                    (builder ??= new()).AppendLine(line);
-                }
-            });
+            var tcsStdError = new TaskCompletionSource<string>();
+            var tStdErr = new Thread(() => tcsStdError.SetResult(standardError.ReadToEnd()));
             tStdErr.Name = "TestApp StdErr read";
             tStdErr.Start();
 
