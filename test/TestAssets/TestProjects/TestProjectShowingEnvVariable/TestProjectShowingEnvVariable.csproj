@@ -10,7 +10,6 @@
 
 		<ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
 		<IsTestingPlatformApplication>true</IsTestingPlatformApplication>
-		<RunArguments>--from-run-arguments</RunArguments>
 	</PropertyGroup>
 
 	<ItemGroup>
