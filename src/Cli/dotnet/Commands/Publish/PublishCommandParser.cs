@@ -37,7 +37,7 @@ internal static class PublishCommandParser
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:NoBuild=true");
 
-    public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
+    public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--no-logo", "--nologo")
     {
         Description = CliCommandStrings.PublishCmdNoLogo,
         Arity = ArgumentArity.Zero
