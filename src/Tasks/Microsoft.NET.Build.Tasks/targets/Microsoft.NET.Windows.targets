@@ -29,9 +29,25 @@ Copyright (c) .NET Foundation. All rights reserved.
     <TargetPlatformVersionSupported>true</TargetPlatformVersionSupported>
   </PropertyGroup>
 
+  <!-- If EffectiveTargetPlatformVersion isn't set, then someone may have manually set TargetPlatformVersion in their Directory.Build.targets
+       which wasn't processed before. -->
+  <PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'windows' and '$(TargetPlatformVersion)' != '' and '$(EffectiveTargetPlatformVersion)' == ''" >
+    <!--
+      In order to support multi-targeting between CsWinRT 2.x and CsWinRT 3.0, we use the revision number of the Windows SDK to indicate the CsWinRT version.
+      Specifically, '.0' indicates CsWinRT 2.x, and '.1' indicates CsWinRT 3.0. Because we want the rest of the tooling to still always see the '.0' version
+      for the Windows SDK (as the '.1' only has meaning for the .NET SDK and TFM in NuGet), here we check if we're using CsWinRT 3.0, and if so we have a version
+      of the target platform version with the revision number reset back to '.0' as EffectiveTargetPlatformVersion which we use in other places.
+      EffectiveTargetPlatformVersion is set to TargetPlatformVersion in other scenarios.
+    -->
+    <_TargetPlatformVersionUsesCsWinRT3 Condition="$([System.Version]::Parse('$(TargetPlatformVersion)').Revision) == 1">true</_TargetPlatformVersionUsesCsWinRT3>
+    <EffectiveTargetPlatformVersion Condition="'$(_TargetPlatformVersionUsesCsWinRT3)' == 'true'">$([System.Version]::Parse('$(TargetPlatformVersion)').Major).$([System.Version]::Parse('$(TargetPlatformVersion)').Minor).$([System.Version]::Parse('$(TargetPlatformVersion)').Build).0</EffectiveTargetPlatformVersion>
+    <EffectiveTargetPlatformVersion Condition="'$(_TargetPlatformVersionUsesCsWinRT3)' != 'true'">$(TargetPlatformVersion)</EffectiveTargetPlatformVersion>
+  </PropertyGroup>
+
   <!-- Set 7.0 as the TargetPlatformVersion for windows. -->
   <PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'windows' and '$(TargetPlatformVersion)' == ''" >
     <TargetPlatformVersion>7.0</TargetPlatformVersion>
+    <EffectiveTargetPlatformVersion>$(TargetPlatformVersion)</EffectiveTargetPlatformVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'Windows'">
@@ -40,9 +56,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <SupportedOSPlatformVersion Condition="'$(SupportedOSPlatformVersion)' == ''">$(TargetPlatformMinVersion)</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == ''">$(SupportedOSPlatformVersion)</TargetPlatformMinVersion>
 
-    <!-- If neither were set, then use the TargetPlatformVersion value for both -->
-    <SupportedOSPlatformVersion Condition="'$(SupportedOSPlatformVersion)' == ''">$(TargetPlatformVersion)</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == ''">$(TargetPlatformVersion)</TargetPlatformMinVersion>
+    <!-- If neither were set, then use the EffectiveTargetPlatformVersion value for both. -->
+    <SupportedOSPlatformVersion Condition="'$(SupportedOSPlatformVersion)' == ''">$(EffectiveTargetPlatformVersion)</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == ''">$(EffectiveTargetPlatformVersion)</TargetPlatformMinVersion>
   </PropertyGroup>
 
   <!-- Used by analyzers in the Microsoft.Windows.SDK.NET.Ref package. -->
@@ -66,8 +82,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Also add the Windows.UI.Xaml.* projections from the Windows SDK if 'UseUwp' is set in the project.
        Note: we only add this reference if the TFM is .NET 8 or above, as the Windows SDK projections
        that are used on .NET 6 and below do not have the Windows.UI.Xaml profile, so this wouldn't work. -->
-  <ItemGroup Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true' ">
-    <FrameworkReference Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) and '$(TargetPlatformIdentifier)' == 'Windows' and '$(UseUwp)' == 'true' " Include="Microsoft.Windows.SDK.NET.Ref.Xaml" />
+  <ItemGroup Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true' And
+                          '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) and '$(TargetPlatformIdentifier)' == 'Windows' and '$(UseUwp)' == 'true' ">
+    <FrameworkReference Condition="'$(_TargetPlatformVersionUsesCsWinRT3)' != 'true'"
+                        Include="Microsoft.Windows.SDK.NET.Ref.Xaml" />
+    <FrameworkReference Condition="'$(_TargetPlatformVersionUsesCsWinRT3)' == 'true'"
+                        Include="Microsoft.Windows.SDK.NET.Ref.CsWinRT3.Xaml" />
   </ItemGroup>
 
   <!-- If WindowsSdkPackageVersion is specified and it is an older version before profile support was added, 
@@ -166,6 +186,18 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition=" !('$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) and '$(TargetPlatformIdentifier)' == 'Windows')
                       and '$(UseUwp)' == 'true' ">
     <NetSdkError ResourceName="WindowsSDKXamlInvalidTfm" />
+  </Target>
+
+  <!--
+    Emit a warning if using CsWinRT 3.0, which is selected when targeting a Windows SDK with '1' as the revision version.
+    NOTE: remove this target when CsWinRT 3.0 is released as a stable version and becomes officially supported.
+  -->
+  <Target Name="_WarnForCsWinRT3_0PreviewFeatureEnabled"
+          AfterTargets="ResolvePackageAssets"
+            Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true'
+                        and '$(_TargetPlatformVersionUsesCsWinRT3)' == 'true' ">
+    <NETSdkWarning ResourceName="UsingPreviewCsWinRT3_0Feature"
+                   FormatArguments="$(_OriginalWindowsTargetPlatformVersion)" />
   </Target>
 
   <!-- Setup common properties for '_RunCsWinRTGenerator' below -->
