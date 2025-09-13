@@ -52,22 +52,14 @@ internal sealed class TestApplication(
             var standardOutput = process.StandardOutput;
             var standardError = process.StandardError;
 
-
             // Reading from process stdout/stderr is done on separate threads to avoid blocking IO on the threadpool.
             // Note: even with 'process.StandardOutput.ReadToEndAsync()' or 'process.BeginOutputReadLine()', we ended up with
             // many TP threads just doing synchronous IO, slowing down the progress of the test run.
             // We want to read requests coming through the pipe and sending responses back to the test app as fast as possible.
-            var tcsStdOutput = new TaskCompletionSource<string>();
-            var tStdOut = new Thread(() => tcsStdOutput.SetResult(standardOutput.ReadToEnd()));
-            tStdOut.Name = "TestApp StdOut read";
-            tStdOut.Start();
+            var stdOutTask = Task.Factory.StartNew(static standardOutput => ((StreamReader)standardOutput!).ReadToEnd(), standardOutput, TaskCreationOptions.LongRunning);
+            var stdErrTask = Task.Factory.StartNew(static standardError => ((StreamReader)standardError!).ReadToEnd(), standardError, TaskCreationOptions.LongRunning);
 
-            var tcsStdError = new TaskCompletionSource<string>();
-            var tStdErr = new Thread(() => tcsStdError.SetResult(standardError.ReadToEnd()));
-            tStdErr.Name = "TestApp StdErr read";
-            tStdErr.Start();
-
-            var outputAndError = await Task.WhenAll(tcsStdOutput.Task, tcsStdError.Task);
+            var outputAndError = await Task.WhenAll(stdOutTask, stdErrTask);
             await process.WaitForExitAsync();
 
             _handler.OnTestProcessExited(process.ExitCode, outputAndError[0], outputAndError[1]);
