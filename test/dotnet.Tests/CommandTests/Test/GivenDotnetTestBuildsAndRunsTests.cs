@@ -504,7 +504,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("DUMMY_TEST_ENV_VAR is 'ENV_VAR_CMD_LINE'");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.Success);
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
     }
 }
