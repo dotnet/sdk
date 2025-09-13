@@ -232,7 +232,7 @@ public class TestCommand(
             msbuildPath);
 
         // Apply environment variables provided by the user via --environment (-e) option, if present
-        if (result.GetValue(CommonOptions.EnvOption) is { } environmentVariables)
+        if (result.GetValue(CommonOptions.TestEnvOption) is { } environmentVariables)
         {
             foreach (var (name, value) in environmentVariables)
             {
