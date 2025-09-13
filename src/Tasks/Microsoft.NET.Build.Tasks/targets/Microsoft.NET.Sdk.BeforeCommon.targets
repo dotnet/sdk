@@ -344,9 +344,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Otherwise>
   </Choose>
 
+  <!-- NOTE: Compiler toolset packages should set the following properties on their own, hence we set them only for RoslynCompilerType being Core or Framework. -->
+  <PropertyGroup Condition="'$(RoslynCompilerType)' == 'Core' or '$(RoslynCompilerType)' == 'Framework'">
+    <!-- In Full Framework MSBuild, RoslynTargetsPath originally points to the directory with Full Framework Roslyn assemblies. -->
+    <RoslynAssembliesPath Condition="'$(RoslynAssembliesPath)' == '' and '$(MSBuildRuntimeType)' != 'Core'">$(RoslynTargetsPath)</RoslynAssembliesPath>
+    <RoslynCoreAssembliesPath>$(MSBuildThisFileDirectory)..\..\..\Roslyn\bincore</RoslynCoreAssembliesPath>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(RoslynCompilerType)' == 'Core'">
     <RoslynTargetsPath Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\..\..\Roslyn</RoslynTargetsPath>
     <RoslynTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\..\..\Roslyn\Microsoft.Build.Tasks.CodeAnalysis.dll</RoslynTasksAssembly>
+    <RoslynAssembliesPath Condition="'$(RoslynAssembliesPath)' == '' and '$(MSBuildRuntimeType)' == 'Core'">$(RoslynCoreAssembliesPath)</RoslynAssembliesPath>
     <RoslynTargetsPath Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\..\..\Roslyn\binfx</RoslynTargetsPath>
     <RoslynTasksAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\..\..\Roslyn\binfx\Microsoft.Build.Tasks.CodeAnalysis.Sdk.dll</RoslynTasksAssembly>
     <CSharpCoreTargetsPath>$(MSBuildThisFileDirectory)..\..\..\Roslyn\Microsoft.CSharp.Core.targets</CSharpCoreTargetsPath>

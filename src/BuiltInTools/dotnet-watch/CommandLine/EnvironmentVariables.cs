@@ -12,11 +12,6 @@ internal static class EnvironmentVariables
 
         public const string DotnetLaunchProfile = "DOTNET_LAUNCH_PROFILE";
 
-        public const string AspNetCoreUrls = "ASPNETCORE_URLS";
-        public const string AspNetCoreHostingStartupAssemblies = "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES";
-        public const string AspNetCoreAutoReloadWSEndPoint = "ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT";
-        public const string AspNetCoreAutoReloadWSKey = "ASPNETCORE_AUTO_RELOAD_WS_KEY";
-
         public const string DotNetWatchHotReloadNamedPipeName = HotReload.AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName;
         public const string DotNetStartupHooks = HotReload.AgentEnvironmentVariables.DotNetStartupHooks;
         public const string DotNetModifiableAssemblies = HotReload.AgentEnvironmentVariables.DotNetModifiableAssemblies;
@@ -44,10 +39,10 @@ internal static class EnvironmentVariables
     public static bool SuppressBrowserRefresh => ReadBool(Names.SuppressBrowserRefresh);
 
     public static TestFlags TestFlags => Environment.GetEnvironmentVariable("__DOTNET_WATCH_TEST_FLAGS") is { } value ? Enum.Parse<TestFlags>(value) : TestFlags.None;
-    public static string TestOutputDir => Environment.GetEnvironmentVariable("__DOTNET_WATCH_TEST_OUTPUT_DIR") ?? "";  
+    public static string TestOutputDir => Environment.GetEnvironmentVariable("__DOTNET_WATCH_TEST_OUTPUT_DIR") ?? "";
 
     public static string? AutoReloadWSHostName => Environment.GetEnvironmentVariable("DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME");
-    public static string? AutoReloadWSPort => Environment.GetEnvironmentVariable("DOTNET_WATCH_AUTO_RELOAD_WS_PORT");
+    public static int? AutoReloadWSPort => ReadInt("DOTNET_WATCH_AUTO_RELOAD_WS_PORT");
     public static string? BrowserPath => Environment.GetEnvironmentVariable("DOTNET_WATCH_BROWSER_PATH");
 
     private static bool ReadBool(string variableName)
@@ -55,4 +50,7 @@ internal static class EnvironmentVariables
 
     private static TimeSpan? ReadTimeSpan(string variableName)
         => Environment.GetEnvironmentVariable(variableName) is var value && long.TryParse(value, out var intValue) && intValue >= 0 ? TimeSpan.FromMilliseconds(intValue) : null;
+
+    private static int? ReadInt(string variableName)
+        => Environment.GetEnvironmentVariable(variableName) is var value && int.TryParse(value, out var intValue) ? intValue : null;
 }
