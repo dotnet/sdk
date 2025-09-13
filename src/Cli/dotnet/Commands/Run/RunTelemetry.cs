@@ -103,7 +103,15 @@ internal static class RunTelemetry
             ? Path.GetRelativePath(repoRoot, projectFilePath)
             : projectFilePath;
 
-        return (hasher ?? Sha256Hasher.Hash)(pathToHash.ToLowerInvariant());
+        // For backward compatibility, normalize case before hashing when using default hasher
+        if (hasher == null)
+        {
+            return Sha256Hasher.Hash(pathToHash.ToLowerInvariant());
+        }
+        else
+        {
+            return hasher(pathToHash);
+        }
     }
 
     /// <summary>
@@ -115,8 +123,15 @@ internal static class RunTelemetry
     /// <returns>Hashed file identifier</returns>
     public static string GetFileBasedIdentifier(string entryPointFilePath, Func<string, string>? hasher = null)
     {
-        // Use the configured telemetry hasher
-        return (hasher ?? Sha256Hasher.Hash)(entryPointFilePath.ToLowerInvariant());
+        // For backward compatibility, normalize case before hashing when using default hasher
+        if (hasher == null)
+        {
+            return Sha256Hasher.Hash(entryPointFilePath.ToLowerInvariant());
+        }
+        else
+        {
+            return hasher(entryPointFilePath);
+        }
     }
 
     /// <summary>
