@@ -278,7 +278,7 @@ internal static class TestCommandParser
 
         command.Options.Add(SettingsOption);
         command.Options.Add(ListTestsOption);
-        command.Options.Add(CommonOptions.CreateEnvOption(CliStrings.CmdTestEnvironmentVariableDescription));
+        command.Options.Add(CommonOptions.TestEnvOption);
         command.Options.Add(FilterOption);
         command.Options.Add(AdapterOption);
         command.Options.Add(LoggerOption);
