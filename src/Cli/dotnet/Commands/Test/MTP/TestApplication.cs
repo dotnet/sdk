@@ -49,15 +49,13 @@ internal sealed class TestApplication(
             Logger.LogTrace($"Starting test process with command '{processStartInfo.FileName}' and arguments '{processStartInfo.Arguments}'.");
 
             using var process = Process.Start(processStartInfo)!;
-            var standardOutput = process.StandardOutput;
-            var standardError = process.StandardError;
 
             // Reading from process stdout/stderr is done on separate threads to avoid blocking IO on the threadpool.
             // Note: even with 'process.StandardOutput.ReadToEndAsync()' or 'process.BeginOutputReadLine()', we ended up with
             // many TP threads just doing synchronous IO, slowing down the progress of the test run.
             // We want to read requests coming through the pipe and sending responses back to the test app as fast as possible.
-            var stdOutTask = Task.Factory.StartNew(static standardOutput => ((StreamReader)standardOutput!).ReadToEnd(), standardOutput, TaskCreationOptions.LongRunning);
-            var stdErrTask = Task.Factory.StartNew(static standardError => ((StreamReader)standardError!).ReadToEnd(), standardError, TaskCreationOptions.LongRunning);
+            var stdOutTask = Task.Factory.StartNew(static standardOutput => ((StreamReader)standardOutput!).ReadToEnd(), process.StandardOutput, TaskCreationOptions.LongRunning);
+            var stdErrTask = Task.Factory.StartNew(static standardError => ((StreamReader)standardError!).ReadToEnd(), process.StandardError, TaskCreationOptions.LongRunning);
 
             var outputAndError = await Task.WhenAll(stdOutTask, stdErrTask);
             await process.WaitForExitAsync();
