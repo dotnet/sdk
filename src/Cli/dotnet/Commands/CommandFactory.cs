@@ -24,7 +24,14 @@ public static class CommandFactory
         var forwardedArgs = parseResult.OptionValuesToBeForwarded(command);
         if (nonBinLogArgs is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
         {
-            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. binLogArgs,], [.. optionsToUseWhenParsingMSBuildFlags]);
+            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. binLogArgs],
+            [
+                .. optionsToUseWhenParsingMSBuildFlags,
+                CommonOptions.GetPropertyOption,
+                CommonOptions.GetItemOption,
+                CommonOptions.GetTargetResultOption,
+                CommonOptions.GetResultOutputFileOption,
+            ]);
             return configureVirtualCommand(msbuildArgs, Path.GetFullPath(arg));
         }
         else
