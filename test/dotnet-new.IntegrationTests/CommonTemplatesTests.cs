@@ -88,7 +88,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             // globaljson is appending current sdk version. Due to the 'base' dotnet used to run test this version differs
             //  on dev and CI runs and possibly from the version within test host. Easiest is just to scrub it away
-            if (expectedTemplateName.Equals("global.json file") && args == null)
+            if (expectedTemplateName.Equals("global.json file") &&
+                (args == null || !args.Contains("--sdk-version")))
             {
                 string sdkVersionUnderTest = await new SdkInfoProvider().GetCurrentVersionAsync(default);
                 options.CustomScrubbers?.AddScrubber(sb => sb.Replace(sdkVersionUnderTest, "%CURRENT-VER%"), "json");
