@@ -100,6 +100,26 @@
           "displayName": "Disable roll-forward"
         }
       ]
+    },
+    "TestRunner": {
+      "type": "parameter",
+      "description": "The test runner to use.",
+      "displayName": "Test runner",
+      "replaces": "TEST_RUNNER_VALUE",
+      "defaultValue": "",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "VSTest",
+          "description": "Use the VSTest test runner",
+          "displayName": "VSTest"
+        },
+        {
+          "choice": "Microsoft.Testing.Platform",
+          "description": "Use the Microsoft.Testing.Platform test runner",
+          "displayName": "Microsoft.Testing.Platform"
+        }
+      ]
     }
   },
   "postActions": [

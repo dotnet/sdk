@@ -29,3 +29,7 @@ Template options:
                                                                                                           latestMinor    Uses the highest installed minor, feature band, and patch level that matches the requested major with a minor, feature band, and patch level that is greater or equal than the specified value. If not found, fails.
                                                                                                           latestMajor    Uses the highest installed .NET SDK with a version that is greater or equal than the specified value. If not found, fail.
                                                                                                           disable        Doesn't roll forward. Exact match required.
+  --test-runner <VSTest|Microsoft.Testing.Platform>                                                     The test runner to use.
+                                                                                                        Type: choice
+                                                                                                          VSTest                      Use the VSTest test runner
+                                                                                                          Microsoft.Testing.Platform  Use the Microsoft.Testing.Platform test runner
