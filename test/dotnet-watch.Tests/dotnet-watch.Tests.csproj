@@ -16,10 +16,23 @@
     -->
     <ProjectReference Include="$(RepoRoot)\src\BuiltInTools\dotnet-watch\dotnet-watch.csproj" ExcludeAssets="Runtime" />
     <ProjectReference Include="$(RepoRoot)\src\BuiltInTools\DotNetWatchTasks\DotNetWatchTasks.csproj" ExcludeAssets="Runtime" Private="false" />
+    <ProjectReference Include="..\dotnet-watch-test-browser\dotnet-watch-test-browser.csproj" ReferenceOutputAssembly="false" OutputItemType="TestBrowserOutput" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.Build.Locator" />
     <PackageReference Include="Moq" />
     <PackageReference Include="Xunit.Combinatorial" />
   </ItemGroup>
+
+  <!-- Copies test browser files to test-browser output directory -->
+  <Target Name="_CopyTestBrowser" Condition="'@(TestBrowserOutput)' != ''" AfterTargets="ResolveProjectReferences">
+    <PropertyGroup>
+      <_Files>@(TestBrowserOutput->'%(RootDir)%(Directory)*.*')</_Files>
+    </PropertyGroup>
+    <ItemGroup>
+      <_FileItem Include="$(_Files)" />
+      <!-- USe hardlinks so that executable permissions are preserved on Unix -->
+      <None Include="@(_FileItem)" Link="test-browser\%(_FileItem.Filename)%(_FileItem.Extension)" CopyToOutputDirectory="PreserveNewest" UseHardlinksIfPossible="true"/>
+    </ItemGroup>
+  </Target>
 </Project>
