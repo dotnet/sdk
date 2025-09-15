@@ -1245,8 +1245,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadChangeHandled);
             App.AssertOutputContains($"dotnet watch 🕵️ [WatchAspire.Web ({tfm})] Updates applied.");
-            App.AssertOutputDoesNotContain("Projects rebuilt");
-            App.AssertOutputDoesNotContain("Projects restarted");
+            App.AssertOutputDoesNotContain(MessageDescriptor.ProjectsRebuilt);
+            App.AssertOutputDoesNotContain(MessageDescriptor.ProjectsRestarted);
             App.AssertOutputDoesNotContain("⚠");
         }
     }

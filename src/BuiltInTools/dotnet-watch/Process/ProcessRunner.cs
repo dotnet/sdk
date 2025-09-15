@@ -9,10 +9,15 @@ namespace Microsoft.DotNet.Watch
 {
     internal sealed class ProcessRunner(TimeSpan processCleanupTimeout)
     {
-        private sealed class ProcessState
+        private sealed class ProcessState(Process process) : IDisposable
         {
+            public Process Process { get; } = process;
+
             public int ProcessId;
             public bool HasExited;
+
+            public void Dispose()
+                => Process.Dispose();
         }
 
         // For testing purposes only, lock on access.
@@ -31,59 +36,24 @@ namespace Microsoft.DotNet.Watch
         /// </summary>
         public async Task<int> RunAsync(ProcessSpec processSpec, ILogger logger, ProcessLaunchResult? launchResult, CancellationToken processTerminationToken)
         {
-            var state = new ProcessState();
             var stopwatch = new Stopwatch();
-
-            var onOutput = processSpec.OnOutput;
-
-            using var process = CreateProcess(processSpec, onOutput, state, logger);
-
             stopwatch.Start();
 
-            Exception? launchException = null;
-            try
+            using var state = TryStartProcessImpl(processSpec, logger);
+            if (state == null)
             {
-                if (!process.Start())
-                {
-                    throw new InvalidOperationException("Process can't be started.");
-                }
-
-                state.ProcessId = process.Id;
-
-                if (processSpec.IsUserApplication)
-                {
-                    lock (s_runningApplicationProcesses)
-                    {
-                        s_runningApplicationProcesses.Add(state.ProcessId);
-                    }
-                }
-
-                if (onOutput != null)
-                {
-                    process.BeginOutputReadLine();
-                    process.BeginErrorReadLine();
-                }
-            }
-            catch (Exception e)
-            {
-                launchException = e;
-            }
-
-            var argsDisplay = processSpec.GetArgumentsDisplay();
-            if (launchException == null)
-            {
-                logger.Log(MessageDescriptor.LaunchedProcess, processSpec.Executable, argsDisplay, state.ProcessId);
-            }
-            else
-            {
-                logger.Log(MessageDescriptor.FailedToLaunchProcess, processSpec.Executable, argsDisplay, launchException.Message);
                 return int.MinValue;
             }
 
-            if (launchResult != null)
+            if (processSpec.IsUserApplication)
             {
-                launchResult.ProcessId = process.Id;
+                lock (s_runningApplicationProcesses)
+                {
+                    s_runningApplicationProcesses.Add(state.ProcessId);
+                }
             }
+
+            launchResult?.ProcessId = state.ProcessId;
 
             int? exitCode = null;
 
@@ -91,7 +61,7 @@ namespace Microsoft.DotNet.Watch
             {
                 try
                 {
-                    await process.WaitForExitAsync(processTerminationToken);
+                    await state.Process.WaitForExitAsync(processTerminationToken);
                 }
                 catch (OperationCanceledException)
                 {
@@ -99,7 +69,7 @@ namespace Microsoft.DotNet.Watch
                     // Either Ctrl+C was pressed or the process is being restarted.
 
                     // Non-cancellable to not leave orphaned processes around blocking resources:
-                    await TerminateProcessAsync(process, processSpec, state, logger, CancellationToken.None);
+                    await TerminateProcessAsync(state.Process, processSpec, state, logger, CancellationToken.None);
                 }
             }
             catch (Exception e)
@@ -125,14 +95,14 @@ namespace Microsoft.DotNet.Watch
 
                 try
                 {
-                    exitCode = process.ExitCode;
+                    exitCode = state.Process.ExitCode;
                 }
                 catch
                 {
                     exitCode = null;
                 }
 
-                logger.Log(MessageDescriptor.ProcessRunAndExited, process.Id, stopwatch.ElapsedMilliseconds, exitCode);
+                logger.Log(MessageDescriptor.ProcessRunAndExited, state.ProcessId, stopwatch.ElapsedMilliseconds, exitCode);
 
                 if (processSpec.IsUserApplication)
                 {
@@ -159,20 +129,27 @@ namespace Microsoft.DotNet.Watch
             return exitCode ?? int.MinValue;
         }
 
-        private static Process CreateProcess(ProcessSpec processSpec, Action<OutputLine>? onOutput, ProcessState state, ILogger logger)
+        internal static Process? TryStartProcess(ProcessSpec processSpec, ILogger logger)
+            => TryStartProcessImpl(processSpec, logger)?.Process;
+
+        private static ProcessState? TryStartProcessImpl(ProcessSpec processSpec, ILogger logger)
         {
+            var onOutput = processSpec.OnOutput;
+
             var process = new Process
             {
                 EnableRaisingEvents = true,
                 StartInfo =
                 {
                     FileName = processSpec.Executable,
-                    UseShellExecute = false,
+                    UseShellExecute = processSpec.UseShellExecute,
                     WorkingDirectory = processSpec.WorkingDirectory,
                     RedirectStandardOutput = onOutput != null,
                     RedirectStandardError = onOutput != null,
                 }
             };
+
+            var state = new ProcessState(process);
 
             if (processSpec.IsUserApplication && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -229,7 +206,32 @@ namespace Microsoft.DotNet.Watch
                 };
             }
 
-            return process;
+            var argsDisplay = processSpec.GetArgumentsDisplay();
+
+            try
+            {
+                if (!process.Start())
+                {
+                    throw new InvalidOperationException("Process can't be started.");
+                }
+                state.ProcessId = process.Id;
+
+                if (onOutput != null)
+                {
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+                }
+
+                logger.Log(MessageDescriptor.LaunchedProcess, processSpec.Executable, argsDisplay, state.ProcessId);
+                return state;
+            }
+            catch (Exception e)
+            {
+                logger.Log(MessageDescriptor.FailedToLaunchProcess, processSpec.Executable, argsDisplay, e.Message);
+
+                state.Dispose();
+                return null;
+            }
         }
 
         private async ValueTask TerminateProcessAsync(Process process, ProcessSpec processSpec, ProcessState state, ILogger logger, CancellationToken cancellationToken)

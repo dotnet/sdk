@@ -30,4 +30,5 @@ internal static class LogEvents
     public static readonly LogEvent UpdatingDiagnostics = Create(LogLevel.Debug, "Updating diagnostics.");
     public static readonly LogEvent SendingStaticAssetUpdateRequest = Create(LogLevel.Debug, "Sending static asset update request to connected browsers: '{0}'.");
     public static readonly LogEvent RefreshServerRunningAt = Create(LogLevel.Debug, "Refresh server running at {0}.");
+    public static readonly LogEvent ConnectedToRefreshServer = Create(LogLevel.Debug, "Connected to refresh server.");
 }
