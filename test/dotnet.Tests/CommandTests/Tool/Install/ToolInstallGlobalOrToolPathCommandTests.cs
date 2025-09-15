@@ -960,23 +960,33 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithHttpSourceItShouldThrowError()
         {
-            // Write the HTTP config to the default nuget.config location in the temporary directory
-            _fileSystem.File.WriteAllText(Path.Combine(_temporaryDirectory, "nuget.config"), @"<?xml version=""1.0"" encoding=""utf-8""?>
+            var httpNugetConfig = Path.Combine(_temporaryDirectory, "httpNuGet.config");
+            
+            _fileSystem.File.WriteAllText(httpNugetConfig, @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
     <add key=""httpsource"" value=""http://insecure.nuget.org/v3/index.json"" />
   </packageSources>
 </configuration>");
 
-            var parseResult = Parser.Parse($"dotnet tool install -g {PackageId}");
+            var parseResult = Parser.Parse($"dotnet tool install -g {PackageId} --configfile {httpNugetConfig}");
+
+            // Create a real tool package factory that will use real NuGetPackageDownloader
+            var realCreateToolPackageStoreDownloaderUninstaller = 
+                (DirectoryPath? nonGlobalLocation, IEnumerable<string>? forwardRestoreArguments, string? currentWorkingDirectory) => 
+                {
+                    // Use the real factory which creates real components
+                    return ToolPackageFactory.CreateToolPackageStoresAndDownloaderAndUninstaller(nonGlobalLocation, forwardRestoreArguments, currentWorkingDirectory);
+                };
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 parseResult,
                 _packageId,
-                _createToolPackageStoreDownloaderUninstaller,
+                realCreateToolPackageStoreDownloaderUninstaller,
                 _createShellShimRepository,
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
-                _reporter);
+                _reporter,
+                currentWorkingDirectory: _temporaryDirectory);
 
             // Verify that HTTP sources cause the command to fail
             Action act = () => toolInstallGlobalOrToolPathCommand.Execute();
@@ -984,7 +994,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .And.Message.Should().Contain("NU1302");
 
             // Clean up
-            _fileSystem.File.Delete(Path.Combine(_temporaryDirectory, "nuget.config"));
+            _fileSystem.File.Delete(httpNugetConfig);
         }
     }
 }
