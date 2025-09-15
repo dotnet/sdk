@@ -67,7 +67,7 @@ internal static class MSBuildUtility
         return (projects, isBuiltOrRestored);
     }
 
-    public static BuildOptions GetBuildOptions(ParseResult parseResult, int degreeOfParallelism)
+    public static BuildOptions GetBuildOptions(ParseResult parseResult)
     {
         LoggerUtility.SeparateBinLogArguments(parseResult.UnmatchedTokens, out var binLogArgs, out var otherArgs);
 
@@ -106,7 +106,6 @@ internal static class MSBuildUtility
             parseResult.HasOption(TestCommandParser.VerbosityOption) ? parseResult.GetValue(TestCommandParser.VerbosityOption) : null,
             parseResult.GetValue(MicrosoftTestingPlatformOptions.NoLaunchProfileOption),
             parseResult.GetValue(MicrosoftTestingPlatformOptions.NoLaunchProfileArgumentsOption),
-            degreeOfParallelism,
             otherArgs,
             msbuildArgs);
     }
@@ -137,7 +136,9 @@ internal static class MSBuildUtility
 
         Parallel.ForEach(
             projects,
-            new ParallelOptions { MaxDegreeOfParallelism = buildOptions.DegreeOfParallelism },
+            // We don't use --max-parallel-test-modules here.
+            // If user wants to limit the test applications run in parallel, we don't want to punish them and force the evaluation to also be limited.
+            new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
             (project) =>
             {
                 IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, projectCollection, evaluationContext, buildOptions);

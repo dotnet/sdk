@@ -51,7 +51,7 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
 
         SetupCancelKeyPressHandler();
 
-        BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult, degreeOfParallelism);
+        BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
 
         bool filterModeEnabled = parseResult.HasOption(MicrosoftTestingPlatformOptions.TestModulesFilterOption);
         TestApplicationActionQueue actionQueue;
