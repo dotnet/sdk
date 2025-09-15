@@ -185,9 +185,9 @@ Rutas de acceso buscadas: "{1}", "{2}".</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotConvertDirective">
-        <source>Some directives cannot be converted: the first error is at {0}. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
-        <target state="translated">Algunas directivas no se pueden convertir: el primer error está en {0}. Ejecute el archivo para ver todos los errores de compilación. Especifique "--force" para convertir de todos modos.</target>
-        <note>{Locked="--force"}. {0} is the file path and line number.</note>
+        <source>Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
+        <target state="new">Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</target>
+        <note>{Locked="--force"}</note>
       </trans-unit>
       <trans-unit id="CannotFindCommandName">
         <source>Cannot find a tool in the manifest file that has a command named '{0}'.</source>
@@ -1126,6 +1126,11 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="translated">Permite habilitar la salida de diagnóstico.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DirectiveError">
+        <source>error</source>
+        <target state="new">error</target>
+        <note>Used when reporting directive errors like "file(location): error: message".</note>
+      </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
         <target state="translated">Se eliminaron las directivas '{0}' ({1}) para '{2}' de: {3}</target>
@@ -1217,9 +1222,9 @@ Defina nombres de perfiles distintos.</target>
         <note />
       </trans-unit>
       <trans-unit id="DuplicateDirective">
-        <source>Duplicate directives are not supported: {0} at {1}</source>
-        <target state="translated">No se admiten directivas duplicadas: {0} en {1}</target>
-        <note>{0} is the directive type and name. {1} is the file path and line number.</note>
+        <source>Duplicate directives are not supported: {0}</source>
+        <target state="new">Duplicate directives are not supported: {0}</target>
+        <note>{0} is the directive type and name.</note>
       </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
         <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
@@ -1562,9 +1567,9 @@ Defina nombres de perfiles distintos.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
-        <source>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="translated">La directiva de ''{2}'' debe contener un nombre sin caracteres especiales y un valor opcional separado por ''{1}'' como ''#:{0} Nombre{1}Valor''.</target>
-        <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</note>
+        <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
+        <target state="new">The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</target>
+        <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</note>
       </trans-unit>
       <trans-unit id="InvalidFilePath">
         <source>The specified file must exist and have '.cs' file extension: '{0}'</source>
@@ -1582,9 +1587,9 @@ Defina nombres de perfiles distintos.</target>
         <note>{0} is an option name like '--no-build'.</note>
       </trans-unit>
       <trans-unit id="InvalidProjectDirective">
-        <source>The '#:project' directive at '{0}' is invalid: {1}</source>
-        <target state="translated">La directiva "#:project" en "{0}" no es válida: {1}</target>
-        <note>{0} is the file path and line number. {1} is the inner error message.</note>
+        <source>The '#:project' directive is invalid: {0}</source>
+        <target state="new">The '#:project' directive is invalid: {0}</target>
+        <note>{0} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
         <source>Failed to parse "{0}" as a semantic version.</source>
@@ -1724,9 +1729,9 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
         <note />
       </trans-unit>
       <trans-unit id="MissingDirectiveName">
-        <source>Missing name of '{0}' at {1}.</source>
-        <target state="translated">Falta el nombre de "{0}" en {1}.</target>
-        <note>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</note>
+        <source>Missing name of '{0}'.</source>
+        <target state="new">Missing name of '{0}'.</target>
+        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="MissingTestSessionEnd">
         <source>A test session start event was received without a corresponding test session end.</source>
@@ -2491,14 +2496,14 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
         <note />
       </trans-unit>
       <trans-unit id="PropertyDirectiveInvalidName">
-        <source>Invalid property name at {0}. {1}</source>
-        <target state="translated">Nombre de propiedad no válido en {0}. {1}</target>
-        <note>{0} is the file path and line number. {1} is an inner exception message.</note>
+        <source>Invalid property name: {0}</source>
+        <target state="new">Invalid property name: {0}</target>
+        <note>{0} is an inner exception message.</note>
       </trans-unit>
       <trans-unit id="PropertyDirectiveMissingParts">
-        <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
-        <target state="translated">La directiva de propiedad debe tener dos partes separadas por "=", como "like '#:property PropertyName=PropertyValue": {0}</target>
-        <note>{0} is the file path and line number.{Locked="#:property"}</note>
+        <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</source>
+        <target state="new">The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</target>
+        <note>{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
@@ -3037,9 +3042,9 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <note />
       </trans-unit>
       <trans-unit id="StaticGraphRestoreNotSupported">
-        <source>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</source>
-        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</target>
-        <note>{0} is the file path and line number.{Locked="#:property"}</note>
+        <source>Static graph restore is not supported for file-based apps. Remove the '#:property'.</source>
+        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property'.</target>
+        <note>{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
@@ -3583,9 +3588,9 @@ y los identificadores de los paquetes correspondientes a las herramientas instal
         <note />
       </trans-unit>
       <trans-unit id="UnrecognizedDirective">
-        <source>Unrecognized directive '{0}' at {1}.</source>
-        <target state="translated">Directiva no reconocida "{0}" en {1}.</target>
-        <note>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</note>
+        <source>Unrecognized directive '{0}'.</source>
+        <target state="new">Unrecognized directive '{0}'.</target>
+        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
         <source>Update all tools.</source>

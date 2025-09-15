@@ -7,10 +7,9 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationActionQueue actionQueue, TerminalTestReporter output)
+internal sealed class MSBuildHandler(BuildOptions buildOptions, TerminalTestReporter output)
 {
     private readonly BuildOptions _buildOptions = buildOptions;
-    private readonly TestApplicationActionQueue _actionQueue = actionQueue;
     private readonly TerminalTestReporter _output = output;
 
     private readonly ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> _testApplications = [];
@@ -128,7 +127,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
         }
     }
 
-    public bool EnqueueTestApplications()
+    public bool EnqueueTestApplications(TestApplicationActionQueue queue)
     {
         if (!_areTestingPlatformApplications)
         {
@@ -137,7 +136,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
 
         foreach (var testApp in _testApplications)
         {
-            _actionQueue.Enqueue(testApp);
+            queue.Enqueue(testApp);
         }
         return true;
     }
