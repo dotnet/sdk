@@ -777,7 +777,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
 
             // Browser is launched based on blazor-devserver output "Now listening on: ...".
-            await App.WaitUntilOutputContains($"dotnet watch ⌚ Launching browser: http://localhost:{port}");
+            await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}", ""));
 
             // Middleware should have been loaded to blazor-devserver before the browser is launched:
             App.AssertOutputContains("dbug: Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware[0]");
@@ -847,7 +847,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains(MessageDescriptor.PressCtrlRToRestart);
 
             // Browser is launched based on blazor-devserver output "Now listening on: ...".
-            await App.WaitUntilOutputContains($"dotnet watch ⌚ Launching browser: http://localhost:{port}");
+            await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}", ""));
 
             App.SendControlR();
 
@@ -891,7 +891,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
             App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
-            App.AssertOutputContains($"dotnet watch ⌚ Launching browser: http://localhost:{port}");
+            App.AssertOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}", ""));
             App.Process.ClearOutput();
 
             var scopedCssPath = Path.Combine(testAsset.Path, "RazorClassLibrary", "Components", "Example.razor.css");

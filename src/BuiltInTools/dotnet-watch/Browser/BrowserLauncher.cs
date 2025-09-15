@@ -70,7 +70,7 @@ internal sealed class BrowserLauncher(ILogger logger, EnvironmentOptions environ
             fileName = browserPath;
         }
 
-        logger.LogDebug("Launching browser: {FileName} {Args}", fileName, args);
+        logger.Log(MessageDescriptor.LaunchingBrowser, fileName, args);
 
         if (environmentOptions.TestFlags != TestFlags.None)
         {
