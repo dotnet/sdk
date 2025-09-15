@@ -66,7 +66,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                         return null;
                     }
 
-                    IEnumerable<string> solutionFiles = Directory.EnumerateFiles(solutionDirectory, "*.sln", SearchOption.TopDirectoryOnly);
+                    IEnumerable<string> solutionFiles = [
+                        ..Directory.EnumerateFiles(solutionDirectory, "*.sln", SearchOption.TopDirectoryOnly),
+                        ..Directory.EnumerateFiles(solutionDirectory, "*.slnx", SearchOption.TopDirectoryOnly)
+                    ];
                     foreach (string solutionFile in solutionFiles)
                     {
                         string projectGuid = GetProjectGuid(solutionFile, projectFileFullPath);
