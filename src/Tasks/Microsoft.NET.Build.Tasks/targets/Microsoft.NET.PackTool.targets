@@ -10,17 +10,103 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 
+<!--
+
+NOTE: This file is imported from the following contexts, so be aware when writing Conditions and thinking about evaluation order:
+* cross-targeting (multi-TFM) builds.
+  * these may not have a RID or RIDs set, but still need to be able to pack tools
+  * IsCrossTargetingBuild is set to true in this case
+* 'outer' builds for a single TFM
+  * these builds are RID-agnostic, but still need to be able to pack 'inner', RID-specific tools.
+  * IsCrossTargetingBuild is unset in this case, RuntimeIdentifier is unset, and RuntimeIdentifiers or ToolPackageRuntimeIdentifiers is set to a list of RIDs
+  * if these builds are RID-specific but not AOT, then we pack the outer tool without implementation dlls and the N inner-RID-specific tools
+  * if these builds are RID-specific and AOT, then we pack the outer tool only without implementation dlls
+  * if these builds are RID-agnostic, then we pack the outer tool only with implementation dlls
+* 'inner' builds for a single TFM
+  * these builds are RID-specific, and have RuntimeIdentifier set to a single RID, and RuntimeIdentifiers or ToolPackageRuntimeIdentifiers set to a list of RIDs
+  * these builds pack only the inner, RID-specific tool implementation dlls and have a unique PackageType of DotnetToolRidPackage
+-->
+
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GenerateToolsSettingsFile"
             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GenerateShims"
             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-  <UsingTask TaskName="Microsoft.NET.Build.Tasks.ResolveToolPackagePaths"
-            AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetEmbeddedApphostPaths"
-      AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-  <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetNuGetShortFolderName"
-             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+            AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="AddPackageType"
+            AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+
+  <PropertyGroup>
+    <!-- tools are specially-formatted packages, so we tell nuget Pack to not even try to include build output -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+
+    <!-- Determine information about all of the potential tool packages to build -->
+    <!-- If shims are included, we need to make sure we restore for those RIDs so the apphost shims are available during restore/publish.
+      This means that we need to set RuntimeIdentifiers. However we need to track certain information about the _users_ decisions around RIDs
+      so that we can correctly decide if we need to package RID-specific tools or not. -->
+    <_ToolRidsAreOnlyShims>false</_ToolRidsAreOnlyShims>
+    <_ToolRidsAreOnlyShims Condition="'$(RuntimeIdentifiers)' == '' and $(PackAsToolShimRuntimeIdentifiers) != '' ">true</_ToolRidsAreOnlyShims>
+    <_UserSpecifiedToolPackageRids Condition="'$(ToolPackageRuntimeIdentifiers)' != ''">$(ToolPackageRuntimeIdentifiers)</_UserSpecifiedToolPackageRids>
+    <_UserSpecifiedToolPackageRids Condition="'$(_UserSpecifiedToolPackageRids)' == ''">$(RuntimeIdentifiers)</_UserSpecifiedToolPackageRids>
+    <_HasRIDSpecificTools Condition=" '$(_UserSpecifiedToolPackageRids)' != '' ">true</_HasRIDSpecificTools>
+    <_HasRIDSpecificTools Condition="'$(_HasRIDSpecificTools)' == ''">false</_HasRIDSpecificTools>
+    <RuntimeIdentifiers Condition="'$(PackAsToolShimRuntimeIdentifiers)' != ''">$(_UserSpecifiedToolPackageRids);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
+
+    <_IsRidSpecific>false</_IsRidSpecific>
+    <_IsRidSpecific Condition="'$(RuntimeIdentifier)' != '' and '$(RuntimeIdentifier)' != 'any'">true</_IsRidSpecific>
+
+    <!-- Not determine information about this specific build of a single (or more!) tool packages -->
+    <!-- the publish* properties _can_ be set, but only for the 'inner' RID-specific builds. We need to make sure that for the outer, agnostic build they are unset  -->
+    <!-- RID information is also stripped during Restore, so we need to make sure user
+         decisions are preserved when Restoring, so that publishing-related packages are implicitly included.  -->
+    <PublishSelfContained Condition="!$(_IsRidSpecific) and '$(MSBuildIsRestoring)' != 'true'">false</PublishSelfContained>
+    <!-- Have to set SelfContained similarly because PackTool targets are imported _after_ RuntimeIdentifierInference targets, where the Publish* properties are
+         forwarded to the 'base' properties. -->
+    <SelfContained Condition="!$(_IsRidSpecific) and '$(MSBuildIsRestoring)' != 'true'">false</SelfContained>
+    <PublishTrimmed Condition="!$(_IsRidSpecific) and '$(MSBuildIsRestoring)' != 'true'">false</PublishTrimmed>
+    <PublishReadyToRun Condition="!$(_IsRidSpecific) and '$(MSBuildIsRestoring)' != 'true'">false</PublishReadyToRun>
+    <PublishSingleFile Condition="!$(_IsRidSpecific) and '$(MSBuildIsRestoring)' != 'true'">false</PublishSingleFile>
+
+    <!-- We need to know if the inner builds are _intended_ to be AOT even if we then explicitly disable AOT for the outer builds.
+         Knowing this lets us correctly decide to create the RID-specific inner tools or not when packaging the outer tool. -->
+    <_InnerToolsPublishAot>false</_InnerToolsPublishAot>
+    <_InnerToolsPublishAot Condition="$(_HasRIDSpecificTools) and '$(PublishAot)' == 'true'">true</_InnerToolsPublishAot>
+    <PublishAot Condition="!$(_IsRidSpecific) and '$(MSBuildIsRestoring)' != 'true'">false</PublishAot>
+
+    <!-- Tool implementation files are not included in the primary package when the tool has RID-specific packages.  So only pack the tool implementation
+       (and only depend on publish) if there are no RID-specific packages, or if the RuntimeIdentifier is set. -->
+    <_ToolPackageShouldIncludeImplementation Condition=" '$(_ToolPackageShouldIncludeImplementation)' == '' And '$(PackAsTool)' == 'true' And
+                                                  ('$(_UserSpecifiedToolPackageRids)' == ''
+                                                     or '$(RuntimeIdentifier)' != '')">true</_ToolPackageShouldIncludeImplementation>
+    <_ToolPackageShouldIncludeImplementation Condition="'$(_ToolPackageShouldIncludeImplementation)' == ''">false</_ToolPackageShouldIncludeImplementation>
+
+    <!-- inner builds and non-RID-specific outer builds need publish content-->
+    <_PackToolPublishDependency Condition=" '$(_ToolPackageShouldIncludeImplementation)' != '' and '$(GeneratePackageOnBuild)' != 'true' and $(IsPublishable) == 'true' ">Publish</_PackToolPublishDependency>
+    <!-- BUT builds that GeneratePackageOnBuild can't directly rely on Publish since Publish would trigger Build, causing an infinite loop. -->
+    <!-- To get around this, we try a bit of a workaround: since we can't set NoBuild=true and call Publish that way, we instead trigger all of the
+         dependencies of the no-build Publish Target, _PublishNoBuildAlternative -->
+    <_PackToolPublishDependency Condition=" '$(_ToolPackageShouldIncludeImplementation)' != '' and '$(GeneratePackageOnBuild)' == 'true' and $(IsPublishable) == 'true' ">$(_PublishNoBuildAlternativeDependsOn)</_PackToolPublishDependency>
+
+    <!-- GenerateNuspec is called in two places: crossTargeting NuGet targets, and single-targeting NuGet targets.
+         Tools need to ensure that
+           a) they can set the correct PackageType(s) and
+           b) we can create the necessary inner-RID packages
+         regardless of which way we are invoked. This means that these key entry points need to be callable from both GenerateNuspec methods.
+         This also means that we need to set correct Conditions on the Targets themselves so they don't run if they aren't actually necessary. -->
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetDotnetToolPackageType;_CreateRIDSpecificToolPackages</GenerateNuspecDependsOn>
+
+    <!-- Finally set up the entrypoint for all tool-content regardless of tool type. This doesn't get set as a GenerateNuspecDependsOn
+         Because this target is inherently TFM-specific, and NuGet handles invoking this target once per TFM as part of the packaging process. -->
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackTool</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+  <!--
+
+  TODO:
+  - We now generate an error when trying to install package as a tool if it's not of type DotnetTool: https://github.com/dotnet/sdk/issues/37010
+    - Does this need to be documented as a breaking change?
+  - Consider a way of declaring what RID a RID-specific package is for, besides just the convention in the package ID
+  -->
 
   <!--
     Mark all dependency as private assets. But keep them as Publish. So dependency DLLs will be included in NuGet package, while
@@ -29,49 +115,111 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <_ToolsSettingsFilePath>$(IntermediateOutputPath)DotnetToolSettings.xml</_ToolsSettingsFilePath>
     <SuppressDependenciesWhenPacking Condition=" '$(PackAsTool)' == 'true' ">true</SuppressDependenciesWhenPacking>
-    <_PackToolPublishDependency Condition=" ('$(GeneratePackageOnBuild)' != 'true' and '$(NoBuild)' != 'true') and $(IsPublishable) == 'true' ">_PublishBuildAlternative</_PackToolPublishDependency>
-    <_PackToolPublishDependency Condition=" ('$(GeneratePackageOnBuild)' == 'true' or '$(NoBuild)' == 'true') and $(IsPublishable) == 'true' ">$(_PublishNoBuildAlternativeDependsOn)</_PackToolPublishDependency>
   </PropertyGroup>
 
-  <Target Name="PackTool" DependsOnTargets="GenerateToolsSettingsFileFromBuildProperty;$(_PackToolPublishDependency);_PackToolValidation" Condition=" '$(PackAsTool)' == 'true' ">
+ <!--
+    PackageId must be set before:
+     - _GenerateRestoreProjectSpec -> _GetRestoreSettings
+     - _GenerateToolsSettingsFileInputCache
+     - _GenerateShimInputCache
+     - _GetOutputItemsFromPack
+  -->
+  <Target Name="SetPackToolProperties"
+          BeforeTargets="_GenerateRestoreProjectSpec;_GenerateToolsSettingsFileInputCache;_GenerateShimInputCache;_GetOutputItemsFromPack">
+
+    <PropertyGroup>
+      <!-- Fun fact - UseAppHost is false for NativeAot because _RuntimeIdentifierUsesAppHost gets set to false.
+           So we need to check if PublishAot is set as part of this too. As far as I can tell there is no 'common'
+           property for 'you should expect a native binary here' -->
+      <_ToolUsesPlatformSpecificExecutable Condition="$(_IsRidSpecific) and ('$(UseAppHost)' == 'true' or '$(PublishAot)' == 'true')">true</_ToolUsesPlatformSpecificExecutable>
+      <_ToolUsesPlatformSpecificExecutable Condition="'$(_ToolUsesPlatformSpecificExecutable)' == ''">false</_ToolUsesPlatformSpecificExecutable>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(ToolCommandRunner)' == ''">
+      <ToolCommandRunner Condition="!$(_ToolUsesPlatformSpecificExecutable)">dotnet</ToolCommandRunner>
+      <ToolCommandRunner Condition="$(_ToolUsesPlatformSpecificExecutable)">executable</ToolCommandRunner>
+    </PropertyGroup>
+
+    <!-- Needs to be in a target so we don't need to worry about evaluation order with NativeBinary property -->
+    <PropertyGroup Condition="'$(ToolEntryPoint)' == ''">
+      <ToolEntryPoint Condition="!$(_ToolUsesPlatformSpecificExecutable)">$(TargetFileName)</ToolEntryPoint>
+      <ToolEntryPoint Condition="$(_ToolUsesPlatformSpecificExecutable)">$(AssemblyName)$(_NativeExecutableExtension)</ToolEntryPoint>
+    </PropertyGroup>
+
+    <!-- inner-build tool packages get a RID suffix -->
+    <PropertyGroup Condition="'$(_HasRIDSpecificTools)' != '' And '$(RuntimeIdentifier)' != ''">
+      <PackageId>$(PackageId).$(RuntimeIdentifier)</PackageId>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="PackToolImplementation">
+
     <ItemGroup>
       <_GeneratedFiles Include="$(PublishDepsFilePath)" Condition="'$(GenerateDependencyFile)' != 'true' or '$(_UseBuildDependencyFile)' == 'true'" />
       <_GeneratedFiles Include="$(PublishRuntimeConfigFilePath)"/>
-      <_GeneratedFiles Include="$(_ToolsSettingsFilePath)"/>
     </ItemGroup>
 
-    <ResolveToolPackagePaths
-      AppHostIntermediatePath="$(AppHostIntermediatePath)"
-      ResolvedFileToPublish="@(ResolvedFileToPublish)"
-      PublishDir="$(PublishDir)"
-      TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
-      TargetPlatformMoniker="$(TargetPlatformMoniker)">
+  </Target>
 
-      <Output TaskParameter="ResolvedFileToPublishWithPackagePath" ItemName="_ResolvedFileToPublishWithPackagePath" />
-    </ResolveToolPackagePaths>
+  <!-- This indirection target essentially allows one target dependency (SetPackToolProperties) of PackTool modify the dependencies of PackTool. -->
+  <Target Name="PackToPublishDependencyIndirection"
+          DependsOnTargets="$(_PackToolPublishDependency)"/>
 
+  <Target Name="PackTool" DependsOnTargets="SetPackToolProperties;GenerateToolsSettingsFileFromBuildProperty;PackToPublishDependencyIndirection;_PackToolValidation;PackToolImplementation"
+    Condition=" '$(PackAsTool)' == 'true' "
+    Returns="@(TfmSpecificPackageFile)">
+    <ItemGroup>
+      <_GeneratedFiles Include="$(_ToolsSettingsFilePath)"/>
+      <!-- Note here that we're _not_ computing relative directories inside the package anymore. In our packages, we essentially want to
+          recreate the publish layout, but under a TFM- or RID-specific root path. Because we're globbing from the PublishDir,
+          the MSBuild Items will have the RecursiveDir metadata - this is used by the PackLogic to combine with the PackagePath
+          we set below to ensure we have the correct layout in the end. If the PackLogic didn't try to use RecursiveDir, then
+          we could just explicitly set everything ourselves.
+
+          We _also_ have to filter out apphosts here from platform-agnostic builds, because we don't want to include them in the tool package.
+          This is because we try not to influence the selection of UseAppHost (so that we do not impact 'normal' publishing and end up
+          influencing the contents of the 'normal' publish directory), so it's possible that the 'publish' of an otherwise RID-agnostic
+          tool may include an apphost.
+      -->
+      <_PublishFiles Condition="'$(_ToolPackageShouldIncludeImplementation)' == 'true'" Include="$(PublishDir)/**/*" />
+      <_PublishFiles Condition="'$(UseAppHost)' == 'true' and '$(RuntimeIdentifier)' == ''" Remove="$(PublishDir)$(AssemblyName)$(_NativeExecutableExtension)"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_ToolRidPath Condition="'$(RuntimeIdentifier)' == ''">any</_ToolRidPath>
+      <_ToolRidPath Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</_ToolRidPath>
+    </PropertyGroup>
     <ItemGroup>
       <TfmSpecificPackageFile Include="@(_GeneratedFiles)">
-        <PackagePath>tools/$(_NuGetShortFolderName)/any/%(_GeneratedFiles.RecursiveDir)%(_GeneratedFiles.Filename)%(_GeneratedFiles.Extension)</PackagePath>
+        <PackagePath>tools/$(_ToolPackShortTargetFrameworkName)/$(_ToolRidPath)/%(_GeneratedFiles.RecursiveDir)</PackagePath>
       </TfmSpecificPackageFile>
 
-      <TfmSpecificPackageFile Include="@(_ResolvedFileToPublishWithPackagePath)">
-        <PackagePath>%(_ResolvedFileToPublishWithPackagePath.PackagePath)</PackagePath>
+      <!-- This PackagePath is a little different - instead of mapping _exactly_ where we want the files to be dropped,
+            NuGet is looking at RecursiveDir/NuGetRecursiveDir metadata (which is set in the Pack targets as part of the
+            'walk target per TFM' logic) _in addition_ to our package path. I don't see an easy way to remove RecursiveDir -->
+      <TfmSpecificPackageFile Include="@(_PublishFiles)">
+        <PackagePath>tools/$(_ToolPackShortTargetFrameworkName)/$(_ToolRidPath)/</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
   </Target>
 
   <PropertyGroup>
     <ToolCommandName Condition=" '$(ToolCommandName)' == '' ">$(TargetName)</ToolCommandName>
-    <ToolEntryPoint Condition=" '$(ToolEntryPoint)' == '' ">$(TargetFileName)</ToolEntryPoint>
+    <ToolRuntimeIdentifier Condition=" '$(ToolRuntimeIdentifier)' == ''">$(RuntimeIdentifier)</ToolRuntimeIdentifier>
     <_GenerateToolsSettingsFileCacheFile Condition="'$(_GenerateToolsSettingsFileCacheFile)' == ''">$(IntermediateOutputPath)$(MSBuildProjectName).toolssettingsinput.cache</_GenerateToolsSettingsFileCacheFile>
     <_GenerateToolsSettingsFileCacheFile>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_GenerateToolsSettingsFileCacheFile)))</_GenerateToolsSettingsFileCacheFile>
   </PropertyGroup>
 
   <Target Name="_GenerateToolsSettingsFileInputCache">
     <ItemGroup>
+      <_ToolPackageRuntimeIdentifier Include="$(_UserSpecifiedToolPackageRids)" />
       <_GenerateToolsSettingsFileInputCacheToHash Include="$(ToolEntryPoint)" />
       <_GenerateToolsSettingsFileInputCacheToHash Include="$(ToolCommandName)" />
+      <_GenerateToolsSettingsFileInputCacheToHash Include="$(ToolCommandRunner)" />
+      <_GenerateToolsSettingsFileInputCacheToHash Include="$(ToolRuntimeIdentifier)" />
+      <_GenerateToolsSettingsFileInputCacheToHash Include="$(PackageId)" />
+      <_GenerateToolsSettingsFileInputCacheToHash Include="$(Version)" />
+      <_GenerateToolsSettingsFileInputCacheToHash Include="@(_ToolPackageRuntimeIdentifier->'%(Identity)')" />
     </ItemGroup>
 
     <Hash ItemsToHash="@(_GenerateToolsSettingsFileInputCacheToHash)">
@@ -98,6 +246,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <GenerateToolsSettingsFile
        EntryPointRelativePath="$(ToolEntryPoint)"
        CommandName="$(ToolCommandName)"
+       CommandRunner="$(ToolCommandRunner)"
+       RuntimeIdentifier="$(ToolRuntimeIdentifier)"
+       ToolPackageId="$(PackageId)"
+       ToolPackageVersion="$(Version)"
+       ToolPackageRuntimeIdentifiers="@(_ToolPackageRuntimeIdentifier)"
        ToolsSettingsFilePath="$(_ToolsSettingsFilePath)" />
   </Target>
 
@@ -107,12 +260,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
       TargetPlatformMoniker="$(TargetPlatformMoniker)">
 
-      <Output TaskParameter="NuGetShortFolderName" PropertyName="_NuGetShortFolderName" />
+      <Output TaskParameter="NuGetShortFolderName" PropertyName="_ToolPackShortTargetFrameworkName" />
 
     </GetNuGetShortFolderName>
 
-    <NETSdkError Condition=" '$(SelfContained)' == 'true' "
-             ResourceName="PackAsToolCannotSupportSelfContained" />
+    <PropertyGroup>
+      <_ToolPackShortTargetFrameworkName Condition="'$(SelfContained)' == 'true'">any</_ToolPackShortTargetFrameworkName>
+    </PropertyGroup>
 
     <NETSdkError Condition=" '$(TargetFrameworkIdentifier)' != '.NETCoreApp' "
                  ResourceName="DotnetToolOnlySupportNetcoreapp" />
@@ -151,7 +305,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ApphostsForShimRuntimeIdentifiers="@(_ApphostsForShimRuntimeIdentifiers)"
       IntermediateAssembly="@(IntermediateAssembly->'%(FullPath)')"
       OutputType="$(OutputType)"
-      PackagedShimOutputDirectory="$(PackagedShimOutputRootDirectory)/shims/$(_NuGetShortFolderName)"
+      PackagedShimOutputDirectory="$([MSBuild]::NormalizeDirectory($(PackagedShimOutputRootDirectory), 'shims', $(_ToolPackShortTargetFrameworkName)))"
       PackageId="$(PackageId)"
       PackageVersion="$(PackageVersion)"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
@@ -180,7 +334,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_ComputeExpectedEmbeddedApphostPaths">
     <GetEmbeddedApphostPaths
-      PackagedShimOutputDirectory="$(PackagedShimOutputRootDirectory)/shims/$(_NuGetShortFolderName)"
+      PackagedShimOutputDirectory="$([MSBuild]::NormalizeDirectory($(PackagedShimOutputRootDirectory), 'shims', $(_ToolPackShortTargetFrameworkName)))"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
       ToolCommandName="$(ToolCommandName)">
 
@@ -214,6 +368,63 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <FileWrites Include="$(_ShimInputCacheFile)" />
     </ItemGroup>
+  </Target>
+
+  <Target Name="SetDotnetToolPackageType" Returns="$(_ToolPackageType)">
+
+    <PropertyGroup>
+      <_ToolPackageType Condition="'$(RuntimeIdentifier)' != '' And '$(_HasRIDSpecificTools)' != ''">DotnetToolRidPackage</_ToolPackageType>
+      <_ToolPackageType Condition="'$(_ToolPackageType)' == ''">DotnetTool</_ToolPackageType>
+    </PropertyGroup>
+
+    <!--
+    PackageType is semicolon-delimited, case-insensitive, with an optional version.
+
+    DotnetTool should be added to the set of package types if the PackAsTool property is set to true.
+
+    Examples:
+       PackageType = ''                     -> 'DotnetTool'
+       PackageType = 'MyCustomType'         -> 'DotnetTool;MyCustomType'
+       PackageType = 'MyCustomType, 1.0'    -> 'DotnetTool;MyCustomType, 1.0'
+       PackageType = 'dotnettool'           -> 'dotnettool'
+       PackageType = 'DotnetTool, 1.0.0.0'  -> 'DotnetTool, 1.0.0.0'
+       PackageType = 'DotnetTool , 1.0.0.0' -> 'DotnetTool , 1.0.0.0'
+       PackageType = 'MyDotnetTool'         -> 'DotnetTool;MyDotnetTool'
+
+    _PaddedPackageType is used to ensure that the PackageType is semicolon delimited and can be easily checked for an existing DotnetTool package type.
+
+    All of this should only apply for the 'outer' tool package - the 'inner' RID-specific tool packages are always of type DotnetToolRidPackage.
+    This is so that the inner packages do not appear on any tool search results.
+    -->
+
+    <AddPackageType Condition="$(_ToolPackageType) == 'DotnetTool'" CurrentPackageType="$(PackageType)" PackageTypeToAdd="$(_ToolPackageType)">
+      <Output TaskParameter="UpdatedPackageType" PropertyName="PackageType" />
+    </AddPackageType>
+
+    <PropertyGroup Condition="$(_ToolPackageType) == 'DotnetToolRidPackage'">
+      <PackageType>DotnetToolRidPackage</PackageType>
+    </PropertyGroup>
+  </Target>
+
+  <!-- Orchestrator for making the N RID-specific tool packages if this Tool supports that mode.
+       We can't call this for AOT'd tools because we can't AOT cross-architecture and cross-platform in .NET today. -->
+  <Target Name="_CreateRIDSpecificToolPackages"
+    Condition="'$(RuntimeIdentifier)' == ''
+      and $(_HasRIDSpecificTools)
+      and !$(_InnerToolsPublishAot)">
+    <PropertyGroup>
+        <_PackageRids>$(ToolPackageRuntimeIdentifiers)</_PackageRids>
+        <_PackageRids Condition="'$(_PackageRids)' == ''">$(RuntimeIdentifiers)</_PackageRids>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <_rids Include="$(_PackageRids)" />
+        <_RidSpecificToolPackageProject Include="$(MSBuildProjectFullPath)" AdditionalProperties="RuntimeIdentifier=%(_rids.Identity);" />
+    </ItemGroup>
+
+    <MSBuild BuildInParallel="true" Projects="@(_RidSpecificToolPackageProject)" Targets="Pack">
+        <Output TaskParameter="TargetOutputs" ItemName="_ToolPackageOutputs" />
+    </MSBuild>
   </Target>
 
 </Project>

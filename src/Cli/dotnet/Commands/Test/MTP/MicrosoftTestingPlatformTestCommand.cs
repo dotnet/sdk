@@ -1,0 +1,150 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
+using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.TemplateEngine.Cli.Commands;
+
+namespace Microsoft.DotNet.Cli.Commands.Test;
+
+internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHelp, ICommandDocument
+{
+    private TerminalTestReporter? _output;
+    private byte _cancelled;
+
+    public MicrosoftTestingPlatformTestCommand(string name, string? description = null) : base(name, description)
+    {
+        TreatUnmatchedTokensAsErrors = false;
+    }
+
+    public string DocsLink => "https://aka.ms/dotnet-test";
+
+    public int Run(ParseResult parseResult, bool isHelp = false)
+    {
+        int? exitCode = null;
+        try
+        {
+            exitCode = RunInternal(parseResult, isHelp);
+            return exitCode.Value;
+        }
+        finally
+        {
+            CompleteRun(exitCode);
+        }
+    }
+
+    private int RunInternal(ParseResult parseResult, bool isHelp)
+    {
+        ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult);
+        ValidationUtility.ValidateSolutionOrProjectOrDirectoryOrModulesArePassedCorrectly(parseResult);
+
+        int degreeOfParallelism = GetDegreeOfParallelism(parseResult);
+        var testOptions = new TestOptions(IsHelp: isHelp, IsDiscovery: parseResult.HasOption(MicrosoftTestingPlatformOptions.ListTestsOption));
+
+        InitializeOutput(degreeOfParallelism, parseResult, testOptions);
+
+        SetupCancelKeyPressHandler();
+
+        BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult, degreeOfParallelism);
+
+        bool filterModeEnabled = parseResult.HasOption(MicrosoftTestingPlatformOptions.TestModulesFilterOption);
+        TestApplicationActionQueue actionQueue;
+        if (filterModeEnabled)
+        {
+            actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, OnHelpRequested);
+            var testModulesFilterHandler = new TestModulesFilterHandler(actionQueue, _output);
+            if (!testModulesFilterHandler.RunWithTestModulesFilter(parseResult))
+            {
+                return ExitCode.GenericFailure;
+            }
+        }
+        else
+        {
+            var msBuildHandler = new MSBuildHandler(buildOptions, _output);
+            if (!msBuildHandler.RunMSBuild())
+            {
+                return ExitCode.GenericFailure;
+            }
+
+            // NOTE: Don't create TestApplicationActionQueue before RunMSBuild.
+            // The constructor will do Task.Run calls matching the degree of parallelism, and if we did that before the build, that can
+            // be slowing us down unnecessarily.
+            // Alternatively, if we can enqueue right after every project evaluation without waiting all evaluations to be done, we can enqueue early.
+            actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, OnHelpRequested);
+            if (!msBuildHandler.EnqueueTestApplications(actionQueue))
+            {
+                return ExitCode.GenericFailure;
+            }
+        }
+
+        actionQueue.EnqueueCompleted();
+        // Don't inline exitCode variable. We want to always call WaitAllActions first.
+        var exitCode = actionQueue.WaitAllActions();
+        exitCode = _output.HasHandshakeFailure ? ExitCode.GenericFailure : exitCode;
+        if (exitCode == ExitCode.Success &&
+            parseResult.HasOption(MicrosoftTestingPlatformOptions.MinimumExpectedTestsOption) &&
+            parseResult.GetValue(MicrosoftTestingPlatformOptions.MinimumExpectedTestsOption) is { } minimumExpectedTests &&
+            _output.TotalTests < minimumExpectedTests)
+        {
+            exitCode = ExitCode.MinimumExpectedTestsPolicyViolation;
+        }
+
+        return exitCode;
+    }
+
+    private void SetupCancelKeyPressHandler()
+    {
+        Console.CancelKeyPress += (s, e) =>
+        {
+            _output?.StartCancelling();
+            // We are not sure what the exit code will be, there might be an exception.
+            CompleteRun(exitCode: null);
+        };
+    }
+
+    [MemberNotNull(nameof(_output))]
+    private void InitializeOutput(int degreeOfParallelism, ParseResult parseResult, TestOptions testOptions)
+    {
+        var console = new SystemConsole();
+        var showPassedTests = parseResult.GetValue(MicrosoftTestingPlatformOptions.OutputOption) == OutputOptions.Detailed;
+        var noProgress = parseResult.HasOption(MicrosoftTestingPlatformOptions.NoProgressOption);
+        var noAnsi = parseResult.HasOption(MicrosoftTestingPlatformOptions.NoAnsiOption);
+
+        // TODO: Replace this with proper CI detection that we already have in telemetry. https://github.com/microsoft/testfx/issues/5533#issuecomment-2838893327
+        bool inCI = string.Equals(Environment.GetEnvironmentVariable("TF_BUILD"), "true", StringComparison.OrdinalIgnoreCase) || string.Equals(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), "true", StringComparison.OrdinalIgnoreCase);
+
+        _output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
+        {
+            ShowPassedTests = showPassedTests,
+            ShowProgress = !noProgress,
+            UseAnsi = !noAnsi,
+            UseCIAnsi = inCI,
+            ShowAssembly = true,
+            ShowAssemblyStartAndComplete = true,
+            MinimumExpectedTests = parseResult.GetValue(MicrosoftTestingPlatformOptions.MinimumExpectedTestsOption),
+        });
+
+        // This is ugly, and we need to replace it by passing out some info from testing platform to inform us that some process level retry plugin is active.
+        var isRetry = parseResult.GetArguments().Contains("--retry-failed-tests");
+
+        _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, testOptions.IsDiscovery, testOptions.IsHelp, isRetry);
+    }
+
+    private static int GetDegreeOfParallelism(ParseResult parseResult)
+    {
+        var degreeOfParallelism = parseResult.GetValue(MicrosoftTestingPlatformOptions.MaxParallelTestModulesOption);
+        if (degreeOfParallelism <= 0)
+            degreeOfParallelism = Environment.ProcessorCount;
+        return degreeOfParallelism;
+    }
+
+    private void CompleteRun(int? exitCode)
+    {
+        if (Interlocked.CompareExchange(ref _cancelled, 1, 0) == 0)
+        {
+            _output?.TestExecutionCompleted(DateTimeOffset.Now, exitCode);
+        }
+    }
+}
