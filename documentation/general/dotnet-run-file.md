@@ -32,6 +32,8 @@ Additionally, the implicit project file has the following customizations:
 
 - `PublishAot` is set to `true`, see [`dotnet publish file.cs`](#other-commands) for more details.
 
+- `UserSecretsId` is set to a hash of the entry point file path.
+
 - [File-level directives](#directives-for-project-metadata) are applied.
 
 - The following are virtual only, i.e., not preserved after [converting to a project](#grow-up):
@@ -53,8 +55,6 @@ Additionally, the implicit project file has the following customizations:
   - `DisableDefaultItemsInProjectFolder` property is set to `true` which results in `EnableDefaultItems=false` by default
     in case there is a project or solution in the same directory as the file-based app.
     This ensures that items from nested projects and artifacts are not included by the app.
-
-  - `UserSecretsId` is set implicitly to a hash of the entry point file path.
 
 ## Grow up
 

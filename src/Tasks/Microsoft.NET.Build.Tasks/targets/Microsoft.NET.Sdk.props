@@ -130,7 +130,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- <WarningsAsErrors>$(WarningsAsErrors);NU1605</WarningsAsErrors> -->
 
     <!-- Implicitly set UserSecretsId for file-based apps. -->
-    <UserSecretsId Condition="'$(FileBasedProgram)' == 'true' and '$(UserSecretsId)' == ''">$(MSBuildProjectName)-$([MSBuild]::StableStringHash($(MSBuildProjectFullPath.ToLowerInvariant()), 'Sha256'))</UserSecretsId>
+    <_ImplicitFileBasedProgramUserSecretsId Condition="'$(FileBasedProgram)' == 'true'">$(MSBuildProjectName)-$([MSBuild]::StableStringHash($(MSBuildProjectFullPath.ToLowerInvariant()), 'Sha256'))</_ImplicitFileBasedProgramUserSecretsId>
+    <UserSecretsId Condition="'$(FileBasedProgram)' == 'true' and '$(UserSecretsId)' == ''">$(_ImplicitFileBasedProgramUserSecretsId)</UserSecretsId>
   </PropertyGroup>
 
   <PropertyGroup>
