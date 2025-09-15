@@ -154,7 +154,7 @@ public class Telemetry : ITelemetry
             _client.Context.Session.Id = CurrentSessionId;
             _client.Context.Device.OperatingSystem = CLIRuntimeEnvironment.OperatingSystem;
 
-            _commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties();
+            _commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties(CurrentSessionId);
             _commonMeasurements = FrozenDictionary<string, double>.Empty;
         }
         catch (Exception e)

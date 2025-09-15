@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Aborted" xml:space="preserve">
-    <value>Aborted</value>
-  </data>
   <data name="ActiveTestsRunning_FullTestsCount" xml:space="preserve">
     <value>{0} tests running</value>
   </data>
@@ -646,14 +643,13 @@ If not specified the file will be generated inside the default 'TestResults' dir
     <value>Test runner '{0}' is not supported.</value>
   </data>
   <data name="CmdUnsupportedVSTestTestApplicationsDescription" xml:space="preserve">
-    <value>dotnet.config defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+    <value>global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
 The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</value>
-    <comment>{0} is one or more project names.
-Microsoft.Testing.Platform is a name, don't translate.
-dotnet.config is a name don't translate.</comment>
+    <comment>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
+{0} is one or more project names.</comment>
   </data>
   <data name="CmdUseLockFileOptionDescription" xml:space="preserve">
     <value>Enables project lock file to be generated and used with restore.</value>
@@ -1102,12 +1098,12 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <comment>{0}, {1} number of tests</comment>
   </data>
   <data name="InvalidProjectDirective" xml:space="preserve">
-    <value>The '#:project' directive at '{0}' is invalid: {1}</value>
-    <comment>{0} is the file path and line number. {1} is the inner error message.</comment>
+    <value>The '#:project' directive is invalid: {0}</value>
+    <comment>{0} is the inner error message.</comment>
   </data>
   <data name="MissingDirectiveName" xml:space="preserve">
-    <value>Missing name of '{0}' at {1}.</value>
-    <comment>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</comment>
+    <value>Missing name of '{0}'.</value>
+    <comment>{0} is the directive name like 'package' or 'sdk'.</comment>
   </data>
   <data name="MsBuildDefinition" xml:space="preserve">
     <value>Run Microsoft Build Engine (MSBuild) commands.</value>
@@ -1597,28 +1593,32 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <value>Project(s)</value>
   </data>
   <data name="PropertyDirectiveInvalidName" xml:space="preserve">
-    <value>Invalid property name at {0}. {1}</value>
-    <comment>{0} is the file path and line number. {1} is an inner exception message.</comment>
+    <value>Invalid property name: {0}</value>
+    <comment>{0} is an inner exception message.</comment>
   </data>
   <data name="PropertyDirectiveMissingParts" xml:space="preserve">
-    <value>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</value>
-    <comment>{0} is the file path and line number.{Locked="#:property"}</comment>
+    <value>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</value>
+    <comment>{Locked="#:property"}</comment>
   </data>
   <data name="StaticGraphRestoreNotSupported" xml:space="preserve">
-    <value>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</value>
-    <comment>{0} is the file path and line number.{Locked="#:property"}</comment>
+    <value>Static graph restore is not supported for file-based apps. Remove the '#:property'.</value>
+    <comment>{Locked="#:property"}</comment>
+  </data>
+  <data name="DirectiveError" xml:space="preserve">
+    <value>error</value>
+    <comment>Used when reporting directive errors like "file(location): error: message".</comment>
   </data>
   <data name="InvalidDirectiveName" xml:space="preserve">
-    <value>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</value>
-    <comment>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</comment>
+    <value>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</value>
+    <comment>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</comment>
   </data>
   <data name="CannotConvertDirective" xml:space="preserve">
-    <value>Some directives cannot be converted: the first error is at {0}. Run the file to see all compilation errors. Specify '--force' to convert anyway.</value>
-    <comment>{Locked="--force"}. {0} is the file path and line number.</comment>
+    <value>Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</value>
+    <comment>{Locked="--force"}</comment>
   </data>
   <data name="DuplicateDirective" xml:space="preserve">
-    <value>Duplicate directives are not supported: {0} at {1}</value>
-    <comment>{0} is the directive type and name. {1} is the file path and line number.</comment>
+    <value>Duplicate directives are not supported: {0}</value>
+    <comment>{0} is the directive type and name.</comment>
   </data>
   <data name="InvalidOptionForStdin" xml:space="preserve">
     <value>Cannot specify option '{0}' when also using '-' to read the file from standard input.</value>
@@ -2257,8 +2257,8 @@ and the corresponding package Ids for installed tools using the command
     <value>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</value>
   </data>
   <data name="UnrecognizedDirective" xml:space="preserve">
-    <value>Unrecognized directive '{0}' at {1}.</value>
-    <comment>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</comment>
+    <value>Unrecognized directive '{0}'.</value>
+    <comment>{0} is the directive name like 'package' or 'sdk'.</comment>
   </data>
   <data name="UpdateAllOptionDescription" xml:space="preserve">
     <value>Update all tools.</value>
@@ -2669,5 +2669,33 @@ Proceed?</value>
   </data>
   <data name="DotnetTestIncompatibleHandshakeVersion" xml:space="preserve">
     <value>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</value>
+  </data>
+  <data name="ErrorRunningTestModule" xml:space="preserve">
+    <value>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
+
+{2}</value>
+    <comment>{Locked="RunCommand"}{Locked="RunArguments"}
+{2} is the exception that occurred.</comment>
+  </data>
+  <data name="UnexpectedTestSessionEnd" xml:space="preserve">
+    <value>A test session end event was received without a corresponding test session start.</value>
+  </data>
+  <data name="MissingTestSessionEnd" xml:space="preserve">
+    <value>A test session start event was received without a corresponding test session end.</value>
+  </data>
+  <data name="Aborted" xml:space="preserve">
+    <value>Aborted</value>
+  </data>
+  <data name="UnexpectedHelpMessage" xml:space="preserve">
+    <value>An unexpected help-related message was received when `--help` wasn't used.</value>
+  </data>
+  <data name="MismatchingHandshakeInfo" xml:space="preserve">
+    <value>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</value>
+  </data>
+  <data name="UnexpectedMessageInHelpMode" xml:space="preserve">
+    <value>A message of type '{0}' was received in help mode, which is not expected.</value>
+  </data>
+  <data name="UnexpectedMessageWithoutHandshake" xml:space="preserve">
+    <value>A message of type '{0}' was received before we got any handshakes, which is unexpected.</value>
   </data>
 </root>

@@ -133,6 +133,7 @@ jobs:
         env:
           BuildConfig: $(buildConfiguration)
           DOTNET_CLI_USE_MSBUILD_SERVER: 1
+          OPENSSL_ENABLE_SHA1_SIGNATURES: 1
 
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
