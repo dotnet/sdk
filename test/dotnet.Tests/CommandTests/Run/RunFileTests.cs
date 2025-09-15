@@ -2185,7 +2185,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void UserSecrets(bool useIdArg, string? userSecretsId)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+
+        string code = $"""
             #:package Microsoft.Extensions.Configuration.UserSecrets@*-*
             {(userSecretsId is null ? "" : $"#:property UserSecretsId={userSecretsId}")}
 
@@ -2195,8 +2196,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 .AddUserSecrets<Program>()
                 .Build();
 
+            Console.WriteLine("v1");
             Console.WriteLine(config.GetDebugView());
-            """);
+            """;
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, code);
 
         if (useIdArg)
         {
@@ -2222,11 +2227,18 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 .Should().Pass();
         }
 
-        new DotnetCommand(Log, "run", "Program.cs")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOut("MySecret=MyValue (JsonConfigurationProvider for 'secrets.json' (Optional))");
+        Build(testInstance, BuildLevel.All, expectedOutput: """
+            v1
+            MySecret=MyValue (JsonConfigurationProvider for 'secrets.json' (Optional))
+            """);
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance, BuildLevel.Csc, expectedOutput: """
+            v2
+            MySecret=MyValue (JsonConfigurationProvider for 'secrets.json' (Optional))
+            """);
     }
 
     /// <summary>
