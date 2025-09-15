@@ -14,6 +14,9 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         public ITaskItem[] Assets { get; set; }
 
         [Output]
+        public ITaskItem[] Endpoints { get; set; }
+
+        [Output]
         public ITaskItem[] DiscoveryPatterns { get; set; }
 
         [Output]
@@ -32,6 +35,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(ManifestPath));
 
                 Assets = manifest.Assets?.Select(a => a.ToTaskItem()).ToArray() ?? Array.Empty<ITaskItem>();
+
+                Endpoints = manifest.Endpoints?.Select(a => a.ToTaskItem()).ToArray() ?? Array.Empty<ITaskItem>();
 
                 DiscoveryPatterns = manifest.DiscoveryPatterns?.Select(dp => dp.ToTaskItem()).ToArray() ?? Array.Empty<ITaskItem>();
 
