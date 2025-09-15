@@ -111,12 +111,12 @@
       "choices": [
         {
           "choice": "VSTest",
-          "description": "Use the VSTest test runner",
+          "description": "Use VSTest as test runner",
           "displayName": "VSTest"
         },
         {
           "choice": "Microsoft.Testing.Platform",
-          "description": "Use the Microsoft.Testing.Platform test runner",
+          "description": "Use Microsoft.Testing.Platform as test runner",
           "displayName": "Microsoft.Testing.Platform"
         }
       ]

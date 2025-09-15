@@ -31,5 +31,5 @@ Template options:
                                                                                                           disable        Doesn't roll forward. Exact match required.
   --test-runner <Microsoft.Testing.Platform|VSTest>                                                     The test runner to use.
                                                                                                         Type: choice
-                                                                                                          VSTest                      Use the VSTest test runner
-                                                                                                          Microsoft.Testing.Platform  Use the Microsoft.Testing.Platform test runner
+                                                                                                          VSTest                      Use VSTest as test runner
+                                                                                                          Microsoft.Testing.Platform  Use Microsoft.Testing.Platform as test runner
