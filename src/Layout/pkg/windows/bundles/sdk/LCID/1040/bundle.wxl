@@ -1,0 +1,95 @@
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  <String Id="Caption" Value="Programma di installazione di [WixBundleName]"/>
+  <String Id="Title" Value="[BUNDLEMONIKER]"/>
+  <String Id="ConfirmCancelMessage" Value="Annullare?"/>
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Versione precedente"/>
+  <String Id="HelpHeader" Value="Guida all'installazione"/>
+  
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [directory] - Consente di installare, riparare, disinstallare o creare una copia locale completa del bundle nella directory. Install è l'opzione predefinita.
+
+/passive | /quiet - Consente di visualizzare un'interfaccia utente minima senza richieste o di non visualizzare alcuna interfaccia utente e alcuna richiesta. Per impostazione predefinita, vengono visualizzati l'interfaccia utente e tutte le richieste.
+
+/norestart - Consente di sopprimere qualsiasi tentativo di riavvio. Per impostazione predefinita, prima del riavvio verrà visualizzata una richiesta nell'interfaccia utente.
+
+/log &lt;LOG_FILE&gt; - Esegue la registrazione nel file specificato. Per impostazione predefinita, viene creato un file di log in %TEMP%.
+
+/lang &lt;LCID&gt; - Visualizza l'interfaccia utente utilizzando il codice identificativo della lingua numerico specificato."/>
+  <String Id="HelpCloseButton" Value="&amp;Chiudi"/>
+  <String Id="InstallAcceptCheckbox" Value="A&amp;ccetto i termini e le condizioni di licenza"/>
+  <String Id="InstallOptionsButton" Value="&amp;Opzioni"/>
+  <String Id="InstallInstallButton" Value="&amp;Installa"/>
+  <String Id="InstallCloseButton" Value="&amp;Chiudi"/>
+  <String Id="ProgressHeader" Value="Stato dell'installazione"/>
+  <String Id="ProgressLabel" Value="Elaborazione:"/>
+  <String Id="OverallProgressPackageText" Value="Inizializzazione in corso..."/>
+  <String Id="ProgressCancelButton" Value="&amp;Annulla"/>
+  <String Id="ModifyHeader" Value="Modifica installazione"/>
+  <String Id="ModifyText" Value="Selezionare Ripara per reinstallare il prodotto o Disinstalla per rimuoverlo."/>
+  <String Id="ModifyRepairButton" Value="&amp;Ripristina"/>
+  <String Id="ModifyUninstallButton" Value="&amp;Disinstalla"/>
+  <String Id="ModifyCloseButton" Value="&amp;Chiudi"/>
+  <String Id="SuccessCacheHeader" Value="Memorizzazione nella cache completata"/>
+  <String Id="SuccessRepairHeader" Value="Riparazione completata"/>
+  <String Id="SuccessUninstallHeader" Value="Disinstallazione completata"/>
+  <String Id="SuccessLayoutHeader" Value="Layout completato"/>
+  <String Id="SuccessModifyHeader" Value="Modifica completata"/>
+  <String Id="SuccessUnsafeUninstallHeader" Value="Disinstallazione completata"/>
+  <String Id="SuccessHeader" Value="Configurazione completata"/>
+  <String Id="SuccessInstallHeader" Value="Installazione completata correttamente"/>
+  <String Id="SuccessLaunchButton" Value="&amp;Avvio"/>
+  <String Id="SuccessRestartText" Value="Per completare l'installazione del software, è necessario riavviare il computer."/>
+  <String Id="SuccessUninstallRestartText" Value="È necessario riavviare il computer per completare la rimozione del software."/>
+  <String Id="SuccessRestartButton" Value="&amp;Riavvia"/>
+  <String Id="SuccessCloseButton" Value="&amp;Chiudi"/>
+  <String Id="FailureHeader" Value="Configurazione non riuscita"/>
+  <String Id="FailureInstallHeader" Value="Configurazione non riuscita"/>
+  <String Id="FailureUninstallHeader" Value="Disinstallazione non riuscita"/>
+  <String Id="FailureRepairHeader" Value="Riparazione non riuscita"/>
+  <String Id="FailureHyperlinkLogText" Value="La configurazione non è stata completata a causa di uno o più problemi. Risolvere i problemi e quindi riprovare a eseguire la configurazione. Per altre informazioni, vedere il &lt;a href=&quot;#&quot;&gt;file di log&lt;/a&gt;."/>
+  <String Id="FailureRestartText" Value="Per completare il rollback del software, è necessario riavviare il computer."/>
+  <String Id="FailureRestartButton" Value="&amp;Riavvia"/>
+  <String Id="FailureCloseButton" Value="&amp;Chiudi"/>
+  <String Id="FilesInUseTitle" Value="File in uso"/>
+  <String Id="FilesInUseLabel" Value="Le applicazioni seguenti usano file che necessitano di aggiornamento:"/>
+  <String Id="FilesInUseNetfxCloseRadioButton" Value="Chiudi le &amp;applicazioni."/>
+  <String Id="FilesInUseCloseRadioButton" Value="&amp;Chiudi tutte le applicazioni e tenta di riavviarle."/>
+  <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Non chiudere le applicazioni. Sarà necessario riavviare il sistema."/>
+  <String Id="FilesInUseRetryButton" Value="&amp;Riprova"/>
+  <String Id="FilesInUseIgnoreButton" Value="&amp;Ignora"/>
+  <String Id="FilesInUseExitButton" Value="E&amp;sci"/>
+  
+  <String Id="FirstTimeWelcomeMessage" Value="Sono stati installati i prodotti seguenti:
+    • .NET SDK [DOTNETSDKVERSION]
+    • Runtime .NET [DOTNETRUNTIMEVERSION]
+    • Runtime ASP.NET Core [ASPNETCOREVERSION]
+    • Runtime Desktop Windows .NET [WINFORMSANDWPFVERSION]
+
+Questo prodotto raccoglie i dati di utilizzo
+    • &lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Altre informazioni e rifiuto esplicito&lt;/A&gt;"/>
+  <String Id="NetDocumentationLinkText" Value="Risorse
+    • &lt;A HREF=&quot;https://aka.ms/dotnet-docs&quot;&gt;Documentazione di .NET&lt;/A&gt;"/>
+  <String Id="SdkDocumentationLinkText" Value="    • &lt;A HREF=&quot;https://aka.ms/dotnet-sdk-docs&quot;&gt;Documentazione SDK&lt;/A&gt;"/>
+  <String Id="ReleaseNotesLinkText" Value="    • &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Note sulla versione &lt;/A&gt;"/>
+  <String Id="TutorialsLinkText" Value="    • &lt;A HREF=&quot;https://aka.ms/dotnet-tutorials&quot;&gt;Esercitazioni&lt;/A&gt;"/>
+  
+  <String Id="WelcomeHeader" Value=".NET SDK" Localizable="no"/>
+  
+  <String Id="WelcomeDescription" Value="SDK .NET consente di creare, eseguire e testare applicazioni .NET. È possibile scegliere tra più linguaggi, editor e strumenti di sviluppo e sfruttare un vasto ecosistema di librerie per creare app per Web, dispositivi mobili, desktop, giochi e IoT. Ci auguriamo che venga apprezzato."/>
+  <String Id="VisualStudioWarning" Value="Se si prevede di usare .NET [VERSIONMAJOR]. [VERSIONMINOR] con Visual Studio, è necessario Visual Studio 2022 [MINIMUMVSVERSION] o versione successiva. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Altre informazioni&lt;/A&gt;."/>
+  <String Id="LicenseAssent" Value="Facendo clic su Installa, si accettano le condizioni seguenti:"/>
+  <String Id="LearnMoreTitle" Value="Altre informazioni su .NET"/>
+  <String Id="ResourcesHeader" Value="Risorse"/>
+  <String Id="CoreDocumentationLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-docs&quot;&gt;Documentazione .NET&lt;/A&gt;"/>
+  <String Id="SDKDocumentation" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-docs&quot;&gt;Documentazione SDK&lt;/A&gt;"/>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;Informativa sulla privacy&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;Informazioni sulle licenze per .NET&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Raccolta di telemetria e rifiuto esplicito&lt;/A&gt;"/>
+  <String Id="InstallationNoteTitle" Value="Nota sull'installazione"/>
+  <String Id="InstallationNote" Value="Durante il processo di installazione verrà eseguito un comando che migliorerà la velocità di ripristino del progetto e abiliterà l'accesso offline. Il completamento del comando richiederà un minuto."/>
+  
+  <String Id="VisualStudioWarning" Value="Se si prevede di usare .NET [VERSIONMAJOR]. [VERSIONMINOR] con Visual Studio, è necessario Visual Studio 2022 [MINIMUMVSVERSION] o versione successiva. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Altre informazioni&lt;/A&gt;."/>
+  <String Id="LicenseAssent" Value="Facendo clic su Installa, si accettano le condizioni seguenti:"/>
+  <String Id="InstallPathx64x86" Value="Percorso di installazione per le installazioni x64 SDK: &quot;[DOTNETHOME_X64]&quot; non può essere uguale a quello delle installazioni di x86 SDK: &quot;[DOTNETHOME_X86]&quot;"/>
+  <String Id="InstallPathARM64x86" Value="Percorso di installazione per le installazioni di ARM64 SDK: &quot;[DOTNETHOME_ARM64]&quot; non può essere uguale a quello delle installazioni di x86 SDK: &quot;[DOTNETHOME_X86]&quot;"/>
+  <String Id="InstallPathARM64x64" Value="Percorso di installazione per le installazioni di ARM64 SDK: &quot;[DOTNETHOME_ARM64]&quot; non può essere uguale a quello delle installazioni x64 SDK: &quot;[DOTNETHOME_X64]&quot;"/>
+</WixLocalization>

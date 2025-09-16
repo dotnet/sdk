@@ -228,6 +228,11 @@ Tüm diğer adları göstermek için 'dotnet {1} --show-aliases' komutunu bağı
         <target state="translated">Şablonlar aranıyor...</target>
         <note />
       </trans-unit>
+      <trans-unit id="Colon_Separator_Deprecated">
+        <source>The colon separator "::" has been deprecated in favor of the at symbol "@" for separating the package from the version in dotnet new install. In your case, this means {0}@{1} instead of {0}::{1}.</source>
+        <target state="translated">İki nokta üst üste ayracı "::", dotnet new install'da paketi sürümden ayırmak için at sembolü "@" lehine kullanımdan kaldırılmıştır. Bu sizin durumunuzda, {0}::{1} yerine {0}@{1} olacaktır.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ColumnNameAuthor">
         <source>Author</source>
         <target state="translated">Yazar</target>
@@ -901,8 +906,8 @@ The header is followed by the list of parameters and their errors (might be seve
         <note />
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Error">
-        <source>Failed to instatiate template '{0}', the following constraints are not met:</source>
-        <target state="translated">'{0}' şablonu başlatılamadı, şu kısıtlamalar karşılanmıyor:</target>
+        <source>Failed to instantiate template '{0}', the following constraints are not met:</source>
+        <target state="translated">'{0}' şablonunun örneği oluşturulamadı, şu kısıtlamalar karşılanmıyor:</target>
         <note>{0} - template name (user friendly)</note>
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Hint">

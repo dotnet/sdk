@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+
   <PropertyGroup>
     <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
     <AssemblyName>Msbuild.Tests.Utilities</AssemblyName>
@@ -15,11 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Runtime.Serialization.Primitives" />
-    <PackageReference Include="FluentAssertions" />
     <PackageReference Include="xunit" />
     <PackageReference Include="Microsoft.Build" />
-    <PackageReference Include="System.Net.Http" />
   </ItemGroup>
 
 </Project>

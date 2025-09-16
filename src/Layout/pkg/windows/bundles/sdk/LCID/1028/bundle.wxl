@@ -1,0 +1,95 @@
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  <String Id="Caption" Value="[WixBundleName] 安裝程式"/>
+  <String Id="Title" Value="[BUNDLEMONIKER]"/>
+  <String Id="ConfirmCancelMessage" Value="您確定要取消嗎?"/>
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="先前的版本"/>
+  <String Id="HelpHeader" Value="安裝程式說明"/>
+  
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [directory] - 安裝、修復、解除安裝或在目錄中建立搭售方案的完整本機複本。預設會進行安裝。
+
+/passive | /quiet - 顯示最基本的 UI 且不出現提示，或是不顯示任何 UI 且不出現提示。預設會顯示 UI 及所有提示。
+
+/norestart - 抑制任何重新啟動嘗試。根據預設，UI 在重新啟動前會先提示。
+
+/log &lt;LOG_FILE&gt; - 記錄到指定的檔案。預設會在 %TEMP% 中建立記錄檔。
+
+/lang &lt;LCID&gt; - 使用指定的數字語言代碼識別碼顯示 UI。"/>
+  <String Id="HelpCloseButton" Value="關閉(&amp;C)"/>
+  <String Id="InstallAcceptCheckbox" Value="我同意授權條款和條件(&amp;A)"/>
+  <String Id="InstallOptionsButton" Value="選項(&amp;O)"/>
+  <String Id="InstallInstallButton" Value="安裝(&amp;I)"/>
+  <String Id="InstallCloseButton" Value="關閉(&amp;C)"/>
+  <String Id="ProgressHeader" Value="安裝程式進度"/>
+  <String Id="ProgressLabel" Value="正在處理:"/>
+  <String Id="OverallProgressPackageText" Value="正在初始化..."/>
+  <String Id="ProgressCancelButton" Value="取消(&amp;C)"/>
+  <String Id="ModifyHeader" Value="修改安裝程式"/>
+  <String Id="ModifyText" Value="選擇「修復」以重新安裝產品，或選擇「解除安裝」以移除產品。"/>
+  <String Id="ModifyRepairButton" Value="修復(&amp;R)"/>
+  <String Id="ModifyUninstallButton" Value="解除安裝(&amp;U)"/>
+  <String Id="ModifyCloseButton" Value="關閉(&amp;C)"/>
+  <String Id="SuccessCacheHeader" Value="快取已成功完成"/>
+  <String Id="SuccessRepairHeader" Value="修復已成功完成"/>
+  <String Id="SuccessUninstallHeader" Value="解除安裝已成功完成"/>
+  <String Id="SuccessLayoutHeader" Value="配置已成功完成"/>
+  <String Id="SuccessModifyHeader" Value="修改已成功完成"/>
+  <String Id="SuccessUnsafeUninstallHeader" Value="解除安裝已成功完成"/>
+  <String Id="SuccessHeader" Value="安裝程式成功"/>
+  <String Id="SuccessInstallHeader" Value="安裝已成功完成"/>
+  <String Id="SuccessLaunchButton" Value="啟動(&amp;L)"/>
+  <String Id="SuccessRestartText" Value="您必須重新啟動電腦，以完成軟體的安裝。"/>
+  <String Id="SuccessUninstallRestartText" Value="您必須重新啟動電腦，才能完成軟體移除。"/>
+  <String Id="SuccessRestartButton" Value="重新啟動(&amp;R)"/>
+  <String Id="SuccessCloseButton" Value="關閉(&amp;C)"/>
+  <String Id="FailureHeader" Value="安裝程式失敗"/>
+  <String Id="FailureInstallHeader" Value="安裝程式失敗"/>
+  <String Id="FailureUninstallHeader" Value="解除安裝失敗"/>
+  <String Id="FailureRepairHeader" Value="修復失敗"/>
+  <String Id="FailureHyperlinkLogText" Value="一或多個問題導致設定失敗。請修正問題，然後重試安裝程式。如需詳細資訊，請參考&lt;a href=&quot;#&quot;&gt;記錄檔&lt;/a&gt;。"/>
+  <String Id="FailureRestartText" Value="必須重新啟動電腦，才能完成軟體的復原。"/>
+  <String Id="FailureRestartButton" Value="重新啟動(&amp;R)"/>
+  <String Id="FailureCloseButton" Value="關閉(&amp;C)"/>
+  <String Id="FilesInUseTitle" Value="使用中的檔案"/>
+  <String Id="FilesInUseLabel" Value="以下應用程式正在使用需要進行更新的檔案:"/>
+  <String Id="FilesInUseNetfxCloseRadioButton" Value="關閉應用程式(&amp;A)。"/>
+  <String Id="FilesInUseCloseRadioButton" Value="請關閉應用程式然後嘗試重新啟動。(&amp;A)"/>
+  <String Id="FilesInUseDontCloseRadioButton" Value="不要關閉應用程式(&amp;D)。需要重新啟動。"/>
+  <String Id="FilesInUseRetryButton" Value="重試(&amp;R)"/>
+  <String Id="FilesInUseIgnoreButton" Value="略過(&amp;I)"/>
+  <String Id="FilesInUseExitButton" Value="結束(&amp;X)"/>
+  
+  <String Id="FirstTimeWelcomeMessage" Value="已安裝下列產品:
+    • .NET SDK [DOTNETSDKVERSION]
+    • .NET Runtime [DOTNETRUNTIMEVERSION]
+    • ASP.NET Core Runtime [ASPNETCOREVERSION]
+    • .NET Windows Desktop Runtime [WINFORMSANDWPFVERSION]
+
+此產品會收集使用方式資料
+    • &lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;更多資訊與退出方法&lt;/A&gt;"/>
+  <String Id="NetDocumentationLinkText" Value="資源
+    • &lt;A HREF=&quot;https://aka.ms/dotnet-docs&quot;&gt;.NET 文件&lt;/A&gt;"/>
+  <String Id="SdkDocumentationLinkText" Value="    • &lt;A HREF=&quot;https://aka.ms/dotnet-sdk-docs&quot;&gt;SDK 文件&lt;/A&gt;"/>
+  <String Id="ReleaseNotesLinkText" Value="    • &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;版本資訊&lt;/A&gt;"/>
+  <String Id="TutorialsLinkText" Value="    • &lt;A HREF=&quot;https://aka.ms/dotnet-tutorials&quot;&gt;教學課程&lt;/A&gt;"/>
+  
+  <String Id="WelcomeHeader" Value=".NET SDK" Localizable="no"/>
+  
+  <String Id="WelcomeDescription" Value=".NET SDK 可用於建置、執行和測試 .NET 應用程式。您可以選擇多種語言、編輯器以及開發人員工具，並可利用程式庫的大型生態系統，來建置 Web、行動裝置、桌面、遊戲及 IoT 的應用程式。希望您會喜歡!"/>
+  <String Id="VisualStudioWarning" Value="如果計劃使用 .NET [VERSIONMAJOR].[VERSIONMINOR] 搭配 Visual Studio，需要 Visual Studio 2022 [MINIMUMVSVERSION] 或更新版本。&lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;深入了解&lt;/A&gt;。"/>
+  <String Id="LicenseAssent" Value="按一下 “安裝” 即表示您同意下列條款:"/>
+  <String Id="LearnMoreTitle" Value="深入了解 .NET"/>
+  <String Id="ResourcesHeader" Value="資源"/>
+  <String Id="CoreDocumentationLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-docs&quot;&gt;.NET 文件&lt;/A&gt;"/>
+  <String Id="SDKDocumentation" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-docs&quot;&gt;SDK 文件&lt;/A&gt;"/>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;隱私權聲明&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;.NET 授權資訊&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;遙測收集和選擇退出&lt;/A&gt;"/>
+  <String Id="InstallationNoteTitle" Value="安裝附註"/>
+  <String Id="InstallationNote" Value="安裝程序期間將會執行命令，加快專案還原速度並啟用離線存取。最多需要一分鐘的時間完成。"/>
+  
+  <String Id="VisualStudioWarning" Value="如果計劃使用 .NET [VERSIONMAJOR].[VERSIONMINOR] 搭配 Visual Studio，需要 Visual Studio 2022 [MINIMUMVSVERSION] 或更新版本。&lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;深入了解&lt;/A&gt;。"/>
+  <String Id="LicenseAssent" Value="按一下 “安裝” 即表示您同意下列條款:"/>
+  <String Id="InstallPathx64x86" Value="x64 SDK 安裝的安裝路徑: &quot;[DOTNETHOME_X64]&quot; 不能與 x86 SDK 安裝的路徑相同: &quot;[DOTNETHOME_X86]&quot;"/>
+  <String Id="InstallPathARM64x86" Value="ARM64 SDK 安裝的安裝路徑: &quot;[DOTNETHOME_ARM64]&quot; 不能與 x86 SDK 安裝的路徑相同: &quot;[DOTNETHOME_X86]&quot;"/>
+  <String Id="InstallPathARM64x64" Value="ARM64 SDK 安裝的安裝路徑: &quot;[DOTNETHOME_ARM64]&quot; 不能與 x64 SDK 安裝的路徑相同: &quot;[DOTNETHOME_X64]&quot;"/>
+</WixLocalization>
