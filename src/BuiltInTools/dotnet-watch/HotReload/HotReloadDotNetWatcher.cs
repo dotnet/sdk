@@ -46,25 +46,18 @@ namespace Microsoft.DotNet.Watch
         {
             CancellationTokenSource? forceRestartCancellationSource = null;
 
-            if (!_context.Options.NonInteractive)
-            {
-                _context.Logger.Log(MessageDescriptor.HotReloadEnabled);
-                _context.Logger.Log(MessageDescriptor.PressCtrlRToRestart);
+            _context.Logger.Log(MessageDescriptor.HotReloadEnabled);
+            _context.Logger.Log(MessageDescriptor.PressCtrlRToRestart);
 
-                _console.KeyPressed += (key) =>
-                {
-                    if (key.Modifiers.HasFlag(ConsoleModifiers.Control) && key.Key == ConsoleKey.R && forceRestartCancellationSource is { } source)
-                    {
-                        // provide immediate feedback to the user:
-                        _context.Logger.Log(source.IsCancellationRequested ? MessageDescriptor.RestartInProgress : MessageDescriptor.RestartRequested);
-                        source.Cancel();
-                    }
-                };
-            }
-            else
+            _console.KeyPressed += (key) =>
             {
-                _context.Logger.Log(MessageDescriptor.HotReloadEnabled with { Severity = MessageSeverity.Verbose });
-            }
+                if (key.Modifiers.HasFlag(ConsoleModifiers.Control) && key.Key == ConsoleKey.R && forceRestartCancellationSource is { } source)
+                {
+                    // provide immediate feedback to the user:
+                    _context.Logger.Log(source.IsCancellationRequested ? MessageDescriptor.RestartInProgress : MessageDescriptor.RestartRequested);
+                    source.Cancel();
+                }
+            };
 
             using var fileWatcher = new FileWatcher(_context.Logger, _context.EnvironmentOptions);
 

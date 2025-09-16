@@ -49,51 +49,15 @@ internal sealed class TestApplication(
             Logger.LogTrace($"Starting test process with command '{processStartInfo.FileName}' and arguments '{processStartInfo.Arguments}'.");
 
             using var process = Process.Start(processStartInfo)!;
-            var standardOutput = process.StandardOutput;
-            var standardError = process.StandardError;
-
-            var tcsStdOutput = new TaskCompletionSource<string>();
-            var tcsStdError = new TaskCompletionSource<string>();
 
             // Reading from process stdout/stderr is done on separate threads to avoid blocking IO on the threadpool.
             // Note: even with 'process.StandardOutput.ReadToEndAsync()' or 'process.BeginOutputReadLine()', we ended up with
             // many TP threads just doing synchronous IO, slowing down the progress of the test run.
             // We want to read requests coming through the pipe and sending responses back to the test app as fast as possible.
-            var tStdOut = new Thread(() =>
-            {
-                StringBuilder? builder = null;
-                while (true)
-                {
-                    if (standardOutput.ReadLine() is not { } line)
-                    {
-                        tcsStdOutput.SetResult(builder?.ToString() ?? string.Empty);
-                        return;
-                    }
+            var stdOutTask = Task.Factory.StartNew(static standardOutput => ((StreamReader)standardOutput!).ReadToEnd(), process.StandardOutput, TaskCreationOptions.LongRunning);
+            var stdErrTask = Task.Factory.StartNew(static standardError => ((StreamReader)standardError!).ReadToEnd(), process.StandardError, TaskCreationOptions.LongRunning);
 
-                    (builder ??= new()).AppendLine(line);
-                }
-            });
-            tStdOut.Name = "TestApp StdOut read";
-            tStdOut.Start();
-
-            var tStdErr = new Thread(() =>
-            {
-                StringBuilder? builder = null;
-                while (true)
-                {
-                    if (standardError.ReadLine() is not { } line)
-                    {
-                        tcsStdError.SetResult(builder?.ToString() ?? string.Empty);
-                        return;
-                    }
-
-                    (builder ??= new()).AppendLine(line);
-                }
-            });
-            tStdErr.Name = "TestApp StdErr read";
-            tStdErr.Start();
-
-            var outputAndError = await Task.WhenAll(tcsStdOutput.Task, tcsStdError.Task);
+            var outputAndError = await Task.WhenAll(stdOutTask, stdErrTask);
             await process.WaitForExitAsync();
 
             _handler.OnTestProcessExited(process.ExitCode, outputAndError[0], outputAndError[1]);
@@ -138,6 +102,12 @@ internal sealed class TestApplication(
             {
                 string value = Environment.ExpandEnvironmentVariables(entry.Value);
                 processStartInfo.Environment[entry.Key] = value;
+            }
+
+            // Env variables specified on command line override those specified in launch profile:
+            foreach (var (name, value) in TestOptions.EnvironmentVariables)
+            {
+                processStartInfo.Environment[name] = value;
             }
 
             if (!_buildOptions.NoLaunchProfileArguments &&
