@@ -3,8 +3,6 @@
 
 <UsageData>
   <IgnorePatterns>
-    <UsagePattern IdentityGlob="Microsoft.SourceBuild.Intermediate.*/*" />
-
     <!-- TODO: Ignore needed until https://github.com/NuGet/Home/issues/11059 is addressed. -->
     <UsagePattern IdentityGlob="Nuget.*/*" />
     <UsagePattern IdentityGlob="Microsoft.Build.NuGetSdkResolver/*" />
@@ -22,7 +20,11 @@
     <UsagePattern IdentityGlob="Microsoft.Build.Utilities.Core/*16.11.0*" />
     <UsagePattern IdentityGlob="Microsoft.Extensions.FileProviders.Abstractions/*6.0.0*" />
     <UsagePattern IdentityGlob="Microsoft.Extensions.FileSystemGlobbing/*6.0.0*" />
-    <UsagePattern IdentityGlob="System.Composition/*7.0.0*" />
+    <UsagePattern IdentityGlob="Microsoft.NET.StringTools/17.7.2" />
+    <UsagePattern IdentityGlob="Microsoft.VisualStudio.Setup.Configuration.Interop/3.2.2146" />
+    <UsagePattern IdentityGlob="System.Collections.Immutable/8.0.0" />
+    <UsagePattern IdentityGlob="System.CommandLine.Rendering/0.4.0-alpha.24112.1" />
+    <UsagePattern IdentityGlob="System.Composition/*8.0.0*" />
     <UsagePattern IdentityGlob="System.Composition.AttributedModel/*7.0.0*" />
     <UsagePattern IdentityGlob="System.Configuration.ConfigurationManager/*7.0.0*" />
     <UsagePattern IdentityGlob="System.Composition.Convention/*7.0.0*" />
@@ -30,26 +32,25 @@
     <UsagePattern IdentityGlob="System.Composition.Runtime/*7.0.0*" />
     <UsagePattern IdentityGlob="System.Composition.TypedParts/*7.0.0*" />
     <UsagePattern IdentityGlob="System.Diagnostics.EventLog/*7.0.0*" />
+    <UsagePattern IdentityGlob="System.Formats.Asn1/*8.0.1*" />
     <UsagePattern IdentityGlob="System.Reflection.MetadataLoadContext/*7.0.0*" />
+    <UsagePattern IdentityGlob="System.Reflection.Metadata/8.0.0" />
     <UsagePattern IdentityGlob="System.Security.Cryptography.ProtectedData/*7.0.0*" />
 
-    <!-- (Don't include these for 9.0) Allow 8.0.2xx and higher to use any version of these packages since source build
-         is only applicable to 8.0.1xx. -->
-    <UsagePattern IdentityGlob="Microsoft.Extensions.DependencyInjection/*8.0.0*" />
-    <UsagePattern IdentityGlob="Microsoft.Extensions.DependencyInjection.Abstractions/8.0.*" />
-    <UsagePattern IdentityGlob="Microsoft.TemplateEngine.Abstractions/8.0.*" />
-    <UsagePattern IdentityGlob="Microsoft.TemplateEngine.Core/8.0.*" />
-    <UsagePattern IdentityGlob="Microsoft.TemplateEngine.Core.Contracts/8.0.*" />
-    <UsagePattern IdentityGlob="Microsoft.TemplateEngine.Edge/8.0.*" />
-    <UsagePattern IdentityGlob="Microsoft.TemplateEngine.Orchestrator.RunnableProjects/8.0.*" />
-    <UsagePattern IdentityGlob="Microsoft.TemplateEngine.Utils/8.0.*" />
-    <UsagePattern IdentityGlob="Microsoft.TemplateSearch.Common/8.0.*" />
-    <UsagePattern IdentityGlob="System.Drawing.Common/8.0.*" />
-    <UsagePattern IdentityGlob="System.Reflection.Metadata/*8.0.0*" />
-    <UsagePattern IdentityGlob="System.Threading.Tasks.Dataflow/*8.0.0*" />
-    <UsagePattern IdentityGlob="Valleysoft.DockerCredsProvider/*" />
-
     <!-- Transitive dependencies from roslyn -->
+    <UsagePattern IdentityGlob="System.Diagnostics.EventLog/8.0.0" />
+    <UsagePattern IdentityGlob="Microsoft.Extensions.DependencyInjection/8.0.0" />
     <UsagePattern IdentityGlob="Microsoft.Extensions.Options/8.0.0" />
+    <UsagePattern IdentityGlob="Microsoft.Extensions.Primitives/8.0.0" />
+
+    <!-- Used only for publishing -->
+    <UsagePattern IdentityGlob="Microsoft.Net.Compilers.Toolset.Framework/*" />
+
+    <!-- These are coming in via runtime but the source-build infra isn't able to automatically pick up the right intermediate. -->
+    <UsagePattern IdentityGlob="Microsoft.NETCore.App.Crossgen2.linux-x64/*9.0.*" />
+
+    <UsagePattern IdentityGlob="System.IO.Pipelines/*8.0.0*" />
+    <UsagePattern IdentityGlob="System.Threading.Tasks.Dataflow/*8.0.0*" />
   </IgnorePatterns>
+
 </UsageData>
