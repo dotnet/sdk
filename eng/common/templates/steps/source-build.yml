@@ -129,7 +129,4 @@ steps:
 - task: ComponentGovernanceComponentDetection@0
   displayName: Component Detection (Exclude upstream cache)
   inputs:
-    ${{ if eq(length(parameters.cgIgnoreDirectories), 0) }}:
-      ignoreDirectories: '$(System.DefaultWorkingDirectory)/artifacts/source-build/self/src/artifacts/obj/source-built-upstream-cache'
-    ${{ else }}:
-      ignoreDirectories: ${{ join(',', parameters.cgIgnoreDirectories) }}
+    ignoreDirectories: '$(System.DefaultWorkingDirectory)/artifacts/source-build/self/src/artifacts/obj/source-built-upstream-cache'
