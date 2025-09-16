@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
@@ -41,13 +42,16 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
         ValidationUtility.ValidateSolutionOrProjectOrDirectoryOrModulesArePassedCorrectly(parseResult);
 
         int degreeOfParallelism = GetDegreeOfParallelism(parseResult);
-        var testOptions = new TestOptions(IsHelp: isHelp, IsDiscovery: parseResult.HasOption(MicrosoftTestingPlatformOptions.ListTestsOption));
+        var testOptions = new TestOptions(
+            IsHelp: isHelp,
+            IsDiscovery: parseResult.HasOption(MicrosoftTestingPlatformOptions.ListTestsOption),
+            EnvironmentVariables: parseResult.GetValue(CommonOptions.EnvOption) ?? ImmutableDictionary<string, string>.Empty);
 
         InitializeOutput(degreeOfParallelism, parseResult, testOptions);
 
         SetupCancelKeyPressHandler();
 
-        BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult, degreeOfParallelism);
+        BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
 
         bool filterModeEnabled = parseResult.HasOption(MicrosoftTestingPlatformOptions.TestModulesFilterOption);
         TestApplicationActionQueue actionQueue;

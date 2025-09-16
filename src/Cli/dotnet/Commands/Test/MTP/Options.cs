@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal record TestOptions(bool IsHelp, bool IsDiscovery);
+internal record TestOptions(bool IsHelp, bool IsDiscovery, IReadOnlyDictionary<string, string> EnvironmentVariables);
 
 internal record PathOptions(string? ProjectPath, string? SolutionPath, string? ResultsDirectoryPath, string? ConfigFilePath, string? DiagnosticOutputDirectoryPath);
 
@@ -14,6 +14,5 @@ internal record BuildOptions(
     Utils.VerbosityOptions? Verbosity,
     bool NoLaunchProfile,
     bool NoLaunchProfileArguments,
-    int DegreeOfParallelism,
     List<string> UnmatchedTokens,
     IEnumerable<string> MSBuildArgs);
