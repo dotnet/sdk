@@ -17,7 +17,7 @@ public class DockerRegistryTests
         _loggerFactory = new TestLoggerFactory(testOutput);
     }
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49300")]
     public async Task GetFromRegistry()
     {
         var loggerFactory = new TestLoggerFactory(_testOutput);
@@ -37,7 +37,7 @@ public class DockerRegistryTests
         Assert.NotNull(downloadedImage);
     }
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49300")]
     public async Task WriteToPrivateBasicRegistry()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(WriteToPrivateBasicRegistry));
