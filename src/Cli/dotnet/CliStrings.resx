@@ -1,0 +1,829 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="UnsupportedProjectType" xml:space="preserve">
+    <value>Project '{0}' has an unknown project type and cannot be added to the solution file. Contact your SDK provider for support.</value>
+  </data>
+  <data name="ProjectAlreadyHasAreference" xml:space="preserve">
+    <value>Project already has a reference to `{0}`.</value>
+  </data>
+  <data name="ProjectReferenceCouldNotBeFound" xml:space="preserve">
+    <value>Project reference `{0}` could not be found.</value>
+  </data>
+  <data name="ProjectReferenceRemoved" xml:space="preserve">
+    <value>Project reference `{0}` removed.</value>
+  </data>
+  <data name="Project" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="Reference" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="ProjectReference" xml:space="preserve">
+    <value>Project reference</value>
+  </data>
+  <data name="ProjectReferenceOneOrMore" xml:space="preserve">
+    <value>Project reference(s)</value>
+  </data>
+  <data name="PackageReference" xml:space="preserve">
+    <value>Package reference</value>
+  </data>
+  <data name="P2P" xml:space="preserve">
+    <value>Project to Project</value>
+  </data>
+  <data name="Package" xml:space="preserve">
+    <value>Package</value>
+  </data>
+  <data name="Solution" xml:space="preserve">
+    <value>Solution</value>
+  </data>
+  <data name="Library" xml:space="preserve">
+    <value>Library</value>
+  </data>
+  <data name="ReferenceAddedToTheProject" xml:space="preserve">
+    <value>Reference `{0}` added to the project.</value>
+  </data>
+  <data name="Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Update" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="New" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="List" xml:space="preserve">
+    <value>List</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="File" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="Directory" xml:space="preserve">
+    <value>Directory</value>
+  </data>
+  <data name="Type" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="Value" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="CommonFileNotFound" xml:space="preserve">
+    <value>File `{0}` not found.</value>
+  </data>
+  <data name="SpecifyAtLeastOne" xml:space="preserve">
+    <value>Specify at least one {0}.</value>
+  </data>
+  <data name="RequiredCommandNotPassed" xml:space="preserve">
+    <value>Required command was not provided.</value>
+  </data>
+  <data name="CouldNotFindAnyProjectInDirectory" xml:space="preserve">
+    <value>Could not find any project in `{0}`.</value>
+  </data>
+  <data name="CouldNotFindProjectOrDirectory" xml:space="preserve">
+    <value>Could not find project or directory `{0}`.</value>
+  </data>
+  <data name="MoreThanOneProjectInDirectory" xml:space="preserve">
+    <value>Found more than one project in `{0}`. Specify which one to use.</value>
+  </data>
+  <data name="FoundInvalidProject" xml:space="preserve">
+    <value>Found a project `{0}` but it is invalid.</value>
+  </data>
+  <data name="InvalidProject" xml:space="preserve">
+    <value>Invalid project `{0}`.</value>
+  </data>
+  <data name="InvalidProjectWithExceptionMessage" xml:space="preserve">
+    <value>Invalid project `{0}`. {1}.</value>
+  </data>
+  <data name="CouldNotFindSolutionIn" xml:space="preserve">
+    <value>Specified solution file {0} does not exist, or there is no solution file in the directory.</value>
+  </data>
+  <data name="CouldNotFindSolutionOrDirectory" xml:space="preserve">
+    <value>Could not find solution or directory `{0}`.</value>
+  </data>
+  <data name="MoreThanOneSolutionInDirectory" xml:space="preserve">
+    <value>Found more than one solution file in {0}. Specify which one to use.</value>
+  </data>
+  <data name="InvalidSolutionFormatString" xml:space="preserve">
+    <value>Invalid solution `{0}`. {1}.</value>
+  </data>
+  <data name="SolutionDoesNotExist" xml:space="preserve">
+    <value>Specified solution file {0} does not exist, or there is no solution file in the directory.</value>
+  </data>
+  <data name="ProjectDoesNotExist" xml:space="preserve">
+    <value>Project `{0}` does not exist.</value>
+  </data>
+  <data name="ProjectIsInvalid" xml:space="preserve">
+    <value>Project `{0}` is invalid.</value>
+  </data>
+  <data name="SpecifyAtLeastOneProjectToAdd" xml:space="preserve">
+    <value>You must specify at least one project to add.</value>
+  </data>
+  <data name="ProjectAddedToTheSolution" xml:space="preserve">
+    <value>Project `{0}` added to the solution.</value>
+  </data>
+  <data name="ProjectRemovedFromTheSolution" xml:space="preserve">
+    <value>Project `{0}` removed from the solution.</value>
+  </data>
+  <data name="SolutionAlreadyContainsProject" xml:space="preserve">
+    <value>Solution {0} already contains project {1}.</value>
+  </data>
+  <data name="SpecifyAtLeastOneReferenceToRemove" xml:space="preserve">
+    <value>You must specify at least one reference to remove.</value>
+  </data>
+  <data name="ProjectNotFoundInTheSolution" xml:space="preserve">
+    <value>Project `{0}` could not be found in the solution.</value>
+  </data>
+  <data name="ProjectRemoved" xml:space="preserve">
+    <value>Project `{0}` removed from solution.</value>
+  </data>
+  <data name="SpecifyAtLeastOneProjectToRemove" xml:space="preserve">
+    <value>You must specify at least one project to remove.</value>
+  </data>
+  <data name="NoReferencesFound" xml:space="preserve">
+    <value>There are no {0} references in project {1}.</value>
+  </data>
+  <data name="NoProjectsFound" xml:space="preserve">
+    <value>No projects found in the solution.</value>
+  </data>
+  <data name="ProjectArgumentName" xml:space="preserve">
+    <value>PROJECT</value>
+  </data>
+  <data name="ProjectOrFileArgumentName" xml:space="preserve">
+    <value>PROJECT | FILE</value>
+  </data>
+  <data name="ProjectArgumentDescription" xml:space="preserve">
+    <value>The project file to operate on. If a file is not specified, the command will search the current directory for one.</value>
+  </data>
+  <data name="ProjectOrFileArgumentDescription" xml:space="preserve">
+    <value>The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file.</value>
+  </data>
+  <data name="FileArgumentDescription" xml:space="preserve">
+    <value>The file-based app to operate on.</value>
+  </data>
+  <data name="CommonCmdFramework" xml:space="preserve">
+    <value>FRAMEWORK</value>
+  </data>
+  <data name="ProjectNotCompatibleWithFrameworks" xml:space="preserve">
+    <value>Project `{0}` cannot be added due to incompatible targeted frameworks between the two projects. Review the project you are trying to add and verify that is compatible with the following targets:</value>
+  </data>
+  <data name="ProjectDoesNotTargetFramework" xml:space="preserve">
+    <value>Project `{0}` does not target framework `{1}`.</value>
+  </data>
+  <data name="ProjectCouldNotBeEvaluated" xml:space="preserve">
+    <value>Project `{0}` could not be evaluated. Evaluation failed with following error:
+{1}.</value>
+  </data>
+  <data name="VerbosityOptionDescription" xml:space="preserve">
+    <value>Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].</value>
+  </data>
+  <data name="CmdVersionSuffixDescription" xml:space="preserve">
+    <value>Set the value of the $(VersionSuffix) property to use when building the project.</value>
+  </data>
+  <data name="ShowHelpDescription" xml:space="preserve">
+    <value>Show command line help.</value>
+  </data>
+  <data name="NoRestoreDescription" xml:space="preserve">
+    <value>Do not restore the project before building.</value>
+  </data>
+  <data name="ToolSettingsInvalidXml" xml:space="preserve">
+    <value>Invalid XML: {0}</value>
+  </data>
+  <data name="ToolSettingsMissingCommandName" xml:space="preserve">
+    <value>Tool defines a command with a missing name setting.</value>
+  </data>
+  <data name="ToolSettingsMissingEntryPoint" xml:space="preserve">
+    <value>Command '{0}' is missing an entry point setting.</value>
+  </data>
+  <data name="ToolSettingsInvalidCommandName" xml:space="preserve">
+    <value>Command '{0}' contains one or more of the following invalid characters: {1}.</value>
+  </data>
+  <data name="ToolSettingsMoreThanOneCommand" xml:space="preserve">
+    <value>More than one command is defined for the tool.</value>
+  </data>
+  <data name="ToolSettingsUnsupportedRunner" xml:space="preserve">
+    <value>Tool '{0}' uses unsupported runner '{1}'."</value>
+  </data>
+  <data name="ToolUnsupportedRuntimeIdentifier" xml:space="preserve">
+    <value>The tool does not support the current architecture or operating system ({0}). Supported runtimes: {1}</value>
+  </data>
+  <data name="ShellShimConflict" xml:space="preserve">
+    <value>Command '{0}' conflicts with an existing command from another tool.</value>
+  </data>
+  <data name="CannotCreateShimForEmptyExecutablePath" xml:space="preserve">
+    <value>Cannot create shell shim for an empty executable path.</value>
+  </data>
+  <data name="FailedToRetrieveToolConfiguration" xml:space="preserve">
+    <value>Failed to retrieve tool configuration: {0}</value>
+  </data>
+  <data name="EnvironmentPathLinuxManualInstructions" xml:space="preserve">
+    <value>Tools directory '{0}' is not currently on the PATH environment variable.
+If you are using bash, you can add it to your profile by running the following command:
+
+cat &lt;&lt; \EOF &gt;&gt; ~/.bash_profile
+# Add .NET Core SDK tools
+export PATH="$PATH:{0}"
+EOF
+
+You can add it to the current session by running the following command:
+
+export PATH="$PATH:{0}"
+</value>
+  </data>
+  <data name="EnvironmentPathLinuxNeedLogout" xml:space="preserve">
+    <value>Since you just installed the .NET SDK, you will need to logout or restart your session before running the tool you installed.</value>
+  </data>
+  <data name="EnvironmentPathOSXBashManualInstructions" xml:space="preserve">
+    <value>Tools directory '{0}' is not currently on the PATH environment variable.
+If you are using bash, you can add it to your profile by running the following command:
+
+cat &lt;&lt; \EOF &gt;&gt; ~/.bash_profile
+# Add .NET Core SDK tools
+export PATH="$PATH:{0}"
+EOF
+
+You can add it to the current session by running the following command:
+
+export PATH="$PATH:{0}"
+</value>
+  </data>
+  <data name="EnvironmentPathOSXZshManualInstructions" xml:space="preserve">
+    <value>Tools directory '{0}' is not currently on the PATH environment variable.
+If you are using zsh, you can add it to your profile by running the following command:
+
+cat &lt;&lt; \EOF &gt;&gt; ~/.zprofile
+# Add .NET Core SDK tools
+export PATH="$PATH:{0}"
+EOF
+
+And run `zsh -l` to make it available for current session.
+
+You can only add it to the current session by running the following command:
+
+export PATH="$PATH:{0}"
+</value>
+  </data>
+  <data name="EnvironmentPathOSXNeedReopen" xml:space="preserve">
+    <value>Since you just installed the .NET SDK, you will need to reopen terminal before running the tool you installed.</value>
+  </data>
+  <data name="EnvironmentPathWindowsManualInstructions" xml:space="preserve">
+    <value>Tools directory '{0}' is not currently on the PATH environment variable.
+
+You can add the directory to the PATH by running the following command:
+
+setx PATH "%PATH%;{0}"
+</value>
+  </data>
+  <data name="EnvironmentPathWindowsNeedReopen" xml:space="preserve">
+    <value>Since you just installed the .NET SDK, you will need to reopen the Command Prompt window before running the tool you installed.</value>
+  </data>
+  <data name="FailedToSetToolsPathEnvironmentVariable" xml:space="preserve">
+    <value>Failed to add '{0}' to the PATH environment variable. Add this directory to your PATH to use tools installed with 'dotnet tool install'.</value>
+  </data>
+  <data name="FailedToCreateShellShim" xml:space="preserve">
+    <value>Failed to create tool shim for command '{0}': {1}</value>
+  </data>
+  <data name="FailedToRemoveShellShim" xml:space="preserve">
+    <value>Failed to remove tool shim for command '{0}': {1}</value>
+  </data>
+  <data name="FailedSettingShimPermissions" xml:space="preserve">
+    <value>Failed to set user executable permissions for shell shim: {0}</value>
+  </data>
+  <data name="FailedToUninstallToolPackage" xml:space="preserve">
+    <value>Failed to uninstall tool package '{0}': {1}</value>
+  </data>
+  <data name="MissingToolEntryPointFile" xml:space="preserve">
+    <value>Entry point file '{0}' for command '{1}' was not found in the package.</value>
+  </data>
+  <data name="MissingToolSettingsFile" xml:space="preserve">
+    <value>Settings file 'DotnetToolSettings.xml' was not found in the package.</value>
+  </data>
+  <data name="ToolPackageConflictPackageId" xml:space="preserve">
+    <value>Tool '{0}' (version '{1}') is already installed.</value>
+  </data>
+  <data name="ToolPackageNotATool" xml:space="preserve">
+    <value>Package {0} is not a .NET tool.</value>
+  </data>
+  <data name="FailedToFindStagedToolPackage" xml:space="preserve">
+    <value>Failed to find staged tool package '{0}'.</value>
+  </data>
+  <data name="ColumnMaxWidthMustBeGreaterThanZero" xml:space="preserve">
+    <value>Column maximum width must be greater than zero.</value>
+  </data>
+  <data name="ToolSettingsInvalidLeadingDotCommandName" xml:space="preserve">
+    <value>The command name '{0}' cannot begin with a leading dot (.).</value>
+  </data>
+  <data name="FormatVersionIsHigher" xml:space="preserve">
+    <value>Format version is higher than supported. This tool may not be supported in this SDK version. Update your SDK.</value>
+  </data>
+  <data name="FormatVersionIsMalformed" xml:space="preserve">
+    <value>Format version is malformed. This tool may not be supported in this SDK version. Contact the author of the tool.</value>
+  </data>
+  <data name="FormatVersionIsMissing" xml:space="preserve">
+    <value>Format version is missing. This tool may not be supported in this SDK version. Contact the author of the tool.</value>
+  </data>
+  <data name="MoreThanOnePackagedShimAvailable" xml:space="preserve">
+    <value>More than one packaged shim is available: {0}.</value>
+  </data>
+  <data name="FailedToReadNuGetLockFile" xml:space="preserve">
+    <value>Failed to read NuGet assets file for tool package '{0}': {1}</value>
+  </data>
+  <data name="FailedToFindLibraryInAssetsFile" xml:space="preserve">
+    <value>Failed to find library in NuGet assets file for tool package '{0}': {1}</value>
+  </data>
+  <data name="LevelArgumentName" xml:space="preserve">
+    <value>LEVEL</value>
+  </data>
+  <data name="FrameworkArgumentName" xml:space="preserve">
+    <value>FRAMEWORK</value>
+  </data>
+  <data name="RuntimeIdentifierArgumentName" xml:space="preserve">
+    <value>RUNTIME_IDENTIFIER</value>
+  </data>
+  <data name="ConfigurationArgumentName" xml:space="preserve">
+    <value>CONFIGURATION</value>
+  </data>
+  <data name="VersionSuffixArgumentName" xml:space="preserve">
+    <value>VERSION_SUFFIX</value>
+  </data>
+  <data name="SolutionOrProjectArgumentDescription" xml:space="preserve">
+    <value>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</value>
+  </data>
+  <data name="SolutionOrProjectArgumentName" xml:space="preserve">
+    <value>PROJECT | SOLUTION</value>
+  </data>
+  <data name="SolutionOrProjectOrFileArgumentDescription" xml:space="preserve">
+    <value>The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</value>
+  </data>
+  <data name="SolutionOrProjectOrFileArgumentName" xml:space="preserve">
+    <value>PROJECT | SOLUTION | FILE</value>
+  </data>
+  <data name="CommandInteractiveOptionDescription" xml:space="preserve">
+    <value>Allows the command to stop and wait for user input or action (for example to complete authentication).</value>
+  </data>
+  <data name="CommandPrereleaseOptionDescription" xml:space="preserve">
+    <value>Allows prerelease packages to be installed.</value>
+  </data>
+  <data name="SolutionArgumentMisplaced" xml:space="preserve">
+    <value>Solution argument '{0}' is misplaced.</value>
+  </data>
+  <data name="DidYouMean" xml:space="preserve">
+    <value>Did you mean the following command?</value>
+  </data>
+  <data name="ArchitectureOptionDescription" xml:space="preserve">
+    <value>The target architecture.</value>
+  </data>
+  <data name="OperatingSystemOptionDescription" xml:space="preserve">
+    <value>The target operating system.</value>
+  </data>
+  <data name="CannotResolveRuntimeIdentifier" xml:space="preserve">
+    <value>Resolving the current runtime identifier failed.</value>
+  </data>
+  <data name="CannotSpecifyBothRuntimeAndArchOptions" xml:space="preserve">
+    <value>Specifying both the `-r|--runtime` and `-a|--arch` options is not supported.</value>
+  </data>
+  <data name="CannotSpecifyBothRuntimeAndOsOptions" xml:space="preserve">
+    <value>Specifying both the `-r|--runtime` and `-os` options is not supported.</value>
+  </data>
+  <data name="CmdEnvironmentVariableDescription" xml:space="preserve">
+    <value>Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</value>
+  </data>
+  <data name="CmdEnvironmentVariableExpression" xml:space="preserve">
+    <value>NAME="VALUE"</value>
+  </data>
+  <data name="IncorrectlyFormattedEnvironmentVariables" xml:space="preserve">
+    <value>Incorrectly formatted environment variables: {0}</value>
+  </data>
+  <data name="SelfContainedOptionDescription" xml:space="preserve">
+    <value>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
+The default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.</value>
+  </data>
+  <data name="FrameworkDependentOptionDescription" xml:space="preserve">
+    <value>Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.</value>
+  </data>
+  <data name="SelfContainAndNoSelfContainedConflict" xml:space="preserve">
+    <value>The '--self-contained' and '--no-self-contained' options cannot be used together.</value>
+    <comment>{Locked="--self-contained"}{Locked="--no-self-contained"}</comment>
+  </data>
+  <data name="DisableBuildServersOptionDescription" xml:space="preserve">
+    <value>Force the command to ignore any persistent build servers.</value>
+  </data>
+  <data name="ResponseFileNotFound" xml:space="preserve">
+    <value>Response file '{0}' does not exist.</value>
+  </data>
+  <data name="ShortWorkloadSearchVersionDescription" xml:space="preserve">
+    <value>Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</value>
+    <comment>{Locked="dotnet workload search version --help"}</comment>
+  </data>
+  <data name="MSBuildAdditionalOptionTitle" xml:space="preserve">
+    <value>.NET Cli Options:</value>
+  </data>
+  <data name="ArchArgumentName" xml:space="preserve">
+    <value>ARCH</value>
+  </data>
+  <data name="OSArgumentName" xml:space="preserve">
+    <value>OS</value>
+  </data>
+  <data name="ArtifactsPathOptionDescription" xml:space="preserve">
+    <value>The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.</value>
+  </data>
+  <data name="ArtifactsPathArgumentName" xml:space="preserve">
+    <value>ARTIFACTS_DIR</value>
+  </data>
+  <data name="UnrecognizedCommandOrArgument" xml:space="preserve">
+    <value>Unrecognized command or argument '{0}'</value>
+  </data>
+  <data name="AmbiguousCommandName" xml:space="preserve">
+    <value>Ambiguous command name: {0}</value>
+  </data>
+  <data name="AttemptingToCreateCommandSpec" xml:space="preserve">
+    <value>{0}: attempting to create commandspec</value>
+  </data>
+  <data name="AttemptingToFindCommand" xml:space="preserve">
+    <value>{0}: attempting to find command {1} in {2}</value>
+  </data>
+  <data name="AttemptingToResolve" xml:space="preserve">
+    <value>{0}: attempting to resolve {1}</value>
+  </data>
+  <data name="AttemptingToResolveCommandSpec" xml:space="preserve">
+    <value>{0}: Attempting to resolve command spec from tool {1}</value>
+  </data>
+  <data name="BuildOutputPathDoesNotExist" xml:space="preserve">
+    <value>outputpathresolver: {0} does not exist</value>
+  </data>
+  <data name="CannotFindAManifestFile" xml:space="preserve">
+    <value>Cannot find a manifest file. The list of searched paths:
+{0}</value>
+  </data>
+  <data name="CannotFindPackageIdInManifest" xml:space="preserve">
+    <value>Cannot find a package with the package id {0} in the manifest file.</value>
+  </data>
+  <data name="CommandAssembliesNotFound" xml:space="preserve">
+    <value>The command executable for "{0}" was not found. The project may not have been restored or restore failed - run `dotnet restore`</value>
+  </data>
+  <data name="CommandSpecIsNull" xml:space="preserve">
+    <value>{0}: commandSpec is null.</value>
+  </data>
+  <data name="CouldNotFindToolRuntimeConfigFile" xml:space="preserve">
+    <value>{0}: Could not find runtimeconfig.json file for tool {1}</value>
+  </data>
+  <data name="DepsJsonGeneratorProjectNotSet" xml:space="preserve">
+    <value>Unable to find deps.json generator project.</value>
+  </data>
+  <data name="DidNotFindAMatchingProject" xml:space="preserve">
+    <value>{0}: Did not find a matching project {1}.</value>
+  </data>
+  <data name="DidNotFindProject" xml:space="preserve">
+    <value>{0}: ProjectFactory did not find Project.</value>
+  </data>
+  <data name="DoesNotExist" xml:space="preserve">
+    <value>{0}: {1} does not exist</value>
+  </data>
+  <data name="ExpectDepsJsonAt" xml:space="preserve">
+    <value>{0}: expect deps.json at: {1}</value>
+  </data>
+  <data name="FailedToFindCommandPath" xml:space="preserve">
+    <value>{0}: failed to find commandPath {1}</value>
+  </data>
+  <data name="FailedToFindSourceUnderPackageSourceMapping" xml:space="preserve">
+    <value>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</value>
+  </data>
+  <data name="FailedToFindToolAssembly" xml:space="preserve">
+    <value>{0}: failed to find toolAssembly for {1}</value>
+  </data>
+  <data name="FailedToLoadNuGetSource" xml:space="preserve">
+    <value>Failed to load NuGet source {0}</value>
+  </data>
+  <data name="FailedToMapSourceUnderPackageSourceMapping" xml:space="preserve">
+    <value>Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</value>
+  </data>
+  <data name="FailedToReadPidFile" xml:space="preserve">
+    <value>Failed to read pid file '{0}': {1}</value>
+  </data>
+  <data name="FailedToResolveCommandSpec" xml:space="preserve">
+    <value>{0}: failed to resolve commandspec from library.</value>
+  </data>
+  <data name="FailedToValidatePackageSigning" xml:space="preserve">
+    <value>Failed to validate package signing.
+{0}</value>
+  </data>
+  <data name="FieldCommandsIsMissing" xml:space="preserve">
+    <value>Missing 'commands' entry.</value>
+  </data>
+  <data name="FoundToolLockFile" xml:space="preserve">
+    <value>{0}: found tool lockfile at : {1}</value>
+  </data>
+  <data name="GeneratingDepsJson" xml:space="preserve">
+    <value>Generating deps.json at: {0}</value>
+  </data>
+  <data name="IgnoringPreferCLIRuntimeFile" xml:space="preserve">
+    <value>{0}: Ignoring prefercliruntime file as the tool target framework ({1}) has a different major version than the current CLI runtime ({2})</value>
+  </data>
+  <data name="InPackage" xml:space="preserve">
+    <value>In package {0}:
+{1}</value>
+  </data>
+  <data name="InvalidCommandResolverArguments" xml:space="preserve">
+    <value>{0}: invalid commandResolverArguments</value>
+  </data>
+  <data name="InvalidInputTypeInteger" xml:space="preserve">
+    <value>{0} should be an integer</value>
+  </data>
+  <data name="InvalidManifestFilePrefix" xml:space="preserve">
+    <value>Invalid manifest file. Path {0}:
+{1}</value>
+  </data>
+  <data name="InvalidRuntimeIdentifier" xml:space="preserve">
+    <value>The runtime identifier {0} is invalid. Valid runtime identifiers are: {1}.</value>
+  </data>
+  <data name="IsNotFoundInNuGetFeeds" xml:space="preserve">
+    <value>{0} is not found in NuGet feeds {1}.</value>
+  </data>
+  <data name="JsonParsingError" xml:space="preserve">
+    <value>Json parsing error in file {0} : {1}</value>
+  </data>
+  <data name="LibraryNotFoundInLockFile" xml:space="preserve">
+    <value>{0}: library not found in lock file.</value>
+  </data>
+  <data name="LookingForPreferCliRuntimeFile" xml:space="preserve">
+    <value>{0}: Looking for prefercliruntime file at `{1}`</value>
+  </data>
+  <data name="ManifestHasMarkOfTheWeb" xml:space="preserve">
+    <value>File {0} came from another computer and might be blocked to help protect this computer. For more information, including how to unblock, see https://aka.ms/motw</value>
+  </data>
+  <data name="ManifestMissingIsRoot" xml:space="preserve">
+    <value>Missing 'isRoot' entry.</value>
+  </data>
+  <data name="ManifestPackageIdCollision" xml:space="preserve">
+    <value>Cannot add package. Manifest file already contains version {0} of the package {1}. Uninstall/install or edit manifest file {2} to specify the new version {3}.</value>
+  </data>
+  <data name="ManifestVersion0" xml:space="preserve">
+    <value>Manifest version 0 is not supported.</value>
+  </data>
+  <data name="ManifestVersionHigherThanSupported" xml:space="preserve">
+    <value>Manifest version is {0}. This manifest may not be supported in this SDK version that can support up to manifest version {1}.</value>
+  </data>
+  <data name="MSBuildArgs" xml:space="preserve">
+    <value>MSBuild arguments: {0}</value>
+  </data>
+  <data name="MSBuildExePath" xml:space="preserve">
+    <value>{0}: MSBUILD_EXE_PATH = {1}</value>
+  </data>
+  <data name="MSBuildProjectPath" xml:space="preserve">
+    <value>{0}: MSBuild project path = {1}</value>
+  </data>
+  <data name="MSBuildServer" xml:space="preserve">
+    <value>MSBuild server</value>
+  </data>
+  <data name="MultipleProjectFilesFound" xml:space="preserve">
+    <value>Specify which project file to use because this '{0}' contains more than one project file.</value>
+  </data>
+  <data name="MultipleSamePackageId" xml:space="preserve">
+    <value>More than one entry exists for package(s): {0}.</value>
+  </data>
+  <data name="NeedRunToolRestore" xml:space="preserve">
+    <value>Run "dotnet tool restore" to make the "{0}" command available.</value>
+  </data>
+  <data name="NonRetriableNugetSearchFailure" xml:space="preserve">
+    <value>Failed to search. NuGet Search API response detail:
+    RequestUrl: {0}. ReasonPhrase: {1}. StatusCode: {2}.</value>
+  </data>
+  <data name="NuGetPackageShouldNotBeSigned" xml:space="preserve">
+    <value>Skipping signature verification for NuGet package "{0}" because it comes from a source that does not require signature validation.</value>
+  </data>
+  <data name="NuGetPackageSignatureVerificationSkipped" xml:space="preserve">
+    <value>Skipping NuGet package signature verification.</value>
+  </data>
+  <data name="NuGetPackagesRoot" xml:space="preserve">
+    <value>{0}: nuget packages root:
+{1}</value>
+  </data>
+  <data name="OnlyOneProjectAllowed" xml:space="preserve">
+    <value>Only one project can be specified at a time using the -p option.</value>
+    <comment>{Locked="-p"}</comment>
+  </data>
+  <data name="PackageVersionDescriptionDefault" xml:space="preserve">
+    <value>A version of {0} of package {1}</value>
+  </data>
+  <data name="PackageVersionDescriptionForExactVersionMatch" xml:space="preserve">
+    <value>Version {0} of package {1}</value>
+  </data>
+  <data name="PackageVersionDescriptionForVersionWithLowerAndUpperBounds" xml:space="preserve">
+    <value>A version between {0} and {1} of package {2}</value>
+  </data>
+  <data name="PackageVersionDescriptionForVersionWithLowerBound" xml:space="preserve">
+    <value>A version higher than {0} of package {1}</value>
+  </data>
+  <data name="PackageVersionDescriptionForVersionWithUpperBound" xml:space="preserve">
+    <value>A version less than {0} of package {1}</value>
+  </data>
+  <data name="RazorServer" xml:space="preserve">
+    <value>Razor build server</value>
+  </data>
+  <data name="ResolvingCommandSpec" xml:space="preserve">
+    <value>{0}: resolving commandspec from {1} Tool Libraries.</value>
+  </data>
+  <data name="RetriableNugetSearchFailure" xml:space="preserve">
+    <value>Failed to search. Retry later may resolve the issue. NuGet Search API response detail:
+    RequestUrl: {0}. ReasonPhrase: {1}. StatusCode: {2}.</value>
+  </data>
+  <data name="SDKDiagnosticsCommandDefinition" xml:space="preserve">
+    <value>Enable diagnostic output.</value>
+  </data>
+  <data name="ShutdownCommandFailed" xml:space="preserve">
+    <value>The shutdown command failed: {0}</value>
+  </data>
+  <data name="ToolLibraryFound" xml:space="preserve">
+    <value>{0}: tool library found {1}</value>
+  </data>
+  <data name="ToolMissingVersion" xml:space="preserve">
+    <value>Missing 'version' entry.</value>
+  </data>
+  <data name="UnableToCheckCertificateChainPolicy" xml:space="preserve">
+    <value>The requested certificate chain policy could not be checked: {0}</value>
+  </data>
+  <data name="UnableToDeleteTemporaryDepsJson" xml:space="preserve">
+    <value>unable to delete temporary deps.json file: {0}</value>
+  </data>
+  <data name="UnableToGenerateDepsJson" xml:space="preserve">
+    <value>Unable to generate deps.json, it may have been already generated.  You can specify the "-d" option option after "dotnet" for diagnostic output (for example, "dotnet -d &lt;toolname&gt;": {0}</value>
+  </data>
+  <data name="UnableToLocateDotnetMultiplexer" xml:space="preserve">
+    <value>Unable to locate dotnet multiplexer</value>
+  </data>
+  <data name="UnexpectedTypeInJson" xml:space="preserve">
+    <value>Expected a {0} for property '{1}'.</value>
+  </data>
+  <data name="VBCSCompilerServer" xml:space="preserve">
+    <value>VB/C# compiler server</value>
+  </data>
+  <data name="VerifyingNuGetPackageSignature" xml:space="preserve">
+    <value>Verified that the NuGet package "{0}" has a valid signature.</value>
+  </data>
+  <data name="VersionForPackageCouldNotBeResolved" xml:space="preserve">
+    <value>Version for package `{0}` could not be resolved.</value>
+  </data>
+  <data name="VersionIsInvalid" xml:space="preserve">
+    <value>Version {0} is invalid.</value>
+  </data>
+  <data name="WorkloadIntegrityCheckError" xml:space="preserve">
+    <value>An issue was encountered verifying workloads. For more information, run "dotnet workload update".</value>
+    <comment>{Locked="dotnet workload update"}</comment>
+  </data>
+  <data name="PackageIdentityArgumentDescription" xml:space="preserve">
+    <value>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</value>
+  </data>
+  <data name="PackageIdentityArgumentIdOrVersionIsNull" xml:space="preserve">
+    <value>Package reference id and version must not be null.</value>
+  </data>
+  <data name="InvalidVersion" xml:space="preserve">
+    <value>Invalid version string: {0}</value>
+  </data>
+  <data name="PackageIdentityArgumentVersionOptionConflict" xml:space="preserve">
+    <value>Cannot specify --version when the package argument already contains a version.</value>
+    <comment>{Locked="--version"}</comment>
+  </data>
+  <data name="YesOptionDescription" xml:space="preserve">
+    <value>Accept all confirmation prompts using "yes."</value>
+  </data>
+  <data name="SDKSchemaCommandDefinition" xml:space="preserve">
+    <value>Display the command schema as JSON.</value>
+  </data>
+  <data name="PackCmd_OneNuspecAllowed" xml:space="preserve">
+    <value>Only one .nuspec file can be packed at a time</value>
+  </data>
+</root>

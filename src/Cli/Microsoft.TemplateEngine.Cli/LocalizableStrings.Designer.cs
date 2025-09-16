@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Cli {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class LocalizableStrings {
@@ -455,6 +455,15 @@ namespace Microsoft.TemplateEngine.Cli {
         internal static string CliTemplateSearchCoordinator_Info_SearchInProgress {
             get {
                 return ResourceManager.GetString("CliTemplateSearchCoordinator_Info_SearchInProgress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The colon separator &quot;::&quot; has been deprecated in favor of the at symbol &quot;@&quot; for separating the package from the version in dotnet new install. In your case, this means {0}@{1} instead of {0}::{1}..
+        /// </summary>
+        internal static string Colon_Separator_Deprecated {
+            get {
+                return ResourceManager.GetString("Colon_Separator_Deprecated", resourceCulture);
             }
         }
         
@@ -1611,7 +1620,7 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to instatiate template &apos;{0}&apos;, the following constraints are not met:.
+        ///   Looks up a localized string similar to Failed to instantiate template &apos;{0}&apos;, the following constraints are not met:.
         /// </summary>
         internal static string TemplateCommand_DisplayConstraintResults_Error {
             get {

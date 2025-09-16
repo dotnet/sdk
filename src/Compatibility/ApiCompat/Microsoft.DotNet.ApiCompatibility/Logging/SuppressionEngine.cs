@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         protected const string DiagnosticIdDocumentationComment = " https://learn.microsoft.com/dotnet/fundamentals/package-validation/diagnostic-ids ";
         private readonly HashSet<Suppression> _baselineSuppressions = [];
         private readonly HashSet<Suppression> _suppressions = [];
-        private readonly HashSet<string> _noWarn = string.IsNullOrEmpty(noWarn) ? [] : new HashSet<string>(noWarn!.Split(';'));
+        private readonly HashSet<string> _noWarn = string.IsNullOrEmpty(noWarn) ? [] : new(noWarn!.Split(';'), StringComparer.OrdinalIgnoreCase);
 
         /// <inheritdoc/>
         public bool BaselineAllErrors { get; } = baselineAllErrors;
@@ -104,7 +104,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         public void AddSuppression(Suppression suppression) => _suppressions.Add(suppression);
 
         /// <inheritdoc/>
-        public IReadOnlyCollection<Suppression> WriteSuppressionsToFile(string suppressionOutputFile, bool preserveUnnecessarySuppressions = false)
+        public (bool SuppressionFileUpdated, IReadOnlyCollection<Suppression> UpdatedSuppressions)
+            WriteSuppressionsToFile(string suppressionOutputFile, bool preserveUnnecessarySuppressions = false)
         {
             // If unnecessary suppressions should be preserved in the suppression file, union the
             // baseline suppressions with the set of actual suppressions. Duplicates are ignored.
@@ -114,9 +115,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
                 suppressionsToSerialize.UnionWith(_baselineSuppressions);
             }
 
-            if (suppressionsToSerialize.Count == 0)
+            // If there aren't any suppressions and baseline suppressions, skip writing the
+            // suppression file.
+            if (suppressionsToSerialize.Count == 0 && _baselineSuppressions.Count == 0)
             {
-                return Array.Empty<Suppression>();
+                return (false, []);
             }
 
             Suppression[] orderedSuppressions = suppressionsToSerialize
@@ -138,7 +141,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
             CreateXmlSerializer().Serialize(xmlWriter, orderedSuppressions);
             AfterWritingSuppressionsCallback(stream);
 
-            return orderedSuppressions;
+            return (true, orderedSuppressions);
         }
 
         /// <inheritdoc/>

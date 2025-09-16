@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -19,7 +21,7 @@ namespace Microsoft.DotNet.HotReload;
 #endif
 internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
 {
-    internal delegate void ContentUpdateAction(StaticAssetUpdate update);
+    internal delegate void ContentUpdateAction(RuntimeStaticAssetUpdate update);
     internal delegate void MetadataUpdateAction(Type[]? updatedTypes);
 
     internal readonly struct UpdateHandler<TAction>(TAction action, MethodInfo method)
@@ -52,7 +54,7 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
             }
         }
 
-        public void UpdateContent(AgentReporter reporter, StaticAssetUpdate update)
+        public void UpdateContent(AgentReporter reporter, RuntimeStaticAssetUpdate update)
         {
             foreach (var handler in updateContentHandlers)
             {
@@ -127,7 +129,7 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
     /// <summary>
     /// Invokes all registered content update handlers.
     /// </summary>
-    internal void ContentUpdated(StaticAssetUpdate update)
+    internal void ContentUpdated(RuntimeStaticAssetUpdate update)
     {
         try
         {
@@ -327,7 +329,7 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
 
         static void Visit(Assembly[] assemblies, Assembly assembly, List<Assembly> sortedAssemblies, HashSet<string> visited)
         {
-            string assemblyIdentifier;
+            string? assemblyIdentifier;
 
             try
             {
