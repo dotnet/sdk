@@ -52,9 +52,9 @@ public class RunTelemetryTests : SdkTest
     public void GetProjectBasedIdentifier_UsesRelativePathWhenRepoRootProvided()
     {
         // Arrange
-        var repoRoot = "/repo/root";
-        var projectPath = "/repo/root/src/project.csproj";
-        var expectedRelativePath = "src/project.csproj";
+        var repoRoot = "/repo/root".Replace('/', Path.DirectorySeparatorChar);
+        var projectPath = "/repo/root/src/project.csproj".Replace('/', Path.DirectorySeparatorChar);
+        var expectedRelativePath = "src/project.csproj".Replace('/', Path.DirectorySeparatorChar);
 
         // Act
         var hashWithRepo = RunTelemetry.GetProjectBasedIdentifier(projectPath, repoRoot);

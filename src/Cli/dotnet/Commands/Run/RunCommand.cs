@@ -124,6 +124,7 @@ public class RunCommand
 
         Func<ProjectCollection, ProjectInstance>? projectFactory = null;
         RunProperties? cachedRunProperties = null;
+        VirtualProjectBuildingCommand? virtualCommand = null;
         if (ShouldBuild)
         {
             if (string.Equals("true", launchSettings?.DotNetRunMessages, StringComparison.OrdinalIgnoreCase))
@@ -131,7 +132,7 @@ public class RunCommand
                 Reporter.Output.WriteLine(CliCommandStrings.RunCommandBuilding);
             }
 
-            EnsureProjectIsBuilt(out projectFactory, out cachedRunProperties);
+            EnsureProjectIsBuilt(out projectFactory, out cachedRunProperties, out virtualCommand);
         }
         else
         {
@@ -143,11 +144,11 @@ public class RunCommand
             if (EntryPointFileFullPath is not null)
             {
                 Debug.Assert(!ReadCodeFromStdin);
-                var command = CreateVirtualCommand();
-                command.MarkArtifactsFolderUsed();
+                virtualCommand = CreateVirtualCommand();
+                virtualCommand.MarkArtifactsFolderUsed();
 
-                var cacheEntry = command.GetPreviousCacheEntry();
-                projectFactory = CanUseRunPropertiesForCscBuiltProgram(BuildLevel.None, cacheEntry) ? null : command.CreateProjectInstance;
+                var cacheEntry = virtualCommand.GetPreviousCacheEntry();
+                projectFactory = CanUseRunPropertiesForCscBuiltProgram(BuildLevel.None, cacheEntry) ? null : virtualCommand.CreateProjectInstance;
                 cachedRunProperties = cacheEntry?.Run;
             }
         }
@@ -164,7 +165,7 @@ public class RunCommand
             }
 
             // Send telemetry about the run operation
-            SendRunTelemetry(launchSettings, projectFactory, cachedRunProperties);
+            SendRunTelemetry(launchSettings, virtualCommand);
 
             // Ignore Ctrl-C for the remainder of the command's execution
             Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
@@ -300,15 +301,15 @@ public class RunCommand
         }
     }
 
-    private void EnsureProjectIsBuilt(out Func<ProjectCollection, ProjectInstance>? projectFactory, out RunProperties? cachedRunProperties)
+    private void EnsureProjectIsBuilt(out Func<ProjectCollection, ProjectInstance>? projectFactory, out RunProperties? cachedRunProperties, out VirtualProjectBuildingCommand? virtualCommand)
     {
         int buildResult;
         if (EntryPointFileFullPath is not null)
         {
-            var command = CreateVirtualCommand();
-            buildResult = command.Execute();
-            projectFactory = CanUseRunPropertiesForCscBuiltProgram(command.LastBuild.Level, command.LastBuild.Cache?.PreviousEntry) ? null : command.CreateProjectInstance;
-            cachedRunProperties = command.LastBuild.Cache?.CurrentEntry.Run;
+            virtualCommand = CreateVirtualCommand();
+            buildResult = virtualCommand.Execute();
+            projectFactory = CanUseRunPropertiesForCscBuiltProgram(virtualCommand.LastBuild.Level, virtualCommand.LastBuild.Cache?.PreviousEntry) ? null : virtualCommand.CreateProjectInstance;
+            cachedRunProperties = virtualCommand.LastBuild.Cache?.CurrentEntry.Run;
         }
         else
         {
@@ -316,6 +317,7 @@ public class RunCommand
 
             projectFactory = null;
             cachedRunProperties = null;
+            virtualCommand = null;
             buildResult = new RestoringCommand(
                 MSBuildArgs.CloneWithExplicitArgs([ProjectFileFullPath, .. MSBuildArgs.OtherMSBuildArgs]),
                 NoRestore,
@@ -760,30 +762,28 @@ public class RunCommand
     /// <summary>
     /// Sends telemetry about the run operation.
     /// </summary>
-    /// <param name="launchSettings">Applied launch settings if any</param>
-    /// <param name="projectFactory">Project factory for file-based apps using MSBuild</param>
-    /// <param name="cachedRunProperties">Cached run properties if available</param>
     private void SendRunTelemetry(
         ProjectLaunchSettingsModel? launchSettings,
-        Func<ProjectCollection, ProjectInstance>? projectFactory,
-        RunProperties? cachedRunProperties)
+        VirtualProjectBuildingCommand? virtualCommand)
     {
         try
         {
-            bool isFileBased = EntryPointFileFullPath is not null;
-
-            if (isFileBased)
+            if (virtualCommand != null)
             {
-                SendFileBasedTelemetry(launchSettings, projectFactory, cachedRunProperties);
+                SendFileBasedTelemetry(launchSettings, virtualCommand);
             }
             else
             {
                 SendProjectBasedTelemetry(launchSettings);
             }
         }
-        catch
+        catch (Exception ex)
         {
             // Silently ignore telemetry errors to not affect the run operation
+            if (CommandLoggingContext.IsVerbose)
+            {
+                Reporter.Verbose.WriteLine($"Failed to send run telemetry: {ex}");
+            }
         }
     }
 
@@ -792,35 +792,16 @@ public class RunCommand
     /// </summary>
     private void SendFileBasedTelemetry(
         ProjectLaunchSettingsModel? launchSettings,
-        Func<ProjectCollection, ProjectInstance>? projectFactory,
-        RunProperties? cachedRunProperties)
+        VirtualProjectBuildingCommand virtualCommand)
     {
-        var projectIdentifier = RunTelemetry.GetFileBasedIdentifier(EntryPointFileFullPath!, Sha256Hasher.Hash);
-        
-        var virtualCommand = CreateVirtualCommand();
+        Debug.Assert(EntryPointFileFullPath != null);
+        var projectIdentifier = RunTelemetry.GetFileBasedIdentifier(EntryPointFileFullPath, Sha256Hasher.Hash);
+
         var directives = virtualCommand.Directives;
-        
         var sdkCount = RunTelemetry.CountSdks(directives);
         var packageReferenceCount = RunTelemetry.CountPackageReferences(directives);
         var projectReferenceCount = RunTelemetry.CountProjectReferences(directives);
         var additionalPropertiesCount = RunTelemetry.CountAdditionalProperties(directives);
-        
-        // Determine if MSBuild or Roslyn compiler was used
-        bool? usedMSBuild = null;
-        bool? usedRoslynCompiler = null;
-        
-        if (cachedRunProperties != null)
-        {
-            // If we have cached properties, we used the optimized path
-            usedRoslynCompiler = projectFactory == null;
-            usedMSBuild = projectFactory != null;
-        }
-        else if (ShouldBuild)
-        {
-            // Fresh build - check if we used MSBuild optimization
-            usedMSBuild = !directives.IsDefaultOrEmpty || projectFactory != null;
-            usedRoslynCompiler = directives.IsDefaultOrEmpty && projectFactory == null;
-        }
 
         RunTelemetry.TrackRunEvent(
             isFileBased: true,
@@ -832,8 +813,8 @@ public class RunCommand
             packageReferenceCount: packageReferenceCount,
             projectReferenceCount: projectReferenceCount,
             additionalPropertiesCount: additionalPropertiesCount,
-            usedMSBuild: usedMSBuild,
-            usedRoslynCompiler: usedRoslynCompiler);
+            usedMSBuild: virtualCommand.LastBuild.Level is BuildLevel.All,
+            usedRoslynCompiler: virtualCommand.LastBuild.Level is BuildLevel.Csc);
     }
 
     /// <summary>
@@ -841,7 +822,8 @@ public class RunCommand
     /// </summary>
     private void SendProjectBasedTelemetry(ProjectLaunchSettingsModel? launchSettings)
     {
-        var projectIdentifier = RunTelemetry.GetProjectBasedIdentifier(ProjectFileFullPath!, GetRepositoryRoot(), Sha256Hasher.Hash);
+        Debug.Assert(ProjectFileFullPath != null);
+        var projectIdentifier = RunTelemetry.GetProjectBasedIdentifier(ProjectFileFullPath, GetRepositoryRoot(), Sha256Hasher.Hash);
         
         // Get package and project reference counts for project-based apps
         int packageReferenceCount = 0;
@@ -857,7 +839,7 @@ public class RunCommand
                 globalProperties[Constants.MSBuildExtensionsPath] = AppContext.BaseDirectory;
                 
                 using var collection = new ProjectCollection(globalProperties: globalProperties);
-                var project = collection.LoadProject(ProjectFileFullPath!).CreateProjectInstance();
+                var project = collection.LoadProject(ProjectFileFullPath).CreateProjectInstance();
                 
                 packageReferenceCount = RunTelemetry.CountPackageReferences(project);
                 projectReferenceCount = RunTelemetry.CountProjectReferences(project);
