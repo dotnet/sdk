@@ -198,7 +198,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithPackageIdWithSourceItShouldCreateValidShim()
         {
-            const string sourcePath = "http://mysource.com";
+            const string sourcePath = "https://mysource.com";
             ParseResult result = Parser.Parse($"dotnet tool install -g {PackageId} --add-source {sourcePath}");
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
