@@ -64,7 +64,7 @@
                    AppHostDestinationPath="%(_RoslynAppHost.RootDir)%(_RoslynAppHost.Directory)%(_RoslynAppHost.Filename)$(ExeExtension)"
                    AppBinaryName="%(_RoslynAppHost.Filename)%(_RoslynAppHost.Extension)"
                    IntermediateAssembly="%(_RoslynAppHost.FullPath)"
-                   EnableMacOSCodeSign="$(RuntimeIdentifier.StartsWith('osx'))" />
+                   EnableMacOSCodeSign="$(TargetRid.StartsWith('osx'))" />
   </Target>
 
   <Target Name="PublishNETAnalyzers">
