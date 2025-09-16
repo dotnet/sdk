@@ -167,16 +167,4 @@ Copyright (c) .NET Foundation. All rights reserved.
                       and '$(UseUwp)' == 'true' ">
     <NetSdkError ResourceName="WindowsSDKXamlInvalidTfm" />
   </Target>
-
-  <!--
-    Emit a warning if 'UseUwp' is set.
-
-    NOTE: remove this target when 'UseUwp' becomes officially supported.
-  -->
-  <Target Name="_WarnForUseUwpPreviewFeatureEnabled"
-          AfterTargets="ResolvePackageAssets"
-          Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true'
-                      and '$(UseUwp)' == 'true'">
-    <NETSdkWarning ResourceName="UsingPreviewUseUwpFeature" />
-  </Target>
 </Project>
