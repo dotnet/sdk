@@ -31,3 +31,18 @@ jobs:
       - name: Check dotnet version
         run: |
           dotnet --version
+
+      # For MCP servers like nuget's
+      - name: Install .NET 10.x
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            10.x
+          dotnet-quality: preview
+
+      # for MCP servers
+      - name: Install .NET 8.x
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.x
