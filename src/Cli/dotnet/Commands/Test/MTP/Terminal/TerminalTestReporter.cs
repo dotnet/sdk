@@ -57,7 +57,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
     private static partial Regex GetFrameRegex();
 
     private int _counter;
-    private bool _disableTestRunSummary;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TerminalTestReporter"/> class with custom terminal and manual refresh for testing.
@@ -148,17 +147,12 @@ internal sealed partial class TerminalTestReporter : IDisposable
         });
     }
 
-    public void DisableTestRunSummary()
-    {
-        _disableTestRunSummary = true;
-    }
-
     public void TestExecutionCompleted(DateTimeOffset endTime, int? exitCode)
     {
         _testExecutionEndTime = endTime;
         _terminalWithProgress.StopShowingProgress();
 
-        if (!_isHelp && !_disableTestRunSummary)
+        if (!_isHelp)
         {
             if (_isDiscovery)
             {
@@ -844,6 +838,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
     /// </summary>
     public void StartCancelling()
     {
+        if (_wasCancelled)
+        {
+            return;
+        }
+
         _wasCancelled = true;
         _terminalWithProgress.WriteToTerminal(terminal =>
         {
