@@ -1172,6 +1172,11 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="new">Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DotnetTestMismatchingExecutionId">
+        <source>Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</source>
+        <target state="new">Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</target>
+        <note>{Locked="ExecutionId"}</note>
+      </trans-unit>
       <trans-unit id="DotnetTestPipeFailureHasHandshake">
         <source>Error disposing 'NamedPipeServer' corresponding to handshake:</source>
         <target state="new">Error disposing 'NamedPipeServer' corresponding to handshake:</target>
