@@ -115,6 +115,9 @@ configuration:
 
             * comply with the [published guidance](https://learn.microsoft.com/dotnet/core/tools/telemetry#data-points)
             * are added to the [repo-local telemetry documentation](./documentation/project-docs/telemetry.md)
+            * get a matching .NET Docs issue raised to document the telemetry changes
+              * Go to https://learn.microsoft.com/dotnet/core/tools/telemetry
+              * Scroll down to the bottom and click the 'Open a documentation issue' link to create an issue with pre-filled details
       - requestReview:
           reviewer: dsplaisted
 
