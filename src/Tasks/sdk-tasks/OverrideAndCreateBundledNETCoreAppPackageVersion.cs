@@ -3,13 +3,6 @@
 
 #nullable disable
 
-using System;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
-using System.Collections.Generic;
 using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Build.Tasks
