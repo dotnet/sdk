@@ -22,6 +22,11 @@
         <target state="translated">Die Optionen {0} und {1} können nicht zusammen verwendet werden. Entfernen Sie bei der Installation aus einer Rollbackdatei {0}. Entfernen Sie andernfalls {1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
+        <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
+        <target state="new">Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
         <source>Checking for updated workload manifests.</source>
         <target state="translated">Es wird nach aktualisierten Workloadmanifesten gesucht.</target>
@@ -182,6 +187,11 @@
         <target state="translated">{0} wird entfernt </target>
         <note />
       </trans-unit>
+      <trans-unit id="NewWorkloadSet">
+        <source>Installing workload version {0}.</source>
+        <target state="translated">Die Workloadversion {0} wird installiert.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
         <source>Failed to establish a trust relationship with parent process ({0}).</source>
         <target state="translated">Fehler beim Einrichten einer Vertrauensbeziehung mit dem übergeordneten Prozess ({0}).</target>
@@ -277,6 +287,11 @@
         <target state="translated">Drucken Sie nur die Liste der Links zum Herunterladen, ohne sie herunterzuladen.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdatedWorkloadMode">
+        <source>Successfully updated workload install mode to use {0}.</source>
+        <target state="new">Successfully updated workload install mode to use {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UsingCacheForPackInstall">
         <source>Installing package {0} version {1} from offline cache {2}.</source>
         <target state="translated">Das Paket "{0}", Version {1}, aus dem Offlinecache "{2}" wird installiert.</target>
@@ -360,6 +375,16 @@
       <trans-unit id="WorkloadPathOptionName">
         <source>PATH</source>
         <target state="translated">PFAD</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetUpgrade">
+        <source>Updating workload version from {0} to {1}.</source>
+        <target state="translated">Die Workloadversion wird von {0} auf {1} aktualisiert.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetVersionOptionDescription">
+        <source>Update to the specified workload version.</source>
+        <target state="translated">Aktualisieren Sie auf die angegebene Workloadversion.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
