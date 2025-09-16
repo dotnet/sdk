@@ -237,7 +237,7 @@ public class Program
             // Get the global.json state to report in telemetry along with this command invocation.
             // We don't care about the actual SDK resolution, just the global.json information,
             // so just pass empty string as executable directory for resolution.
-            NativeWrapper.SdkResolutionResult result = NativeWrapper.NETCoreSdkResolverNativeWrapper.ResolveSdk(string.Empty, Environment.CurrentDirectory);
+            NativeWrapper.SdkResolutionResult result = NativeWrapper.NETCoreSdkResolverNativeWrapper.ResolveSdk(string.Empty, Environment.CurrentDirectory, doNotPrintErrors: true);
             globalJsonState = result.GlobalJsonState;
         }
 

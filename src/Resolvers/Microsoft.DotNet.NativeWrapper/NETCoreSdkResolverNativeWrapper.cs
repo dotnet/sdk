@@ -10,10 +10,12 @@ namespace Microsoft.DotNet.NativeWrapper
         public static SdkResolutionResult ResolveSdk(
             string? dotnetExeDirectory,
             string? globalJsonStartDirectory,
-            bool disallowPrerelease = false)
+            bool disallowPrerelease = false,
+            bool doNotPrintErrors = false)
         {
             var result = new SdkResolutionResult();
             var flags = disallowPrerelease ? Interop.hostfxr_resolve_sdk2_flags_t.disallow_prerelease : 0;
+            flags |= doNotPrintErrors ?  Interop.hostfxr_resolve_sdk2_flags_t.do_not_print_errors : 0;
 
             int errorCode = Interop.RunningOnWindows
                 ? Interop.Windows.hostfxr_resolve_sdk2(dotnetExeDirectory, globalJsonStartDirectory, flags, result.Initialize)

@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.NativeWrapper
         }
 
         // MSBuild SDK resolvers are required to be AnyCPU, but we have a native dependency and .NETFramework does not
-        // have a built-in facility for dynamically loading user native dlls for the appropriate platform. We therefore 
+        // have a built-in facility for dynamically loading user native dlls for the appropriate platform. We therefore
         // preload the version with the correct architecture (from a corresponding sub-folder relative to us) on static
         // construction so that subsequent P/Invokes can find it.
         private static void PreloadWindowsLibrary(string dllFileName)
@@ -73,6 +73,7 @@ namespace Microsoft.DotNet.NativeWrapper
         internal enum hostfxr_resolve_sdk2_flags_t : int
         {
             disallow_prerelease = 0x1,
+            do_not_print_errors = 0x2,
         }
 
         internal enum hostfxr_resolve_sdk2_result_key_t : int
