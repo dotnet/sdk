@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Evaluation;
@@ -61,7 +62,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         {
             using var stream = File.Open(projectFile, FileMode.Create, FileAccess.Write);
             using var writer = new StreamWriter(stream, Encoding.UTF8);
-            VirtualProjectBuildingCommand.WriteProjectFile(writer, directives, isVirtualProject: false);
+            VirtualProjectBuildingCommand.WriteProjectFile(writer, UpdateDirectives(directives), isVirtualProject: false);
         }
 
         // Copy or move over included items.
@@ -150,6 +151,28 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
                 string itemRelativePath = Path.GetRelativePath(relativeTo: entryPointFileDirectory, path: itemFullPath);
                 yield return (FullPath: itemFullPath, RelativePath: itemRelativePath);
             }
+        }
+
+        ImmutableArray<CSharpDirective> UpdateDirectives(ImmutableArray<CSharpDirective> directives)
+        {
+            var result = ImmutableArray.CreateBuilder<CSharpDirective>(directives.Length);
+
+            foreach (var directive in directives)
+            {
+                // Fixup relative project reference paths (they need to be relative to the output directory instead of the source directory).
+                if (directive is CSharpDirective.Project project &&
+                    !Path.IsPathFullyQualified(project.Name))
+                {
+                    var modified = project.WithName(Path.GetRelativePath(relativeTo: targetDirectory, path: project.Name));
+                    result.Add(modified);
+                }
+                else
+                {
+                    result.Add(directive);
+                }
+            }
+
+            return result.DrainToImmutable();
         }
     }
 
