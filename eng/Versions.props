@@ -115,7 +115,7 @@
 
          Additionally, set the MinimumVSVersion for the installer UI that's required for targeting NetCurrent -->
     <MicrosoftBuildMinimumVersion Condition="'$(DotNetBuildSourceOnly)' != 'true'">17.14.8</MicrosoftBuildMinimumVersion>
-    <MinimumVSVersion>17.14</MinimumVSVersion>
+    <MinimumVSVersion>18.0</MinimumVSVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/emsdk -->
