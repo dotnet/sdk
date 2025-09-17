@@ -10,12 +10,14 @@ internal class LLMEnvironmentDetectorForTelemetry : ILLMEnvironmentDetector
 {
     private static readonly EnvironmentDetectionRuleWithResult<string>[] _detectionRules = [
         // Claude Code
-        new EnvironmentDetectionRuleWithResult<string>("claude", "CLAUDECODE")
+        new EnvironmentDetectionRuleWithResult<string>("claude", "CLAUDECODE"),
+        // Cursor AI
+        new EnvironmentDetectionRuleWithResult<string>("cursor", "CURSOR_EDITOR")
     ];
 
     public string? GetLLMEnvironment()
     {
-        return string.Join(", ", _detectionRules.Select(r => r.GetResult()).Where(r => r != null);
-);
+        var results = _detectionRules.Select(r => r.GetResult()).Where(r => r != null).ToArray();
+        return results.Length > 0 ? string.Join(", ", results) : null;
     }
 }

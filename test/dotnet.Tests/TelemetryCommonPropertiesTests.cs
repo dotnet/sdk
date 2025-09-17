@@ -227,6 +227,8 @@ namespace Microsoft.DotNet.Tests
 
         public static IEnumerable<object[]> LLMTelemetryTestCases => new List<object[]>{
             new object[] { new Dictionary<string, string> { { "CLAUDECODE", "1" } }, "claude" },
+            new object[] { new Dictionary<string, string> { { "CURSOR_EDITOR", "1" } }, "cursor" },
+            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" } }, "claude, cursor" },
             new object[] { new Dictionary<string, string>(), null },
         };
 
