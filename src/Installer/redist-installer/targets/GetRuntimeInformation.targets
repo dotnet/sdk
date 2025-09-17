@@ -54,6 +54,8 @@
       <!-- Mariner RPM names -->
       <MarinerArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk Condition=" '$(IsRPMBasedDistro)' == 'True' ">$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-cm.1-$(InstallerTargetArchitecture)</MarinerArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
       <Mariner2ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk Condition=" '$(IsRPMBasedDistro)' == 'True' ">$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-cm.2-$(InstallerTargetArchitecture)</Mariner2ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
+      <!-- NewKey RPM and Deb names-->
+      <NewKeyArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-newkey-$(InstallerTargetArchitecture)</NewKeyArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
     </PropertyGroup>
   </Target>
 
