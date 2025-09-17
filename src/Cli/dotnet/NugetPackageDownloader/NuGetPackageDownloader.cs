@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Collections.Concurrent;
+using System.Reflection;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NugetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
@@ -479,16 +480,54 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         
         if (httpSources.Any())
         {
-            // TODO: Check if allowInsecureConnections is set to true in the config section
-            // The NuGet Configuration API for reading specific settings needs further investigation
-            // For now, always throw error for HTTP sources (as per .NET 9 requirement)
-            
-            // Throw error for each HTTP source found
+            // Check each HTTP source for allowInsecureConnections configuration
             foreach (var httpSource in httpSources)
             {
-                throw new NuGetPackageInstallerException(string.Format(CliStrings.Error_NU1302_HttpSourceUsed, httpSource.Source));
+                if (!IsInsecureConnectionAllowed(httpSource, settings))
+                {
+                    throw new NuGetPackageInstallerException(string.Format(CliStrings.Error_NU1302_HttpSourceUsed, httpSource.Source));
+                }
             }
         }
+    }
+
+    private bool IsInsecureConnectionAllowed(PackageSource packageSource, ISettings settings)
+    {
+        // First, try to check if the PackageSource has AllowInsecureConnections property (NuGet 6.8+)
+        // This approach uses reflection to check for the property in case the NuGet version supports it
+        var packageSourceType = packageSource.GetType();
+        var allowInsecureConnectionsProperty = packageSourceType.GetProperty("AllowInsecureConnections");
+        
+        if (allowInsecureConnectionsProperty != null && allowInsecureConnectionsProperty.PropertyType == typeof(bool))
+        {
+            return (bool)allowInsecureConnectionsProperty.GetValue(packageSource);
+        }
+
+        // Fallback: Check the settings configuration directly
+        // Read the allowInsecureConnections attribute from the packageSources section
+        if (settings != null)
+        {
+            var packageSourcesSection = settings.GetSection("packageSources");
+            if (packageSourcesSection != null)
+            {
+                var sourceItems = packageSourcesSection.Items.OfType<AddItem>();
+                var matchingSource = sourceItems.FirstOrDefault(item => 
+                    string.Equals(item.Key, packageSource.Name, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(item.Value, packageSource.Source, StringComparison.OrdinalIgnoreCase));
+
+                if (matchingSource != null)
+                {
+                    // Check for allowInsecureConnections attribute
+                    if (matchingSource.AdditionalAttributes.TryGetValue("allowInsecureConnections", out string allowInsecureValue))
+                    {
+                        return string.Equals(allowInsecureValue, "true", StringComparison.OrdinalIgnoreCase);
+                    }
+                }
+            }
+        }
+
+        // Default: do not allow insecure connections
+        return false;
     }
 
     private async Task<(PackageSource, IPackageSearchMetadata)> GetMatchingVersionInternalAsync(
