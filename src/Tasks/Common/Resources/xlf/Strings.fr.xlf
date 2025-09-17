@@ -861,6 +861,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1103: le paramètre RollForward est uniquement pris en charge sur .NET Core 3.0 ou version ultérieure.</target>
         <note>{StrBegins="NETSDK1103: "}</note>
       </trans-unit>
+      <trans-unit id="RuntimeGraphFileDoesNotExist">
+        <source>NETSDK1229: File '{0}' does not exist. Please ensure the runtime graph path exists.</source>
+        <target state="new">NETSDK1229: File '{0}' does not exist. Please ensure the runtime graph path exists.</target>
+        <note>{StrBegins="NETSDK1229: "}{Locked="{0}"}</note>
+      </trans-unit>
       <trans-unit id="RuntimeIdentifierNotRecognized">
         <source>NETSDK1083: The specified RuntimeIdentifier '{0}' is not recognized. See https://aka.ms/netsdk1083 for more information.</source>
         <target state="translated">NETSDK1083: Le RuntimeIdentifier «{0}» spécifié n’est pas reconnu. Pour plus d’informations, consultez https://aka.ms/netsdk1083.</target>
@@ -957,6 +962,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1172: The provided type library '{0}' does not exist.</source>
         <target state="translated">NETSDK1172: la bibliothèque de types «{0}» fournie n’existe pas.</target>
         <note>{StrBegins="NETSDK1172: "}</note>
+      </trans-unit>
+      <trans-unit id="UnableToFindMatchingRid">
+        <source>NETSDK1230: Unable to find a matching RID for '{0}' from among [{1}] in graph '{2}'.</source>
+        <target state="new">NETSDK1230: Unable to find a matching RID for '{0}' from among [{1}] in graph '{2}'.</target>
+        <note>{StrBegins="NETSDK1230: "}{Locked="{0}"}{Locked="{1}"}{Locked="{2}"}</note>
       </trans-unit>
       <trans-unit id="UnableToFindResolvedPath">
         <source>NETSDK1016: Unable to find resolved path for '{0}'.</source>
