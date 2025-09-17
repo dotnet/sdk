@@ -75,7 +75,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// <remarks>
     /// Kept in sync with the default <c>dotnet new console</c> project file (enforced by <c>DotnetProjectAddTests.SameAsTemplate</c>).
     /// </remarks>
-    private static readonly FrozenDictionary<string, string> s_defaultProperties = FrozenDictionary.Create<string, string>(StringComparer.OrdinalIgnoreCase,
+    public static readonly FrozenDictionary<string, string> DefaultProperties = FrozenDictionary.Create<string, string>(StringComparer.OrdinalIgnoreCase,
     [
         new("OutputType", "Exe"),
         new("TargetFramework", $"net{TargetFrameworkVersion}"),
@@ -1138,8 +1138,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         bool isVirtualProject,
         string? targetFilePath = null,
         string? artifactsPath = null,
-        bool includeRuntimeConfigInformation = true)
+        bool includeRuntimeConfigInformation = true,
+        IEnumerable<string>? excludeDefaultProperties = null)
     {
+        Debug.Assert(excludeDefaultProperties == null || !isVirtualProject);
+
         int processedDirectives = 0;
 
         var sdkDirectives = directives.OfType<CSharpDirective.Sdk>();
@@ -1178,6 +1181,20 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                     <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
                     <FileBasedProgram>true</FileBasedProgram>
+                    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                    <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                """);
+
+            // Write default properties before importing SDKs so they can be overridden by SDKs
+            // (and implicit build files which are imported by the default .NET SDK).
+            foreach (var (name, value) in DefaultProperties)
+            {
+                writer.WriteLine($"""
+                        <{name}>{EscapeValue(value)}</{name}>
+                    """);
+            }
+
+            writer.WriteLine($"""
                   </PropertyGroup>
 
                   <ItemGroup>
@@ -1244,25 +1261,21 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 """);
 
             // First write the default properties except those specified by the user.
-            var customPropertyNames = propertyDirectives.Select(d => d.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            foreach (var (name, value) in s_defaultProperties)
+            if (!isVirtualProject)
             {
-                if (!customPropertyNames.Contains(name))
+                var customPropertyNames = propertyDirectives
+                    .Select(static d => d.Name)
+                    .Concat(excludeDefaultProperties ?? [])
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+                foreach (var (name, value) in DefaultProperties)
                 {
-                    writer.WriteLine($"""
-                            <{name}>{EscapeValue(value)}</{name}>
-                        """);
+                    if (!customPropertyNames.Contains(name))
+                    {
+                        writer.WriteLine($"""
+                                <{name}>{EscapeValue(value)}</{name}>
+                            """);
+                    }
                 }
-            }
-
-            // Write virtual-only properties.
-            if (isVirtualProject)
-            {
-                writer.WriteLine("""
-                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
-                        <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
-                    """);
             }
 
             // Write custom properties.
@@ -1279,6 +1292,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             if (isVirtualProject)
             {
                 writer.WriteLine("""
+                        <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
                         <Features>$(Features);FileBasedProgram</Features>
                     """);
             }
