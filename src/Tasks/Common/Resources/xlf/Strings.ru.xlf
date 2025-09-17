@@ -862,9 +862,9 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegins="NETSDK1103: "}</note>
       </trans-unit>
       <trans-unit id="RuntimeGraphFileDoesNotExist">
-        <source>NETSDK1229: File '{0}' does not exist. Please ensure the runtime graph path exists.</source>
-        <target state="new">NETSDK1229: File '{0}' does not exist. Please ensure the runtime graph path exists.</target>
-        <note>{StrBegins="NETSDK1229: "}{Locked="{0}"}</note>
+        <source>NETSDK1231: File '{0}' does not exist. Please ensure the runtime graph path exists.</source>
+        <target state="new">NETSDK1231: File '{0}' does not exist. Please ensure the runtime graph path exists.</target>
+        <note>{StrBegins="NETSDK1231: "}{Locked="{0}"}</note>
       </trans-unit>
       <trans-unit id="RuntimeIdentifierNotRecognized">
         <source>NETSDK1083: The specified RuntimeIdentifier '{0}' is not recognized. See https://aka.ms/netsdk1083 for more information.</source>
@@ -964,9 +964,9 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegins="NETSDK1172: "}</note>
       </trans-unit>
       <trans-unit id="UnableToFindMatchingRid">
-        <source>NETSDK1230: Unable to find a matching RID for '{0}' from among [{1}] in graph '{2}'.</source>
-        <target state="new">NETSDK1230: Unable to find a matching RID for '{0}' from among [{1}] in graph '{2}'.</target>
-        <note>{StrBegins="NETSDK1230: "}{Locked="{0}"}{Locked="{1}"}{Locked="{2}"}</note>
+        <source>NETSDK1232: Unable to find a matching RID for '{0}' from among [{1}] in graph '{2}'.</source>
+        <target state="new">NETSDK1232: Unable to find a matching RID for '{0}' from among [{1}] in graph '{2}'.</target>
+        <note>{StrBegins="NETSDK1232: "}{Locked="{0}"}{Locked="{1}"}{Locked="{2}"}</note>
       </trans-unit>
       <trans-unit id="UnableToFindResolvedPath">
         <source>NETSDK1016: Unable to find resolved path for '{0}'.</source>
