@@ -12,6 +12,9 @@ parameters:
   # the usage of the properties on this object is split between the 'job' and 'steps' templates.
   platform: {}
 
+  # Optional list of directories to ignore for component governance scans.
+  cgIgnoreDirectories: []
+
 steps:
 # Build. Keep it self-contained for simple reusability. (No source-build-specific job variables.)
 - script: |
