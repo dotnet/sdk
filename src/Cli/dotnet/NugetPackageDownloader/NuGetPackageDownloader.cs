@@ -4,7 +4,6 @@
 #nullable disable
 
 using System.Collections.Concurrent;
-using System.Reflection;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NugetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
@@ -453,81 +452,19 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             throw new NuGetPackageInstallerException("No NuGet sources are defined or enabled");
         }
 
-        // Load settings to check allowInsecureConnections
-        string currentDirectory = _currentWorkingDirectory ?? Directory.GetCurrentDirectory();
-        ISettings settings;
-        if (packageSourceLocation?.NugetConfig != null)
-        {
-            string nugetConfigParentDirectory =
-                packageSourceLocation.NugetConfig.Value.GetDirectoryPath().Value;
-            string nugetConfigFileName = Path.GetFileName(packageSourceLocation.NugetConfig.Value.Value);
-            settings = Settings.LoadSpecificSettings(nugetConfigParentDirectory,
-                nugetConfigFileName);
-        }
-        else
-        {
-            settings = Settings.LoadDefaultSettings(
-                packageSourceLocation?.RootConfigDirectory?.Value ?? currentDirectory);
-        }
-
-        CheckHttpSources(sources, settings);
+        CheckHttpSources(sources);
         return sources;
     }
 
-    private void CheckHttpSources(IEnumerable<PackageSource> packageSources, ISettings settings)
+    private void CheckHttpSources(IEnumerable<PackageSource> packageSources)
     {
-        var httpSources = packageSources.Where(source => !source.IsLocal && source.SourceUri?.Scheme?.Equals("http", StringComparison.OrdinalIgnoreCase) == true).ToList();
-        
-        if (httpSources.Any())
+        foreach (var packageSource in packageSources)
         {
-            // Check each HTTP source for allowInsecureConnections configuration
-            foreach (var httpSource in httpSources)
+            if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
             {
-                if (!IsInsecureConnectionAllowed(httpSource, settings))
-                {
-                    throw new NuGetPackageInstallerException(string.Format(CliStrings.Error_NU1302_HttpSourceUsed, httpSource.Source));
-                }
+                throw new NuGetPackageInstallerException(string.Format(CliStrings.Error_NU1302_HttpSourceUsed, packageSource.Source));
             }
         }
-    }
-
-    private bool IsInsecureConnectionAllowed(PackageSource packageSource, ISettings settings)
-    {
-        // First, try to check if the PackageSource has AllowInsecureConnections property (NuGet 6.8+)
-        // This approach uses reflection to check for the property in case the NuGet version supports it
-        var packageSourceType = packageSource.GetType();
-        var allowInsecureConnectionsProperty = packageSourceType.GetProperty("AllowInsecureConnections");
-        
-        if (allowInsecureConnectionsProperty != null && allowInsecureConnectionsProperty.PropertyType == typeof(bool))
-        {
-            return (bool)allowInsecureConnectionsProperty.GetValue(packageSource);
-        }
-
-        // Fallback: Check the settings configuration directly
-        // Read the allowInsecureConnections attribute from the packageSources section
-        if (settings != null)
-        {
-            var packageSourcesSection = settings.GetSection("packageSources");
-            if (packageSourcesSection != null)
-            {
-                var sourceItems = packageSourcesSection.Items.OfType<AddItem>();
-                var matchingSource = sourceItems.FirstOrDefault(item => 
-                    string.Equals(item.Key, packageSource.Name, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(item.Value, packageSource.Source, StringComparison.OrdinalIgnoreCase));
-
-                if (matchingSource != null)
-                {
-                    // Check for allowInsecureConnections attribute
-                    if (matchingSource.AdditionalAttributes.TryGetValue("allowInsecureConnections", out string allowInsecureValue))
-                    {
-                        return string.Equals(allowInsecureValue, "true", StringComparison.OrdinalIgnoreCase);
-                    }
-                }
-            }
-        }
-
-        // Default: do not allow insecure connections
-        return false;
     }
 
     private async Task<(PackageSource, IPackageSearchMetadata)> GetMatchingVersionInternalAsync(
