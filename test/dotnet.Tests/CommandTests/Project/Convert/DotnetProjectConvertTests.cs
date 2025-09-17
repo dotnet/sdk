@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Security;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands;
@@ -746,6 +747,51 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
+                  </PropertyGroup>
+
+                </Project>
+
+                """);
+    }
+
+    [Theory, CombinatorialData]
+    public void UserSecretsId_Overridden_SameAsImplicit(bool hasDirective, bool hasDirectiveBuildProps)
+    {
+        const string implicitValue = "$(MSBuildProjectName)-$([MSBuild]::StableStringHash($(MSBuildProjectFullPath.ToLowerInvariant()), 'Sha256'))";
+
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            {(hasDirective ? $"#:property UserSecretsId={implicitValue}" : "")}
+            Console.WriteLine();
+            """);
+
+        if (hasDirectiveBuildProps)
+        {
+            File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
+                <Project>
+                  <PropertyGroup>
+                    <UserSecretsId>{SecurityElement.Escape(implicitValue)}</UserSecretsId>
+                  </PropertyGroup>
+                </Project>
+                """);
+        }
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Program", "Program.csproj"))
+            .Should().Match($"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <UserSecretsId>{(hasDirective ? SecurityElement.Escape(implicitValue) : "Program-*")}</UserSecretsId>
                   </PropertyGroup>
 
                 </Project>

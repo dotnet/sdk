@@ -32,7 +32,6 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !_force, DiagnosticBag.ThrowOnFirst());
 
         // Create a project instance for evaluation.
-        string entryPointFileDirectory = PathUtility.EnsureTrailingSlash(Path.GetDirectoryName(file)!);
         var projectCollection = new ProjectCollection();
         var command = new VirtualProjectBuildingCommand(
             entryPointFileFullPath: file,
@@ -123,6 +122,8 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 
         IEnumerable<(string FullPath, string RelativePath)> FindIncludedItems()
         {
+            string entryPointFileDirectory = PathUtility.EnsureTrailingSlash(Path.GetDirectoryName(file)!);
+
             // Include only items we know are files.
             string[] itemTypes = ["Content", "None", "Compile", "EmbeddedResource"];
             var items = itemTypes.SelectMany(t => projectInstance.GetItems(t));

@@ -2187,7 +2187,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var testInstance = _testAssetsManager.CreateTestDirectory();
 
         string code = $"""
-            #:package Microsoft.Extensions.Configuration.UserSecrets@*-*
+            #:package Microsoft.Extensions.Configuration.UserSecrets@{CSharpCompilerCommand.RuntimeVersion}
             {(userSecretsId is null ? "" : $"#:property UserSecretsId={userSecretsId}")}
 
             using Microsoft.Extensions.Configuration;
