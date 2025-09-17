@@ -85,12 +85,6 @@ stages:
             ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
               _SignType: real
               _Test: ''
-  - template: /eng/common/templates/job/source-build.yml
-    parameters:
-      enableInternalSources: true
-      platform:
-        name: 'Managed'
-        container: 'mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9'
   - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
     - template: /eng/build-pr.yml
       parameters:
