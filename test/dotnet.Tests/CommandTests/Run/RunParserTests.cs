@@ -27,5 +27,35 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var runCommand = RunCommand.FromArgs(new[] { "--project", projectPath, "--", "foo" });
             runCommand.ApplicationArgs.Single().Should().Be("foo");
         }
+
+        [WindowsOnlyFact]
+        public void RunParserAcceptsWindowsPathSeparatorsOnWindows()
+        {
+            var tam = new TestAssetsManager(output);
+            var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
+            var newWorkingDir = testAsset.Path;
+
+            Directory.SetCurrentDirectory(newWorkingDir);
+            var projectPath = @".\HelloWorld.csproj";
+                
+            // Should not throw on Windows
+            var runCommand = RunCommand.FromArgs(new[] { "--project", projectPath });
+            runCommand.ProjectFileFullPath.Should().NotBeNull();
+        }
+
+        [UnixOnlyFact]
+        public void RunParserAcceptsWindowsPathSeparatorsOnLinux()
+        {
+            var tam = new TestAssetsManager(output);
+            var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
+            var newWorkingDir = testAsset.Path;
+
+            Directory.SetCurrentDirectory(newWorkingDir);
+            var projectPath = @".\HelloWorld.csproj";
+                
+            // Should not throw on Linux with backslash separators
+            var runCommand = RunCommand.FromArgs(new[] { "--project", projectPath });
+            runCommand.ProjectFileFullPath.Should().NotBeNull();
+        }
     }
 }

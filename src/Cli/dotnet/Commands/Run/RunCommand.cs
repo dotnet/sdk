@@ -529,6 +529,13 @@ public class RunCommand
             projectFileOrDirectoryPath = Directory.GetCurrentDirectory();
         }
 
+        // Normalize path separators to handle Windows-style paths on non-Windows platforms
+        // First convert backslashes to forward slashes on non-Windows, then get the full path
+        if (Path.DirectorySeparatorChar != '\\')
+        {
+            projectFileOrDirectoryPath = projectFileOrDirectoryPath.Replace('\\', '/');
+        }
+
         string? projectFilePath = Directory.Exists(projectFileOrDirectoryPath)
             ? TryFindSingleProjectInDirectory(projectFileOrDirectoryPath)
             : projectFileOrDirectoryPath;
