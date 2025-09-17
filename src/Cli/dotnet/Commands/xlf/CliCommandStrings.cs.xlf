@@ -185,9 +185,9 @@ Prohledané cesty: „{1}“, „{2}“.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotConvertDirective">
-        <source>Some directives cannot be converted: the first error is at {0}. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
-        <target state="translated">Některé direktivy nelze převést: První chyba je tady: {0}. Spuštěním souboru zobrazíte všechny chyby kompilace. Zadejte '--force', pokud chcete přesto provést převod.</target>
-        <note>{Locked="--force"}. {0} is the file path and line number.</note>
+        <source>Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
+        <target state="new">Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</target>
+        <note>{Locked="--force"}</note>
       </trans-unit>
       <trans-unit id="CannotFindCommandName">
         <source>Cannot find a tool in the manifest file that has a command named '{0}'.</source>
@@ -878,19 +878,18 @@ Pokud zadaný adresář neexistuje, bude vytvořen.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
-        <source>dotnet.config defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+        <source>global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
 The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="translated">Soubor dotnet.config definuje, že spouštěč testů bude Microsoft.Testing.Platform. Tento spouštěč testů musí používat všechny projekty.
-Následující testovací projekty používají spouštěč testů VSTest:
+        <target state="new">global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+The following test projects are using VSTest test runner:
 {0}
 
-Další informace najdete na https://aka.ms/dotnet-test/mtp.</target>
-        <note>{0} is one or more project names.
-Microsoft.Testing.Platform is a name, don't translate.
-dotnet.config is a name don't translate.</note>
+See https://aka.ms/dotnet-test/mtp for more information.</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
+{0} is one or more project names.</note>
       </trans-unit>
       <trans-unit id="CmdUseLockFileOptionDescription">
         <source>Enables project lock file to be generated and used with restore.</source>
@@ -1127,6 +1126,11 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">Povolí diagnostický výstup.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DirectiveError">
+        <source>error</source>
+        <target state="new">error</target>
+        <note>Used when reporting directive errors like "file(location): error: message".</note>
+      </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
         <target state="translated">Odebrány direktivy {0} ({1}) pro {2} z umístění: {3}</target>
@@ -1163,6 +1167,31 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">Testovací příkaz .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
+        <source>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</source>
+        <target state="new">Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeFailureHasHandshake">
+        <source>Error disposing 'NamedPipeServer' corresponding to handshake:</source>
+        <target state="new">Error disposing 'NamedPipeServer' corresponding to handshake:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeFailureWithoutHandshake">
+        <source>Error disposing 'NamedPipeServer', and no handshake was found.</source>
+        <target state="new">Error disposing 'NamedPipeServer', and no handshake was found.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeIncompleteSize">
+        <source>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</source>
+        <target state="new">'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestPipeOverlapping">
+        <source>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</source>
+        <target state="new">'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
         <source>DIRECTORY</source>
         <target state="translated">ADRESÁŘ</target>
@@ -1193,9 +1222,19 @@ Nastavte odlišné názvy profilů.</target>
         <note />
       </trans-unit>
       <trans-unit id="DuplicateDirective">
-        <source>Duplicate directives are not supported: {0} at {1}</source>
-        <target state="translated">Duplicitní direktivy nejsou podporovány: {0} v {1}</target>
-        <note>{0} is the directive type and name. {1} is the file path and line number.</note>
+        <source>Duplicate directives are not supported: {0}</source>
+        <target state="new">Duplicate directives are not supported: {0}</target>
+        <note>{0} is the directive type and name.</note>
+      </trans-unit>
+      <trans-unit id="ErrorRunningTestModule">
+        <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
+
+{2}</source>
+        <target state="new">The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
+
+{2}</target>
+        <note>{Locked="RunCommand"}{Locked="RunArguments"}
+{2} is the exception that occurred.</note>
       </trans-unit>
       <trans-unit id="Error_restore">
         <source>Restore failed. Run `dotnet restore` for more details on the issue.</source>
@@ -1522,10 +1561,15 @@ Nastavte odlišné názvy profilů.</target>
         <target state="translated">Pracovní adresář použitý příkazem, který se má spustit</target>
         <note />
       </trans-unit>
+      <trans-unit id="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage">
+        <source>Method '{0}' did not exit successfully</source>
+        <target state="new">Method '{0}' did not exit successfully</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidDirectiveName">
-        <source>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="translated">Direktiva v {2} by měla obsahovat název bez speciálních znaků a volitelnou hodnotu oddělenou znakem {1}, například #:{0} Název{1}Hodnota.</target>
-        <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</note>
+        <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
+        <target state="new">The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</target>
+        <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</note>
       </trans-unit>
       <trans-unit id="InvalidFilePath">
         <source>The specified file must exist and have '.cs' file extension: '{0}'</source>
@@ -1543,9 +1587,9 @@ Nastavte odlišné názvy profilů.</target>
         <note>{0} is an option name like '--no-build'.</note>
       </trans-unit>
       <trans-unit id="InvalidProjectDirective">
-        <source>The '#:project' directive at '{0}' is invalid: {1}</source>
-        <target state="translated">Direktiva #:project v {0} je neplatná: {1}.</target>
-        <note>{0} is the file path and line number. {1} is the inner error message.</note>
+        <source>The '#:project' directive is invalid: {0}</source>
+        <target state="new">The '#:project' directive is invalid: {0}</target>
+        <note>{0} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
         <source>Failed to parse "{0}" as a semantic version.</source>
@@ -1679,10 +1723,20 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
         <target state="translated">Minimální očekávané porušení zásad testů, spuštěné testy: {0}, očekávané minimum: {1}</target>
         <note>{0}, {1} number of tests</note>
       </trans-unit>
+      <trans-unit id="MismatchingHandshakeInfo">
+        <source>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</source>
+        <target state="new">A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MissingDirectiveName">
-        <source>Missing name of '{0}' at {1}.</source>
-        <target state="translated">Chybí název pro {0} v {1}.</target>
-        <note>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</note>
+        <source>Missing name of '{0}'.</source>
+        <target state="new">Missing name of '{0}'.</target>
+        <note>{0} is the directive name like 'package' or 'sdk'.</note>
+      </trans-unit>
+      <trans-unit id="MissingTestSessionEnd">
+        <source>A test session start event was received without a corresponding test session end.</source>
+        <target state="new">A test session start event was received without a corresponding test session end.</target>
+        <note />
       </trans-unit>
       <trans-unit id="MsBuildDefinition">
         <source>Run Microsoft Build Engine (MSBuild) commands.</source>
@@ -2442,14 +2496,14 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
         <note />
       </trans-unit>
       <trans-unit id="PropertyDirectiveInvalidName">
-        <source>Invalid property name at {0}. {1}</source>
-        <target state="translated">Neplatný název vlastnosti v {0}. {1}</target>
-        <note>{0} is the file path and line number. {1} is an inner exception message.</note>
+        <source>Invalid property name: {0}</source>
+        <target state="new">Invalid property name: {0}</target>
+        <note>{0} is an inner exception message.</note>
       </trans-unit>
       <trans-unit id="PropertyDirectiveMissingParts">
-        <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
-        <target state="translated">Direktiva property musí mít dvě části oddělené znakem =, například #:property PropertyName=PropertyValue: {0}</target>
-        <note>{0} is the file path and line number.{Locked="#:property"}</note>
+        <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</source>
+        <target state="new">The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</target>
+        <note>{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
@@ -2988,9 +3042,9 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
         <note />
       </trans-unit>
       <trans-unit id="StaticGraphRestoreNotSupported">
-        <source>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</source>
-        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</target>
-        <note>{0} is the file path and line number.{Locked="#:property"}</note>
+        <source>Static graph restore is not supported for file-based apps. Remove the '#:property'.</source>
+        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property'.</target>
+        <note>{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
@@ -3059,7 +3113,7 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
       </trans-unit>
       <trans-unit id="TestCommandUseDirectoryWithSwitch">
         <source>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</source>
-        <target state="new">Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</target>
+        <target state="translated">Zadání adresáře pro dotnet test by mělo být prostřednictvím --project nebo --solution.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseProject">
@@ -3244,6 +3298,11 @@ Nástroj {1} (verze {2}) byl úspěšně nainstalován.</target>
       <trans-unit id="ToolInstallPackageIdArgumentName">
         <source>PACKAGE_ID</source>
         <target state="translated">PACKAGE_ID</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallPackageIdMissing">
+        <source>A package ID was not specified for tool installation.</source>
+        <target state="new">A package ID was not specified for tool installation.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallSourceOptionDescription">
@@ -3498,6 +3557,26 @@ příkazu „dotnet tool list“.</target>
         <target state="translated">{0} pokus</target>
         <note>number or tries of the current test assembly when test assembly is being retried. {0} is number that starts at 1</note>
       </trans-unit>
+      <trans-unit id="UnexpectedHelpMessage">
+        <source>An unexpected help-related message was received when `--help` wasn't used.</source>
+        <target state="new">An unexpected help-related message was received when `--help` wasn't used.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedMessageInHelpMode">
+        <source>A message of type '{0}' was received in help mode, which is not expected.</source>
+        <target state="new">A message of type '{0}' was received in help mode, which is not expected.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedMessageWithoutHandshake">
+        <source>A message of type '{0}' was received before we got any handshakes, which is unexpected.</source>
+        <target state="new">A message of type '{0}' was received before we got any handshakes, which is unexpected.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedTestSessionEnd">
+        <source>A test session end event was received without a corresponding test session start.</source>
+        <target state="new">A test session end event was received without a corresponding test session start.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UninstallLocalToolSucceeded">
         <source>Tool '{0}' was successfully uninstalled and removed from manifest file {1}.</source>
         <target state="translated">Nástroj {0} se úspěšně odinstaloval a odebral ze souboru manifestu {1}.</target>
@@ -3514,9 +3593,9 @@ příkazu „dotnet tool list“.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnrecognizedDirective">
-        <source>Unrecognized directive '{0}' at {1}.</source>
-        <target state="translated">Nerozpoznaná direktiva {0} na {1}.</target>
-        <note>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</note>
+        <source>Unrecognized directive '{0}'.</source>
+        <target state="new">Unrecognized directive '{0}'.</target>
+        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
         <source>Update all tools.</source>

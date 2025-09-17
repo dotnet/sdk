@@ -331,8 +331,11 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("net451", false)]
         [InlineData("net462")]
         [InlineData("net481")]
-        [InlineData("net9.0", true, "")]
-        [InlineData("netstandard2.1", true, "")]
+        //  These target frameworks shouldn't prune packages unless explicitly enabled
+        [InlineData("net9.0", false, "")]
+        [InlineData("netstandard2.1", false, "")]
+        //  .NET 10 and up should prune packages by default
+        [InlineData("net10.0", true, "")]
         public void PrunePackageDataSucceeds(string targetFramework, bool shouldPrune = true, string enablePackagePruning = "True")
         {
             var nugetFramework = NuGetFramework.Parse(targetFramework);
@@ -393,7 +396,7 @@ namespace Microsoft.NET.Build.Tests
                 prunedPackages.Should().BeEmpty();
             }
 
-            if (nugetFramework.Framework.Equals(".NETCoreApp", StringComparison.OrdinalIgnoreCase) && nugetFramework.Version.Major >= 3)
+            if (shouldPrune && nugetFramework.Framework.Equals(".NETCoreApp", StringComparison.OrdinalIgnoreCase) && nugetFramework.Version.Major >= 3)
             {
                 foreach(var frameworkReference in new [] {
                         "Microsoft.AspNetCore.App",
