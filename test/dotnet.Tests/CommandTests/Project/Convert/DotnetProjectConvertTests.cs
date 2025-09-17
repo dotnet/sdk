@@ -67,7 +67,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Theory] // https://github.com/dotnet/sdk/issues/50832
     [InlineData("File", "Lib", "../Lib", "Project", "../Lib/lib.csproj")]
     [InlineData(".", "Lib", "./Lib", "Project", "../Lib/lib.csproj")]
+    [InlineData(".", "Lib", "Lib/../Lib", "Project", "../Lib/lib.csproj")]
     [InlineData("File", "Lib", "../Lib", "File/Project", "../../Lib/lib.csproj")]
+    [InlineData("File", "Lib", "..\\Lib", "File/Project", "../../Lib/lib.csproj")]
     public void ProjectReference_RelativePaths(string fileDir, string libraryDir, string reference, string outputDir, string convertedReference)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
