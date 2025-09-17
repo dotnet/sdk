@@ -97,22 +97,14 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         // Perform HTTP source validation early to ensure compatibility with .NET 9 requirements
         if (_packageId != null)
         {
-            try
+            var packageSourceLocationForValidation = new PackageSourceLocation(
+                nugetConfig: GetConfigFile(), 
+                additionalSourceFeeds: _addSource,
+                basePath: _currentWorkingDirectory);
+                
+            if (nugetPackageDownloader is NuGetPackageDownloader.NuGetPackageDownloader concreteDownloader)
             {
-                var packageSourceLocationForValidation = new PackageSourceLocation(
-                    nugetConfig: GetConfigFile(), 
-                    additionalSourceFeeds: _addSource,
-                    basePath: _currentWorkingDirectory);
-                    
-                if (nugetPackageDownloader is NuGetPackageDownloader.NuGetPackageDownloader concreteDownloader)
-                {
-                    concreteDownloader.LoadNuGetSources((PackageId)_packageId, packageSourceLocationForValidation);
-                }
-            }
-            catch (Exception)
-            {
-                // Re-throw any exceptions from HTTP source validation
-                throw;
+                concreteDownloader.LoadNuGetSources((PackageId)_packageId, packageSourceLocationForValidation);
             }
         }
         
