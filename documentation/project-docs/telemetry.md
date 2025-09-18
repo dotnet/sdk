@@ -24,7 +24,7 @@ The .NET SDK telemetry can be disabled using the following environment variable:
   - Example: `export DOTNET_CLI_TELEMETRY_OPTOUT=1` (Linux/macOS)
   - Example: `set DOTNET_CLI_TELEMETRY_OPTOUT=1` (Windows)
   - Note: this value is defaulted to `true` on non-Microsoft-provided builds of the .NET SDK (e.g. those provided by our Linux Distro partners, through Source Build, etc.)
-  -
+
 
 ### Related Environment Variables
 
@@ -39,7 +39,7 @@ The .NET SDK telemetry can be disabled using the following environment variable:
 - **Default Behavior**:
   - For Microsoft official builds: Telemetry is **enabled by default** (opt-out model)
   - For non-Microsoft builds: Telemetry is **disabled by default** (controlled by `MICROSOFT_ENABLE_TELEMETRY` compile flag)
-  -
+
 
 - **Connection String**: Telemetry data is sent to Application Insights with instrumentation key: `74cc1c9e-3e6e-4d05-b3fc-dde9101d0254`
 
@@ -288,4 +288,3 @@ See [Container Telemetry Documentation](https://github.com/dotnet/sdk-container-
 * Review and update common properties as needed
 * Add new events or properties as they are introduced in the .NET SDK
 * Follow the pre-existing format
-* Make sure to cover both directly-fired events (`Telemetry.TrackEvent`) and those that come through the MSBuild Engine Telemetry system
