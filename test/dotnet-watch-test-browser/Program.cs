@@ -93,27 +93,19 @@ static async Task<(string[] url, string key)> GetWebSocketUrlsAndPublicKey(Uri b
 {
     var refreshScriptUrl = new Uri(baseUrl, "/_framework/aspnetcore-browser-refresh.js");
 
-    try
-    {
-        Log($"Fetching: {refreshScriptUrl}");
+    Log($"Fetching: {refreshScriptUrl}");
 
-        using var httpClient = new HttpClient();
-        var content = await httpClient.GetStringAsync(refreshScriptUrl);
+    using var httpClient = new HttpClient();
+    var content = await httpClient.GetStringAsync(refreshScriptUrl);
 
-        Log($"Request for '{refreshScriptUrl}' succeeded");
-        var webSocketUrl = GetWebSocketUrls(content);
-        var key = GetSharedSecretKey(content);
+    Log($"Request for '{refreshScriptUrl}' succeeded");
+    var webSocketUrl = GetWebSocketUrls(content);
+    var key = GetSharedSecretKey(content);
 
-        Log($"WebSocket urls are '{string.Join(',', webSocketUrl)}'.");
-        Log($"Key is '{key}'.");
+    Log($"WebSocket urls are '{string.Join(',', webSocketUrl)}'.");
+    Log($"Key is '{key}'.");
 
-        return (webSocketUrl, key);
-    }
-    catch (Exception e)
-    {
-        Log($"Error fetching '{refreshScriptUrl}': {e.Message}");
-        return default;
-    }
+    return (webSocketUrl, key);
 }
 
 static string[] GetWebSocketUrls(string refreshScript)

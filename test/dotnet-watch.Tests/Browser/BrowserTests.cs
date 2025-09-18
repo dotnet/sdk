@@ -33,7 +33,7 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
 
         App.UseTestBrowser();
 
-        var url = $"https://localhost:{TestOptions.GetTestPort()}";
+        var url = $"http://localhost:{TestOptions.GetTestPort()}";
         var tfm = ToolsetInfo.CurrentTargetFramework;
 
         App.Start(testAsset, ["--urls", url], relativeProjectDirectory: "RazorApp", testFlags: TestFlags.ReadKeyFromStdin);
