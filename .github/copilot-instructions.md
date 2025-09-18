@@ -2,6 +2,9 @@ Coding Style and Changes:
 - Code should match the style of the file it's in.
 - Changes should be minimal to resolve a problem in a clean way.
 - User-visible changes to behavior should be considered carefully before committing. They should always be flagged.
+- When generating code, run `dotnet format` to ensure uniform formatting.
+- Prefer using file-based namespaces for new code.
+- Do not allow unused `using` directives to be committed.
 
 Testing:
 - Large changes should always include test changes.
