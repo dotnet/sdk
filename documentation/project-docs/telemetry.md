@@ -1,15 +1,18 @@
 # .NET SDK Telemetry Documentation
 
 ## Table of Contents
-- [How to Control Telemetry](#how-to-control-telemetry)
-- [Common Properties Collected](#common-properties-collected)
-- [Telemetry Events](#telemetry-events)
-  - [Core CLI Events](#core-cli-events)
-  - [Template Engine Events](#template-engine-events)
-  - [MSBuild Events](#msbuild-events)
-  - [Container Events](#container-events)
-  - [`dotnet new` Command MSBuild Evaluation](#dotnet-new-command-msbuild-evaluation)
-- [How to update this document](#how-to-update-this-document)
+- [.NET SDK Telemetry Documentation](#net-sdk-telemetry-documentation)
+  - [Table of Contents](#table-of-contents)
+  - [How to Control Telemetry](#how-to-control-telemetry)
+  - [Common Properties Collected](#common-properties-collected)
+  - [Telemetry Events](#telemetry-events)
+    - [Core CLI Events](#core-cli-events)
+    - [Template Engine Events](#template-engine-events)
+    - [SDK-Collected Build Events](#sdk-collected-build-events)
+    - [MSBuild Engine Telemetry](#msbuild-engine-telemetry)
+    - [Container Events](#container-events)
+    - [`dotnet new` Command MSBuild Evaluation](#dotnet-new-command-msbuild-evaluation)
+  - [How to update this document](#how-to-update-this-document)
 
 ## How to Control Telemetry
 
@@ -176,7 +179,7 @@ Every telemetry event automatically includes these common properties:
 
 **Description**: Tracks template usage and creation success
 
-### MSBuild Events
+### SDK-Collected Build Events
 
 #### `msbuild/targetframeworkeval`
 **When fired**: When target framework is evaluated
@@ -194,52 +197,6 @@ Every telemetry event automatically includes these common properties:
 
 ---
 
-#### `msbuild/build`
-**When fired**: During MSBuild build operations
-
-**Properties** : See https://github.com/dotnet/msbuild/blob/354e651619831907f28202611b8f4da59337f398/src/Framework/Telemetry/BuildTelemetry.cs (TODO: fill in later)
-
-**Measurements**: See above
-
-**Description**: Tracks build performance and targets
-
----
-
-#### `msbuild/loggingConfiguration`
-**When fired**: When logging configuration is processed during the build
-
-**Properties**: See https://github.com/dotnet/msbuild/blob/354e651619831907f28202611b8f4da59337f398/src/Framework/Telemetry/LoggingConfigurationTelemetry.cs (TODO: fill in later)
-
-**Description**: Tracks MSBuild logging setup
-
----
-
-#### `msbuild/buildcheck/acquisitionfailure`
-**When fired**: When buildcheck acquisition fails
-
-**Properties**: See https://github.com/dotnet/msbuild/blob/354e651619831907f28202611b8f4da59337f398/src/Framework/Telemetry/BuildCheckTelemetry.cs (TODO: fill in later)
-
-**Description**: Tracks buildcheck acquisition failures
-
----
-
-#### `msbuild/buildcheck/run`
-**When fired**: When buildchecks are run during a build
-
-**Properties**: See https://github.com/dotnet/msbuild/blob/354e651619831907f28202611b8f4da59337f398/src/Framework/Telemetry/BuildCheckTelemetry.cs (TODO: fill in later)
-
-**Description**: Tracks buildcheck execution performance
-
----
-
-#### `msbuild/buildcheck/rule`
-**When fired**: As part of buildcheck execution for each individual rule that ran
-
-**Properties**: See https://github.com/dotnet/msbuild/blob/354e651619831907f28202611b8f4da59337f398/src/Framework/Telemetry/BuildCheckTelemetry.cs (TODO: fill in later)
-
-**Description**: Tracks individual buildcheck rule performance
-
----
 
 #### `taskBaseCatchException`
 **When fired**: When exceptions occur in SDK-provided MSBuild tasks
@@ -299,6 +256,10 @@ Every telemetry event automatically includes these common properties:
 * FailedCount: _ReadyToRunCompilationFailures->Count()
 
 **Description**: Tracks ReadyToRun compilation usage
+
+### MSBuild Engine Telemetry
+
+See [MSBuild Telemetry Documentation](https://github.com/dotnet/msbuild/blob/main/documentation/wiki/CollectedTelemetry.md) for details on these events.
 
 ### Container Events
 
