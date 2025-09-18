@@ -8,7 +8,8 @@
   - [Template Engine Events](#template-engine-events)
   - [MSBuild Events](#msbuild-events)
   - [Container Events](#container-events)
-  - [New Command MSBuild Evaluation](#new-command-msbuild-evaluation)
+  - [`dotnet new` Command MSBuild Evaluation](#dotnet-new-command-msbuild-evaluation)
+- [How to update this document](#how-to-update-this-document)
 
 ## How to Control Telemetry
 
@@ -20,7 +21,7 @@ The .NET SDK telemetry can be disabled using the following environment variable:
   - Example: `export DOTNET_CLI_TELEMETRY_OPTOUT=1` (Linux/macOS)
   - Example: `set DOTNET_CLI_TELEMETRY_OPTOUT=1` (Windows)
   - Note: this value is defaulted to `true` on non-Microsoft-provided builds of the .NET SDK (e.g. those provided by our Linux Distro partners, through Source Build, etc.)
-  - **Source**: [Environment variable definition](../../src/Common/EnvironmentVariableNames.cs#L18) | [Opt-out check](../../src/Cli/dotnet/Telemetry/Telemetry.cs#L47) | [Default value](../../src/Common/CompileOptions.cs#L13-L18)
+  -
 
 ### Related Environment Variables
 
@@ -35,7 +36,7 @@ The .NET SDK telemetry can be disabled using the following environment variable:
 - **Default Behavior**:
   - For Microsoft official builds: Telemetry is **enabled by default** (opt-out model)
   - For non-Microsoft builds: Telemetry is **disabled by default** (controlled by `MICROSOFT_ENABLE_TELEMETRY` compile flag)
-  - **Source**: [Compile-time configuration](../../src/Common/CompileOptions.cs#L5-L25)
+  -
 
 - **Connection String**: Telemetry data is sent to Application Insights with instrumentation key: `74cc1c9e-3e6e-4d05-b3fc-dde9101d0254`
 
@@ -47,7 +48,7 @@ The .NET SDK telemetry can be disabled using the following environment variable:
 
 Every telemetry event automatically includes these common properties:
 
-**Source**: [TelemetryCommonProperties.cs](../../src/Cli/dotnet/Telemetry/TelemetryCommonProperties.cs#L57-L88)
+
 
 | Property | Description | Example Value |
 |----------|-------------|---------------|
@@ -77,7 +78,7 @@ Every telemetry event automatically includes these common properties:
 
 #### `command/finish`
 **When fired**: At the end of every dotnet CLI command execution
-**Source**: [Program.cs:288](../../src/Cli/dotnet/Program.cs#L288)
+
 **Properties**:
 - `exitCode`: The exit code of the command
 
@@ -87,7 +88,7 @@ Every telemetry event automatically includes these common properties:
 
 #### `schema`
 **When fired**: When CLI schema is generated or accessed
-**Source**: [CliSchema.cs:78](../../src/Cli/dotnet/CliSchema.cs#L78)
+
 **Properties**:
 - `command`: The command hierarchy as a string
 
@@ -97,10 +98,9 @@ Every telemetry event automatically includes these common properties:
 
 #### `toplevelparser/command`
 **When fired**: For every top-level dotnet command
-**Source**: [TelemetryFilter.cs:59](../../src/Cli/dotnet/Telemetry/TelemetryFilter.cs#L59)
+
 **Properties**:
 - `verb`: Top-level command name (build, restore, publish, etc.)
-- `globalJson`: Global.json state information (if available)
 
 **Measurements**: Performance data (startup time, parse time, etc.)
 
@@ -110,7 +110,7 @@ Every telemetry event automatically includes these common properties:
 
 #### `sublevelparser/command`
 **When fired**: For subcommands and specific command options
-**Source**: [TelemetryFilter.cs:153](../../src/Cli/dotnet/Telemetry/TelemetryFilter.cs#L153)
+
 **Properties**: Various depending on command (verbosity, configuration, framework, etc.)
 
 **Description**: Tracks detailed command option usage
@@ -119,7 +119,7 @@ Every telemetry event automatically includes these common properties:
 
 #### `commandresolution/commandresolved`
 **When fired**: When a command is resolved through the command factory
-**Source**: [CompositeCommandResolver.cs:41](../../src/Cli/dotnet/CommandFactory/CommandResolution/CompositeCommandResolver.cs#L41)
+
 **Properties**:
 - `commandName`: SHA256 hash of command name
 - `commandResolver`: Type of command resolver used
@@ -130,9 +130,9 @@ Every telemetry event automatically includes these common properties:
 
 #### `install/reportsuccess`
 **When fired**: When installation success is reported
-**Source**: [TelemetryFilter.cs:76](../../src/Cli/dotnet/Telemetry/TelemetryFilter.cs#L76)
+
 **Properties**:
-- `exeName`: Name of the executable being installed
+- `exeName`: Name of the install method that was used - one of `debianpackage`, a specific macOS `.pkg` file name, or a specific Windows exe installer file name.
 
 **Description**: Tracks successful tool installations
 
@@ -140,7 +140,7 @@ Every telemetry event automatically includes these common properties:
 
 #### `mainCatchException/exception`
 **When fired**: When unhandled exceptions occur in the main CLI
-**Source**: [TelemetryFilter.cs:82](../../src/Cli/dotnet/Telemetry/TelemetryFilter.cs#L82)
+
 **Properties**:
 - `exceptionType`: Type of exception
 - `detail`: Exception details (sensitive message removed)
@@ -151,7 +151,7 @@ Every telemetry event automatically includes these common properties:
 
 #### `template/new-install`
 **When fired**: During template package installation
-**Source**: [TemplatePackageCoordinator.cs:193](../../src/Cli/Microsoft.TemplateEngine.Cli/TemplatePackageCoordinator.cs#L193)
+
 **Properties**:
 - `CountOfThingsToInstall`: Number of template packages being installed
 
@@ -161,18 +161,18 @@ Every telemetry event automatically includes these common properties:
 
 #### `template/new-create-template`
 **When fired**: When creating a new project from template
-**Source**: [TemplateInvoker.cs:81](../../src/Cli/Microsoft.TemplateEngine.Cli/TemplateInvoker.cs#L81)
+
 **Properties**:
-- `language`: Template language (hashed if Microsoft-authored)
+- `language`: Template language (C#, F#, VB, etc)
 - `argument-error`: Whether there were argument errors ("True"/"False")
-- `framework`: Framework choice (hashed if Microsoft-authored)
+- `framework`: Framework choice (only sent for Microsoft-authored templates)
 - `template-name`: SHA256 hash of template identity
 - `template-short-name`: SHA256 hash of template short names
 - `package-name`: SHA256 hash of package name
 - `package-version`: SHA256 hash of package version
 - `is-template-3rd-party`: Whether template is third-party
 - `create-success`: Whether creation succeeded
-- `auth`: Authentication choice (hashed if Microsoft-authored)
+- `auth`: Authentication choice (only sent for Microsoft-authored templates)
 
 **Description**: Tracks template usage and creation success
 
@@ -180,15 +180,15 @@ Every telemetry event automatically includes these common properties:
 
 #### `msbuild/targetframeworkeval`
 **When fired**: When target framework is evaluated
-**Source**: [MSBuildLogger.cs:114](../../src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs#L114)
-**Properties** (all hashed):
+
+**Properties**:
 - `TargetFrameworkVersion`: Target framework version
 - `RuntimeIdentifier`: Runtime identifier
 - `SelfContained`: Whether self-contained
 - `UseApphost`: Whether using app host
 - `OutputType`: Output type (Exe, Library, etc.)
 - `UseArtifactsOutput`: Whether using artifacts output
-- `ArtifactsPathLocationType`: Artifacts path location type
+- `ArtifactsPathLocationType`: Artifacts path location type - one of `Explicitly Specified`, `DirectoryBuildPropsFolder`, or `ProjectFolder`.
 
 **Description**: Tracks target framework configurations
 
@@ -196,24 +196,19 @@ Every telemetry event automatically includes these common properties:
 
 #### `msbuild/build`
 **When fired**: During MSBuild build operations
-**Source**: [MSBuildLogger.cs:137](../../src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs#L137)
-**Properties** (hashed):
-- `ProjectPath`: SHA256 hash of project path
-- `BuildTarget`: SHA256 hash of build target
 
-**Measurements**:
-- `BuildDurationInMilliseconds`: Build duration
-- `InnerBuildDurationInMilliseconds`: Inner build duration
+**Properties** : See https://github.com/dotnet/msbuild/blob/354e651619831907f28202611b8f4da59337f398/src/Framework/Telemetry/BuildTelemetry.cs (TODO: fill in later)
+
+**Measurements**: See above
 
 **Description**: Tracks build performance and targets
 
 ---
 
 #### `msbuild/loggingConfiguration`
-**When fired**: When logging configuration is processed
-**Source**: [MSBuildLogger.cs:142](../../src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs#L142)
-**Measurements**:
-- `FileLoggersCount`: Number of file loggers configured
+**When fired**: When logging configuration is processed during the build
+
+**Properties**: See https://github.com/dotnet/msbuild/blob/354e651619831907f28202611b8f4da59337f398/src/Framework/Telemetry/LoggingConfigurationTelemetry.cs (TODO: fill in later)
 
 **Description**: Tracks MSBuild logging setup
 
@@ -221,43 +216,34 @@ Every telemetry event automatically includes these common properties:
 
 #### `msbuild/buildcheck/acquisitionfailure`
 **When fired**: When buildcheck acquisition fails
-**Source**: [MSBuildLogger.cs:147](../../src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs#L147)
-**Properties** (hashed):
-- `AssemblyName`: Failed assembly name
-- `ExceptionType`: Exception type
-- `ExceptionMessage`: Exception message
+
+**Properties**: See https://github.com/dotnet/msbuild/blob/354e651619831907f28202611b8f4da59337f398/src/Framework/Telemetry/BuildCheckTelemetry.cs (TODO: fill in later)
 
 **Description**: Tracks buildcheck acquisition failures
 
 ---
 
 #### `msbuild/buildcheck/run`
-**When fired**: When buildcheck runs
-**Source**: [MSBuildLogger.cs:152](../../src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs#L152)
-**Measurements**:
-- `TotalRuntimeInMilliseconds`: Total runtime
+**When fired**: When buildchecks are run during a build
+
+**Properties**: See https://github.com/dotnet/msbuild/blob/354e651619831907f28202611b8f4da59337f398/src/Framework/Telemetry/BuildCheckTelemetry.cs (TODO: fill in later)
 
 **Description**: Tracks buildcheck execution performance
 
 ---
 
 #### `msbuild/buildcheck/rule`
-**When fired**: When buildcheck rules are processed
-**Source**: [MSBuildLogger.cs:157](../../src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs#L157)
-**Properties** (hashed):
-- `RuleId`: Rule identifier
-- `CheckFriendlyName`: Check friendly name
+**When fired**: As part of buildcheck execution for each individual rule that ran
 
-**Measurements**:
-- `TotalRuntimeInMilliseconds`: Runtime for the rule
+**Properties**: See https://github.com/dotnet/msbuild/blob/354e651619831907f28202611b8f4da59337f398/src/Framework/Telemetry/BuildCheckTelemetry.cs (TODO: fill in later)
 
 **Description**: Tracks individual buildcheck rule performance
 
 ---
 
 #### `taskBaseCatchException`
-**When fired**: When exceptions occur in MSBuild tasks
-**Source**: [TaskBase.cs:44](../../src/Tasks/Common/TaskBase.cs#L44)
+**When fired**: When exceptions occur in SDK-provided MSBuild tasks
+
 **Properties**:
 - `exceptionType`: Exception type
 - `detail`: Exception details (message removed)
@@ -267,8 +253,14 @@ Every telemetry event automatically includes these common properties:
 ---
 
 #### `PublishProperties`
-**When fired**: During publish operations
-**Source**: [MSBuildLogger.cs:163](../../src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs#L163)
+**When fired**: During the Publish Target
+
+**Properties**: Gathers the values of the following MSBuild Properties if they are set in the project file or via command line:
+* PublishReadyToRun
+* PublishSingleFile
+* PublishTrimmed
+* PublishAot
+* PublishProtocol
 
 **Description**: Tracks publish-related properties
 
@@ -276,7 +268,21 @@ Every telemetry event automatically includes these common properties:
 
 #### `WorkloadPublishProperties`
 **When fired**: During workload publish operations
-**Source**: [MSBuildLogger.cs:165](../../src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs#L165)
+
+**Properties**: Gathers the values of the following MSBuild Properties if they are set in the project file or via command line:
+* TargetPlatformIdentifier: TargetPlatformIdentifier
+* RuntimeIdentifier: RuntimeIdentifier
+* BlazorWasm: _WorkloadUsesBlazorWasm
+* WasmSDK: _WorkloadUsesWasmSDK
+* UsesMaui: UseMaui
+* UsesMobileSDKOnly: _WorkloadUsesMobileSDKOnly
+* UsesOtherMobileSDK: _WorkloadUsesOther
+* MonoAOT: _WorkloadUsesMonoAOT
+* NativeAOT: _WorkloadUsesNativeAOT
+* Interp: _WorkloadUsesInterpreter
+* LibraryMode: _WorkloadUsesLibraryMode
+* ResolvedRuntimePack: _MonoWorkloadRuntimePackPackageVersion
+* StripILAfterAOT: _WorkloadUsesStripILAfterAOT
 
 **Description**: Tracks workload-specific publish properties
 
@@ -284,57 +290,25 @@ Every telemetry event automatically includes these common properties:
 
 #### `ReadyToRun`
 **When fired**: During ReadyToRun compilation
-**Source**: [MSBuildLogger.cs:164](../../src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs#L164)
+
+**Properties**: Gathers the values of the following MSBuild Properties and Items if they are set in the project file or via command line:
+
+* PublishReadyToRunUseCrossgen2: PublishReadyToRunUseCrossgen2
+* Crossgen2PackVersion: ResolvedCrossgen2Pack.NuGetPackageVersion
+* CompileListCount: _ReadyToRunCompileList->Count()
+* FailedCount: _ReadyToRunCompilationFailures->Count()
 
 **Description**: Tracks ReadyToRun compilation usage
 
 ### Container Events
 
-#### `sdk/container/inference`
-**When fired**: When base container image is inferred
-**Source**: [ComputeDotnetBaseImageAndTag.cs](../../src/Containers/Microsoft.NET.Build.Containers/Tasks/ComputeDotnetBaseImageAndTag.cs)
-**Properties**:
-- `ProjectType`: Type of project
-- `PublishMode`: Publish mode used
-- `IsInvariant`: Whether using invariant globalization
-- `TargetRuntimes`: Target runtime identifiers
+See [Container Telemetry Documentation](https://github.com/dotnet/sdk-container-builds/blob/main/docs/Telemetry.md) for details.
 
-**Description**: Tracks container base image inference decisions
-
----
-
-#### `sdk/container/publish/success`
-**When fired**: When container publish succeeds
-**Source**: [Telemetry.cs:68](../../src/Containers/Microsoft.NET.Build.Containers/Telemetry.cs#L68)
-**Properties**:
-- `RemotePullType`: Remote pull registry type
-- `LocalPullType`: Local pull storage type
-- `RemotePushType`: Remote push registry type
-- `LocalPushType`: Local push storage type
-
-**Description**: Tracks successful container publishes
-
----
-
-#### `sdk/container/publish/error`
-**When fired**: When container publish encounters errors
-**Source**: [Telemetry.cs:75](../../src/Containers/Microsoft.NET.Build.Containers/Telemetry.cs#L75)
-**Properties**:
-- `RemotePullType`: Remote pull registry type
-- `LocalPullType`: Local pull storage type
-- `RemotePushType`: Remote push registry type
-- `LocalPushType`: Local push storage type
-- `error`: Error type (`unknown_repository`, `credential_failure`, `rid_mismatch`, etc.)
-- `direction`: Direction for credential failures (`pull`/`push`)
-- Additional error-specific properties
-
-**Description**: Tracks container publish failures and error types
-
-### New Command MSBuild Evaluation
+### `dotnet new` Command MSBuild Evaluation
 
 #### `new/msbuild-eval`
 **When fired**: When MSBuild project evaluation occurs during `dotnet new`
-**Source**: [MSBuildEvaluator.cs:212](../../src/Cli/dotnet/Commands/New/MSBuildEvaluation/MSBuildEvaluator.cs#L212)
+
 **Properties** (hashed):
 - `ProjectPath`: Project path
 - `SdkStyleProject`: Whether it's SDK-style project
@@ -347,25 +321,10 @@ Every telemetry event automatically includes these common properties:
 
 **Description**: Tracks MSBuild evaluation performance for new projects
 
-## Privacy and Data Handling
+## How to update this document
 
-### Data Protection Measures
-
-1. **Hashing**: Sensitive data like file paths, project names, and machine identifiers are SHA256 hashed before transmission
-2. **No Personal Information**: No personally identifiable information is collected
-3. **No Source Code**: No source code or file contents are collected
-4. **Exception Sanitization**: Exception messages are removed, only exception types are collected
-5. **Opt-out Available**: Users can completely disable telemetry at any time
-
-### Data Usage
-
-The telemetry data is used by Microsoft to:
-- Understand .NET SDK usage patterns
-- Identify and fix common issues
-- Improve performance and reliability
-- Guide feature development priorities
-- Monitor adoption of new features
-
-### Compliance
-
-The .NET SDK telemetry system complies with Microsoft's privacy policies and data handling practices. For more information, see [Microsoft Privacy Statement](https://privacy.microsoft.com/privacystatement).
+* Ensure that all telemetry events and properties are accurately documented
+* Review and update common properties as needed
+* Add new events or properties as they are introduced in the .NET SDK
+* Follow the pre-existing format
+* Make sure to cover both directly-fired events (`Telemetry.TrackEvent`) and those that come through the MSBuild Engine Telemetry system
