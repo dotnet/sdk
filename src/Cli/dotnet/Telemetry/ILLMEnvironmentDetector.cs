@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-internal interface ICIEnvironmentDetector
+internal interface ILLMEnvironmentDetector
 {
-    bool IsCIEnvironment();
+    string? GetLLMEnvironment();
 }
