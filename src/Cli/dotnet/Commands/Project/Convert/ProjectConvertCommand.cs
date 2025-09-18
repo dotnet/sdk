@@ -32,6 +32,16 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         var sourceFile = SourceFile.Load(file);
         var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !_force, DiagnosticBag.ThrowOnFirst());
 
+        // Create a project instance for evaluation.
+        var projectCollection = new ProjectCollection();
+        var command = new VirtualProjectBuildingCommand(
+            entryPointFileFullPath: file,
+            msbuildArgs: MSBuildArgs.FromOtherArgs([]))
+        {
+            Directives = directives,
+        };
+        var projectInstance = command.CreateProjectInstance(projectCollection);
+
         // Find other items to copy over, e.g., default Content items like JSON files in Web apps.
         var includeItems = FindIncludedItems().ToList();
 
@@ -62,7 +72,8 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         {
             using var stream = File.Open(projectFile, FileMode.Create, FileAccess.Write);
             using var writer = new StreamWriter(stream, Encoding.UTF8);
-            VirtualProjectBuildingCommand.WriteProjectFile(writer, UpdateDirectives(directives), isVirtualProject: false);
+            VirtualProjectBuildingCommand.WriteProjectFile(writer, UpdateDirectives(directives), isVirtualProject: false,
+                userSecretsId: DetermineUserSecretsId());
         }
 
         // Copy or move over included items.
@@ -113,14 +124,6 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         IEnumerable<(string FullPath, string RelativePath)> FindIncludedItems()
         {
             string entryPointFileDirectory = PathUtility.EnsureTrailingSlash(Path.GetDirectoryName(file)!);
-            var projectCollection = new ProjectCollection();
-            var command = new VirtualProjectBuildingCommand(
-                entryPointFileFullPath: file,
-                msbuildArgs: MSBuildArgs.FromOtherArgs([]))
-            {
-                Directives = directives,
-            };
-            var projectInstance = command.CreateProjectInstance(projectCollection);
 
             // Include only items we know are files.
             string[] itemTypes = ["Content", "None", "Compile", "EmbeddedResource"];
@@ -151,6 +154,13 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
                 string itemRelativePath = Path.GetRelativePath(relativeTo: entryPointFileDirectory, path: itemFullPath);
                 yield return (FullPath: itemFullPath, RelativePath: itemRelativePath);
             }
+        }
+
+        string? DetermineUserSecretsId()
+        {
+            var implicitValue = projectInstance.GetPropertyValue("_ImplicitFileBasedProgramUserSecretsId");
+            var actualValue = projectInstance.GetPropertyValue("UserSecretsId");
+            return implicitValue == actualValue ? actualValue : null;
         }
 
         ImmutableArray<CSharpDirective> UpdateDirectives(ImmutableArray<CSharpDirective> directives)

@@ -1138,7 +1138,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         bool isVirtualProject,
         string? targetFilePath = null,
         string? artifactsPath = null,
-        bool includeRuntimeConfigInformation = true)
+        bool includeRuntimeConfigInformation = true,
+        string? userSecretsId = null)
     {
         int processedDirectives = 0;
 
@@ -1253,6 +1254,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                             <{name}>{EscapeValue(value)}</{name}>
                         """);
                 }
+            }
+
+            if (userSecretsId != null && !customPropertyNames.Contains("UserSecretsId"))
+            {
+                writer.WriteLine($"""
+                        <UserSecretsId>{EscapeValue(userSecretsId)}</UserSecretsId>
+                    """);
             }
 
             // Write virtual-only properties.

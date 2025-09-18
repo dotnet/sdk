@@ -116,6 +116,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PreferNativeArm64 Condition="'$(PreferNativeArm64)'==''">false</PreferNativeArm64>
     <SignAssembly Condition="'$(SignAssembly)'==''">false</SignAssembly>
     <DelaySign Condition="'$(DelaySign)'==''">false</DelaySign>
+    <!-- TODO: should we set _IsPacking=true on the NuGet Pack targets when they hook up the 'generate package on build' stuff -->
     <GeneratePackageOnBuild Condition="'$(GeneratePackageOnBuild)'==''">false</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance Condition="'$(PackageRequireLicenseAcceptance)'==''">false</PackageRequireLicenseAcceptance>
     <DebugSymbols Condition="'$(DebugSymbols)'==''">false</DebugSymbols>
@@ -128,6 +129,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Uncomment this once https://github.com/Microsoft/visualfsharp/issues/3207 gets fixed -->
     <!-- <WarningsAsErrors>$(WarningsAsErrors);NU1605</WarningsAsErrors> -->
+
+    <!-- Implicitly set UserSecretsId for file-based apps. -->
+    <_ImplicitFileBasedProgramUserSecretsId Condition="'$(FileBasedProgram)' == 'true'">$(MSBuildProjectName)-$([MSBuild]::StableStringHash($(MSBuildProjectFullPath.ToLowerInvariant()), 'Sha256'))</_ImplicitFileBasedProgramUserSecretsId>
+    <UserSecretsId Condition="'$(FileBasedProgram)' == 'true' and '$(UserSecretsId)' == ''">$(_ImplicitFileBasedProgramUserSecretsId)</UserSecretsId>
   </PropertyGroup>
 
   <PropertyGroup>

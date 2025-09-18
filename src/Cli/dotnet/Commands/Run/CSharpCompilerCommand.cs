@@ -72,6 +72,9 @@ internal sealed partial class CSharpCompilerCommand
         // Write .rsp file and other intermediate build outputs.
         PrepareAuxiliaryFiles(out string rspPath);
 
+        // Ensure the compiler is launched with the correct dotnet.
+        Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", new Muxer().MuxerPath);
+
         // Create a request for the compiler server
         // (this is much faster than starting a csc.dll process, especially on Windows).
         var buildRequest = BuildServerConnection.CreateBuildRequest(
