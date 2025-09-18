@@ -154,6 +154,7 @@ public class TestProgressStateTests
         state.SkippedTests.Should().Be(1);
         state.RetriedFailedTests.Should().Be(3);
     }
+
     /// <summary>
     /// Tests that DiscoverTest increments PassedTests and adds the displayName and uid to DiscoveredTests.
     /// </summary>
@@ -178,7 +179,7 @@ public class TestProgressStateTests
 
         state.DiscoverTest(displayName, uid);
 
-        state.PassedTests.Should().Be(1);
+        state.DiscoveredTests.Should().Be(1);
         state.DiscoveredTestNames.Count.Should().Be(1);
         state.DiscoveredTestNames[0].DisplayName.Should().Be(displayName);
         state.DiscoveredTestNames[0].UID.Should().Be(uid);
