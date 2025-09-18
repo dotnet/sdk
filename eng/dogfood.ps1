@@ -26,10 +26,7 @@ function Print-Usage() {
   Write-Host "if it is set, will be used."
 }
 
-function Global:prompt {
-  Set-Location $env:USERPROFILE
-  "(dogfood) PS $PWD> "
-}
+function Global:prompt { "(dogfood) PS $PWD> " }
 
 if ($help -or (($command -ne $null) -and ($command.Contains("/help") -or $command.Contains("/?")))) {
   Print-Usage
@@ -65,6 +62,7 @@ try {
     $Host.UI.RawUI.WindowTitle = "SDK Test ($RepoRoot) ($configuration)"
     & $command[0] $command[1..($command.Length-1)]
   }
+  Set-Location $env:USERPROFILE
 }
 catch {
   Write-Host $_
