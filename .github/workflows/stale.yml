@@ -19,7 +19,7 @@ jobs:
           ascending: true # Process the oldest issues first
           stale-issue-message: "Due to lack of recent activity, this issue has been labeled as 'Stale'. It will be closed if no further activity occurs within 30 more days. Any new comment will remove the label."
           stale-pr-message: "Due to lack of recent activity, this PR has been labeled as 'Stale'. It will be closed if no further activity occurs within 7 more days. Any new comment will remove the label."
-          days-before-issue-stale: 1827 # 5 years 2 days
+          days-before-issue-stale: 1827 # ~5 years
           days-before-issue-close: 30
           days-before-pr-stale: 80 # 6 months
           days-before-pr-close: 7
