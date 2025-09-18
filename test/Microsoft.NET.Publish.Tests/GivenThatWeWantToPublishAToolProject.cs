@@ -10,6 +10,12 @@ namespace Microsoft.NET.Publish.Tests
 {
     public class GivenThatWeWantToPublishAToolProject : SdkTest
     {
+
+        public static string HostfxrName =
+                RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "hostfxr.dll" :
+                RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "libhostfxr.so" :
+                "libhostfxr.dylib";
+
         public GivenThatWeWantToPublishAToolProject(ITestOutputHelper log) : base(log)
         {
         }
@@ -36,6 +42,25 @@ namespace Microsoft.NET.Publish.Tests
 
             publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework)
                 .Should().HaveFile("consoledemo" + Constants.ExeSuffix);
+        }
+
+        [Fact]
+        // this test verifies that we don't regress the 'normal' publish experience accidentally in the
+        // PackTool.targets
+        public void It_can_publish_selfcontained_and_has_apphost()
+        {
+            var testAsset = SetupTestAsset().SetProjProperty("PublishSelfContained", "true");
+            var publishCommand = new PublishCommand(testAsset);
+
+            var binlogDestPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot ?
+                Path.Combine(ciOutputRoot, "binlog", $"{nameof(It_can_publish_selfcontained_and_has_apphost)}.binlog") :
+                "./msbuild.binlog";
+
+            publishCommand.WithWorkingDirectory(testAsset.Path).Execute($"-bl:{binlogDestPath}");
+
+            publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: System.Runtime.InteropServices.RuntimeInformation.RuntimeIdentifier)
+                .Should().HaveFile("consoledemo" + Constants.ExeSuffix)
+                .And.HaveFile(HostfxrName);
         }
     }
 }

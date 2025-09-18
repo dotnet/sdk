@@ -100,9 +100,10 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="new">Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This argument can be specified multiple times to provide multiple variables.
+        <target state="needs-review-translation">Imposta il valore di una variabile di ambiente. 
+Crea la variabile se non esiste e la sostituisce se esiste. 
+In questo modo forza l'esecuzione dei test in un processo isolato. 
+È possibile specificare più volte questo argomento per fornire più variabili.
 
 Examples:
 -e VARIABLE=abc
