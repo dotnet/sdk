@@ -32,6 +32,8 @@ Additionally, the implicit project file has the following customizations:
 
 - `PublishAot` is set to `true`, see [`dotnet publish file.cs`](#other-commands) for more details.
 
+- `UserSecretsId` is set to a hash of the entry point file path.
+
 - [File-level directives](#directives-for-project-metadata) are applied.
 
 - The following are virtual only, i.e., not preserved after [converting to a project](#grow-up):
