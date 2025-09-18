@@ -26,7 +26,10 @@ function Print-Usage() {
   Write-Host "if it is set, will be used."
 }
 
-function Global:prompt {"(dogfood) PS $PWD> "} 
+function Global:prompt {
+  Set-Location $env:USERPROFILE
+  "(dogfood) PS $PWD> "
+}
 
 if ($help -or (($command -ne $null) -and ($command.Contains("/help") -or $command.Contains("/?")))) {
   Print-Usage
