@@ -180,13 +180,8 @@ namespace Microsoft.NET.Build.Tests
         {
             var buildCommand = new BuildCommand(testAsset, "1");
             buildCommand.WithWorkingDirectory(testAsset.TestRoot);
-            var binlogDestPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot && Environment.GetEnvironmentVariable("HELIX_WORKITEM_ID") is { } helixGuid ?
-                Path.Combine(ciOutputRoot, "binlog", helixGuid, $"{callingMethod}.binlog") :
-                "./msbuild.binlog";
-            var buildResult = buildCommand.ExecuteWithoutRestore([..msbuildArguments, $"/bl:{binlogDestPath}"]);
-
+            var buildResult = buildCommand.ExecuteWithoutRestore(msbuildArguments);
             var outputDirectories = targetFrameworks.ToImmutableDictionary(tf => tf, tf => buildCommand.GetOutputDirectory(tf));
-
             return (buildResult, outputDirectories);
         }
 
