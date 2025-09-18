@@ -1139,8 +1139,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         string? targetFilePath = null,
         string? artifactsPath = null,
         bool includeRuntimeConfigInformation = true,
+        string? userSecretsId = null,
         IEnumerable<string>? excludeDefaultProperties = null)
     {
+        Debug.Assert(userSecretsId == null || !isVirtualProject);
         Debug.Assert(excludeDefaultProperties == null || !isVirtualProject);
 
         int processedDirectives = 0;
@@ -1275,6 +1277,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                                 <{name}>{EscapeValue(value)}</{name}>
                             """);
                     }
+                }
+
+                if (userSecretsId != null && !customPropertyNames.Contains("UserSecretsId"))
+                {
+                    writer.WriteLine($"""
+                            <UserSecretsId>{EscapeValue(userSecretsId)}</UserSecretsId>
+                        """);
                 }
             }
 

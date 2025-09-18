@@ -1,8 +1,7 @@
 <Project>
 
   <ItemGroup>
-    <BundledSdk Include="NuGet.Build.Tasks.Pack" Version="$(NuGetBuildTasksPackPackageVersion)" />
-    <BundledSdk Include="Microsoft.NET.Sdk.WindowsDesktop" Version="$(MicrosoftNETSdkWindowsDesktopPackageVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+    <BundledSdk Include="Microsoft.NET.Sdk.WindowsDesktop" Version="$(MicrosoftNETSdkWindowsDesktopPackageVersion)" />
     <BundledSdk Include="FSharp.NET.Sdk" Version="1.0.4-bundled-0100" />
     <BundledSdk Include="Microsoft.Docker.Sdk" Version="1.1.0" />
 

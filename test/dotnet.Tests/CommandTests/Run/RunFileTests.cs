@@ -2313,6 +2313,70 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 string.Format(CliStrings.MoreThanOneProjectInDirectory, Path.Join(testInstance.Path, "dir/"))));
     }
 
+    [Theory] // https://github.com/dotnet/aspnetcore/issues/63440
+    [InlineData(true, null)]
+    [InlineData(false, null, Skip = "Needs https://github.com/dotnet/aspnetcore/pull/63496")]
+    [InlineData(true, "test-id")]
+    [InlineData(false, "test-id", Skip = "Needs https://github.com/dotnet/aspnetcore/pull/63496")]
+    public void UserSecrets(bool useIdArg, string? userSecretsId)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        string code = $"""
+            #:package Microsoft.Extensions.Configuration.UserSecrets@{CSharpCompilerCommand.RuntimeVersion}
+            {(userSecretsId is null ? "" : $"#:property UserSecretsId={userSecretsId}")}
+
+            using Microsoft.Extensions.Configuration;
+
+            IConfigurationRoot config = new ConfigurationBuilder()
+                .AddUserSecrets<Program>()
+                .Build();
+
+            Console.WriteLine("v1");
+            Console.WriteLine(config.GetDebugView());
+            """;
+
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, code);
+
+        if (useIdArg)
+        {
+            if (userSecretsId == null)
+            {
+                var result = new DotnetCommand(Log, "build", "-getProperty:UserSecretsId", "Program.cs")
+                    .WithWorkingDirectory(testInstance.Path)
+                    .Execute();
+                result.Should().Pass();
+                userSecretsId = result.StdOut!.Trim();
+            }
+
+            new DotnetCommand(Log, "user-secrets", "set", "MySecret", "MyValue", "--id", userSecretsId)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass();
+        }
+        else
+        {
+            new DotnetCommand(Log, "user-secrets", "set", "MySecret", "MyValue", "--file", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass();
+        }
+
+        Build(testInstance, BuildLevel.All, expectedOutput: """
+            v1
+            MySecret=MyValue (JsonConfigurationProvider for 'secrets.json' (Optional))
+            """);
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance, BuildLevel.Csc, expectedOutput: """
+            v2
+            MySecret=MyValue (JsonConfigurationProvider for 'secrets.json' (Optional))
+            """);
+    }
+
     /// <summary>
     /// Verifies that msbuild-based runs use CSC args equivalent to csc-only runs.
     /// Can regenerate CSC arguments template in <see cref="CSharpCompilerCommand"/>.

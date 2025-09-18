@@ -72,6 +72,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
             using var stream = File.Open(projectFile, FileMode.Create, FileAccess.Write);
             using var writer = new StreamWriter(stream, Encoding.UTF8);
             VirtualProjectBuildingCommand.WriteProjectFile(writer, directives, isVirtualProject: false,
+                userSecretsId: DetermineUserSecretsId(),
                 excludeDefaultProperties: FindDefaultPropertiesToExclude());
         }
 
@@ -153,6 +154,13 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
                 string itemRelativePath = Path.GetRelativePath(relativeTo: entryPointFileDirectory, path: itemFullPath);
                 yield return (FullPath: itemFullPath, RelativePath: itemRelativePath);
             }
+        }
+
+        string? DetermineUserSecretsId()
+        {
+            var implicitValue = projectInstance.GetPropertyValue("_ImplicitFileBasedProgramUserSecretsId");
+            var actualValue = projectInstance.GetPropertyValue("UserSecretsId");
+            return implicitValue == actualValue ? actualValue : null;
         }
 
         IEnumerable<string> FindDefaultPropertiesToExclude()
