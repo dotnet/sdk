@@ -957,9 +957,5 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
   </packageSources>
 </configuration>
 }";
-
-        // NOTE: HTTP source validation test removed as it requires integration testing
-        // The HTTP source validation is implemented in NuGetPackageDownloader.LoadNuGetSources()
-        // and will throw NU1302 errors when HTTP sources are detected
     }
 }
