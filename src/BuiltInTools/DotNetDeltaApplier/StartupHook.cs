@@ -89,7 +89,7 @@ internal sealed class StartupHook
         if (!string.IsNullOrEmpty(prefix))
         {
             Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.WriteLine($"{prefix} {message}");
+            Console.Error.WriteLine($"{prefix} {message}");
             Console.ResetColor();
         }
     }
