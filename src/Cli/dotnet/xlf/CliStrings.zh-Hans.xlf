@@ -100,10 +100,9 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="needs-review-translation">设置环境变量的值。
-如果该变量不存在，则创建它；如果它已存在，则替代它。
-这将在隔离的进程中强制运行测试。
-可多次指定此参数来提供多个变量。
+        <target state="new">Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This argument can be specified multiple times to provide multiple variables.
 
 Examples:
 -e VARIABLE=abc

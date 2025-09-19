@@ -100,10 +100,9 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="needs-review-translation">Nastaví hodnotu proměnné prostředí.
-Pokud proměnná neexistuje, vytvoří ji, a pokud existuje, přepíše ji.
-Tímto se vynutí spuštění testů v izolovaném procesu.
-Tento argument je možné zadat vícekrát a určit tak více proměnných.
+        <target state="new">Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This argument can be specified multiple times to provide multiple variables.
 
 Examples:
 -e VARIABLE=abc
