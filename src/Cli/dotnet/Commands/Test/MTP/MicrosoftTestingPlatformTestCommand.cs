@@ -13,7 +13,6 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHelp, ICommandDocument
 {
     private TerminalTestReporter? _output;
-    private byte _cancelled;
 
     public MicrosoftTestingPlatformTestCommand(string name, string? description = null) : base(name, description)
     {
@@ -32,7 +31,7 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
         }
         finally
         {
-            CompleteRun(exitCode);
+            _output?.TestExecutionCompleted(DateTimeOffset.Now, exitCode);
         }
     }
 
@@ -47,16 +46,14 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
             IsDiscovery: parseResult.HasOption(MicrosoftTestingPlatformOptions.ListTestsOption),
             EnvironmentVariables: parseResult.GetValue(CommonOptions.EnvOption) ?? ImmutableDictionary<string, string>.Empty);
 
-        InitializeOutput(degreeOfParallelism, parseResult, testOptions);
-
-        SetupCancelKeyPressHandler();
-
         BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
 
         bool filterModeEnabled = parseResult.HasOption(MicrosoftTestingPlatformOptions.TestModulesFilterOption);
         TestApplicationActionQueue actionQueue;
         if (filterModeEnabled)
         {
+            InitializeOutput(degreeOfParallelism, parseResult, testOptions);
+
             actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, OnHelpRequested);
             var testModulesFilterHandler = new TestModulesFilterHandler(actionQueue, _output);
             if (!testModulesFilterHandler.RunWithTestModulesFilter(parseResult))
@@ -66,11 +63,13 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
         }
         else
         {
-            var msBuildHandler = new MSBuildHandler(buildOptions, _output);
+            var msBuildHandler = new MSBuildHandler(buildOptions);
             if (!msBuildHandler.RunMSBuild())
             {
                 return ExitCode.GenericFailure;
             }
+
+            InitializeOutput(degreeOfParallelism, parseResult, testOptions);
 
             // NOTE: Don't create TestApplicationActionQueue before RunMSBuild.
             // The constructor will do Task.Run calls matching the degree of parallelism, and if we did that before the build, that can
@@ -98,16 +97,6 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
         return exitCode;
     }
 
-    private void SetupCancelKeyPressHandler()
-    {
-        Console.CancelKeyPress += (s, e) =>
-        {
-            _output?.StartCancelling();
-            // We are not sure what the exit code will be, there might be an exception.
-            CompleteRun(exitCode: null);
-        };
-    }
-
     [MemberNotNull(nameof(_output))]
     private void InitializeOutput(int degreeOfParallelism, ParseResult parseResult, TestOptions testOptions)
     {
@@ -130,6 +119,11 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
             MinimumExpectedTests = parseResult.GetValue(MicrosoftTestingPlatformOptions.MinimumExpectedTestsOption),
         });
 
+        Console.CancelKeyPress += (s, e) =>
+        {
+            _output.StartCancelling();
+        };
+
         // This is ugly, and we need to replace it by passing out some info from testing platform to inform us that some process level retry plugin is active.
         var isRetry = parseResult.GetArguments().Contains("--retry-failed-tests");
 
@@ -142,13 +136,5 @@ internal partial class MicrosoftTestingPlatformTestCommand : Command, ICustomHel
         if (degreeOfParallelism <= 0)
             degreeOfParallelism = Environment.ProcessorCount;
         return degreeOfParallelism;
-    }
-
-    private void CompleteRun(int? exitCode)
-    {
-        if (Interlocked.CompareExchange(ref _cancelled, 1, 0) == 0)
-        {
-            _output?.TestExecutionCompleted(DateTimeOffset.Now, exitCode);
-        }
     }
 }

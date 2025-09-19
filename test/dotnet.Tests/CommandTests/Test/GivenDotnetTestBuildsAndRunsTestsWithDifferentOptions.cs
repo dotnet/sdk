@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute(MicrosoftTestingPlatformOptions.ProjectOption.Name, invalidProjectPath,
                                              MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdOut.Should().Contain(string.Format(CliCommandStrings.CmdInvalidProjectFileExtensionErrorDescription, invalidProjectPath));
+            result.StdErr.Should().Contain(string.Format(CliCommandStrings.CmdInvalidProjectFileExtensionErrorDescription, invalidProjectPath));
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute(MicrosoftTestingPlatformOptions.SolutionOption.Name, invalidSolutionPath,
                                              MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdOut.Should().Contain(string.Format(CliCommandStrings.CmdInvalidSolutionFileExtensionErrorDescription, invalidSolutionPath));
+            result.StdErr.Should().Contain(string.Format(CliCommandStrings.CmdInvalidSolutionFileExtensionErrorDescription, invalidSolutionPath));
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
@@ -186,7 +186,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             string fullProjectPath = $"{testInstance.TestRoot}{Path.DirectorySeparatorChar}{testProjectPath}";
-            result.StdOut.Should().Contain(string.Format(CliCommandStrings.CmdNonExistentFileErrorDescription, fullProjectPath));
+            result.StdErr.Should().Contain(string.Format(CliCommandStrings.CmdNonExistentFileErrorDescription, fullProjectPath));
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
@@ -206,7 +206,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                              MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             string fullSolutionPath = $"{testInstance.TestRoot}{Path.DirectorySeparatorChar}{solutionPath}";
-            result.StdOut.Should().Contain(string.Format(CliCommandStrings.CmdNonExistentFileErrorDescription, fullSolutionPath));
+            result.StdErr.Should().Contain(string.Format(CliCommandStrings.CmdNonExistentFileErrorDescription, fullSolutionPath));
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
@@ -480,22 +480,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             /*
                 error NETSDK1005: Assets file 'path\to\OtherTestProject\obj\project.assets.json' doesn't have a target for 'net9.0'. Ensure that restore has run and that you have included 'net9.0' in the TargetFrameworks for your project.
                 Get projects properties with MSBuild didn't execute properly with exit code: 1.
-
-                Test run summary: Zero tests ran
-                  total: 0
-                  failed: 0
-                  succeeded: 0
-                  skipped: 0
-                  duration: 33s 867ms
             */
             if (!TestContext.IsLocalized())
             {
                 result.StdOut
-                 .Should().Contain("Test run summary: Zero tests ran")
-                 .And.Contain("total: 0")
-                 .And.Contain("succeeded: 0")
-                 .And.Contain("failed: 0")
-                 .And.Contain("skipped: 0")
+                 .Should().NotContain("Test run summary")
                  .And.Contain("NETSDK1005");
             }
 
