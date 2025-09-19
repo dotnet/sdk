@@ -209,9 +209,12 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor UpdatingDiagnostics = Create(LogEvents.UpdatingDiagnostics, Emoji.Default);
         public static readonly MessageDescriptor FailedToReceiveResponseFromConnectedBrowser = Create(LogEvents.FailedToReceiveResponseFromConnectedBrowser, Emoji.Default);
         public static readonly MessageDescriptor NoBrowserConnected = Create(LogEvents.NoBrowserConnected, Emoji.Default);
+        public static readonly MessageDescriptor LaunchingBrowser = Create("Launching browser: {0} {1}", Emoji.Default, MessageSeverity.Verbose);
         public static readonly MessageDescriptor RefreshingBrowser = Create(LogEvents.RefreshingBrowser, Emoji.Default);
         public static readonly MessageDescriptor ReloadingBrowser = Create(LogEvents.ReloadingBrowser, Emoji.Default);
         public static readonly MessageDescriptor RefreshServerRunningAt = Create(LogEvents.RefreshServerRunningAt, Emoji.Default);
+        public static readonly MessageDescriptor ConnectedToRefreshServer = Create(LogEvents.ConnectedToRefreshServer, Emoji.Default);
+        public static readonly MessageDescriptor RestartingApplicationToApplyChanges = Create("Restarting application to apply changes ...", Emoji.Default, MessageSeverity.Output);
         public static readonly MessageDescriptor IgnoringChangeInHiddenDirectory = Create("Ignoring change in hidden directory '{0}': {1} '{2}'", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor IgnoringChangeInOutputDirectory = Create("Ignoring change in output directory: {0} '{1}'", Emoji.Watch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor IgnoringChangeInExcludedFile = Create("Ignoring change in excluded file '{0}': {1}. Path matches {2} glob '{3}' set in '{4}'.", Emoji.Watch, MessageSeverity.Verbose);
