@@ -276,6 +276,14 @@
         Condition="'$(BundleRuntimePacks)' == 'true'"
         Include="$(ProductMonikerRid)" />
 
+      <ILCompilerSupportedRids
+        Condition="'$(BundleNativeAotCompiler)' == 'true'"
+        Include="$(ProductMonikerRid)" />
+
+      <Crossgen2SupportedRids
+        Condition="'$(BundleCrossgen2)' == 'true'"
+        Include="$(ProductMonikerRid)" />
+
       <Net60MonoRuntimePackRids Include="
         @(Net60RuntimePackRids);
         browser-wasm;
@@ -368,12 +376,6 @@
 
       <Crossgen2SupportedRids Include="@(Net90Crossgen2SupportedRids);" />
 
-      <Crossgen2SupportedPortableRids Include="@(Crossgen2SupportedRids)" />
-
-      <Crossgen2SupportedRids
-        Condition="'$(BundleCrossgen2)' == 'true'"
-        Include="$(ProductMonikerRid)" />
-
       <Net70ILCompilerSupportedRids Include="
         linux-arm64;
         linux-musl-arm64;
@@ -407,12 +409,6 @@
         linux-riscv64;
         linux-musl-riscv64;
         " />
-
-      <ILCompilerSupportedPortableRids Include="@(ILCompilerSupportedRids)" />
-
-      <ILCompilerSupportedRids
-        Condition="'$(BundleNativeAotCompiler)' == 'true'"
-        Include="$(ProductMonikerRid)" />
 
       <Net80NativeAOTRuntimePackRids Include="
         ios-arm64;
@@ -707,7 +703,6 @@ Copyright (c) .NET Foundation. All rights reserved.
                         TargetFramework="net10.0"
                         Crossgen2PackNamePattern="Microsoft.NETCore.App.Crossgen2.**RID**"
                         Crossgen2PackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
-                        Crossgen2PortableRuntimeIdentifiers="@(Crossgen2SupportedPortableRids, '%3B')"
                         Crossgen2RuntimeIdentifiers="@(Crossgen2SupportedRids, '%3B')"
                         />
 
@@ -716,7 +711,6 @@ Copyright (c) .NET Foundation. All rights reserved.
                          ILCompilerPackNamePattern="runtime.**RID**.Microsoft.DotNet.ILCompiler"
                          ILCompilerRuntimePackNamePattern="Microsoft.NETCore.App.Runtime.NativeAOT.**RID**"
                          ILCompilerPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
-                         ILCompilerPortableRuntimeIdentifiers="@(ILCompilerSupportedPortableRids, '%3B')"
                          ILCompilerRuntimeIdentifiers="@(ILCompilerSupportedRids, '%3B')"
                          />
 
