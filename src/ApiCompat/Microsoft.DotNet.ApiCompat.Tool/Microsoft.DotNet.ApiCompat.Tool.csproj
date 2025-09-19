@@ -7,6 +7,8 @@
     <Nullable>enable</Nullable>
     <StrongNameKeyId>Open</StrongNameKeyId>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- NETSDK1138: Target framework 'net6.0' is no longer supported and will not receive future security updates. -->
+    <NoWarn>$(NoWarn);NETSDK1138</NoWarn>
 
     <IsPackable>true</IsPackable>
     <IsShippingPackage>true</IsShippingPackage>
