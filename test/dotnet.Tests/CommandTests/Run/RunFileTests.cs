@@ -1695,7 +1695,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "MyFileBasedTool.cs");
         File.WriteAllText(programFile, """
-            #:property PackAsTool=true
             Console.WriteLine($"Hello; EntryPointFilePath set? {AppContext.GetData("EntryPointFilePath") is string}");
             #if !DEBUG
             Console.WriteLine("Release config");
@@ -1742,7 +1741,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "MyFileBasedTool.cs");
         File.WriteAllText(programFile, """
-            #:property PackAsTool=true
             #:property PackageOutputPath=custom
             Console.WriteLine($"Hello; EntryPointFilePath set? {AppContext.GetData("EntryPointFilePath") is string}");
             """);
@@ -3309,6 +3307,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
+                        <PackAsTool>true</PackAsTool>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
@@ -3379,6 +3378,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
+                        <PackAsTool>true</PackAsTool>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
@@ -3446,6 +3446,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
+                        <PackAsTool>true</PackAsTool>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
