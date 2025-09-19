@@ -81,7 +81,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependency from https://github.com/dotnet/winforms -->
-    <MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>9.0.9-servicing.25419.3</MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>
+    <MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>9.0.10-servicing.25468.2</MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/runtime -->
@@ -132,10 +132,10 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/windowsdesktop -->
-    <VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>9.0.9-servicing.25421.5</VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>
-    <VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>9.0.9-servicing.25421.5</VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>
-    <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>9.0.9</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
-    <MicrosoftWindowsDesktopAppRefPackageVersion>9.0.9</MicrosoftWindowsDesktopAppRefPackageVersion>
+    <VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>9.0.10-servicing.25468.2</VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>
+    <VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>9.0.10-servicing.25468.2</VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>
+    <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>9.0.10</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
+    <MicrosoftWindowsDesktopAppRefPackageVersion>9.0.10</MicrosoftWindowsDesktopAppRefPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
@@ -239,8 +239,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/wpf -->
-    <MicrosoftNETSdkWindowsDesktopPackageVersion>9.0.9-rtm.25421.1</MicrosoftNETSdkWindowsDesktopPackageVersion>
-    <MicrosoftDotNetWpfProjectTemplatesPackageVersion>9.0.9-rtm.25421.1</MicrosoftDotNetWpfProjectTemplatesPackageVersion>
+    <MicrosoftNETSdkWindowsDesktopPackageVersion>9.0.10-rtm.25468.4</MicrosoftNETSdkWindowsDesktopPackageVersion>
+    <MicrosoftDotNetWpfProjectTemplatesPackageVersion>9.0.10-rtm.25468.4</MicrosoftDotNetWpfProjectTemplatesPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Runtime and Apphost aliases">
     <!-- Runtime and Apphost pack versions are the same for all RIDs. We flow the x64 version above and create aliases without the winx64 here for clarity elsewhere. -->
