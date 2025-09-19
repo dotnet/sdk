@@ -105,11 +105,11 @@ Pokud proměnná neexistuje, vytvoří ji, a pokud existuje, přepíše ji.
 Tímto se vynutí spuštění testů v izolovaném procesu.
 Tento argument je možné zadat vícekrát a určit tak více proměnných.
 
-Příklady:
--e PROMĚNNÁ=abc
--e PROMĚNNÁ="hodnota s mezerami"
--e PROMĚNNÁ="hodnota;oddělená;pomocí;středníků"
--e PROM1=abc -e PROM2=def -e PROM3=ghi
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
       </trans-unit>

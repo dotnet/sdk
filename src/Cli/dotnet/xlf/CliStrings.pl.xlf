@@ -105,11 +105,11 @@ Jeśli zmienna nie istnieje, tworzy ją, a jeśli istnieje, przesłania.
 Wymusi to uruchamianie testów w izolowanym procesie. 
 Ten argument można określić wiele razy w celu podania wielu wartości.
 
-Przykłady:
--e ZMIENNA=abc
--e ZMIENNA="wartość ze spacjami"
--e ZMIENNA="wartości;rozdzielone;średnikami"
--e ZM1=abc -e ZM2=def -e ZM3=ghi
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
       </trans-unit>

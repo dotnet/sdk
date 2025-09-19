@@ -105,7 +105,7 @@ Crea la variable si no existe o la reemplaza en caso de que exista.
 Esto forzará la ejecución de las pruebas en un proceso aislado. 
 Este argumento se puede especificar varias veces para proporcionar múltiples variables.
 
-Ejemplos:
+Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
 -e VARIABLE="value;seperated with;semicolons"

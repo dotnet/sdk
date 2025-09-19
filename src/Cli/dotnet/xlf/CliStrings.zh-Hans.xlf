@@ -105,7 +105,7 @@ Examples:
 这将在隔离的进程中强制运行测试。
 可多次指定此参数来提供多个变量。
 
-示例:
+Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
 -e VARIABLE="value;seperated with;semicolons"

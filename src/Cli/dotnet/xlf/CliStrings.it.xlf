@@ -105,10 +105,10 @@ Crea la variabile se non esiste e la sostituisce se esiste.
 In questo modo forza l'esecuzione dei test in un processo isolato. 
 È possibile specificare più volte questo argomento per fornire più variabili.
 
-Esempi:
+Examples:
 -e VARIABLE=abc
--e VARIABLE="valore con spazi"
--e VARIABLE="valore;delimitato da;punti e virgola"
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />

@@ -105,7 +105,7 @@ Examples:
 這會強制在隔離流程中執行測試。
 此引數可多次指定，以提供多項變數。
 
-範例:
+Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
 -e VARIABLE="value;seperated with;semicolons"

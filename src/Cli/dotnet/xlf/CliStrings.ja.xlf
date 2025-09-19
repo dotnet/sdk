@@ -105,7 +105,7 @@ Examples:
 これにより、テストは強制的に分離プロセスで実行されます。
 この引数は、複数の変数を指定するために複数回指定できます。
 
-例:
+Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
 -e VARIABLE="value;seperated with;semicolons"
