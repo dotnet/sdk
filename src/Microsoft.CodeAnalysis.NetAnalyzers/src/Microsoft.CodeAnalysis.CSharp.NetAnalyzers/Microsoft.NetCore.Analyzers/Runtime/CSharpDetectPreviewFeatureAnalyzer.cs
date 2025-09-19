@@ -3,15 +3,29 @@
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 using Microsoft.NetCore.Analyzers.Runtime;
+using Analyzer.Utilities.Lightup;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class CSharpDetectPreviewFeatureAnalyzer : DetectPreviewFeatureAnalyzer
     {
+        protected override ISymbol? SymbolFromAwaitOperation(IAwaitOperation operation)
+        {
+            if (operation.Syntax is not AwaitExpressionSyntax awaitSyntax)
+            {
+                return null;
+            }
+
+            var awaitableInfo = operation.SemanticModel.GetAwaitExpressionInfo(awaitSyntax);
+            return awaitableInfo.RuntimeAwaitMethod;
+        }
+
         protected override SyntaxNode? GetPreviewSyntaxNodeForFieldsOrEvents(ISymbol fieldOrEventSymbol, ISymbol previewSymbol)
         {
             ImmutableArray<SyntaxReference> fieldOrEventReferences = fieldOrEventSymbol.DeclaringSyntaxReferences;
