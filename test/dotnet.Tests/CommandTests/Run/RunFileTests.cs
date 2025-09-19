@@ -2973,6 +2973,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
     }
 
+    /// <summary>
+    /// Tests an optimization which remembers CSC args from prior MSBuild runs and can skip subsequent MSBuild invocations and call CSC directly.
+    /// This optimization kicks in when the file has some <c>#:</c> directives (then the simpler "hard-coded CSC args" optimization cannot be used).
+    /// </summary>
     [Fact]
     public void CscOnly_AfterMSBuild()
     {
@@ -3028,6 +3032,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.All, expectedOutput: "v4 ");
     }
 
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// </summary>
     [Fact]
     public void CscOnly_AfterMSBuild_SpacesInPath()
     {
@@ -3058,6 +3065,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v2 Release", programFileName: programFileName);
     }
 
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// </summary>
     [Fact]
     public void CscOnly_AfterMSBuild_Args()
     {
@@ -3091,6 +3101,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
     }
 
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// This optimization currently does not support <c>#:project</c> references and hence is disabled if those are present.
+    /// </summary>
     [Fact]
     public void CscOnly_AfterMSBuild_ProjectReferences()
     {
@@ -3147,8 +3161,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// If users have more complex build customizations, they can opt out of the optimization which
-    /// reuses CSC arguments and skips subsequent MSBuild invocations.
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// If users have more complex build customizations, they can opt out of the optimization.
     /// </summary>
     [Theory, CombinatorialData]
     public void CscOnly_AfterMSBuild_OptOut(bool canSkipMSBuild, bool inDirectoryBuildProps)
@@ -3192,6 +3206,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, canSkipMSBuild ? BuildLevel.Csc : BuildLevel.All, expectedOutput: "v2 Release");
     }
 
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// </summary>
     [Fact]
     public void CscOnly_AfterMSBuild_AuxiliaryFilesNotReused()
     {
