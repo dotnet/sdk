@@ -3218,6 +3218,11 @@ Devam edilsin mi?</target>
         <target state="translated">Araç paketinin indirilmesi için onay gerekiyor. Etkileşimli modda çalıştırın veya onaylamak için "--yes" komut satırı seçeneğini kullanın.</target>
         <note>{Locked="--yes"}</note>
       </trans-unit>
+      <trans-unit id="ToolDownloadPackageNotFoundButHasPrerelease">
+        <source>A stable version of Tool package {0} could not be found, but a prerelease version ({1}) was found. Try re-running with the `--prerelease` option or this explicit version to run this tool.</source>
+        <target state="new">A stable version of Tool package {0} could not be found, but a prerelease version ({1}) was found. Try re-running with the `--prerelease` option or this explicit version to run this tool.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolExecuteCommandDescription">
         <source>Executes a tool from source without permanently installing it.</source>
         <target state="translated">Aracı kalıcı olarak yüklemeden kaynaktan yürütür.</target>

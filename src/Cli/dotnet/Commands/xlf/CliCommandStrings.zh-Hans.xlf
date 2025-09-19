@@ -3218,6 +3218,11 @@ Proceed?</source>
         <target state="translated">工具包下载需要确认。在交互模式下运行，或使用 “--yes” 命令行选项进行确认。</target>
         <note>{Locked="--yes"}</note>
       </trans-unit>
+      <trans-unit id="ToolDownloadPackageNotFoundButHasPrerelease">
+        <source>A stable version of Tool package {0} could not be found, but a prerelease version ({1}) was found. Try re-running with the `--prerelease` option or this explicit version to run this tool.</source>
+        <target state="new">A stable version of Tool package {0} could not be found, but a prerelease version ({1}) was found. Try re-running with the `--prerelease` option or this explicit version to run this tool.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolExecuteCommandDescription">
         <source>Executes a tool from source without permanently installing it.</source>
         <target state="translated">从源执行工具，而无需永久安装它。</target>

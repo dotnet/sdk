@@ -3218,6 +3218,11 @@ Procedere?</target>
         <target state="translated">Il download del pacchetto dello strumento richiede conferma. Esegui in modalità interattiva o usa l'opzione della riga di comando "--yes" per confermare.</target>
         <note>{Locked="--yes"}</note>
       </trans-unit>
+      <trans-unit id="ToolDownloadPackageNotFoundButHasPrerelease">
+        <source>A stable version of Tool package {0} could not be found, but a prerelease version ({1}) was found. Try re-running with the `--prerelease` option or this explicit version to run this tool.</source>
+        <target state="new">A stable version of Tool package {0} could not be found, but a prerelease version ({1}) was found. Try re-running with the `--prerelease` option or this explicit version to run this tool.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolExecuteCommandDescription">
         <source>Executes a tool from source without permanently installing it.</source>
         <target state="translated">Esegue uno strumento dall'origine senza installarlo permanentemente.</target>

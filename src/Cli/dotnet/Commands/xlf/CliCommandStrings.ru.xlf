@@ -3218,6 +3218,11 @@ Proceed?</source>
         <target state="translated">Для скачивания пакета инструмента требуется подтверждение. Запустите в интерактивном режиме или используйте параметр командной строки "--yes" для подтверждения.</target>
         <note>{Locked="--yes"}</note>
       </trans-unit>
+      <trans-unit id="ToolDownloadPackageNotFoundButHasPrerelease">
+        <source>A stable version of Tool package {0} could not be found, but a prerelease version ({1}) was found. Try re-running with the `--prerelease` option or this explicit version to run this tool.</source>
+        <target state="new">A stable version of Tool package {0} could not be found, but a prerelease version ({1}) was found. Try re-running with the `--prerelease` option or this explicit version to run this tool.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolExecuteCommandDescription">
         <source>Executes a tool from source without permanently installing it.</source>
         <target state="translated">Выполняет инструмент из источника без его постоянной установки.</target>
