@@ -2789,11 +2789,15 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     /// <summary>
     /// Up-to-date checks and optimizations currently don't support other included files.
     /// </summary>
-    [Fact]
-    public void UpToDate_DefaultItems()
+    [Theory, CombinatorialData] // https://github.com/dotnet/sdk/issues/50912
+    public void UpToDate_DefaultItems(bool optOut)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programReadingEmbeddedResource);
+        var code = $"""
+            {(optOut ? "#:property FileBasedProgramCanSkipMSBuild=false" : "")}
+            {s_programReadingEmbeddedResource}
+            """;
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), code);
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "[MyString, TestValue]");
@@ -2801,12 +2805,76 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         // Update the RESX file.
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx.Replace("TestValue", "UpdatedValue"));
 
-        Build(testInstance, BuildLevel.None, expectedOutput: "[MyString, TestValue]"); // note: outdated output (build skipped)
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.None, expectedOutput: optOut ? "[MyString, UpdatedValue]" : "[MyString, TestValue]"); // note: outdated output (build skipped)
 
         // Update the C# file.
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "//v2\n" + s_programReadingEmbeddedResource);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "//v2\n" + code);
 
-        Build(testInstance, BuildLevel.Csc, expectedOutput: "[MyString, TestValue]"); // note: outdated output (only CSC used)
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: optOut ? "[MyString, UpdatedValue]" : "[MyString, TestValue]"); // note: outdated output (only CSC used)
+
+        Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: "[MyString, UpdatedValue]");
+    }
+
+    /// <summary>
+    /// Combination of <see cref="UpToDate_DefaultItems"/> with <see cref="CscOnly"/> optimization.
+    /// </summary>
+    [Theory, CombinatorialData] // https://github.com/dotnet/sdk/issues/50912
+    public void UpToDate_DefaultItems_CscOnly(bool optOut)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var code = $"""
+            {(optOut ? "#:property FileBasedProgramCanSkipMSBuild=false" : "")}
+            {s_programReadingEmbeddedResource}
+            """;
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), code);
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
+
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: optOut ? "[MyString, TestValue]" : "Resource not found");
+
+        // Update the RESX file.
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx.Replace("TestValue", "UpdatedValue"));
+
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.None, expectedOutput: optOut ? "[MyString, UpdatedValue]" : "Resource not found");
+
+        // Update the C# file.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "//v2\n" + code);
+
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: optOut ? "[MyString, UpdatedValue]" : "Resource not found");
+
+        Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: "[MyString, UpdatedValue]");
+    }
+
+    /// <summary>
+    /// Combination of <see cref="UpToDate_DefaultItems"/> with <see cref="CscOnly_AfterMSBuild"/> optimization.
+    /// </summary>
+    [Theory, CombinatorialData] // https://github.com/dotnet/sdk/issues/50912
+    public void UpToDate_DefaultItems_CscOnly_AfterMSBuild(bool optOut)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var code = $"""
+            #:property Configuration=Release
+            {(optOut ? "#:property FileBasedProgramCanSkipMSBuild=false" : "")}
+            {s_programReadingEmbeddedResource}
+            """;
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), code);
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "[MyString, TestValue]");
+
+        // Update the C# file.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "//v2\n" + code);
+
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: optOut ? "[MyString, TestValue]" : "[MyString, TestValue]");
+
+        // Update the RESX file.
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx.Replace("TestValue", "UpdatedValue"));
+
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.None, expectedOutput: optOut ? "[MyString, UpdatedValue]" : "[MyString, TestValue]");
+
+        // Update the C# file.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "//v3\n" + code);
+
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: optOut ? "[MyString, UpdatedValue]" : "[MyString, TestValue]");
 
         Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: "[MyString, UpdatedValue]");
     }
