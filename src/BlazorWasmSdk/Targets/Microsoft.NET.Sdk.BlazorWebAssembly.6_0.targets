@@ -86,6 +86,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       GenerateBuildBlazorBootExtensionJson;
     </GenerateBuildWasmBootJsonDependsOn>
 
+    <ResolveHtmlAssetPlaceholdersPublishConfigurationDependsOn>
+      $(ResolveHtmlAssetPlaceholdersPublishConfigurationDependsOn);
+      _ReplaceFingerprintedBlazorJsForPublish
+    </ResolveHtmlAssetPlaceholdersPublishConfigurationDependsOn>
     <ResolvePublishRelatedStaticWebAssetsDependsOn>
       $(ResolvePublishRelatedStaticWebAssetsDependsOn);
       _ReplaceFingerprintedBlazorJsForPublish

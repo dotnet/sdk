@@ -145,7 +145,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   
   <!-- Publish -->
 
-  <Target Name="ResolveHtmlAssetPlaceholdersPublishConfiguration">
+  <Target Name="ResolveHtmlAssetPlaceholdersPublishConfiguration" DependsOnTargets="$(ResolveHtmlAssetPlaceholdersPublishConfigurationDependsOn)">
     <PropertyGroup>
       <_PublishHtmlAssetPlaceholdersPath>$([MSBuild]::NormalizeDirectory($(_StaticWebAssetsIntermediateOutputPath), 'htmlassetplaceholders', 'publish'))</_PublishHtmlAssetPlaceholdersPath>
     </PropertyGroup>
