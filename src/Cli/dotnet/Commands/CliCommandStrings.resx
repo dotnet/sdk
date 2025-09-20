@@ -2698,4 +2698,8 @@ Proceed?</value>
   <data name="UnexpectedMessageWithoutHandshake" xml:space="preserve">
     <value>A message of type '{0}' was received before we got any handshakes, which is unexpected.</value>
   </data>
+  <data name="DotnetTestMismatchingExecutionId" xml:space="preserve">
+    <value>Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</value>
+    <comment>{Locked="ExecutionId"}</comment>
+  </data>
 </root>
