@@ -217,6 +217,67 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             asset.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec)).Should().Be(Path.Combine("wwwroot", fileName));
         }
 
+    [Fact]
+    [Trait("Category", "FingerprintIdentity")]
+    public void ComputesIdentity_UsingFingerprintPattern_ForComputedAssets_WhenIdentityNeedsComputation()
+        {
+            // Arrange: simulate a packaged asset (outside content root) with a RelativePath inside the app
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+            // Create a physical file to allow fingerprint computation (tests override ResolveFileDetails returning null file otherwise)
+            var tempRoot = Path.Combine(Path.GetTempPath(), "swafp_identity_test");
+            var nugetPackagePath = Path.Combine(tempRoot, "microsoft.aspnetcore.components.webassembly", "10.0.0-rc.1.25451.107", "build", "net10.0");
+            Directory.CreateDirectory(nugetPackagePath);
+            var assetFileName = "blazor.webassembly.js";
+            var assetFullPath = Path.Combine(nugetPackagePath, assetFileName);
+            File.WriteAllText(assetFullPath, "console.log('test');");
+            // Relative path provided by the item (pre-fingerprinting)
+            var relativePath = Path.Combine("_framework", assetFileName).Replace('\\', '/');
+            var contentRoot = Path.Combine("bin", "Release", "net10.0", "wwwroot");
+
+            var task = new DefineStaticWebAssets
+            {
+                BuildEngine = buildEngine.Object,
+                // Use default file resolution so the file we created is used for hashing.
+                TestResolveFileDetails = null,
+                CandidateAssets =
+                [
+                    new TaskItem(assetFullPath, new Dictionary<string, string>
+                    {
+                        ["RelativePath"] = relativePath
+                    })
+                ],
+                // No RelativePathPattern, we trigger the branch that synthesizes identity under content root.
+                FingerprintPatterns = [ new TaskItem("Js", new Dictionary<string,string>{{"Pattern","*.js"},{"Expression","#[.{fingerprint}]!"}})],
+                FingerprintCandidates = true,
+                SourceType = "Computed",
+                SourceId = "Client",
+                ContentRoot = contentRoot,
+                BasePath = "/",
+                AssetKind = StaticWebAsset.AssetKinds.All,
+                AssetTraitName = "WasmResource",
+                AssetTraitValue = "boot"
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            result.Should().BeTrue($"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
+            task.Assets.Length.Should().Be(1);
+            var asset = task.Assets[0];
+
+            // RelativePath should contain the hard fingerprint pattern per existing behavior
+            asset.GetMetadata(nameof(StaticWebAsset.RelativePath)).Should().Be("_framework/blazor.webassembly#[.{fingerprint}]!.js");
+
+            // Identity (ItemSpec) MUST now incorporate the fingerprint pattern file name (regression expectation)
+            var expectedIdentity = Path.GetFullPath(Path.Combine(contentRoot, "_framework", "blazor.webassembly#[.{fingerprint}]!.js"));
+            asset.ItemSpec.Should().Be(expectedIdentity);
+        }
+
         [Fact]
         public void RespectsItemRelativePathWhenExplicitlySpecified()
         {
@@ -450,7 +511,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             // Assert
             result.Should().Be(false);
             errorMessages.Count.Should().Be(1);
-            errorMessages[0].Should().Be($@"Two assets found targeting the same path with incompatible asset kinds: 
+            errorMessages[0].Should().Be($@"Two assets found targeting the same path with incompatible asset kinds:
 '{Path.GetFullPath(Path.Combine("wwwroot", "candidate.js"))}' with kind '{firstKind}'
 '{Path.GetFullPath(Path.Combine("wwwroot", "candidate.publish.js"))}' with kind '{secondKind}'
 for path 'candidate.js'");
