@@ -1612,12 +1612,14 @@ public class TestReference
             fileInWwwroot.Should().Exist();
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
-        public void Publish_BlazorWasmReferencedByAspNetCoreServer()
+        [RequiresMSBuildVersionTheory("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [InlineData("")]
+        [InlineData("/p:BlazorFingerprintBlazorJs=false")]
+        public void Publish_BlazorWasmReferencedByAspNetCoreServer(string publishArg)
         {
             var testInstance = CreateAspNetSdkTestAsset("BlazorWasmReferencedByAspNetCoreServer");
             var publishCommand = CreatePublishCommand(testInstance, "Server");
-            ExecuteCommand(publishCommand).Should().Pass();
+            ExecuteCommand(publishCommand, publishArg).Should().Pass();
         }
 
         private void VerifyTypeGranularTrimming(string blazorPublishDirectory)
