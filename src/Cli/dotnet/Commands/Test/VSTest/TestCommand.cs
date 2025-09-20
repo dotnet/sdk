@@ -298,11 +298,16 @@ public class TestCommand(
 
     private static bool ContainsBuiltTestSources(string[] args)
     {
-        foreach (string arg in args)
+        for (int i = 0; i < args.Length; i++)
         {
-            if (!arg.StartsWith("-") &&
-                (arg.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || arg.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)))
+            string arg = args[i];
+            if (arg.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || arg.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
             {
+                var previousArg = i > 0 ? args[i - 1] : null;
+                if (previousArg != null &&  CommonOptions.PropertiesOption.Aliases.Contains(previousArg))
+                {
+                    return false;
+                }
                 return true;
             }
         }
