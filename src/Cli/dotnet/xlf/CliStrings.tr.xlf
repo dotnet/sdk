@@ -100,10 +100,9 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="needs-review-translation">Bir ortam değişkeninin değerini ayarlar. 
-Değişken yoksa oluşturur, varsa değişkeni geçersiz kılar. 
-Bu, testleri yalıtılmış bir işlemde çalıştırılmaya zorlar. 
-Bu bağımsız değişken, birden çok değişken sağlamak için birden çok kez belirtilebilir.
+        <target state="new">Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This argument can be specified multiple times to provide multiple variables.
 
 Examples:
 -e VARIABLE=abc

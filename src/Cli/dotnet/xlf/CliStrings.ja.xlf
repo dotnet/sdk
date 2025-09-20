@@ -100,10 +100,9 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="needs-review-translation">環境変数の値を設定します。
-変数が存在しない場合は作成され、存在する場合はオーバーライドされます。
-これにより、テストは強制的に分離プロセスで実行されます。
-この引数は、複数の変数を指定するために複数回指定できます。
+        <target state="new">Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This argument can be specified multiple times to provide multiple variables.
 
 Examples:
 -e VARIABLE=abc
