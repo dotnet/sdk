@@ -109,7 +109,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <Target Name="_ResolveBlazorWasmOutputs" DependsOnTargets="ResolveWasmOutputs;ResolveReferences;PrepareResourceNames;ComputeIntermediateSatelliteAssemblies;_BlazorWasmNativeForBuild" BeforeTargets="_RazorPrepareForRun">
+  <Target Name="_ResolveBlazorJSFile" DependsOnTargets="ResolveWasmOutputs;ResolveReferences;PrepareResourceNames;ComputeIntermediateSatelliteAssemblies;_BlazorWasmNativeForBuild">
     <ItemGroup>
       <_BlazorJSFile Include="$(BlazorWebAssemblyJSPath)" />
       <_BlazorJSFile Include="$(BlazorWebAssemblyJSMapPath)" Condition="Exists('$(BlazorWebAssemblyJSMapPath)')" />
@@ -125,7 +125,9 @@ Copyright (c) .NET Foundation. All rights reserved.
         Code="RAZORSDK1007"
         Condition="'@(_BlazorJSFile->Count())' == '0'" />
     </ItemGroup>
+  </Target>
 
+  <Target Name="_ResolveBlazorWasmOutputs" DependsOnTargets="_ResolveBlazorJSFile" BeforeTargets="_RazorPrepareForRun">
     <DefineStaticWebAssets
       CandidateAssets="@(_BlazorJSFile)"
       FingerprintCandidates="$(BlazorFingerprintBlazorJs)"
@@ -159,7 +161,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <Target Name="_ReplaceFingerprintedBlazorJsForPublish" DependsOnTargets="ProcessPublishFilesForWasm" Condition="'$(WasmBuildingForNestedPublish)' != 'true' and '$(BlazorFingerprintBlazorJs)' == 'true'">
+  <Target Name="_ReplaceFingerprintedBlazorJsForPublish" DependsOnTargets="ProcessPublishFilesForWasm;_ResolveBlazorJSFile" Condition="'$(WasmBuildingForNestedPublish)' != 'true' and '$(BlazorFingerprintBlazorJs)' == 'true'">
     <PropertyGroup>
       <_BlazorJSFileNames>;@(_BlazorJSFile->'%(FileName)');</_BlazorJSFileNames>
     </PropertyGroup>
