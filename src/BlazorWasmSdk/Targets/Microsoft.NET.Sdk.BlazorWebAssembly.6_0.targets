@@ -128,13 +128,17 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="_ResolveBlazorWasmOutputs" DependsOnTargets="_ResolveBlazorJSFile" BeforeTargets="_RazorPrepareForRun">
+    <PropertyGroup>
+      <_BlazorJSFileAssetKindBuild>All</_BlazorJSFileAssetKindBuild>
+      <_BlazorJSFileAssetKindBuild Condition="'$(BlazorFingerprintBlazorJs)' == 'true'">Build</_BlazorJSFileAssetKindBuild>
+    </PropertyGroup>
     <DefineStaticWebAssets
       CandidateAssets="@(_BlazorJSFile)"
       FingerprintCandidates="$(BlazorFingerprintBlazorJs)"
       FingerprintPatterns="@(_BlazorJSFingerprintPattern)"
       SourceId="$(PackageId)"
       SourceType="Computed"
-      AssetKind="All"
+      AssetKind="$(_BlazorJSFileAssetKindBuild)"
       AssetMergeSource="$(StaticWebAssetMergeTarget)"
       AssetRole="Primary"
       AssetTraitName="WasmResource"
@@ -180,7 +184,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       FingerprintPatterns="@(_BlazorJSFingerprintPattern)"
       SourceId="$(PackageId)"
       SourceType="Computed"
-      AssetKind="All"
+      AssetKind="Publish"
       AssetMergeSource="$(StaticWebAssetMergeTarget)"
       AssetRole="Primary"
       AssetTraitName="WasmResource"
@@ -199,23 +203,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     >
       <Output TaskParameter="Endpoints" ItemName="_BlazorJSJSPublishStaticWebAssetsEndpoint" />
     </DefineStaticWebAssetEndpoints>
-    <PropertyGroup>
-      <_BlazorJSJSStaticWebAssetFullPath>@(_BlazorJSJSStaticWebAsset->'%(FullPath)')</_BlazorJSJSStaticWebAssetFullPath>
-    </PropertyGroup>
+    
     <ItemGroup>
-      <_BlazorJSJSStaticWebAsset Include="@(StaticWebAsset)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(RelatedAsset)' == '$(_BlazorJSJSStaticWebAssetFullPath)'" />
-    </ItemGroup>
-    <FilterStaticWebAssetEndpoints Condition="'@(_BlazorJSJSStaticWebAsset)' != ''"
-      Endpoints="@(StaticWebAssetEndpoint)"
-      Assets="@(_BlazorJSJSStaticWebAsset)"
-      Filters=""
-    >
-      <Output TaskParameter="FilteredEndpoints" ItemName="_BlazorJSEndpointsToRemove" />
-    </FilterStaticWebAssetEndpoints>
-    <ItemGroup>
-      <StaticWebAsset Remove="@(_BlazorJSJSStaticWebAsset)" />
       <StaticWebAsset Include="@(_BlazorJSJSPublishStaticWebAssets)" />
-      <StaticWebAssetEndpoint Remove="@(_BlazorJSEndpointsToRemove)" />
       <StaticWebAssetEndpoint Include="@(_BlazorJSJSPublishStaticWebAssetsEndpoint)" />
     </ItemGroup>
   </Target>
