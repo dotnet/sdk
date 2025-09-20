@@ -238,6 +238,14 @@ public partial class DefineStaticWebAssets : Task
                     break;
                 }
 
+                // IMPORTANT: Apply fingerprint pattern (which can change the file name) BEFORE computing identity
+                // for non-Discovered assets so that a synthesized identity incorporates the fingerprint pattern.
+                if (FingerprintCandidates)
+                {
+                    matchContext.SetPathAndReinitialize(relativePathCandidate);
+                    relativePathCandidate = StaticWebAsset.Normalize(fingerprintPatternMatcher.AppendFingerprintPattern(matchContext, identity));
+                }
+
                 if (!string.Equals(SourceType, StaticWebAsset.SourceTypes.Discovered, StringComparison.OrdinalIgnoreCase))
                 {
                     // We ignore the content root for publish only assets since it doesn't matter.
@@ -248,12 +256,6 @@ public partial class DefineStaticWebAssets : Task
                     {
                         assetsCache.AppendCopyCandidate(hash, candidate.ItemSpec, identity);
                     }
-                }
-
-                if (FingerprintCandidates)
-                {
-                    matchContext.SetPathAndReinitialize(relativePathCandidate);
-                    relativePathCandidate = StaticWebAsset.Normalize(fingerprintPatternMatcher.AppendFingerprintPattern(matchContext, identity));
                 }
 
                 var asset = StaticWebAsset.FromProperties(
@@ -357,7 +359,13 @@ public partial class DefineStaticWebAssets : Task
                 // Alternatively, we could be explicit here and support ContentRootSubPath to indicate where it needs to go.
                 var identitySubPath = Path.GetDirectoryName(relativePath);
                 var itemSpecFileName = Path.GetFileName(candidateFullPath);
-                var finalIdentity = Path.Combine(normalizedContentRoot, identitySubPath, itemSpecFileName);
+                var relativeFileName = Path.GetFileName(relativePath);
+                // If the relative path filename has been modified (e.g. fingerprint pattern appended) use it when synthesizing identity.
+                if (!string.IsNullOrEmpty(relativeFileName) && !string.Equals(relativeFileName, itemSpecFileName, StringComparison.OrdinalIgnoreCase))
+                {
+                    itemSpecFileName = relativeFileName;
+                }
+                var finalIdentity = Path.Combine(normalizedContentRoot, identitySubPath ?? string.Empty, itemSpecFileName);
                 Log.LogMessage(MessageImportance.Low, "Identity for candidate '{0}' is '{1}' because it did not start with the content root '{2}'", candidate.ItemSpec, finalIdentity, normalizedContentRoot);
                 return (finalIdentity, true);
             }
