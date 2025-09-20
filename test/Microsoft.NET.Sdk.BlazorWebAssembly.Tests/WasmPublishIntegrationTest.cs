@@ -1612,6 +1612,14 @@ public class TestReference
             fileInWwwroot.Should().Exist();
         }
 
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        public void Publish_BlazorWasmReferencedByAspNetCoreServer()
+        {
+            var testInstance = CreateAspNetSdkTestAsset("BlazorWasmReferencedByAspNetCoreServer");
+            var publishCommand = CreatePublishCommand(testInstance, "Server");
+            ExecuteCommand(publishCommand).Should().Pass();
+        }
+
         private void VerifyTypeGranularTrimming(string blazorPublishDirectory)
         {
             VerifyAssemblyHasTypes(Path.Combine(blazorPublishDirectory, "_framework", "Microsoft.AspNetCore.Components.wasm"), new[] {
