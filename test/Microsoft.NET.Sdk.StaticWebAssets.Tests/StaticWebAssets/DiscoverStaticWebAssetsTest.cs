@@ -270,11 +270,13 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.Assets.Length.Should().Be(1);
             var asset = task.Assets[0];
 
-            // RelativePath should contain the hard fingerprint pattern per existing behavior
+            // RelativePath should still contain the hard fingerprint pattern placeholder (not expanded yet)
             asset.GetMetadata(nameof(StaticWebAsset.RelativePath)).Should().Be("_framework/blazor.webassembly#[.{fingerprint}]!.js");
 
-            // Identity (ItemSpec) MUST now incorporate the fingerprint pattern file name (regression expectation)
-            var expectedIdentity = Path.GetFullPath(Path.Combine(contentRoot, "_framework", "blazor.webassembly#[.{fingerprint}]!.js"));
+            // Identity must contain the ACTUAL fingerprint value in the file name (placeholder expanded)
+            var actualFingerprint = asset.GetMetadata(nameof(StaticWebAsset.Fingerprint));
+            actualFingerprint.Should().NotBeNullOrEmpty();
+            var expectedIdentity = Path.GetFullPath(Path.Combine(contentRoot, "_framework", $"blazor.webassembly.{actualFingerprint}.js"));
             asset.ItemSpec.Should().Be(expectedIdentity);
         }
 
