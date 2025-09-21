@@ -395,7 +395,7 @@ public partial class DefineStaticWebAssets : Task
             }
         }
     }
-    
+
     private string ComputePropertyValue(ITaskItem element, string metadataName, string propertyValue, bool isRequired = true)
     {
         if (_overrides.Contains(metadataName))
@@ -512,7 +512,7 @@ public partial class DefineStaticWebAssets : Task
                 {
                     case (StaticWebAsset.AssetCopyOptions.Never, StaticWebAsset.AssetCopyOptions.Never):
                     case (not StaticWebAsset.AssetCopyOptions.Never, not StaticWebAsset.AssetCopyOptions.Never):
-                        var errorMessage = "Two assets found targeting the same path with incompatible asset kinds: " + Environment.NewLine +
+                        var errorMessage = "Two assets found targeting the same path with incompatible asset kinds:" + Environment.NewLine +
                             "'{0}' with kind '{1}'" + Environment.NewLine +
                             "'{2}' with kind '{3}'" + Environment.NewLine +
                             "for path '{4}'";
