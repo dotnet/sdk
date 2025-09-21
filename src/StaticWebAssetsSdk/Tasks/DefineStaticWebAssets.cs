@@ -254,6 +254,17 @@ public partial class DefineStaticWebAssets : Task
 
                     if (computed)
                     {
+                        // If we synthesized identity and there is a fingerprint placeholder pattern in the file name
+                        // expand it to the concrete fingerprinted file name while keeping RelativePath pattern form.
+                        if (FingerprintCandidates && !string.IsNullOrEmpty(fingerprint))
+                        {
+                            var fileNamePattern = Path.GetFileName(identity);
+                            if (fileNamePattern.Contains("#["))
+                            {
+                                var expanded = StaticWebAssetPathPattern.ExpandIdentityFileNameForFingerprint(fileNamePattern, fingerprint);
+                                identity = Path.Combine(Path.GetDirectoryName(identity) ?? string.Empty, expanded);
+                            }
+                        }
                         assetsCache.AppendCopyCandidate(hash, candidate.ItemSpec, identity);
                     }
                 }
@@ -384,7 +395,7 @@ public partial class DefineStaticWebAssets : Task
             }
         }
     }
-
+    
     private string ComputePropertyValue(ITaskItem element, string metadataName, string propertyValue, bool isRequired = true)
     {
         if (_overrides.Contains(metadataName))
