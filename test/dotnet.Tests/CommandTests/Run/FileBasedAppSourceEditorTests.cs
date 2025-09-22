@@ -371,6 +371,33 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             """));
     }
 
+    /// <summary>
+    /// Shebang directive should always stay first.
+    /// </summary>
+    [Fact]
+    public void Shebang()
+    {
+        Verify(
+            """
+            #!/test
+            Console.WriteLine();
+            """,
+            (static editor => editor.Add(new CSharpDirective.Package(default) { Name = "MyPackage", Version = "1.0.0" }),
+            """
+            #!/test
+
+            #:package MyPackage@1.0.0
+
+            Console.WriteLine();
+            """),
+            (static editor => editor.Remove(editor.Directives[1]),
+            """
+            #!/test
+
+            Console.WriteLine();
+            """));
+    }
+
     [Fact]
     public void AfterTokens()
     {

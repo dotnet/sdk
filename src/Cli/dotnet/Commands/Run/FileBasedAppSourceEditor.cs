@@ -120,7 +120,7 @@ internal sealed class FileBasedAppSourceEditor
         var result = tokenizer.ParseNextToken();
         var leadingTrivia = result.Token.LeadingTrivia;
 
-        // If there is a comment at the top of the file, we add the directive after it
+        // If there is a comment or #! at the top of the file, we add the directive after it
         // (the comment might be a license which should always stay at the top).
         int insertAfterIndex = -1;
         int trailingNewLines = 0;
@@ -159,6 +159,11 @@ internal sealed class FileBasedAppSourceEditor
                         trailingNewLines = 1;
                         insertAfterIndex = i;
                     }
+                    break;
+
+                case SyntaxKind.ShebangDirectiveTrivia:
+                    trailingNewLines = 1; // shebang trivia has one newline embedded in its structure
+                    insertAfterIndex = i;
                     break;
 
                 case SyntaxKind.EndOfLineTrivia:
