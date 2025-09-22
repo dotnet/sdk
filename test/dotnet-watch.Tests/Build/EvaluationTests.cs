@@ -10,11 +10,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
     {
         private readonly TestLogger _logger;
         private readonly TestAssetsManager _testAssets;
+        private readonly ITestOutputHelper output;
 
         public EvaluationTests(ITestOutputHelper output)
         {
             _logger = new TestLogger(output);
             _testAssets = new TestAssetsManager(output);
+            this.output = output;
 
             // During the dogfood, we want the MSBuild server on for build of the pipeline. Not for the tests - it breaks outputs.
             Environment.SetEnvironmentVariable("DOTNET_CLI_USE_MSBUILD_SERVER", "0");

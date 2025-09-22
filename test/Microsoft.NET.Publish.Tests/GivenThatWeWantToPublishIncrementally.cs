@@ -3,8 +3,6 @@
 
 #nullable disable
 
-using System.Diagnostics;
-
 namespace Microsoft.NET.Publish.Tests
 {
     public class GivenThatWeWantToPublishIncrementally : SdkTest
