@@ -13,8 +13,8 @@
     </PropertyGroup>
 
     <!--Register our custom task-->
-    <UsingTask TaskName="$(MSBuildThisFileName).Tasks.CreateNewImage" AssemblyFile="$(ContainerCustomTasksAssemblyNet)" Runtime="NET"/>
-    <UsingTask TaskName="$(MSBuildThisFileName).Tasks.CreateImageIndex" AssemblyFile="$(ContainerCustomTasksAssemblyNet)" Runtime="NET"/>
-    <UsingTask TaskName="$(MSBuildThisFileName).Tasks.ParseContainerProperties" AssemblyFile="$(ContainerCustomTasksAssemblyNet)" Runtime="NET" />
-    <UsingTask TaskName="$(MSBuildThisFileName).Tasks.ComputeDotnetBaseImageAndTag" AssemblyFile="$(ContainerCustomTasksAssemblyNet)" Runtime="NET"/>
+    <UsingTask TaskName="$(MSBuildThisFileName).Tasks.CreateNewImage" AssemblyFile="$(ContainerCustomTasksAssemblyNet)" Runtime="NET" TaskFactory="TaskHostFactory" />
+    <UsingTask TaskName="$(MSBuildThisFileName).Tasks.CreateImageIndex" AssemblyFile="$(ContainerCustomTasksAssemblyNet)" Runtime="NET" TaskFactory="TaskHostFactory" />
+    <UsingTask TaskName="$(MSBuildThisFileName).Tasks.ParseContainerProperties" AssemblyFile="$(ContainerCustomTasksAssemblyNet)" Runtime="NET" TaskFactory="TaskHostFactory" />
+    <UsingTask TaskName="$(MSBuildThisFileName).Tasks.ComputeDotnetBaseImageAndTag" AssemblyFile="$(ContainerCustomTasksAssemblyNet)" Runtime="NET" TaskFactory="TaskHostFactory" />
 </Project>
