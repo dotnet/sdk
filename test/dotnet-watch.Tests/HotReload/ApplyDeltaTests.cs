@@ -838,19 +838,20 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 .WithSource();
 
             var port = TestOptions.GetTestPort();
-            App.Start(testAsset, ["--urls", "http://localhost:" + port], testFlags: TestFlags.ReadKeyFromStdin | TestFlags.MockBrowser);
+            App.Start(testAsset, ["--urls", "http://localhost:" + port, "--non-interactive"], testFlags: TestFlags.ReadKeyFromStdin | TestFlags.MockBrowser);
 
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
             App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
+            App.AssertOutputContains(MessageDescriptor.PressCtrlRToRestart);
 
             // Browser is launched based on blazor-devserver output "Now listening on: ...".
             await App.WaitUntilOutputContains($"dotnet watch ⌚ Launching browser: http://localhost:{port}");
 
             App.SendControlR();
 
-            await App.WaitUntilOutputContains($"dotnet watch ⌚ Reloading browser.");
+            await App.WaitUntilOutputContains(MessageDescriptor.ReloadingBrowser);
         }
 
         [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/49928")] // "https://github.com/dotnet/sdk/issues/49307")
@@ -868,7 +869,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
             App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
-            App.AssertOutputContains("dotnet watch 🔥 HotReloadProfile: BlazorHosted");
+            App.AssertOutputContains(MessageDescriptor.ApplicationKind_BlazorHosted);
 
             // client capabilities:
             App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Project 'blazorwasm ({tfm})' specifies capabilities: 'Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType'");
