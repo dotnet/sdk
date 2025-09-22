@@ -23,6 +23,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 Options = new(),
                 RootProjectOptions = TestOptions.GetProjectOptions(args),
                 EnvironmentOptions = environmentOptions,
+                BrowserLauncher = new BrowserLauncher(NullLogger.Instance, environmentOptions),
+                BrowserRefreshServerFactory = new BrowserRefreshServerFactory()
             };
         }
 

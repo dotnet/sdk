@@ -41,8 +41,12 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
 
     public override int Execute()
     {
-        VersionRange versionRange = _parseResult.GetVersionRange();
+        VersionRange? versionRange = _parseResult.GetVersionRange();
         PackageId packageId = new PackageId(_packageToolIdentityArgument.Id);
+
+        var toolLocationActivity = Activities.Source.StartActivity("find-tool");
+        toolLocationActivity?.SetTag("tool.package.id", packageId.ToString());
+        toolLocationActivity?.SetTag("tool.package.version", versionRange?.ToString() ?? "latest");
 
         //  Look in local tools manifest first, but only if version is not specified
         if (versionRange == null)
@@ -51,6 +55,9 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
 
             if (_toolManifestFinder.TryFindPackageId(packageId, out var toolManifestPackage))
             {
+                toolLocationActivity?.SetTag("tool.exec.kind", "local");
+                toolLocationActivity?.Stop();
+
                 var toolPackageRestorer = new ToolPackageRestorer(
                     _toolPackageDownloader,
                     _sources,
@@ -82,6 +89,8 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
                 additionalFeeds: _addSource);
 
         (var bestVersion, var packageSource) = _toolPackageDownloader.GetNuGetVersion(packageLocation, packageId, _verbosity, versionRange, _restoreActionConfig);
+        toolLocationActivity?.SetTag("tool.exec.kind", "one-shot");
+        toolLocationActivity?.Stop();
 
         //  TargetFramework is null, which means to use the current framework.  Global tools can override the target framework to use (or select assets for),
         //  but we don't support this for local or one-shot tools.
@@ -119,6 +128,10 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
                 restoreActionConfig: _restoreActionConfig);
         }
 
+        using var toolExecuteActivity = Activities.Source.StartActivity("execute-tool");
+        toolExecuteActivity?.SetTag("tool.package.id", packageId.ToString());
+        toolExecuteActivity?.SetTag("tool.package.version", toolPackage.Version.ToString());
+        toolExecuteActivity?.SetTag("tool.runner", toolPackage.Command.Runner);
         var commandSpec = ToolCommandSpecCreator.CreateToolCommandSpec(toolPackage.Command.Name.Value, toolPackage.Command.Executable.Value, toolPackage.Command.Runner, _allowRollForward, _forwardArguments);
         var command = CommandFactoryUsingResolver.Create(commandSpec);
         var result = command.Execute();
