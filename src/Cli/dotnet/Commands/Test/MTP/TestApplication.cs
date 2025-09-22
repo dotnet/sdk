@@ -20,6 +20,7 @@ internal sealed class TestApplication(
     TerminalTestReporter output,
     Action<CommandLineOptionMessages> onHelpRequested) : IDisposable
 {
+    private readonly Lock _requestLock = new();
     private readonly BuildOptions _buildOptions = buildOptions;
     private readonly Action<CommandLineOptionMessages> _onHelpRequested = onHelpRequested;
     private readonly TestApplicationHandler _handler = new(output, module, testOptions);
@@ -199,63 +200,69 @@ internal sealed class TestApplication(
 
     private Task<IResponse> OnRequest(NamedPipeServer server, IRequest request)
     {
-        try
+        // We need to lock as we might be called concurrently when test app child processes all communicate with us.
+        // For example, in a case of a sharding extension, we could get test result messages concurrently.
+        // To be the most safe, we lock the whole OnRequest.
+        lock (_requestLock)
         {
-            switch (request)
+            try
             {
-                case HandshakeMessage handshakeMessage:
-                    _handshakes.Add(server, handshakeMessage);
-                    string negotiatedVersion = GetSupportedProtocolVersion(handshakeMessage);
-                    OnHandshakeMessage(handshakeMessage, negotiatedVersion.Length > 0);
-                    return Task.FromResult((IResponse)CreateHandshakeMessage(negotiatedVersion));
+                switch (request)
+                {
+                    case HandshakeMessage handshakeMessage:
+                        _handshakes.Add(server, handshakeMessage);
+                        string negotiatedVersion = GetSupportedProtocolVersion(handshakeMessage);
+                        OnHandshakeMessage(handshakeMessage, negotiatedVersion.Length > 0);
+                        return Task.FromResult((IResponse)CreateHandshakeMessage(negotiatedVersion));
 
-                case CommandLineOptionMessages commandLineOptionMessages:
-                    OnCommandLineOptionMessages(commandLineOptionMessages);
-                    break;
+                    case CommandLineOptionMessages commandLineOptionMessages:
+                        OnCommandLineOptionMessages(commandLineOptionMessages);
+                        break;
 
-                case DiscoveredTestMessages discoveredTestMessages:
-                    OnDiscoveredTestMessages(discoveredTestMessages);
-                    break;
+                    case DiscoveredTestMessages discoveredTestMessages:
+                        OnDiscoveredTestMessages(discoveredTestMessages);
+                        break;
 
-                case TestResultMessages testResultMessages:
-                    OnTestResultMessages(testResultMessages);
-                    break;
+                    case TestResultMessages testResultMessages:
+                        OnTestResultMessages(testResultMessages);
+                        break;
 
-                case FileArtifactMessages fileArtifactMessages:
-                    OnFileArtifactMessages(fileArtifactMessages);
-                    break;
+                    case FileArtifactMessages fileArtifactMessages:
+                        OnFileArtifactMessages(fileArtifactMessages);
+                        break;
 
-                case TestSessionEvent sessionEvent:
-                    OnSessionEvent(sessionEvent);
-                    break;
+                    case TestSessionEvent sessionEvent:
+                        OnSessionEvent(sessionEvent);
+                        break;
 
-                // If we don't recognize the message, log and skip it
-                case UnknownMessage unknownMessage:
-                    Logger.LogTrace($"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
-                    return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+                    // If we don't recognize the message, log and skip it
+                    case UnknownMessage unknownMessage:
+                        Logger.LogTrace($"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
+                        return Task.FromResult((IResponse)VoidResponse.CachedInstance);
 
-                default:
-                    // If it doesn't match any of the above, throw an exception
-                    throw new NotSupportedException(string.Format(CliCommandStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
+                    default:
+                        // If it doesn't match any of the above, throw an exception
+                        throw new NotSupportedException(string.Format(CliCommandStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            // BE CAREFUL:
-            // When handling some of the messages, we may throw an exception in unexpected state.
-            // (e.g, OnSessionEvent may throw if we receive TestSessionEnd without TestSessionStart).
-            // (or if we receive help-related messages when not in help mode)
-            // In that case, we FailFast.
-            // The lack of FailFast *might* have unintended consequences, such as breaking the internal loop of pipe server.
-            // In that case, maybe MTP app will continue waiting for response, but we don't send the response and are waiting for
-            // MTP app process exit (which doesn't happen).
-            // So, we explicitly FailFast here.
-            string exAsString = ex.ToString();
-            Logger.LogTrace(exAsString);
-            Environment.FailFast(exAsString);
-        }
+            catch (Exception ex)
+            {
+                // BE CAREFUL:
+                // When handling some of the messages, we may throw an exception in unexpected state.
+                // (e.g, OnSessionEvent may throw if we receive TestSessionEnd without TestSessionStart).
+                // (or if we receive help-related messages when not in help mode)
+                // In that case, we FailFast.
+                // The lack of FailFast *might* have unintended consequences, such as breaking the internal loop of pipe server.
+                // In that case, maybe MTP app will continue waiting for response, but we don't send the response and are waiting for
+                // MTP app process exit (which doesn't happen).
+                // So, we explicitly FailFast here.
+                string exAsString = ex.ToString();
+                Logger.LogTrace(exAsString);
+                Environment.FailFast(exAsString);
+            }
 
-        return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+            return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+        }
     }
 
     private static string GetSupportedProtocolVersion(HandshakeMessage handshakeMessage)
