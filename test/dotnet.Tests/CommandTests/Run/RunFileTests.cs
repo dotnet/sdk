@@ -332,10 +332,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     /// </summary>
     [Theory]
     // error MSB1003: Specify a project or solution file. The current working directory does not contain a project or solution file.
-    [InlineData("build", "MSB1003")]
+    [InlineData("build", "MSB1003", false)]
     // dotnet watch: Could not find a MSBuild project file in '...'. Specify which project to use with the --project option.
-    [InlineData("watch", "--project")]
-    public void Precedence_BuiltInCommand(string cmd, string error)
+    [InlineData("watch", "--project", true)]
+    public void Precedence_BuiltInCommand(string cmd, string error, bool errorInStdErr)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, cmd), """
@@ -348,18 +348,26 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         // dotnet build -> built-in command
-        new DotnetCommand(Log, cmd)
+        var failure = new DotnetCommand(Log, cmd)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
-            .Should().Fail()
-            .And.HaveStdOutContaining(error);
+            .Should().Fail();
+
+        if (errorInStdErr)
+        {
+            failure.And.HaveStdErrContaining(error);
+        }
+        else
+        {
+            failure.And.HaveStdOutContaining(error);
+        }
 
         // dotnet ./build -> file-based app
         new DotnetCommand(Log, $"./{cmd}")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOut("hello 1");
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOut("hello 1");
 
         // dotnet run build -> file-based app
         new DotnetCommand(Log, "run", cmd)
