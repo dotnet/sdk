@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantToFloatWarningLevels : SdkTest
@@ -43,7 +45,7 @@ namespace Microsoft.NET.Build.Tests
             };
 
             var testAsset = _testAssetsManager
-                .CreateTestProject(testProject, identifier: "warningLevelConsoleApp" + tfm, targetExtension: ".csproj");
+                .CreateTestProject(testProject, identifier: "warningLevelConsoleApp" + tfm);
 
             var buildCommand = new GetValuesCommand(
                 Log,
@@ -87,7 +89,7 @@ namespace Microsoft.NET.Build.Tests
             };
             testProject.AdditionalProperties.Add("WarningLevel", warningLevel?.ToString());
             var testAsset = _testAssetsManager
-                .CreateTestProject(testProject, identifier: "customWarningLevelConsoleApp", targetExtension: ".csproj");
+                .CreateTestProject(testProject, identifier: "customWarningLevelConsoleApp");
 
             var buildCommand = new GetValuesCommand(
                 Log,
@@ -132,7 +134,7 @@ namespace Microsoft.NET.Build.Tests
             };
 
             var testAsset = _testAssetsManager
-                .CreateTestProject(testProject, identifier: "analysisLevelConsoleApp" + tfm, targetExtension: ".csproj");
+                .CreateTestProject(testProject, identifier: "analysisLevelConsoleApp" + tfm);
 
             var buildCommand = new GetValuesCommand(
                 Log,
@@ -157,7 +159,10 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.NextTargetFrameworkVersion)]
-        [RequiresMSBuildVersionTheory("16.8")]
+        // Fixing this test requires bumping _LatestAnalysisLevel and _PreviewAnalysisLevel
+        // Bumping will cause It_maps_analysis_properties_to_globalconfig to fail which requires changes in dotnet/roslyn-analyzers repo.
+        // See instructions in the comment in It_maps_analysis_properties_to_globalconfig
+        [RequiresMSBuildVersionTheory("16.8", Skip = "https://github.com/dotnet/sdk/issues/45299")]
         public void It_defaults_preview_AnalysisLevel_to_the_next_tfm(string currentTFM, string nextTFMVersionNumber)
         {
             var testProject = new TestProject
@@ -185,7 +190,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties.Add("AnalysisLevel", "preview");
 
             var testAsset = _testAssetsManager
-                .CreateTestProject(testProject, identifier: "analysisLevelPreviewConsoleApp" + currentTFM, targetExtension: ".csproj");
+                .CreateTestProject(testProject, identifier: "analysisLevelPreviewConsoleApp" + currentTFM);
 
             var buildCommand = new GetValuesCommand(
                 Log,
@@ -232,7 +237,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties.Add("AnalysisLevel", analysisLevel);
 
             var testAsset = _testAssetsManager
-                .CreateTestProject(testProject, identifier: "analysisLevelPreviewConsoleApp" + ToolsetInfo.CurrentTargetFramework + analysisLevel, targetExtension: ".csproj");
+                .CreateTestProject(testProject, identifier: "analysisLevelPreviewConsoleApp" + ToolsetInfo.CurrentTargetFramework + analysisLevel);
 
             var buildCommand = new GetValuesCommand(
                 Log,
@@ -328,7 +333,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties.Add("CodeAnalysisTreatWarningsAsErrors", codeAnalysisTreatWarningsAsErrors);
 
             var testAsset = _testAssetsManager
-                .CreateTestProject(testProject, identifier: "analysisLevelPreviewConsoleApp" + ToolsetInfo.CurrentTargetFramework + analysisLevel + category, targetExtension: ".csproj");
+                .CreateTestProject(testProject, identifier: "analysisLevelPreviewConsoleApp" + ToolsetInfo.CurrentTargetFramework + analysisLevel + category);
 
             var buildCommand = new GetValuesCommand(
                 Log,
@@ -375,7 +380,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("recommended", "true", new string[] { "CA1310", "CA1068", "CA2200" })]
         [InlineData("all", "false", new string[] { "CA1031", "CA1310", "CA1068", "CA2200" })]
         [InlineData("all", "true", new string[] { "CA1031", "CA1310", "CA1068", "CA2200" })]
-        [RequiresMSBuildVersionTheory("17.8.0")]
+        [RequiresMSBuildVersionTheory("17.12.0")]
         public void It_bulk_configures_rules_with_different_analysis_modes(string analysisMode, string codeAnalysisTreatWarningsAsErrors, string[] expectedViolations)
         {
             var testProject = new TestProject
@@ -453,7 +458,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties.Add("NoWarn", "CS9057");
 
             var testAsset = _testAssetsManager
-                .CreateTestProject(testProject, identifier: "analysisLevelConsoleApp" + ToolsetInfo.CurrentTargetFramework + analysisLevel + $"Warnaserror:{codeAnalysisTreatWarningsAsErrors}", targetExtension: ".csproj");
+                .CreateTestProject(testProject, identifier: "analysisLevelConsoleApp" + ToolsetInfo.CurrentTargetFramework + analysisLevel + $"Warnaserror:{codeAnalysisTreatWarningsAsErrors}");
 
             var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             var buildResult = buildCommand.Execute();

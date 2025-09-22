@@ -9,20 +9,19 @@ namespace Microsoft.NET.TestFramework.Commands
     {
         private const string PublishSubfolderName = "publish";
 
-        //  Encourage use of the other overload, which is generally simpler to use
+        // Encourage use of the other overload, which is generally simpler to use
         [EditorBrowsable(EditorBrowsableState.Never)]
         public PublishCommand(ITestOutputHelper log, string projectPath)
-            : base(log, "Publish", projectPath, relativePathToProject: null)
+            : base(log, "Publish", projectPath, relativePathToProject: null, requiredArgs: "/p:_IsPublishing=true")
         {
         }
 
-        public PublishCommand(TestAsset testAsset, string relativePathToProject = null)
-            : base(testAsset, "Publish", relativePathToProject)
+        public PublishCommand(TestAsset testAsset, string? relativePathToProject = null)
+            : base(testAsset, "Publish", relativePathToProject, requiredArgs: "/p:_IsPublishing=true")
         {
-
         }
 
-        public override DirectoryInfo GetOutputDirectory(string targetFramework = null, string configuration = "Debug", string runtimeIdentifier = "", string platformIdentifier = "")
+        public override DirectoryInfo GetOutputDirectory(string? targetFramework = null, string configuration = "Debug", string? runtimeIdentifier = "", string? platformIdentifier = "")
         {
             if (TestAsset != null)
             {

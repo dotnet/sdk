@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Aspire.AppHost.Sdk" Version="$(AspirePackageVersion)" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsAspireHost>true</IsAspireHost>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WatchAspire.ApiService\WatchAspire.ApiService.csproj" Watch="true" />
+    <ProjectReference Include="..\WatchAspire.Web\WatchAspire.Web.csproj" Watch="true" />
+    <ProjectReference Include="..\WatchAspire.Wasm\WatchAspire.Wasm.csproj" Watch="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="$(AspirePackageVersion)" />
+  </ItemGroup>
+
+</Project>

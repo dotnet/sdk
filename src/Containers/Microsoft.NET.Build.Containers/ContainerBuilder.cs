@@ -6,6 +6,12 @@ using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
 
+internal enum KnownImageFormats
+{
+    OCI,
+    Docker
+}
+
 internal static class ContainerBuilder
 {
     internal static async Task<int> ContainerizeAsync(
@@ -14,6 +20,7 @@ internal static class ContainerBuilder
         string baseRegistry,
         string baseImageName,
         string baseImageTag,
+        string? baseImageDigest,
         string[] entrypoint,
         string[] entrypointArgs,
         string[] defaultArgs,
@@ -33,6 +40,7 @@ internal static class ContainerBuilder
         string? archiveOutputPath,
         bool generateLabels,
         bool generateDigestLabel,
+        KnownImageFormats? imageFormat,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
@@ -45,8 +53,9 @@ internal static class ContainerBuilder
         logger.LogTrace("Trace logging: enabled.");
 
         bool isLocalPull = string.IsNullOrEmpty(baseRegistry);
-        Registry? sourceRegistry = isLocalPull ? null : new Registry(baseRegistry, logger);
-        SourceImageReference sourceImageReference = new(sourceRegistry, baseImageName, baseImageTag);
+        RegistryMode sourceRegistryMode = baseRegistry.Equals(outputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
+        Registry? sourceRegistry = isLocalPull ? null : new Registry(baseRegistry, logger, sourceRegistryMode);
+        SourceImageReference sourceImageReference = new(sourceRegistry, baseImageName, baseImageTag, baseImageDigest);
 
         DestinationImageReference destinationImageReference = DestinationImageReference.CreateFromSettings(
             imageName,
@@ -64,14 +73,14 @@ internal static class ContainerBuilder
                 var ridGraphPicker = new RidGraphManifestPicker(ridGraphPath);
                 imageBuilder = await registry.GetImageManifestAsync(
                     baseImageName,
-                    baseImageTag,
+                    sourceImageReference.Reference,
                     containerRuntimeIdentifier,
                     ridGraphPicker,
                     cancellationToken).ConfigureAwait(false);
             }
             catch (RepositoryNotFoundException)
             {
-                logger.LogError(Resource.FormatString(nameof(Strings.RepositoryNotFound), baseImageName, baseImageTag, registry.RegistryName));
+                logger.LogError(Resource.FormatString(nameof(Strings.RepositoryNotFound), baseImageName, baseImageTag, baseImageDigest, registry.RegistryName));
                 return 1;
             }
             catch (UnableToAccessRepositoryException)
@@ -97,7 +106,16 @@ internal static class ContainerBuilder
         logger.LogInformation(Strings.ContainerBuilder_StartBuildingImage, imageName, string.Join(",", imageName), sourceImageReference);
         cancellationToken.ThrowIfCancellationRequested();
 
-        Layer newLayer = Layer.FromDirectory(publishDirectory.FullName, workingDir, imageBuilder.IsWindows, imageBuilder.ManifestMediaType);
+        // forcibly change the media type if required
+        imageBuilder.ManifestMediaType = imageFormat switch
+        {
+            null => imageBuilder.ManifestMediaType,
+            KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
+            KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
+            _ => imageBuilder.ManifestMediaType // should be impossible unless we add to the enum
+        };
+        var userId = imageBuilder.IsWindows ? null : TryParseUserId(containerUser);
+        Layer newLayer = Layer.FromDirectory(publishDirectory.FullName, workingDir, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, userId);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(workingDir);
 
@@ -182,6 +200,24 @@ internal static class ContainerBuilder
         return exitCode;
     }
 
+    public static int? TryParseUserId(string? containerUser)
+    {
+        if (containerUser is null)
+        {
+            return null;
+        }
+        if (int.TryParse(containerUser, out int userId))
+        {
+            return userId;
+        }
+        if (containerUser.Equals("root", StringComparison.OrdinalIgnoreCase))
+        {
+            return 0; // root user
+        }
+        // TODO: on Linux we could _potentially_ try to map the user name to a UID
+        return null;
+    }
+
     private static async Task<int> PushToLocalRegistryAsync(ILogger logger, BuiltImage builtImage, SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,
         CancellationToken cancellationToken)
@@ -197,6 +233,11 @@ internal static class ContainerBuilder
         {
             await containerRegistry.LoadAsync(builtImage, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
             logger.LogInformation(Strings.ContainerBuilder_ImageUploadedToLocalDaemon, destinationImageReference, containerRegistry);
+        }
+        catch (UnableToDownloadFromRepositoryException)
+        {
+            logger.LogError(Resource.FormatString(nameof(Strings.UnableToDownloadFromRepository)), sourceImageReference);
+            return 1;
         }
         catch (Exception ex)
         {
@@ -220,9 +261,9 @@ internal static class ContainerBuilder
                 cancellationToken)).ConfigureAwait(false);
             logger.LogInformation(Strings.ContainerBuilder_ImageUploadedToRegistry, destinationImageReference, destinationImageReference.RemoteRegistry.RegistryName);
         }
-        catch (UnableToAccessRepositoryException)
+        catch (UnableToDownloadFromRepositoryException)
         {
-            logger.LogError(Resource.FormatString(nameof(Strings.UnableToAccessRepository), destinationImageReference.Repository, destinationImageReference.RemoteRegistry!.RegistryName));
+            logger.LogError(Resource.FormatString(nameof(Strings.UnableToDownloadFromRepository)), sourceImageReference);
             return 1;
         }
         catch (Exception e)

@@ -1,6 +1,64 @@
 <Project Sdk="Microsoft.NET.Sdk.WebAssembly">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateHtmlAssetPlaceholdersBuildStaticWebAssetsDependsOn>
+      _AddAppPreloadProperties;
+      $(GenerateHtmlAssetPlaceholdersBuildStaticWebAssetsDependsOn)
+    </GenerateHtmlAssetPlaceholdersBuildStaticWebAssetsDependsOn>
   </PropertyGroup>
+  <Target Name="_AppConfigurePreload">
+    <ItemGroup>
+      <_AppendPreloadRelPreloadProperty Include="Append">
+        <UpdateTarget>Property</UpdateTarget>
+        <Name>PreloadRel</Name>
+        <Value>preload</Value>
+      </_AppendPreloadRelPreloadProperty>
+      <_AppendPreloadAsScriptProperty Include="Append">
+        <UpdateTarget>Property</UpdateTarget>
+        <Name>PreloadAs</Name>
+        <Value>script</Value>
+      </_AppendPreloadAsScriptProperty>
+      <_AppendPreloadPriorityHighProperty Include="Append">
+        <UpdateTarget>Property</UpdateTarget>
+        <Name>PreloadPriority</Name>
+        <Value>high</Value>
+      </_AppendPreloadPriorityHighProperty>
+      <_AppendPreloadCrossoriginAnonymousProperty Include="Append">
+        <UpdateTarget>Property</UpdateTarget>
+        <Name>PreloadCrossorigin</Name>
+        <Value>anonymous</Value>
+      </_AppendPreloadCrossoriginAnonymousProperty>
+      <_AppendPreloadGroupWebAssemblyProperty Include="Append">
+        <UpdateTarget>Property</UpdateTarget>
+        <Name>PreloadGroup</Name>
+        <Value>webassembly</Value>
+      </_AppendPreloadGroupWebAssemblyProperty>
+    </ItemGroup>
+  </Target>
+  <Target Name="_AddAppPreloadProperties" DependsOnTargets="_AppConfigurePreload;_AddWasmStaticWebAssets" BeforeTargets="GenerateStaticWebAssetsManifest">
+    <ItemGroup>
+      <_AppPreloadScriptAsset Include="@(StaticWebAsset)" Condition="'%(FileName)%(Extension)' == 'main.js'" />
+      <_AppPreloadEndpointFilter Include="Property" Name="Label" Mode="Include" Condition="'$(FingerprintUserJavascriptAssets)' == 'true'" />
+      <_AppPreloadEndpointFilter Include="Property" Name="Label" Mode="Exclude" Condition="'@(_AppPreloadEndpointFilter)' == ''" />
+    </ItemGroup>
+    <FilterStaticWebAssetEndpoints
+      Endpoints="@(StaticWebAssetEndpoint)"
+      Assets="@(_AppPreloadScriptAsset)"
+      Filters="@(_AppPreloadEndpointFilter)"
+    >
+      <Output TaskParameter="FilteredEndpoints" ItemName="_AppPreloadScriptAssetEndpoint" />
+    </FilterStaticWebAssetEndpoints>
+    <UpdateStaticWebAssetEndpoints
+      EndpointsToUpdate="@(_AppPreloadScriptAssetEndpoint)"
+      AllEndpoints="@(_AppPreloadScriptAssetEndpoint)"
+      Operations="@(_AppendPreloadRelPreloadProperty);@(_AppendPreloadAsScriptProperty);@(_AppendPreloadPriorityHighProperty);@(_AppendPreloadCrossoriginAnonymousProperty);@(_AppendPreloadGroupWebAssemblyProperty)"
+    >
+      <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedAppStaticWebAssetEndpoint" />
+    </UpdateStaticWebAssetEndpoints>
+    <ItemGroup>
+      <StaticWebAssetEndpoint Remove="@(_AppPreloadScriptAssetEndpoint)" />
+      <StaticWebAssetEndpoint Include="@(_UpdatedAppStaticWebAssetEndpoint)" />
+    </ItemGroup>
+  </Target>
 </Project>

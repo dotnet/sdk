@@ -1,13 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
+#nullable disable
+
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.MsiInstallerTests.Framework
@@ -213,6 +209,9 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
 
         //  Applies to CopyFileToVM, CopyFolderToVM, MoveFolderOnVM, WriteFileToVM, GetRemoteDirectory, GetRemoteFile
         public string TargetPath { get; set; }
+
+        //  Applies to GetRemoteDirectory, GetRemoteFile
+        public bool MustExist { get; set; }
 
         //  Applies to CopyFileToVM, CopyFolderToVM, MoveFolderOnVM
         public string SourcePath { get; set; }

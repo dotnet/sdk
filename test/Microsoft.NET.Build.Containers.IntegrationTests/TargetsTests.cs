@@ -26,7 +26,6 @@ public class TargetsTests
         }, projectName: $"{nameof(CanDeferContainerAppCommand)}_{prop}_{value}_{string.Join("_", expectedAppCommandArgs)}");
         using var _ = d;
         var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
-        //Assert.True(instance.Build([ ComputeContainerConfig ], []));
         instance.Build([ ComputeContainerConfig ], []);
         var computedAppCommand = instance.GetItems(ContainerAppCommand).Select(i => i.EvaluatedInclude);
 
@@ -35,7 +34,6 @@ public class TargetsTests
         // So, to make sure we actually test something, we check that we actually get the expected collection.
         computedAppCommand.Should().BeEquivalentTo(expectedAppCommandArgs);
     }
-
 
     public static TheoryData<string, string, bool, string[]> ContainerAppCommands()
     {
@@ -312,7 +310,7 @@ public class TargetsTests
             ["TargetFrameworkIdentifier"] = ".NETCoreApp",
             ["TargetFrameworkVersion"] = tfm,
             ["TargetFramework"] = "net" + tfm.TrimStart('v'),
-            ["ContainerRuntimeIdentifier"] = rid
+            ["ContainerRuntimeIdentifier"] = rid,
         }, projectName: $"{nameof(CanComputeContainerUser)}_{tfm}_{rid}_{expectedUser}");
         using var _ = d;
         var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
@@ -387,10 +385,43 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
-    [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-alpine-aot")]
-    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-jammy-chiseled-aot")]
+    [InlineData("linux-musl-x64;linux-musl-arm64", "mcr.microsoft.com/dotnet/runtime:8.0-alpine")]
+    [InlineData("linux-x64;linux-arm64", "mcr.microsoft.com/dotnet/runtime:8.0")]
     [Theory]
-    public void AOTAppsGetAOTImages(string rid, string expectedImage)
+    public void AllMuslRidsGetAlpineContainers(string rids, string expectedImage)
+    {
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = "8.0.100",
+            ["TargetFrameworkVersion"] = "v8.0",
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = rids,
+        }, projectName: $"{nameof(AllMuslRidsGetAlpineContainers)}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
+    [Fact]
+    public void NotAllMuslRidsLogsError()
+    {
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = "8.0.100",
+            ["TargetFrameworkVersion"] = "v8.0",
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = "linux-musl-x64;linux-arm64",
+        }, projectName: $"{nameof(NotAllMuslRidsLogsError)}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerBaseImage }, [logger], null, out var outputs).Should().BeFalse(String.Join(Environment.NewLine, logger.Errors));
+        logger.Errors.Should().ContainSingle(error => error.Message == Resources.Strings.InvalidTargetRuntimeIdentifiers);
+    }
+
+    [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine")]
+    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy-chiseled")]
+    [Theory]
+    public void AOTAppsGetExpectedImages(string rid, string expectedImage)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
         {
@@ -400,7 +431,7 @@ public class TargetsTests
             [KnownStrings.Properties.PublishSelfContained] = true.ToString(),
             [KnownStrings.Properties.PublishAot] = true.ToString(),
             [KnownStrings.Properties.InvariantGlobalization] = true.ToString(),
-        }, projectName: $"{nameof(AOTAppsGetAOTImages)}_{rid}_{expectedImage}");
+        }, projectName: $"{nameof(AOTAppsGetExpectedImages)}_{rid}_{expectedImage}");
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
         instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
@@ -473,12 +504,12 @@ public class TargetsTests
 
     [InlineData(true, false, "linux-musl-x64", true, "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine")]
     [InlineData(true, false, "linux-musl-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
-    [InlineData(false, true, "linux-musl-x64", true, "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-alpine-aot")]
+    [InlineData(false, true, "linux-musl-x64", true, "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine")]
     [InlineData(false, true, "linux-musl-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
 
     [InlineData(true, false, "linux-x64", true, "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled")]
     [InlineData(true, false, "linux-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled-extra")]
-    [InlineData(false, true, "linux-x64", true, "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-noble-chiseled-aot")]
+    [InlineData(false, true, "linux-x64", true, "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled")]
     [InlineData(false, true, "linux-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled-extra")]
     [Theory]
     public void TheBigMatrixOfTrimmingInference(bool trimmed, bool aot, string rid, bool invariant, string expectedImage)

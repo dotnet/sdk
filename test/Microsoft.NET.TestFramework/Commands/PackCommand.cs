@@ -5,19 +5,17 @@ namespace Microsoft.NET.TestFramework.Commands
 {
     public sealed class PackCommand : MSBuildCommand
     {
-        public PackCommand(ITestOutputHelper log, string projectPath, string relativePathToProject = null)
-            : base(log, "Pack", projectPath, relativePathToProject)
+        public PackCommand(ITestOutputHelper log, string projectPath, string? relativePathToProject = null)
+            : base(log, "Pack", projectPath, relativePathToProject, requiredArgs: "/p:_IsPacking=true")
         {
-
         }
 
-        public PackCommand(TestAsset testAsset, string relativePathToProject = null)
-            : base(testAsset, "Pack", relativePathToProject)
+        public PackCommand(TestAsset testAsset, string? relativePathToProject = null)
+            : base(testAsset, "Pack", relativePathToProject, requiredArgs: "/p:_IsPacking=true")
         {
-
         }
 
-        public string GetIntermediateNuspecPath(string packageId = null, string configuration = "Debug", string packageVersion = "1.0.0")
+        public string GetIntermediateNuspecPath(string? packageId = null, string configuration = "Debug", string packageVersion = "1.0.0")
         {
             if (packageId == null)
             {
@@ -27,7 +25,7 @@ namespace Microsoft.NET.TestFramework.Commands
             return Path.Combine(GetBaseIntermediateDirectory().FullName, configuration, $"{packageId}.{packageVersion}.nuspec");
         }
 
-        public string GetNuGetPackage(string packageId = null, string configuration = "Debug", string packageVersion = "1.0.0")
+        public string GetNuGetPackage(string? packageId = null, string configuration = "Debug", string packageVersion = "1.0.0")
         {
             if (packageId == null)
             {

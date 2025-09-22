@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
 
@@ -34,6 +36,24 @@ namespace Microsoft.NET.Build.Tests
                 "HelloWorld.pdb",
                 "HelloWorld.exe.config"
             });
+        }
+
+        [CoreMSBuildOnlyFact]
+        public void It_does_not_pass_excess_references_to_the_compiler()
+        {
+            var tfm = ToolsetInfo.CurrentTargetFramework;
+            var testAsset = _testAssetsManager.CopyTestAsset("AllResourcesInSatellite").WithSource().WithTargetFrameworks(tfm);
+            var getValues =
+                new GetValuesCommand(testAsset, "_SatelliteAssemblyReferences", GetValuesCommand.ValueType.Item, tfm)
+                {
+                    DependsOnTargets = "CoreBuild",
+                    WorkingDirectory = testAsset.TestRoot,
+                };
+            getValues.Execute($"-p:TargetFramework={tfm}", "-bl").Should().Pass();
+
+            var referenceAssemblies = getValues.GetValues().Select(p => Path.GetFileName(p)).Order().ToArray();
+            // only the 'primary' assemblies for the three potential frameworks (netcoreapp, netframework, netstandard) should be used for satellite assembly generation.
+            referenceAssemblies.Should().Equal(["mscorlib.dll", "netstandard.dll", "System.Runtime.dll",]);
         }
 
         [WindowsOnlyTheory]
@@ -824,9 +844,10 @@ class Program
                 Path.Combine(testAsset.TestRoot, "App.Config"));
 
             XElement root = BuildTestAssetGetAppConfig(testAsset);
+
             root.Elements("startup").Single()
                 .Elements("supportedRuntime").Single()
-                .Should().HaveAttribute("version", "v999", "It should keep existing supportedRuntime");
+                .Should().HaveAttributeWithValue("version", "v999", "It should keep existing supportedRuntime");
         }
 
         [WindowsOnlyFact]
@@ -928,7 +949,7 @@ class Program
                 .Pass();
         }
 
-        [WindowsOnlyFact]
+        [Fact]
         public void It_places_package_xml_in_ref_folder_in_output_directory()
         {
             var testProject = new TestProject()
@@ -943,13 +964,18 @@ class Program
 
             testProject.AdditionalProperties.Add("CopyDebugSymbolFilesFromPackages", "true");
             testProject.AdditionalProperties.Add("CopyDocumentationFilesFromPackages", "true");
+            // we need to disable package pruning to ensure that the xml file is copied
+            // from the packagereference - otherwise this dependency will be satisfied
+            // by the framework reference and the xml file will not be copied.
+            testProject.AdditionalProperties.Add("RestoreEnablePackagePruning", "false");
 
             TestAsset testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
 
             buildCommand
-                .Execute()
+                .WithWorkingDirectory(testAsset.TestRoot)
+                .Execute("/bl:{}.binlog")
                 .Should()
                 .Pass();
 

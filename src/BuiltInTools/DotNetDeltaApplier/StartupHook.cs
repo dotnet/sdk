@@ -1,101 +1,96 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.IO.Pipes;
-using Microsoft.Extensions.HotReload;
+using System.Reflection;
+using System.Runtime.Loader;
+using Microsoft.DotNet.HotReload;
+using Microsoft.DotNet.Watch;
 
+/// <summary>
+/// The runtime startup hook looks for top-level type named "StartupHook".
+/// </summary>
 internal sealed class StartupHook
 {
-    private static readonly bool LogDeltaClientMessages = Environment.GetEnvironmentVariable("HOTRELOAD_DELTA_CLIENT_LOG_MESSAGES") == "1";
+    private static readonly string? s_standardOutputLogPrefix = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.HotReloadDeltaClientLogMessages);
+    private static readonly string? s_namedPipeName = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName);
+
+#if NET10_0_OR_GREATER
+    private static PosixSignalRegistration? s_signalRegistration;
+#endif
 
     /// <summary>
     /// Invoked by the runtime when the containing assembly is listed in DOTNET_STARTUP_HOOKS.
     /// </summary>
     public static void Initialize()
     {
-        ClearHotReloadEnvironmentVariables(Environment.GetEnvironmentVariable, Environment.SetEnvironmentVariable);
+        var processPath = Environment.GetCommandLineArgs().FirstOrDefault();
+        var processDir = Path.GetDirectoryName(processPath)!;
 
-        Task.Run(async () =>
+        Log($"Loaded into process: {processPath} ({typeof(StartupHook).Assembly.Location})");
+
+        HotReloadAgent.ClearHotReloadEnvironmentVariables(typeof(StartupHook));
+
+        if (string.IsNullOrEmpty(s_namedPipeName))
         {
-            using var hotReloadAgent = new HotReloadAgent(Log);
-            try
-            {
-                await ReceiveDeltas(hotReloadAgent);
-            }
-            catch (Exception ex)
-            {
-                Log(ex.Message);
-            }
-        });
-    }
-
-    internal static void ClearHotReloadEnvironmentVariables(
-        Func<string, string?> getEnvironmentVariable,
-        Action<string, string?> setEnvironmentVariable)
-    {
-        // Workaround for https://github.com/dotnet/runtime/issues/58000
-        // Clear any hot-reload specific environment variables. This should prevent child processes from being
-        // affected by the current app's hot reload settings.
-        const string StartupHooksEnvironment = "DOTNET_STARTUP_HOOKS";
-        var environment = getEnvironmentVariable(StartupHooksEnvironment);
-        setEnvironmentVariable(StartupHooksEnvironment, RemoveCurrentAssembly(environment));
-
-        static string? RemoveCurrentAssembly(string? environment)
-        {
-            if (string.IsNullOrEmpty(environment))
-            {
-                return environment;
-            }
-
-            var assemblyLocation = typeof(StartupHook).Assembly.Location;
-            var updatedValues = environment.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
-                .Where(e => !string.Equals(e, assemblyLocation, StringComparison.OrdinalIgnoreCase));
-
-            return string.Join(Path.PathSeparator, updatedValues);
-        }
-    }
-
-    public static async Task ReceiveDeltas(HotReloadAgent hotReloadAgent)
-    {
-        Log("Attempting to receive deltas.");
-
-        // This value is configured by dotnet-watch when the app is to be launched.
-        var namedPipeName = Environment.GetEnvironmentVariable("DOTNET_HOTRELOAD_NAMEDPIPE_NAME") ??
-            throw new InvalidOperationException("DOTNET_HOTRELOAD_NAMEDPIPE_NAME was not specified.");
-
-        using var pipeClient = new NamedPipeClientStream(".", namedPipeName, PipeDirection.InOut, PipeOptions.CurrentUserOnly | PipeOptions.Asynchronous);
-        try
-        {
-            await pipeClient.ConnectAsync(5000);
-            Log("Connected.");
-        }
-        catch (TimeoutException)
-        {
-            Log("Unable to connect to hot-reload server.");
+            Log($"Environment variable {AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName} has no value");
             return;
         }
 
-        var initPayload = new ClientInitializationPayload(hotReloadAgent.Capabilities);
-        Log("Writing capabilities: " + initPayload.Capabilities);
-        initPayload.Write(pipeClient);
+        RegisterSignalHandlers();
 
-        while (pipeClient.IsConnected)
+        var agent = new HotReloadAgent(assemblyResolvingHandler: (_, args) =>
         {
-            var update = await UpdatePayload.ReadAsync(pipeClient, default);
-            Log("Attempting to apply deltas.");
+            Log($"Resolving '{args.Name}, Version={args.Version}'");
+            var path = Path.Combine(processDir, args.Name + ".dll");
+            return File.Exists(path) ? AssemblyLoadContext.Default.LoadFromAssemblyPath(path) : null;
+        });
 
-            hotReloadAgent.ApplyDeltas(update.Deltas);
-            pipeClient.WriteByte(UpdatePayload.ApplySuccessValue);
+        var listener = new PipeListener(s_namedPipeName, agent, Log);
+
+        // fire and forget:
+        _ = listener.Listen(CancellationToken.None);
+    }
+
+    private static void RegisterSignalHandlers()
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            ProcessUtilities.EnableWindowsCtrlCHandling(Log);
         }
+        else
+        {
+#if NET10_0_OR_GREATER
+            // Register a handler for SIGTERM to allow graceful shutdown of the application on Unix.
+            // See https://github.com/dotnet/docs/issues/46226.
 
-        Log("Stopped received delta updates. Server is no longer connected.");
+            // Note: registered handlers are executed in reverse order of their registration.
+            // Since the startup hook is executed before any code of the application, it is the first handler registered and thus the last to run.
+
+            s_signalRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, context =>
+            {
+                Log($"SIGTERM received. Cancel={context.Cancel}");
+
+                if (!context.Cancel)
+                {
+                    Environment.Exit(0);
+                }
+            });
+
+            Log("Posix signal handlers registered.");
+#endif
+        }
     }
 
     private static void Log(string message)
     {
-        if (LogDeltaClientMessages)
+        var prefix = s_standardOutputLogPrefix;
+        if (!string.IsNullOrEmpty(prefix))
         {
-            Console.WriteLine(message);
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine($"{prefix} {message}");
+            Console.ResetColor();
         }
     }
 }

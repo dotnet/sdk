@@ -280,6 +280,10 @@ dotnet_diagnostic.IDE0200.severity = none
 dotnet_diagnostic.IDE0240.severity = warning
 
 # Additional rules for template engine source code
+
+# Default severity for analyzer diagnostics with category 'StyleCop.CSharp.SpacingRules'
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.SpacingRules.severity = none
+
 [{src,test}/**{Microsoft.TemplateEngine.*,dotnet-new?*}/**.cs]
 # Default analyzed API surface = 'public' (public APIs)
 dotnet_code_quality.api_surface = public
@@ -456,7 +460,7 @@ dotnet_diagnostic.SA1601.severity = none
 dotnet_diagnostic.SA1633.severity = none
 
 # Additional rules for test source code for template engine
-[test/{Microsoft.TemplateEngine.*,dotnet-new.Tests}/**.cs]
+[test/{Microsoft.TemplateEngine.*,dotnet-new.IntegrationTests}/**.cs]
 # Test methods should not be skipped
 dotnet_diagnostic.xUnit1004.severity = warning
 # Elements should appear in the correct order
@@ -473,6 +477,10 @@ indent_brace_style = Allman
 
 # Xml project files
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,nativeproj,locproj}]
+indent_size = 2
+
+# WiX files
+[*.{wixproj,wxs,wxi,wxl,thm}]
 indent_size = 2
 
 [*.{csproj,vbproj,proj,nativeproj,locproj}]
@@ -506,5 +514,12 @@ dotnet_diagnostic.IDE0040.severity = warning
 [*.txt]
 insert_final_newline = false
 
-[test/dotnet-new.Tests/**/Approvals/**]
+# Verify settings
+[*.{received,verified}.{txt,xml,json}]
+charset = "utf-8-bom"
+end_of_line = lf
+indent_size = unset
+indent_style = unset
+insert_final_newline = false
+tab_width = unset
 trim_trailing_whitespace = false

@@ -1,0 +1,40 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+namespace Microsoft.DotNet.Watch.UnitTests;
+
+public class CompilationHandlerTests(ITestOutputHelper output) : DotNetWatchTestBase(output)
+{
+    [Fact]
+    public async Task ReferenceOutputAssembly_False()
+    {
+        var testAsset = TestAssets.CopyTestAsset("WatchAppMultiProc")
+            .WithSource();
+
+        var workingDirectory = testAsset.Path;
+        var hostDir = Path.Combine(testAsset.Path, "Host");
+        var hostProject = Path.Combine(hostDir, "Host.csproj");
+
+        var options = TestOptions.GetProjectOptions(["--project", hostProject]);
+
+        var environmentOptions = TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory, "dotnet");
+
+        var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
+
+        var reporter = new TestReporter(Logger);
+        var loggerFactory = new LoggerFactory(reporter);
+        var logger = loggerFactory.CreateLogger("Test");
+        var projectGraph = ProjectGraphUtilities.TryLoadProjectGraph(options.ProjectPath, globalOptions: [], logger, projectGraphRequired: false, CancellationToken.None);
+        var handler = new CompilationHandler(loggerFactory, logger, processRunner);
+
+        await handler.Workspace.UpdateProjectConeAsync(hostProject, CancellationToken.None);
+
+        // all projects are present
+        AssertEx.SequenceEqual(["Host", "Lib2", "Lib", "A", "B"], handler.Workspace.CurrentSolution.Projects.Select(p => p.Name));
+
+        // Host does not have project reference to A, B:
+        AssertEx.SequenceEqual(["Lib2"],
+            handler.Workspace.CurrentSolution.Projects.Single(p => p.Name == "Host").ProjectReferences
+                .Select(r => handler.Workspace.CurrentSolution.GetProject(r.ProjectId)!.Name));
+    }
+}

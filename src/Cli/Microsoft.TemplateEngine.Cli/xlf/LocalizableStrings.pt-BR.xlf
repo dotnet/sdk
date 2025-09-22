@@ -228,6 +228,11 @@ Execute 'dotnet {1} --mostrar- aliases' sem nenhum args para mostrar todos os al
         <target state="translated">Procurando modelos...</target>
         <note />
       </trans-unit>
+      <trans-unit id="Colon_Separator_Deprecated">
+        <source>The colon separator "::" has been deprecated in favor of the at symbol "@" for separating the package from the version in dotnet new install. In your case, this means {0}@{1} instead of {0}::{1}.</source>
+        <target state="translated">O separador de dois-pontos "::" foi preterido em favor do símbolo de arroba "@" para separar o pacote da versão na nova instalação do dotnet. No seu caso, isso significa {0}@{1} em vez de {0}::{1}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ColumnNameAuthor">
         <source>Author</source>
         <target state="translated">Autor</target>
@@ -827,7 +832,7 @@ The header is followed by the list of parameters and their errors (might be seve
       </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotBoolean">
         <source>Post action argument '{0}' is not a valid boolean value.</source>
-        <target state="new">Post action argument '{0}' is not a valid boolean value.</target>
+        <target state="translated">O argumento de pós-ação '{0}' não é um valor booleano válido.</target>
         <note />
       </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotConfigured">
@@ -857,7 +862,7 @@ The header is followed by the list of parameters and their errors (might be seve
       </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Verbose_AttemptingToFindJsonFile">
         <source>Attempting to find json file '{0}' in '{1}'</source>
-        <target state="new">Attempting to find json file '{0}' in '{1}'</target>
+        <target state="translated">Tentando localizar o arquivo JSON '{0}' em '{1}'</target>
         <note />
       </trans-unit>
       <trans-unit id="PostAction_ProcessStartProcessor_Error_ConfigMissingExecutable">
@@ -901,8 +906,8 @@ The header is followed by the list of parameters and their errors (might be seve
         <note />
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Error">
-        <source>Failed to instatiate template '{0}', the following constraints are not met:</source>
-        <target state="translated">Falha ao instanciar o modelo '{0}', as seguintes restrições não são atendidas:</target>
+        <source>Failed to instantiate template '{0}', the following constraints are not met:</source>
+        <target state="translated">Falha ao instanciar o modelo '{0}', as seguintes restrições não foram atendidas:</target>
         <note>{0} - template name (user friendly)</note>
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Hint">

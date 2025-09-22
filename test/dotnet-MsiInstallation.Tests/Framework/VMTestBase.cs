@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Versioning;
@@ -23,7 +25,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 }
                 else
                 {
-                    var sdkTestingDir = VM.GetRemoteDirectory(@"c:\SdkTesting");
+                    var sdkTestingDir = VM.GetRemoteDirectory(@"c:\SdkTesting", mustExist: true);
 
                     string installerPrefix = "dotnet-sdk-";
                     string installerSuffix = "-win-x64.exe";
@@ -52,7 +54,10 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             VM.Dispose();
         }
 
+        protected virtual bool NeedsIncludePreviews => false;
+
         Lazy<string> _sdkInstallerVersion;
+        private bool _sdkInstalled = false;
 
         protected string SdkInstallerVersion => _sdkInstallerVersion.Value;
 
@@ -60,22 +65,32 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
 
         protected void InstallSdk(bool deployStage2 = true)
         {
-            VM.CreateRunCommand("setx", "DOTNET_NOLOGO", "true")
-                .WithDescription("Disable .NET SDK first run message")
-                .Execute()
-                .Should()
-                .Pass();
+            if (_sdkInstalled)
+            {
+                return;
+            }
+            IEnumerable<VMAction> AddNuGetSourceActions = Enumerable.Empty<VMAction>();
+            if (VM.VMTestSettings.NuGetSourcesToAdd != null)
+            {
+                AddNuGetSourceActions = VM.VMTestSettings.NuGetSourcesToAdd.Select(source =>
 
-            VM.CreateRunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet")
-                .WithDescription($"Install SDK {SdkInstallerVersion}")
+                    VM.CreateRunCommand("dotnet", "nuget", "add", "source", source)
+                ).ToList();
+            }
+
+            VM.CreateActionGroup($"Install and setup SDK {SdkInstallerVersion}",
+                    [
+                        VM.CreateRunCommand("setx", "DOTNET_NOLOGO", "true"),
+                        VM.CreateRunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet"),
+                        ..AddNuGetSourceActions
+                    ])
                 .Execute().Should().Pass();
-
-            
-
             if (deployStage2)
             {
                 DeployStage2Sdk();
             }
+
+            _sdkInstalled = true;
         }
 
         protected void UninstallSdk()
@@ -119,7 +134,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 .WithIsReadOnly(true)
                 .Execute();
 
-            result.Should().Pass();
+            result.Should().PassWithoutWarning();
 
             string existingVersionToOverwrite = result.StdOut;
 
@@ -174,13 +189,17 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             var command = VM.CreateRunCommand("dotnet", "--version");
             command.IsReadOnly = true;
             var result = command.Execute();
-            result.Should().Pass();
+            result.Should().PassWithoutWarning();
             return result.StdOut;
         }
 
         protected CommandResult InstallWorkload(string workloadName, bool skipManifestUpdate)
         {
             string [] args = { "dotnet", "workload", "install", workloadName};
+            if (NeedsIncludePreviews)
+            {
+                args = [.. args, "--include-previews"];
+            }
             if (skipManifestUpdate)
             {
                 args = [.. args, "--skip-manifest-update"];
@@ -190,7 +209,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                     .WithDescription($"Install {workloadName} workload")
                     .Execute();
 
-            result.Should().Pass();
+            result.Should().PassWithoutWarning();
 
             return result;
         }
@@ -202,7 +221,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 .WithIsReadOnly(true)
                 .Execute();
 
-            result.Should().Pass();
+            result.Should().PassWithoutWarning();
 
             return ParseRollbackOutput(result.StdOut);
         }
@@ -222,7 +241,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 .WithIsReadOnly(true)
                 .Execute();
 
-            result.Should().Pass();
+            result.Should().PassWithoutWarning();
 
             return result.StdOut;
         }
@@ -233,7 +252,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 .WithDescription($"Add {source} to NuGet.config")
                 .Execute()
                 .Should()
-                .Pass();
+                .PassWithoutWarning();
         }
     }
 }

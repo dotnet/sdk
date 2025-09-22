@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
+  </PropertyGroup>
+
+  <Target Name="TriggerErrorDuringSetRunArgs" BeforeTargets="ComputeRunArguments">
+    <Warning Code="MYAPP001" Text="This app is wonky, dude, don't run it" />
+    <Error Code="MYAPP002" Text="I _said_, don't run it!" />
+  </Target>
+
+</Project>

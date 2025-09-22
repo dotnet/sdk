@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.Installer;
@@ -207,9 +208,16 @@ namespace Microsoft.TemplateEngine.Cli
 
             foreach (string installArg in args.TemplatePackages)
             {
-                string[] splitByColons = installArg.Split(new[] { "::" }, StringSplitOptions.RemoveEmptyEntries);
-                string identifier = splitByColons[0];
-                string? version = splitByColons.Length > 1 ? splitByColons[1] : null;
+                bool isPath = File.Exists(installArg) || Directory.Exists(installArg);
+                string[] split = isPath ? new[] { installArg } : installArg.Split(["::"], StringSplitOptions.RemoveEmptyEntries).SelectMany(arg => arg.Split('@', StringSplitOptions.RemoveEmptyEntries)).ToArray();
+                string identifier = split[0];
+                string? version = split.Length > 1 ? split[1] : null;
+
+                if (installArg.Contains("::"))
+                {
+                    Reporter.Output.WriteLine(string.Format(LocalizableStrings.Colon_Separator_Deprecated, split[0], split.Length > 1 ? split[1] : string.Empty).Yellow());
+                }
+
                 foreach (string expandedIdentifier in InstallRequestPathResolution.ExpandMaskedPath(identifier, _engineEnvironmentSettings))
                 {
                     installRequests.Add(new InstallRequest(expandedIdentifier, version, details: details, force: args.Force));
@@ -436,7 +444,7 @@ namespace Microsoft.TemplateEngine.Cli
             }
             else
             {
-                IEnumerable<PackageSource> packageSources = LoadNuGetSources(additionalSources, true);
+                IEnumerable<PackageSource> packageSources = LoadNuGetSources(additionalSources, includeNuGetFeed: PathUtility.CheckForNuGetInNuGetConfig());
 
                 nuGetPackageMetadata = await GetPackageMetadataFromMultipleFeedsAsync(packageSources, nugetApiManager, packageIdentity, packageVersion, cancellationToken).ConfigureAwait(false);
                 if (nuGetPackageMetadata != null && nuGetPackageMetadata.Source.Source.Equals(NugetOrgFeed))
@@ -746,9 +754,6 @@ namespace Microsoft.TemplateEngine.Cli
                                     .WithSubcommand<UninstallCommand>()
                                     .WithArgument(BaseUninstallCommand.NameArgument, managedPackages.First().Identifier));
                         }
-
-                        //TODO:
-                        //Reporter.Error.WriteLine($"To list the templates installed in a package, use dotnet new3 <new option> <package name>.");
                     }
                     else
                     {

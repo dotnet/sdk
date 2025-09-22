@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-tool-run" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-tool-run" "1" "2025-09-15" "" ".NET Documentation"
 .hy
 .SH dotnet tool run
 .PP
@@ -26,7 +26,7 @@ dotnet-tool-run - Invokes a local tool.
 .IP
 .nf
 \f[C]
-dotnet tool run <COMMAND NAME>
+dotnet tool run <COMMAND NAME> [--allow-roll-forward]
 
 dotnet tool run -h|--help
 \f[R]
@@ -45,6 +45,13 @@ The command name of the tool to run.
 .RE
 .SH OPTIONS
 .IP \[bu] 2
+\f[B]\f[VB]--allow-roll-forward\f[B]\f[R]
+.RS 2
+.PP
+Available starting with .NET 9.0 SDK.
+Allow tool to use a newer version of the .NET runtime if the runtime it targets isn\[cq]t installed.
+.RE
+.IP \[bu] 2
 \f[B]\f[VB]-?|-h|--help\f[B]\f[R]
 .RS 2
 .PP
@@ -56,6 +63,12 @@ Prints out a description of how to use the command.
 .RS 2
 .PP
 Runs the \f[V]dotnetsay\f[R] local tool.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]dotnet tool run dotnetsay --allow-roll-forward\f[B]\f[R]
+.RS 2
+.PP
+Runs the \f[V]dotnetsay\f[R] local tool and allows it to run on newer .NET versions if the target runtime isn\[cq]t available.
 .RE
 .SH SEE ALSO
 .IP \[bu] 2

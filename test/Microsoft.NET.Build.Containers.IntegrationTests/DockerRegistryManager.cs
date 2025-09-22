@@ -15,17 +15,29 @@ public class DockerRegistryManager
     public const string Net6ImageTag = "6.0";
     public const string Net7ImageTag = "7.0";
     public const string Net8ImageTag = "8.0";
-    public const string Net9PreviewImageTag = "9.0-preview";
-    public const string RuntimeFrameworkVersion = "9.0.0-preview.3.24172.9";
+    public const string Net9ImageTag = "9.0";
+    public const string Net9ImageDigest = "sha256:d8f01f752bf9bd3ff630319181a2ccfbeecea4080a1912095a34002f61bfa345";
     public const string Net8PreviewWindowsSpecificImageTag = $"{Net8ImageTag}-nanoserver-ltsc2022";
     public const string LocalRegistry = "localhost:5010";
-    public const string FullyQualifiedBaseImageDefault = $"{BaseImageSource}/{RuntimeBaseImage}:{Net9PreviewImageTag}";
-    public const string FullyQualifiedBaseImageAspNet = $"{BaseImageSource}/{AspNetBaseImage}:{Net9PreviewImageTag}";
+    public const string FullyQualifiedBaseImageDefault = $"{BaseImageSource}/{RuntimeBaseImage}:{Net9ImageTag}";
+    public const string FullyQualifiedBaseImageAspNet = $"{BaseImageSource}/{AspNetBaseImage}:{Net9ImageTag}";
+    public const string FullyQualifiedBaseImageAspNetDigest = $"{BaseImageSource}/{AspNetBaseImage}@{Net9ImageDigest}";
     private static string? s_registryContainerId;
+
+    private static string SDK_AzureContainerRegistryImage => "dotnetdhmirror-f8bzbjakh8cga6ab.azurecr.io/registry:2";
+    private static string Docker_HubRegistryImage => "docker.io/library/registry:2";
+
+    // TODO: some logic to pivot between this and Docker Hub
+    private static string RegistryImageToUse => SDK_AzureContainerRegistryImage;
 
     internal class SameArchManifestPicker : IManifestPicker
     {
-        public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> manifestList, string runtimeIdentifier) 
+        public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> manifestList, string runtimeIdentifier)
+        {
+            return manifestList.Values.SingleOrDefault(m => m.platform.os == "linux" && m.platform.architecture == "amd64");
+        }
+
+        public PlatformSpecificOciManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificOciManifest> manifestList, string runtimeIdentifier)
         {
             return manifestList.Values.SingleOrDefault(m => m.platform.os == "linux" && m.platform.architecture == "amd64");
         }
@@ -46,8 +58,8 @@ public class DockerRegistryManager
         int spawnRegistryDelay = 1000; //ms
         StringBuilder failureReasons = new();
 
-        var pullRegistry = new Registry(BaseImageSource, logger);
-        var pushRegistry = new Registry(LocalRegistry, logger);
+        var pullRegistry = new Registry(BaseImageSource, logger, RegistryMode.Pull);
+        var pushRegistry = new Registry(LocalRegistry, logger, RegistryMode.Push);
 
         for (int spawnRegistryAttempt = 1; spawnRegistryAttempt <= spawnRegistryMaxRetry; spawnRegistryAttempt++)
         {
@@ -55,7 +67,7 @@ public class DockerRegistryManager
             {
                 logger.LogInformation("Spawning local registry at '{registry}', attempt #{attempt}.", LocalRegistry, spawnRegistryAttempt);
 
-                CommandResult processResult = ContainerCli.RunCommand(testOutput, "--rm", "--publish", "5010:5000", "--detach", "docker.io/library/registry:2").Execute();
+                CommandResult processResult = ContainerCli.RunCommand(testOutput, "--rm", "--publish", "5010:5000", "--detach", RegistryImageToUse).Execute();
 
                 processResult.Should().Pass().And.HaveStdOut();
 
@@ -67,19 +79,20 @@ public class DockerRegistryManager
 
                 EnsureRegistryLoaded(new Uri($"http://{LocalRegistry}"), s_registryContainerId, logger, testOutput);
 
-                foreach (string? tag in new[] { Net6ImageTag, Net7ImageTag, Net8ImageTag, Net9PreviewImageTag })
+                foreach (string? tag in new[] { Net6ImageTag, Net7ImageTag, Net8ImageTag, Net9ImageTag })
                 {
                     logger.LogInformation("Pulling image '{repo}/{image}:{tag}'.", BaseImageSource, RuntimeBaseImage, tag);
                     string dotnetdll = System.Reflection.Assembly.GetExecutingAssembly().Location;
                     var ridjson = Path.Combine(Path.GetDirectoryName(dotnetdll)!, "RuntimeIdentifierGraph.json");
 
-                    var image = await pullRegistry.GetImageManifestAsync(RuntimeBaseImage, tag, "linux-x64", new SameArchManifestPicker(),  CancellationToken.None);
-                    var source = new SourceImageReference(pullRegistry, RuntimeBaseImage, tag);
+                    var image = await pullRegistry.GetImageManifestAsync(RuntimeBaseImage, tag, "linux-x64", new SameArchManifestPicker(), CancellationToken.None);
+                    var source = new SourceImageReference(pullRegistry, RuntimeBaseImage, tag, null);
                     var dest = new DestinationImageReference(pushRegistry, RuntimeBaseImage, [tag]);
                     logger.LogInformation($"Pushing image for {BaseImageSource}/{RuntimeBaseImage}:{tag}");
                     await pushRegistry.PushAsync(image.Build(), source, dest, CancellationToken.None);
                     logger.LogInformation($"Pushed image  for {BaseImageSource}/{RuntimeBaseImage}:{tag}");
                 }
+
                 return;
             }
             catch (Exception ex)

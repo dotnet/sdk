@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.IO.Compression;
 using System.Reflection.Metadata;
 
@@ -112,7 +114,7 @@ namespace Microsoft.NET.Build.Tests
         /// <summary>
         /// When creating a new repository locally we want the build to work and not report warnings even before the remote is set.
         /// </summary>
-        [RequiresMSBuildVersionFact("17.8.0")]
+        [RequiresMSBuildVersionFact("17.12.0")]
         public void WithNoRemoteNoCommit()
         {
             var testAsset = _testAssetsManager
@@ -131,7 +133,7 @@ namespace Microsoft.NET.Build.Tests
         /// <summary>
         /// When creating a new repository locally we want the build to work and not report warnings even before the remote is set.
         /// </summary>
-        [RequiresMSBuildVersionFact("17.8.0")]
+        [RequiresMSBuildVersionFact("17.12.0")]
         public void WithNoRemote()
         {
             var testAsset = _testAssetsManager

@@ -84,6 +84,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Checks for EOL frameworks -->
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.EolTargetFrameworks.targets" />
 
+  <!-- Checks for deprecated Aspire workload usage -->
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.AspireWorkloadDeprecation.targets" />
+
   <!-- Check if the Target Framework is coreclr based -->
   <PropertyGroup Condition="'$(_IsNETCoreOrNETStandard)' == ''">
     <_IsNETCoreOrNETStandard Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">true</_IsNETCoreOrNETStandard>
@@ -182,31 +185,48 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <!-- Add conditional compilation symbols for the target framework (for example NET461, NETSTANDARD2_0, NETCOREAPP1_0) -->
-  <PropertyGroup Condition=" '$(DisableImplicitFrameworkDefines)' != 'true' and '$(TargetFrameworkIdentifier)' != '.NETPortable' and '$(TargetFrameworkIdentifier)' != ''">
-    <_FrameworkIdentifierForImplicitDefine>$(TargetFrameworkIdentifier.Replace('.', '').ToUpperInvariant())</_FrameworkIdentifierForImplicitDefine>
-    <_FrameworkIdentifierForImplicitDefine Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) ">NET</_FrameworkIdentifierForImplicitDefine>
-    <VersionlessImplicitFrameworkDefine>$(_FrameworkIdentifierForImplicitDefine)</VersionlessImplicitFrameworkDefine>
-    <_FrameworkIdentifierForImplicitDefine Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework'">NET</_FrameworkIdentifierForImplicitDefine>
+  <Target Name="GenerateTargetFrameworkDefineConstants"
+          Condition=" '$(DisableImplicitFrameworkDefines)' != 'true' and '$(TargetFrameworkIdentifier)' != '.NETPortable' and '$(TargetFrameworkIdentifier)' != ''">
+    <PropertyGroup>
+      <_FrameworkIdentifierForImplicitDefine>$(TargetFrameworkIdentifier.Replace('.', '').ToUpperInvariant())</_FrameworkIdentifierForImplicitDefine>
+      <_FrameworkIdentifierForImplicitDefine Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) ">NET</_FrameworkIdentifierForImplicitDefine>
+      <VersionlessImplicitFrameworkDefine>$(_FrameworkIdentifierForImplicitDefine)</VersionlessImplicitFrameworkDefine>
+      <_FrameworkIdentifierForImplicitDefine Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework'">NET</_FrameworkIdentifierForImplicitDefine>
 
-    <_FrameworkVersionForImplicitDefine>$(TargetFrameworkVersion.TrimStart('vV'))</_FrameworkVersionForImplicitDefine>
-    <_FrameworkVersionForImplicitDefine>$(_FrameworkVersionForImplicitDefine.Replace('.', '_'))</_FrameworkVersionForImplicitDefine>
-    <_FrameworkVersionForImplicitDefine Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework'">$(_FrameworkVersionForImplicitDefine.Replace('_', ''))</_FrameworkVersionForImplicitDefine>
+      <_FrameworkVersionForImplicitDefine>$(TargetFrameworkVersion.TrimStart('vV'))</_FrameworkVersionForImplicitDefine>
+      <_FrameworkVersionForImplicitDefine>$(_FrameworkVersionForImplicitDefine.Replace('.', '_'))</_FrameworkVersionForImplicitDefine>
+      <_FrameworkVersionForImplicitDefine Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework'">$(_FrameworkVersionForImplicitDefine.Replace('_', ''))</_FrameworkVersionForImplicitDefine>
 
-    <ImplicitFrameworkDefine>$(_FrameworkIdentifierForImplicitDefine)$(_FrameworkVersionForImplicitDefine)</ImplicitFrameworkDefine>
+      <ImplicitFrameworkDefine>$(_FrameworkIdentifierForImplicitDefine)$(_FrameworkVersionForImplicitDefine)</ImplicitFrameworkDefine>
 
-    <BackwardsCompatFrameworkDefine Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0))">$(TargetFrameworkIdentifier.Replace('.', '').ToUpperInvariant())</BackwardsCompatFrameworkDefine>
-  </PropertyGroup>
+      <BackwardsCompatFrameworkDefine Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0))">$(TargetFrameworkIdentifier.Replace('.', '').ToUpperInvariant())</BackwardsCompatFrameworkDefine>
+    </PropertyGroup>
+    <ItemGroup>
+      <_ImplicitDefineConstant Include="$(VersionlessImplicitFrameworkDefine)" />
+      <_ImplicitDefineConstant Include="$(ImplicitFrameworkDefine)" />
+      <_ImplicitDefineConstant Include="$(BackwardsCompatFrameworkDefine)" />
+    </ItemGroup>
+  </Target>
 
   <!-- Add conditional compilation symbols for the target platform (for example ANDROID, IOS, WINDOWS) -->
   <Target Name="GenerateTargetPlatformDefineConstants"
         Condition=" '$(DisableImplicitFrameworkDefines)' != 'true' and '$(TargetPlatformIdentifier)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) " >
     <PropertyGroup>
       <_PlatformIdentifierForImplicitDefine>$(TargetPlatformIdentifier.ToUpperInvariant())</_PlatformIdentifierForImplicitDefine>
-      <_PlatformVersionForImplicitDefine>$(TargetPlatformVersion.Replace('.', '_'))</_PlatformVersionForImplicitDefine>
+      <_PlatformVersionForImplicitDefine>$(EffectiveTargetPlatformVersion.Replace('.', '_'))</_PlatformVersionForImplicitDefine>
     </PropertyGroup>
     <ItemGroup>
       <_ImplicitDefineConstant Include="$(_PlatformIdentifierForImplicitDefine)" />
       <_ImplicitDefineConstant Include="$(_PlatformIdentifierForImplicitDefine)$(_PlatformVersionForImplicitDefine)" />
+    </ItemGroup>
+
+    <!--
+      We support multi-targeting CsWinRT 3.0, which has several breaking changes that consuming projects might require
+      using 'ifdef'-s for, to handle the differences between CsWinRT 2.x and 3.0. So when that is used, we also define
+      a constant. Common scenarios are 'TypedEventHandler<,>' not existing anymore, and interop code being different.
+    -->
+    <ItemGroup Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true' and '$(_TargetPlatformVersionUsesCsWinRT3)' == 'true' ">
+      <_ImplicitDefineConstant Include="CSWINRT3_0" />
     </ItemGroup>
   </Target>
 
@@ -231,7 +251,15 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="GeneratePlatformCompatibleDefineConstants"
           Condition=" '$(DisableImplicitFrameworkDefines)' != 'true' and '$(TargetPlatformIdentifier)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) " >
     <ItemGroup>
-      <_SupportedPlatformCompatibleVersions Include="@(SdkSupportedTargetPlatformVersion)" Condition=" %(Identity) != '' and $([MSBuild]::VersionLessThanOrEquals(%(Identity), $(TargetPlatformVersion))) " />
+      <!--
+        Prefer the normalized version of the supported target platform version when available.
+        This allows to drop the .1 at the end of the version in CsWinRT 3.0 scenarios and 
+        use a common define for both CsWinRT 3.0 and CsWinRT 2.x.
+      -->
+      <_SupportedPlatformCompatibleVersions Include="@(SdkSupportedTargetPlatformVersion)"
+                                            Condition=" %(Identity) != '' and '%(SdkSupportedTargetPlatformVersion.NormalizedSupportedTargetPlatformVersion)' == '' and $([MSBuild]::VersionLessThanOrEquals(%(Identity), $(TargetPlatformVersion))) " />
+      <_SupportedPlatformCompatibleVersions Include="@(SdkSupportedTargetPlatformVersion->'%(NormalizedSupportedTargetPlatformVersion)')"
+                                            Condition=" '%(SdkSupportedTargetPlatformVersion.NormalizedSupportedTargetPlatformVersion)' != '' and $([MSBuild]::VersionLessThanOrEquals('%(SdkSupportedTargetPlatformVersion.NormalizedSupportedTargetPlatformVersion)', $(TargetPlatformVersion))) " />
       <_ImplicitDefineConstant Include="@(_SupportedPlatformCompatibleVersions->Distinct()->'$(TargetPlatformIdentifier.ToUpper())%(Identity)_OR_GREATER'->Replace('.', '_'))" />
     </ItemGroup>
   </Target>
@@ -239,7 +267,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Remove TRACE when DisableDiagnosticTracing is true -->
   <Target Name="_DisableDiagnosticTracing"
           Condition="'$(DisableDiagnosticTracing)' == 'true'"
-          DependsOnTargets="GenerateTargetPlatformDefineConstants;GenerateNETCompatibleDefineConstants;GeneratePlatformCompatibleDefineConstants"
+          DependsOnTargets="GenerateTargetFrameworkDefineConstants;GenerateTargetPlatformDefineConstants;GenerateNETCompatibleDefineConstants;GeneratePlatformCompatibleDefineConstants"
           BeforeTargets="CoreCompile">
     <ItemGroup>
       <_DefineConstantsWithoutTrace Include="$(DefineConstants)" />
@@ -251,11 +279,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
   </Target>
 
-  <!-- Add implicitly defined preprocessor symbols to DefineConstants -->
+  <!--
+    Add implicitly defined preprocessor symbols to DefineConstants. Note: this is intentionally using 'PrepareForBuild' as
+    trigger to ensure that it runs before the XamlPreCompile targets. This targets creates the intermediate XAML project
+    that is used by some XAML-based UI frameworks (eg. UWP XAML, WinUI 3). If it runs before AddImplicitDefineConstants,
+    and the code has any '#ifdefs' on constants generated by this target (eg. 'NET9_0_OR_GREATER'), the intermediate XAML
+    project will end up selecting the other code paths instead, which can cause all kinds of build failures or other
+    problems. For additional context, see: https://github.com/dotnet/sdk/issues/43908.
+  -->
   <Target Name="AddImplicitDefineConstants"
           Condition=" '$(DisableImplicitFrameworkDefines)' != 'true' "
-          DependsOnTargets="GenerateTargetPlatformDefineConstants;GenerateNETCompatibleDefineConstants;GeneratePlatformCompatibleDefineConstants;_DisableDiagnosticTracing"
-          BeforeTargets="CoreCompile" >
+          DependsOnTargets="GenerateTargetFrameworkDefineConstants;GenerateTargetPlatformDefineConstants;GenerateNETCompatibleDefineConstants;GeneratePlatformCompatibleDefineConstants;_DisableDiagnosticTracing"
+          AfterTargets="PrepareForBuild" >
     <PropertyGroup>
       <DefineConstants Condition=" '@(_ImplicitDefineConstant)' != '' " >$(DefineConstants);@(_ImplicitDefineConstant)</DefineConstants>
       <FinalDefineConstants Condition=" '@(_ImplicitDefineConstant)' != '' and '$(Language)' == 'VB' " >$(FinalDefineConstants),@(_ImplicitDefineConstant->'%(Identity)=-1', ',')</FinalDefineConstants>
@@ -290,6 +325,56 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <IsNetCoreAppTargetingLatestTFM Condition="'$(IsNetCoreAppTargetingLatestTFM)' == '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(_TargetFrameworkVersionWithoutV)' == '$(NETCoreAppMaximumVersion)'">true</IsNetCoreAppTargetingLatestTFM>
+  </PropertyGroup>
+
+  <!--
+    Use Roslyn deployed with SDK for builds of SDK-style projects (regardless of whether the initiator is `dotnet` or `msbuild`).
+    See https://github.com/dotnet/sdk/blob/main/documentation/general/decouple-vs-and-net-sdk.md.
+  -->
+  <Choose>
+    <!-- RoslynCompilerType specified by user, do not overwrite it. -->
+    <When Condition="'$(RoslynCompilerType)' != ''"></When>
+
+    <!-- BuildWithNetFrameworkHostedCompiler specified by user to opt into downloading compiler framework toolset package. -->
+    <When Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true'">
+      <PropertyGroup><RoslynCompilerType>FrameworkPackage</RoslynCompilerType></PropertyGroup>
+    </When>
+
+    <!-- On core MSBuild or if we have path to dotnet host, use Core compiler type. -->
+    <When Condition="'$(MSBuildRuntimeType)' == 'Core' or '$(DOTNET_HOST_PATH)' != '' or '$(DOTNET_EXPERIMENTAL_HOST_PATH)' != ''">
+      <PropertyGroup><RoslynCompilerType>Core</RoslynCompilerType></PropertyGroup>
+    </When>
+
+    <!-- Automatically opt users into using the toolset package if they are running an MSBuild other than what this SDK was built against.
+          This is to reduce 'tearing'/dependency mismatch, but as always users can override this behavior by disabling the hosted compiler flag. -->
+    <When Condition="'$(MSBuildRuntimeType)' == 'Full'
+      and '$(BuildWithNetFrameworkHostedCompiler)' == ''
+      and '$(_IsDisjointMSBuildVersion)' == 'true'
+      and ('$(MSBuildProjectExtension)' == '.csproj'
+      or '$(MSBuildProjectExtension)' == '.vbproj')">
+      <PropertyGroup><RoslynCompilerType>FrameworkPackage</RoslynCompilerType></PropertyGroup>
+    </When>
+
+    <!-- Otherwise we must be on full MSBuild, so choose Framework compiler type. -->
+    <Otherwise>
+      <PropertyGroup><RoslynCompilerType>Framework</RoslynCompilerType></PropertyGroup>
+    </Otherwise>
+  </Choose>
+
+  <!-- NOTE: Compiler toolset packages should set the following properties on their own, hence we set them only for RoslynCompilerType being Core or Framework. -->
+  <PropertyGroup Condition="'$(RoslynCompilerType)' == 'Core' or '$(RoslynCompilerType)' == 'Framework'">
+    <!-- In Full Framework MSBuild, RoslynTargetsPath originally points to the directory with Full Framework Roslyn assemblies. -->
+    <RoslynAssembliesPath Condition="'$(RoslynAssembliesPath)' == '' and '$(MSBuildRuntimeType)' != 'Core'">$(RoslynTargetsPath)</RoslynAssembliesPath>
+    <RoslynCoreAssembliesPath>$(MSBuildThisFileDirectory)..\..\..\Roslyn\bincore</RoslynCoreAssembliesPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(RoslynCompilerType)' == 'Core'">
+    <RoslynTargetsPath Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\..\..\Roslyn</RoslynTargetsPath>
+    <RoslynTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\..\..\Roslyn\Microsoft.Build.Tasks.CodeAnalysis.dll</RoslynTasksAssembly>
+    <RoslynAssembliesPath Condition="'$(RoslynAssembliesPath)' == '' and '$(MSBuildRuntimeType)' == 'Core'">$(RoslynCoreAssembliesPath)</RoslynAssembliesPath>
+    <RoslynTargetsPath Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\..\..\Roslyn\binfx</RoslynTargetsPath>
+    <RoslynTasksAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\..\..\Roslyn\binfx\Microsoft.Build.Tasks.CodeAnalysis.Sdk.dll</RoslynTasksAssembly>
+    <CSharpCoreTargetsPath>$(MSBuildThisFileDirectory)..\..\..\Roslyn\Microsoft.CSharp.Core.targets</CSharpCoreTargetsPath>
+    <VisualBasicCoreTargetsPath>$(MSBuildThisFileDirectory)..\..\..\Roslyn\Microsoft.VisualBasic.Core.targets</VisualBasicCoreTargetsPath>
   </PropertyGroup>
 
 </Project>

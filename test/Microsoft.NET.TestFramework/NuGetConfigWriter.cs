@@ -5,14 +5,13 @@ namespace Microsoft.NET.TestFramework
 {
     public static class NuGetConfigWriter
     {
-        public static readonly string DotnetCoreBlobFeed = "https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json";
         public static readonly string AspNetCoreDevFeed = "https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json";
 
-        public static void Write(string folder, params string[] nugetSources)
+        public static void Write(string folder, params string?[] nugetSources)
         {
             Write(folder, nugetSources.ToList());
         }
-        public static void Write(string folder, List<string> nugetSources)
+        public static void Write(string folder, List<string?> nugetSources)
         {
             string configFilePath = Path.Combine(folder, "NuGet.Config");
             var root = new XElement("configuration");
@@ -24,7 +23,7 @@ namespace Microsoft.NET.TestFramework
             {
                 packageSources.Add(new XElement("add",
                     new XAttribute("key", Guid.NewGuid().ToString()),
-                    new XAttribute("value", nugetSources[i])
+                    new XAttribute("value", nugetSources[i] ?? string.Empty)
                     ));
             }
 

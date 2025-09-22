@@ -1,21 +1,11 @@
 <Project>
 
-  <ItemGroup Condition="'$(PostBuildSign)' != 'true'">
-    <ItemsToSign Remove="@(ItemsToSign)" />
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.exe" />
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.zip" />
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.msi" />
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.nupkg" />
-  </ItemGroup>
+  <PropertyGroup>
+    <PublishBinariesAndBadge Condition="'$(PublishBinariesAndBadge)' == ''">true</PublishBinariesAndBadge>
+  </PropertyGroup>
 
   <PropertyGroup>
     <ExternalCertificateId Condition="'$(ExternalCertificateId)' == ''">3PartySHA2</ExternalCertificateId>
-    <InternalCertificateId Condition="'$(InternalCertificateId)' == ''">MicrosoftDotNet500</InternalCertificateId>
-
-    <!-- Signing of shipping artifacts (layout, msi, bundle) are handled separately. It is therefore expected that <ItemsToSign> could be an empty set. -->
-    <AllowEmptySignList>true</AllowEmptySignList>
-    <AllowEmptySignPostBuildList>true</AllowEmptySignPostBuildList>
-
     <UseDotNetCertificate>true</UseDotNetCertificate>
   </PropertyGroup>
 
@@ -32,7 +22,7 @@
     <FileSignInfo Include="PackageWithFakeNativeDep.dll" CertificateName="None" />
     <FileSignInfo Include="dotnet-tool-with-output-name.dll" CertificateName="None" />
 
-    <!-- Third party DLLs used by tests -->
+    <!-- Third party DLLs used by tests-->
     <FileSignInfo Include="Castle.Core.dll" CertificateName="None" />
     <FileSignInfo Include="Moq.dll" CertificateName="None" />
 
@@ -44,47 +34,105 @@
     <FileSignInfo Include="comhost.dll" CertificateName="None" />
     <FileSignInfo Include="singlefilehost.exe" CertificateName="None" />
 
-    <!-- .ttf and .js files come in from some older aspnetcore packages (e.g. 2.1).
+    <!-- .ttf and .otf files come in from some older aspnetcore packages (e.g. 2.1).
           These files in the 5.0 packages are NOT signed. When doing postbuild signing,
           SignTool will recognize that the files in the installer zips came from the 5.0 packages
           pulled in from aspnetcore, and aspnetcore said not to sign them. This info is not
           available for the 2.1 packages, so we need to avoid signing these in this repo. -->
     <FileExtensionSignInfo Include=".ttf" CertificateName="None" />
     <FileExtensionSignInfo Include=".otf" CertificateName="None" />
-    <FileExtensionSignInfo Remove=".js" />
-    <FileExtensionSignInfo Include=".js" CertificateName="None" />
-  </ItemGroup>
 
-  <ItemGroup>
-    <FileExtensionSignInfo Include=".msi" CertificateName="$(InternalCertificateId)" />
+    <!-- We don't need to code sign .js files because they are not used in Windows Script Host. -->
+    <FileExtensionSignInfo Update=".js" CertificateName="None" />
+
+    <!-- Skip signing .py files because they are already signed -->
+    <FileExtensionSignInfo Update=".py" CertificateName="None" />
+    <FileExtensionSignInfo Include=".pyd" CertificateName="None" />
+    <FileExtensionSignInfo Include=".cat" CertificateName="None" />
+
+    <!-- Zero length files should not be signed because it breaks signing/ESRP. -->
+    <FileSignInfo Include="__init__.py" CertificateName="None" />
+    <FileSignInfo Include="eggs.py" CertificateName="None" />
   </ItemGroup>
 
   <!--
-    These are third party libraries that we use in Arcade. We need to sign them even if they
-    are already signed. However, they must be signed with a 3rd party certificate.
+    Arcade is no longer signed so we don't have to sign test assemblies.
+    ReSign 3rd party files that we use in the product
   -->
   <ItemGroup>
     <FileSignInfo Include="MessagePack.Annotations.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="MessagePack.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Nerdbank.Streams.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="StreamJsonRpc.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="CommandLine.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="FluentAssertions.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="FluentAssertions.Core.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="FluentAssertions.Json.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="Microsoft.3rdpartytools.MarkdownLog.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="xunit.performance.api.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="xunit.performance.core.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="xunit.performance.execution.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="xunit.performance.metrics.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Valleysoft.DockerCredsProvider.dll" CertificateName="$(ExternalCertificateId)" />
+
+    <!-- Additionally, we need to notarize any .pkg files -->
+    <MacOSPkg Include="$(ArtifactsShippingPackagesDir)**/dotnet-sdk*.pkg" Exclude="$(ArtifactsShippingPackagesDir)**/dotnet-sdk-internal*.pkg" />
+    <FileSignInfo Include="@(MacOSPkg->'%(Filename)%(Extension)')" CertificateName="MacDeveloperWithNotarization" />
+  </ItemGroup>
+
+  <!-- Third party DLLs used in src projects that are not participating in source-build -->
+  <ItemGroup>
+    <FileSignInfo Include="Argon.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="DiffEngine.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="DiffPlex.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="EmptyFiles.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="SimpleInfoName.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="Verify.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="Verify.DiffPlex.dll" CertificateName="$(ExternalCertificateId)" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <FileSignInfo Include="StreamJsonRpc.dll" CertificateName="MicrosoftSHA2" />
   </ItemGroup>
 
   <!-- Filter out any test packages from ItemsToSign -->
   <ItemGroup>
-    <ItemsToSignPostBuild Remove="*tests*.nupkg" />
     <ItemsToSign Remove="$(ArtifactsPackagesDir)**\*tests*.nupkg" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(EnableDefaultArtifacts)' != 'true'">
+    <Artifact Include="$(ArtifactsPackagesDir)**\VS.Tools.*.nupkg;
+                       $(ArtifactsPackagesDir)**\VS.Redist.*.nupkg"
+              IsShipping="$([System.String]::Copy('%(RecursiveDir)').StartsWith('Shipping'))"
+              Kind="Package" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuild)' != 'true' or '$(BuildWorkloads)' == 'true'">
+    <Artifact Include="$(VisualStudioSetupInsertionPath)\**\*.zip"
+              IsShipping="true"
+              Kind="Blob" />
+  </ItemGroup>
+
+  <!-- Only publish this file from win-x64 so that we don't end up with duplicates. -->
+  <ItemGroup Condition="'$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(TargetArchitecture)' == 'x64' and '$(PgoInstrument)' != 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')">
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productVersion.txt" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.zip" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.tar.gz" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.pkg" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.exe" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.deb" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.rpm" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.msi" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.cab" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.json" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.txt" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.swr" IsShipping="false" />
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.msi" IsShipping="false" />
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.tar.gz" IsShipping="false" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.zip" IsShipping="false" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.pkg" IsShipping="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Artifact Include="@(SdkArtifact)" Kind="Blob">
+      <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512</ChecksumPath>
+    </Artifact>
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Text.Json;
 using Microsoft.NET.Sdk.WebAssembly;
 
@@ -10,7 +12,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     {
         public WasmBuildLazyLoadTest(ITestOutputHelper log) : base(log) { }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_LazyLoadExplicitAssembly_Debug_Works()
         {
             // Arrange
@@ -24,6 +26,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 itemGroup.Add(new XElement("BlazorWebAssemblyLazyLoad",
                     new XAttribute("Include", "RazorClassLibrary.wasm")));
                 project.Root.Add(itemGroup);
+
+                var propertyGroup = new XElement("PropertyGroup");
+                propertyGroup.Add(new XElement("WasmFingerprintAssets", false));
+                project.Root.Add(propertyGroup);
             });
 
             // Act
@@ -36,13 +42,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Assert
             var expectedFiles = new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/RazorClassLibrary.wasm"
             };
 
             outputDirectory.Should().HaveFiles(expectedFiles);
 
-            var bootJson = ReadBootJsonData(Path.Combine(outputDirectory.ToString(), "wwwroot", "_framework", "blazor.boot.json"));
+            var bootJson = ReadBootJsonData(Path.Combine(outputDirectory.ToString(), "wwwroot", "_framework", WasmBootConfigFileName));
 
             // And that it has been labelled as a dynamic assembly in the boot.json
             var lazyAssemblies = bootJson.resources.lazyAssembly;
@@ -58,7 +64,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             assemblies.Keys.Should().Contain("blazorwasm.wasm");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_LazyLoadExplicitAssembly_Release_Works()
         {
             // Arrange
@@ -72,6 +78,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 itemGroup.Add(new XElement("BlazorWebAssemblyLazyLoad",
                     new XAttribute("Include", "RazorClassLibrary.wasm")));
                 project.Root.Add(itemGroup);
+
+                var propertyGroup = new XElement("PropertyGroup");
+                propertyGroup.Add(new XElement("WasmFingerprintAssets", false));
+                project.Root.Add(propertyGroup);
             });
 
             // Act
@@ -84,13 +94,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Assert
             var expectedFiles = new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/RazorClassLibrary.wasm"
             };
 
             outputDirectory.Should().HaveFiles(expectedFiles);
 
-            var bootJson = ReadBootJsonData(Path.Combine(outputDirectory.ToString(), "wwwroot", "_framework", "blazor.boot.json"));
+            var bootJson = ReadBootJsonData(Path.Combine(outputDirectory.ToString(), "wwwroot", "_framework", WasmBootConfigFileName));
 
             // And that it has been labelled as a dynamic assembly in the boot.json
             var lazyAssemblies = bootJson.resources.lazyAssembly;
@@ -106,7 +116,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             assemblies.Keys.Should().Contain("blazorwasm.wasm");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_LazyLoadExplicitAssembly_Debug_Works()
         {
             // Arrange
@@ -120,6 +130,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 itemGroup.Add(new XElement("BlazorWebAssemblyLazyLoad",
                     new XAttribute("Include", "RazorClassLibrary.wasm")));
                 project.Root.Add(itemGroup);
+
+                var propertyGroup = new XElement("PropertyGroup");
+                propertyGroup.Add(new XElement("WasmFingerprintAssets", false));
+                project.Root.Add(propertyGroup);
             });
 
             // Act
@@ -132,13 +146,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Assert
             var expectedFiles = new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/RazorClassLibrary.wasm"
             };
 
             outputDirectory.Should().HaveFiles(expectedFiles);
 
-            var bootJson = ReadBootJsonData(Path.Combine(outputDirectory.ToString(), "wwwroot", "_framework", "blazor.boot.json"));
+            var bootJson = ReadBootJsonData(Path.Combine(outputDirectory.ToString(), "wwwroot", "_framework", WasmBootConfigFileName));
 
             // And that it has been labelled as a dynamic assembly in the boot.json
             var lazyAssemblies = bootJson.resources.lazyAssembly;
@@ -154,7 +168,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             assemblies.Keys.Should().Contain("blazorwasm.wasm");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_LazyLoadExplicitAssembly_Release_Works()
         {
             // Arrange
@@ -168,6 +182,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 itemGroup.Add(new XElement("BlazorWebAssemblyLazyLoad",
                     new XAttribute("Include", "RazorClassLibrary.wasm")));
                 project.Root.Add(itemGroup);
+
+                var propertyGroup = new XElement("PropertyGroup");
+                propertyGroup.Add(new XElement("WasmFingerprintAssets", false));
+                project.Root.Add(propertyGroup);
             });
 
             // Act
@@ -180,13 +198,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Assert
             var expectedFiles = new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/RazorClassLibrary.wasm"
             };
 
             outputDirectory.Should().HaveFiles(expectedFiles);
 
-            var bootJson = ReadBootJsonData(Path.Combine(outputDirectory.ToString(), "wwwroot", "_framework", "blazor.boot.json"));
+            var bootJson = ReadBootJsonData(Path.Combine(outputDirectory.ToString(), "wwwroot", "_framework", WasmBootConfigFileName));
 
             // And that it has been labelled as a dynamic assembly in the boot.json
             var lazyAssemblies = bootJson.resources.lazyAssembly;
@@ -202,7 +220,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             assemblies.Keys.Should().Contain("blazorwasm.wasm");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_LazyLoadExplicitAssembly_InvalidAssembly()
         {
             // Arrange
@@ -223,7 +241,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             ExecuteCommand(buildCommand).Should().Fail().And.HaveStdOutContaining("BLAZORSDK1001");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_LazyLoadExplicitAssembly_InvalidAssembly()
         {
             // Arrange
@@ -246,9 +264,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         private static BootJsonData ReadBootJsonData(string path)
         {
-            return JsonSerializer.Deserialize<BootJsonData>(
-                File.ReadAllText(path),
-                new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            return BootJsonDataLoader.ParseBootData(path);
         }
     }
 }

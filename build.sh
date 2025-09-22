@@ -8,4 +8,10 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 ScriptRoot="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-. "$ScriptRoot/eng/common/build.sh" --build --restore "$@"
+if [[ "$@" != *"-pack"* ]]; then
+  # skip crossgen for inner-loop builds to save a ton of time
+  skipFlags="/p:SkipUsingCrossgen=true /p:SkipBuildingInstallers=true"
+fi
+
+export DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT="true"
+. "$ScriptRoot/eng/common/build.sh" --build --restore $skipFlags /tlp:summary "$@"

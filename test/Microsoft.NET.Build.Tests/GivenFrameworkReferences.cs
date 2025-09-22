@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json.Linq;
 
@@ -71,6 +73,14 @@ namespace FrameworkReferenceTest
         [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
         public void Multiple_frameworks_are_written_to_runtimeconfig_for_self_contained_apps(string tfm, bool shouldHaveIncludedFrameworks)
         {
+            if (tfm == "netcoreapp3.0" &&
+                RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                //  https://github.com/dotnet/sdk/issues/49665
+                //  error NETSDK1084: There is no application host available for the specified RuntimeIdentifier 'osx-arm64'.
+                return;
+            }
+
             var testProject = new TestProject()
             {
                 Name = "MultipleFrameworkReferenceTest",
@@ -304,6 +314,10 @@ namespace FrameworkReferenceTest
 
             //  Set targeting pack folder to nonexistent folder so the project won't use installed targeting packs
             testProject.AdditionalProperties["NetCoreTargetingPackRoot"] = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
+            //  Package pruning may load data from the targeting packs directory.  Since we're disabling the targeting pack
+            //  root, we need to allow it to succeed even if it can't find that data.
+            testProject.AdditionalProperties["AllowMissingPrunePackageData"] = "true";
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -887,7 +901,7 @@ namespace FrameworkReferenceTest
             TestFrameworkReferenceProfiles(
                 frameworkReferences: new[] { "Microsoft.WindowsDesktop.App.WindowsForms" },
                 expectedReferenceNames: new[] { "Microsoft.Win32.Registry", "System.Windows.Forms" },
-                notExpectedReferenceNames: new[] { "WindowsFormsIntegration" },
+                notExpectedReferenceNames: Enumerable.Empty<string>(),
                 selfContained);
         }
 
@@ -899,7 +913,7 @@ namespace FrameworkReferenceTest
             TestFrameworkReferenceProfiles(
                 frameworkReferences: new[] { "Microsoft.WindowsDesktop.App.WPF" },
                 expectedReferenceNames: new[] { "Microsoft.Win32.Registry", "System.Windows.Presentation" },
-                notExpectedReferenceNames: new[] { "WindowsFormsIntegration" },
+                notExpectedReferenceNames: Enumerable.Empty<string>(),
                 selfContained);
         }
 
@@ -911,7 +925,7 @@ namespace FrameworkReferenceTest
             TestFrameworkReferenceProfiles(
                 frameworkReferences: new[] { "Microsoft.WindowsDesktop.App.WindowsForms", "Microsoft.WindowsDesktop.App.WPF" },
                 expectedReferenceNames: new[] { "Microsoft.Win32.Registry", "System.Windows.Forms", "System.Windows.Presentation" },
-                notExpectedReferenceNames: new[] { "WindowsFormsIntegration" },
+                notExpectedReferenceNames: Enumerable.Empty<string>(),
                 selfContained);
         }
 

@@ -228,6 +228,11 @@ Pokud si chcete zobrazit všechny aliasy, spusťte bez argumentů příkaz dotne
         <target state="translated">Vyhledávají se šablony...</target>
         <note />
       </trans-unit>
+      <trans-unit id="Colon_Separator_Deprecated">
+        <source>The colon separator "::" has been deprecated in favor of the at symbol "@" for separating the package from the version in dotnet new install. In your case, this means {0}@{1} instead of {0}::{1}.</source>
+        <target state="translated">Oddělovač dvojtečkou „::“ byl zrušen ve prospěch symbolu at „@“ pro oddělení balíčku od verze v dotnet new install. Ve vašem případě to znamená {0}@{1} místo {0}::{1}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ColumnNameAuthor">
         <source>Author</source>
         <target state="translated">Autor</target>
@@ -827,7 +832,7 @@ The header is followed by the list of parameters and their errors (might be seve
       </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotBoolean">
         <source>Post action argument '{0}' is not a valid boolean value.</source>
-        <target state="new">Post action argument '{0}' is not a valid boolean value.</target>
+        <target state="translated">Argument post-action {0} není platná logická hodnota.</target>
         <note />
       </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotConfigured">
@@ -857,7 +862,7 @@ The header is followed by the list of parameters and their errors (might be seve
       </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Verbose_AttemptingToFindJsonFile">
         <source>Attempting to find json file '{0}' in '{1}'</source>
-        <target state="new">Attempting to find json file '{0}' in '{1}'</target>
+        <target state="translated">Probíhá pokus o vyhledání souboru JSON {0} v {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="PostAction_ProcessStartProcessor_Error_ConfigMissingExecutable">
@@ -901,7 +906,7 @@ The header is followed by the list of parameters and their errors (might be seve
         <note />
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Error">
-        <source>Failed to instatiate template '{0}', the following constraints are not met:</source>
+        <source>Failed to instantiate template '{0}', the following constraints are not met:</source>
         <target state="translated">Nepovedlo se vytvořit instanci šablony {0}, protože nejsou splněna následující omezení:</target>
         <note>{0} - template name (user friendly)</note>
       </trans-unit>

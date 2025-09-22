@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-publish" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-publish" "1" "2025-08-29" "" ".NET Documentation"
 .hy
 .SH dotnet publish
 .PP
@@ -27,13 +27,15 @@ dotnet-publish - Publishes the application and its dependencies to a folder for 
 .nf
 \f[C]
 dotnet publish [<PROJECT>|<SOLUTION>] [-a|--arch <ARCHITECTURE>]
+    [--artifacts-path <ARTIFACTS_DIR>]
     [-c|--configuration <CONFIGURATION>] [--disable-build-servers]
     [-f|--framework <FRAMEWORK>] [--force] [--interactive]
     [--manifest <PATH_TO_MANIFEST_FILE>] [--no-build] [--no-dependencies]
     [--no-restore] [--nologo] [-o|--output <OUTPUT_DIRECTORY>]
     [--os <OS>] [-r|--runtime <RUNTIME_IDENTIFIER>]
     [--sc|--self-contained [true|false]] [--no-self-contained]
-    [-s|--source <SOURCE>] [--use-current-runtime, --ucr [true|false]]
+    [-s|--source <SOURCE>] [--tl:[auto|on|off]]
+    [--use-current-runtime, --ucr [true|false]]
     [-v|--verbosity <LEVEL>] [--version-suffix <VERSION_SUFFIX>]
 
 dotnet publish -h|--help
@@ -55,7 +57,7 @@ The application\[cq]s dependencies, which are copied from the NuGet cache into t
 The \f[V]dotnet publish\f[R] command\[cq]s output is ready for deployment to a hosting system (for example, a server, PC, Mac, laptop) for execution.
 It\[cq]s the only officially supported way to prepare the application for deployment.
 Depending on the type of deployment that the project specifies, the hosting system may or may not have the .NET shared runtime installed on it.
-For more information, see Publish .NET apps with the .NET CLI.
+For more information, see .NET application publishing overview.
 .SS Implicit restore
 .PP
 You don\[cq]t have to run \f[V]dotnet restore\f[R] because it\[cq]s run implicitly by all commands that require a restore to occur, such as \f[V]dotnet new\f[R], \f[V]dotnet build\f[R], \f[V]dotnet run\f[R], \f[V]dotnet test\f[R], \f[V]dotnet publish\f[R], and \f[V]dotnet pack\f[R].
@@ -142,6 +144,7 @@ We recommend that you specify \f[V]PublishReadyToRun\f[R] in a publish profile r
 .PP
 Packages the app into a platform-specific single-file executable.
 For more information about single-file publishing, see the single-file bundler design document (https://github.com/dotnet/designs/blob/main/accepted/2020/single-file/design.md).
+When this property is set to \f[V]true\f[R], the \f[V]PublishSelfContained\f[R] property is implicitly set to \f[V]true\f[R].
 .PP
 We recommend that you specify this option in the project file rather than on the command line.
 .RE
@@ -178,7 +181,7 @@ The project or solution to publish.
 \f[V]PROJECT\f[R] is the path and filename of a C#, F#, or Visual Basic project file, or the path to a directory that contains a C#, F#, or Visual Basic project file.
 If the directory is not specified, it defaults to the current directory.
 .IP \[bu] 2
-\f[V]SOLUTION\f[R] is the path and filename of a solution file (\f[I].sln\f[R] extension), or the path to a directory that contains a solution file.
+\f[V]SOLUTION\f[R] is the path and filename of a solution file (\f[I].sln\f[R] or \f[I].slnx\f[R] extension), or the path to a directory that contains a solution file.
 If the directory is not specified, it defaults to the current directory.
 .RE
 .SH OPTIONS
@@ -193,11 +196,22 @@ If you use this option, don\[cq]t use the \f[V]-r|--runtime\f[R] option.
 Available since .NET 6 Preview 7.
 .RE
 .IP \[bu] 2
+\f[B]\f[VB]--artifacts-path <ARTIFACTS_DIR>\f[B]\f[R]
+.RS 2
+.PP
+All build output files from the executed command will go in subfolders under the specified path, separated by project.
+For more information see Artifacts Output Layout.
+Available since .NET 8 SDK.
+.RE
+.IP \[bu] 2
 \f[B]\f[VB]-c|--configuration <CONFIGURATION>\f[B]\f[R]
 .RS 2
 .PP
 Defines the build configuration.
-The default for most projects is \f[V]Debug\f[R], but you can override the build configuration settings in your project.
+If you\[cq]re developing with the .NET 8 SDK or a later version, the command uses the \f[V]Release\f[R] configuration by default for projects whose TargetFramework is set to \f[V]net8.0\f[R] or a later version.
+The default build configuration is \f[V]Debug\f[R] for earlier versions of the SDK and for earlier target frameworks.
+You can override the default in project settings or by using this option.
+For more information, see `dotnet publish' uses Release configuration and `dotnet pack' uses Release configuration.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--disable-build-servers\f[B]\f[R]
@@ -332,7 +346,7 @@ Available since .NET 6.
 .PP
 Publishes the .NET runtime with your application so the runtime doesn\[cq]t need to be installed on the target machine.
 Default is \f[V]true\f[R] if a runtime identifier is specified and the project is an executable project (not a library project).
-For more information, see .NET application publishing and Publish .NET apps with the .NET CLI.
+For more information, see Self-contained deployment.
 .PP
 If this option is used without specifying \f[V]true\f[R] or \f[V]false\f[R], the default is \f[V]true\f[R].
 In that case, don\[cq]t put the solution or project argument immediately after \f[V]--self-contained\f[R], because \f[V]true\f[R] or \f[V]false\f[R] is expected in that position.
@@ -355,8 +369,44 @@ The URI of the NuGet package source to use during the restore operation.
 .PP
 Publishes the application for a given runtime.
 For a list of Runtime Identifiers (RIDs), see the RID catalog.
-For more information, see .NET application publishing and Publish .NET apps with the .NET CLI.
+For more information, see .NET application publishing overview.
 If you use this option, use \f[V]--self-contained\f[R] or \f[V]--no-self-contained\f[R] also.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--tl:[auto|on|off]\f[B]\f[R]
+.RS 2
+.PP
+Specifies whether the \f[I]terminal logger\f[R] should be used for the build output.
+The default is \f[V]auto\f[R], which first verifies the environment before enabling terminal logging.
+The environment check verifies that the terminal is capable of using modern output features and isn\[cq]t using a redirected standard output before enabling the new logger.
+\f[V]on\f[R] skips the environment check and enables terminal logging.
+\f[V]off\f[R] skips the environment check and uses the default console logger.
+.PP
+The terminal logger shows you the restore phase followed by the build phase.
+During each phase, the currently building projects appear at the bottom of the terminal.
+Each project that\[cq]s building outputs both the MSBuild target currently being built and the amount of time spent on that target.
+You can search this information to learn more about the build.
+When a project is finished building, a single \[lq]build completed\[rq] section is written that captures:
+.IP \[bu] 2
+The name of the built project.
+.IP \[bu] 2
+The target framework (if multi-targeted).
+.IP \[bu] 2
+The status of that build.
+.IP \[bu] 2
+The primary output of that build (which is hyperlinked).
+.IP \[bu] 2
+Any diagnostics generated for that project.
+.PP
+This option is available starting in .NET 8.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--use-current-runtime, --ucr [true|false]\f[B]\f[R]
+.RS 2
+.PP
+Sets the \f[V]RuntimeIdentifier\f[R] to a platform portable \f[V]RuntimeIdentifier\f[R] based on the one of your machine.
+This happens implicitly with properties that require a \f[V]RuntimeIdentifier\f[R], such as \f[V]SelfContained\f[R], \f[V]PublishAot\f[R], \f[V]PublishSelfContained\f[R], \f[V]PublishSingleFile\f[R], and \f[V]PublishReadyToRun\f[R].
+If the property is set to false, that implicit resolution will no longer occur.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
@@ -366,14 +416,6 @@ Sets the verbosity level of the command.
 Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \f[V]d[etailed]\f[R], and \f[V]diag[nostic]\f[R].
 The default is \f[V]minimal\f[R].
 For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
-.RE
-.IP \[bu] 2
-\f[B]\f[VB]--use-current-runtime, --ucr [true|false]\f[B]\f[R]
-.RS 2
-.PP
-Sets the \f[V]RuntimeIdentifier\f[R] to a platform portable \f[V]RuntimeIdentifier\f[R] based on the one of your machine.
-This happens implicitly with properties that require a \f[V]RuntimeIdentifier\f[R], such as \f[V]SelfContained\f[R], \f[V]PublishAot\f[R], \f[V]PublishSelfContained\f[R], \f[V]PublishSingleFile\f[R], and \f[V]PublishReadyToRun\f[R].
-If the property is set to false, that implicit resolution will no longer occur.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--version-suffix <VERSION_SUFFIX>\f[B]\f[R]
@@ -400,7 +442,7 @@ Create a self-contained executable for the project in the current directory, for
 .IP
 .nf
 \f[C]
-dotnet publish --runtime osx.10.11-x64
+dotnet publish --runtime osx-x64
 \f[R]
 .fi
 .PP
@@ -412,7 +454,7 @@ Create a framework-dependent executable for the project in the current directory
 .IP
 .nf
 \f[C]
-dotnet publish --runtime osx.10.11-x64 --self-contained false
+dotnet publish --runtime osx-x64 --self-contained false
 \f[R]
 .fi
 .PP
@@ -425,7 +467,7 @@ Publish the project in the current directory, for a specific runtime and target 
 .IP
 .nf
 \f[C]
-dotnet publish --framework netcoreapp3.1 --runtime osx.10.11-x64
+dotnet publish --framework net8.0 --runtime osx-x64
 \f[R]
 .fi
 .RE
@@ -452,8 +494,6 @@ dotnet publish --no-dependencies
 .SH SEE ALSO
 .IP \[bu] 2
 \&.NET application publishing overview
-.IP \[bu] 2
-Publish .NET apps with the .NET CLI
 .IP \[bu] 2
 Target frameworks
 .IP \[bu] 2

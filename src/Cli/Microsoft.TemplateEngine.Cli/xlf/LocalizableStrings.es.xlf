@@ -228,6 +228,11 @@ Ejecute "dotnet {1} --show-aliases" sin argumentos para mostrar todos los alias.
         <target state="translated">Buscando las plantillas...</target>
         <note />
       </trans-unit>
+      <trans-unit id="Colon_Separator_Deprecated">
+        <source>The colon separator "::" has been deprecated in favor of the at symbol "@" for separating the package from the version in dotnet new install. In your case, this means {0}@{1} instead of {0}::{1}.</source>
+        <target state="translated">El separador de dos puntos "::" está en desuso en favor del símbolo de "@" para separar el paquete de la versión en la nueva instalación de dotnet. En su caso, esto significa {0}@{1} en lugar de {0}::{1}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ColumnNameAuthor">
         <source>Author</source>
         <target state="translated">Autor</target>
@@ -827,7 +832,7 @@ The header is followed by the list of parameters and their errors (might be seve
       </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotBoolean">
         <source>Post action argument '{0}' is not a valid boolean value.</source>
-        <target state="new">Post action argument '{0}' is not a valid boolean value.</target>
+        <target state="translated">El argumento de la acción publicado '{0}' no es un valor booleano válido.</target>
         <note />
       </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotConfigured">
@@ -857,7 +862,7 @@ The header is followed by the list of parameters and their errors (might be seve
       </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Verbose_AttemptingToFindJsonFile">
         <source>Attempting to find json file '{0}' in '{1}'</source>
-        <target state="new">Attempting to find json file '{0}' in '{1}'</target>
+        <target state="translated">Intentando encontrar el archivo JSON "{0}" en "{1}"</target>
         <note />
       </trans-unit>
       <trans-unit id="PostAction_ProcessStartProcessor_Error_ConfigMissingExecutable">
@@ -901,8 +906,8 @@ The header is followed by the list of parameters and their errors (might be seve
         <note />
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Error">
-        <source>Failed to instatiate template '{0}', the following constraints are not met:</source>
-        <target state="translated">No se pudo crear la instancia de la plantilla '{0}', no se cumplen las restricciones siguientes:</target>
+        <source>Failed to instantiate template '{0}', the following constraints are not met:</source>
+        <target state="translated">No se pudo crear una instancia de la plantilla ''{0}". No se cumplen las restricciones siguientes:</target>
         <note>{0} - template name (user friendly)</note>
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Hint">

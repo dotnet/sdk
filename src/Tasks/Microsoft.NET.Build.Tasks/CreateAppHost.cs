@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 using Microsoft.NET.HostModel;
 using Microsoft.NET.HostModel.AppHost;
@@ -48,6 +50,10 @@ namespace Microsoft.NET.Build.Tasks
 
         public bool DisableCetCompat { get; set; } = false;
 
+        public ITaskItem[] DotNetSearchLocations { get; set; }
+
+        public string AppRelativeDotNet { get; set; } = null;
+
         protected override void ExecuteCore()
         {
             try
@@ -61,13 +67,38 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     try
                     {
+                        HostWriter.DotNetSearchOptions options = null;
+                        if (DotNetSearchLocations?.Length > 0)
+                        {
+                            HostWriter.DotNetSearchOptions.SearchLocation searchLocation = default;
+                            foreach (var locationItem in DotNetSearchLocations)
+                            {
+                                if (Enum.TryParse(locationItem.ItemSpec, out HostWriter.DotNetSearchOptions.SearchLocation location)
+                                    && Enum.IsDefined(typeof(HostWriter.DotNetSearchOptions.SearchLocation), location))
+                                {
+                                    searchLocation |= location;
+                                }
+                                else
+                                {
+                                    throw new BuildErrorException(Strings.InvalidAppHostDotNetSearch, locationItem.ItemSpec);
+                                }
+                            }
+
+                            options = new HostWriter.DotNetSearchOptions()
+                            {
+                                Location = searchLocation,
+                                AppRelativeDotNet = AppRelativeDotNet
+                            };
+                        }
+
                         HostWriter.CreateAppHost(appHostSourceFilePath: AppHostSourcePath,
                                                 appHostDestinationFilePath: AppHostDestinationPath,
                                                 appBinaryFilePath: AppBinaryName,
                                                 windowsGraphicalUserInterface: isGUI,
                                                 assemblyToCopyResourcesFrom: resourcesAssembly,
                                                 enableMacOSCodeSign: EnableMacOSCodeSign,
-                                                disableCetCompat: DisableCetCompat);
+                                                disableCetCompat: DisableCetCompat,
+                                                dotNetSearchOptions: options);
                         return;
                     }
                     catch (Exception ex) when (ex is IOException ||

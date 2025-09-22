@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using Microsoft.NET.Sdk.BlazorWebAssembly.Tests;
 using static Microsoft.NET.Sdk.BlazorWebAssembly.Tests.ServiceWorkerAssert;
@@ -16,7 +18,14 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new[] { "blazorwasm" });
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new[] { "blazorwasm" })
+                .WithProjectChanges((p, doc) =>
+                {
+                    var itemGroup = new XElement("PropertyGroup");
+                    itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                    doc.Root.Add(itemGroup);
+                });
+
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
             var publishCommand = new PublishCommand(testInstance, "blazorwasm");
@@ -28,7 +37,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
 
             var expectedFiles = new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/blazor.webassembly.js",
                 "wwwroot/_framework/dotnet.native.wasm",
                 "wwwroot/_framework/blazorwasm.wasm",
@@ -52,7 +61,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new[] { "blazorwasm" });
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new[] { "blazorwasm" })
+                .WithProjectChanges((p, doc) =>
+                {
+                    var itemGroup = new XElement("PropertyGroup");
+                    itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                    doc.Root.Add(itemGroup);
+                });
 
             var webConfigContents = "test webconfig contents";
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "web.config"), webConfigContents);
@@ -74,7 +89,17 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new[] { "blazorwasm", "blazorhosted" });
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new[] { "blazorwasm", "blazorhosted" })
+                .WithProjectChanges((p, doc) =>
+                {
+                    if (Path.GetFileName(p) == "blazorwasm.csproj")
+                    {
+                        var itemGroup = new XElement("PropertyGroup");
+                        itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                        doc.Root.Add(itemGroup);
+                    }
+                });
+
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
             // VS builds projects individually and then a publish with BuildDependencies=false, but building the main project is a close enough approximation for this test.
@@ -101,7 +126,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
 
             publishDirectory.Should().HaveFiles(new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/blazor.webassembly.js",
                 "wwwroot/_framework/dotnet.native.wasm",
                 "wwwroot/_framework/blazorwasm.wasm",

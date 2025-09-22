@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Tasks;
@@ -80,10 +82,10 @@ namespace Microsoft.NET.Publish.Tests
                    RuntimeInformation.RuntimeIdentifier.StartsWith("osx") ? "lib" + baseName + ".dylib" : "lib" + baseName + ".so";
         }
 
-        private DirectoryInfo GetPublishDirectory(PublishCommand publishCommand, string targetFramework = ToolsetInfo.CurrentTargetFramework)
+        private DirectoryInfo GetPublishDirectory(PublishCommand publishCommand, string targetFramework = ToolsetInfo.CurrentTargetFramework, string runtimeIdentifier = null)
         {
             return publishCommand.GetOutputDirectory(targetFramework: targetFramework,
-                                                     runtimeIdentifier: RuntimeInformation.RuntimeIdentifier);
+                                                     runtimeIdentifier: runtimeIdentifier ?? RuntimeInformation.RuntimeIdentifier);
         }
 
         [Fact]
@@ -130,31 +132,14 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining(Strings.CannotHaveSingleFileWithoutAppHost);
         }
 
-        [Fact]
-        public void It_generates_publishing_single_file_with_win7()
-        {
-            const string rid = "win7-x86";
-
-            //  Retarget project to net7.0, as net8.0 and up by default use portable runtime graph which doesn't have win7-* RIDs
-            var projectChanges = (XDocument doc) =>
-            {
-                var ns = doc.Root.Name.Namespace;
-                doc.Root.Element(ns + "PropertyGroup")
-                    .Element(ns + "TargetFramework")
-                    .Value = "net7.0";
-            };
-
-            GetPublishCommand(projectChanges: projectChanges)
-                .Execute($"/p:RuntimeIdentifier={rid}", PublishSingleFile)
-                .Should()
-                .Pass();
-        }
-
-        [Fact]
-        public void Target_after_AfterSdkPublish_executes()
+        [Theory]
+        [InlineData("Microsoft.NET.Sdk")]
+        [InlineData("Microsoft.NET.Sdk.Web")]
+        public void Target_after_AfterSdkPublish_executes(string sdk)
         {
             var projectChanges = (XDocument doc) =>
             {
+                doc.Root.SetAttributeValue("Sdk", sdk);
                 var ns = doc.Root.Name.Namespace;
                 var target = new XElement("Target");
                 target.ReplaceAttributes(new XAttribute[] { new XAttribute("Name", "AfterAfterSdkPublish"), new XAttribute("AfterTargets", "AfterSdkPublish") });
@@ -410,7 +395,9 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [RequiresMSBuildVersionTheory("16.8.0")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        //   error NETSDK1084: There is no application host available for the specified RuntimeIdentifier 'osx-arm64'.
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("netcoreapp3.0")]
         [InlineData("netcoreapp3.1")]
         public void It_generates_a_single_file_including_pdbs(string targetFramework)
@@ -552,6 +539,44 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionFact("16.8.0")]
+        public void It_uses_appropriate_host_on_selfcontained_publish_with_no_build()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "SingleFileTest",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                RuntimeIdentifier = RuntimeInformation.RuntimeIdentifier,
+                IsExe = true,
+            };
+            testProject.AdditionalProperties.Add("SelfContained", "true");
+            TestAsset testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            // Build will create app using apphost
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            // Publish without build should create app using singlefilehost
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand
+                .Execute(PublishSingleFile, "/p:NoBuild=true")
+                .Should()
+                .Pass();
+            string singleFilePath = Path.Combine(
+                GetPublishDirectory(publishCommand).FullName,
+                $"{testProject.Name}{Constants.ExeSuffix}");
+
+            // Make sure published app runs correctly
+            var command = new RunExeCommand(Log, singleFilePath);
+            command.Execute()
+                .Should()
+                .Pass()
+                .And.HaveStdOutContaining("Hello World");
+        }
+
+        [RequiresMSBuildVersionFact("16.8.0")]
         public void It_rewrites_the_apphost_for_single_file_publish()
         {
             var publishCommand = GetPublishCommand();
@@ -653,7 +678,8 @@ namespace Microsoft.NET.Publish.Tests
         }
 
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("netcoreapp2.1", true)]
         [InlineData("netcoreapp3.0", false)]
         [InlineData("netcoreapp3.1", false)]
@@ -693,7 +719,8 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("net6.0", false)]
         [InlineData("netstandard2.0;net5.0", true)] // None of these TFMs are supported for single-file
         [InlineData("netstandard2.0;net6.0", false)] // Net6.0 is the min TFM supported for single-file and targeting.
-        [InlineData("netstandard2.0;net8.0", true)] // Net8.0 is supported for single-file, but leaves a "gap" for the supported net6./net7.0 TFMs.
+        [InlineData("netstandard2.0;net8.0", false)] // Net8.0 is supported for single-file
+        [InlineData("netstandard2.0;net9.0", true)] // Net9.0 is supported for single-file, but leaves a "gap" for the supported net6./net7.0 TFMs.
         [InlineData("alias-ns2", true)]
         [InlineData("alias-n6", false)]
         [InlineData("alias-n6;alias-n8", false)] // If all TFMs are supported, there's no warning even though the project uses aliases.
@@ -706,19 +733,23 @@ namespace Microsoft.NET.Publish.Tests
                 TargetFrameworks = targetFrameworks
             };
             testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "true";
+            testProject.AdditionalProperties["CheckEolTargetFramework"] = "false"; // Silence warning about targeting EOL TFMs
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFrameworks)
                 .WithProjectChanges(AddTargetFrameworkAliases);
 
             var buildCommand = new BuildCommand(testAsset);
-            var resultAssertion = buildCommand.Execute("/bl:my.binlog")
+            var resultAssertion = buildCommand.Execute("/p:CheckEolTargetFramework=false")
                 .Should().Pass();
-            if (shouldWarn) {
+            if (shouldWarn)
+            {
                 // Note: can't check for Strings.EnableSingleFileAnalyzerUnsupported because each line of
                 // the message gets prefixed with a file path by MSBuild.
                 resultAssertion
                     .And.HaveStdOutContaining($"warning NETSDK1211")
-                    .And.HaveStdOutContaining($"<EnableSingleFileAnalyzer Condition=\"$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))\">true</EnableSingleFileAnalyzer>");
-            } else {
+                    .And.HaveStdOutContaining($"<EnableSingleFileAnalyzer Condition=\"$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))\">true</EnableSingleFileAnalyzer>");
+            }
+            else
+            {
                 resultAssertion.And.NotHaveStdOutContaining($"warning");
             }
         }
@@ -755,14 +786,6 @@ class C
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
-        [InlineData("netcoreapp3.0", false, IncludeDefault)]
-        [InlineData("netcoreapp3.0", true, IncludeDefault)]
-        [InlineData("netcoreapp3.0", false, IncludePdb)]
-        [InlineData("netcoreapp3.0", true, IncludePdb)]
-        [InlineData("netcoreapp3.1", false, IncludeDefault)]
-        [InlineData("netcoreapp3.1", true, IncludeDefault)]
-        [InlineData("netcoreapp3.1", false, IncludePdb)]
-        [InlineData("netcoreapp3.1", true, IncludePdb)]
         [InlineData("net6.0", false, IncludeDefault)]
         [InlineData("net6.0", false, IncludeNative)]
         [InlineData("net6.0", false, IncludeAllContent)]
@@ -777,6 +800,12 @@ class C
         [InlineData(ToolsetInfo.CurrentTargetFramework, true, IncludeAllContent)]
         public void It_runs_single_file_apps(string targetFramework, bool selfContained, string bundleOption)
         {
+            if (targetFramework == "net6.0" && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                //  https://github.com/dotnet/sdk/issues/49665
+                return;
+            }
+
             var testProject = new TestProject()
             {
                 Name = "SingleFileTest",
@@ -824,9 +853,14 @@ class C
                 testProject.AdditionalProperties.Add("CetCompat", cetCompat.ToString());
             }
 
+            var binlogDestPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot && Environment.GetEnvironmentVariable("HELIX_WORKITEM_ID") is { } helixGuid ?
+                Path.Combine(ciOutputRoot, "binlog", helixGuid, $"{nameof(It_can_disable_cetcompat)}_{cetCompat?.ToString() ?? "null"}.binlog") :
+                "./msbuild.binlog";
+
+
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: cetCompat.HasValue ? cetCompat.Value.ToString() : "default");
             var publishCommand = new PublishCommand(testAsset);
-            publishCommand.Execute(PublishSingleFile)
+            publishCommand.Execute(PublishSingleFile, "/bl:" + binlogDestPath)
                 .Should()
                 .Pass();
 
@@ -865,7 +899,8 @@ class C
                 .HaveStdOutContaining(Strings.CannotIncludeSymbolsInSingleFile);
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void It_errors_when_enabling_compression_targeting_net5()
         {
             var testProject = new TestProject()
@@ -1089,6 +1124,60 @@ class C
                         new XElement(ns + "FilesToBundle",
                             new XAttribute("Remove", "@(FilesToBundle)"),
                             new XAttribute("Condition", "'%(FilesToBundle.RelativePath)' == 'SingleFileTest.dll'"))));
+            }
+        }
+
+        [Theory]
+        [InlineData("osx-x64", true)]
+        [InlineData("osx-arm64", true)]
+        [InlineData("osx-x64", false)]
+        [InlineData("osx-arm64", false)]
+        [InlineData("osx-x64", null)]
+        [InlineData("osx-arm64", null)]
+        public void It_codesigns_an_app_targeting_osx(string rid, bool? enableMacOSCodeSign)
+        {
+            const bool CodesignsByDefault = true;
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
+            var testProject = new TestProject()
+            {
+                Name = "SingleFileTest",
+                TargetFrameworks = targetFramework,
+                IsExe = true,
+            };
+            testProject.AdditionalProperties.Add("SelfContained", "true");
+
+            var testAsset = _testAssetsManager.CreateTestProject(
+                testProject,
+                identifier: $"{rid}_{enableMacOSCodeSign}");
+            var publishCommand = new PublishCommand(testAsset);
+
+            List<string> publishArgs = new List<string>(3)
+            {
+                PublishSingleFile,
+                $"/p:RuntimeIdentifier={rid}"
+            };
+            if (enableMacOSCodeSign.HasValue)
+            {
+                publishArgs.Add($"/p:_EnableMacOSCodeSign={enableMacOSCodeSign.Value}");
+            }
+
+            publishCommand.Execute(publishArgs)
+                .Should()
+                .Pass();
+
+            var publishDir = GetPublishDirectory(publishCommand, targetFramework, runtimeIdentifier: rid).FullName;
+            var singleFilePath = Path.Combine(publishDir, testProject.Name);
+
+            bool shouldBeSigned = enableMacOSCodeSign ?? CodesignsByDefault;
+
+            MachOSignature.HasMachOSignatureLoadCommand(new FileInfo(singleFilePath))
+                .Should()
+                .Be(shouldBeSigned, $"The app host should {(shouldBeSigned ? "" : "not ")}have a Mach-O signature load command.");
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                MachOSignature.HasValidMachOSignature(new FileInfo(singleFilePath), Log)
+                    .Should()
+                    .Be(shouldBeSigned, $"The app host should {(shouldBeSigned ? "" : "not ")}have a valid Mach-O signature for {rid}.");
             }
         }
     }

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Security.Cryptography;
 using Microsoft.Build.Framework;
 using NuGet.Versioning;
 #if NETFRAMEWORK
@@ -41,10 +40,10 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
 
     /// <summary>
     /// If this is set to linux-ARCH then we use noble-chiseled for the AOT/Extra/etc decisions.
-    /// If this is set to linux-musl-ARCH then we need to use `alpine` for all containers, and tag on `aot` or `extra` as necessary.
+    /// If this is set to linux-musl-ARCH then we need to use `alpine` for all containers, and tag on `extra` as necessary.
     /// </summary>
     [Required]
-    public string TargetRuntimeIdentifier { get; set; }
+    public string[] TargetRuntimeIdentifiers { get; set; }
 
     /// <summary>
     /// If a project is self-contained then it includes a runtime, and so the runtime-deps image should be used.
@@ -52,7 +51,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     public bool IsSelfContained { get; set; }
 
     /// <summary>
-    /// If a project is AOT-published then not only is it self-contained, but it can also remove some other deps - we can use the dotnet/nightly/runtime-deps variant here aot
+    /// If a project is AOT-published then not only is it self-contained, but it can also remove some other deps.
     /// </summary>
     public bool IsAotPublished { get; set; }
 
@@ -84,14 +83,10 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         FrameworkReferences.Length > 0
         && FrameworkReferences.Any(x => x.ItemSpec.Equals("Microsoft.AspNetCore.App", StringComparison.OrdinalIgnoreCase));
 
-    private bool IsMuslRid => TargetRuntimeIdentifier.StartsWith("linux-musl", StringComparison.Ordinal);
+    private bool IsMuslRid;
     private bool IsBundledRuntime => IsSelfContained;
 
     private bool RequiresInference => String.IsNullOrEmpty(UserBaseImage);
-
-    // as of March 2024, the -extra images are on stable MCR, but the -aot images are still on nightly. This means AOT, invariant apps need the /nightly/ base.
-    private bool NeedsNightlyImages => IsAotPublished && UsesInvariantGlobalization;
-    private bool AllowsExperimentalTagInference => String.IsNullOrEmpty(ContainerFamily);
 
     public ComputeDotnetBaseImageAndTag()
     {
@@ -99,7 +94,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         TargetFrameworkVersion = "";
         ContainerFamily = "";
         FrameworkReferences = [];
-        TargetRuntimeIdentifier = "";
+        TargetRuntimeIdentifiers = [];
         UserBaseImage = "";
     }
 
@@ -113,14 +108,37 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         }
         else
         {
-            var defaultRegistry = RegistryConstants.MicrosoftContainerRegistryDomain;
-            if (ComputeRepositoryAndTag(out var repository, out var tag))
+            if (TargetRuntimeIdentiriersAreValid())
             {
-                ComputedContainerBaseImage = $"{defaultRegistry}/{repository}:{tag}";
-                LogInferencePerformedTelemetry($"{defaultRegistry}/{repository}", tag!);
+                var defaultRegistry = RegistryConstants.MicrosoftContainerRegistryDomain;
+                if (ComputeRepositoryAndTag(out var repository, out var tag))
+                {
+                    ComputedContainerBaseImage = $"{defaultRegistry}/{repository}:{tag}";
+                    LogInferencePerformedTelemetry($"{defaultRegistry}/{repository}", tag!);
+                }
             }
             return !Log.HasLoggedErrors;
         }
+    }
+
+    private bool TargetRuntimeIdentiriersAreValid()
+    {
+        // For "linux-musl" RIDs we choose the alpine base image.
+        // And because we compute the base image only once, we need to ensure that all RIDs are "linux-musl" or none of them.
+        var muslRidsCount = TargetRuntimeIdentifiers.Count(rid => rid.StartsWith("linux-musl", StringComparison.Ordinal));
+        if (muslRidsCount > 0)
+        {
+            if (muslRidsCount == TargetRuntimeIdentifiers.Length)
+            {
+                IsMuslRid = true;              
+            }
+            else
+            {
+                Log.LogError(Resources.Strings.InvalidTargetRuntimeIdentifiers);
+                return false;
+            }
+        }
+        return true;
     }
 
     private string UbuntuCodenameForSDKVersion(SemanticVersion version)
@@ -148,12 +166,11 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
                 return false;
             }
 
-            var detectedRepository = (NeedsNightlyImages, IsSelfContained, IsAspNetCoreProject) switch
+            var detectedRepository = (IsSelfContained, IsAspNetCoreProject) switch
             {
-                (true, true, _) when AllowsExperimentalTagInference && versionAllowsUsingAOTAndExtrasImages => "dotnet/nightly/runtime-deps",
-                (_, true, _) => "dotnet/runtime-deps",
-                (_, _, true) => "dotnet/aspnet",
-                (_, _, false) => "dotnet/runtime"
+                (true, _) => "dotnet/runtime-deps",
+                (_, true) => "dotnet/aspnet",
+                (_, false) => "dotnet/runtime"
             };
             Log.LogMessage("Chose base image repository {0}", detectedRepository);
             repository = detectedRepository;
@@ -206,12 +223,12 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
                         false => ""
                     };
 
-                    // now choose the variant, if any - if globalization then -extra, else -aot
+                    // now choose the variant, if any - if globalization then -extra
+                    // as of March 2025, the -aot tag is no longer used, and for .NET 8 and 9 the nightly/runtime-deps images with aot tags point at the regular runtime-deps images 
                     tag += (IsAotPublished, IsTrimmed, UsesInvariantGlobalization) switch
                     {
                         (true, _, false) => "-extra",
                         (_, true, false) => "-extra",
-                        (true, _, true) => "-aot",
                         _ => ""
                     };
                     Log.LogMessage("Selected base image tag {0}", tag);
@@ -231,7 +248,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     {
         if (SemanticVersion.TryParse(TargetFrameworkVersion, out var tfm) && tfm.Major < FirstVersionWithNewTaggingScheme)
         {
-            // < 8 TFMs don't support the -aot and -extras images
+            // < 8 TFMs don't support the -extras images
             return ($"{tfm.Major}.{tfm.Minor}", tfm, false);
         }
         else if (SemanticVersion.TryParse(SdkVersion, out var version))
@@ -297,11 +314,11 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         };
     }
 
-    private bool UserImageIsMicrosoftBaseImage => UserBaseImage?.StartsWith("mcr.microsoft.com/dotnet") ?? false;
+    private bool UserImageIsMicrosoftBaseImage => UserBaseImage?.StartsWith("mcr.microsoft.com/") ?? false;
 
     private void LogNoInferencePerformedTelemetry()
     {
-        // we should only log the base image, tag, containerFamily if we _know_ they are .NET's MCR images
+        // we should only log the base image, tag, containerFamily if we _know_ they are MCR images
         string? userBaseImage = null;
         string? userTag = null;
         string? containerFamily = null;
@@ -314,14 +331,14 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
                 containerFamily = ContainerFamily;
             }
         }
-        var telemetryData = new InferenceTelemetryData(InferencePerformed: false, TargetFramework: ParseSemVerToMajorMinor(TargetFrameworkVersion), userBaseImage, userTag, containerFamily, GetTelemetryProjectType(), GetTelemetryPublishMode(), UsesInvariantGlobalization, TargetRuntimeIdentifier);
+        var telemetryData = new InferenceTelemetryData(InferencePerformed: false, TargetFramework: ParseSemVerToMajorMinor(TargetFrameworkVersion), userBaseImage, userTag, containerFamily, GetTelemetryProjectType(), GetTelemetryPublishMode(), UsesInvariantGlobalization, TargetRuntimeIdentifiers);
         LogTelemetryData(telemetryData);
     }
 
     private void LogInferencePerformedTelemetry(string imageName, string tag)
     {
         // for all inference use cases we will use .NET's images, so we can safely log name, tag, and family
-        var telemetryData = new InferenceTelemetryData(InferencePerformed: true, TargetFramework: ParseSemVerToMajorMinor(TargetFrameworkVersion), imageName, tag, String.IsNullOrEmpty(ContainerFamily) ? null : ContainerFamily, GetTelemetryProjectType(), GetTelemetryPublishMode(), UsesInvariantGlobalization, TargetRuntimeIdentifier);
+        var telemetryData = new InferenceTelemetryData(InferencePerformed: true, TargetFramework: ParseSemVerToMajorMinor(TargetFrameworkVersion), imageName, tag, String.IsNullOrEmpty(ContainerFamily) ? null : ContainerFamily, GetTelemetryProjectType(), GetTelemetryPublishMode(), UsesInvariantGlobalization, TargetRuntimeIdentifiers);
         LogTelemetryData(telemetryData);
     }
 
@@ -342,7 +359,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
             { nameof(telemetryData.ProjectType), telemetryData.ProjectType.ToString() },
             { nameof(telemetryData.PublishMode), telemetryData.PublishMode.ToString() },
             { nameof(telemetryData.IsInvariant), telemetryData.IsInvariant.ToString() },
-            { nameof(telemetryData.TargetRuntime), telemetryData.TargetRuntime }
+            { nameof(telemetryData.TargetRuntimes), string.Join(";", telemetryData.TargetRuntimes) }
         };
         Log.LogTelemetry("sdk/container/inference", telemetryProperties);
     }
@@ -359,8 +376,8 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     /// <param name="ProjectType">Classifies the project into categories - currently only the broad categories of web/console are known.</param>
     /// <param name="PublishMode">Categorizes the publish mode of the app - FDD, SC, Trimmed, AOT in rough order of complexity/container customization</param>
     /// <param name="IsInvariant">We make inference decisions on the invariant-ness of the project, so it's useful to track how often that is used.</param>
-    /// <param name="TargetRuntime">Different RIDs change the inference calculation, so it's useful to know how different RIDs flow into the results of inference.</param>
-    private record class InferenceTelemetryData(bool InferencePerformed, string TargetFramework, string? BaseImage, string? BaseImageTag, string? ContainerFamily, ProjectType ProjectType, PublishMode PublishMode, bool IsInvariant, string TargetRuntime);
+    /// <param name="TargetRuntimes">Different RIDs change the inference calculation, so it's useful to know how different RIDs flow into the results of inference.</param>
+    private record class InferenceTelemetryData(bool InferencePerformed, string TargetFramework, string? BaseImage, string? BaseImageTag, string? ContainerFamily, ProjectType ProjectType, PublishMode PublishMode, bool IsInvariant, string[] TargetRuntimes);
     private enum ProjectType
     {
         AspNetCore,

@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.DotNet.Tests
 {
     public class GivenCodeSigningCtlFile : CtlFileTests
@@ -26,6 +28,7 @@ namespace Microsoft.DotNet.Tests
         [InlineData("5367f20c7ade0e2bca790915056d086b720c33c1fa2a2661acf787e3292e1270")]  // CN=Microsoft Identity Verification Root Certificate Authority 2020, O=Microsoft Corporation, C=US
         [InlineData("552f7bdcf1a7af9e6ce672017f4f12abf77240c78e761ac203d1d9d20ac89988")]  // CN=DigiCert Trusted Root G4, OU=www.digicert.com, O=DigiCert Inc, C=US
         [InlineData("5c58468d55f58e497e743982d2b50010b6d165374acf83a7d4a32db768c4408e")]  // CN=Certum Trusted Network CA, OU=Certum Certification Authority, O=Unizeto Technologies S.A., C=PL
+        [InlineData("5d56499be4d2e08bcfcad08a3e38723d50503bde706948e42f55603019e528ae")]  // CN=IdenTrust Commercial Root CA 1, O=IdenTrust, C=US
         [InlineData("7353b6d6c2d6da4247773f3f07d075decb5134212bead0928ef1f46115260941")]  // CN=DigiCert CS RSA4096 Root G5, O="DigiCert, Inc.", C=US
         [InlineData("7431e5f4c3c1ce4690774f0b61e05440883ba9a01ed00ba6abd7806ed3b118cf")]  // CN=DigiCert High Assurance EV Root CA, OU=www.digicert.com, O=DigiCert Inc, C=US
         [InlineData("7b9d553e1c92cb6e8803e137f4f287d4363757f5d44b37d52f9fca22fb97df86")]  // CN=GlobalSign Code Signing Root R45, O=GlobalSign nv-sa, C=BE

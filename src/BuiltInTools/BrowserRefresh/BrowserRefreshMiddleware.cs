@@ -9,19 +9,34 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 {
-    public class BrowserRefreshMiddleware
+    public sealed class BrowserRefreshMiddleware
     {
-        private static readonly MediaTypeHeaderValue _textHtmlMediaType = new("text/html");
+        private static readonly MediaTypeHeaderValue s_textHtmlMediaType = new("text/html");
+        private static readonly MediaTypeHeaderValue s_applicationJsonMediaType = new("application/json");
         private readonly RequestDelegate _next;
-        private readonly ILogger _logger;
+        private readonly ILogger<BrowserRefreshMiddleware> _logger;
+        private string? _dotnetModifiableAssemblies = GetNonEmptyEnvironmentVariableValue("DOTNET_MODIFIABLE_ASSEMBLIES");
+        private string? _aspnetcoreBrowserTools = GetNonEmptyEnvironmentVariableValue("__ASPNETCORE_BROWSER_TOOLS");
 
-        public BrowserRefreshMiddleware(RequestDelegate next, ILogger<BrowserRefreshMiddleware> logger) =>
-            (_next, _logger) = (next, logger);
+        public BrowserRefreshMiddleware(RequestDelegate next, ILogger<BrowserRefreshMiddleware> logger)
+        {
+            _next = next;
+            _logger = logger;
+
+            logger.LogDebug("Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES={ModifiableAssemblies}, __ASPNETCORE_BROWSER_TOOLS={BrowserTools}", _dotnetModifiableAssemblies, _aspnetcoreBrowserTools);
+        }
+
+        private static string? GetNonEmptyEnvironmentVariableValue(string name)
+            => Environment.GetEnvironmentVariable(name) is { Length: > 0 } value ? value : null;
 
         public async Task InvokeAsync(HttpContext context)
         {
-            // We only need to support this for requests that could be initiated by a browser.
-            if (IsBrowserDocumentRequest(context))
+            if (IsWebAssemblyBootRequest(context))
+            {
+                AttachWebAssemblyHeaders(context);
+                await _next(context);
+            }
+            else if (IsBrowserDocumentRequest(context))
             {
                 // Use a custom StreamWrapper to rewrite output on Write/WriteAsync
                 using var responseStreamWrapper = new ResponseStreamWrapper(context, _logger);
@@ -31,6 +46,11 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 try
                 {
                     await _next(context);
+
+                    // We complete the wrapper stream to ensure that any intermediate buffers
+                    // get fully flushed to the response stream. This is also required to
+                    // reliably determine whether script injection was performed.
+                    await responseStreamWrapper.CompleteAsync();
                 }
                 finally
                 {
@@ -59,6 +79,86 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             }
         }
 
+        private void AttachWebAssemblyHeaders(HttpContext context)
+        {
+            context.Response.OnStarting(() =>
+            {
+                if (!context.Response.Headers.ContainsKey("DOTNET-MODIFIABLE-ASSEMBLIES"))
+                {
+                    if (_dotnetModifiableAssemblies != null)
+                    {
+                        context.Response.Headers.Append("DOTNET-MODIFIABLE-ASSEMBLIES", _dotnetModifiableAssemblies);
+                    }
+                    else
+                    {
+                        _logger.LogDebug("DOTNET_MODIFIABLE_ASSEMBLIES environment variable is not set, likely because hot reload is not enabled. The browser refresh feature may not work as expected.");
+                    }
+                }
+                else
+                {
+                    _logger.LogDebug("DOTNET-MODIFIABLE-ASSEMBLIES header is already set.");
+                }
+
+                if (!context.Response.Headers.ContainsKey("ASPNETCORE-BROWSER-TOOLS"))
+                {
+                    if (_aspnetcoreBrowserTools != null)
+                    {
+                        context.Response.Headers.Append("ASPNETCORE-BROWSER-TOOLS", _aspnetcoreBrowserTools);
+                    }
+                    else
+                    {
+                        _logger.LogDebug("__ASPNETCORE_BROWSER_TOOLS environment variable is not set. The browser refresh feature may not work as expected.");
+                    }
+                }
+                else
+                {
+                    _logger.LogDebug("ASPNETCORE-BROWSER-TOOLS header is already set.");
+                }
+
+                return Task.CompletedTask;
+            });
+        }
+
+        internal static bool IsWebAssemblyBootRequest(HttpContext context)
+        {
+            var request = context.Request;
+            if (!HttpMethods.IsGet(request.Method))
+            {
+                return false;
+            }
+
+            if (request.Headers.TryGetValue("Sec-Fetch-Dest", out var values) &&
+                !StringValues.IsNullOrEmpty(values) &&
+                !string.Equals(values[0], "empty", StringComparison.OrdinalIgnoreCase))
+            {
+                // See https://github.com/dotnet/aspnetcore/issues/37326.
+                // Only inject scripts that are destined for a browser page.
+                return false;
+            }
+
+            if (!request.Path.HasValue ||
+                !string.Equals(Path.GetFileName(request.Path.Value), "blazor.boot.json", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var typedHeaders = request.GetTypedHeaders();
+            if (typedHeaders.Accept is not IList<MediaTypeHeaderValue> acceptHeaders)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < acceptHeaders.Count; i++)
+            {
+                if (acceptHeaders[i].MatchesAllTypes || acceptHeaders[i].IsSubsetOf(s_applicationJsonMediaType))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         internal static bool IsBrowserDocumentRequest(HttpContext context)
         {
             var request = context.Request;
@@ -69,7 +169,8 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             if (request.Headers.TryGetValue("Sec-Fetch-Dest", out var values) &&
                 !StringValues.IsNullOrEmpty(values) &&
-                !string.Equals(values[0], "document", StringComparison.OrdinalIgnoreCase))
+                !string.Equals(values[0], "document", StringComparison.OrdinalIgnoreCase) &&
+                !IsProgressivelyEnhancedNavigation(context.Request))
             {
                 // See https://github.com/dotnet/aspnetcore/issues/37326.
                 // Only inject scripts that are destined for a browser page.
@@ -84,13 +185,27 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             for (var i = 0; i < acceptHeaders.Count; i++)
             {
-                if (acceptHeaders[i].IsSubsetOf(_textHtmlMediaType))
+                if (acceptHeaders[i].IsSubsetOf(s_textHtmlMediaType))
                 {
                     return true;
                 }
             }
 
             return false;
+        }
+
+        private static bool IsProgressivelyEnhancedNavigation(HttpRequest request)
+        {
+            // This is an exact copy from https://github.com/dotnet/aspnetcore/blob/bb2d778dc66aa998ea8e26db0e98e7e01423ff78/src/Components/Endpoints/src/Rendering/EndpointHtmlRenderer.Streaming.cs#L327-L332
+            // For enhanced nav, the Blazor JS code controls the "accept" header precisely, so we can be very specific about the format
+            var accept = request.Headers.Accept;
+            return accept.Count == 1 && string.Equals(accept[0]!, "text/html; blazor-enhanced-nav=on", StringComparison.Ordinal);
+        }
+
+        internal void Test_SetEnvironment(string dotnetModifiableAssemblies, string aspnetcoreBrowserTools)
+        {
+            _dotnetModifiableAssemblies = dotnetModifiableAssemblies;
+            _aspnetcoreBrowserTools = aspnetcoreBrowserTools;
         }
 
         internal static class Log
@@ -109,7 +224,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 LogLevel.Warning,
                 new EventId(3, "FailedToConfiguredForRefreshes"),
                 "Unable to configure browser refresh script injection on the response. " +
-                $"Consider manually adding '{WebSocketScriptInjection.InjectedScript}' to the body of the page.");
+                $"Consider manually adding '{ScriptInjectingStream.InjectedScript}' to the body of the page.");
 
             private static readonly Action<ILogger, StringValues, Exception?> _responseCompressionDetected = LoggerMessage.Define<StringValues>(
                 LogLevel.Warning,

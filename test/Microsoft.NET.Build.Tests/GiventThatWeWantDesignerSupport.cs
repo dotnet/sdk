@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Extensions.DependencyModel;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -17,16 +19,23 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("net46", "false")]
         [InlineData("netcoreapp3.0", "true")]
         [InlineData("netcoreapp3.0", "false")]
-        [InlineData("net5.0-windows", "true")]
-        [InlineData("net5.0-windows", "false")]
+        [InlineData("net6.0-windows", "true")]
+        [InlineData("net6.0-windows", "false")]
         [InlineData("net7.0-windows10.0.17763", "true")]
         [InlineData("net7.0-windows10.0.17763", "false")]
         public void It_provides_runtime_configuration_and_shadow_copy_files_via_outputgroup(string targetFramework, string isSelfContained)
         {
-            if ((targetFramework == "net5.0-windows" || targetFramework == "net7.0-windows10.0.17763")
+            if (targetFramework == "netcoreapp3.0" && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                //  https://github.com/dotnet/sdk/issues/49665
+                //  error NETSDK1084: There is no application host available for the specified RuntimeIdentifier 'osx-arm64'.
+                return;
+            }
+
+            if ((targetFramework == "net6.0-windows" || targetFramework == "net7.0-windows10.0.17763")
                 && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // net5.0-windows is windows only scenario
+                // net6.0-windows is windows only scenario
                 return;
             }
 
@@ -45,6 +54,12 @@ namespace Microsoft.NET.Build.Tests
                 ReferencedProjects = { projectRef },
                 SelfContained = isSelfContained
             };
+
+            if (targetFramework == "net7.0-windows10.0.17763")
+            {
+                // Temporary until new projections flow to tests
+                project.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.17763.38";
+            }
 
             var asset = _testAssetsManager
                 .CreateTestProject(project, identifier: targetFramework);
@@ -96,7 +111,7 @@ namespace Microsoft.NET.Build.Tests
             switch (targetFramework)
             {
                 case "netcoreapp3.0":
-                case "net5.0-windows":
+                case "net6.0-windows":
                 case "net7.0-windows10.0.17763":
                     var depsFileLibraries = GetRuntimeLibraryFileNames(depsFile);
                     depsFileLibraries.Should().BeEquivalentTo(new[] { "Newtonsoft.Json.dll" });
@@ -104,7 +119,7 @@ namespace Microsoft.NET.Build.Tests
                     var options = GetRuntimeOptions(runtimeConfig);
                     options["configProperties"]["Microsoft.NETCore.DotNetHostPolicy.SetAppPaths"].Value<bool>().Should().BeTrue();
                     // runtimeconfiguration should not have platform.
-                    // it should be net5.0 instead of net5.0-windows
+                    // it should be net6.0 instead of net6.0-windows
                     options["tfm"].Value<string>().Should().Be(targetFramework.Split('-')[0]);
                     options["additionalProbingPaths"].Value<JArray>().Should().NotBeEmpty();
 

@@ -1,8 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
+using Microsoft.DotNet.Cli.CommandFactory;
+using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.CommandFactory;
 
 namespace Microsoft.DotNet.Tests
 {
@@ -28,7 +31,7 @@ namespace Microsoft.DotNet.Tests
 
         private class ResolveNothingCommandResolverPolicy : ICommandResolverPolicy
         {
-            public CompositeCommandResolver CreateCommandResolver()
+            public CompositeCommandResolver CreateCommandResolver(string currentWorkingDirectory = null)
             {
                 var compositeCommandResolver = new CompositeCommandResolver();
                 compositeCommandResolver.AddCommandResolver(new ResolveNothingCommandResolver());

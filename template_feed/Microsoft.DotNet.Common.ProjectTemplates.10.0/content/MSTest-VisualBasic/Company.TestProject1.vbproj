@@ -1,0 +1,54 @@
+﻿<!--#if (UseMSTestSdk)-->
+<Project Sdk="MSTest.Sdk/4.0.0-preview.25454.2">
+
+  <PropertyGroup>
+    <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">net10.0</TargetFramework>
+    <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
+    <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.TestProject1</RootNamespace>
+    <LangVersion Condition="'$(langVersion)' != ''">$(ProjectLanguageVersion)</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+<!--#if (TestRunner == "VSTest")-->
+    <UseVSTest>true</UseVSTest>
+  </PropertyGroup>
+<!--#if (CoverageTool == "coverlet")-->
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+  </ItemGroup>
+<!--#endif-->
+<!--#else-->
+    <TestingExtensionsProfile Condition=" '$(ExtensionsProfile)' != 'Default' ">$(ExtensionsProfile)</TestingExtensionsProfile>
+  </PropertyGroup>
+<!--#endif-->
+
+</Project>
+<!--#else-->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">net10.0</TargetFramework>
+    <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
+    <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.TestProject1</RootNamespace>
+    <LangVersion Condition="'$(langVersion)' != ''">$(ProjectLanguageVersion)</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+<!--#if (TestRunner == "Microsoft.Testing.Platform")-->
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <OutputType>Exe</OutputType>
+<!--#endif-->
+  </PropertyGroup>
+
+  <ItemGroup>
+<!--#if (CoverageTool == "coverlet")-->
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+<!--#endif-->
+    <PackageReference Include="MSTest" Version="4.0.0-preview.25454.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+
+</Project>
+<!--#endif-->

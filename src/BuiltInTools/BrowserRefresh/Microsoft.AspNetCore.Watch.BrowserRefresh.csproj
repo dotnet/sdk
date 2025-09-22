@@ -1,27 +1,34 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!-- Intentionally pinned. This feature is supported in projects targeting 6.0 or newer.-->
+    <!--
+      This assembly may be loaded .NET 6.0+ web server.
+      When updating the TFM also update minimal supported version in dotnet-watch.csproj and WebApplicationAppModel.cs.
+    -->
     <TargetFramework>net6.0</TargetFramework>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
 
-    <IsPackable>false</IsPackable>
-    <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.DotNet.HotReload.Web.Middleware</PackageId>
+    <PackageDescription>Package containing Hot Reload middleware.</PackageDescription>
+    <DisableTransitiveFrameworkReferenceDownloads Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</DisableTransitiveFrameworkReferenceDownloads>
   </PropertyGroup>
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <EmbeddedResource Include="WebSocketScriptInjection.js" />
+
+    <!-- Back compat only -->
     <EmbeddedResource Include="BlazorHotReload.js" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
-    <!-- Reference 6.0.2 targeting packs in Source Build - this was the earliest version after the API surface stabilized -->
-    <FrameworkReference
-      Update="Microsoft.AspNetCore.App"
-      TargetingPackVersion="6.0.2" />
-    <FrameworkReference
-      Update="Microsoft.NETCore.App"
-      TargetingPackVersion="6.0.2" />
+    <!-- Reference 6.0 targeting packs in Source Build -->
+    <FrameworkReference Update="Microsoft.AspNetCore.App" TargetingPackVersion="6.0.2" />
+    <FrameworkReference Update="Microsoft.NETCore.App" TargetingPackVersion="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Watch.BrowserRefresh.Tests" />
   </ItemGroup>
 
 </Project>

@@ -2,73 +2,106 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-using System.Diagnostics;
 using Microsoft.Build.Graph;
-using Microsoft.Extensions.Tools.Internal;
+using Microsoft.Extensions.Logging;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
-    internal sealed class ScopedCssFileHandler(IReporter reporter, BrowserRefreshServer? browserRefreshServer)
+    internal sealed class ScopedCssFileHandler(ILogger logger, ILogger buildLogger, ProjectNodeMap projectMap, BrowserRefreshServerFactory browserConnector, GlobalOptions options, EnvironmentOptions environmentOptions)
     {
-        public async ValueTask<bool> TryHandleFileChange(DotNetWatchContext context, FileItem file, CancellationToken cancellationToken)
-        {
-            Debug.Assert(context.ProjectGraph != null);
+        private const string BuildTargetName = TargetNames.GenerateComputedBuildStaticWebAssets;
 
-            HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.ScopedCssHandler);
-            if (!file.FilePath.EndsWith(".razor.css", StringComparison.Ordinal) &&
-                !file.FilePath.EndsWith(".cshtml.css", StringComparison.Ordinal))
+        public async ValueTask HandleFileChangesAsync(IReadOnlyList<ChangedFile> files, CancellationToken cancellationToken)
+        {
+            var projectsToRefresh = new HashSet<ProjectGraphNode>();
+            var hasApplicableFiles = false;
+
+            for (int i = 0; i < files.Count; i++)
             {
-                HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.ScopedCssHandler);
-                return default;
+                var file = files[i].Item;
+
+                if (!file.FilePath.EndsWith(".razor.css", StringComparison.Ordinal) &&
+                    !file.FilePath.EndsWith(".cshtml.css", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                hasApplicableFiles = true;
+                logger.LogDebug("Handling file change event for scoped css file {FilePath}.", file.FilePath);
+                foreach (var containingProjectPath in file.ContainingProjectPaths)
+                {
+                    if (!projectMap.Map.TryGetValue(containingProjectPath, out var projectNodes))
+                    {
+                        // Shouldn't happen.
+                        logger.LogWarning("Project '{Path}' not found in the project graph.", containingProjectPath);
+                        continue;
+                    }
+
+                    // Build and refresh each instance (TFM) of the project.
+                    foreach (var projectNode in projectNodes)
+                    {
+                        // The outer build project instance (that specifies TargetFrameworks) won't have the target.
+                        if (projectNode.ProjectInstance.Targets.ContainsKey(BuildTargetName))
+                        {
+                            projectsToRefresh.Add(projectNode);
+                        }
+                    }
+                }
             }
 
-            reporter.Verbose($"Handling file change event for scoped css file {file.FilePath}.");
-            if (!RebuildScopedCss(context.ProjectGraph, file.ProjectPath))
-            {
-                HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.ScopedCssHandler);
-                return false;
-            }
-            await HandleBrowserRefresh(browserRefreshServer, file, cancellationToken);
-            reporter.Output("Hot reload of scoped css succeeded.", emoji: "🔥");
-            HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.ScopedCssHandler);
-            return true;
-        }
-
-        private bool RebuildScopedCss(ProjectGraph projectGraph, string projectPath)
-        {
-            var project = projectGraph.ProjectNodesTopologicallySorted.FirstOrDefault(f => string.Equals(f.ProjectInstance.FullPath, projectPath, StringComparison.OrdinalIgnoreCase));
-            if (project is null)
-            {
-                return false;
-            }
-
-            var projectInstance = project.ProjectInstance.DeepCopy();
-            var logger = reporter.IsVerbose ? new[] { new Build.Logging.ConsoleLogger() } : null;
-            return projectInstance.Build("GenerateComputedBuildStaticWebAssets", logger);
-        }
-
-        private static async Task HandleBrowserRefresh(BrowserRefreshServer? browserRefreshServer, FileItem fileItem, CancellationToken cancellationToken)
-        {
-            if (browserRefreshServer is null)
+            if (!hasApplicableFiles)
             {
                 return;
             }
 
-            // We'd like an accurate scoped css path, but this needs a lot of work to wire-up now.
-            // We'll handle this as part of https://github.com/dotnet/aspnetcore/issues/31217.
-            // For now, we'll make it look like some css file which would cause JS to update a
-            // single file if it's from the current project, or all locally hosted css files if it's a file from
-            // referenced project.
-            var cssFilePath = Path.GetFileNameWithoutExtension(fileItem.ProjectPath) + ".css";
-            var message = new UpdateStaticFileMessage { Path = cssFilePath };
-            await browserRefreshServer.SendJsonSerlialized(message, cancellationToken);
-        }
+            var buildReporter = new BuildReporter(buildLogger, options, environmentOptions);
 
-        private readonly struct UpdateStaticFileMessage
-        {
-            public string Type => "UpdateStaticFile";
+            var buildTasks = projectsToRefresh.Select(projectNode => Task.Run(() =>
+            {
+                using var loggers = buildReporter.GetLoggers(projectNode.ProjectInstance.FullPath, BuildTargetName);
 
-            public string Path { get; init; }
+                // Deep copy so that we don't pollute the project graph:
+                if (!projectNode.ProjectInstance.DeepCopy().Build(BuildTargetName, loggers))
+                {
+                    loggers.ReportOutput();
+                    return null;
+                }
+
+                return projectNode;
+            }));
+
+            var buildResults = await Task.WhenAll(buildTasks).WaitAsync(cancellationToken);
+
+            var browserRefreshTasks = buildResults.Where(p => p != null)!.GetAncestorsAndSelf().Select(async projectNode =>
+            {
+                if (browserConnector.TryGetRefreshServer(projectNode, out var browserRefreshServer))
+                {
+                    // We'd like an accurate scoped css path, but this needs a lot of work to wire-up now.
+                    // We'll handle this as part of https://github.com/dotnet/aspnetcore/issues/31217.
+                    // For now, we'll make it look like some css file which would cause JS to update a
+                    // single file if it's from the current project, or all locally hosted css files if it's a file from
+                    // referenced project.
+                    var relativeUrl = Path.GetFileNameWithoutExtension(projectNode.ProjectInstance.FullPath) + ".css";
+                    await browserRefreshServer.UpdateStaticAssetsAsync([relativeUrl], cancellationToken);
+                }
+            });
+
+            await Task.WhenAll(browserRefreshTasks).WaitAsync(cancellationToken);
+
+            var successfulCount = buildResults.Sum(r => r != null ? 1 : 0);
+
+            if (successfulCount == buildResults.Length)
+            {
+                logger.Log(MessageDescriptor.HotReloadOfScopedCssSucceeded);
+            }
+            else if (successfulCount > 0)
+            {
+                logger.Log(MessageDescriptor.HotReloadOfScopedCssPartiallySucceeded, successfulCount, buildResults.Length);
+            }
+            else
+            {
+                logger.Log(MessageDescriptor.HotReloadOfScopedCssFailed);
+            }
         }
     }
 }

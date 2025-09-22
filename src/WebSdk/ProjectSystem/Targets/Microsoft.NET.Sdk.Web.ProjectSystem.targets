@@ -54,19 +54,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Default settings for trimmed apps. -->
   <PropertyGroup Condition="'$(PublishTrimmed)' == 'true' Or '$(PublishAot)' == 'true'">
-    <!-- Enable the built-in source generators. -->
-    <EnableRequestDelegateGenerator Condition="'$(EnableRequestDelegateGenerator)' == ''">true</EnableRequestDelegateGenerator>
-    <EnableConfigurationBindingGenerator Condition="'$(EnableConfigurationBindingGenerator)' == ''">true</EnableConfigurationBindingGenerator>
-
     <!-- Default feature switch values for trimmed apps. -->
     <SignalRCustomAwaitableSupport Condition="'$(SignalRCustomAwaitableSupport)' == ''">false</SignalRCustomAwaitableSupport>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <!-- Set the namespaces emitted by the RequestDelegateGenerator for interception when applicable. -->
-    <InterceptorsPreviewNamespaces Condition="'$(EnableRequestDelegateGenerator)' == 'true'">$(InterceptorsPreviewNamespaces);Microsoft.AspNetCore.Http.Generated</InterceptorsPreviewNamespaces>
-    <!-- Set the namespaces emitted by the ConfigurationBindingGenerator for interception when applicable. -->
-    <InterceptorsPreviewNamespaces Condition="'$(EnableConfigurationBindingGenerator)' == 'true'">$(InterceptorsPreviewNamespaces);Microsoft.Extensions.Configuration.Binder.SourceGeneration</InterceptorsPreviewNamespaces>
+    <MvcEnhancedModelMetadataSupport Condition="'$(MvcEnhancedModelMetadataSupport)' == ''">false</MvcEnhancedModelMetadataSupport>
+    <BlazorDisableThrowNavigationException Condition="'$(BlazorDisableThrowNavigationException)' == ''">false</BlazorDisableThrowNavigationException>
   </PropertyGroup>
 
   <!--
@@ -107,4 +98,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     </When>
   </Choose>
 
+  <Target Name="ResolveRequiredWebAssets" BeforeTargets="ProcessFrameworkReferences">
+    <PropertyGroup>
+      <RequiresAspNetWebAssets Condition="'$(RequiresAspNetWebAssets)' == '' and @(Content->AnyHaveMetadataValue(Extension, .razor))">true</RequiresAspNetWebAssets>
+    </PropertyGroup>
+  </Target>
 </Project>

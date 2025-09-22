@@ -32,6 +32,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_FirstTargetFrameworkVersionToSupportSingleFileAnalyzer>$([MSBuild]::GetTargetFrameworkVersion('$(_FirstTargetFrameworkToSupportSingleFile)'))</_FirstTargetFrameworkVersionToSupportSingleFileAnalyzer>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectCapability Condition="'$(IsAotCompatible)' == 'true'" Include="IsAotCompatible" />
+    <ProjectCapability Condition="'$(IsTrimmable)' == 'true'" Include="IsTrimmable" />
+    <ProjectCapability Condition="'$(PublishAot)' == 'true'" Include="PublishAot" />
+    <ProjectCapability Condition="'$(PublishReadyToRun)' == 'true'" Include="PublishReadyToRun" />
+    <ProjectCapability Condition="'$(PublishSingleFile)' == 'true'" Include="PublishSingleFile" />
+    <ProjectCapability Condition="'$(PublishTrimmed)' == 'true'" Include="PublishTrimmed" />
+  </ItemGroup>
+
   <ItemDefinitionGroup>
     <ResolvedFileToPublish>
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>
@@ -219,6 +228,13 @@ Copyright (c) .NET Foundation. All rights reserved.
                  ResourceName="SolutionProjectConfigurationsConflict"
                  FormatArguments="PublishRelease;$(ProjectName)"/>
 
+    <NETSdkError Condition="'$(PublishAot)' == 'true' and
+                            '$(_IsPublishing)' != 'true' and
+                            '$(PublishAotUsingRuntimePack)' == 'true' and
+                            '$(NativeCompilationDuringPublish)' != 'false' and
+                            '$(_TargetFrameworkVersionWithoutV)' >= '10.0'"
+                 ResourceName="NativeCompilationRequiresPublishing" />
+
     <PropertyGroup>
       <!-- Ensure any PublishDir has a trailing slash, so it can be concatenated -->
       <PublishDir Condition="!HasTrailingSlash('$(PublishDir)')">$(PublishDir)\</PublishDir>
@@ -312,11 +328,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Find all files in the final output directory. -->
     <FindUnderPath Path="$(_NormalizedPublishDir)" Files="@(_UnfilteredAbsolutePriorPublishFileWrites)" UpdateToAbsolutePaths="true">
-      <Output TaskParameter="InPath" ItemName="_PriorPublishFileWritesInOuput"/>
+      <Output TaskParameter="InPath" ItemName="_PriorPublishFileWritesInOutput"/>
     </FindUnderPath>
 
     <!-- Remove duplicates from files produced in the previous publish. -->
-    <RemoveDuplicates Inputs="@(_PriorPublishFileWritesInOuput)" >
+    <RemoveDuplicates Inputs="@(_PriorPublishFileWritesInOutput)" >
       <Output TaskParameter="Filtered" ItemName="_PriorPublishFileWrites"/>
     </RemoveDuplicates>
 
@@ -721,6 +737,35 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
+    _CreateAppHostForPublish
+    Create the apphost for the publish scenario if app is configuring .NET install search behaviour
+    Because there is no SDK support yet for output with a layout conforming to the configuration,
+    only do this on publish, such that the inner dev loop is unaffected.
+    ============================================================
+     -->
+  <Target Name="_CreateAppHostForPublish"
+          Inputs="@(IntermediateAssembly);$(AppHostSourcePath)"
+          Outputs="$(AppHostForPublishIntermediatePath)"
+          DependsOnTargets="_GetAppHostPaths;_GetAppHostCreationConfiguration"
+          Condition="'$(_UpdateAppHostForPublish)' == 'true' and
+                     Exists('@(IntermediateAssembly)') and
+                     Exists('$(AppHostSourcePath)')">
+    <CreateAppHost AppHostSourcePath="$(AppHostSourcePath)"
+                   AppHostDestinationPath="$(AppHostForPublishIntermediatePath)"
+                   AppBinaryName="$(AssemblyName)$(TargetExt)"
+                   IntermediateAssembly="@(IntermediateAssembly->'%(FullPath)')"
+                   WindowsGraphicalUserInterface="$(_UseWindowsGraphicalUserInterface)"
+                   Retries="$(CopyRetryCount)"
+                   RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+                   EnableMacOSCodeSign="$(_EnableMacOSCodeSign)"
+                   DisableCetCompat="$(_DisableCetCompat)"
+                   DotNetSearchLocations="$(AppHostDotNetSearch)"
+                   AppRelativeDotNet="$(AppHostRelativeDotNet)"
+                   />
+  </Target>
+
+  <!--
+    ============================================================
                                         _ComputeCopyToPublishDirectoryItems
     ============================================================
     -->
@@ -762,6 +807,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           DependsOnTargets="AssignTargetPaths;
                             DefaultCopyToPublishDirectoryMetadata;
                             _CreateSingleFileHost;
+                            _CreateAppHostForPublish;
                             _SplitProjectReferencesByFileExistence;
                             _GetProjectReferenceTargetFrameworkProperties">
 
@@ -859,6 +905,15 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <!-- Add the single-file host created as part of publish -->
       <_SourceItemsToCopyToPublishDirectoryAlways Include="$(SingleFileHostIntermediatePath)" CopyToOutputDirectory="Always" TargetPath="$(AssemblyName)$(_NativeExecutableExtension)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(_UpdateAppHostForPublish)' == 'true' and Exists('$(AppHostForPublishIntermediatePath)')">
+      <!-- Remove apphost from build from items to publish -->
+      <_SourceItemsToCopyToPublishDirectoryAlways Remove="$(AppHostIntermediatePath)" />
+      <_SourceItemsToCopyToPublishDirectory Remove="$(AppHostIntermediatePath)" />
+
+      <!-- Add the apphost created as part of publish -->
+      <_SourceItemsToCopyToPublishDirectoryAlways Include="$(AppHostForPublishIntermediatePath)" CopyToOutputDirectory="Always" TargetPath="$(AssemblyName)$(_NativeExecutableExtension)" />
     </ItemGroup>
 
     <ItemGroup>
@@ -1083,7 +1138,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                     TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
                     RuntimeIdentifier="$(RuntimeIdentifier)"
                     OutputDir="$(PublishDir)"
-                    ShowDiagnosticOutput="$(TraceSingleFileBundler)">
+                    ShowDiagnosticOutput="$(TraceSingleFileBundler)"
+                    EnableMacOSCodeSign="$(_EnableMacOSCodeSign)">
       <Output TaskParameter="ExcludedFiles" ItemName="_FilesExcludedFromBundle"/>
     </GenerateBundle>
 
@@ -1193,6 +1249,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       ReferenceAssemblies="@(_ReferenceAssemblies)"
                       RuntimePackAssets="@(RuntimePackAsset)"
                       IncludeMainProject="$(IncludeMainProjectInDepsFile)"
+                      TrimDepsJsonLibrariesWithoutAssets="$(TrimDepsJsonLibrariesWithoutAssets)"
                       RuntimeIdentifier="$(RuntimeIdentifier)"
                       PlatformLibraryName="$(MicrosoftNETPlatformLibrary)"
                       RuntimeFrameworks="@(RuntimeFramework)"
@@ -1225,14 +1282,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetEmbeddedApphostPaths"
           AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-  <Target Name="ComputeEmbeddedApphostPaths">
+  <Target Name="ComputeEmbeddedApphostPaths" Condition="'$(PackAsTool)' == 'true'">
 
     <ItemGroup>
       <_PackAsToolShimRuntimeIdentifiers Condition="@(_PackAsToolShimRuntimeIdentifiers) ==''" Include="$(PackAsToolShimRuntimeIdentifiers)"/>
     </ItemGroup>
 
     <GetEmbeddedApphostPaths
-      PackagedShimOutputDirectory="$(PackagedShimOutputRootDirectory)/shims/$(TargetFramework)"
+      PackagedShimOutputDirectory="$([MSBuild]::NormalizeDirectory($(PackagedShimOutputRootDirectory), 'shims', $(TargetFramework)))"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
       ToolCommandName="$(ToolCommandName)"
       >

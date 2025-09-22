@@ -8,15 +8,14 @@
       $(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage
     </TargetsForTfmSpecificBuildOutput>
 
-    <!-- Tell the SDK to generate a deps.json file -->
-    <GenerateDependencyFile>true</GenerateDependencyFile>
+    <!-- Tell the SDK to generate a deps.json file to be used by .NET SDK MSBuild -->
+    <GenerateDependencyFile Condition=" '$(TargetFramework)' != 'net472'">true</GenerateDependencyFile>
 
     <!-- Allow the packaging project to use the name `Microsoft.NET.Build.Containers` for the nuget package -->
     <Packageid>.</Packageid>
 
     <!-- While in prerelease, ship the symbols to everyone all the time. -->
     <DebugType>embedded</DebugType>
-    <Nullable>enable</Nullable>
     <NoWarn>$(NoWarn);CS8002</NoWarn>
     <StrongNameKeyId>MicrosoftShared</StrongNameKeyId>
     <SignAssembly>true</SignAssembly>
@@ -27,12 +26,14 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj"
-                      Condition="'$(TargetFramework)' != 'net472'">
+                      Condition="'$(TargetFramework)' != 'net472'"
+                      GlobalPropertiesToRemove="PublishDir">
       <!-- This is referenced by the core CLI as well so it doesn't need to be redistributed
            in the containers task folder. -->
       <IncludeAssets>build</IncludeAssets>
       <Private>false</Private>
     </ProjectReference>
+    <ProjectReference Include="..\..\Microsoft.Extensions.Logging.MSBuild\Microsoft.Extensions.Logging.MSBuild.csproj" Condition="'$(TargetFramework)' != 'net472'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,10 +46,10 @@
       <!-- In the SDK, NuGet is already available in the MSBuild/SDK directory -->
       <ExcludeAssets Condition="'$(TargetFramework)' != 'net472'">runtime</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Text.Json" ExcludeAssets="runtime">
+    <PackageReference Include="System.Text.Json" ExcludeAssets="runtime" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
       <!-- For the net472 flavor, lock back to a System.Text.Json equal to or older than MSBuild will provide
            so it doesn't have to be redistributed. -->
-      <VersionOverride Condition="'$(TargetFramework)' == 'net472'">8.0.3</VersionOverride>
+      <VersionOverride Condition="'$(TargetFramework)' == 'net472'">$(SystemTextJsonToolsetPackageVersion)</VersionOverride>
     </PackageReference>
   </ItemGroup>
 
@@ -113,7 +114,7 @@
   </Target>
 
   <!-- This target adds the generated deps.json file to our package output -->
-  <Target Name="AddBuildDependencyFileToBuiltProjectOutputGroupOutput" BeforeTargets="BuiltProjectOutputGroup" Condition=" '$(GenerateDependencyFile)' == 'true'">
+  <Target Name="AddBuildDependencyFileToBuiltProjectOutputGroupOutput" BeforeTargets="BuiltProjectOutputGroup" Condition="'$(GenerateDependencyFile)' == 'true'">
     <ItemGroup>
       <BuiltProjectOutputGroupOutput Include="$(ProjectDepsFilePath)" TargetPath="$(ProjectDepsFileName)" FinalOutputPath="$(ProjectDepsFilePath)" />
     </ItemGroup>
@@ -121,7 +122,7 @@
 
   <!-- Copy to *.csproj for using in sanity checks integration tests. -->
   <Target Name="CopyCsprojToTestExecutionDirectory" AfterTargets="Build">
-    <Copy SourceFiles="$(MSBuildThisFileFullPath)" DestinationFiles="$(ArtifactsTmpDir)Container\ProjectFiles\$(MSBuildThisFileName).csproj" />
+    <Copy SourceFiles="$(MSBuildThisFileFullPath)" DestinationFiles="$(TestLayoutDir)Container\ProjectFiles\$(MSBuildThisFileName).csproj" SkipUnchangedFiles="true" />
   </Target>
 
 </Project>

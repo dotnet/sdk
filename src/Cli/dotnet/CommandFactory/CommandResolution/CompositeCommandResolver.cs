@@ -1,43 +1,53 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.CommandFactory
+#nullable disable
+
+using Microsoft.DotNet.Cli.Utils;
+
+namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+
+public class CompositeCommandResolver : ICommandResolver
 {
-    public class CompositeCommandResolver : ICommandResolver
+    private const string CommandResolveEvent = "commandresolution/commandresolved";
+    private readonly IList<ICommandResolver> _orderedCommandResolvers;
+
+    public IEnumerable<ICommandResolver> OrderedCommandResolvers
     {
-        private IList<ICommandResolver> _orderedCommandResolvers;
-
-        public IEnumerable<ICommandResolver> OrderedCommandResolvers
+        get
         {
-            get
+            return _orderedCommandResolvers;
+        }
+    }
+
+    public CompositeCommandResolver()
+    {
+        _orderedCommandResolvers = [];
+    }
+
+    public void AddCommandResolver(ICommandResolver commandResolver)
+    {
+        _orderedCommandResolvers.Add(commandResolver);
+    }
+
+    public CommandSpec Resolve(CommandResolverArguments commandResolverArguments)
+    {
+        foreach (var commandResolver in _orderedCommandResolvers)
+        {
+            var commandSpec = commandResolver.Resolve(commandResolverArguments);
+
+            if (commandSpec != null)
             {
-                return _orderedCommandResolvers;
-            }
-        }
-
-        public CompositeCommandResolver()
-        {
-            _orderedCommandResolvers = new List<ICommandResolver>();
-        }
-
-        public void AddCommandResolver(ICommandResolver commandResolver)
-        {
-            _orderedCommandResolvers.Add(commandResolver);
-        }
-
-        public CommandSpec Resolve(CommandResolverArguments commandResolverArguments)
-        {
-            foreach (var commandResolver in _orderedCommandResolvers)
-            {
-                var commandSpec = commandResolver.Resolve(commandResolverArguments);
-
-                if (commandSpec != null)
+                TelemetryEventEntry.TrackEvent(CommandResolveEvent, new Dictionary<string, string>()
                 {
-                    return commandSpec;
-                }
-            }
+                    { "commandName", commandResolverArguments is null ? string.Empty : Sha256Hasher.HashWithNormalizedCasing(commandResolverArguments.CommandName) },
+                    { "commandResolver", commandResolver.GetType().ToString() }
+                });
 
-            return null;
+                return commandSpec;
+            }
         }
+
+        return null;
     }
 }

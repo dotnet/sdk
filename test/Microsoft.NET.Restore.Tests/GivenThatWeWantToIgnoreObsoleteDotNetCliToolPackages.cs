@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.NET.Restore.Tests
 {
     public class GivenThatWeWantToIgnoreObsoleteDotNetCliToolPackages : SdkTest
@@ -34,7 +36,7 @@ namespace Microsoft.NET.Restore.Tests
                         new XAttribute("Include", obsoletePackageId)));
                 });
 
-            NuGetConfigWriter.Write(toolProjectInstance.TestRoot, NuGetConfigWriter.DotnetCoreBlobFeed);
+            NuGetConfigWriter.Write(toolProjectInstance.TestRoot);
 
             RestoreCommand restoreCommand = toolProjectInstance.GetRestoreCommand(Log, toolProject.Name);
             restoreCommand.Execute("/v:n").Should()

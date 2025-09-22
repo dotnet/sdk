@@ -35,7 +35,7 @@ public class RegistryTests : IDisposable
     public void CheckIfGoogleArtifactRegistry(string registryName, bool isECR)
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(CheckIfGoogleArtifactRegistry));
-        Registry registry = new(registryName, logger);
+        Registry registry = new(registryName, logger, RegistryMode.Push);
         Assert.Equal(isECR, registry.IsGoogleArtifactRegistry);
     }
 
@@ -43,7 +43,7 @@ public class RegistryTests : IDisposable
     public void DockerIoAlias()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(DockerIoAlias));
-        Registry registry = new("docker.io", logger);
+        Registry registry = new("docker.io", logger, RegistryMode.Push);
         Assert.True(registry.IsDockerHub);
         Assert.Equal("docker.io", registry.RegistryName);
         Assert.Equal("registry-1.docker.io", registry.BaseUri.Host);
@@ -395,12 +395,12 @@ public class RegistryTests : IDisposable
         api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
     }
 
+    [Theory(Skip = "https://github.com/dotnet/sdk/issues/42820")]
     [InlineData(true, true, true)]
     [InlineData(false, true, true)]
     [InlineData(true, false, true)]
     [InlineData(false, false, true)]
     [InlineData(false, false, false)]
-    [Theory]
     public async Task InsecureRegistry(bool isInsecureRegistry, bool serverIsHttps, bool httpServerCloseAbortive)
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(InsecureRegistry));
@@ -462,7 +462,7 @@ public class RegistryTests : IDisposable
         {
             IsInsecure = isInsecureRegistry
         };
-        Registry registry = new(registryUri, logger, settings: settings);
+        Registry registry = new(registryUri, logger, RegistryMode.Pull, settings: settings);
 
         // Make a request.
         Task getManifest = registry.GetImageManifestAsync(repositoryName: "dotnet/runtime", reference: "latest", runtimeIdentifier: "linux-x64", manifestPicker: null!, cancellationToken: default!);
@@ -543,6 +543,77 @@ public class RegistryTests : IDisposable
         var registrySettings = new RegistrySettings(registryName, new MockEnvironmentProvider(environment));
 
         Assert.Equal(expectedInsecure, registrySettings.IsInsecure);
+    }
+
+    [Fact]
+    public async Task DownloadBlobAsync_RetriesOnFailure()
+    {
+        // Arrange
+        var logger = _loggerFactory.CreateLogger(nameof(DownloadBlobAsync_RetriesOnFailure));
+
+        var repoName = "testRepo";
+        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:testdigest1234", 1234);
+        var cancellationToken = CancellationToken.None;
+
+        var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);
+        mockRegistryAPI
+            .SetupSequence(api => api.Blob.GetStreamAsync(repoName, descriptor.Digest, cancellationToken))
+            .ThrowsAsync(new Exception("Simulated failure 1")) // First attempt fails
+            .ThrowsAsync(new Exception("Simulated failure 2")) // Second attempt fails
+            .ReturnsAsync(new MemoryStream(new byte[] { 1, 2, 3 })); // Third attempt succeeds
+
+        Registry registry = new(repoName, logger, mockRegistryAPI.Object, null, () => TimeSpan.Zero);
+
+        string? result = null;
+        try
+        {
+            // Act
+            result = await registry.DownloadBlobAsync(repoName, descriptor, cancellationToken);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(File.Exists(result)); // Ensure the file was successfully downloaded
+            mockRegistryAPI.Verify(api => api.Blob.GetStreamAsync(repoName, descriptor.Digest, cancellationToken), Times.Exactly(3)); // Verify retries
+        }
+        finally
+        {
+            // Cleanup
+            if (result != null)
+            {
+                File.Delete(result);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task DownloadBlobAsync_ThrowsAfterMaxRetries()
+    {
+        // Arrange
+        var logger = _loggerFactory.CreateLogger(nameof(DownloadBlobAsync_ThrowsAfterMaxRetries));
+
+        var repoName = "testRepo";
+        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:testdigest1234", 1234);
+        var cancellationToken = CancellationToken.None;
+
+        var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);
+        // Simulate 5 failures (assuming your retry logic attempts 5 times before throwing)
+        mockRegistryAPI
+            .SetupSequence(api => api.Blob.GetStreamAsync(repoName, descriptor.Digest, cancellationToken))
+            .ThrowsAsync(new Exception("Simulated failure 1"))
+            .ThrowsAsync(new Exception("Simulated failure 2"))
+            .ThrowsAsync(new Exception("Simulated failure 3"))
+            .ThrowsAsync(new Exception("Simulated failure 4"))
+            .ThrowsAsync(new Exception("Simulated failure 5"));
+
+        Registry registry = new(repoName, logger, mockRegistryAPI.Object, null, () => TimeSpan.Zero);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<UnableToDownloadFromRepositoryException>(async () =>
+        {
+            await registry.DownloadBlobAsync(repoName, descriptor, cancellationToken);
+        });
+
+        mockRegistryAPI.Verify(api => api.Blob.GetStreamAsync(repoName, descriptor.Digest, cancellationToken), Times.Exactly(5));
     }
 
     private static NextChunkUploadInformation ChunkUploadSuccessful(Uri requestUri, Uri uploadUrl, int? contentLength, HttpStatusCode code = HttpStatusCode.Accepted)

@@ -8,16 +8,46 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "Create an empty solution containing no projects",
   "groupIdentity": "ItemSolution",
-  "precedence": "100",
+  "precedence": "101",
   "identity": "Microsoft.Standard.QuickStarts.Solution",
   "shortName": [
     "sln",
     "solution"
   ],
   "sourceName": "Solution1",
-  "primaryOutputs": [
+  "symbols": {
+    "Format": {
+      "type": "parameter",
+      "displayName": "Solution file format",
+      "description": "Choose the format for the solution file: sln or slnx.",
+      "defaultValue": "slnx",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "sln",
+          "displayName": ".sln format",
+          "description": "Solution file"
+        },
+        {
+          "choice": "slnx",
+          "displayName": ".slnx format",
+          "description": "XML Solution file"
+        }
+      ]
+    }
+  },
+  "sources": [
     {
-      "path": "Solution1.sln"
+      "modifiers": [
+        {
+          "condition": "(Format == \"slnx\")",
+          "exclude": [ "Solution1.sln" ]
+        },
+        {
+          "condition": "(Format == \"sln\")",
+          "exclude": [ "Solution1.slnx" ]
+        }
+      ]
     }
   ],
   "defaultName": "Solution1"
