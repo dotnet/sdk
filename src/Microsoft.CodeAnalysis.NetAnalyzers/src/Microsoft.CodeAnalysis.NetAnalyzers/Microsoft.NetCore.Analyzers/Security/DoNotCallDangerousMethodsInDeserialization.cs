@@ -24,7 +24,7 @@ namespace Microsoft.NetCore.Analyzers.Security
     {
         internal const string DiagnosticId = "CA5360";
 
-        private ImmutableArray<(string, string[])> DangerousCallable = ImmutableArray.Create<(string, string[])>
+        private static ImmutableArray<(string, string[])> DangerousCallable = ImmutableArray.Create
             (
                 (WellKnownTypeNames.SystemIOFile, new[] { "WriteAllBytes", "WriteAllLines", "WriteAllText", "Copy", "Move", "AppendAllLines", "AppendAllText", "AppendText", "Delete" }),
                 (WellKnownTypeNames.SystemIODirectory, new[] { "Delete" }),
@@ -88,7 +88,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                         }
                     }
 
-                    if (!dangerousMethodSymbolsBuilder.Any())
+                    if (dangerousMethodSymbolsBuilder.Count == 0)
                     {
                         return;
                     }
