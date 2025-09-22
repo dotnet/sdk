@@ -214,7 +214,7 @@
       </trans-unit>
       <trans-unit id="CantSpecifyBothProperties">
         <source>NETSDK1230: The {0} and {1} properties cannot both be specified. Remove one or the other.</source>
-        <target state="new">NETSDK1230: The {0} and {1} properties cannot both be specified. Remove one or the other.</target>
+        <target state="translated">NETSDK1230: свойства {0} и {1} не могут быть указаны одновременно. Удалите одно из них.</target>
         <note>{StrBegins="NETSDK1230: "}</note>
       </trans-unit>
       <trans-unit id="ChoosingAssemblyVersion_Info">
@@ -863,7 +863,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="RuntimeGraphFileDoesNotExist">
         <source>NETSDK1231: File '{0}' does not exist. Please ensure the runtime graph path exists.</source>
-        <target state="new">NETSDK1231: File '{0}' does not exist. Please ensure the runtime graph path exists.</target>
+        <target state="translated">NETSDK1231: файл "{0}" не существует. Убедитесь, что путь к графу среды выполнения существует.</target>
         <note>{StrBegins="NETSDK1231: "}{Locked="{0}"}</note>
       </trans-unit>
       <trans-unit id="RuntimeIdentifierNotRecognized">
@@ -965,7 +965,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="UnableToFindMatchingRid">
         <source>NETSDK1232: Unable to find a matching RID for '{0}' from among [{1}] in graph '{2}'.</source>
-        <target state="new">NETSDK1232: Unable to find a matching RID for '{0}' from among [{1}] in graph '{2}'.</target>
+        <target state="translated">NETSDK1232: не удалось найти соответствующий RID для "{0}" среди [{1}] в графе "{2}".</target>
         <note>{StrBegins="NETSDK1232: "}{Locked="{0}"}{Locked="{1}"}{Locked="{2}"}</note>
       </trans-unit>
       <trans-unit id="UnableToFindResolvedPath">
@@ -1060,7 +1060,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="UsingPreviewCsWinRT3_0Feature">
         <source>NETSDK1229: Targeting a Windows SDK version with '1' as the revision number will reference CsWinRT 3.0, which is currently in preview. The current project is targeting the Windows SDK version '{0}'. If this is not intended, change the revision number to '0' to use CsWinRT 2.x instead.</source>
-        <target state="new">NETSDK1229: Targeting a Windows SDK version with '1' as the revision number will reference CsWinRT 3.0, which is currently in preview. The current project is targeting the Windows SDK version '{0}'. If this is not intended, change the revision number to '0' to use CsWinRT 2.x instead.</target>
+        <target state="translated">NETSDK1229: нацеливание на версию Windows SDK с номером редакции "1" будет ссылаться на CsWinRT 3.0, которая сейчас находится в предварительной версии. Текущий проект нацелен на Windows SDK версии "{0}". Если это не соответствует намерениям, измените номер редакции на "0", чтобы использовать CsWinRT 2.x.</target>
         <note>{StrBegins="NETSDK1229: "}</note>
       </trans-unit>
       <trans-unit id="UsingPreviewSdk">
