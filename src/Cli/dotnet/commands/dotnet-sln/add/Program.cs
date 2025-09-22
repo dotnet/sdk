@@ -82,15 +82,15 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 {
                     Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
                 });
-            }
-            // Set default configurations and platforms for sln file
-            foreach (var platform in _defaultPlatforms)
-            {
-                solution.AddPlatform(platform);
-            }
-            foreach (var buildType in _defaultBuildTypes)
-            {
-                solution.AddBuildType(buildType);
+                // Set default configurations and platforms for sln file
+                foreach (var platform in _defaultPlatforms)
+                {
+                    solution.AddPlatform(platform);
+                }
+                foreach (var buildType in _defaultBuildTypes)
+                {
+                    solution.AddBuildType(buildType);
+                }
             }
 
             SolutionFolderModel? solutionFolder = (!_inRoot && !string.IsNullOrEmpty(_solutionFolderPath))
@@ -100,8 +100,10 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             foreach (var projectPath in projectPaths)
             {
                 string relativePath = Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath);
-                // Add fallback solution folder
-                string relativeSolutionFolder = Path.GetDirectoryName(relativePath);
+                // Add fallback solution folder if relative path does not contain `..`.
+                string relativeSolutionFolder =  relativePath.Split(Path.DirectorySeparatorChar).Any(p => p == "..")
+                    ? string.Empty : Path.GetDirectoryName(relativePath);
+
                 if (!_inRoot && solutionFolder is null && !string.IsNullOrEmpty(relativeSolutionFolder))
                 {
                     if (relativeSolutionFolder.Split(Path.DirectorySeparatorChar).LastOrDefault() == Path.GetFileNameWithoutExtension(relativePath))
@@ -134,15 +136,16 @@ namespace Microsoft.DotNet.Tools.Sln.Add
         {
             // Open project instance to see if it is a valid project
             ProjectRootElement projectRootElement = ProjectRootElement.Open(fullPath);
+            ProjectInstance projectInstance = new ProjectInstance(projectRootElement);
             SolutionProjectModel project;
             try
             {
                 project = solution.AddProject(solutionRelativeProjectPath, null, solutionFolder);
             }
-            catch (SolutionArgumentException ex) when (ex.ParamName == "projectTypeName")
+            catch (SolutionArgumentException ex) when (ex.Type == SolutionErrorType.InvalidProjectTypeReference)
             {
                 // If guid is not identified by vs-solutionpersistence, check in project element itself
-                var guid = projectRootElement.GetProjectTypeGuid();
+                var guid = projectRootElement.GetProjectTypeGuid() ?? projectInstance.GetDefaultProjectTypeGuid();
                 if (string.IsNullOrEmpty(guid))
                 {
                     Reporter.Error.WriteLine(CommonLocalizableStrings.UnsupportedProjectType, fullPath);
@@ -151,7 +154,6 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 project = solution.AddProject(solutionRelativeProjectPath, guid, solutionFolder);
             }
             // Add settings based on existing project instance
-            ProjectInstance projectInstance = new ProjectInstance(projectRootElement);
             string projectInstanceId = projectInstance.GetProjectId();
             if (!string.IsNullOrEmpty(projectInstanceId) && serializer is ISolutionSerializer<SlnV12SerializerSettings>)
             {

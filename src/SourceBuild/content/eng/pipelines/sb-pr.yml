@@ -1,0 +1,43 @@
+# This is the non-1ES PR pipeline for dotnet/dotnet
+# https://dev.azure.com/dnceng-public/public/_build?definitionId=240
+trigger: none
+pr:
+  branches:
+    include:
+    - release/9.0.2xx
+    - internal/release/9.0.2xx
+
+variables:
+# enable source-only build for pipelines that contain the -source-build string
+- name: isSourceOnlyBuild
+  value: ${{ contains(variables['Build.DefinitionName'], '-source-build') }}
+
+- name: isSourceOnlyBuildLite
+  value: ${{ contains(variables['Build.DefinitionName'], '-source-build-lite') }}
+
+- name: isScheduleTrigger
+  value: ${{ eq(variables['Build.Reason'], 'Schedule') }}
+
+- name: isPRTrigger
+  value: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
+
+- name: Codeql.Enabled  # we run CodeQL on internal builds only
+  value: false
+
+- template: /eng/common/templates/variables/pool-providers.yml@self
+
+stages:
+- template: /src/sdk/eng/pipelines/templates/stages/vmr-build.yml
+  parameters:
+    isBuiltFromVmr: true
+    isSourceOnlyBuild: ${{ variables.isSourceOnlyBuild }}
+    ${{ if eq(variables.isScheduleTrigger, 'true') }}:
+      scope: full
+    ${{ elseif eq(variables.isSourceOnlyBuildLite, 'true') }}:
+      scope: lite
+    ${{ elseif and(eq(variables.isPRTrigger, 'true'), eq(variables.isSourceOnlyBuild, 'true')) }}:
+      scope: ultralite
+    ${{ elseif and(eq(variables.isPRTrigger, 'true'), ne(variables.isSourceOnlyBuild, 'true')) }}:
+      scope: lite
+    ${{ else }}:
+      scope: full

@@ -17,27 +17,7 @@ namespace Microsoft.DotNet.Watch
         public PhysicalConsole(TestFlags testFlags)
         {
             Console.OutputEncoding = Encoding.UTF8;
-
-            bool readFromStdin;
-            if (testFlags.HasFlag(TestFlags.ReadKeyFromStdin))
-            {
-                readFromStdin = true;
-            }
-            else
-            {
-                try
-                {
-                    Console.TreatControlCAsInput = true;
-                    readFromStdin = false;
-                }
-                catch
-                {
-                    // fails when stdin is redirected
-                    readFromStdin = true;
-                }
-            }
-
-            _ = readFromStdin ? ListenToStandardInputAsync() : ListenToConsoleKeyPressAsync();
+            _ = testFlags.HasFlag(TestFlags.ReadKeyFromStdin) ? ListenToStandardInputAsync() : ListenToConsoleKeyPressAsync();
         }
 
         private async Task ListenToStandardInputAsync()
@@ -73,7 +53,14 @@ namespace Microsoft.DotNet.Watch
         }
 
         private Task ListenToConsoleKeyPressAsync()
-            => Task.Factory.StartNew(() =>
+        {
+            Console.CancelKeyPress += (s, e) =>
+            {
+                e.Cancel = true;
+                KeyPressed?.Invoke(new ConsoleKeyInfo(CtrlC, ConsoleKey.C, shift: false, alt: false, control: true));
+            };
+
+            return Task.Factory.StartNew(() =>
             {
                 while (true)
                 {
@@ -81,6 +68,7 @@ namespace Microsoft.DotNet.Watch
                     KeyPressed?.Invoke(key);
                 }
             }, TaskCreationOptions.LongRunning);
+        }
 
         public TextWriter Error => Console.Error;
         public TextWriter Out => Console.Out;

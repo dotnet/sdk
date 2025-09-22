@@ -76,7 +76,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             return FromDictionaryForJson(JsonSerializer.Deserialize<IDictionary<string, string>>(json, jsonSerializerOptions)!, defaultFeatureBand);
         }
 
-        public static WorkloadSet FromWorkloadSetFolder(string path, string workloadSetVersion, SdkFeatureBand defaultFeatureBand)
+        public static WorkloadSet? FromWorkloadSetFolder(string path, string workloadSetVersion, SdkFeatureBand defaultFeatureBand)
         {
             WorkloadSet? workloadSet = null;
             foreach (var jsonFile in Directory.GetFiles(path, "*.workloadset.json"))
@@ -102,7 +102,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             if (workloadSet == null)
             {
-                throw new InvalidOperationException("No workload set information found in: " + path);
+                return null;
             }
 
             if (File.Exists(Path.Combine(path, "baseline.workloadset.json")))

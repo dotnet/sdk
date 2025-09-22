@@ -1,9 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
 using Microsoft.DotNet.Workloads.Workload.Search;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using Microsoft.TemplateEngine.Abstractions.Components;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Workload.Search.Tests
 {
@@ -55,6 +58,54 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             command.Execute();
 
             _reporter.Lines.Count.Should().Be(4, because: "Output should have header and no values.");
+        }
+
+        [Fact]
+        public void GivenWorkloadSearchWithComponentsItFindsHighestMatchingSet()
+        {
+            string workloadSet1 = @"{
+""Microsoft.NET.Sdk.Android"": ""17.5.9/9.0.100"",
+""Microsoft.NET.Sdk.macOS"": ""14.5.92/9.0.100""
+}
+";
+            string workloadSet2 = @"{
+""Microsoft.NET.Sdk.Android"": ""17.5.9/9.0.100"",
+""Microsoft.NET.Sdk.macOS"": ""14.5.92/9.0.100""
+}
+";
+            string workloadSet3 = @"{
+""Microsoft.NET.Sdk.Android"": ""17.5.9/9.0.100"",
+""Microsoft.NET.Sdk.Maui"": ""14.5.92/9.0.100""
+}
+";
+            string workloadSet4 = @"{
+""Microsoft.NET.Sdk.Android"": ""17.5.9/9.0.100"",
+""Microsoft.NET.Sdk.macOS"": ""14.5.93/9.0.100""
+}
+";
+            Dictionary<string, string> workloadSets = new()
+            {
+                { "9.0.100", workloadSet1 },
+                { "9.0.101", workloadSet2 },
+                { "9.0.102", workloadSet3 },
+                { "9.0.103", workloadSet4 }
+            };
+
+            MockPackWorkloadInstaller installer = new(workloadSetContents: workloadSets);
+            MockNuGetPackageDownloader nugetPackageDownloader = new(packageVersions: [new NuGetVersion("9.103.0"), new NuGetVersion("9.102.0"), new NuGetVersion("9.101.0"), new NuGetVersion("9.100.0")]);
+            var parseResult = Parser.Instance.Parse("dotnet workload search version android@17.5.9 macos@14.5.92 --take 1");
+            MockWorkloadResolver resolver = new(
+                [new WorkloadResolver.WorkloadInfo(new WorkloadId("Microsoft.NET.Sdk.Android"), null),
+                 new WorkloadResolver.WorkloadInfo(new WorkloadId("Microsoft.NET.Sdk.macOS"), null),
+                 new WorkloadResolver.WorkloadInfo(new WorkloadId("Microsoft.NET.Sdk.Maui"), null)],
+                getManifest: id => id.Equals(new WorkloadId("android")) ? WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.Android") :
+                                   id.Equals(new WorkloadId("macos")) ? WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.macOS") :
+                                   WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.Maui"));
+            var command = new WorkloadSearchVersionsCommand(parseResult, _reporter, installer: installer, nugetPackageDownloader: nugetPackageDownloader, resolver: resolver);
+            _reporter.Clear();
+            command.Execute();
+            _reporter.Lines.Count.Should().Be(1);
+            _reporter.Lines.Single().Should().Be("9.0.101");
         }
 
         [Fact]

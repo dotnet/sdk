@@ -6,6 +6,12 @@ using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
 
+internal enum KnownImageFormats
+{
+    OCI,
+    Docker
+}
+
 internal static class ContainerBuilder
 {
     internal static async Task<int> ContainerizeAsync(
@@ -14,6 +20,7 @@ internal static class ContainerBuilder
         string baseRegistry,
         string baseImageName,
         string baseImageTag,
+        string? baseImageDigest,
         string[] entrypoint,
         string[] entrypointArgs,
         string[] defaultArgs,
@@ -33,6 +40,7 @@ internal static class ContainerBuilder
         string? archiveOutputPath,
         bool generateLabels,
         bool generateDigestLabel,
+        KnownImageFormats? imageFormat,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
@@ -47,7 +55,7 @@ internal static class ContainerBuilder
         bool isLocalPull = string.IsNullOrEmpty(baseRegistry);
         RegistryMode sourceRegistryMode = baseRegistry.Equals(outputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
         Registry? sourceRegistry = isLocalPull ? null : new Registry(baseRegistry, logger, sourceRegistryMode);
-        SourceImageReference sourceImageReference = new(sourceRegistry, baseImageName, baseImageTag);
+        SourceImageReference sourceImageReference = new(sourceRegistry, baseImageName, baseImageTag, baseImageDigest);
 
         DestinationImageReference destinationImageReference = DestinationImageReference.CreateFromSettings(
             imageName,
@@ -65,14 +73,14 @@ internal static class ContainerBuilder
                 var ridGraphPicker = new RidGraphManifestPicker(ridGraphPath);
                 imageBuilder = await registry.GetImageManifestAsync(
                     baseImageName,
-                    baseImageTag,
+                    sourceImageReference.Reference,
                     containerRuntimeIdentifier,
                     ridGraphPicker,
                     cancellationToken).ConfigureAwait(false);
             }
             catch (RepositoryNotFoundException)
             {
-                logger.LogError(Resource.FormatString(nameof(Strings.RepositoryNotFound), baseImageName, baseImageTag, registry.RegistryName));
+                logger.LogError(Resource.FormatString(nameof(Strings.RepositoryNotFound), baseImageName, baseImageTag, baseImageDigest, registry.RegistryName));
                 return 1;
             }
             catch (UnableToAccessRepositoryException)
@@ -97,6 +105,15 @@ internal static class ContainerBuilder
         }
         logger.LogInformation(Strings.ContainerBuilder_StartBuildingImage, imageName, string.Join(",", imageName), sourceImageReference);
         cancellationToken.ThrowIfCancellationRequested();
+
+        // forcibly change the media type if required
+        imageBuilder.ManifestMediaType = imageFormat switch
+        {
+            null => imageBuilder.ManifestMediaType,
+            KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
+            KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
+            _ => imageBuilder.ManifestMediaType // should be impossible unless we add to the enum
+        };
 
         Layer newLayer = Layer.FromDirectory(publishDirectory.FullName, workingDir, imageBuilder.IsWindows, imageBuilder.ManifestMediaType);
         imageBuilder.AddLayer(newLayer);

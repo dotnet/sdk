@@ -31,6 +31,7 @@ internal static class KnownStrings
         public static readonly string ContainerBaseRegistry = nameof(ContainerBaseRegistry);
         public static readonly string ContainerBaseName = nameof(ContainerBaseName);
         public static readonly string ContainerBaseTag = nameof(ContainerBaseTag);
+        public static readonly string ContainerBaseDigest = nameof(ContainerBaseDigest);
 
         public static readonly string ContainerGenerateLabels = nameof(ContainerGenerateLabels);
 

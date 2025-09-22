@@ -39,7 +39,7 @@ namespace Microsoft.NET.Build.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var packagesPaths = packageReferences.Select(e => Path.GetDirectoryName(e.NupkgPath));
-            List<string> sources = new() { NuGetConfigWriter.DotnetCoreBlobFeed };
+            List<string> sources = new();
             sources.AddRange(packagesPaths);
             NuGetConfigWriter.Write(testAsset.TestRoot, sources);
 
@@ -85,7 +85,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.SourceFiles[$"{testProject.Name}.cs"] = ClassLibAandBUsage;
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            List<string> sources = new() { NuGetConfigWriter.DotnetCoreBlobFeed, Path.GetDirectoryName(packageReferenceA.NupkgPath), Path.GetDirectoryName(packageReferenceB.NupkgPath) };
+            List<string> sources = new() { Path.GetDirectoryName(packageReferenceA.NupkgPath), Path.GetDirectoryName(packageReferenceB.NupkgPath) };
             NuGetConfigWriter.Write(testAsset.TestRoot, sources);
 
             var buildCommand = new BuildCommand(testAsset)
@@ -122,7 +122,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.SourceFiles[$"{testProject.Name}.cs"] = ClassLibAandBUsage;
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            List<string> sources = new() { NuGetConfigWriter.DotnetCoreBlobFeed, Path.GetDirectoryName(packageReferenceA.NupkgPath) };
+            List<string> sources = new() { Path.GetDirectoryName(packageReferenceA.NupkgPath) };
             NuGetConfigWriter.Write(testAsset.TestRoot, sources);
 
             var buildCommand = new BuildCommand(testAsset)

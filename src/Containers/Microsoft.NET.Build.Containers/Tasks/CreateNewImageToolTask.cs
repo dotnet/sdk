@@ -107,6 +107,10 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         {
             builder.AppendSwitchIfNotNull("--baseimagetag ", BaseImageTag);
         }
+        if (!string.IsNullOrWhiteSpace(BaseImageDigest))
+        {
+            builder.AppendSwitchIfNotNull("--baseimagedigest ", BaseImageDigest);
+        }
         if (!string.IsNullOrWhiteSpace(OutputRegistry))
         {
             builder.AppendSwitchIfNotNull("--outputregistry ", OutputRegistry);
@@ -118,6 +122,10 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         if (!string.IsNullOrWhiteSpace(AppCommandInstruction))
         {
             builder.AppendSwitchIfNotNull("--appcommandinstruction ", AppCommandInstruction);
+        }
+        if (!string.IsNullOrWhiteSpace(ImageFormat))
+        {
+            builder.AppendSwitchIfNotNull("--image-format ", ImageFormat);
         }
 
         AppendSwitchIfNotNullSanitized(builder, "--entrypoint ", nameof(Entrypoint), Entrypoint);

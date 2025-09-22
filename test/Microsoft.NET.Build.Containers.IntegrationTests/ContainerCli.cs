@@ -9,11 +9,10 @@ static class ContainerCli
 
     public static bool IsAvailable => _isAvailable.Value;
 
+    public static bool IsContainerdStoreEnabledForDocker => DockerCli.IsContainerdStoreEnabledForDocker();
+
     public static RunExeCommand PullCommand(ITestOutputHelper log, params string[] args)
       => CreateCommand(log, "pull", args);
-
-    public static RunExeCommand TagCommand(ITestOutputHelper log, params string[] args)
-      => CreateCommand(log, "tag", args);
 
     public static RunExeCommand PushCommand(ITestOutputHelper log, params string[] args)
       => CreateCommand(log, "push", args);

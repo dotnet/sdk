@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="CannotMigrateSlnx">
         <source>Only .sln files can be migrated to .slnx format.</source>
-        <target state="new">Only .sln files can be migrated to .slnx format.</target>
+        <target state="translated">Seuls les fichiers .sln peuvent être migrés au format .slnx.</target>
         <note />
       </trans-unit>
       <trans-unit id="InRoot">
@@ -44,7 +44,7 @@
       </trans-unit>
       <trans-unit id="MigrateAppFullName">
         <source>Generate a .slnx file from a .sln file.</source>
-        <target state="new">Generate a .slnx file from a .sln file.</target>
+        <target state="translated">Générez un fichier .slnx à partir d’un fichier .sln.</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveAppFullName">
@@ -69,12 +69,12 @@
       </trans-unit>
       <trans-unit id="SerializerNotFound">
         <source>Could not read solution file {0}. Supported files are .sln and .slnx valid solutions.</source>
-        <target state="new">Could not read solution file {0}. Supported files are .sln and .slnx valid solutions.</target>
+        <target state="translated">Impossible de lire le fichier solution {0}. Les fichiers pris en charge sont des solutions valides .sln et .slnx.</target>
         <note />
       </trans-unit>
       <trans-unit id="SlnxGenerated">
         <source>.slnx file {0} generated.</source>
-        <target state="new">.slnx file {0} generated.</target>
+        <target state="translated">Fichier .slnx {0} généré.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionArgumentName">

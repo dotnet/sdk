@@ -125,14 +125,13 @@ stages:
       - template: ../jobs/vmr-build.yml
         parameters:
           # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-          buildName: ${{ format('{0}_Offline_PreviousSourceBuiltSdk', variables.alpinePreviousName) }}
+          buildName: ${{ format('{0}_Offline_PreviousSourceBuiltSdk', variables.centOSStreamName) }}
           isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
           vmrBranch: ${{ variables.VmrBranch }}
           architecture: x64
-          artifactsRid: ${{ variables.alpinePreviousX64Rid }}
+          artifactsRid: ${{ variables.centOSStreamX64Rid }}
           pool: ${{ parameters.pool_Linux }}
-          container: ${{ variables.alpinePreviousContainer }}
-          targetRid: ${{ variables.alpinePreviousX64Rid }}
+          container: ${{ variables.centOSStreamContainer }}
           buildFromArchive: false            # 🚫
           buildSourceOnly: true              # ✅
           enablePoison: true                 # ✅
@@ -166,18 +165,18 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: ${{ format('{0}_Online_MsftSdk', variables.alpineLatestName) }}
+            buildName: ${{ format('{0}_Offline_MsftSdk', variables.alpineName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.alpineLatestContainer }}
-            targetRid: ${{ variables.alpineLatestX64Rid }}
+            container: ${{ variables.alpineContainer }}
+            targetRid: ${{ variables.alpineX64Rid }}
             buildFromArchive: false            # 🚫
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
             excludeOmniSharpTests: true        # ✅
-            runOnline: true                    # ✅
+            runOnline: false                   # 🚫
             useMonoRuntime: false              # 🚫
             withPreviousSDK: false             # 🚫
 
@@ -213,24 +212,6 @@ stages:
             enablePoison: false                # 🚫
             excludeOmniSharpTests: false       # 🚫
             runOnline: true                    # ✅
-            useMonoRuntime: false              # 🚫
-            withPreviousSDK: true              # ✅
-
-        - template: ../jobs/vmr-build.yml
-          parameters:
-            # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: ${{ format('{0}_Offline_PreviousSourceBuiltSdk', variables.centOSStreamName) }}
-            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
-            vmrBranch: ${{ variables.VmrBranch }}
-            architecture: x64
-            artifactsRid: ${{ variables.centOSStreamX64Rid }}
-            pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.centOSStreamContainer }}
-            buildFromArchive: false            # 🚫
-            buildSourceOnly: true              # ✅
-            enablePoison: false                # 🚫
-            excludeOmniSharpTests: true        # ✅
-            runOnline: false                   # 🚫
             useMonoRuntime: false              # 🚫
             withPreviousSDK: true              # ✅
 

@@ -66,7 +66,9 @@ src/diagnostics/THIRD-PARTY-NOTICES.TXT|codesourcery-2004
 
 # False positive
 src/efcore/test/EfCore.Tests/ChangeTracking/ComplexPropertyEntryTest.cs|proprietary-license
+src/efcore/test/EFCore.Tests/ChangeTracking/EntityEntryTest.cs|proprietary-license
 src/efcore/test/EfCore.Tests/ChangeTracking/MemberEntryTest.cs|proprietary-license
+src/efcore/test/EFCore.Tests/ChangeTracking/PropertyEntryTest.cs|proprietary-license
 
 #
 # fsharp
@@ -74,6 +76,9 @@ src/efcore/test/EfCore.Tests/ChangeTracking/MemberEntryTest.cs|proprietary-licen
 
 # Applies to installer, not source
 src/fsharp/setup/resources/eula/*.rtf
+
+# False positive
+src/fsharp/tests/fsharp/core/members/ops/THIRD-PARTY-NOTICES.TXT|unknown-license-reference
 
 #
 # msbuild
@@ -106,6 +111,7 @@ src/nuget-client/test/NuGet.Core.Tests/NuGet.Packaging.Test/DefaultManifestValue
 src/nuget-client/test/NuGet.Core.Tests/NuGet.Packaging.Test/LicensesTests/LicenseExpressionTokenizerTests.cs
 src/nuget-client/test/NuGet.Core.Tests/NuGet.Packaging.Test/LicensesTests/NuGetLicenseExpressionParserTests.cs
 src/nuget-client/test/NuGet.Core.Tests/NuGet.Packaging.Test/LicensesTests/NuGetLicenseTests.cs
+src/nuget-client/test/NuGet.Core.FuncTests/Dotnet.Integration.Test/PackCommandTests.cs|389-exception
 src/nuget-client/test/TestUtilities/Test.Utility/JsonData.cs
 
 #
@@ -187,6 +193,9 @@ src/source-build-externals/src/humanizer/NuSpecs/*.nuspec*
 src/source-build-externals/src/xunit/README.md|free-unknown
 src/source-build-externals/src/xunit/src/xunit.assert/Asserts/README.md|free-unknown
 
+# Configuration, doesn't apply to source directly
+src/source-build-externals/src/vs-solutionpersistence/stylecop.json
+
 # Scanner is identifying the https://github.com/SixLabors/ImageSharp/blob/master/LICENSE license as unknown. But this license is not applicable because we're
 # relying on the Spectre.Console distribution.
 # See https://github.com/dotnet/dotnet/blob/c6a7278fbb7d79fa3d1f386ef0dc8474043ed06c/src/source-build-externals/src/spectre-console/README.md?plain=1#L104
@@ -242,7 +251,7 @@ src/wpf/src/Microsoft.DotNet.Wpf/src/PresentationCore/System/Windows/Media/FontE
 src/wpf/eng/WpfArcadeSdk/tools/AvTrace/GenTraceSources.pl|proprietary-license
 src/wpf/eng/WpfArcadeSdk/tools/GenXmlStringTable.pl|proprietary-license
 
-# False positive - https://github.com/dotnet/source-build/issues/4373
+# False positive
 src/wpf/src/Microsoft.DotNet.Wpf/src/PresentationUI/MS/Internal/Documents/RMPublishingDialog.RightsTable.cs|unknown-license-reference
 src/wpf/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/WindowBackdropType.cs|bsd-2-clause-views
 src/wpf/src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Resources/*.xaml|bsd-2-clause-views
@@ -250,3 +259,4 @@ src/wpf/src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Resourc
 src/wpf/src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Styles/*.xaml|bsd-2-clause-views
 src/wpf/src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Styles/*.xaml|mpl-2.0
 src/wpf/src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Themes/*.xaml|bsd-2-clause-views
+src/wpf/src/Microsoft.DotNet.Wpf/src/WindowsBase/MS/Internal/IO/Packaging/CompoundFile/RightsManagementEncryptionTransform.cs|proprietary-license

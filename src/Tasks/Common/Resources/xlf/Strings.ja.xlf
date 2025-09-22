@@ -1023,11 +1023,6 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1057: プレビュー版の .NET を使用しています。https://aka.ms/dotnet-support-policy をご覧ください</target>
         <note>{StrBegin="NETSDK1057: "}</note>
       </trans-unit>
-      <trans-unit id="UsingPreviewUseUwpFeature">
-        <source>NETSDK1219: UseUwp and all associated functionality are currently experimental and not officially supported.</source>
-        <target state="translated">NETSDK1219: UseUwp および関連するすべての機能は現在試験段階であり、正式にはサポートされていません。</target>
-        <note>{StrBegin="NETSDK1219: "}</note>
-      </trans-unit>
       <trans-unit id="WinMDObjNotSupportedOnTargetFramework">
         <source>NETSDK1131: Producing a managed Windows Metadata component with WinMDExp is not supported when targeting {0}.</source>
         <target state="translated">NETSDK1131: {0} をターゲットにする場合、WinMDExp を使用したマネージド Windows メタデータ コンポーネント生成はサポートされていません。</target>
