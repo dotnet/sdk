@@ -34,6 +34,10 @@ namespace Microsoft.DotNet.Watch
         bool SuppressLaunchBrowser = false,
         bool SuppressBrowserRefresh = false,
         bool SuppressEmojis = false,
+        bool RestartOnRudeEdit = false,
+        string? AutoReloadWebSocketHostName = null,
+        int? AutoReloadWebSocketPort = null,
+        string? BrowserPath = null,
         TestFlags TestFlags = TestFlags.None,
         string TestOutput = "")
     {
@@ -48,6 +52,10 @@ namespace Microsoft.DotNet.Watch
             SuppressLaunchBrowser: EnvironmentVariables.SuppressLaunchBrowser,
             SuppressBrowserRefresh: EnvironmentVariables.SuppressBrowserRefresh,
             SuppressEmojis: EnvironmentVariables.SuppressEmojis,
+            RestartOnRudeEdit: EnvironmentVariables.RestartOnRudeEdit,
+            AutoReloadWebSocketHostName: EnvironmentVariables.AutoReloadWSHostName,
+            AutoReloadWebSocketPort: EnvironmentVariables.AutoReloadWSPort,
+            BrowserPath: EnvironmentVariables.BrowserPath,
             TestFlags: EnvironmentVariables.TestFlags,
             TestOutput: EnvironmentVariables.TestOutputDir
         );

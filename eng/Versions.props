@@ -23,7 +23,7 @@
     <PreReleaseVersionLabel Condition="'$(StabilizePackageVersion)' != 'true'">rc</PreReleaseVersionLabel>
     <PreReleaseVersionLabel Condition="'$(StabilizePackageVersion)' == 'true' and $(VersionPrefix.EndsWith('00'))">rtm</PreReleaseVersionLabel>
     <PreReleaseVersionLabel Condition="'$(StabilizePackageVersion)' == 'true' and !$(VersionPrefix.EndsWith('00'))">servicing</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration Condition="'$(StabilizePackageVersion)' != 'true'">1</PreReleaseVersionIteration>
+    <PreReleaseVersionIteration Condition="'$(StabilizePackageVersion)' != 'true'">2</PreReleaseVersionIteration>
     <!-- In source-build the version of the compiler must be same or newer than the version of the
          compiler API targeted by analyzer assemblies. This is mostly an issue on source-build as
          in that build mode analyzer assemblies always target the live compiler API. -->
@@ -65,8 +65,6 @@
     <SystemCommandLineVersion>2.0.0-rc.1.25377.103</SystemCommandLineVersion>
     <SystemCommandLineNamingConventionBinderVersion>2.0.0-beta5.25279.2</SystemCommandLineNamingConventionBinderVersion>
     <MicrosoftCodeAnalysisAnalyzerTestingVersion>1.1.2</MicrosoftCodeAnalysisAnalyzerTestingVersion>
-    <MicrosoftCodeAnalysisVersionForNetAnalyzers Condition="'$(DotNetBuildSourceOnly)' != 'true'">3.11.0</MicrosoftCodeAnalysisVersionForNetAnalyzers>
-    <MicrosoftCodeAnalysisVersionForNetAnalyzers Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(MicrosoftCodeAnalysisVersion)</MicrosoftCodeAnalysisVersionForNetAnalyzers>
     <MicrosoftVisualBasicVersion>10.3.0</MicrosoftVisualBasicVersion>
     <MicrosoftVisualStudioSetupConfigurationInteropVersion>3.2.2146</MicrosoftVisualStudioSetupConfigurationInteropVersion>
     <MicrosoftWindowsCsWin32PackageVersion>0.3.49-beta</MicrosoftWindowsCsWin32PackageVersion>
@@ -84,7 +82,7 @@
     <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
     <!-- These are minimum versions used for netfx-targeted components that run in Visual Studio because in those cases,
          Visual Studio is providing those assemblies, and we should work with whichever version it ships. -->
-    <MicrosoftBclAsyncInterfacesToolsetPackageVersion>8.0.0</MicrosoftBclAsyncInterfacesToolsetPackageVersion>
+    <MicrosoftBclAsyncInterfacesToolsetPackageVersion>9.0.0</MicrosoftBclAsyncInterfacesToolsetPackageVersion>
     <MicrosoftDeploymentDotNetReleasesToolsetPackageVersion>2.0.0-preview.1.24427.4</MicrosoftDeploymentDotNetReleasesToolsetPackageVersion>
     <MicrosoftExtensionsLoggingAbstractionsToolsetPackageVersion>9.0.0</MicrosoftExtensionsLoggingAbstractionsToolsetPackageVersion>
     <SystemBuffersToolsetPackageVersion>4.5.1</SystemBuffersToolsetPackageVersion>
@@ -93,7 +91,7 @@
     <SystemReflectionMetadataLoadContextToolsetPackageVersion>9.0.0</SystemReflectionMetadataLoadContextToolsetPackageVersion>
     <SystemReflectionMetadataToolsetPackageVersion>9.0.0</SystemReflectionMetadataToolsetPackageVersion>
     <SystemDiagnosticsDiagnosticSourceToolsetPackageVersion>9.0.0</SystemDiagnosticsDiagnosticSourceToolsetPackageVersion>
-    <SystemTextJsonToolsetPackageVersion>8.0.5</SystemTextJsonToolsetPackageVersion>
+    <SystemTextJsonToolsetPackageVersion>9.0.0</SystemTextJsonToolsetPackageVersion>
     <SystemThreadingTasksExtensionsToolsetPackageVersion>4.5.4</SystemThreadingTasksExtensionsToolsetPackageVersion>
     <SystemResourcesExtensionsToolsetPackageVersion>8.0.0</SystemResourcesExtensionsToolsetPackageVersion>
   </PropertyGroup>
@@ -117,7 +115,7 @@
 
          Additionally, set the MinimumVSVersion for the installer UI that's required for targeting NetCurrent -->
     <MicrosoftBuildMinimumVersion Condition="'$(DotNetBuildSourceOnly)' != 'true'">17.14.8</MicrosoftBuildMinimumVersion>
-    <MinimumVSVersion>17.14</MinimumVSVersion>
+    <MinimumVSVersion>18.0</MinimumVSVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/emsdk -->

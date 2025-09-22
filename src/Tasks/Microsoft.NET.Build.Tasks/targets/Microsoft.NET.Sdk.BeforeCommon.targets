@@ -213,11 +213,20 @@ Copyright (c) .NET Foundation. All rights reserved.
         Condition=" '$(DisableImplicitFrameworkDefines)' != 'true' and '$(TargetPlatformIdentifier)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) " >
     <PropertyGroup>
       <_PlatformIdentifierForImplicitDefine>$(TargetPlatformIdentifier.ToUpperInvariant())</_PlatformIdentifierForImplicitDefine>
-      <_PlatformVersionForImplicitDefine>$(TargetPlatformVersion.Replace('.', '_'))</_PlatformVersionForImplicitDefine>
+      <_PlatformVersionForImplicitDefine>$(EffectiveTargetPlatformVersion.Replace('.', '_'))</_PlatformVersionForImplicitDefine>
     </PropertyGroup>
     <ItemGroup>
       <_ImplicitDefineConstant Include="$(_PlatformIdentifierForImplicitDefine)" />
       <_ImplicitDefineConstant Include="$(_PlatformIdentifierForImplicitDefine)$(_PlatformVersionForImplicitDefine)" />
+    </ItemGroup>
+
+    <!--
+      We support multi-targeting CsWinRT 3.0, which has several breaking changes that consuming projects might require
+      using 'ifdef'-s for, to handle the differences between CsWinRT 2.x and 3.0. So when that is used, we also define
+      a constant. Common scenarios are 'TypedEventHandler<,>' not existing anymore, and interop code being different.
+    -->
+    <ItemGroup Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true' and '$(_TargetPlatformVersionUsesCsWinRT3)' == 'true' ">
+      <_ImplicitDefineConstant Include="CSWINRT3_0" />
     </ItemGroup>
   </Target>
 
@@ -242,7 +251,15 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="GeneratePlatformCompatibleDefineConstants"
           Condition=" '$(DisableImplicitFrameworkDefines)' != 'true' and '$(TargetPlatformIdentifier)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) " >
     <ItemGroup>
-      <_SupportedPlatformCompatibleVersions Include="@(SdkSupportedTargetPlatformVersion)" Condition=" %(Identity) != '' and $([MSBuild]::VersionLessThanOrEquals(%(Identity), $(TargetPlatformVersion))) " />
+      <!--
+        Prefer the normalized version of the supported target platform version when available.
+        This allows to drop the .1 at the end of the version in CsWinRT 3.0 scenarios and 
+        use a common define for both CsWinRT 3.0 and CsWinRT 2.x.
+      -->
+      <_SupportedPlatformCompatibleVersions Include="@(SdkSupportedTargetPlatformVersion)"
+                                            Condition=" %(Identity) != '' and '%(SdkSupportedTargetPlatformVersion.NormalizedSupportedTargetPlatformVersion)' == '' and $([MSBuild]::VersionLessThanOrEquals(%(Identity), $(TargetPlatformVersion))) " />
+      <_SupportedPlatformCompatibleVersions Include="@(SdkSupportedTargetPlatformVersion->'%(NormalizedSupportedTargetPlatformVersion)')"
+                                            Condition=" '%(SdkSupportedTargetPlatformVersion.NormalizedSupportedTargetPlatformVersion)' != '' and $([MSBuild]::VersionLessThanOrEquals('%(SdkSupportedTargetPlatformVersion.NormalizedSupportedTargetPlatformVersion)', $(TargetPlatformVersion))) " />
       <_ImplicitDefineConstant Include="@(_SupportedPlatformCompatibleVersions->Distinct()->'$(TargetPlatformIdentifier.ToUpper())%(Identity)_OR_GREATER'->Replace('.', '_'))" />
     </ItemGroup>
   </Target>
@@ -344,9 +361,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Otherwise>
   </Choose>
 
+  <!-- NOTE: Compiler toolset packages should set the following properties on their own, hence we set them only for RoslynCompilerType being Core or Framework. -->
+  <PropertyGroup Condition="'$(RoslynCompilerType)' == 'Core' or '$(RoslynCompilerType)' == 'Framework'">
+    <!-- In Full Framework MSBuild, RoslynTargetsPath originally points to the directory with Full Framework Roslyn assemblies. -->
+    <RoslynAssembliesPath Condition="'$(RoslynAssembliesPath)' == '' and '$(MSBuildRuntimeType)' != 'Core'">$(RoslynTargetsPath)</RoslynAssembliesPath>
+    <RoslynCoreAssembliesPath>$(MSBuildThisFileDirectory)..\..\..\Roslyn\bincore</RoslynCoreAssembliesPath>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(RoslynCompilerType)' == 'Core'">
     <RoslynTargetsPath Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\..\..\Roslyn</RoslynTargetsPath>
     <RoslynTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\..\..\Roslyn\Microsoft.Build.Tasks.CodeAnalysis.dll</RoslynTasksAssembly>
+    <RoslynAssembliesPath Condition="'$(RoslynAssembliesPath)' == '' and '$(MSBuildRuntimeType)' == 'Core'">$(RoslynCoreAssembliesPath)</RoslynAssembliesPath>
     <RoslynTargetsPath Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\..\..\Roslyn\binfx</RoslynTargetsPath>
     <RoslynTasksAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\..\..\Roslyn\binfx\Microsoft.Build.Tasks.CodeAnalysis.Sdk.dll</RoslynTasksAssembly>
     <CSharpCoreTargetsPath>$(MSBuildThisFileDirectory)..\..\..\Roslyn\Microsoft.CSharp.Core.targets</CSharpCoreTargetsPath>

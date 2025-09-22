@@ -12,6 +12,10 @@
     <PackageReference Include="Moq" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\dotnet-watch.Tests\TestUtilities\AssertEx.cs" Link="Utilities\AssertEx.cs" />
+  </ItemGroup>
+
   <Import Project="..\..\src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems" Label="Shared" />
 
 </Project>
