@@ -6,15 +6,8 @@ using Microsoft.DotNet.Tools.Run;
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
     [Collection(TestConstants.UsesStaticTelemetryState)]
-    public class GivenDotnetRunInvocation : IClassFixture<NullCurrentSessionIdFixture>
+    public class GivenDotnetRunInvocation(ITestOutputHelper log) : SdkTest(log), IClassFixture<NullCurrentSessionIdFixture>
     {
-        public ITestOutputHelper Log { get; }
-
-        public GivenDotnetRunInvocation(ITestOutputHelper log)
-        {
-            Log = log;
-        }
-
         [Theory]
         [InlineData(new string[] { "-p:prop1=true" }, new string[] { "--property:prop1=true" })]
         [InlineData(new string[] { "--property:prop1=true" }, new string[] { "--property:prop1=true" })]
@@ -29,9 +22,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
             string[] constantRestoreArgs = ["-nologo", "-verbosity:quiet"];
             string[] fullExpectedArgs = constantRestoreArgs.Concat(expectedArgs).ToArray();
-            var tam = new TestAssetsManager(Log);
             var oldWorkingDirectory = Directory.GetCurrentDirectory();
-            var newWorkingDir = tam.CopyTestAsset("HelloWorld", identifier: $"{nameof(MsbuildInvocationIsCorrect)}_{args.GetHashCode()}_{expectedArgs.GetHashCode()}").WithSource().Path;
+            var newWorkingDir = _testAssetsManager.CopyTestAsset("HelloWorld", identifier: $"{nameof(MsbuildInvocationIsCorrect)}_{args.GetHashCode()}_{expectedArgs.GetHashCode()}").WithSource().Path;
             try
             {
                 Directory.SetCurrentDirectory(newWorkingDir);

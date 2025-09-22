@@ -32,7 +32,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         {
             if (!ShutdownSource.IsCancellationRequested)
             {
-                Test.Log("Shutting down");
+                Test.LogMessage("Shutting down");
                 ShutdownSource.Cancel();
             }
 
@@ -54,7 +54,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
     }
 
     private TestAsset CopyTestAsset(string assetName, params object[] testParameters)
-        => TestAssets.CopyTestAsset(assetName, identifier: string.Join(";", testParameters)).WithSource();
+        => _testAssetsManager.CopyTestAsset(assetName, identifier: string.Join(";", testParameters)).WithSource();
 
     private static async Task<RunningProject> Launch(string projectPath, TestRuntimeProcessLauncher service, string workingDirectory, CancellationToken cancellationToken)
     {
@@ -94,8 +94,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
     private RunningWatcher StartWatcher(TestAsset testAsset, string[] args, string workingDirectory, string projectPath, SemaphoreSlim? fileChangesCompleted = null)
     {
-        var console = new TestConsole(Logger);
-        var reporter = new TestReporter(Logger);
+        var console = new TestConsole(Log);
+        var reporter = new TestReporter(Log);
 
         var program = Program.TryCreate(
            TestOptions.GetCommandLineOptions(["--verbose", ..args, "--project", projectPath]),
@@ -193,25 +193,25 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await launchCompletionB.Task;
 
         // let the host process start:
-        Log("Waiting for changes...");
+        LogMessage("Waiting for changes...");
         await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
 
-        Log("Waiting for session started...");
+        LogMessage("Waiting for session started...");
         await sessionStarted.WaitAsync(w.ShutdownSource.Token);
 
         await MakeRudeEditChange();
 
-        Log("Waiting for changed handled ...");
+        LogMessage("Waiting for changed handled ...");
         await changeHandled.WaitAsync(w.ShutdownSource.Token);
 
         // Wait for project baselines to be updated, so that we capture the new solution snapshot
         // and further changes are treated as another update.
-        Log("Waiting for baselines updated...");
+        LogMessage("Waiting for baselines updated...");
         await projectBaselinesUpdated.WaitAsync(w.ShutdownSource.Token);
 
         await MakeValidDependencyChange();
 
-        Log("Waiting for changed handled ...");
+        LogMessage("Waiting for changed handled ...");
         await changeHandled.WaitAsync(w.ShutdownSource.Token);
 
         // Hot Reload shared dependency - should update both service projects
@@ -259,10 +259,10 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 }
                 """);
 
-            Log("Waiting for updated output from project A ...");
+            LogMessage("Waiting for updated output from project A ...");
             await hasUpdateSourceA.Task;
 
-            Log("Waiting for updated output from project B ...");
+            LogMessage("Waiting for updated output from project B ...");
             await hasUpdateSourceB.Task;
 
             Assert.True(hasUpdateSourceA.Task.IsCompletedSuccessfully);
@@ -288,7 +288,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 [assembly: System.Reflection.AssemblyMetadata("TestAssemblyMetadata", "2")]
                 """);
 
-            Log("Waiting for updated output from project A ...");
+            LogMessage("Waiting for updated output from project A ...");
             await hasUpdateSource.Task;
 
             Assert.True(hasUpdateSource.Task.IsCompletedSuccessfully);
@@ -345,7 +345,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         };
 
         // let the host process start:
-        Log("Waiting for changes...");
+        LogMessage("Waiting for changes...");
         await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
 
         // service should have been created before Hot Reload session started:
@@ -366,23 +366,23 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 }
                 """);
 
-        Log("Waiting for updated output from A ...");
+        LogMessage("Waiting for updated output from A ...");
         await hasUpdateA.WaitAsync(w.ShutdownSource.Token);
 
         // Host and ServiceA received updates:
-        Log("Waiting for updates applied 1/2 ...");
+        LogMessage("Waiting for updates applied 1/2 ...");
         await updatesApplied.WaitAsync(w.ShutdownSource.Token);
 
-        Log("Waiting for updates applied 2/2 ...");
+        LogMessage("Waiting for updates applied 2/2 ...");
         await updatesApplied.WaitAsync(w.ShutdownSource.Token);
 
         await Launch(serviceProjectB, w.Service, workingDirectory, w.ShutdownSource.Token);
 
         // ServiceB received updates:
-        Log("Waiting for updates applied ...");
+        LogMessage("Waiting for updates applied ...");
         await updatesApplied.WaitAsync(w.ShutdownSource.Token);
 
-        Log("Waiting for updated output from B ...");
+        LogMessage("Waiting for updated output from B ...");
         await hasUpdateB.WaitAsync(w.ShutdownSource.Token);
     }
 
@@ -432,7 +432,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await Task.Delay(TimeSpan.FromSeconds(1));
 
         // let the host process start:
-        Log("Waiting for changes...");
+        LogMessage("Waiting for changes...");
         await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
 
         switch (updateLocation)
@@ -451,7 +451,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                     """);
 
                 // Host received Hot Reload updates:
-                Log("Waiting for change handled ...");
+                LogMessage("Waiting for change handled ...");
                 await changeHandled.WaitAsync(w.ShutdownSource.Token);
                 break;
 
@@ -460,7 +460,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 UpdateSourceFile(hostProgram, content => content.Replace("Waiting", "<Updated>"));
 
                 // Host received Hot Reload updates:
-                Log("Waiting for change handled ...");
+                LogMessage("Waiting for change handled ...");
                 await changeHandled.WaitAsync(w.ShutdownSource.Token);
                 break;
 
@@ -469,17 +469,17 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 UpdateSourceFile(hostProgram, content => content.Replace("Started", "<Updated>"));
 
                 // ⚠ ENC0118: Changing 'top-level code' might not have any effect until the application is restarted. Press "Ctrl + R" to restart.
-                Log("Waiting for restart needed ...");
+                LogMessage("Waiting for restart needed ...");
                 await restartNeeded.WaitAsync(w.ShutdownSource.Token);
 
                 w.Console.PressKey(new ConsoleKeyInfo('R', ConsoleKey.R, shift: false, alt: false, control: true));
 
-                Log("Waiting for restart requested ...");
+                LogMessage("Waiting for restart requested ...");
                 await restartRequested.WaitAsync(w.ShutdownSource.Token);
                 break;
         }
 
-        Log("Waiting updated output from Host ...");
+        LogMessage("Waiting updated output from Host ...");
         await hasUpdate.WaitAsync(w.ShutdownSource.Token);
     }
 
@@ -503,14 +503,14 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var sessionStarted = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadSessionStarted);
 
         // let the host process start:
-        Log("Waiting for changes...");
+        LogMessage("Waiting for changes...");
         await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
 
         // service should have been created before Hot Reload session started:
         Assert.NotNull(w.Service);
 
         var runningProject = await Launch(serviceProjectA, w.Service, workingDirectory, w.ShutdownSource.Token);
-        Log("Waiting for session started ...");
+        LogMessage("Waiting for session started ...");
         await sessionStarted.WaitAsync(w.ShutdownSource.Token);
 
         // Terminate the process:
@@ -521,7 +521,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             [assembly: System.Reflection.AssemblyMetadata("TestAssemblyMetadata", "2")]
             """);
 
-        Log("Waiting for change handled ...");
+        LogMessage("Waiting for change handled ...");
         await changeHandled.WaitAsync(w.ShutdownSource.Token);
 
         w.Reporter.ProcessOutput.Contains("verbose ⌚ Rude edits detected but do not affect any running process");
@@ -594,7 +594,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var fileAdditionTriggeredReEvaluation = w.Reporter.RegisterSemaphore(MessageDescriptor.FileAdditionTriggeredReEvaluation);
         var noHotReloadChangesToApply = w.Reporter.RegisterSemaphore(MessageDescriptor.NoHotReloadChangesToApply);
 
-        Log("Waiting for changes...");
+        LogMessage("Waiting for changes...");
         await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
         
         UpdateSourceFile(path, "class C { int F() => 2; }");
@@ -602,27 +602,27 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         switch ((isExisting, isIncluded, directoryKind))
         {
             case (isExisting: true, isIncluded: true, directoryKind: _):
-                Log("Waiting for changed handled ...");
+                LogMessage("Waiting for changed handled ...");
                 await changeHandled.WaitAsync(w.ShutdownSource.Token);
                 break;
 
             case (isExisting: true, isIncluded: false, directoryKind: DirectoryKind.Ordinary):
-                Log("Waiting for no hot reload changes to apply ...");
+                LogMessage("Waiting for no hot reload changes to apply ...");
                 await noHotReloadChangesToApply.WaitAsync(w.ShutdownSource.Token);
                 break;
 
             case (isExisting: false, isIncluded: _, directoryKind: DirectoryKind.Ordinary):
-                Log("Waiting for file addition re-evalutation ...");
+                LogMessage("Waiting for file addition re-evalutation ...");
                 await fileAdditionTriggeredReEvaluation.WaitAsync(w.ShutdownSource.Token);
                 break;
 
             case (isExisting: _, isIncluded: _, directoryKind: DirectoryKind.Hidden):
-                Log("Waiting for ignored change in hidden dir ...");
+                LogMessage("Waiting for ignored change in hidden dir ...");
                 await ignoringChangeInHiddenDirectory.WaitAsync(w.ShutdownSource.Token);
                 break;
 
             case (isExisting: _, isIncluded: _, directoryKind: DirectoryKind.Bin or DirectoryKind.Obj):
-                Log("Waiting for ignored change in output dir ...");
+                LogMessage("Waiting for ignored change in output dir ...");
                 await ignoringChangeInOutputDirectory.WaitAsync(w.ShutdownSource.Token);
                 break;
 

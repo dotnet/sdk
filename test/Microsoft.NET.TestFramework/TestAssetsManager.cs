@@ -14,6 +14,7 @@ namespace Microsoft.NET.TestFramework
 
         protected ITestOutputHelper Log { get; }
 
+        [Obsolete($"Use instance provided by {nameof(SdkTest)}.")]
         public TestAssetsManager(ITestOutputHelper log)
         {
             var testAssetsDirectory = TestContext.Current.TestAssetsDirectory;

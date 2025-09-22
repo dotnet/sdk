@@ -14,7 +14,9 @@ namespace Microsoft.NET.TestFramework
         protected SdkTest(ITestOutputHelper log)
         {
             Log = log;
+#pragma warning disable CS0618 // The only allowed caller of TestAssetsManager constructor.
             _testAssetsManager = new TestAssetsManager(log);
+#pragma warning restore CS0618
         }
 
         protected static void WaitForUtcNowToAdvance()

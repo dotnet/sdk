@@ -8,10 +8,8 @@ using Microsoft.NET.Build.Tasks.UnitTests;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class FileSetSerializerTests(ITestOutputHelper output)
+public class FileSetSerializerTests(ITestOutputHelper output) : SdkTest(output)
 {
-    private readonly TestAssetsManager _testAssetManager = new (output);
-
     private static string Serialize(MSBuildFileSetResult fileSetResult, Stream stream)
     {
         foreach (var item in fileSetResult.Projects.Values)
@@ -102,7 +100,7 @@ public class FileSetSerializerTests(ITestOutputHelper output)
     [Fact]
     public async Task Task()
     {
-        var dir = _testAssetManager.CreateTestDirectory().Path;
+        var dir = _testAssetsManager.CreateTestDirectory().Path;
         var outputPath = Path.Combine(dir, "output.txt");
 
         var engine = new MockBuildEngine();
