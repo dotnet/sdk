@@ -2,7 +2,7 @@
   <PropertyGroup>
     <!--
       This assembly may be loaded .NET 6.0+ web server.
-      When updating the TFM also update minimal supported version in BrowserConnector.cs.
+      When updating the TFM also update minimal supported version in dotnet-watch.csproj and WebApplicationAppModel.cs.
     -->
     <TargetFramework>net6.0</TargetFramework>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
@@ -22,8 +22,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
-    <!-- Reference 6.0.0 targeting packs in Source Build -->
-    <FrameworkReference Update="Microsoft.AspNetCore.App" TargetingPackVersion="6.0.0" />
+    <!-- Reference 6.0 targeting packs in Source Build -->
+    <FrameworkReference Update="Microsoft.AspNetCore.App" TargetingPackVersion="6.0.2" />
     <FrameworkReference Update="Microsoft.NETCore.App" TargetingPackVersion="6.0.0" />
   </ItemGroup>
 
