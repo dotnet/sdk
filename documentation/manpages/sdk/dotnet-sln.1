@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-sln" "1" "2025-06-13" "" ".NET Documentation"
+.TH "dotnet-sln" "1" "2025-08-29" "" ".NET Documentation"
 .hy
 .SH dotnet sln
 .PP
@@ -39,7 +39,7 @@ The \f[V]dotnet sln\f[R] command provides a convenient way to list and modify pr
 To use the \f[V]dotnet sln\f[R] command, the solution file must already exist.
 If you need to create one, use the dotnet new command with the \f[V]sln\f[R] template name.
 .PP
-The following example creates a \f[I].sln\f[R] file in the current folder, with the same name as the folder:
+The following example creates an \f[I].slnx\f[R] file in the current folder, with the same name as the folder:
 .IP
 .nf
 \f[C]
@@ -47,7 +47,7 @@ dotnet new sln
 \f[R]
 .fi
 .PP
-The following example creates a \f[I].sln\f[R] file in the current folder, with the specified file name:
+The following example creates an \f[I].slnx\f[R] file in the current folder, with the specified file name:
 .IP
 .nf
 \f[C]
@@ -55,13 +55,17 @@ dotnet new sln --name MySolution
 \f[R]
 .fi
 .PP
-The following example creates a \f[I].sln\f[R] file in the specified folder, with the same name as the folder:
+The following example creates an \f[I].slnx\f[R] file in the specified folder, with the same name as the folder:
 .IP
 .nf
 \f[C]
 dotnet new sln --output MySolution
 \f[R]
 .fi
+.RS
+.PP
+In .NET 9 and earlier versions, \f[V]dotnet new sln\f[R] creates an \f[I].sln\f[R] file instead of an \f[I].slnx\f[R] file.
+.RE
 .SH ARGUMENTS
 .IP \[bu] 2
 \f[B]\f[VB]SOLUTION_FILE\f[B]\f[R]
