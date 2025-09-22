@@ -61,7 +61,7 @@ Every telemetry event automatically includes these common properties:
 | **Telemetry Profile** | Custom telemetry profile (if set via env var) | Custom value or null |
 | **Docker Container** | Whether running in Docker container | `True` or `False` |
 | **CI** | Whether running in CI environment | `True` or `False` |
-| **LLM** | Detected LLM/assistant environment identifiers (comma-separated) | `claude`, `claude, cursor`, or null |
+| **LLM** | Detected LLM/assistant environment identifiers (comma-separated) | `claude` or `cursor` |
 | **Current Path Hash** | SHA256 hash of current directory path | Hashed value |
 | **Machine ID** | SHA256 hash of machine MAC address (or GUID if unavailable) | Hashed value |
 | **Machine ID Old** | Legacy machine ID for compatibility | Hashed value |
