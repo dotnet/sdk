@@ -667,7 +667,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var testDir = _testAssetsManager.CreateTestDirectory().Path;
 
             var toolInstallGlobalOrToolPathCommand = new DotnetCommand(Log, "tool", "install", "-g", UnlistedPackageId, "--add-source", nugetSourcePath)
-                .WithEnvironmentVariable("DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK", "true")
                 .WithWorkingDirectory(testDir);
 
             toolInstallGlobalOrToolPathCommand.Execute().Should().Fail();
@@ -964,7 +963,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var testDir = _testAssetsManager.CreateTestDirectory().Path;
 
             var toolInstallCommand = new DotnetCommand(Log, "tool", "install", "-g", "fake-tool", "--add-source", "http://test.example.com/nuget")
-                .WithEnvironmentVariable("DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK", "true")
                 .WithWorkingDirectory(testDir);
 
             var result = toolInstallCommand.Execute();
@@ -992,7 +990,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             File.WriteAllText(nugetConfigPath, nugetConfigContent);
 
             var toolInstallCommand = new DotnetCommand(Log, "tool", "install", "-g", "fake-tool")
-                .WithEnvironmentVariable("DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK", "true")
                 .WithWorkingDirectory(testDir);
 
             var result = toolInstallCommand.Execute();
@@ -1020,7 +1017,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             File.WriteAllText(nugetConfigPath, nugetConfigContent);
 
             var toolInstallCommand = new DotnetCommand(Log, "tool", "install", "-g", "fake-tool")
-                .WithEnvironmentVariable("DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK", "true")
                 .WithWorkingDirectory(testDir);
 
             var result = toolInstallCommand.Execute();
