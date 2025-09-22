@@ -361,7 +361,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     }
                     else
                     {
-                        TryCacheCscArguments(cache, buildResult);
+                        CacheCscArguments(cache, buildResult);
 
                         MarkBuildSuccess(cache);
                     }
@@ -451,7 +451,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return null;
         }
 
-        void TryCacheCscArguments(CacheInfo cache, BuildResult result)
+        void CacheCscArguments(CacheInfo cache, BuildResult result)
         {
             // We cannot reuse CSC arguments from previous run and skip MSBuild if there are project references
             // because we cannot easily detect whether any referenced projects have changed.

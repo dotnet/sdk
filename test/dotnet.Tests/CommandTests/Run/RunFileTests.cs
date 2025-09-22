@@ -2842,6 +2842,11 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: optOut ? "[MyString, UpdatedValue]" : "Resource not found");
 
         Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: "[MyString, UpdatedValue]");
+
+        // Update the C# file.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "//v3\n" + code);
+
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: "[MyString, UpdatedValue]");
     }
 
     /// <summary>
