@@ -347,6 +347,45 @@ public sealed class FileBasedAppSourceEditorTests(ITestOutputHelper log) : SdkTe
             """));
     }
 
+    /// <summary>
+    /// New package directive should be sorted into the correct location in the package group.
+    /// </summary>
+    [Fact]
+    public void Sort()
+    {
+        Verify(
+            """
+            #:property X=Y
+            #:package B@C
+            #:package X@Y
+            #:project D
+            #:package E
+
+            Console.WriteLine();
+            """,
+            (static editor => editor.Add(new CSharpDirective.Package(default) { Name = "Test", Version = "1.0.0" }),
+            """
+            #:property X=Y
+            #:package B@C
+            #:package Test@1.0.0
+            #:package X@Y
+            #:project D
+            #:package E
+
+            Console.WriteLine();
+            """),
+            (static editor => editor.Remove(editor.Directives[2]),
+            """
+            #:property X=Y
+            #:package B@C
+            #:package X@Y
+            #:project D
+            #:package E
+
+            Console.WriteLine();
+            """));
+    }
+
     [Fact]
     public void OtherDirectives()
     {
