@@ -2,13 +2,13 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.NetCore.Analyzers.Runtime;
-using Analyzer.Utilities.Lightup;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 {

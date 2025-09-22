@@ -24,7 +24,8 @@ namespace Analyzer.Utilities.Lightup
                             fallbackResult: null);
                     });
 
-                    return s_RuntimeAwaitMethodAccessor!(info);
+                    RoslynDebug.Assert(s_RuntimeAwaitMethodAccessor is not null);
+                    return s_RuntimeAwaitMethodAccessor(info);
                 }
             }
         }
