@@ -11,6 +11,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             // During the dogfood, we want the MSBuild server on for build of the pipeline. Not for the tests - it breaks outputs.
             Environment.SetEnvironmentVariable("DOTNET_CLI_USE_MSBUILD_SERVER", "0");
+            Environment.SetEnvironmentVariable("MSBUILDUSESERVER", "0");
         }
 
         [Fact]
