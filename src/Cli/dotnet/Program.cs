@@ -285,6 +285,12 @@ public class Program
             }
         }
 
+        TelemetryClient.TrackEvent("command/finish", properties: new Dictionary<string, string>
+                    {
+                        { "exitCode", exitCode.ToString() }
+                    },
+            measurements: new Dictionary<string, double>());
+
         PerformanceLogEventSource.Log.TelemetryClientFlushStart();
         TelemetryClient.Flush();
         PerformanceLogEventSource.Log.TelemetryClientFlushStop();

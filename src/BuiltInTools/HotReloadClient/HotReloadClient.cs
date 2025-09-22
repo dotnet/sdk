@@ -24,10 +24,24 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
     public readonly ILogger Logger = logger;
     public readonly ILogger AgentLogger = agentLogger;
 
+    private int _updateBatchId;
+
+    /// <summary>
+    /// Updates that were sent over to the agent while the process has been suspended.
+    /// </summary>
+    private readonly object _pendingUpdatesGate = new();
+    private Task _pendingUpdates = Task.CompletedTask;
+
+    // for testing
+    internal Task PendingUpdates
+        => _pendingUpdates;
+
+    public abstract void ConfigureLaunchEnvironment(IDictionary<string, string> environmentBuilder);
+
     /// <summary>
     /// Initiates connection with the agent in the target process.
     /// </summary>
-    public abstract void InitiateConnection(string namedPipeName, CancellationToken cancellationToken);
+    public abstract void InitiateConnection(CancellationToken cancellationToken);
 
     /// <summary>
     /// Waits until the connection with the agent is established.
@@ -83,5 +97,35 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
         }
 
         return applicableUpdates;
+    }
+
+    protected async ValueTask<TResult> SendAndReceiveUpdateAsync<TResult>(
+        Func<int, CancellationToken, ValueTask<TResult>> send,
+        bool isProcessSuspended,
+        TResult suspendedResult,
+        CancellationToken cancellationToken)
+        where TResult : struct
+    {
+        var batchId = _updateBatchId++;
+
+        Task previous;
+        lock (_pendingUpdatesGate)
+        {
+            previous = _pendingUpdates;
+
+            if (isProcessSuspended)
+            {
+                _pendingUpdates = Task.Run(async () =>
+                {
+                    await previous;
+                    _ = await send(batchId, cancellationToken);
+                }, cancellationToken);
+
+                return suspendedResult;
+            }
+        }
+
+        await previous;
+        return await send(batchId, cancellationToken);
     }
 }

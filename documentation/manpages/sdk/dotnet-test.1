@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-test" "1" "2025-06-13" "" ".NET Documentation"
+.TH "dotnet-test" "1" "2025-09-15" "" ".NET Documentation"
 .hy
 .SH dotnet test
 .SH NAME
@@ -736,7 +736,6 @@ Passing runsettings arguments through commandline (https://github.com/microsoft/
 dotnet test
     [--project <PROJECT_PATH>]
     [--solution <SOLUTION_PATH>]
-    [--directory <DIRECTORY_PATH>]
     [--test-modules <EXPRESSION>] 
     [--root-directory <ROOT_PATH>]
     [--max-parallel-test-modules <NUMBER>]
@@ -780,7 +779,7 @@ For information about how to manage NuGet feeds, see the \f[V]dotnet restore\f[R
 .SH OPTIONS
 .RS
 .PP
-You can use only one of the following options at a time: \f[V]--project\f[R], \f[V]--solution\f[R], \f[V]--directory\f[R], or \f[V]--test-modules\f[R].
+You can use only one of the following options at a time: \f[V]--project\f[R], \f[V]--solution\f[R], or \f[V]--test-modules\f[R].
 These options can\[cq]t be combined.
 In addition, when using \f[V]--test-modules\f[R], you can\[cq]t specify \f[V]--arch\f[R], \f[V]--configuration\f[R], \f[V]--framework\f[R], \f[V]--os\f[R], or \f[V]--runtime\f[R].
 These options are not relevant for an already-built module.
@@ -789,19 +788,15 @@ These options are not relevant for an already-built module.
 \f[B]\f[VB]--project <PROJECT_PATH>\f[B]\f[R]
 .RS 2
 .PP
-Specifies the path to the test project.
+Specifies the path of the project file to run (folder name or full path).
+If not specified, it defaults to the current directory.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--solution <SOLUTION_PATH>\f[B]\f[R]
 .RS 2
 .PP
-Specifies the path to the solution.
-.RE
-.IP \[bu] 2
-\f[B]\f[VB]--directory <DIRECTORY_PATH>\f[B]\f[R]
-.RS 2
-.PP
-Specifies the path to a directory that contains a project or a solution.
+Specifies the path of the solution file to run (folder name or full path).
+If not specified, it defaults to the current directory.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--test-modules <EXPRESSION>\f[B]\f[R]
@@ -865,6 +860,11 @@ Available since .NET 6.
 The target runtime to test for.
 .PP
 Short form \f[V]-r\f[R] available starting in .NET SDK 7.
+.RS
+.PP
+Running tests for a solution with a global \f[V]RuntimeIdentifier\f[R] property (explicitly or via \f[V]--arch\f[R], \f[V]--runtime\f[R], or \f[V]--os\f[R]) is not supported.
+Set \f[V]RuntimeIdentifier\f[R] on an individual project level instead.
+.RE
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
@@ -989,16 +989,6 @@ Run the tests in the \f[V]TestProjects\f[R] solution:
 .nf
 \f[C]
 dotnet test --solution ./TestProjects/TestProjects.sln
-\f[R]
-.fi
-.RE
-.IP \[bu] 2
-Run the tests in a solution or project that can be found in the \f[V]TestProjects\f[R] directory:
-.RS 2
-.IP
-.nf
-\f[C]
-dotnet test --directory ./TestProjects
 \f[R]
 .fi
 .RE
