@@ -5,7 +5,7 @@
       "name": ".NET Core Launch (console)",
       "type": "coreclr",
       "request": "launch",
-      "program": "${workspaceFolder}${/}artifacts${/}bin${/}redist${/}Debug${/}dotnet${/}sdk${/}10.0.100--dev${/}dotnet.dll",
+      "program": "${workspaceFolder}${/}artifacts${/}bin${/}redist${/}Debug${/}dotnet${/}sdk${/}10.0.100-dev${/}dotnet.dll",
       "args": [
       ],
       "env": {
