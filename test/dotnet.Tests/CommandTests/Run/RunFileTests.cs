@@ -3034,6 +3034,27 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v1", programFileName: programFileName);
     }
 
+    [Fact] // https://github.com/dotnet/sdk/issues/50778
+    public void CscOnly_Args()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, s_program);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.Csc, args: ["test", "args"], expectedOutput: """
+            echo args:test;args
+            Hello from Program
+            """);
+    }
+
+    /// <summary>
+    /// Tests an optimization which remembers CSC args from prior MSBuild runs and can skip subsequent MSBuild invocations and call CSC directly.
+    /// This optimization kicks in when the file has some <c>#:</c> directives (then the simpler "hard-coded CSC args" optimization cannot be used).
+    /// </summary>
     [Fact]
     public void CscOnly_AfterMSBuild()
     {
@@ -3089,6 +3110,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.All, expectedOutput: "v4 ");
     }
 
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// </summary>
     [Fact]
     public void CscOnly_AfterMSBuild_SpacesInPath()
     {
@@ -3119,6 +3143,46 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v2 Release", programFileName: programFileName);
     }
 
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// </summary>
+    [Fact]
+    public void CscOnly_AfterMSBuild_Args()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+
+        var code = $"""
+            #:property Configuration=Release
+            {s_program}
+            """;
+
+        File.WriteAllText(programPath, code);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, args: ["test", "args"], expectedOutput: """
+            echo args:test;args
+            Hello from Program
+            Release config
+            """);
+
+        code = code.Replace("Hello", "Hi");
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance, BuildLevel.Csc, ["test", "args"], expectedOutput: """
+            echo args:test;args
+            Hi from Program
+            Release config
+            """);
+    }
+
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// This optimization currently does not support <c>#:project</c> references and hence is disabled if those are present.
+    /// </summary>
     [Fact]
     public void CscOnly_AfterMSBuild_ProjectReferences()
     {
@@ -3175,8 +3239,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// If users have more complex build customizations, they can opt out of the optimization which
-    /// reuses CSC arguments and skips subsequent MSBuild invocations.
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// If users have more complex build customizations, they can opt out of the optimization.
     /// </summary>
     [Theory, CombinatorialData]
     public void CscOnly_AfterMSBuild_OptOut(bool canSkipMSBuild, bool inDirectoryBuildProps)
@@ -3220,6 +3284,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, canSkipMSBuild ? BuildLevel.Csc : BuildLevel.All, expectedOutput: "v2 Release");
     }
 
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// </summary>
     [Fact]
     public void CscOnly_AfterMSBuild_AuxiliaryFilesNotReused()
     {
