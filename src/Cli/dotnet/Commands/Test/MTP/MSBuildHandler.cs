@@ -2,22 +2,21 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal sealed class MSBuildHandler(BuildOptions buildOptions, TerminalTestReporter output)
+internal sealed class MSBuildHandler(BuildOptions buildOptions)
 {
     private readonly BuildOptions _buildOptions = buildOptions;
-    private readonly TerminalTestReporter _output = output;
 
     private readonly ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> _testApplications = [];
     private bool _areTestingPlatformApplications = true;
 
     public bool RunMSBuild()
     {
-        if (!ValidationUtility.ValidateBuildPathOptions(_buildOptions, _output))
+        if (!ValidationUtility.ValidateBuildPathOptions(_buildOptions))
         {
             return false;
         }
@@ -50,7 +49,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TerminalTestRepo
 
         if (msBuildExitCode != ExitCode.Success)
         {
-            _output.WriteMessage(string.Format(CliCommandStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
             return false;
         }
 
@@ -81,7 +80,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TerminalTestRepo
 
         if (!solutionOrProjectFileFound)
         {
-            _output.WriteMessage(message);
+            Reporter.Error.WriteLine(message);
             return ExitCode.GenericFailure;
         }
 
@@ -89,7 +88,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TerminalTestRepo
 
         InitializeTestApplications(projects);
 
-        return restored ? ExitCode.Success : ExitCode.GenericFailure;
+        return restored && !_testApplications.IsEmpty ? ExitCode.Success : ExitCode.GenericFailure;
     }
 
     private int RunBuild(string filePath, bool isSolution)
@@ -98,7 +97,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TerminalTestRepo
 
         InitializeTestApplications(projects);
 
-        return restored ? ExitCode.Success : ExitCode.GenericFailure;
+        return restored && !_testApplications.IsEmpty ? ExitCode.Success : ExitCode.GenericFailure;
     }
 
     private void InitializeTestApplications(IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> moduleGroups)
@@ -110,13 +109,10 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TerminalTestRepo
         {
             _areTestingPlatformApplications = false;
 
-            _output.WriteMessage(
+            Reporter.Error.WriteLine(
                 string.Format(
                     CliCommandStrings.CmdUnsupportedVSTestTestApplicationsDescription,
-                    string.Join(Environment.NewLine, vsTestTestProjects.Select(module => Path.GetFileName(module.ProjectFullPath)))),
-                new SystemConsoleColor { ConsoleColor = ConsoleColor.Red });
-
-            _output.DisableTestRunSummary();
+                    string.Join(Environment.NewLine, vsTestTestProjects.Select(module => Path.GetFileName(module.ProjectFullPath))).Red().Bold()));
 
             return;
         }
