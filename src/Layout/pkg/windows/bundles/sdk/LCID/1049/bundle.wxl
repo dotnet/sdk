@@ -75,7 +75,7 @@
   <String Id="WelcomeHeader" Value="Пакет SDK .NET" Localizable="no"/>
   
   <String Id="WelcomeDescription" Value="Пакет SDK для .NET используется для сборки, запуска и тестирования приложений .NET. Вам предоставляются на выбор различные языки, редакторы и инструменты для разработчиков; кроме того, к вашим услугам большая экосистема библиотек для создания веб-приложений, мобильных и классических приложений, игр и приложений Интернета вещей. Надеемся, что вам понравится!"/>
-  <String Id="VisualStudioWarning" Value="Если вы планируете использовать .NET [VERSIONMAJOR].[VERSIONMINOR] с Visual Studio, вам потребуется Visual Studio 2022 версии не ниже [MINIMUMVSVERSION]. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Подробнее&lt;/A&gt;."/>
+  <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2026 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;."/>
   <String Id="LicenseAssent" Value="Нажимая кнопку &quot;Установить&quot;, вы принимаете следующие условия."/>
   <String Id="LearnMoreTitle" Value="Дополнительные сведения о .NET"/>
   <String Id="ResourcesHeader" Value="Ресурсы"/>
@@ -87,7 +87,7 @@
   <String Id="InstallationNoteTitle" Value="Примечание по установке"/>
   <String Id="InstallationNote" Value="В процессе установки будет выполнена команда, которая увеличит скорость восстановления проекта и обеспечит автономный доступ. Выполнение займет до минуты."/>
   
-  <String Id="VisualStudioWarning" Value="Если вы планируете использовать .NET [VERSIONMAJOR].[VERSIONMINOR] с Visual Studio, вам потребуется Visual Studio 2022 версии не ниже [MINIMUMVSVERSION]. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Подробнее&lt;/A&gt;."/>
+  <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2026 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;."/>
   <String Id="LicenseAssent" Value="Нажимая кнопку &quot;Установить&quot;, вы принимаете следующие условия."/>
   <String Id="InstallPathx64x86" Value="Совпадение пути установки недопустимо для установок пакетов SDK x64: &quot;[DOTNETHOME_X64]&quot; и SDK x86: &quot;[DOTNETHOME_X86]&quot;."/>
   <String Id="InstallPathARM64x86" Value="Совпадение пути установки недопустимо для установок пакетов SDK ARM64: &quot;[DOTNETHOME_ARM64]&quot; и SDK x86: &quot;[DOTNETHOME_X86]&quot;."/>

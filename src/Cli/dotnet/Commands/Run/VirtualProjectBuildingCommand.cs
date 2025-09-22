@@ -1900,7 +1900,11 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 if (Directory.Exists(resolvedProjectPath))
                 {
                     var fullFilePath = MsbuildProject.GetProjectFileFromDirectory(resolvedProjectPath).FullName;
-                    directiveText = Path.GetRelativePath(relativeTo: sourceDirectory, fullFilePath);
+
+                    // Keep a relative path only if the original directive was a relative path.
+                    directiveText = Path.IsPathFullyQualified(directiveText)
+                        ? fullFilePath
+                        : Path.GetRelativePath(relativeTo: sourceDirectory, fullFilePath);
                 }
                 else if (!File.Exists(resolvedProjectPath))
                 {
@@ -1916,6 +1920,11 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             {
                 Name = directiveText,
             };
+        }
+
+        public Project WithName(string name)
+        {
+            return new Project(Info) { Name = name };
         }
 
         public override string ToString() => $"#:project {Name}";
