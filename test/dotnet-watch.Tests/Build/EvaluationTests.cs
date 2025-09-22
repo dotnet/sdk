@@ -490,7 +490,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
             var buildReporter = new BuildReporter(_logger, new GlobalOptions(), options);
 
-            var factory = new MSBuildFileSetFactory(project1Path, buildArguments: [], processRunner, buildReporter);
+            var factory = new MSBuildFileSetFactory(project1Path, buildArguments: ["/interactive:False"], processRunner, buildReporter);
             var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.Null(result);
 
