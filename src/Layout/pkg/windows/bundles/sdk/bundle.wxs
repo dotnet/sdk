@@ -175,7 +175,7 @@
       <ExePackage SourceFile="$(FinalizerExeSourceFile)"
                   Bundle="no"
                   Cache="keep"
-                  DetectCondition="1=1"
+                  DetectCondition="WixBundleInstalled"
                   Id="Finalizer"
                   InstallArguments="&quot;[WixBundleLog_Finalizer]&quot; $(Version) $(TargetArchitecture) [WixBundleAction]"
                   UninstallArguments="&quot;[WixBundleLog_Finalizer]&quot; $(Version) $(TargetArchitecture) [WixBundleAction]"
