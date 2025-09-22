@@ -1,14 +1,24 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
-    public class EvaluationTests(ITestOutputHelper output)
+    public class EvaluationTests
     {
-        private readonly TestLogger _logger = new(output);
-        private readonly TestAssetsManager _testAssets = new(output);
+        private readonly TestLogger _logger;
+        private readonly TestAssetsManager _testAssets;
+
+        public EvaluationTests(ITestOutputHelper output)
+        {
+            _logger = new TestLogger(output);
+            _testAssets = new TestAssetsManager(output);
+
+            // During the dogfood, we want the MSBuild server on for build of the pipeline. Not for the tests - it breaks outputs.
+            Environment.SetEnvironmentVariable("DOTNET_CLI_USE_MSBUILD_SERVER", "0");
+        }
 
         private static string MuxerPath
             => TestContext.Current.ToolsetUnderTest.DotNetHostPath;
