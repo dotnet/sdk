@@ -100,11 +100,12 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="new">Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This argument can be specified multiple times to provide multiple variables.
+        <target state="needs-review-translation">Устанавливает значение переменной среды. 
+Если переменной среды не существует, она создается. Если переменная среды существует, она переопределяется. 
+Этот аргумент подразумевает принудительное выполнение тестов в изолированном процессе. 
+Этот аргумент может быть указан несколько раз для нескольких переменных среды.
 
-Examples:
+Примеры:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
 -e VARIABLE="value;seperated with;semicolons"
