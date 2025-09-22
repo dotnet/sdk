@@ -133,17 +133,21 @@ To mitigate this we will be fixing the `build-server shutdown` command to be rel
 
 ## RoslynCompilerType
 
-Based on the value of the `RoslynCompilerType` property, the SDK sets property `RoslynTasksAssembly` to a full path to a [Roslyn build task DLL][roslyn-build-task],
-and the SDK targets use `$(RoslynTasksAssembly)` to load the build task.
-
-The SDK also sets `RoslynTargetsPath` to the directory path of the roslyn tasks assembly. This property is used by some targets
-but it should be avoided if possible because the tasks assembly name can change as well, not just the directory path.
+Based on the value of the `RoslynCompilerType` property, the SDK (or compiler toolset packages) set the following properties:
+- `RoslynTasksAssembly` to a full path to a [Roslyn build task DLL][roslyn-build-task],
+  and the SDK targets use `$(RoslynTasksAssembly)` to load the build task
+- `RoslynTargetsPath` to the directory path of the roslyn tasks assembly. This property is used by some targets
+  but it should be avoided if possible because the tasks assembly name can change as well, not just the directory path.
+  This property is a misnomer for historical reasons, it really points to _tasks_, there is no guarantee there will be any _targets_ in the directory.
+- `RoslynAssembliesPath` to the directory path of other roslyn assemblies (like `Microsoft.CodeAnalysis.dll`).
+  In builds using .NET Framework MSBuild, the path is set to the Roslyn directory that ships with MSBuild (no .NET Framework Roslyn assemblies ship with the .NET SDK).
+- `RoslynCoreAssembliesPath` to the directory path of other roslyn assemblies which target .NET Core regardless of the host being .NET Framework or Core MSBuild.
 
 These values are recognized for property `RoslynCompilerType`:
 - `Core`: use the compiler that comes with the .NET SDK
 - `Framework`: use the compiler that comes with .NET Framework MSBuild
 - `FrameworkPackage`: download the Microsoft.Net.Sdk.Compilers.Toolset package which contains the .NET Framework compiler corresponding to the .NET SDK version
-- `Custom`: the SDK will not override `RoslynTasksAssembly` - used for example by Microsoft.Net.Compilers.Toolset package which injects its own version of the build task
+- `Custom`: the SDK will not override `RoslynTasksAssembly` and the other properties listed above - used for example by Microsoft.Net.Compilers.Toolset package which injects its own version of the build task
 
 ## Alternative
 

@@ -21,10 +21,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Create the test file
             var testFilePath = Path.Combine(testDir.Path, filename);
             File.WriteAllText(testFilePath, "dummy content");
-            File.WriteAllText(Path.Combine(testDir.Path, "dotnet.config"),
+            File.WriteAllText(Path.Combine(testDir.Path, "global.json"),
                 """
-                [dotnet.test.runner]
-                name = Microsoft.Testing.Platform
+                {
+                    "test": {
+                        "runner": "Microsoft.Testing.Platform"
+                    }
+                }
                 """);
 
             var result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -44,10 +47,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var testDir = _testAssetsManager.CreateTestDirectory();
             var subDir = Path.Combine(testDir.Path, "test_directory");
             Directory.CreateDirectory(subDir);
-            File.WriteAllText(Path.Combine(testDir.Path, "dotnet.config"),
+            File.WriteAllText(Path.Combine(testDir.Path, "global.json"),
                 """
-                [dotnet.test.runner]
-                name = Microsoft.Testing.Platform
+                {
+                    "test": {
+                        "runner": "Microsoft.Testing.Platform"
+                    }
+                }
                 """);
 
             var result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -69,10 +75,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Create a dummy dll file
             var dllPath = Path.Combine(testDir.Path, "test.dll");
             File.WriteAllText(dllPath, "dummy dll content");
-            File.WriteAllText(Path.Combine(testDir.Path, "dotnet.config"),
+            File.WriteAllText(Path.Combine(testDir.Path, "global.json"),
                 """
-                [dotnet.test.runner]
-                name = Microsoft.Testing.Platform
+                {
+                    "test": {
+                        "runner": "Microsoft.Testing.Platform"
+                    }
+                }
                 """);
 
             var result = new DotnetTestCommand(Log, disableNewOutput: false)
