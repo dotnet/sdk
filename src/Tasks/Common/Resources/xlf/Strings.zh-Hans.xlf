@@ -214,7 +214,7 @@
       </trans-unit>
       <trans-unit id="CantSpecifyBothProperties">
         <source>NETSDK1230: The {0} and {1} properties cannot both be specified. Remove one or the other.</source>
-        <target state="new">NETSDK1230: The {0} and {1} properties cannot both be specified. Remove one or the other.</target>
+        <target state="translated">NETSDK1230: 不能同时指定 {0} 和 {1} 属性。移除其中一个。</target>
         <note>{StrBegins="NETSDK1230: "}</note>
       </trans-unit>
       <trans-unit id="ChoosingAssemblyVersion_Info">
@@ -863,7 +863,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="RuntimeGraphFileDoesNotExist">
         <source>NETSDK1231: File '{0}' does not exist. Please ensure the runtime graph path exists.</source>
-        <target state="new">NETSDK1231: File '{0}' does not exist. Please ensure the runtime graph path exists.</target>
+        <target state="translated">NETSDK1231: 文件 "{0}" 不存在。请确保运行时图形路径存在。</target>
         <note>{StrBegins="NETSDK1231: "}{Locked="{0}"}</note>
       </trans-unit>
       <trans-unit id="RuntimeIdentifierNotRecognized">
@@ -965,7 +965,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="UnableToFindMatchingRid">
         <source>NETSDK1232: Unable to find a matching RID for '{0}' from among [{1}] in graph '{2}'.</source>
-        <target state="new">NETSDK1232: Unable to find a matching RID for '{0}' from among [{1}] in graph '{2}'.</target>
+        <target state="translated">NETSDK1232: 无法在图 "{2}" 的 [{1}] 中找到与 "{0}" 匹配的 RID。</target>
         <note>{StrBegins="NETSDK1232: "}{Locked="{0}"}{Locked="{1}"}{Locked="{2}"}</note>
       </trans-unit>
       <trans-unit id="UnableToFindResolvedPath">
@@ -1060,7 +1060,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="UsingPreviewCsWinRT3_0Feature">
         <source>NETSDK1229: Targeting a Windows SDK version with '1' as the revision number will reference CsWinRT 3.0, which is currently in preview. The current project is targeting the Windows SDK version '{0}'. If this is not intended, change the revision number to '0' to use CsWinRT 2.x instead.</source>
-        <target state="new">NETSDK1229: Targeting a Windows SDK version with '1' as the revision number will reference CsWinRT 3.0, which is currently in preview. The current project is targeting the Windows SDK version '{0}'. If this is not intended, change the revision number to '0' to use CsWinRT 2.x instead.</target>
+        <target state="translated">NETSDK1229: 将修订号为 "1" 的 Windows SDK 版本作为目标时，将引用 CsWinRT 3.0，它目前为预览版。当前项目面向 Windows SDK 版本 "{0}"。如果这不是预期内的，请将修订号更改为 "0" 以改用 CsWinRT 2.x。</target>
         <note>{StrBegins="NETSDK1229: "}</note>
       </trans-unit>
       <trans-unit id="UsingPreviewSdk">
