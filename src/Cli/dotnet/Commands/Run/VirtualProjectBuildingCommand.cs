@@ -82,6 +82,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         new("ImplicitUsings", "enable"),
         new("Nullable", "enable"),
         new("PublishAot", "true"),
+        new("PackAsTool", "true"),
     ]);
 
     /// <summary>
@@ -355,9 +356,16 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     // Cache run info (to avoid re-evaluating the project instance).
                     cache.CurrentEntry.Run = RunProperties.FromProject(buildRequest.ProjectInstance);
 
-                    TryCacheCscArguments(cache, buildResult, buildRequest.ProjectInstance);
+                    if (!MSBuildUtilities.ConvertStringToBool(buildRequest.ProjectInstance.GetPropertyValue(FileBasedProgramCanSkipMSBuild), defaultValue: true))
+                    {
+                        Reporter.Verbose.WriteLine($"Not saving cache because there is an opt-out via MSBuild property {FileBasedProgramCanSkipMSBuild}.");
+                    }
+                    else
+                    {
+                        CacheCscArguments(cache, buildResult);
 
-                    MarkBuildSuccess(cache);
+                        MarkBuildSuccess(cache);
+                    }
                 }
 
                 projectInstance = buildRequest.ProjectInstance;
@@ -444,14 +452,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return null;
         }
 
-        void TryCacheCscArguments(CacheInfo cache, BuildResult result, ProjectInstance projectInstance)
+        void CacheCscArguments(CacheInfo cache, BuildResult result)
         {
-            if (!MSBuildUtilities.ConvertStringToBool(projectInstance.GetPropertyValue(FileBasedProgramCanSkipMSBuild), defaultValue: true))
-            {
-                Reporter.Verbose.WriteLine($"Not saving CSC arguments because there is an opt-out via MSBuild property {FileBasedProgramCanSkipMSBuild}.");
-                return;
-            }
-
             // We cannot reuse CSC arguments from previous run and skip MSBuild if there are project references
             // because we cannot easily detect whether any referenced projects have changed.
             if (Directives.Any(static d => d is CSharpDirective.Project))
@@ -1885,7 +1887,11 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 if (Directory.Exists(resolvedProjectPath))
                 {
                     var fullFilePath = MsbuildProject.GetProjectFileFromDirectory(resolvedProjectPath).FullName;
-                    directiveText = Path.GetRelativePath(relativeTo: sourceDirectory, fullFilePath);
+
+                    // Keep a relative path only if the original directive was a relative path.
+                    directiveText = Path.IsPathFullyQualified(directiveText)
+                        ? fullFilePath
+                        : Path.GetRelativePath(relativeTo: sourceDirectory, fullFilePath);
                 }
                 else if (!File.Exists(resolvedProjectPath))
                 {
@@ -1901,6 +1907,11 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             {
                 Name = directiveText,
             };
+        }
+
+        public Project WithName(string name)
+        {
+            return new Project(Info) { Name = name };
         }
 
         public override string ToString() => $"#:project {Name}";

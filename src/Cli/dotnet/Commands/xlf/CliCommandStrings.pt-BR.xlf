@@ -186,7 +186,7 @@ Caminhos pesquisados: "{1}", "{2}".</target>
       </trans-unit>
       <trans-unit id="CannotConvertDirective">
         <source>Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
-        <target state="new">Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</target>
+        <target state="translated">Algumas diretivas não podem ser convertidas. Execute o arquivo para ver todos os erros de compilação. Especifique '--force' para converter mesmo assim.</target>
         <note>{Locked="--force"}</note>
       </trans-unit>
       <trans-unit id="CannotFindCommandName">
@@ -585,7 +585,7 @@ Isso equivale a excluir o project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdMinimumExpectedTestsDescription">
         <source>Specifies the minimum number of tests that are expected to run.</source>
-        <target state="new">Specifies the minimum number of tests that are expected to run.</target>
+        <target state="translated">Especifica o número mínimo de testes que devem ser executados.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
@@ -883,11 +883,11 @@ The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="new">global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
-The following test projects are using VSTest test runner:
+        <target state="translated">O global.json define o executor de teste como Microsoft.Testing.Platform. Todos os projetos devem usar esse executor de teste.
+Os seguintes projetos de teste estão usando o executor de teste do VSTest:
 {0}
 
-See https://aka.ms/dotnet-test/mtp for more information.</target>
+Consulte https://aka.ms/dotnet-test/mtp para obter mais informações.</target>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
 {0} is one or more project names.</note>
       </trans-unit>
@@ -1128,7 +1128,7 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
       </trans-unit>
       <trans-unit id="DirectiveError">
         <source>error</source>
-        <target state="new">error</target>
+        <target state="translated">erro</target>
         <note>Used when reporting directive errors like "file(location): error: message".</note>
       </trans-unit>
       <trans-unit id="DirectivesRemoved">
@@ -1169,32 +1169,32 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
       </trans-unit>
       <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
         <source>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</source>
-        <target state="new">Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</target>
+        <target state="translated">As versões de protocolo suportadas enviadas pelo Microsoft.Testing.Platform são '{0}'. O SDK oferece suporte a '{1}', que é incompatível.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestMismatchingExecutionId">
         <source>Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</source>
-        <target state="new">Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</target>
+        <target state="translated">Recebido 'ExecutionId' com valor '{0}' para a mensagem '{1}', enquanto o 'ExecutionId' recebido na mensagem de handshake era '{2}'.</target>
         <note>{Locked="ExecutionId"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestPipeFailureHasHandshake">
         <source>Error disposing 'NamedPipeServer' corresponding to handshake:</source>
-        <target state="new">Error disposing 'NamedPipeServer' corresponding to handshake:</target>
+        <target state="translated">Erro ao descartar 'NamedPipeServer' correspondente ao handshake:</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestPipeFailureWithoutHandshake">
         <source>Error disposing 'NamedPipeServer', and no handshake was found.</source>
-        <target state="new">Error disposing 'NamedPipeServer', and no handshake was found.</target>
+        <target state="translated">Erro ao descartar 'NamedPipeServer', e nenhum handshake foi encontrado.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestPipeIncompleteSize">
         <source>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</source>
-        <target state="new">'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</target>
+        <target state="translated">O 'dotnet' recebeu inesperadamente menos de 4 bytes do pipe nomeado 'dotnet test'.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestPipeOverlapping">
         <source>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</source>
-        <target state="new">'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</target>
+        <target state="translated">O 'dotnet' recebeu inesperadamente mensagens sobrepostas do pipe nomeado 'dotnet test'.</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
@@ -1228,14 +1228,14 @@ Diferencie os nomes dos perfis.</target>
       </trans-unit>
       <trans-unit id="DuplicateDirective">
         <source>Duplicate directives are not supported: {0}</source>
-        <target state="new">Duplicate directives are not supported: {0}</target>
+        <target state="translated">Diretivas duplicadas não são suportadas:{0}</target>
         <note>{0} is the directive type and name.</note>
       </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
         <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
 
 {2}</source>
-        <target state="new">The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
+        <target state="translated">A seguinte exceção ocorreu ao executar o módulo de teste com RunCommand '{0}' e RunArguments '{1}':
 
 {2}</target>
         <note>{Locked="RunCommand"}{Locked="RunArguments"}
@@ -1568,12 +1568,12 @@ Diferencie os nomes dos perfis.</target>
       </trans-unit>
       <trans-unit id="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage">
         <source>Method '{0}' did not exit successfully</source>
-        <target state="new">Method '{0}' did not exit successfully</target>
+        <target state="translated">O método '{0}' não foi concluído com sucesso</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
         <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="new">The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</target>
+        <target state="translated">A diretiva deve conter um nome sem caracteres especiais e um valor opcional separado por '{1}' como '#:{0} Nome{1}Valor'.</target>
         <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</note>
       </trans-unit>
       <trans-unit id="InvalidFilePath">
@@ -1593,7 +1593,7 @@ Diferencie os nomes dos perfis.</target>
       </trans-unit>
       <trans-unit id="InvalidProjectDirective">
         <source>The '#:project' directive is invalid: {0}</source>
-        <target state="new">The '#:project' directive is invalid: {0}</target>
+        <target state="translated">A diretiva '#:project' é inválida:{0}</target>
         <note>{0} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
@@ -1730,17 +1730,17 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
       </trans-unit>
       <trans-unit id="MismatchingHandshakeInfo">
         <source>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</source>
-        <target state="new">A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</target>
+        <target state="translated">Um novo handshake '{0}' foi recebido para o aplicativo de teste que não corresponde ao handshake anterior '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingDirectiveName">
         <source>Missing name of '{0}'.</source>
-        <target state="new">Missing name of '{0}'.</target>
+        <target state="translated">Nome de '{0}' ausente.</target>
         <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="MissingTestSessionEnd">
         <source>A test session start event was received without a corresponding test session end.</source>
-        <target state="new">A test session start event was received without a corresponding test session end.</target>
+        <target state="translated">Um evento de início de sessão de teste foi recebido sem um término de sessão de teste correspondente.</target>
         <note />
       </trans-unit>
       <trans-unit id="MsBuildDefinition">
@@ -2502,12 +2502,12 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
       </trans-unit>
       <trans-unit id="PropertyDirectiveInvalidName">
         <source>Invalid property name: {0}</source>
-        <target state="new">Invalid property name: {0}</target>
+        <target state="translated">Nome de propriedade inválido: {0}</target>
         <note>{0} is an inner exception message.</note>
       </trans-unit>
       <trans-unit id="PropertyDirectiveMissingParts">
         <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</source>
-        <target state="new">The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</target>
+        <target state="translated">A diretiva de propriedade precisa ter duas partes separadas por '=' como '#:property PropertyName=PropertyValue'.</target>
         <note>{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
@@ -3048,7 +3048,7 @@ Ele tem diversas estruturas como destino. Especifique que estrutura executar usa
       </trans-unit>
       <trans-unit id="StaticGraphRestoreNotSupported">
         <source>Static graph restore is not supported for file-based apps. Remove the '#:property'.</source>
-        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property'.</target>
+        <target state="translated">A restauração de grafo estático não é suportada para aplicativos baseados em arquivos. Remova '#:property'.</target>
         <note>{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="StatusColumnHeader">
@@ -3559,22 +3559,22 @@ e as Ids de pacote correspondentes para as ferramentas instaladas usando o coman
       </trans-unit>
       <trans-unit id="UnexpectedHelpMessage">
         <source>An unexpected help-related message was received when `--help` wasn't used.</source>
-        <target state="new">An unexpected help-related message was received when `--help` wasn't used.</target>
+        <target state="translated">Uma mensagem inesperada relacionada à ajuda foi recebida quando `--help` não foi usado.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedMessageInHelpMode">
         <source>A message of type '{0}' was received in help mode, which is not expected.</source>
-        <target state="new">A message of type '{0}' was received in help mode, which is not expected.</target>
+        <target state="translated">Uma mensagem do tipo '{0}' foi recebida no modo de ajuda, o que não era esperado.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedMessageWithoutHandshake">
         <source>A message of type '{0}' was received before we got any handshakes, which is unexpected.</source>
-        <target state="new">A message of type '{0}' was received before we got any handshakes, which is unexpected.</target>
+        <target state="translated">Uma mensagem do tipo '{0}' foi recebida antes de qualquer handshake, o que é inesperado.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedTestSessionEnd">
         <source>A test session end event was received without a corresponding test session start.</source>
-        <target state="new">A test session end event was received without a corresponding test session start.</target>
+        <target state="translated">Um evento de término de sessão de teste foi recebido sem um início de sessão de teste correspondente.</target>
         <note />
       </trans-unit>
       <trans-unit id="UninstallLocalToolSucceeded">
@@ -3594,7 +3594,7 @@ e as Ids de pacote correspondentes para as ferramentas instaladas usando o coman
       </trans-unit>
       <trans-unit id="UnrecognizedDirective">
         <source>Unrecognized directive '{0}'.</source>
-        <target state="new">Unrecognized directive '{0}'.</target>
+        <target state="translated">Diretiva não reconhecida '{0}'.</target>
         <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">

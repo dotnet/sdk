@@ -332,10 +332,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     /// </summary>
     [Theory]
     // error MSB1003: Specify a project or solution file. The current working directory does not contain a project or solution file.
-    [InlineData("build", "MSB1003")]
+    [InlineData("build", "MSB1003", false)]
     // dotnet watch: Could not find a MSBuild project file in '...'. Specify which project to use with the --project option.
-    [InlineData("watch", "--project")]
-    public void Precedence_BuiltInCommand(string cmd, string error)
+    [InlineData("watch", "--project", true)]
+    public void Precedence_BuiltInCommand(string cmd, string error, bool errorInStdErr)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, cmd), """
@@ -348,18 +348,26 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         // dotnet build -> built-in command
-        new DotnetCommand(Log, cmd)
+        var failure = new DotnetCommand(Log, cmd)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
-            .Should().Fail()
-            .And.HaveStdOutContaining(error);
+            .Should().Fail();
+
+        if (errorInStdErr)
+        {
+            failure.And.HaveStdErrContaining(error);
+        }
+        else
+        {
+            failure.And.HaveStdOutContaining(error);
+        }
 
         // dotnet ./build -> file-based app
         new DotnetCommand(Log, $"./{cmd}")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOut("hello 1");
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOut("hello 1");
 
         // dotnet run build -> file-based app
         new DotnetCommand(Log, "run", cmd)
@@ -1695,7 +1703,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "MyFileBasedTool.cs");
         File.WriteAllText(programFile, """
-            #:property PackAsTool=true
             Console.WriteLine($"Hello; EntryPointFilePath set? {AppContext.GetData("EntryPointFilePath") is string}");
             #if !DEBUG
             Console.WriteLine("Release config");
@@ -1742,7 +1749,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "MyFileBasedTool.cs");
         File.WriteAllText(programFile, """
-            #:property PackAsTool=true
             #:property PackageOutputPath=custom
             Console.WriteLine($"Hello; EntryPointFilePath set? {AppContext.GetData("EntryPointFilePath") is string}");
             """);
@@ -2789,11 +2795,15 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     /// <summary>
     /// Up-to-date checks and optimizations currently don't support other included files.
     /// </summary>
-    [Fact]
-    public void UpToDate_DefaultItems()
+    [Theory, CombinatorialData] // https://github.com/dotnet/sdk/issues/50912
+    public void UpToDate_DefaultItems(bool optOut)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programReadingEmbeddedResource);
+        var code = $"""
+            {(optOut ? "#:property FileBasedProgramCanSkipMSBuild=false" : "")}
+            {s_programReadingEmbeddedResource}
+            """;
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), code);
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "[MyString, TestValue]");
@@ -2801,12 +2811,81 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         // Update the RESX file.
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx.Replace("TestValue", "UpdatedValue"));
 
-        Build(testInstance, BuildLevel.None, expectedOutput: "[MyString, TestValue]"); // note: outdated output (build skipped)
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.None, expectedOutput: optOut ? "[MyString, UpdatedValue]" : "[MyString, TestValue]"); // note: outdated output (build skipped)
 
         // Update the C# file.
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "//v2\n" + s_programReadingEmbeddedResource);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "//v2\n" + code);
 
-        Build(testInstance, BuildLevel.Csc, expectedOutput: "[MyString, TestValue]"); // note: outdated output (only CSC used)
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: optOut ? "[MyString, UpdatedValue]" : "[MyString, TestValue]"); // note: outdated output (only CSC used)
+
+        Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: "[MyString, UpdatedValue]");
+    }
+
+    /// <summary>
+    /// Combination of <see cref="UpToDate_DefaultItems"/> with <see cref="CscOnly"/> optimization.
+    /// </summary>
+    [Theory, CombinatorialData] // https://github.com/dotnet/sdk/issues/50912
+    public void UpToDate_DefaultItems_CscOnly(bool optOut)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var code = $"""
+            {(optOut ? "#:property FileBasedProgramCanSkipMSBuild=false" : "")}
+            {s_programReadingEmbeddedResource}
+            """;
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), code);
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
+
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: optOut ? "[MyString, TestValue]" : "Resource not found");
+
+        // Update the RESX file.
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx.Replace("TestValue", "UpdatedValue"));
+
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.None, expectedOutput: optOut ? "[MyString, UpdatedValue]" : "Resource not found");
+
+        // Update the C# file.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "//v2\n" + code);
+
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: optOut ? "[MyString, UpdatedValue]" : "Resource not found");
+
+        Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: "[MyString, UpdatedValue]");
+
+        // Update the C# file.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "//v3\n" + code);
+
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: "[MyString, UpdatedValue]");
+    }
+
+    /// <summary>
+    /// Combination of <see cref="UpToDate_DefaultItems"/> with <see cref="CscOnly_AfterMSBuild"/> optimization.
+    /// </summary>
+    [Theory, CombinatorialData] // https://github.com/dotnet/sdk/issues/50912
+    public void UpToDate_DefaultItems_CscOnly_AfterMSBuild(bool optOut)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var code = $"""
+            #:property Configuration=Release
+            {(optOut ? "#:property FileBasedProgramCanSkipMSBuild=false" : "")}
+            {s_programReadingEmbeddedResource}
+            """;
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), code);
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "[MyString, TestValue]");
+
+        // Update the C# file.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "//v2\n" + code);
+
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: optOut ? "[MyString, TestValue]" : "[MyString, TestValue]");
+
+        // Update the RESX file.
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), s_resx.Replace("TestValue", "UpdatedValue"));
+
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.None, expectedOutput: optOut ? "[MyString, UpdatedValue]" : "[MyString, TestValue]");
+
+        // Update the C# file.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "//v3\n" + code);
+
+        Build(testInstance, optOut ? BuildLevel.All : BuildLevel.Csc, expectedOutput: optOut ? "[MyString, UpdatedValue]" : "[MyString, TestValue]");
 
         Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: "[MyString, UpdatedValue]");
     }
@@ -3034,6 +3113,27 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v1", programFileName: programFileName);
     }
 
+    [Fact] // https://github.com/dotnet/sdk/issues/50778
+    public void CscOnly_Args()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, s_program);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.Csc, args: ["test", "args"], expectedOutput: """
+            echo args:test;args
+            Hello from Program
+            """);
+    }
+
+    /// <summary>
+    /// Tests an optimization which remembers CSC args from prior MSBuild runs and can skip subsequent MSBuild invocations and call CSC directly.
+    /// This optimization kicks in when the file has some <c>#:</c> directives (then the simpler "hard-coded CSC args" optimization cannot be used).
+    /// </summary>
     [Fact]
     public void CscOnly_AfterMSBuild()
     {
@@ -3089,6 +3189,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.All, expectedOutput: "v4 ");
     }
 
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// </summary>
     [Fact]
     public void CscOnly_AfterMSBuild_SpacesInPath()
     {
@@ -3119,6 +3222,46 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, BuildLevel.Csc, expectedOutput: "v2 Release", programFileName: programFileName);
     }
 
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// </summary>
+    [Fact]
+    public void CscOnly_AfterMSBuild_Args()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+
+        var code = $"""
+            #:property Configuration=Release
+            {s_program}
+            """;
+
+        File.WriteAllText(programPath, code);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, args: ["test", "args"], expectedOutput: """
+            echo args:test;args
+            Hello from Program
+            Release config
+            """);
+
+        code = code.Replace("Hello", "Hi");
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance, BuildLevel.Csc, ["test", "args"], expectedOutput: """
+            echo args:test;args
+            Hi from Program
+            Release config
+            """);
+    }
+
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// This optimization currently does not support <c>#:project</c> references and hence is disabled if those are present.
+    /// </summary>
     [Fact]
     public void CscOnly_AfterMSBuild_ProjectReferences()
     {
@@ -3175,8 +3318,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// If users have more complex build customizations, they can opt out of the optimization which
-    /// reuses CSC arguments and skips subsequent MSBuild invocations.
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// If users have more complex build customizations, they can opt out of the optimization.
     /// </summary>
     [Theory, CombinatorialData]
     public void CscOnly_AfterMSBuild_OptOut(bool canSkipMSBuild, bool inDirectoryBuildProps)
@@ -3220,6 +3363,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Build(testInstance, canSkipMSBuild ? BuildLevel.Csc : BuildLevel.All, expectedOutput: "v2 Release");
     }
 
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// </summary>
     [Fact]
     public void CscOnly_AfterMSBuild_AuxiliaryFilesNotReused()
     {
@@ -3309,6 +3455,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
+                        <PackAsTool>true</PackAsTool>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
@@ -3379,6 +3526,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
+                        <PackAsTool>true</PackAsTool>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
@@ -3446,6 +3594,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
                         <PublishAot>true</PublishAot>
+                        <PackAsTool>true</PackAsTool>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                         <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>

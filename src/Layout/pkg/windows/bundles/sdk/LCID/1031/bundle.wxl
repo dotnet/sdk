@@ -75,7 +75,7 @@ Dieses Produkt sammelt Verbrauchsdaten
   <String Id="WelcomeHeader" Value=".NET-SDK" Localizable="no"/>
   
   <String Id="WelcomeDescription" Value="Das .NET SDK wird zum Erstellen, Ausführen und Testen von .NET-Anwendungen verwendet. Sie können aus mehreren Sprachen, Editoren und Entwicklungstools wählen und ein großes Bibliotheksnetzwerk nutzen, um Apps für das Web, mobile Geräte, Desktops, Gaming und IoT zu entwickeln. Wir wünschen Ihnen viel Spaß dabei!"/>
-  <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2026 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;."/>
+  <String Id="VisualStudioWarning" Value="Wenn Sie beabsichtigen, .NET [VERSIONMAJOR].[VERSIONMINOR] mit Visual Studio zu verwenden, ist Visual Studio 2026 [MINIMUMVSVERSION] oder neuer erforderlich. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Weitere Informationen&lt;/A&gt;."/>
   <String Id="LicenseAssent" Value="Durch Klicken auf „Installieren“ stimmen Sie den nachstehenden Bedingungen zu:"/>
   <String Id="LearnMoreTitle" Value="Weitere Informationen zu .NET"/>
   <String Id="ResourcesHeader" Value="Ressourcen"/>
@@ -87,7 +87,7 @@ Dieses Produkt sammelt Verbrauchsdaten
   <String Id="InstallationNoteTitle" Value="Installationshinweis"/>
   <String Id="InstallationNote" Value="Während des Installationsvorgangs wird ein Befehl ausgeführt, durch den die Geschwindigkeit der Projektwiederherstellung verbessert und der Offlinezugriff aktiviert wird. Der Vorgang dauert bis zu einer Minute."/>
   
-  <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2026 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;."/>
+  <String Id="VisualStudioWarning" Value="Wenn Sie beabsichtigen, .NET [VERSIONMAJOR].[VERSIONMINOR] mit Visual Studio zu verwenden, ist Visual Studio 2026 [MINIMUMVSVERSION] oder neuer erforderlich. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Weitere Informationen&lt;/A&gt;."/>
   <String Id="LicenseAssent" Value="Durch Klicken auf „Installieren“ stimmen Sie den nachstehenden Bedingungen zu:"/>
   <String Id="InstallPathx64x86" Value="Der Installationspfad „[DOTNETHOME_X64]“ für x64 SDK-Installationen kann nicht derselbe sein wie für x86 SDK-Installationen: „[DOTNETHOME_X86]“"/>
   <String Id="InstallPathARM64x86" Value="Der Installationspfad „[DOTNETHOME_ARM64]“ für ARM64 SDK-Installationen kann nicht derselbe sein wie für x86 SDK-Installationen: „[DOTNETHOME_X86]“"/>

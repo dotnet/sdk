@@ -1,6 +1,7 @@
 # .NET SDK Telemetry Documentation
 
 ## Table of Contents
+
 - [.NET SDK Telemetry Documentation](#net-sdk-telemetry-documentation)
   - [Table of Contents](#table-of-contents)
   - [How to Control Telemetry](#how-to-control-telemetry)
@@ -25,7 +26,6 @@ The .NET SDK telemetry can be disabled using the following environment variable:
   - Example: `set DOTNET_CLI_TELEMETRY_OPTOUT=1` (Windows)
   - Note: this value is defaulted to `true` on non-Microsoft-provided builds of the .NET SDK (e.g. those provided by our Linux Distro partners, through Source Build, etc.)
 
-
 ### Related Environment Variables
 
 - **`DOTNET_NOLOGO`**: Set to `true` to hide .NET welcome and telemetry messages on first run
@@ -40,7 +40,6 @@ The .NET SDK telemetry can be disabled using the following environment variable:
   - For Microsoft official builds: Telemetry is **enabled by default** (opt-out model)
   - For non-Microsoft builds: Telemetry is **disabled by default** (controlled by `MICROSOFT_ENABLE_TELEMETRY` compile flag)
 
-
 - **Connection String**: Telemetry data is sent to Application Insights with instrumentation key: `74cc1c9e-3e6e-4d05-b3fc-dde9101d0254`
 
 - **First Time Use**: Telemetry is only collected after the first-time-use notice has been shown and accepted (tracked via sentinel file)
@@ -50,8 +49,6 @@ The .NET SDK telemetry can be disabled using the following environment variable:
 ## Common Properties Collected
 
 Every telemetry event automatically includes these common properties:
-
-
 
 | Property | Description | Example Value |
 |----------|-------------|---------------|
@@ -64,6 +61,7 @@ Every telemetry event automatically includes these common properties:
 | **Telemetry Profile** | Custom telemetry profile (if set via env var) | Custom value or null |
 | **Docker Container** | Whether running in Docker container | `True` or `False` |
 | **CI** | Whether running in CI environment | `True` or `False` |
+| **LLM** | Detected LLM/assistant environment identifiers (comma-separated) | `claude` or `cursor` |
 | **Current Path Hash** | SHA256 hash of current directory path | Hashed value |
 | **Machine ID** | SHA256 hash of machine MAC address (or GUID if unavailable) | Hashed value |
 | **Machine ID Old** | Legacy machine ID for compatibility | Hashed value |
@@ -80,9 +78,11 @@ Every telemetry event automatically includes these common properties:
 ### Core CLI Events
 
 #### `command/finish`
+
 **When fired**: At the end of every dotnet CLI command execution
 
 **Properties**:
+
 - `exitCode`: The exit code of the command
 
 **Description**: Tracks the completion status of any dotnet command
@@ -90,9 +90,11 @@ Every telemetry event automatically includes these common properties:
 ---
 
 #### `schema`
+
 **When fired**: When CLI schema is generated or accessed
 
 **Properties**:
+
 - `command`: The command hierarchy as a string
 
 **Description**: Tracks schema generation for the CLI
@@ -100,9 +102,11 @@ Every telemetry event automatically includes these common properties:
 ---
 
 #### `toplevelparser/command`
+
 **When fired**: For every top-level dotnet command
 
 **Properties**:
+
 - `verb`: Top-level command name (build, restore, publish, etc.)
 
 **Measurements**: Performance data (startup time, parse time, etc.)
@@ -112,6 +116,7 @@ Every telemetry event automatically includes these common properties:
 ---
 
 #### `sublevelparser/command`
+
 **When fired**: For subcommands and specific command options
 
 **Properties**: Various depending on command (verbosity, configuration, framework, etc.)
@@ -121,9 +126,11 @@ Every telemetry event automatically includes these common properties:
 ---
 
 #### `commandresolution/commandresolved`
+
 **When fired**: When a command is resolved through the command factory
 
 **Properties**:
+
 - `commandName`: SHA256 hash of command name
 - `commandResolver`: Type of command resolver used
 
@@ -132,9 +139,11 @@ Every telemetry event automatically includes these common properties:
 ---
 
 #### `install/reportsuccess`
+
 **When fired**: When installation success is reported
 
 **Properties**:
+
 - `exeName`: Name of the install method that was used - one of `debianpackage`, a specific macOS `.pkg` file name, or a specific Windows exe installer file name.
 
 **Description**: Tracks successful tool installations
@@ -142,9 +151,11 @@ Every telemetry event automatically includes these common properties:
 ---
 
 #### `mainCatchException/exception`
+
 **When fired**: When unhandled exceptions occur in the main CLI
 
 **Properties**:
+
 - `exceptionType`: Type of exception
 - `detail`: Exception details (sensitive message removed)
 
@@ -153,9 +164,11 @@ Every telemetry event automatically includes these common properties:
 ### Template Engine Events
 
 #### `template/new-install`
+
 **When fired**: During template package installation
 
 **Properties**:
+
 - `CountOfThingsToInstall`: Number of template packages being installed
 
 **Description**: Tracks template package installation operations
@@ -163,9 +176,11 @@ Every telemetry event automatically includes these common properties:
 ---
 
 #### `template/new-create-template`
+
 **When fired**: When creating a new project from template
 
 **Properties**:
+
 - `language`: Template language (C#, F#, VB, etc)
 - `argument-error`: Whether there were argument errors ("True"/"False")
 - `framework`: Framework choice (only sent for Microsoft-authored templates)
@@ -182,9 +197,11 @@ Every telemetry event automatically includes these common properties:
 ### SDK-Collected Build Events
 
 #### `msbuild/targetframeworkeval`
+
 **When fired**: When target framework is evaluated
 
 **Properties**:
+
 - `TargetFrameworkVersion`: Target framework version
 - `RuntimeIdentifier`: Runtime identifier
 - `SelfContained`: Whether self-contained
@@ -197,11 +214,12 @@ Every telemetry event automatically includes these common properties:
 
 ---
 
-
 #### `taskBaseCatchException`
+
 **When fired**: When exceptions occur in SDK-provided MSBuild tasks
 
 **Properties**:
+
 - `exceptionType`: Exception type
 - `detail`: Exception details (message removed)
 
@@ -210,52 +228,59 @@ Every telemetry event automatically includes these common properties:
 ---
 
 #### `PublishProperties`
+
 **When fired**: During the Publish Target
 
 **Properties**: Gathers the values of the following MSBuild Properties if they are set in the project file or via command line:
-* PublishReadyToRun
-* PublishSingleFile
-* PublishTrimmed
-* PublishAot
-* PublishProtocol
+
+- PublishReadyToRun
+- PublishSingleFile
+- PublishTrimmed
+- PublishAot
+- PublishProtocol
 
 **Description**: Tracks publish-related properties
 
 ---
 
 #### `WorkloadPublishProperties`
+
 **When fired**: During workload publish operations
 
 **Properties**: Gathers the values of the following MSBuild Properties if they are set in the project file or via command line:
-* TargetPlatformIdentifier: TargetPlatformIdentifier
-* RuntimeIdentifier: RuntimeIdentifier
-* BlazorWasm: _WorkloadUsesBlazorWasm
-* WasmSDK: _WorkloadUsesWasmSDK
-* UsesMaui: UseMaui
-* UsesMobileSDKOnly: _WorkloadUsesMobileSDKOnly
-* UsesOtherMobileSDK: _WorkloadUsesOther
-* MonoAOT: _WorkloadUsesMonoAOT
-* NativeAOT: _WorkloadUsesNativeAOT
-* Interp: _WorkloadUsesInterpreter
-* LibraryMode: _WorkloadUsesLibraryMode
-* ResolvedRuntimePack: _MonoWorkloadRuntimePackPackageVersion
-* StripILAfterAOT: _WorkloadUsesStripILAfterAOT
+
+- TargetPlatformIdentifier: TargetPlatformIdentifier
+- RuntimeIdentifier: RuntimeIdentifier
+- BlazorWasm: _WorkloadUsesBlazorWasm
+- WasmSDK: _WorkloadUsesWasmSDK
+- UsesMaui: UseMaui
+- UsesMobileSDKOnly: _WorkloadUsesMobileSDKOnly
+- UsesOtherMobileSDK: _WorkloadUsesOther
+- MonoAOT: _WorkloadUsesMonoAOT
+- NativeAOT: _WorkloadUsesNativeAOT
+- Interp: _WorkloadUsesInterpreter
+- LibraryMode: _WorkloadUsesLibraryMode
+- ResolvedRuntimePack: _MonoWorkloadRuntimePackPackageVersion
+- StripILAfterAOT: _WorkloadUsesStripILAfterAOT
 
 **Description**: Tracks workload-specific publish properties
 
 ---
 
 #### `ReadyToRun`
+
 **When fired**: During ReadyToRun compilation
 
 **Properties**: Gathers the values of the following MSBuild Properties and Items if they are set in the project file or via command line:
 
-* PublishReadyToRunUseCrossgen2: PublishReadyToRunUseCrossgen2
-* Crossgen2PackVersion: ResolvedCrossgen2Pack.NuGetPackageVersion
-* CompileListCount: _ReadyToRunCompileList->Count()
-* FailedCount: _ReadyToRunCompilationFailures->Count()
+- PublishReadyToRunUseCrossgen2: PublishReadyToRunUseCrossgen2
+- Crossgen2PackVersion: ResolvedCrossgen2Pack.NuGetPackageVersion
+- CompileListCount: _ReadyToRunCompileList->Count()
+- FailedCount: _ReadyToRunCompilationFailures->Count()
 
 **Description**: Tracks ReadyToRun compilation usage
+
+---
 
 ### MSBuild Engine Telemetry
 
@@ -268,15 +293,18 @@ See [Container Telemetry Documentation](https://github.com/dotnet/sdk-container-
 ### `dotnet new` Command MSBuild Evaluation
 
 #### `new/msbuild-eval`
+
 **When fired**: When MSBuild project evaluation occurs during `dotnet new`
 
 **Properties** (hashed):
+
 - `ProjectPath`: Project path
 - `SdkStyleProject`: Whether it's SDK-style project
 - `Status`: Evaluation status
 - `TargetFrameworks`: Target frameworks
 
 **Measurements**:
+
 - `EvaluationTime`: Total evaluation time in milliseconds
 - `InnerEvaluationTime`: Inner evaluation time in milliseconds
 
@@ -284,7 +312,7 @@ See [Container Telemetry Documentation](https://github.com/dotnet/sdk-container-
 
 ## How to update this document
 
-* Ensure that all telemetry events and properties are accurately documented
-* Review and update common properties as needed
-* Add new events or properties as they are introduced in the .NET SDK
-* Follow the pre-existing format
+- Ensure that all telemetry events and properties are accurately documented
+- Review and update common properties as needed
+- Add new events or properties as they are introduced in the .NET SDK
+- Follow the pre-existing format

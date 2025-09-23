@@ -75,7 +75,7 @@
   <String Id="WelcomeHeader" Value=".NET SDK" Localizable="no"/>
   
   <String Id="WelcomeDescription" Value=".NET SDK 可用於建置、執行和測試 .NET 應用程式。您可以選擇多種語言、編輯器以及開發人員工具，並可利用程式庫的大型生態系統，來建置 Web、行動裝置、桌面、遊戲及 IoT 的應用程式。希望您會喜歡!"/>
-  <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2026 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;."/>
+  <String Id="VisualStudioWarning" Value="如果計劃使用 .NET [VERSIONMAJOR].[VERSIONMINOR] 搭配 Visual Studio，需要 Visual Studio 2026 [MINIMUMVSVERSION] 或更新版本。&lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;深入了解&lt;/A&gt;。"/>
   <String Id="LicenseAssent" Value="按一下 “安裝” 即表示您同意下列條款:"/>
   <String Id="LearnMoreTitle" Value="深入了解 .NET"/>
   <String Id="ResourcesHeader" Value="資源"/>
@@ -87,7 +87,7 @@
   <String Id="InstallationNoteTitle" Value="安裝附註"/>
   <String Id="InstallationNote" Value="安裝程序期間將會執行命令，加快專案還原速度並啟用離線存取。最多需要一分鐘的時間完成。"/>
   
-  <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2026 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;."/>
+  <String Id="VisualStudioWarning" Value="如果計劃使用 .NET [VERSIONMAJOR].[VERSIONMINOR] 搭配 Visual Studio，需要 Visual Studio 2026 [MINIMUMVSVERSION] 或更新版本。&lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;深入了解&lt;/A&gt;。"/>
   <String Id="LicenseAssent" Value="按一下 “安裝” 即表示您同意下列條款:"/>
   <String Id="InstallPathx64x86" Value="x64 SDK 安裝的安裝路徑: &quot;[DOTNETHOME_X64]&quot; 不能與 x86 SDK 安裝的路徑相同: &quot;[DOTNETHOME_X86]&quot;"/>
   <String Id="InstallPathARM64x86" Value="ARM64 SDK 安裝的安裝路徑: &quot;[DOTNETHOME_ARM64]&quot; 不能與 x86 SDK 安裝的路徑相同: &quot;[DOTNETHOME_X86]&quot;"/>
