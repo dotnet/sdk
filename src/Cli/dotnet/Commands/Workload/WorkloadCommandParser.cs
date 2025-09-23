@@ -176,7 +176,6 @@ internal static class WorkloadCommandParser
     {
         public ShowWorkloadsInfoAction()
         {
-            Terminating = true;
         }
 
         public override int Invoke(ParseResult parseResult)
@@ -191,7 +190,6 @@ internal static class WorkloadCommandParser
     {
         public ShowWorkloadsVersionOption()
         {
-            Terminating = true;
         }
 
         public override int Invoke(ParseResult parseResult)

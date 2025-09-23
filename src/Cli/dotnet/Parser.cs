@@ -429,7 +429,6 @@ public static class Parser
     {
         public PrintCliSchemaAction()
         {
-            Terminating = true;
         }
 
         public override int Invoke(ParseResult parseResult)
