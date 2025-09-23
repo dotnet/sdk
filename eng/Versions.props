@@ -38,8 +38,8 @@
     <VersionFeature60>36</VersionFeature60>
     <VersionFeature70>20</VersionFeature70>
     <!-- This version should be N-1 (ie the currently released version) in the preview branch but N-2 in main so that workloads stay behind the unreleased version -->
-    <VersionFeature80>18</VersionFeature80>
-    <VersionFeature90>7</VersionFeature90>
+    <VersionFeature80>19</VersionFeature80>
+    <VersionFeature90>8</VersionFeature90>
     <!-- Should be kept in sync with VersionFeature70. It should match the version of Microsoft.NET.ILLink.Tasks
          referenced by the same 7.0 SDK that references the 7.0.VersionFeature70 runtime pack. -->
     <_NET70ILLinkPackVersion>7.0.100-1.23211.1</_NET70ILLinkPackVersion>
