@@ -1,26 +1,22 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Collections.Concurrent;
-using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationActionQueue actionQueue, TerminalTestReporter output)
+internal sealed class MSBuildHandler(BuildOptions buildOptions)
 {
     private readonly BuildOptions _buildOptions = buildOptions;
-    private readonly TestApplicationActionQueue _actionQueue = actionQueue;
-    private readonly TerminalTestReporter _output = output;
 
     private readonly ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> _testApplications = [];
     private bool _areTestingPlatformApplications = true;
 
     public bool RunMSBuild()
     {
-        if (!ValidationUtility.ValidateBuildPathOptions(_buildOptions, _output))
+        if (!ValidationUtility.ValidateBuildPathOptions(_buildOptions))
         {
             return false;
         }
@@ -53,7 +49,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
 
         if (msBuildExitCode != ExitCode.Success)
         {
-            _output.WriteMessage(string.Format(CliCommandStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
             return false;
         }
 
@@ -84,7 +80,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
 
         if (!solutionOrProjectFileFound)
         {
-            _output.WriteMessage(message);
+            Reporter.Error.WriteLine(message);
             return ExitCode.GenericFailure;
         }
 
@@ -92,7 +88,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
 
         InitializeTestApplications(projects);
 
-        return restored ? ExitCode.Success : ExitCode.GenericFailure;
+        return restored && !_testApplications.IsEmpty ? ExitCode.Success : ExitCode.GenericFailure;
     }
 
     private int RunBuild(string filePath, bool isSolution)
@@ -101,7 +97,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
 
         InitializeTestApplications(projects);
 
-        return restored ? ExitCode.Success : ExitCode.GenericFailure;
+        return restored && !_testApplications.IsEmpty ? ExitCode.Success : ExitCode.GenericFailure;
     }
 
     private void InitializeTestApplications(IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> moduleGroups)
@@ -113,13 +109,10 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
         {
             _areTestingPlatformApplications = false;
 
-            _output.WriteMessage(
+            Reporter.Error.WriteLine(
                 string.Format(
                     CliCommandStrings.CmdUnsupportedVSTestTestApplicationsDescription,
-                    string.Join(Environment.NewLine, vsTestTestProjects.Select(module => Path.GetFileName(module.ProjectFullPath)))),
-                new SystemConsoleColor { ConsoleColor = ConsoleColor.Red });
-
-            _output.DisableTestRunSummary();
+                    string.Join(Environment.NewLine, vsTestTestProjects.Select(module => Path.GetFileName(module.ProjectFullPath))).Red().Bold()));
 
             return;
         }
@@ -130,7 +123,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
         }
     }
 
-    public bool EnqueueTestApplications()
+    public bool EnqueueTestApplications(TestApplicationActionQueue queue)
     {
         if (!_areTestingPlatformApplications)
         {
@@ -139,7 +132,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
 
         foreach (var testApp in _testApplications)
         {
-            _actionQueue.Enqueue(testApp);
+            queue.Enqueue(testApp);
         }
         return true;
     }
@@ -169,7 +162,6 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
             foreach (var module in moduleGroup)
             {
                 logMessageBuilder.AppendLine($"{ProjectProperties.ProjectFullPath}: {module.ProjectFullPath}");
-                logMessageBuilder.AppendLine($"{ProjectProperties.IsTestProject}: {module.IsTestProject}");
                 logMessageBuilder.AppendLine($"{ProjectProperties.IsTestingPlatformApplication}: {module.IsTestingPlatformApplication}");
                 logMessageBuilder.AppendLine($"{ProjectProperties.TargetFramework}: {module.TargetFramework}");
                 logMessageBuilder.AppendLine($"{ProjectProperties.RunCommand}: {module.RunProperties.Command}");

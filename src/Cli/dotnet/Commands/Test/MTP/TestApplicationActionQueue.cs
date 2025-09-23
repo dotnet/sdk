@@ -1,10 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Threading.Channels;
+using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -17,14 +17,14 @@ internal class TestApplicationActionQueue
 
     private static readonly Lock _lock = new();
 
-    public TestApplicationActionQueue(int degreeOfParallelism, BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Func<TestApplication, Task<int>> action)
+    public TestApplicationActionQueue(int degreeOfParallelism, BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action<CommandLineOptionMessages> onHelpRequested)
     {
         _channel = Channel.CreateUnbounded<ParallelizableTestModuleGroupWithSequentialInnerModules>(new UnboundedChannelOptions { SingleReader = false, SingleWriter = false });
         _readers = new Task[degreeOfParallelism];
 
         for (int i = 0; i < degreeOfParallelism; i++)
         {
-            _readers[i] = Task.Run(async () => await Read(action, buildOptions, testOptions, output));
+            _readers[i] = Task.Run(async () => await Read(buildOptions, testOptions, output, onHelpRequested));
         }
     }
 
@@ -51,23 +51,27 @@ internal class TestApplicationActionQueue
         _channel.Writer.Complete();
     }
 
-    private async Task Read(Func<TestApplication, Task<int>> action, BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output)
+    private async Task Read(BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action<CommandLineOptionMessages> onHelpRequested)
     {
         await foreach (var nonParallelizedGroup in _channel.Reader.ReadAllAsync())
         {
             foreach (var module in nonParallelizedGroup)
             {
                 int result = ExitCode.GenericFailure;
-                var testApp = new TestApplication(module, buildOptions, testOptions, output);
-                using (testApp)
+                var testApp = new TestApplication(module, buildOptions, testOptions, output, onHelpRequested);
+                try
                 {
-                    // TODO: If this throws, we will loose "one" degree of parallelism.
-                    // Then, if we ended up losing all degree of parallelisms, we will not be able to process all test apps.
-                    // At the end, WaitAllActions will likely just throw this exception wrapped in AggregateException, and
-                    // it will bubble up to CLI Main and crash the process.
-                    // We should try to work on a better handling for this, and better understand what are the possibilities for this to throw.
-                    // e.g, RunCommand pointing out to some file that doesn't exist? Process.Start failing for some reason?
-                    result = await action(testApp);
+                    using (testApp)
+                    {
+                        result = await testApp.RunAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var exAsString = ex.ToString();
+                    Logger.LogTrace($"Exception running test module {module.RunProperties?.Command} {module.RunProperties?.Arguments}: {exAsString}");
+                    Reporter.Error.WriteLine(string.Format(CliCommandStrings.ErrorRunningTestModule, module.RunProperties?.Command, module.RunProperties?.Arguments, exAsString));
+                    result = ExitCode.GenericFailure;
                 }
 
                 if (result == ExitCode.Success && testApp.HasFailureDuringDispose)

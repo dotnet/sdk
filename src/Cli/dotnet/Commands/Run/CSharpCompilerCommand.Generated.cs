@@ -190,6 +190,7 @@ partial class CSharpCompilerCommand
             $"/reference:{DotNetRootPath}/packs/Microsoft.NETCore.App.Ref/{RuntimeVersion}/ref/net10.0/System.Xml.XPath.dll",
             $"/reference:{DotNetRootPath}/packs/Microsoft.NETCore.App.Ref/{RuntimeVersion}/ref/net10.0/System.Xml.XPath.XDocument.dll",
             $"/reference:{DotNetRootPath}/packs/Microsoft.NETCore.App.Ref/{RuntimeVersion}/ref/net10.0/WindowsBase.dll",
+            "/features:InterceptorsNamespaces=;Microsoft.AspNetCore.Http.Generated;Microsoft.Extensions.Configuration.Binder.SourceGeneration;Microsoft.Extensions.Validation.Generated",
             "/debug+",
             "/debug:portable",
             "/filealign:512",

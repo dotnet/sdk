@@ -338,14 +338,18 @@ internal static class CommonOptions
         }
         .ForwardIfEnabled([$"--property:SelfContained=false", "--property:_CommandLineDefinedSelfContained=true"]);
 
-    public static readonly Option<IReadOnlyDictionary<string, string>> EnvOption = new("--environment", "-e")
+    public static Option<IReadOnlyDictionary<string, string>> CreateEnvOption(string description) => new("--environment", "-e")
     {
-        Description = CliStrings.CmdEnvironmentVariableDescription,
+        Description = description,
         HelpName = CliStrings.CmdEnvironmentVariableExpression,
         CustomParser = ParseEnvironmentVariables,
         // Can't allow multiple arguments because the separator needs to be parsed as part of the environment variable value.
         AllowMultipleArgumentsPerToken = false
     };
+
+    public static readonly Option<IReadOnlyDictionary<string, string>> EnvOption = CreateEnvOption(CliStrings.CmdEnvironmentVariableDescription);
+    
+    public static readonly Option<IReadOnlyDictionary<string, string>> TestEnvOption = CreateEnvOption(CliStrings.CmdTestEnvironmentVariableDescription);
 
     private static IReadOnlyDictionary<string, string> ParseEnvironmentVariables(ArgumentResult argumentResult)
     {

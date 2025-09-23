@@ -185,9 +185,9 @@ Przeszukane ścieżki: „{1}”, „{2}”.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotConvertDirective">
-        <source>Some directives cannot be converted: the first error is at {0}. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
-        <target state="translated">Nie można przekonwertować niektórych dyrektyw: pierwszy błąd pojawia się w: {0}. Uruchom plik, aby wyświetlić wszystkie błędy kompilacji. Określ element „--force”, aby mimo to przekonwertować.</target>
-        <note>{Locked="--force"}. {0} is the file path and line number.</note>
+        <source>Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
+        <target state="translated">Nie można przekonwertować niektórych dyrektyw. Uruchom plik, aby wyświetlić wszystkie błędy kompilacji. Określ element „--force”, aby mimo to przekonwertować.</target>
+        <note>{Locked="--force"}</note>
       </trans-unit>
       <trans-unit id="CannotFindCommandName">
         <source>Cannot find a tool in the manifest file that has a command named '{0}'.</source>
@@ -585,7 +585,7 @@ Jest to równoważne usunięciu pliku project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdMinimumExpectedTestsDescription">
         <source>Specifies the minimum number of tests that are expected to run.</source>
-        <target state="new">Specifies the minimum number of tests that are expected to run.</target>
+        <target state="translated">Określa minimalną liczbę testów, które mają zostać uruchomione.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
@@ -878,19 +878,18 @@ Jeśli określony katalog nie istnieje, zostanie utworzony.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
-        <source>dotnet.config defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+        <source>global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
 The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="translated">Plik dotnet.config definiuje moduł uruchamiający testy jako Microsoft.Testing.Platform. Wszystkie projekty muszą używać tego modułu uruchamiającego testy.
+        <target state="translated">global.json definiuje moduł uruchamiający testy jako Microsoft.Testing.Platform. Wszystkie projekty muszą używać tego modułu uruchamiającego testy.
 Następujące projekty testowe używają modułu uruchamiającego testy VSTest:
 {0}
 
 Aby uzyskać więcej informacji, zobacz https://aka.ms/dotnet-test/mtp.</target>
-        <note>{0} is one or more project names.
-Microsoft.Testing.Platform is a name, don't translate.
-dotnet.config is a name don't translate.</note>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
+{0} is one or more project names.</note>
       </trans-unit>
       <trans-unit id="CmdUseLockFileOptionDescription">
         <source>Enables project lock file to be generated and used with restore.</source>
@@ -1127,6 +1126,11 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">Włącza dane wyjściowe diagnostyki.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DirectiveError">
+        <source>error</source>
+        <target state="translated">błąd</target>
+        <note>Used when reporting directive errors like "file(location): error: message".</note>
+      </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
         <target state="translated">Usunięto dyrektywy „{0}” ({1}) dla „{2}” z pliku: {3}</target>
@@ -1165,27 +1169,32 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
         <source>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</source>
-        <target state="new">Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</target>
+        <target state="translated">Obsługiwane wersje protokołów wysyłane przez element Microsoft.Testing.Platform to „{0}”. Zestaw SDK obsługuje element „{1}”, co jest niezgodne.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestMismatchingExecutionId">
+        <source>Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</source>
+        <target state="translated">Odebrano wartość „ExecutionId” dla{0}komunikatu „{1}”, a element „ExecutionId” odebrany z komunikatu uzgadniania to „{2}”.</target>
+        <note>{Locked="ExecutionId"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestPipeFailureHasHandshake">
         <source>Error disposing 'NamedPipeServer' corresponding to handshake:</source>
-        <target state="new">Error disposing 'NamedPipeServer' corresponding to handshake:</target>
+        <target state="translated">Błąd usuwania elementu „NamedPipeServer” odpowiadającego uzgadnianiu:</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestPipeFailureWithoutHandshake">
         <source>Error disposing 'NamedPipeServer', and no handshake was found.</source>
-        <target state="new">Error disposing 'NamedPipeServer', and no handshake was found.</target>
+        <target state="translated">Wystąpił błąd podczas usuwania elementu „NamedPipeServer” i nie znaleziono uzgadniania.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestPipeIncompleteSize">
         <source>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</source>
-        <target state="new">'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</target>
+        <target state="translated">Element „dotnet” nieoczekiwanie odebrał mniej niż 4 bajty z nazwanego potoku "dotnet test".</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestPipeOverlapping">
         <source>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</source>
-        <target state="new">'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</target>
+        <target state="translated">Element "dotnet" nieoczekiwanie odebrał nakładające się komunikaty z nazwanego potoku „dotnet test”.</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
@@ -1218,9 +1227,19 @@ Rozróżnij nazwy profilów.</target>
         <note />
       </trans-unit>
       <trans-unit id="DuplicateDirective">
-        <source>Duplicate directives are not supported: {0} at {1}</source>
-        <target state="translated">Zduplikowane dyrektywy nie są obsługiwane: {0} w lokalizacji {1}</target>
-        <note>{0} is the directive type and name. {1} is the file path and line number.</note>
+        <source>Duplicate directives are not supported: {0}</source>
+        <target state="translated">Zduplikowane dyrektywy nie są obsługiwane: {0}</target>
+        <note>{0} is the directive type and name.</note>
+      </trans-unit>
+      <trans-unit id="ErrorRunningTestModule">
+        <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
+
+{2}</source>
+        <target state="translated">Wystąpił następujący wyjątek podczas uruchamiania modułu testowego z elementami RunCommand „{0}” i RunArguments „{1}”:
+
+{2}</target>
+        <note>{Locked="RunCommand"}{Locked="RunArguments"}
+{2} is the exception that occurred.</note>
       </trans-unit>
       <trans-unit id="Error_restore">
         <source>Restore failed. Run `dotnet restore` for more details on the issue.</source>
@@ -1549,13 +1568,13 @@ Rozróżnij nazwy profilów.</target>
       </trans-unit>
       <trans-unit id="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage">
         <source>Method '{0}' did not exit successfully</source>
-        <target state="new">Method '{0}' did not exit successfully</target>
+        <target state="translated">Metoda „{0}” nie zakończyła się pomyślnie</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
-        <source>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="translated">Dyrektywa w „{2}” powinna zawierać nazwę bez znaków specjalnych i opcjonalną wartość oddzieloną znakiem „{1}”, na przykład "#:{0} wartość{1}nazwy”.</target>
-        <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</note>
+        <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
+        <target state="translated">Dyrektywa powinna zawierać nazwę bez znaków specjalnych i opcjonalną wartość rozdzieloną znakiem "{1}#:{0} Name{1}Value".</target>
+        <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</note>
       </trans-unit>
       <trans-unit id="InvalidFilePath">
         <source>The specified file must exist and have '.cs' file extension: '{0}'</source>
@@ -1573,9 +1592,9 @@ Rozróżnij nazwy profilów.</target>
         <note>{0} is an option name like '--no-build'.</note>
       </trans-unit>
       <trans-unit id="InvalidProjectDirective">
-        <source>The '#:project' directive at '{0}' is invalid: {1}</source>
-        <target state="translated">Dyrektywa „#:project” w lokalizacji „{0}” jest nieprawidłowa: {1}</target>
-        <note>{0} is the file path and line number. {1} is the inner error message.</note>
+        <source>The '#:project' directive is invalid: {0}</source>
+        <target state="translated">Dyrektywa „#:project” jest nieprawidłowa: {0}</target>
+        <note>{0} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
         <source>Failed to parse "{0}" as a semantic version.</source>
@@ -1709,10 +1728,20 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
         <target state="translated">Minimalne oczekiwane naruszenie zasad testów, uruchomione testy: {0}, oczekiwane minimum: {1}</target>
         <note>{0}, {1} number of tests</note>
       </trans-unit>
+      <trans-unit id="MismatchingHandshakeInfo">
+        <source>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</source>
+        <target state="translated">Odebrano nowe uzgadnianie „{0}” dla aplikacji testowej, która nie pasuje do poprzedniego uzgadniania „{1}”.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MissingDirectiveName">
-        <source>Missing name of '{0}' at {1}.</source>
-        <target state="translated">Brak nazwy „{0}” w {1}.</target>
-        <note>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</note>
+        <source>Missing name of '{0}'.</source>
+        <target state="translated">Brak nazwy „{0}”.</target>
+        <note>{0} is the directive name like 'package' or 'sdk'.</note>
+      </trans-unit>
+      <trans-unit id="MissingTestSessionEnd">
+        <source>A test session start event was received without a corresponding test session end.</source>
+        <target state="translated">Odebrano zdarzenie rozpoczęcia sesji testowej bez odpowiedniego zakończenia sesji testowej.</target>
+        <note />
       </trans-unit>
       <trans-unit id="MsBuildDefinition">
         <source>Run Microsoft Build Engine (MSBuild) commands.</source>
@@ -2472,14 +2501,14 @@ Narzędzie „{1}” (wersja „{2}”) zostało pomyślnie zainstalowane. Wpis 
         <note />
       </trans-unit>
       <trans-unit id="PropertyDirectiveInvalidName">
-        <source>Invalid property name at {0}. {1}</source>
-        <target state="translated">Nieprawidłowa nazwa właściwości w {0}. {1}</target>
-        <note>{0} is the file path and line number. {1} is an inner exception message.</note>
+        <source>Invalid property name: {0}</source>
+        <target state="translated">Nieprawidłowa nazwa właściwości: {0}</target>
+        <note>{0} is an inner exception message.</note>
       </trans-unit>
       <trans-unit id="PropertyDirectiveMissingParts">
-        <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
-        <target state="translated">Dyrektywa właściwości musi mieć dwie części oddzielone znakiem „=”, na przykład „'#:property PropertyName=PropertyValue”: {0}</target>
-        <note>{0} is the file path and line number.{Locked="#:property"}</note>
+        <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</source>
+        <target state="translated">Dyrektywa właściwości musi mieć dwie części oddzielone znakiem „=”, na przykład „#:property PropertyName=PropertyValue”.</target>
+        <note>{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
@@ -3018,9 +3047,9 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
         <note />
       </trans-unit>
       <trans-unit id="StaticGraphRestoreNotSupported">
-        <source>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</source>
-        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</target>
-        <note>{0} is the file path and line number.{Locked="#:property"}</note>
+        <source>Static graph restore is not supported for file-based apps. Remove the '#:property'.</source>
+        <target state="translated">Przywracanie statycznego grafu nie jest obsługiwane w przypadku aplikacji opartych na plikach. Usuń element „#:property”.</target>
+        <note>{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
@@ -3528,6 +3557,26 @@ i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleź�
         <target state="translated">wypróbuj {0}</target>
         <note>number or tries of the current test assembly when test assembly is being retried. {0} is number that starts at 1</note>
       </trans-unit>
+      <trans-unit id="UnexpectedHelpMessage">
+        <source>An unexpected help-related message was received when `--help` wasn't used.</source>
+        <target state="translated">Odebrano nieoczekiwany komunikat związany z pomocą, gdy nie użyto elementu „--help”.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedMessageInHelpMode">
+        <source>A message of type '{0}' was received in help mode, which is not expected.</source>
+        <target state="translated">Komunikat typu „{0}” został odebrany w trybie pomocy, co nie jest oczekiwane.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedMessageWithoutHandshake">
+        <source>A message of type '{0}' was received before we got any handshakes, which is unexpected.</source>
+        <target state="translated">Komunikat typu „{0}” został odebrany przed otrzymaniem jakichkolwiek uzgadniań, co jest nieoczekiwane.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedTestSessionEnd">
+        <source>A test session end event was received without a corresponding test session start.</source>
+        <target state="translated">Odebrano zdarzenie zakończenia sesji testowej bez odpowiedniego uruchomienia sesji testowej.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UninstallLocalToolSucceeded">
         <source>Tool '{0}' was successfully uninstalled and removed from manifest file {1}.</source>
         <target state="translated">Narzędzie „{0}” zostało pomyślnie odinstalowane i usunięte z pliku manifestu {1}.</target>
@@ -3544,9 +3593,9 @@ i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleź�
         <note />
       </trans-unit>
       <trans-unit id="UnrecognizedDirective">
-        <source>Unrecognized directive '{0}' at {1}.</source>
-        <target state="translated">Nierozpoznana dyrektywa „{0}” w {1}.</target>
-        <note>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</note>
+        <source>Unrecognized directive '{0}'.</source>
+        <target state="translated">Nierozpoznana dyrektywa „{0}”.</target>
+        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
         <source>Update all tools.</source>

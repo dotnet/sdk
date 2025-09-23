@@ -40,6 +40,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CreateWindowsSdkKnownFrameworkReferences
       UseWindowsSDKPreview="$(UseWindowsSDKPreview)"
       WindowsSdkPackageVersion="$(WindowsSdkPackageVersion)"
+      WindowsSdkPackageMinimumRevision="$(WindowsSdkPackageMinimumRevision)"
       TargetFrameworkIdentifier="$(TargetFrameworkIdentifier)"
       TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
       TargetPlatformIdentifier="$(TargetPlatformIdentifier)"
@@ -469,8 +470,25 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
+  <!-- Default "off by default analyzer" settings for trimmed apps. -->
+  <PropertyGroup Condition="'$(PublishTrimmed)' == 'true' Or '$(PublishAot)' == 'true'">
+    <!-- Enable the built-in source generators. -->
+    <EnableRequestDelegateGenerator Condition="'$(EnableRequestDelegateGenerator)' == ''">true</EnableRequestDelegateGenerator>
+    <EnableConfigurationBindingGenerator Condition="'$(EnableConfigurationBindingGenerator)' == ''">true</EnableConfigurationBindingGenerator>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Set the namespaces emitted by the RequestDelegateGenerator for interception when applicable. -->
+    <InterceptorsPreviewNamespaces Condition="'$(EnableRequestDelegateGenerator)' == 'true'">$(InterceptorsPreviewNamespaces);Microsoft.AspNetCore.Http.Generated</InterceptorsPreviewNamespaces>
+    <!-- Set the namespaces emitted by the ConfigurationBindingGenerator for interception when applicable. -->
+    <InterceptorsPreviewNamespaces Condition="'$(EnableConfigurationBindingGenerator)' == 'true'">$(InterceptorsPreviewNamespaces);Microsoft.Extensions.Configuration.Binder.SourceGeneration</InterceptorsPreviewNamespaces>
+    <!-- Set the namespaces emitted by the ValidationsGenerator for interception when applicable (.NET 10 and above). -->
+    <InterceptorsPreviewNamespaces Condition="'$(_TargetFrameworkVersionWithoutV)' != '' and $([MSBuild]::VersionGreaterThanOrEquals('$(_TargetFrameworkVersionWithoutV)', '10.0'))">$(InterceptorsPreviewNamespaces);Microsoft.Extensions.Validation.Generated</InterceptorsPreviewNamespaces>
+  </PropertyGroup>
+  
   <Target Name="ResolveOffByDefaultAnalyzers" AfterTargets="ResolveTargetingPackAssets"
           Condition="'@(FrameworkReference)' != ''">
+    
     <ItemGroup>
       <OffByDefaultAnalyzer Include="Microsoft.AspNetCore.Http.RequestDelegateGenerator.dll"
                             IsEnabled="$(EnableRequestDelegateGenerator)"/>

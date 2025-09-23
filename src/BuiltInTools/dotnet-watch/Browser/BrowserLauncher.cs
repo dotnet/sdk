@@ -22,7 +22,7 @@ internal sealed class BrowserLauncher(ILogger logger, EnvironmentOptions environ
         ProcessSpec processSpec,
         ProjectGraphNode projectNode,
         ProjectOptions projectOptions,
-        BrowserRefreshServer? server,
+        AbstractBrowserRefreshServer? server,
         CancellationToken cancellationToken)
     {
         if (!CanLaunchBrowser(projectOptions, out var launchProfile))
@@ -59,7 +59,7 @@ internal sealed class BrowserLauncher(ILogger logger, EnvironmentOptions environ
             Uri.TryCreate(outputLaunchUrl, UriKind.Absolute, out var launchUri) ? new Uri(launchUri, profileLaunchUrl).ToString() :
             outputLaunchUrl;
 
-    private void LaunchBrowser(string launchUrl, BrowserRefreshServer? server)
+    private void LaunchBrowser(string launchUrl, AbstractBrowserRefreshServer? server)
     {
         var fileName = launchUrl;
 

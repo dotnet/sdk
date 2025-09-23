@@ -212,6 +212,11 @@
         <target state="translated">NETSDK1125: Tek dosyada yayımlama yalnızca netcoreapp hedefi için desteklenir.</target>
         <note>{StrBegins="NETSDK1125: "}</note>
       </trans-unit>
+      <trans-unit id="CantSpecifyBothProperties">
+        <source>NETSDK1230: The {0} and {1} properties cannot both be specified. Remove one or the other.</source>
+        <target state="translated">NETSDK1230: {0} ve {1} özellikleri birlikte belirtilemez. Birini kaldırın.</target>
+        <note>{StrBegins="NETSDK1230: "}</note>
+      </trans-unit>
       <trans-unit id="ChoosingAssemblyVersion_Info">
         <source>Choosing '{0}' because AssemblyVersion '{1}' is greater than '{2}'.</source>
         <target state="translated">'{1}' AssemblyVersion değeri '{2}' değerinden büyük olduğundan '{0}' seçiliyor.</target>
@@ -856,6 +861,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1103: RollForward ayarı yalnızca .NET Core 3.0 veya üzeri sürümlerde desteklenir.</target>
         <note>{StrBegins="NETSDK1103: "}</note>
       </trans-unit>
+      <trans-unit id="RuntimeGraphFileDoesNotExist">
+        <source>NETSDK1231: File '{0}' does not exist. Please ensure the runtime graph path exists.</source>
+        <target state="translated">NETSDK1231: '{0}' dosyası mevcut değil. Lütfen çalışma zamanı grafiği yolunun var olduğundan emin olun.</target>
+        <note>{StrBegins="NETSDK1231: "}{Locked="{0}"}</note>
+      </trans-unit>
       <trans-unit id="RuntimeIdentifierNotRecognized">
         <source>NETSDK1083: The specified RuntimeIdentifier '{0}' is not recognized. See https://aka.ms/netsdk1083 for more information.</source>
         <target state="translated">NETSDK1083: Belirtilen RuntimeIdentifier '{0}' tanınmıyor. Daha fazla bilgi için https://aka.ms/netsdk1083 adresini ziyaret edin.</target>
@@ -953,6 +963,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1172: Sağlanan tür kitaplığı '{0}' mevcut değil.</target>
         <note>{StrBegins="NETSDK1172: "}</note>
       </trans-unit>
+      <trans-unit id="UnableToFindMatchingRid">
+        <source>NETSDK1232: Unable to find a matching RID for '{0}' from among [{1}] in graph '{2}'.</source>
+        <target state="translated">NETSDK1232: '{2}' grafiğindeki [{1}] arasından '{0}' için eşleşen bir RID bulunamadı.</target>
+        <note>{StrBegins="NETSDK1232: "}{Locked="{0}"}{Locked="{1}"}{Locked="{2}"}</note>
+      </trans-unit>
       <trans-unit id="UnableToFindResolvedPath">
         <source>NETSDK1016: Unable to find resolved path for '{0}'.</source>
         <target state="translated">NETSDK1016: '{0}' için çözümlenmiş yol bulunamıyor.</target>
@@ -1042,6 +1057,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1107: Microsoft.NET.Sdk.WindowsDesktop is required to build Windows desktop applications. 'UseWpf' and 'UseWindowsForms' are not supported by the current SDK.</source>
         <target state="translated">NETSDK1107: Windows Masaüstü uygulamalarını derlemek için Microsoft.NET.Sdk.WindowsDesktop gereklidir. 'UseWpf' ve 'UseWindowsForms' geçerli SDK tarafından desteklenmiyor.</target>
         <note>{StrBegins="NETSDK1107: "}</note>
+      </trans-unit>
+      <trans-unit id="UsingPreviewCsWinRT3_0Feature">
+        <source>NETSDK1229: Targeting a Windows SDK version with '1' as the revision number will reference CsWinRT 3.0, which is currently in preview. The current project is targeting the Windows SDK version '{0}'. If this is not intended, change the revision number to '0' to use CsWinRT 2.x instead.</source>
+        <target state="translated">NETSDK1229: Düzeltme numarası olarak '1' kullanılarak bir Windows SDK sürümünü hedeflemek, şu anda önizlemede olan CsWinRT 3.0’ı referans alacaktır. Geçerli proje Windows SDK sürüm '{0}' sürümünü hedefliyor. Eğer bu amaçlanmadıysa, CsWinRT 2.x kullanmak için düzeltme numarasını '0' olarak değiştirin.</target>
+        <note>{StrBegins="NETSDK1229: "}</note>
       </trans-unit>
       <trans-unit id="UsingPreviewSdk">
         <source>NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy</source>

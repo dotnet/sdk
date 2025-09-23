@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -51,18 +48,18 @@ internal static class ValidationUtility
         }
     }
 
-    public static bool ValidateBuildPathOptions(BuildOptions buildPathOptions, TerminalTestReporter output)
+    public static bool ValidateBuildPathOptions(BuildOptions buildPathOptions)
     {
         PathOptions pathOptions = buildPathOptions.PathOptions;
 
         if (!string.IsNullOrEmpty(pathOptions.ProjectPath))
         {
-            return ValidateProjectPath(pathOptions.ProjectPath, output);
+            return ValidateProjectPath(pathOptions.ProjectPath);
         }
 
         if (!string.IsNullOrEmpty(pathOptions.SolutionPath))
         {
-            return ValidateSolutionPath(pathOptions.SolutionPath, output);
+            return ValidateSolutionPath(pathOptions.SolutionPath);
         }
 
         return true;
@@ -109,7 +106,7 @@ internal static class ValidationUtility
         }
     }
 
-    private static bool ValidateSolutionPath(string path, TerminalTestReporter output)
+    private static bool ValidateSolutionPath(string path)
     {
         // If it's a directory, just check if it exists
         if (Directory.Exists(path))
@@ -120,14 +117,14 @@ internal static class ValidationUtility
         // If it's not a directory, validate as a file path
         if (!CliConstants.SolutionExtensions.Contains(Path.GetExtension(path)))
         {
-            output.WriteMessage(string.Format(CliCommandStrings.CmdInvalidSolutionFileExtensionErrorDescription, path));
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.CmdInvalidSolutionFileExtensionErrorDescription, path));
             return false;
         }
 
-        return ValidateFilePathExists(path, output);
+        return ValidateFilePathExists(path);
     }
 
-    private static bool ValidateProjectPath(string path, TerminalTestReporter output)
+    private static bool ValidateProjectPath(string path)
     {
         // If it's a directory, just check if it exists
         if (Directory.Exists(path))
@@ -138,18 +135,18 @@ internal static class ValidationUtility
         // If it's not a directory, validate as a file path
         if (!Path.GetExtension(path).EndsWith("proj", StringComparison.OrdinalIgnoreCase))
         {
-            output.WriteMessage(string.Format(CliCommandStrings.CmdInvalidProjectFileExtensionErrorDescription, path));
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.CmdInvalidProjectFileExtensionErrorDescription, path));
             return false;
         }
 
-        return ValidateFilePathExists(path, output);
+        return ValidateFilePathExists(path);
     }
 
-    private static bool ValidateFilePathExists(string filePath, TerminalTestReporter output)
+    private static bool ValidateFilePathExists(string filePath)
     {
         if (!File.Exists(filePath))
         {
-            output.WriteMessage(string.Format(CliCommandStrings.CmdNonExistentFileErrorDescription, Path.GetFullPath(filePath)));
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.CmdNonExistentFileErrorDescription, Path.GetFullPath(filePath)));
             return false;
         }
 

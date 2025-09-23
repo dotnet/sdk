@@ -14,10 +14,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
         }
 
-        //  https://github.com/dotnet/sdk/issues/49665
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [Theory]
         public void DiscoverTestProjectWithNoTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString())
@@ -38,10 +37,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.ZeroTests);
         }
 
-        //  https://github.com/dotnet/sdk/issues/49665
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [Theory]
         public void DiscoverMultipleTestProjectsWithNoTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultipleTestProjectSolution", Guid.NewGuid().ToString())
@@ -62,10 +60,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.ZeroTests);
         }
 
-        //  https://github.com/dotnet/sdk/issues/49665
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [Theory]
         public void DiscoverTestProjectWithTests_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithDiscoveredTests", Guid.NewGuid().ToString())
@@ -84,10 +81,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
-        //  https://github.com/dotnet/sdk/issues/49665
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [Theory]
         public void DiscoverMultipleTestProjectsWithTests_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDiscoveredTests", Guid.NewGuid().ToString())
@@ -145,7 +141,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                result.StdOut.Should().Contain(string.Format(CliCommandStrings.CmdUnsupportedVSTestTestApplicationsDescription, "AnotherTestProject.csproj"));
+                result.StdErr.Should().Contain(string.Format(CliCommandStrings.CmdUnsupportedVSTestTestApplicationsDescription, "AnotherTestProject.csproj"));
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);

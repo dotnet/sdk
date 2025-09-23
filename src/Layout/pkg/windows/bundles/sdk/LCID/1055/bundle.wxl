@@ -75,7 +75,7 @@ Bu ürün, kullanım verilerini toplar
   <String Id="WelcomeHeader" Value=".NET SDK" Localizable="no"/>
   
   <String Id="WelcomeDescription" Value=".NET SDK, .NET uygulamalarını derlemek, çalıştırmak ve test etmek için kullanılır. Birden çok dil, düzenleyici ve geliştirici aracı arasından seçim yapabilirsiniz ve web, mobil, masaüstü, oyun ve IoT uygulamaları oluşturmak için büyük bir kitaplık ekosisteminden yararlanabilirsiniz. Beğeneceğinizi umuyoruz!"/>
-  <String Id="VisualStudioWarning" Value="Visual Studio ile .NET [VERSIONMAJOR].[VERSIONMINOR] kullanmayı planlıyorsanız Visual Studio 2022 [MINIMUMVSVERSION] veya üzeri bir sürüm gerekir. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Daha fazla bilgi edinin&lt;/A&gt;."/>
+  <String Id="VisualStudioWarning" Value="Visual Studio ile .NET [VERSIONMAJOR].[VERSIONMINOR] kullanmayı planlıyorsanız Visual Studio 2026 [MINIMUMVSVERSION] veya üzeri bir sürüm gerekir. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Daha fazla bilgi edinin&lt;/A&gt;."/>
   <String Id="LicenseAssent" Value="Yükle'ye tıklayarak aşağıdaki koşulları kabul etmiş olursunuz:"/>
   <String Id="LearnMoreTitle" Value=".NET hakkında daha fazla bilgi edinin"/>
   <String Id="ResourcesHeader" Value="Kaynaklar"/>
@@ -87,7 +87,7 @@ Bu ürün, kullanım verilerini toplar
   <String Id="InstallationNoteTitle" Value="Yükleme notu"/>
   <String Id="InstallationNote" Value="Yükleme işlemi sırasında proje geri yükleme hızını artıran ve çevrimdışı erişimi etkinleştiren bir komut çalıştırılır. Tamamlanması bir dakikanızı alır."/>
   
-  <String Id="VisualStudioWarning" Value="Visual Studio ile .NET [VERSIONMAJOR].[VERSIONMINOR] kullanmayı planlıyorsanız Visual Studio 2022 [MINIMUMVSVERSION] veya üzeri bir sürüm gerekir. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Daha fazla bilgi edinin&lt;/A&gt;."/>
+  <String Id="VisualStudioWarning" Value="Visual Studio ile .NET [VERSIONMAJOR].[VERSIONMINOR] kullanmayı planlıyorsanız Visual Studio 2026 [MINIMUMVSVERSION] veya üzeri bir sürüm gerekir. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Daha fazla bilgi edinin&lt;/A&gt;."/>
   <String Id="LicenseAssent" Value="Yükle'ye tıklayarak aşağıdaki koşulları kabul etmiş olursunuz:"/>
   <String Id="InstallPathx64x86" Value="x64 SDK yüklemelerinin yükleme yolu (&quot;[DOTNETHOME_X64]&quot;), x86 SDK yüklemelerinin yükleme yolu (&quot;[DOTNETHOME_X86]&quot;) ile aynı olamaz"/>
   <String Id="InstallPathARM64x86" Value="ARM64 SDK yüklemeleri için yükleme yolu (&quot;[DOTNETHOME_ARM64]&quot;), x86 SDK yüklemelerinin yükleme yolu (&quot;[DOTNETHOME_X86]&quot;) ile aynı olamaz"/>

@@ -185,9 +185,9 @@ Paths searched: '{1}', '{2}'.</source>
         <note />
       </trans-unit>
       <trans-unit id="CannotConvertDirective">
-        <source>Some directives cannot be converted: the first error is at {0}. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
-        <target state="translated">일부 지시문을 변환할 수 없습니다. 첫 번째 오류는 {0}에 있습니다. 파일을 실행하여 모든 컴파일 오류를 확인하세요. 변환을 강제로 진행하려면 '--force'를 지정하세요.</target>
-        <note>{Locked="--force"}. {0} is the file path and line number.</note>
+        <source>Some directives cannot be converted. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
+        <target state="translated">일부 지시문을 변환할 수 없습니다. 파일을 실행하여 모든 컴파일 오류를 확인하세요. 변환을 강제로 진행하려면 '--force'를 지정하세요.</target>
+        <note>{Locked="--force"}</note>
       </trans-unit>
       <trans-unit id="CannotFindCommandName">
         <source>Cannot find a tool in the manifest file that has a command named '{0}'.</source>
@@ -585,7 +585,7 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
       </trans-unit>
       <trans-unit id="CmdMinimumExpectedTestsDescription">
         <source>Specifies the minimum number of tests that are expected to run.</source>
-        <target state="new">Specifies the minimum number of tests that are expected to run.</target>
+        <target state="translated">실행될 것으로 예상되는 최소 테스트 수를 지정합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
@@ -878,19 +878,18 @@ The specified directory will be created if it does not exist.</source>
         <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
-        <source>dotnet.config defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+        <source>global.json defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
 The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="translated">dotnet.config는 Test Runner를 Microsoft.Testing.Platform으로 정의합니다. 모든 프로젝트는 해당 Test Runner를 사용해야 합니다.
+        <target state="translated">global.json은 Test Runner를 Microsoft.Testing.Platform으로 정의합니다. 모든 프로젝트는 해당 Test Runner를 사용해야 합니다.
 다음 테스트 프로젝트에서 VSTest Test Runner를 사용하고 있습니다.
 {0}
 
 자세한 내용은 https://aka.ms/dotnet-test/mtp를 참조하세요.</target>
-        <note>{0} is one or more project names.
-Microsoft.Testing.Platform is a name, don't translate.
-dotnet.config is a name don't translate.</note>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}
+{0} is one or more project names.</note>
       </trans-unit>
       <trans-unit id="CmdUseLockFileOptionDescription">
         <source>Enables project lock file to be generated and used with restore.</source>
@@ -1127,6 +1126,11 @@ dotnet.config is a name don't translate.</note>
         <target state="translated">진단 출력을 사용하도록 설정합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DirectiveError">
+        <source>error</source>
+        <target state="translated">오류</target>
+        <note>Used when reporting directive errors like "file(location): error: message".</note>
+      </trans-unit>
       <trans-unit id="DirectivesRemoved">
         <source>Removed '{0}' directives ({1}) for '{2}' from: {3}</source>
         <target state="translated">다음에서 '{2}'에 대한 '{0}' 지시문({1})을 제거했습니다. {3}</target>
@@ -1165,27 +1169,32 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
         <source>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</source>
-        <target state="new">Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</target>
+        <target state="translated">Microsoft.Testing.Platform에서 보낸 지원되는 프로토콜 버전은 '{0}'입니다. SDK는 호환되지 않는 '{1}'을(를) 지원합니다.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestMismatchingExecutionId">
+        <source>Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</source>
+        <target state="translated">핸드셰이크 메시지에서 받은 'ExecutionId'가 '{2}'인 동안 메시지 '{1}'에 대해 값 '{0}'의 'ExecutionId'가 수신되었습니다.</target>
+        <note>{Locked="ExecutionId"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestPipeFailureHasHandshake">
         <source>Error disposing 'NamedPipeServer' corresponding to handshake:</source>
-        <target state="new">Error disposing 'NamedPipeServer' corresponding to handshake:</target>
+        <target state="translated">핸드셰이크에 해당하는 'NamedPipeServer'를 삭제하는 동안 오류가 발생했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestPipeFailureWithoutHandshake">
         <source>Error disposing 'NamedPipeServer', and no handshake was found.</source>
-        <target state="new">Error disposing 'NamedPipeServer', and no handshake was found.</target>
+        <target state="translated">'NamedPipeServer'를 삭제하는 동안 오류가 발생하여 핸드셰이크를 찾을 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestPipeIncompleteSize">
         <source>'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</source>
-        <target state="new">'dotnet' unexpectedly received less than 4 bytes from the 'dotnet test' named pipe.</target>
+        <target state="translated">'dotnet'이 'dotnet test'로 명명된 파이프에서 예기치 않게 4바이트 미만의 데이터를 받았습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetTestPipeOverlapping">
         <source>'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</source>
-        <target state="new">'dotnet' unexpectedly received overlapping messages from the 'dotnet test' named pipe.</target>
+        <target state="translated">'dotnet'이 'dotnet test'로 명명된 파이프에서 예기치 않게 겹치는 메시지를 받았습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
@@ -1218,9 +1227,19 @@ Make the profile names distinct.</source>
         <note />
       </trans-unit>
       <trans-unit id="DuplicateDirective">
-        <source>Duplicate directives are not supported: {0} at {1}</source>
-        <target state="translated">중복된 지시문은 지원되지 않습니다. {1}의 {0}.</target>
-        <note>{0} is the directive type and name. {1} is the file path and line number.</note>
+        <source>Duplicate directives are not supported: {0}</source>
+        <target state="translated">중복 지시문은 지원되지 않습니다. {0}</target>
+        <note>{0} is the directive type and name.</note>
+      </trans-unit>
+      <trans-unit id="ErrorRunningTestModule">
+        <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
+
+{2}</source>
+        <target state="translated">RunCommand '{0}' 및 RunArguments '{1}'(으)로 테스트 모듈을 실행하는 동안 다음 예외가 발생했습니다.
+
+{2}</target>
+        <note>{Locked="RunCommand"}{Locked="RunArguments"}
+{2} is the exception that occurred.</note>
       </trans-unit>
       <trans-unit id="Error_restore">
         <source>Restore failed. Run `dotnet restore` for more details on the issue.</source>
@@ -1549,13 +1568,13 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage">
         <source>Method '{0}' did not exit successfully</source>
-        <target state="new">Method '{0}' did not exit successfully</target>
+        <target state="translated">'{0}' 메서드가 성공적으로 종료되지 않았습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
-        <source>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="translated">'{2}'의 지시문에는 특수 문자가 없는 이름과 '{1}' 구분 기호로 구분되는 선택적 값('#:{0} 이름{1}값')이 포함되어야 합니다.</target>
-        <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</note>
+        <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
+        <target state="translated">지시문에는 특수 문자가 없는 이름과 '#:{0} 이름{1}값'과 같이 '{1}'(으)로 구분된 선택적 값이 포함되어야 합니다.</target>
+        <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='.</note>
       </trans-unit>
       <trans-unit id="InvalidFilePath">
         <source>The specified file must exist and have '.cs' file extension: '{0}'</source>
@@ -1573,9 +1592,9 @@ Make the profile names distinct.</source>
         <note>{0} is an option name like '--no-build'.</note>
       </trans-unit>
       <trans-unit id="InvalidProjectDirective">
-        <source>The '#:project' directive at '{0}' is invalid: {1}</source>
-        <target state="translated">'{0}'의 '#:project' 지시문이 잘못되었습니다. {1}.</target>
-        <note>{0} is the file path and line number. {1} is the inner error message.</note>
+        <source>The '#:project' directive is invalid: {0}</source>
+        <target state="translated">'#:p roject' 지시문이 잘못되었습니다. {0}</target>
+        <note>{0} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
         <source>Failed to parse "{0}" as a semantic version.</source>
@@ -1709,10 +1728,20 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">예상되는 최소 테스트 정책 위반, 테스트 실행 {0}, 필요한 최소 {1}</target>
         <note>{0}, {1} number of tests</note>
       </trans-unit>
+      <trans-unit id="MismatchingHandshakeInfo">
+        <source>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</source>
+        <target state="translated">이전 핸드셰이크 '{1}'과(와) 일치하지 않는 테스트 애플리케이션에 대해 새 핸드셰이크 '{0}'이(가) 수신되었습니다.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MissingDirectiveName">
-        <source>Missing name of '{0}' at {1}.</source>
-        <target state="translated">{1}에 ' {0}'의 이름이 없습니다.</target>
-        <note>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</note>
+        <source>Missing name of '{0}'.</source>
+        <target state="translated">'{0}' 이름이 없습니다.</target>
+        <note>{0} is the directive name like 'package' or 'sdk'.</note>
+      </trans-unit>
+      <trans-unit id="MissingTestSessionEnd">
+        <source>A test session start event was received without a corresponding test session end.</source>
+        <target state="translated">해당 테스트 세션 종료 없이 테스트 세션 시작 이벤트를 받았습니다.</target>
+        <note />
       </trans-unit>
       <trans-unit id="MsBuildDefinition">
         <source>Run Microsoft Build Engine (MSBuild) commands.</source>
@@ -2472,14 +2501,14 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <note />
       </trans-unit>
       <trans-unit id="PropertyDirectiveInvalidName">
-        <source>Invalid property name at {0}. {1}</source>
-        <target state="translated">{0}의 속성 이름이 잘못되었습니다. {1}</target>
-        <note>{0} is the file path and line number. {1} is an inner exception message.</note>
+        <source>Invalid property name: {0}</source>
+        <target state="translated">잘못된 속성 이름: {0}</target>
+        <note>{0} is an inner exception message.</note>
       </trans-unit>
       <trans-unit id="PropertyDirectiveMissingParts">
-        <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
-        <target state="translated">property 지시문에는 '#:property PropertyName=PropertyValue'와 같이 '='로 구분된 두 부분이 있어야 합니다. {0}.</target>
-        <note>{0} is the file path and line number.{Locked="#:property"}</note>
+        <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue'.</source>
+        <target state="translated">property 지시문에는 '#:property PropertyName=PropertyValue'와 같이 '='로 구분된 두 부분이 있어야 합니다.</target>
+        <note>{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
         <source>Publisher for the .NET Platform</source>
@@ -3018,9 +3047,9 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <note />
       </trans-unit>
       <trans-unit id="StaticGraphRestoreNotSupported">
-        <source>Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</source>
-        <target state="new">Static graph restore is not supported for file-based apps. Remove the '#:property' at {0}.</target>
-        <note>{0} is the file path and line number.{Locked="#:property"}</note>
+        <source>Static graph restore is not supported for file-based apps. Remove the '#:property'.</source>
+        <target state="translated">정적 그래프 복원은 파일 기반 앱에서 지원되지 않습니다. '#:property'를 제거합니다.</target>
+        <note>{Locked="#:property"}</note>
       </trans-unit>
       <trans-unit id="StatusColumnHeader">
         <source>Status</source>
@@ -3528,6 +3557,26 @@ and the corresponding package Ids for installed tools using the command
         <target state="translated">{0} 시도</target>
         <note>number or tries of the current test assembly when test assembly is being retried. {0} is number that starts at 1</note>
       </trans-unit>
+      <trans-unit id="UnexpectedHelpMessage">
+        <source>An unexpected help-related message was received when `--help` wasn't used.</source>
+        <target state="translated">'--help'를 사용하지 않았는데 예기치 않은 도움말 관련 메시지를 받았습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedMessageInHelpMode">
+        <source>A message of type '{0}' was received in help mode, which is not expected.</source>
+        <target state="translated">도움말 모드에서 예상치 못하게 '{0}' 형식의 메시지를 받았습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedMessageWithoutHandshake">
+        <source>A message of type '{0}' was received before we got any handshakes, which is unexpected.</source>
+        <target state="translated">핸드셰이크를 받기 전에 예기치 않게 '{0}' 형식의 메시지가 수신되었습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedTestSessionEnd">
+        <source>A test session end event was received without a corresponding test session start.</source>
+        <target state="translated">해당 테스트 세션을 시작하지 않고 테스트 세션 종료 이벤트를 받았습니다.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UninstallLocalToolSucceeded">
         <source>Tool '{0}' was successfully uninstalled and removed from manifest file {1}.</source>
         <target state="translated">'{0}' 도구가 제거되었으며 매니페스트 파일 {1}에서 제거되었습니다.</target>
@@ -3544,9 +3593,9 @@ and the corresponding package Ids for installed tools using the command
         <note />
       </trans-unit>
       <trans-unit id="UnrecognizedDirective">
-        <source>Unrecognized directive '{0}' at {1}.</source>
-        <target state="translated">'{0}' 지시문을 {1}에서 인식할 수 없습니다.</target>
-        <note>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</note>
+        <source>Unrecognized directive '{0}'.</source>
+        <target state="translated">인식할 수 없는 지시문 '{0}'입니다.</target>
+        <note>{0} is the directive name like 'package' or 'sdk'.</note>
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
         <source>Update all tools.</source>

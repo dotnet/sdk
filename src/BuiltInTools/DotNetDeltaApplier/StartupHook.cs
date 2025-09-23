@@ -32,7 +32,7 @@ internal sealed class StartupHook
 
         HotReloadAgent.ClearHotReloadEnvironmentVariables(typeof(StartupHook));
 
-        if (s_namedPipeName == null)
+        if (string.IsNullOrEmpty(s_namedPipeName))
         {
             Log($"Environment variable {AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName} has no value");
             return;
@@ -86,10 +86,10 @@ internal sealed class StartupHook
     private static void Log(string message)
     {
         var prefix = s_standardOutputLogPrefix;
-        if (prefix != null)
+        if (!string.IsNullOrEmpty(prefix))
         {
             Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.WriteLine($"{prefix} {message}");
+            Console.Error.WriteLine($"{prefix} {message}");
             Console.ResetColor();
         }
     }

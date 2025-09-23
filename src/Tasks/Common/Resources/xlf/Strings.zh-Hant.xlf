@@ -212,6 +212,11 @@
         <target state="translated">NETSDK1125: 只有 netcoreapp 目標支援發行到單一檔案。</target>
         <note>{StrBegins="NETSDK1125: "}</note>
       </trans-unit>
+      <trans-unit id="CantSpecifyBothProperties">
+        <source>NETSDK1230: The {0} and {1} properties cannot both be specified. Remove one or the other.</source>
+        <target state="translated">NETSDK1230: {0} 和 {1} 屬性無法同時指定。請移除其中一者。</target>
+        <note>{StrBegins="NETSDK1230: "}</note>
+      </trans-unit>
       <trans-unit id="ChoosingAssemblyVersion_Info">
         <source>Choosing '{0}' because AssemblyVersion '{1}' is greater than '{2}'.</source>
         <target state="translated">因為 AssemblyVersion '{1}' 大於 '{2}'，所以選擇 '{0}'。</target>
@@ -856,6 +861,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1103: 僅於 .NET Core 3.0 或更新版本支援 RollForward 設定。</target>
         <note>{StrBegins="NETSDK1103: "}</note>
       </trans-unit>
+      <trans-unit id="RuntimeGraphFileDoesNotExist">
+        <source>NETSDK1231: File '{0}' does not exist. Please ensure the runtime graph path exists.</source>
+        <target state="translated">NETSDK1231: 檔案 '{0}' 不存在。請確認執行階段圖形路徑是否存在。</target>
+        <note>{StrBegins="NETSDK1231: "}{Locked="{0}"}</note>
+      </trans-unit>
       <trans-unit id="RuntimeIdentifierNotRecognized">
         <source>NETSDK1083: The specified RuntimeIdentifier '{0}' is not recognized. See https://aka.ms/netsdk1083 for more information.</source>
         <target state="translated">NETSDK1083: 無法辨識指定的 RuntimeIdentifier '{0}'。如需詳細資訊，請參閱 https://aka.ms/netsdk1083。</target>
@@ -953,6 +963,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1172: 提供的型別程式庫 '{0}' 不存在。</target>
         <note>{StrBegins="NETSDK1172: "}</note>
       </trans-unit>
+      <trans-unit id="UnableToFindMatchingRid">
+        <source>NETSDK1232: Unable to find a matching RID for '{0}' from among [{1}] in graph '{2}'.</source>
+        <target state="translated">NETSDK1232: 無法在圖表 '{2}' 中的 '{1}' 項目中找到與 '{0}' 相符的 RID。</target>
+        <note>{StrBegins="NETSDK1232: "}{Locked="{0}"}{Locked="{1}"}{Locked="{2}"}</note>
+      </trans-unit>
       <trans-unit id="UnableToFindResolvedPath">
         <source>NETSDK1016: Unable to find resolved path for '{0}'.</source>
         <target state="translated">NETSDK1016: 找不到 '{0}' 的解析路徑。</target>
@@ -1042,6 +1057,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1107: Microsoft.NET.Sdk.WindowsDesktop is required to build Windows desktop applications. 'UseWpf' and 'UseWindowsForms' are not supported by the current SDK.</source>
         <target state="translated">NETSDK1107: 需有 Microsoft.NET.Sdk.WindowsDesktop 才能建置 Windows 傳統型應用程式。目前的 SDK 不支援 'UseWpf' 和 'UseWindowsForms'。</target>
         <note>{StrBegins="NETSDK1107: "}</note>
+      </trans-unit>
+      <trans-unit id="UsingPreviewCsWinRT3_0Feature">
+        <source>NETSDK1229: Targeting a Windows SDK version with '1' as the revision number will reference CsWinRT 3.0, which is currently in preview. The current project is targeting the Windows SDK version '{0}'. If this is not intended, change the revision number to '0' to use CsWinRT 2.x instead.</source>
+        <target state="translated">NETSDK1229: 若將修訂編號設為「1」來指定 Windows SDK 版本，將參考目前處於預覽階段的 CsWinRT 3.0。目前專案的目標 Windows SDK 版本為 '{0}'。若非此意圖，請將修訂編號改為「0」以改用 CsWinRT 2.x。</target>
+        <note>{StrBegins="NETSDK1229: "}</note>
       </trans-unit>
       <trans-unit id="UsingPreviewSdk">
         <source>NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy</source>

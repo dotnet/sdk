@@ -52,7 +52,7 @@
   "symbols/Fixture/choices/TestCleanup/description": "TestCleanup fixture 메서드",
   "postActions/restoreNugetPackages/description": "이 프로젝트에 필요한 NuGet 패키지를 복원합니다.",
   "postActions/restoreNugetPackages/manualInstructions/default/text": "'dotnet restore' 실행",
-  "postActions/createOrUpdateDotnetConfig/description": "Create or update 'dotnet.config' file required by Microsoft.Testing.Platform.",
-  "postActions/createOrUpdateDotnetConfig/manualInstructions/default/text": "Manually create 'dotnet.config' file setting the test runner to Microsoft.Testing.Platform",
+  "postActions/addJsonProperty/description": "Microsoft.Testing.Platform에 필요한 'global.json' 파일을 만들거나 업데이트합니다.",
+  "postActions/addJsonProperty/manualInstructions/default/text": "테스트 실행기를 Microsoft.Testing.Platform으로 설정하는 'global.json' 파일을 수동으로 만들거나 업데이트합니다.",
   "postActions/openInEditor/description": "편집기에서 Test1.vb 열기"
 }

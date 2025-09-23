@@ -1,11 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipes;
+using System.Threading;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
@@ -18,21 +17,18 @@ internal sealed class TestApplication(
     TestModule module,
     BuildOptions buildOptions,
     TestOptions testOptions,
-    TerminalTestReporter output) : IDisposable
+    TerminalTestReporter output,
+    Action<CommandLineOptionMessages> onHelpRequested) : IDisposable
 {
+    private readonly Lock _requestLock = new();
     private readonly BuildOptions _buildOptions = buildOptions;
+    private readonly Action<CommandLineOptionMessages> _onHelpRequested = onHelpRequested;
     private readonly TestApplicationHandler _handler = new(output, module, testOptions);
 
-    private readonly List<string> _outputData = [];
-    private readonly List<string> _errorData = [];
     private readonly string _pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
-    private readonly CancellationTokenSource _cancellationToken = new();
 
-    private Task _testAppPipeConnectionLoop;
     private readonly List<NamedPipeServer> _testAppPipeConnections = [];
     private readonly Dictionary<NamedPipeServer, HandshakeMessage> _handshakes = new();
-
-    public event EventHandler<HelpEventArgs> HelpRequested;
 
     public TestModule Module { get; } = module;
     public TestOptions TestOptions { get; } = testOptions;
@@ -43,19 +39,42 @@ internal sealed class TestApplication(
     {
         // TODO: RunAsync is probably expected to be executed exactly once on each TestApplication instance.
         // Consider throwing an exception if it's called more than once.
-        if (TestOptions.HasFilterMode && !ModulePathExists())
-        {
-            return ExitCode.GenericFailure;
-        }
-
         var processStartInfo = CreateProcessStartInfo();
 
-        _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
-        var testProcessResult = await StartProcess(processStartInfo);
+        var cancellationTokenSource = new CancellationTokenSource();
+        var cancellationToken = cancellationTokenSource.Token;
+        var testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(cancellationToken));
 
-        WaitOnTestApplicationPipeConnectionLoop();
+        try
+        {
+            Logger.LogTrace($"Starting test process with command '{processStartInfo.FileName}' and arguments '{processStartInfo.Arguments}'.");
 
-        return testProcessResult;
+            using var process = Process.Start(processStartInfo)!;
+
+            // Reading from process stdout/stderr is done on separate threads to avoid blocking IO on the threadpool.
+            // Note: even with 'process.StandardOutput.ReadToEndAsync()' or 'process.BeginOutputReadLine()', we ended up with
+            // many TP threads just doing synchronous IO, slowing down the progress of the test run.
+            // We want to read requests coming through the pipe and sending responses back to the test app as fast as possible.
+            var stdOutTask = Task.Factory.StartNew(static standardOutput => ((StreamReader)standardOutput!).ReadToEnd(), process.StandardOutput, TaskCreationOptions.LongRunning);
+            var stdErrTask = Task.Factory.StartNew(static standardError => ((StreamReader)standardError!).ReadToEnd(), process.StandardError, TaskCreationOptions.LongRunning);
+
+            var outputAndError = await Task.WhenAll(stdOutTask, stdErrTask);
+            await process.WaitForExitAsync();
+
+            _handler.OnTestProcessExited(process.ExitCode, outputAndError[0], outputAndError[1]);
+
+            if (_handler.HasMismatchingTestSessionEventCount())
+            {
+                throw new InvalidOperationException(CliCommandStrings.MissingTestSessionEnd);
+            }
+
+            return process.ExitCode;
+        }
+        finally
+        {
+            cancellationTokenSource.Cancel();
+            await testAppPipeConnectionLoop;
+        }
     }
 
     private ProcessStartInfo CreateProcessStartInfo()
@@ -69,6 +88,8 @@ internal sealed class TestApplication(
             Arguments = GetArguments(),
             RedirectStandardOutput = true,
             RedirectStandardError = true,
+            // False is already the default on .NET Core, but prefer to be explicit.
+            UseShellExecute = false,
         };
 
         if (!string.IsNullOrEmpty(Module.RunProperties.WorkingDirectory))
@@ -82,6 +103,12 @@ internal sealed class TestApplication(
             {
                 string value = Environment.ExpandEnvironmentVariables(entry.Value);
                 processStartInfo.Environment[entry.Key] = value;
+            }
+
+            // Env variables specified on command line override those specified in launch profile:
+            foreach (var (name, value) in TestOptions.EnvironmentVariables)
+            {
+                processStartInfo.Environment[name] = value;
             }
 
             if (!_buildOptions.NoLaunchProfileArguments &&
@@ -145,12 +172,6 @@ internal sealed class TestApplication(
         return builder.ToString();
     }
 
-    private void WaitOnTestApplicationPipeConnectionLoop()
-    {
-        _cancellationToken.Cancel();
-        _testAppPipeConnectionLoop?.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
-    }
-
     private async Task WaitConnectionAsync(CancellationToken token)
     {
         try
@@ -179,59 +200,74 @@ internal sealed class TestApplication(
 
     private Task<IResponse> OnRequest(NamedPipeServer server, IRequest request)
     {
-        try
+        // We need to lock as we might be called concurrently when test app child processes all communicate with us.
+        // For example, in a case of a sharding extension, we could get test result messages concurrently.
+        // To be the most safe, we lock the whole OnRequest.
+        lock (_requestLock)
         {
-            switch (request)
+            try
             {
-                case HandshakeMessage handshakeMessage:
-                    _handshakes.Add(server, handshakeMessage);
-                    string negotiatedVersion = GetSupportedProtocolVersion(handshakeMessage);
-                    OnHandshakeMessage(handshakeMessage, negotiatedVersion.Length > 0);
-                    return Task.FromResult((IResponse)CreateHandshakeMessage(negotiatedVersion));
+                switch (request)
+                {
+                    case HandshakeMessage handshakeMessage:
+                        _handshakes.Add(server, handshakeMessage);
+                        string negotiatedVersion = GetSupportedProtocolVersion(handshakeMessage);
+                        OnHandshakeMessage(handshakeMessage, negotiatedVersion.Length > 0);
+                        return Task.FromResult((IResponse)CreateHandshakeMessage(negotiatedVersion));
 
-                case CommandLineOptionMessages commandLineOptionMessages:
-                    OnCommandLineOptionMessages(commandLineOptionMessages);
-                    break;
+                    case CommandLineOptionMessages commandLineOptionMessages:
+                        OnCommandLineOptionMessages(commandLineOptionMessages);
+                        break;
 
-                case DiscoveredTestMessages discoveredTestMessages:
-                    OnDiscoveredTestMessages(discoveredTestMessages);
-                    break;
+                    case DiscoveredTestMessages discoveredTestMessages:
+                        OnDiscoveredTestMessages(discoveredTestMessages);
+                        break;
 
-                case TestResultMessages testResultMessages:
-                    OnTestResultMessages(testResultMessages);
-                    break;
+                    case TestResultMessages testResultMessages:
+                        OnTestResultMessages(testResultMessages);
+                        break;
 
-                case FileArtifactMessages fileArtifactMessages:
-                    OnFileArtifactMessages(fileArtifactMessages);
-                    break;
+                    case FileArtifactMessages fileArtifactMessages:
+                        OnFileArtifactMessages(fileArtifactMessages);
+                        break;
 
-                case TestSessionEvent sessionEvent:
-                    OnSessionEvent(sessionEvent);
-                    break;
+                    case TestSessionEvent sessionEvent:
+                        OnSessionEvent(sessionEvent);
+                        break;
 
-                // If we don't recognize the message, log and skip it
-                case UnknownMessage unknownMessage:
-                    Logger.LogTrace($"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
-                    return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+                    // If we don't recognize the message, log and skip it
+                    case UnknownMessage unknownMessage:
+                        Logger.LogTrace($"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
+                        return Task.FromResult((IResponse)VoidResponse.CachedInstance);
 
-                default:
-                    // If it doesn't match any of the above, throw an exception
-                    throw new NotSupportedException(string.Format(CliCommandStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
+                    default:
+                        // If it doesn't match any of the above, throw an exception
+                        throw new NotSupportedException(string.Format(CliCommandStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            string exAsString = ex.ToString();
-            Logger.LogTrace(exAsString);
-            Environment.FailFast(exAsString);
-        }
+            catch (Exception ex)
+            {
+                // BE CAREFUL:
+                // When handling some of the messages, we may throw an exception in unexpected state.
+                // (e.g, OnSessionEvent may throw if we receive TestSessionEnd without TestSessionStart).
+                // (or if we receive help-related messages when not in help mode)
+                // In that case, we FailFast.
+                // The lack of FailFast *might* have unintended consequences, such as breaking the internal loop of pipe server.
+                // In that case, maybe MTP app will continue waiting for response, but we don't send the response and are waiting for
+                // MTP app process exit (which doesn't happen).
+                // So, we explicitly FailFast here.
+                string exAsString = ex.ToString();
+                Logger.LogTrace(exAsString);
+                Environment.FailFast(exAsString);
+            }
 
-        return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+            return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+        }
     }
 
     private static string GetSupportedProtocolVersion(HandshakeMessage handshakeMessage)
     {
-        if (!handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.SupportedProtocolVersions, out string protocolVersions) ||
+        if (!handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.SupportedProtocolVersions, out string? protocolVersions) ||
             protocolVersions is null)
         {
             // It's not expected we hit this.
@@ -254,7 +290,7 @@ internal sealed class TestApplication(
     }
 
     private static HandshakeMessage CreateHandshakeMessage(string version) =>
-        new(new Dictionary<byte, string>(capacity: 5)
+        new HandshakeMessage(new Dictionary<byte, string>(capacity: 5)
         {
             { HandshakeMessagePropertyNames.PID, Environment.ProcessId.ToString(CultureInfo.InvariantCulture) },
             { HandshakeMessagePropertyNames.Architecture, RuntimeInformation.ProcessArchitecture.ToString() },
@@ -263,59 +299,17 @@ internal sealed class TestApplication(
             { HandshakeMessagePropertyNames.SupportedProtocolVersions, version }
         });
 
-    private async Task<int> StartProcess(ProcessStartInfo processStartInfo)
-    {
-        Logger.LogTrace($"Test application arguments: {processStartInfo.Arguments}");
-
-        using var process = Process.Start(processStartInfo);
-        StoreOutputAndErrorData(process);
-        await process.WaitForExitAsync();
-
-        _handler.OnTestProcessExited(process.ExitCode, _outputData, _errorData);
-
-        return process.ExitCode;
-    }
-
-    private void StoreOutputAndErrorData(Process process)
-    {
-        process.EnableRaisingEvents = true;
-
-        process.OutputDataReceived += (sender, e) =>
-        {
-            if (string.IsNullOrEmpty(e.Data))
-                return;
-
-            _outputData.Add(e.Data);
-        };
-        process.ErrorDataReceived += (sender, e) =>
-        {
-            if (string.IsNullOrEmpty(e.Data))
-                return;
-
-            _errorData.Add(e.Data);
-        };
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
-    }
-
-    private bool ModulePathExists()
-    {
-        if (!File.Exists(Module.RunProperties.Command))
-        {
-            // TODO: The error should be shown to the user, not just logged to trace.
-            Logger.LogTrace($"Test module '{Module.RunProperties.Command}' not found. Build the test application before or run 'dotnet test'.");
-
-            return false;
-        }
-        return true;
-    }
-
     public void OnHandshakeMessage(HandshakeMessage handshakeMessage, bool gotSupportedVersion)
         => _handler.OnHandshakeReceived(handshakeMessage, gotSupportedVersion);
 
     private void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
     {
-        HelpRequested?.Invoke(this, new HelpEventArgs { ModulePath = commandLineOptionMessages.ModulePath, CommandLineOptions = [.. commandLineOptionMessages.CommandLineOptionMessageList.Select(message => new CommandLineOption(message.Name, message.Description, message.IsHidden, message.IsBuiltIn))] });
+        if (!TestOptions.IsHelp)
+        {
+            throw new InvalidOperationException(CliCommandStrings.UnexpectedHelpMessage);
+        }
+
+        _onHelpRequested(commandLineOptionMessages);
     }
 
     private void OnDiscoveredTestMessages(DiscoveredTestMessages discoveredTestMessages)
@@ -324,7 +318,7 @@ internal sealed class TestApplication(
     private void OnTestResultMessages(TestResultMessages testResultMessage)
         => _handler.OnTestResultsReceived(testResultMessage);
 
-    internal void OnFileArtifactMessages(FileArtifactMessages fileArtifactMessages)
+    private void OnFileArtifactMessages(FileArtifactMessages fileArtifactMessages)
         => _handler.OnFileArtifactsReceived(fileArtifactMessages);
 
     private void OnSessionEvent(TestSessionEvent sessionEvent)
@@ -396,7 +390,5 @@ internal sealed class TestApplication(
                 Reporter.Error.WriteLine(messageBuilder.ToString());
             }
         }
-
-        WaitOnTestApplicationPipeConnectionLoop();
     }
 }

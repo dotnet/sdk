@@ -88,11 +88,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ResolvePublishRelatedStaticWebAssetsDependsOn>
       $(ResolvePublishRelatedStaticWebAssetsDependsOn);
-      _ReplaceFingerprintedBlazorJsForPublish
     </ResolvePublishRelatedStaticWebAssetsDependsOn>
     <ResolveCompressedFilesForPublishDependsOn>
       $(ResolveCompressedFilesForPublishDependsOn);
-      _ReplaceFingerprintedBlazorJsForPublish
     </ResolveCompressedFilesForPublishDependsOn>
 
     <GeneratePublishWasmBootJsonDependsOn>
@@ -156,65 +154,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <StaticWebAsset Include="@(_BlazorJSStaticWebAsset)" />
       <StaticWebAssetEndpoint Include="@(_BlazorStaticWebAssetEndpoint)" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="_ReplaceFingerprintedBlazorJsForPublish" DependsOnTargets="ProcessPublishFilesForWasm" Condition="'$(WasmBuildingForNestedPublish)' != 'true' and '$(BlazorFingerprintBlazorJs)' == 'true'">
-    <PropertyGroup>
-      <_BlazorJSFileNames>;@(_BlazorJSFile->'%(FileName)');</_BlazorJSFileNames>
-    </PropertyGroup>
-    <ItemGroup>
-      <_BlazorJSJSStaticWebAsset Include="@(StaticWebAsset)" Condition="$(_BlazorJSFileNames.Contains(';%(FileName);')) and '%(Extension)' == '.js'" />
-      <_BlazorJSPublishCandidate Include="%(_BlazorJSJSStaticWebAsset.RelativeDir)%(_BlazorJSJSStaticWebAsset.FileName).%(_BlazorJSJSStaticWebAsset.Fingerprint)%(_BlazorJSJSStaticWebAsset.Extension)" />
-      <_BlazorJSPublishCandidate Remove="@(_BlazorJSPublishCandidate)" Condition="'%(Extension)' == '.map'" />
-      <_BlazorJSPublishCandidate>
-        <RelativePath>_framework/$([System.IO.Path]::GetFileNameWithoutExtension('%(Filename)'))%(Extension)</RelativePath>
-      </_BlazorJSPublishCandidate>
-    </ItemGroup>
-
-    <DefineStaticWebAssets
-      CandidateAssets="@(_BlazorJSPublishCandidate)"
-      FingerprintCandidates="true"
-      FingerprintPatterns="@(_BlazorJSFingerprintPattern)"
-      SourceId="$(PackageId)"
-      SourceType="Computed"
-      AssetKind="All"
-      AssetMergeSource="$(StaticWebAssetMergeTarget)"
-      AssetRole="Primary"
-      AssetTraitName="WasmResource"
-      AssetTraitValue="boot"
-      CopyToOutputDirectory="Never"
-      CopyToPublishDirectory="PreserveNewest"
-      ContentRoot="%(_BlazorJSJSStaticWebAsset.ContentRoot)"
-      BasePath="%(_BlazorJSJSStaticWebAsset.BasePath)"
-    >
-      <Output TaskParameter="Assets" ItemName="_BlazorJSJSPublishStaticWebAssets" />
-    </DefineStaticWebAssets>
-    <DefineStaticWebAssetEndpoints
-      CandidateAssets="@(_BlazorJSJSPublishStaticWebAssets)"
-      ExistingEndpoints="@(StaticWebAssetEndpoint)"
-      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
-    >
-      <Output TaskParameter="Endpoints" ItemName="_BlazorJSJSPublishStaticWebAssetsEndpoint" />
-    </DefineStaticWebAssetEndpoints>
-    <PropertyGroup>
-      <_BlazorJSJSStaticWebAssetFullPath>@(_BlazorJSJSStaticWebAsset->'%(FullPath)')</_BlazorJSJSStaticWebAssetFullPath>
-    </PropertyGroup>
-    <ItemGroup>
-      <_BlazorJSJSStaticWebAsset Include="@(StaticWebAsset)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(RelatedAsset)' == '$(_BlazorJSJSStaticWebAssetFullPath)'" />
-    </ItemGroup>
-    <FilterStaticWebAssetEndpoints Condition="'@(_BlazorJSJSStaticWebAsset)' != ''"
-      Endpoints="@(StaticWebAssetEndpoint)"
-      Assets="@(_BlazorJSJSStaticWebAsset)"
-      Filters=""
-    >
-      <Output TaskParameter="FilteredEndpoints" ItemName="_BlazorJSEndpointsToRemove" />
-    </FilterStaticWebAssetEndpoints>
-    <ItemGroup>
-      <StaticWebAsset Remove="@(_BlazorJSJSStaticWebAsset)" />
-      <StaticWebAsset Include="@(_BlazorJSJSPublishStaticWebAssets)" />
-      <StaticWebAssetEndpoint Remove="@(_BlazorJSEndpointsToRemove)" />
-      <StaticWebAssetEndpoint Include="@(_BlazorJSJSPublishStaticWebAssetsEndpoint)" />
     </ItemGroup>
   </Target>
 

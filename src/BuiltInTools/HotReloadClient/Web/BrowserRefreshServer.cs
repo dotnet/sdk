@@ -27,12 +27,13 @@ namespace Microsoft.DotNet.HotReload;
 /// <summary>
 /// Kestrel-based Browser Refesh Server implementation.
 /// </summary>
-internal sealed class BrowserRefreshServer(    
+internal sealed class BrowserRefreshServer(
     ILogger logger,
     ILoggerFactory loggerFactory,
     string middlewareAssemblyPath,
     string dotnetPath,
     string? autoReloadWebSocketHostName,
+    int? autoReloadWebSocketPort,
     bool suppressTimeouts)
     : AbstractBrowserRefreshServer(middlewareAssemblyPath, logger, loggerFactory)
 {
@@ -44,6 +45,7 @@ internal sealed class BrowserRefreshServer(
     protected override async ValueTask<WebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken)
     {
         var hostName = autoReloadWebSocketHostName ?? "127.0.0.1";
+        var port = autoReloadWebSocketPort ?? 0;
 
         var supportsTls = await IsTlsSupportedAsync(cancellationToken);
 
@@ -53,11 +55,11 @@ internal sealed class BrowserRefreshServer(
                 builder.UseKestrel();
                 if (supportsTls)
                 {
-                    builder.UseUrls($"https://{hostName}:0", $"http://{hostName}:0");
+                    builder.UseUrls($"https://{hostName}:{port}", $"http://{hostName}:{port}");
                 }
                 else
                 {
-                    builder.UseUrls($"http://{hostName}:0");
+                    builder.UseUrls($"http://{hostName}:{port}");
                 }
 
                 builder.Configure(app =>

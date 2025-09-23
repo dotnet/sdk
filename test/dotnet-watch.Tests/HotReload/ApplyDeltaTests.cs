@@ -838,12 +838,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 .WithSource();
 
             var port = TestOptions.GetTestPort();
-            App.Start(testAsset, ["--urls", "http://localhost:" + port], testFlags: TestFlags.ReadKeyFromStdin | TestFlags.MockBrowser);
+            App.Start(testAsset, ["--urls", "http://localhost:" + port, "--non-interactive"], testFlags: TestFlags.ReadKeyFromStdin | TestFlags.MockBrowser);
 
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
             App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
+            App.AssertOutputContains(MessageDescriptor.PressCtrlRToRestart);
 
             // Browser is launched based on blazor-devserver output "Now listening on: ...".
             await App.WaitUntilOutputContains($"dotnet watch ⌚ Launching browser: http://localhost:{port}");

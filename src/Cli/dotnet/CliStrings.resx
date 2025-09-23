@@ -512,6 +512,18 @@ setx PATH "%PATH%;{0}"
   <data name="CmdEnvironmentVariableDescription" xml:space="preserve">
     <value>Sets the value of an environment variable. 
 Creates the variable if it does not exist, overrides if it does. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</value>
+  </data>
+  <data name="CmdTestEnvironmentVariableDescription" xml:space="preserve">
+    <value>Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
 This will force the tests to be run in an isolated process. 
 This argument can be specified multiple times to provide multiple variables.
 
@@ -825,5 +837,8 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
   </data>
   <data name="PackCmd_OneNuspecAllowed" xml:space="preserve">
     <value>Only one .nuspec file can be packed at a time</value>
+  </data>
+  <data name="Error_NU1302_HttpSourceUsed" xml:space="preserve">
+    <value>You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</value>
   </data>
 </root>

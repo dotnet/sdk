@@ -32,6 +32,8 @@ Additionally, the implicit project file has the following customizations:
 
 - `PublishAot` is set to `true`, see [`dotnet publish file.cs`](#other-commands) for more details.
 
+- `UserSecretsId` is set to a hash of the entry point file path.
+
 - [File-level directives](#directives-for-project-metadata) are applied.
 
 - The following are virtual only, i.e., not preserved after [converting to a project](#grow-up):
@@ -287,7 +289,8 @@ The build is performed using MSBuild APIs on in-memory project files.
 If an up-to-date check detects that inputs didn't change in subsequent `dotnet run file.cs` invocations,
 building is skipped (as if `--no-build` option has been passed).
 The up-to-date check is not 100% precise (e.g., files imported through an implicit build file are not considered).
-It is possible to enforce a full build using `--no-cache` flag or `dotnet build file.cs`.
+It is possible to enforce a full build using `--no-cache` flag or `dotnet build file.cs`
+(for a more permanent opt-out, there is MSBuild property `FileBasedProgramCanSkipMSBuild=false`).
 Environment variable [`DOTNET_CLI_CONTEXT_VERBOSE=true`][verbose-env] can be used to get more details about caching decisions made by `dotnet run file.cs`.
 
 There are multiple optimization levels - skipping build altogether, running just the C# compiler, or running full MSBuild.
