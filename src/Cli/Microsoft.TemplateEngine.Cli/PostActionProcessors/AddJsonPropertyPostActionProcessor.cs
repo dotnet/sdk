@@ -169,17 +169,19 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
 
         private static JsonNode? AddElementToJson(IPhysicalFileSystem fileSystem, string targetJsonFile, string? propertyPath, string propertyPathSeparator, string newJsonPropertyName, string newJsonPropertyValue, IPostAction action)
         {
-            JsonNode? jsonContent = JsonNode.Parse(fileSystem.ReadAllText(targetJsonFile), nodeOptions: null, documentOptions: DeserializerOptions);
+            var fileContent = fileSystem.ReadAllText(targetJsonFile);
+            JsonNode? jsonContent = JsonNode.Parse(fileContent, nodeOptions: null, documentOptions: DeserializerOptions);
 
             if (jsonContent == null)
             {
+                Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_NullJson, fileContent));
                 return null;
             }
 
             if (!bool.TryParse(action.Args.GetValueOrDefault(AllowPathCreationArgument, "false"), out bool createPath))
             {
                 Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotBoolean, AllowPathCreationArgument));
-                return false;
+                return null;
             }
 
             JsonNode? parentProperty = FindJsonNode(jsonContent, propertyPath, propertyPathSeparator, createPath);
