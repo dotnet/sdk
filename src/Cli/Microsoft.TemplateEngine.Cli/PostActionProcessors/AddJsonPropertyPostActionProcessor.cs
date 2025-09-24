@@ -101,6 +101,8 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 return false;
             }
 
+            string? repoRoot = detectRepoRoot ? GetRootDirectory(environment.Host.FileSystem, outputBasePath) : null;
+
             if (!bool.TryParse(action.Args.GetValueOrDefault(IncludeAllParentDirectoriesInSearch, "false"), out bool includeAllParentDirectories))
             {
                 Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotBoolean, IncludeAllParentDirectoriesInSearch));
@@ -112,7 +114,8 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 outputBasePath,
                 jsonFileName,
                 includeAllDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly,
-                includeAllParentDirectories ? int.MaxValue : 1);
+                includeAllParentDirectories ? int.MaxValue : 1,
+                repoRoot);
 
             if (jsonFiles.Count == 0)
             {
@@ -128,7 +131,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                     return false;
                 }
 
-                string newJsonFilePath = Path.Combine(detectRepoRoot ? GetRootDirectory(environment.Host.FileSystem, outputBasePath) : outputBasePath, jsonFileName);
+                string newJsonFilePath = Path.Combine(repoRoot ?? outputBasePath, jsonFileName);
                 environment.Host.FileSystem.WriteAllText(newJsonFilePath, "{}");
                 jsonFiles = new List<string> { newJsonFilePath };
             }
@@ -239,7 +242,8 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             string startPath,
             string matchPattern,
             SearchOption searchOption,
-            int maxUpLevels)
+            int maxUpLevels,
+            string? repoRoot)
         {
             string? directory = fileSystem.DirectoryExists(startPath) ? startPath : Path.GetDirectoryName(startPath);
 
@@ -258,6 +262,13 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 if (filesInDir.Length > 0)
                 {
                     return filesInDir;
+                }
+
+                if (repoRoot is not null && directory == repoRoot)
+                {
+                    // The post action wants to detect the "repo root".
+                    // We have already processed up to the repo root and didn't find any matching files, so we shouldn't go up any further.
+                    return Array.Empty<string>();
                 }
 
                 directory = Path.GetPathRoot(directory) != directory ? Directory.GetParent(directory)?.FullName : null;
