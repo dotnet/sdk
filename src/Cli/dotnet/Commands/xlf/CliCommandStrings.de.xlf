@@ -1231,6 +1231,16 @@ Erstellen Sie eindeutige Profilnamen.</target>
         <target state="translated">Doppelte Anweisungen werden nicht unterstützt: {0}</target>
         <note>{0} is the directive type and name.</note>
       </trans-unit>
+      <trans-unit id="DurationColon">
+        <source>duration:</source>
+        <target state="new">duration:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ErrorColon">
+        <source>error:</source>
+        <target state="new">error:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
         <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
 
@@ -1279,6 +1289,11 @@ Erstellen Sie eindeutige Profilnamen.</target>
       <trans-unit id="FailedAdManifestUpdate">
         <source>Failed to update the advertising manifest {0}: {1}.</source>
         <target state="translated">Fehler beim Aktualisieren des Ankündigungsmanifests "{0}": {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedColon">
+        <source>failed:</source>
+        <target state="new">failed:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -2672,6 +2687,11 @@ Standardmäßig wird eine Framework-abhängige Anwendung veröffentlicht.</targe
         <target state="translated">Das Tool "{0}" (Version {1}) wurde wiederhergestellt. Verfügbare Befehle: {2}</target>
         <note />
       </trans-unit>
+      <trans-unit id="Retried">
+        <source>retried</source>
+        <target state="new">retried</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RollForwardDefinition">
         <source>Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</source>
         <target state="translated">Rollforward zu Frameworkversion (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</target>
@@ -2951,6 +2971,11 @@ Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches 
         <target state="translated">Hiermit wird die Erstellung von Symboldateien übersprungen, die für die Profilerstellung der optimierten Assemblys verwendet werden können.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SkippedColon">
+        <source>skipped:</source>
+        <target state="new">skipped:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SkippedLowercase">
         <source>skipped</source>
         <target state="translated">übersprungen</target>
@@ -3084,6 +3109,11 @@ Ihr Projekt verwendet mehrere Zielframeworks. Geben Sie über "{0}" an, welches 
       <trans-unit id="StoreRuntimeOptionDescription">
         <source>The target runtime to store packages for.</source>
         <target state="translated">Die Zielruntime zum Speichern von Paketen.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SucceededColon">
+        <source>succeeded:</source>
+        <target state="new">succeeded:</target>
         <note />
       </trans-unit>
       <trans-unit id="Summary">
@@ -3550,6 +3580,11 @@ und die zugehörigen Paket-IDs für installierte Tools über den Befehl
       <trans-unit id="ToolUpdateUpdateSucceeded">
         <source>Tool '{0}' was successfully updated from version '{1}' to version '{2}'.</source>
         <target state="translated">Das Tool "{0}" wurde erfolgreich von Version {1} auf Version {2} aktualisiert.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TotalColon">
+        <source>total:</source>
+        <target state="new">total:</target>
         <note />
       </trans-unit>
       <trans-unit id="Try">

@@ -1231,6 +1231,16 @@ Lütfen profil adlarını değiştirin.</target>
         <target state="translated">Yinelenen yönergeler desteklenmez: {0}</target>
         <note>{0} is the directive type and name.</note>
       </trans-unit>
+      <trans-unit id="DurationColon">
+        <source>duration:</source>
+        <target state="new">duration:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ErrorColon">
+        <source>error:</source>
+        <target state="new">error:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
         <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
 
@@ -1279,6 +1289,11 @@ Lütfen profil adlarını değiştirin.</target>
       <trans-unit id="FailedAdManifestUpdate">
         <source>Failed to update the advertising manifest {0}: {1}.</source>
         <target state="translated">Reklam bildirimi {0} güncelleştirilemedi: {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedColon">
+        <source>failed:</source>
+        <target state="new">failed:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -2672,6 +2687,11 @@ Varsayılan durum, çerçeveye bağımlı bir uygulama yayımlamaktır.</target>
         <target state="translated">'{0}' aracı (sürüm '{1}') geri yüklendi. Kullanılabilen komutlar: {2}</target>
         <note />
       </trans-unit>
+      <trans-unit id="Retried">
+        <source>retried</source>
+        <target state="new">retried</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RollForwardDefinition">
         <source>Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</source>
         <target state="translated">Şu framework sürümüne ileri sarın: (LatestPatch, İkincil, LatestMinor, Ana, LatestMajor, Devre dışı).</target>
@@ -2951,6 +2971,11 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
         <target state="translated">İyileştirilen bütünleştirilmiş kodların profilini oluşturmak için kullanılabilen sembol dosyalarını oluşturma işlemini atlar.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SkippedColon">
+        <source>skipped:</source>
+        <target state="new">skipped:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SkippedLowercase">
         <source>skipped</source>
         <target state="translated">atlandı</target>
@@ -3084,6 +3109,11 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
       <trans-unit id="StoreRuntimeOptionDescription">
         <source>The target runtime to store packages for.</source>
         <target state="translated">Paketlerin geri yükleneceği hedef çalışma zamanı.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SucceededColon">
+        <source>succeeded:</source>
+        <target state="new">succeeded:</target>
         <note />
       </trans-unit>
       <trans-unit id="Summary">
@@ -3550,6 +3580,11 @@ karşılık gelen paket kimliklerini bulmak için
       <trans-unit id="ToolUpdateUpdateSucceeded">
         <source>Tool '{0}' was successfully updated from version '{1}' to version '{2}'.</source>
         <target state="translated">'{0}' aracı, '{1}' sürümünden '{2}' sürümüne başarıyla güncelleştirildi.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TotalColon">
+        <source>total:</source>
+        <target state="new">total:</target>
         <note />
       </trans-unit>
       <trans-unit id="Try">

@@ -2698,4 +2698,25 @@ Proceed?</value>
     <value>Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</value>
     <comment>{Locked="ExecutionId"}</comment>
   </data>
+  <data name="ErrorColon" xml:space="preserve">
+    <value>error:</value>
+  </data>
+  <data name="TotalColon" xml:space="preserve">
+    <value>total:</value>
+  </data>
+  <data name="Retried" xml:space="preserve">
+    <value>retried</value>
+  </data>
+  <data name="FailedColon" xml:space="preserve">
+    <value>failed:</value>
+  </data>
+  <data name="SucceededColon" xml:space="preserve">
+    <value>succeeded:</value>
+  </data>
+  <data name="SkippedColon" xml:space="preserve">
+    <value>skipped:</value>
+  </data>
+  <data name="DurationColon" xml:space="preserve">
+    <value>duration:</value>
+  </data>
 </root>

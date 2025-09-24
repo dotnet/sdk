@@ -1231,6 +1231,16 @@ Make the profile names distinct.</source>
         <target state="translated">중복 지시문은 지원되지 않습니다. {0}</target>
         <note>{0} is the directive type and name.</note>
       </trans-unit>
+      <trans-unit id="DurationColon">
+        <source>duration:</source>
+        <target state="new">duration:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ErrorColon">
+        <source>error:</source>
+        <target state="new">error:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
         <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
 
@@ -1279,6 +1289,11 @@ Make the profile names distinct.</source>
       <trans-unit id="FailedAdManifestUpdate">
         <source>Failed to update the advertising manifest {0}: {1}.</source>
         <target state="translated">광고 매니페스트 {0}: {1}을(를) 업데이트하지 못했습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedColon">
+        <source>failed:</source>
+        <target state="new">failed:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -2672,6 +2687,11 @@ The default is to publish a framework-dependent application.</source>
         <target state="translated">'{0}' 도구(버전 '{1}')가 복원되었습니다. 사용 가능한 명령: {2}</target>
         <note />
       </trans-unit>
+      <trans-unit id="Retried">
+        <source>retried</source>
+        <target state="new">retried</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RollForwardDefinition">
         <source>Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</source>
         <target state="translated">프레임워크 버전(LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable)으로 롤포워드합니다.</target>
@@ -2951,6 +2971,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">최적화된 어셈블리 프로파일링에 대해 사용할 수 있는 기호 파일 만들기를 건너뜁니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SkippedColon">
+        <source>skipped:</source>
+        <target state="new">skipped:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SkippedLowercase">
         <source>skipped</source>
         <target state="translated">건너뜀</target>
@@ -3084,6 +3109,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
       <trans-unit id="StoreRuntimeOptionDescription">
         <source>The target runtime to store packages for.</source>
         <target state="translated">패키지를 저장할 대상 런타임입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SucceededColon">
+        <source>succeeded:</source>
+        <target state="new">succeeded:</target>
         <note />
       </trans-unit>
       <trans-unit id="Summary">
@@ -3550,6 +3580,11 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="ToolUpdateUpdateSucceeded">
         <source>Tool '{0}' was successfully updated from version '{1}' to version '{2}'.</source>
         <target state="translated">'{0}' 도구가 '{1}' 버전에서 '{2}' 버전으로 업데이트되었습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TotalColon">
+        <source>total:</source>
+        <target state="new">total:</target>
         <note />
       </trans-unit>
       <trans-unit id="Try">

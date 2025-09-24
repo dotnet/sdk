@@ -1231,6 +1231,16 @@ Make the profile names distinct.</source>
         <target state="translated">Повторяющиеся директивы не поддерживаются: {0}</target>
         <note>{0} is the directive type and name.</note>
       </trans-unit>
+      <trans-unit id="DurationColon">
+        <source>duration:</source>
+        <target state="new">duration:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ErrorColon">
+        <source>error:</source>
+        <target state="new">error:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
         <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
 
@@ -1279,6 +1289,11 @@ Make the profile names distinct.</source>
       <trans-unit id="FailedAdManifestUpdate">
         <source>Failed to update the advertising manifest {0}: {1}.</source>
         <target state="translated">Не удалось обновить манифест рекламы {0}: {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedColon">
+        <source>failed:</source>
+        <target state="new">failed:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -2672,6 +2687,11 @@ The default is to publish a framework-dependent application.</source>
         <target state="translated">Средство "{0}" (версия "{1}") было восстановлено. Доступные команды: {2}</target>
         <note />
       </trans-unit>
+      <trans-unit id="Retried">
+        <source>retried</source>
+        <target state="new">retried</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RollForwardDefinition">
         <source>Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</source>
         <target state="translated">Накат до версии платформы (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</target>
@@ -2951,6 +2971,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">Пропуск создания файлов символов, которые можно использовать для профилирования оптимизированных сборок.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SkippedColon">
+        <source>skipped:</source>
+        <target state="new">skipped:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SkippedLowercase">
         <source>skipped</source>
         <target state="translated">пропущено</target>
@@ -3084,6 +3109,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
       <trans-unit id="StoreRuntimeOptionDescription">
         <source>The target runtime to store packages for.</source>
         <target state="translated">Целевая среда выполнения, для которой хранятся пакеты.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SucceededColon">
+        <source>succeeded:</source>
+        <target state="new">succeeded:</target>
         <note />
       </trans-unit>
       <trans-unit id="Summary">
@@ -3551,6 +3581,11 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="ToolUpdateUpdateSucceeded">
         <source>Tool '{0}' was successfully updated from version '{1}' to version '{2}'.</source>
         <target state="translated">Инструмент "{0}" успешно обновлен с версии "{1}" до версии "{2}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TotalColon">
+        <source>total:</source>
+        <target state="new">total:</target>
         <note />
       </trans-unit>
       <trans-unit id="Try">

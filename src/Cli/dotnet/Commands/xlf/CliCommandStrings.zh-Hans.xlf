@@ -1231,6 +1231,16 @@ Make the profile names distinct.</source>
         <target state="translated">不支持重复指令: {0}</target>
         <note>{0} is the directive type and name.</note>
       </trans-unit>
+      <trans-unit id="DurationColon">
+        <source>duration:</source>
+        <target state="new">duration:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ErrorColon">
+        <source>error:</source>
+        <target state="new">error:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
         <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
 
@@ -1279,6 +1289,11 @@ Make the profile names distinct.</source>
       <trans-unit id="FailedAdManifestUpdate">
         <source>Failed to update the advertising manifest {0}: {1}.</source>
         <target state="translated">未能更新广告清单 {0}: {1}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedColon">
+        <source>failed:</source>
+        <target state="new">failed:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -2672,6 +2687,11 @@ The default is to publish a framework-dependent application.</source>
         <target state="translated">工具“{0}”(版本“{1}”)已还原。可用的命令: {2}</target>
         <note />
       </trans-unit>
+      <trans-unit id="Retried">
+        <source>retried</source>
+        <target state="new">retried</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RollForwardDefinition">
         <source>Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</source>
         <target state="translated">前滚至框架版本(LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable)。</target>
@@ -2951,6 +2971,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">跳过符号文件的创建操作，这些文件可用于分析已优化的程序集。</target>
         <note />
       </trans-unit>
+      <trans-unit id="SkippedColon">
+        <source>skipped:</source>
+        <target state="new">skipped:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SkippedLowercase">
         <source>skipped</source>
         <target state="translated">已跳过</target>
@@ -3084,6 +3109,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
       <trans-unit id="StoreRuntimeOptionDescription">
         <source>The target runtime to store packages for.</source>
         <target state="translated">要存储包的目标运行时。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SucceededColon">
+        <source>succeeded:</source>
+        <target state="new">succeeded:</target>
         <note />
       </trans-unit>
       <trans-unit id="Summary">
@@ -3550,6 +3580,11 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="ToolUpdateUpdateSucceeded">
         <source>Tool '{0}' was successfully updated from version '{1}' to version '{2}'.</source>
         <target state="translated">工具“{0}”已成功从版本“{1}”更新到版本“{2}”。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TotalColon">
+        <source>total:</source>
+        <target state="new">total:</target>
         <note />
       </trans-unit>
       <trans-unit id="Try">
