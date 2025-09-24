@@ -1,0 +1,172 @@
+name: Nx DTE CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - nx-plugin
+    paths:
+      - '**'
+  pull_request:
+    branches:
+      - master
+      - release/**
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ contains(github.ref, 'merge') }}
+
+permissions:
+  actions: read
+  contents: read
+
+env:
+  NX_CLOUD_DISTRIBUTED_EXECUTION: true
+  NX_BRANCH: ${{ github.event.number || github.ref_name }}
+  NX_CLOUD_DISTRIBUTED_EXECUTION_AGENT_COUNT: 3
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  GIT_CONFIG_PARAMETERS: "'core.autocrlf=false'"
+  POWERSHELL_TELEMETRY_OPTOUT: 1
+  __SuppressAnsiEscapeSequences: 1
+  nugetMultiFeedWarnLevel: none
+
+jobs:
+  withoutNx:
+    name: Without Nx DTE Job
+    runs-on: windows-latest
+    steps:
+      - name: Record start time
+        id: start_time
+        run: echo "start_time=$(date -u +%s)" >> $GITHUB_OUTPUT
+        shell: bash
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1000
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: ./global.json
+
+      - name: Bootstrap PowerShell build environment
+        run: |
+          Write-Verbose -Verbose "Running Bootstrap..."
+          Import-Module .\tools\ci.psm1
+          Invoke-CIInstall -SkipUser
+        shell: pwsh
+
+      - name: Install dependencies
+        run: nuget restore sdk.slnx
+
+      - name: Build solution
+        run: dotnet build ./src/Layout/redist/redist.csproj -c Release
+
+      - name: Record end time
+        id: end_time
+        run: echo "end_time=$(date -u +%s)" >> $GITHUB_OUTPUT
+        shell: bash
+
+  main:
+    name: Main DTE Job
+    runs-on: windows-latest
+    steps:
+      - name: Record start time
+        id: start_time
+        run: echo "start_time=$(date -u +%s)" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1000
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: ./global.json
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Set SHAs for Nx
+        uses: nrwl/nx-set-shas@v4
+
+      - name: Initialize Nx Cloud distributed CI run
+        run: npx nx-cloud start-ci-run --distribute-on="manual" --stop-agents-after="build"
+
+      - name: Run Nx affected tasks
+        run: node ./node_modules/nx/bin/nx.js build redist --parallel 1
+
+      - name: Stop agents
+        run: npx nx-cloud stop-all-agents
+        if: always()
+
+      - name: Record end time
+        id: end_time
+        run: echo "end_time=$(date -u +%s)" >> $GITHUB_OUTPUT
+        shell: bash
+
+  agents:
+    name: Agent ${{ matrix.agent }}
+    runs-on: windows-latest
+    timeout-minutes: 60
+    strategy:
+      matrix:
+        agent: [1, 2, 3]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1000
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: ./global.json
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Start Nx agent
+        run: npx nx-cloud start-agent
+        env:
+          NX_AGENT_NAME: ${{ matrix.agent }}
+
+  compareTimings:
+    name: Compare Timings
+    runs-on: ubuntu-latest
+    needs: [withoutNx, main]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1000
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Compare timings
+        run: |
+          echo "Without Nx DTE Job Duration: $(( ${{ needs.withoutNx.outputs.end_time }} - ${{ needs.withoutNx.outputs.start_time }} )) seconds"
+          echo "With Nx DTE Job Duration: $(( ${{ needs.main.outputs.end_time }} - ${{ needs.main.outputs.start_time }} )) seconds"
+        shell: bash
