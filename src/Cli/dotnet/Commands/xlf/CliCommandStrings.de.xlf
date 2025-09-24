@@ -4025,8 +4025,8 @@ Um einen Wert anzuzeigen, geben Sie die entsprechende Befehlszeilenoption an, oh
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSearchCommandDescription">
-        <source>Search for available workloads.</source>
-        <target state="translated">Suchen Sie nach verfügbaren Workloads.</target>
+        <source>Search for available workloads or workload versions.</source>
+        <target state="needs-review-translation">Suchen Sie nach verfügbaren Workloads.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">

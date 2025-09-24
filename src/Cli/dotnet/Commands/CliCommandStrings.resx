@@ -2528,7 +2528,7 @@ To display a value, specify the corresponding command-line option without provid
     <value>Workloads</value>
   </data>
   <data name="WorkloadSearchCommandDescription" xml:space="preserve">
-    <value>Search for available workloads.</value>
+    <value>Search for available workloads or workload versions.</value>
   </data>
   <data name="WorkloadSetFromGlobalJsonInstalled" xml:space="preserve">
     <value>Using workload version {0}, which was specified in the global.json file at {1}.</value>
