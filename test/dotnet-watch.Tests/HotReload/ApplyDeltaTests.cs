@@ -721,6 +721,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [PlatformSpecificFact(TestPlatforms.Windows)]
         public async Task GracefulTermination_Windows()
         {
+            var tfm = ToolsetInfo.CurrentTargetFramework;
+
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
                .WithSource();
 
@@ -739,13 +741,44 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
-            await App.WaitUntilOutputContains(new Regex(@"dotnet watch 🕵️ \[.*\] Windows Ctrl\+C handling enabled."));
+            await App.WaitUntilOutputContains($"dotnet watch 🕵️ [WatchHotReloadApp ({tfm})] Windows Ctrl+C handling enabled.");
 
             await App.WaitUntilOutputContains("Started");
 
             App.SendControlC();
 
             await App.WaitForOutputLineContaining("Ctrl+C detected! Performing cleanup...");
+            await App.WaitUntilOutputContains("exited with exit code 0.");
+        }
+
+        [PlatformSpecificFact(TestPlatforms.AnyUnix)]
+        public async Task GracefulTermination_Unix()
+        {
+            var tfm = ToolsetInfo.CurrentTargetFramework;
+
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+               .WithSource();
+
+            var programPath = Path.Combine(testAsset.Path, "Program.cs");
+
+            UpdateSourceFile(programPath, src => src.Replace("// <metadata update handler placeholder>", """
+                using var termSignalRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, _ =>
+                {
+                    Console.WriteLine("SIGTERM detected! Performing cleanup...");
+                });
+                """));
+
+            App.Start(testAsset, [], testFlags: TestFlags.ReadKeyFromStdin);
+
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
+
+            await App.WaitUntilOutputContains($"dotnet watch 🕵️ [WatchHotReloadApp ({tfm})] Posix signal handlers registered.");
+
+            await App.WaitUntilOutputContains("Started");
+
+            App.SendControlC();
+
+            await App.WaitForOutputLineContaining("SIGTERM detected! Performing cleanup...");
             await App.WaitUntilOutputContains("exited with exit code 0.");
         }
 
