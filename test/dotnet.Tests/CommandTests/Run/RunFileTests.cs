@@ -1965,7 +1965,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 Message: 'First1'
                 """);
 
-        new DotnetCommand(Log, "run", "-v", "q",  "Second.cs")
+        new DotnetCommand(Log, "run", "-v", "q", "Second.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()

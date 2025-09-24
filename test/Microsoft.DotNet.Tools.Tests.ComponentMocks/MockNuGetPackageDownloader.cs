@@ -116,7 +116,12 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 return Task.FromResult(Enumerable.Empty<NuGetVersion>());
             }
 
-            return Task.FromResult(_packageVersions ?? Enumerable.Empty<NuGetVersion>());
+            var versions = _packageVersions ?? Enumerable.Empty<NuGetVersion>();
+
+            // Simulate deduplication that would happen in the real NuGet downloader
+            var uniqueVersions = versions.Distinct().OrderByDescending(v => v);
+
+            return Task.FromResult(numberOfResults == 0 ? uniqueVersions : uniqueVersions.Take(numberOfResults));
         }
 
         public Task<NuGetVersion> GetLatestPackageVersion(PackageId packageId, PackageSourceLocation packageSourceLocation = null, bool includePreview = false)
@@ -135,7 +140,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         }
 
         public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
-            VersionRange versionRange,PackageSourceLocation packageSourceLocation = null)
+            VersionRange versionRange, PackageSourceLocation packageSourceLocation = null)
         {
             if (!ShouldFindPackage(packageId, packageSourceLocation))
             {
