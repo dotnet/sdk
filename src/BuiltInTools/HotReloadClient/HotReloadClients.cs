@@ -173,7 +173,7 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
 #endif
                     content = ImmutableCollectionsMarshal.AsImmutableArray(blob);
                 }
-                catch (Exception e)
+                catch (Exception e) when (e is not OperationCanceledException)
                 {
                     ClientLogger.LogError("Failed to read file {FilePath}: {Message}", filePath, e.Message);
                     continue;
