@@ -4025,8 +4025,8 @@ Bir değeri görüntülemek için, bir değer sağlamadan ilgili komut satırı 
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSearchCommandDescription">
-        <source>Search for available workloads.</source>
-        <target state="translated">Kullanılabilir iş yüklerini arayın.</target>
+        <source>Search for available workloads or workload versions.</source>
+        <target state="needs-review-translation">Kullanılabilir iş yüklerini arayın.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">

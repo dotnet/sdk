@@ -4025,8 +4025,8 @@ To display a value, specify the corresponding command-line option without provid
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSearchCommandDescription">
-        <source>Search for available workloads.</source>
-        <target state="translated">사용 가능한 워크로드를 검색합니다.</target>
+        <source>Search for available workloads or workload versions.</source>
+        <target state="needs-review-translation">사용 가능한 워크로드를 검색합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">
