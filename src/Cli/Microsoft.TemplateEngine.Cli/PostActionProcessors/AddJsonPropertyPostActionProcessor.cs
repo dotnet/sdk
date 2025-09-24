@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
         private const string ParentPropertyPathArgument = "parentPropertyPath";
         private const string NewJsonPropertyNameArgument = "newJsonPropertyName";
         private const string NewJsonPropertyValueArgument = "newJsonPropertyValue";
-        private const string DetectRepoRootForFileCreation = "detectRepositoryRootForFileCreation";
+        private const string DetectRepoRoot = "detectRepositoryRoot";
         private const string IncludeAllDirectoriesInSearch = "includeAllDirectoriesInSearch";
         private const string IncludeAllParentDirectoriesInSearch = "includeAllParentDirectoriesInSearch";
 
@@ -89,9 +89,9 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 return false;
             }
 
-            if (!bool.TryParse(action.Args.GetValueOrDefault(DetectRepoRootForFileCreation, "false"), out bool detectRepoRoot))
+            if (!bool.TryParse(action.Args.GetValueOrDefault(DetectRepoRoot, "false"), out bool detectRepoRoot))
             {
-                Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotBoolean, DetectRepoRootForFileCreation));
+                Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotBoolean, DetectRepoRoot));
                 return false;
             }
 
