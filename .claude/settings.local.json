@@ -3,7 +3,8 @@
     "allow": [
       "WebFetch(domain:github.com)",
       "Bash(NX_DAEMON=false nx show projects)",
-      "Bash(NX_DAEMON=false nx show projects --json)"
+      "Bash(NX_DAEMON=false nx show projects --json)",
+      "Bash(dotnet build:*)"
     ],
     "deny": []
   }
