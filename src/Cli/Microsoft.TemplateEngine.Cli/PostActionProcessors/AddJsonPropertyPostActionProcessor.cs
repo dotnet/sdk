@@ -20,6 +20,8 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
         private const string NewJsonPropertyNameArgument = "newJsonPropertyName";
         private const string NewJsonPropertyValueArgument = "newJsonPropertyValue";
         private const string DetectRepoRootForFileCreation = "detectRepositoryRootForFileCreation";
+        private const string IncludeAllDirectoriesInSearch = "includeAllDirectoriesInSearch";
+        private const string IncludeAllParentDirectoriesInSearch = "includeAllParentDirectoriesInSearch";
 
         private static readonly JsonSerializerOptions SerializerOptions = new()
         {
@@ -87,7 +89,30 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 return false;
             }
 
-            IReadOnlyList<string> jsonFiles = FindFilesInCurrentFolderOrParentFolder(environment.Host.FileSystem, outputBasePath, jsonFileName);
+            if (!bool.TryParse(action.Args.GetValueOrDefault(DetectRepoRootForFileCreation, "false"), out bool detectRepoRoot))
+            {
+                Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotBoolean, DetectRepoRootForFileCreation));
+                return false;
+            }
+
+            if (!bool.TryParse(action.Args.GetValueOrDefault(IncludeAllDirectoriesInSearch, "true"), out bool includeAllDirectories))
+            {
+                Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotBoolean, IncludeAllDirectoriesInSearch));
+                return false;
+            }
+
+            if (!bool.TryParse(action.Args.GetValueOrDefault(IncludeAllParentDirectoriesInSearch, "false"), out bool includeAllParentDirectories))
+            {
+                Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotBoolean, IncludeAllParentDirectoriesInSearch));
+                return false;
+            }
+
+            IReadOnlyList<string> jsonFiles = FindFilesInCurrentFolderOrParentFolder(
+                environment.Host.FileSystem,
+                outputBasePath,
+                jsonFileName,
+                includeAllDirectories ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories,
+                includeAllParentDirectories ? int.MaxValue : 1);
 
             if (jsonFiles.Count == 0)
             {
@@ -100,12 +125,6 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 if (!createFile)
                 {
                     Reporter.Error.WriteLine(LocalizableStrings.PostAction_ModifyJson_Error_NoJsonFile);
-                    return false;
-                }
-
-                if (!bool.TryParse(action.Args.GetValueOrDefault(DetectRepoRootForFileCreation, "false"), out bool detectRepoRoot))
-                {
-                    Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotBoolean, DetectRepoRootForFileCreation));
                     return false;
                 }
 
@@ -216,7 +235,9 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
         private static string[] FindFilesInCurrentFolderOrParentFolder(
             IPhysicalFileSystem fileSystem,
             string startPath,
-            string matchPattern)
+            string matchPattern,
+            SearchOption searchOption,
+            int maxUpLevels)
         {
             string? directory = fileSystem.DirectoryExists(startPath) ? startPath : Path.GetDirectoryName(startPath);
 
@@ -230,7 +251,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             do
             {
                 Reporter.Verbose.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Verbose_AttemptingToFindJsonFile, matchPattern, directory));
-                string[] filesInDir = fileSystem.EnumerateFileSystemEntries(directory, matchPattern, SearchOption.AllDirectories).ToArray();
+                string[] filesInDir = fileSystem.EnumerateFileSystemEntries(directory, matchPattern, searchOption).ToArray();
 
                 if (filesInDir.Length > 0)
                 {
@@ -240,7 +261,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 directory = Path.GetPathRoot(directory) != directory ? Directory.GetParent(directory)?.FullName : null;
                 numberOfUpLevels++;
             }
-            while (directory != null && numberOfUpLevels <= 1);
+            while (directory != null && numberOfUpLevels <= maxUpLevels);
 
             return Array.Empty<string>();
         }
