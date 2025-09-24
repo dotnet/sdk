@@ -111,7 +111,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 environment.Host.FileSystem,
                 outputBasePath,
                 jsonFileName,
-                includeAllDirectories ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories,
+                includeAllDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly,
                 includeAllParentDirectories ? int.MaxValue : 1);
 
             if (jsonFiles.Count == 0)
