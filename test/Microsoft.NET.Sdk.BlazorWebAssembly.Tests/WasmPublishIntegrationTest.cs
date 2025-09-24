@@ -152,8 +152,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "blazorwasm.wasm")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "System.Text.Json.wasm")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "System.Text.Json.wasm.gz")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "System.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "System.wasm.gz")).Should().Exist();
+            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "System.Private.CoreLib.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "System.Private.CoreLib.wasm.gz")).Should().Exist();
 
             new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.wasm")).Should().Exist();
         }

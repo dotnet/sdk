@@ -4,37 +4,37 @@
     <body>
       <trans-unit id="AssemblyLoaded">
         <source>Assembly '{0}' loaded.</source>
-        <target state="new">Assembly '{0}' loaded.</target>
+        <target state="translated">組件 '{0}' 已載入。</target>
         <note />
       </trans-unit>
       <trans-unit id="AssemblyReferenceLoaded">
         <source>Assembly '{0}' referenced by '{1}' loaded.</source>
-        <target state="new">Assembly '{0}' referenced by '{1}' loaded.</target>
+        <target state="translated">已載入由 '{1}' 參考的組件 '{0}'。</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldNotResolveReference">
         <source>Could not resolve reference '{0}' directly or transitively referenced by {1} in any of the provided search directories.</source>
-        <target state="new">Could not resolve reference '{0}' directly or transitively referenced by {1} in any of the provided search directories.</target>
+        <target state="translated">無法解析參考項目 '{0}' (其直接或間接由 {1} 所參考) 於任何提供的搜尋目錄中皆找不到。</target>
         <note />
       </trans-unit>
       <trans-unit id="LoadingAssemblies">
         <source>Loading assemblies '{0}'.</source>
-        <target state="new">Loading assemblies '{0}'.</target>
+        <target state="translated">正在載入組件 '{0}'。</target>
         <note />
       </trans-unit>
       <trans-unit id="LoadingAssembliesFromArchive">
         <source>Loading assemblies '{0}' ({1}).</source>
-        <target state="new">Loading assemblies '{0}' ({1}).</target>
+        <target state="translated">正在載入組件 '{0}' ({1})。</target>
         <note />
       </trans-unit>
       <trans-unit id="LoadingAssembly">
         <source>Loading assembly '{0}'.</source>
-        <target state="new">Loading assembly '{0}'.</target>
+        <target state="translated">正在載入組件 '{0}'。</target>
         <note />
       </trans-unit>
       <trans-unit id="LoadingAssemblyFromStream">
         <source>Loading assembly '{0}' from stream.</source>
-        <target state="new">Loading assembly '{0}' from stream.</target>
+        <target state="translated">正在從資料流載入組件 '{0}'。</target>
         <note />
       </trans-unit>
       <trans-unit id="MatchingAssemblyNotFound">
@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="RootAssemblyDisplayString">
         <source>'{0}'</source>
-        <target state="new">'{0}'</target>
+        <target state="translated">'{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="RootAssemblyFromPackageDisplayString">
         <source>'{0}' ({1})</source>
-        <target state="new">'{0}' ({1})</target>
+        <target state="translated">'{0}' ({1})</target>
         <note />
       </trans-unit>
       <trans-unit id="ShouldNotBeNullAndContainAtLeastOneElement">

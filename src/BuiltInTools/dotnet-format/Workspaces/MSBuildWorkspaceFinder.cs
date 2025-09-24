@@ -55,7 +55,9 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
         private static (bool isSolution, string workspacePath) FindFile(string workspacePath)
         {
             var workspaceExtension = Path.GetExtension(workspacePath);
-            var isSolution = workspaceExtension.Equals(".sln", StringComparison.OrdinalIgnoreCase) || workspaceExtension.Equals(".slnf", StringComparison.OrdinalIgnoreCase);
+            var isSolution = workspaceExtension.Equals(".sln", StringComparison.OrdinalIgnoreCase)
+                || workspaceExtension.Equals(".slnf", StringComparison.OrdinalIgnoreCase)
+                || workspaceExtension.Equals(".slnx", StringComparison.OrdinalIgnoreCase);
             var isProject = !isSolution
                 && workspaceExtension.EndsWith("proj", StringComparison.OrdinalIgnoreCase)
                 && !workspaceExtension.Equals(DnxProjectExtension, StringComparison.OrdinalIgnoreCase);

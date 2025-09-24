@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Versioning;
 
@@ -46,7 +48,7 @@ internal class WorkloadPackRecord
     /// <summary>
     /// The workload pack IDs and versions that are installed by this MSI
     /// </summary>
-    public List<(WorkloadPackId id, NuGetVersion version)> InstalledPacks { get; set; } = new();
+    public List<(WorkloadPackId id, NuGetVersion version)> InstalledPacks { get; set; } = [];
 
     /// <summary>
     /// The product code (GUID) of the workload pack MSI.

@@ -1,13 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
-public class DepsJsonCommandResolver : ICommandResolver
+public class DepsJsonCommandResolver(Muxer muxer, string nugetPackageRoot) : ICommandResolver
 {
     private static readonly string[] s_extensionPreferenceOrder =
     [
@@ -16,17 +18,11 @@ public class DepsJsonCommandResolver : ICommandResolver
         ".dll"
     ];
 
-    private string _nugetPackageRoot;
-    private Muxer _muxer;
+    private readonly string _nugetPackageRoot = nugetPackageRoot;
+    private readonly Muxer _muxer = muxer;
 
     public DepsJsonCommandResolver(string nugetPackageRoot)
         : this(new Muxer(), nugetPackageRoot) { }
-
-    public DepsJsonCommandResolver(Muxer muxer, string nugetPackageRoot)
-    {
-        _muxer = muxer;
-        _nugetPackageRoot = nugetPackageRoot;
-    }
 
     public CommandSpec Resolve(CommandResolverArguments commandResolverArguments)
     {
@@ -127,7 +123,7 @@ public class DepsJsonCommandResolver : ICommandResolver
         return commandCandidates;
     }
 
-    private IEnumerable<CommandCandidate> GetCommandCandidatesFromRuntimeAssetGroups(
+    private static IEnumerable<CommandCandidate> GetCommandCandidatesFromRuntimeAssetGroups(
         string commandName,
         IEnumerable<RuntimeAssetGroup> runtimeAssetGroups,
         string PackageName,
@@ -160,7 +156,7 @@ public class DepsJsonCommandResolver : ICommandResolver
         return commandCandidates;
     }
 
-    private CommandCandidate ChooseCommandCandidate(IEnumerable<CommandCandidate> commandCandidates)
+    private static CommandCandidate ChooseCommandCandidate(IEnumerable<CommandCandidate> commandCandidates)
     {
         foreach (var extension in s_extensionPreferenceOrder)
         {
@@ -187,8 +183,7 @@ public class DepsJsonCommandResolver : ICommandResolver
         var depsFileArguments = GetDepsFileArguments(depsJsonFile);
         var additionalProbingPathArguments = GetAdditionalProbingPathArguments();
 
-        var muxerArgs = new List<string>();
-        muxerArgs.Add("exec");
+        List<string> muxerArgs = ["exec"];
         muxerArgs.AddRange(depsFileArguments);
         muxerArgs.AddRange(additionalProbingPathArguments);
         muxerArgs.Add(commandPath);
@@ -199,7 +194,7 @@ public class DepsJsonCommandResolver : ICommandResolver
         return new CommandSpec(_muxer.MuxerPath, escapedArgString);
     }
 
-    private bool IsPortableApp(string commandPath)
+    private static bool IsPortableApp(string commandPath)
     {
         var commandDir = Path.GetDirectoryName(commandPath);
 
@@ -216,14 +211,14 @@ public class DepsJsonCommandResolver : ICommandResolver
         return runtimeConfig.IsPortable;
     }
 
-    private IEnumerable<string> GetDepsFileArguments(string depsJsonFile)
+    private static IEnumerable<string> GetDepsFileArguments(string depsJsonFile)
     {
-        return new[] { "--depsfile", depsJsonFile };
+        return ["--depsfile", depsJsonFile];
     }
 
     private IEnumerable<string> GetAdditionalProbingPathArguments()
     {
-        return new[] { "--additionalProbingPath", _nugetPackageRoot };
+        return ["--additionalProbingPath", _nugetPackageRoot];
     }
 
     private class CommandCandidate

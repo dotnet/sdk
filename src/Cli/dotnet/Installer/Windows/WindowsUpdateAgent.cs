@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.Versioning;
 using System.ServiceProcess;
 
@@ -14,7 +16,7 @@ internal sealed class WindowsUpdateAgent
 {
     private readonly ServiceController _wuauserv;
 
-    private ISetupLogger _log;
+    private readonly ISetupLogger _log;
 
     private bool _wasRunning;
     private bool _wasStopped;

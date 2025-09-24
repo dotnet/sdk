@@ -15,7 +15,7 @@ namespace Microsoft.NET.Publish.Tests
     {
         private readonly string RuntimeIdentifier = $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}";
 
-        private readonly string ExplicitPackageVersion = "7.0.0-rc.2.22456.11";
+        private const string NetCurrentExplicitPackageVersion = "10.0.0-preview.6.25316.103";
 
         public GivenThatWeWantToPublishAnAotApp(ITestOutputHelper log) : base(log)
         {
@@ -42,25 +42,7 @@ namespace Microsoft.NET.Publish.Tests
             {
                 testProject.AdditionalProperties["StripSymbols"] = "true";
             }
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
-
-            string[] ignoredPatterns = null;
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                ignoredPatterns = new string[]
-                {
-                    // Both these exclusions can be removed once the min tested version is .NET 10 and the min supported
-                    // XCode version is XCode 16.
-
-                    // -ld_classic option is required to workaround bugs in XCode 15 and .NET 9 and older runtimes.
-                    // See https://github.com/dotnet/runtime/issues/97745 for details.
-                    "ld: warning: -ld_classic is deprecated and will be removed in a future release",
-                    // These warnings show up when dotnet/runtime compiled using Apple clang 15+ is used
-                    // with classic linker (either Apple clang 14 or clang 15+ with -ld_classic).
-                    "ld: warning: __LD,__compact_unwind entries for",
-                };
-            }
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -69,7 +51,7 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutContaining("IL2026")
                 .And.NotHaveStdErrContaining("NETSDK1179")
                 .And.NotHaveStdErrContaining("warning")
-                .And.NotHaveStdOutContaining("warning", ignoredPatterns);
+                .And.NotHaveStdOutContaining("warning");
 
             var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
@@ -85,8 +67,10 @@ namespace Microsoft.NET.Publish.Tests
             DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue($"{publishDirectory} should contain {testProject.Name} symbol");
             IsNativeImage(publishedExe).Should().BeTrue();
 
+            bool useRuntimePackLayout = targetFramework is not ("net7.0" or "net8.0" or "net9.0");
+
             GetKnownILCompilerPackVersion(testAsset, targetFramework, out string expectedVersion);
-            CheckIlcVersions(testAsset, targetFramework, rid, expectedVersion);
+            CheckIlcVersions(testAsset, targetFramework, rid, expectedVersion, useRuntimePackLayout);
 
             var command = new RunExeCommand(Log, publishedExe)
                 .Execute().Should().Pass()
@@ -267,8 +251,10 @@ namespace Microsoft.NET.Publish.Tests
             File.Exists(depsPath).Should().BeTrue();
         }
 
+        private const string Net7ExplicitPackageVersion = "7.0.0";
+
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [InlineData("net7.0")]
         public void NativeAot_hw_runs_with_PackageReference_PublishAot_is_enabled(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -284,7 +270,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["PublishAot"] = "true";
 
             // This will add a reference to a package that will also be automatically imported by the SDK
-            testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", ExplicitPackageVersion));
+            testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", Net7ExplicitPackageVersion));
 
             // Linux symbol files are embedded and require additional steps to be stripped to a separate file
             // assumes /bin (or /usr/bin) are in the PATH
@@ -320,7 +306,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Execute().Should().Pass()
                 .And.HaveStdOutContaining("Hello World");
 
-            CheckIlcVersions(testAsset, targetFramework, rid, ExplicitPackageVersion);
+            CheckIlcVersions(testAsset, targetFramework, rid, Net7ExplicitPackageVersion, useRuntimePackLayout: false);
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
@@ -333,7 +319,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
 
             // This will add a reference to a package that will also be automatically imported by the SDK
-            testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", ExplicitPackageVersion));
+            testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", NetCurrentExplicitPackageVersion));
 
             // Linux symbol files are embedded and require additional steps to be stripped to a separate file
             // assumes /bin (or /usr/bin) are in the PATH
@@ -361,7 +347,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_hw_runs_with_cross_target_PublishAot_is_enabled(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (RuntimeInformation.OSArchitecture == Architecture.X64))
@@ -385,13 +371,13 @@ namespace Microsoft.NET.Publish.Tests
                 File.Exists(publishedExe).Should().BeTrue();
 
                 GetKnownILCompilerPackVersion(testAsset, targetFramework, out string expectedVersion);
-                CheckIlcVersions(testAsset, targetFramework, rid, expectedVersion);
+                CheckIlcVersions(testAsset, targetFramework, rid, expectedVersion, useRuntimePackLayout: true);
             }
         }
 
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_hw_runs_with_cross_PackageReference_PublishAot_is_enabled(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (RuntimeInformation.OSArchitecture == Architecture.X64))
@@ -400,11 +386,16 @@ namespace Microsoft.NET.Publish.Tests
                 var rid = "win-arm64";
 
                 var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
+                testProject.RecordProperties("BundledNETCoreAppPackageVersion");
                 testProject.AdditionalProperties["PublishAot"] = "true";
 
                 // This will add a reference to a package that will also be automatically imported by the SDK
-                testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", ExplicitPackageVersion));
-                testProject.PackageReferences.Add(new TestPackageReference("runtime.win-x64.Microsoft.DotNet.ILCompiler", ExplicitPackageVersion));
+                testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", "$(BundledNETCoreAppPackageVersion)"));
+                testProject.AddItem("PackageDownload", new Dictionary<string, string>
+                {
+                    { "Include", "Microsoft.NETCore.App.Runtime.NativeAOT.win-arm64" },
+                    { "Version", $"[$(BundledNETCoreAppPackageVersion)]" }
+                });
 
                 var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
@@ -416,13 +407,16 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("warning")
                 .And.HaveStdOutContaining("Microsoft.DotNet.ILCompiler");
 
+                var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
+                var targetVersion = buildProperties["BundledNETCoreAppPackageVersion"];
+
                 var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
                 var publishedDll = Path.Combine(publishDirectory, $"{projectName}.dll");
                 var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
                 File.Exists(publishedDll).Should().BeFalse();
                 File.Exists(publishedExe).Should().BeTrue();
 
-                CheckIlcVersions(testAsset, targetFramework, rid, ExplicitPackageVersion);
+                CheckIlcVersions(testAsset, targetFramework, rid, targetVersion, useRuntimePackLayout: true);
             }
         }
 
@@ -438,8 +432,8 @@ namespace Microsoft.NET.Publish.Tests
                 var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
 
                 // This will add a reference to a package that will also be automatically imported by the SDK
-                testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", ExplicitPackageVersion));
-                testProject.PackageReferences.Add(new TestPackageReference("runtime.win-x64.Microsoft.DotNet.ILCompiler", ExplicitPackageVersion));
+                testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", NetCurrentExplicitPackageVersion));
+                testProject.PackageReferences.Add(new TestPackageReference("runtime.win-x64.Microsoft.DotNet.ILCompiler", NetCurrentExplicitPackageVersion));
 
                 var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
@@ -487,7 +481,7 @@ namespace Microsoft.NET.Publish.Tests
                 var testProject = CreateHelloWorldTestProject("net6.0", projectName, true);
                 testProject.AdditionalProperties["PublishAot"] = "true";
 
-                testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", ExplicitPackageVersion));
+                testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", NetCurrentExplicitPackageVersion));
 
                 var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
@@ -599,7 +593,7 @@ namespace Microsoft.NET.Publish.Tests
             var assemblyPath = Path.Combine(outputDirectory, $"{projectName}.dll");
 
             // injects the IsTrimmable attribute
-            AssemblyInfo.Get(assemblyPath)["AssemblyMetadataAttribute"].Should().Be("IsTrimmable:True");
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("AssemblyMetadataAttribute", "IsTrimmable:True"));
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -650,7 +644,8 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("net7.0", false)]
         [InlineData("netstandard2.0;net5.0", true)] // None of these TFMs are supported for AOT
         [InlineData("netstandard2.0;net7.0", false)] // Net7.0 is the min TFM supported for AOT and targeting.
-        [InlineData("netstandard2.0;net8.0", true)] // Net8.0 is supported for AOT, but leaves a "gap" for the supported net7.0 TFMs.
+        [InlineData("netstandard2.0;net8.0", false)] // net8.0 is supported for AOT and targeting.
+        [InlineData("netstandard2.0;net9.0", true)] // Net9.0 is supported for AOT, but leaves a "gap" for the supported net8.0 TFMs.
         [InlineData("alias-ns2", true)]
         [InlineData("alias-n6", true)]
         [InlineData("alias-n7", false)]
@@ -666,18 +661,19 @@ namespace Microsoft.NET.Publish.Tests
                 TargetFrameworks = targetFrameworks
             };
             testProject.AdditionalProperties["IsAotCompatible"] = "true";
+            testProject.AdditionalProperties["CheckEolTargetFramework"] = "false"; // Silence warning about targeting EOL TFMs
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFrameworks)
                 .WithProjectChanges(AddTargetFrameworkAliases);
 
             var buildCommand = new BuildCommand(testAsset);
-            var resultAssertion = buildCommand.Execute()
+            var resultAssertion = buildCommand.Execute("/p:CheckEolTargetFramework=false")
                 .Should().Pass();
             if (shouldWarn) {
                 resultAssertion
                     // Note: can't check for Strings.IsAotCompatibleUnsupported because each line of
                     // the message gets prefixed with a file path by MSBuild.
                     .And.HaveStdOutContaining($"warning NETSDK1210")
-                    .And.HaveStdOutContaining($"<IsAotCompatible Condition=\"$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))\">true</IsAotCompatible>");
+                    .And.HaveStdOutContaining($"<IsAotCompatible Condition=\"$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))\">true</IsAotCompatible>");
             } else {
                 resultAssertion.And.NotHaveStdOutContaining($"warning");
             }
@@ -1059,7 +1055,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Single();
         }
 
-        private void CheckIlcVersions(TestAsset testAsset, string targetFramework, string rid, string expectedVersion)
+        private void CheckIlcVersions(TestAsset testAsset, string targetFramework, string rid, string expectedVersion, bool useRuntimePackLayout)
         {
             // Compiler version matches expected version
             var ilcToolsPathCommand = new GetValuesCommand(testAsset, "IlcToolsPath", targetFramework: targetFramework)
@@ -1079,7 +1075,17 @@ namespace Microsoft.NET.Publish.Tests
             ilcReferenceCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true").Should().Pass();
             var ilcReference = ilcReferenceCommand.GetValues();
             var corelibReference = ilcReference.Where(r => Path.GetFileName(r).Equals("System.Private.CoreLib.dll")).Single();
-            var ilcReferenceVersion = Path.GetFileName(Path.GetDirectoryName(Path.GetDirectoryName(corelibReference)));
+            string ilcReferenceVersion;
+            if (useRuntimePackLayout)
+            {
+                // In the runtime pack layout, System.Private.CoreLib.dll is in the runtimes/<rid>/native directory
+                ilcReferenceVersion = Path.GetFileName(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(corelibReference)))));
+            }
+            else
+            {
+                // In the old layout, System.Private.CoreLib.dll is in the framework directory
+                ilcReferenceVersion = Path.GetFileName(Path.GetDirectoryName(Path.GetDirectoryName(corelibReference)));
+            }
             ilcReferenceVersion.Should().Be(expectedVersion);
         }
 

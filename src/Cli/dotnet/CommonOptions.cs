@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Frozen;
+using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
@@ -12,96 +14,230 @@ namespace Microsoft.DotNet.Cli;
 
 internal static class CommonOptions
 {
-    public static CliOption<string[]> PropertiesOption =
-        // these are all of the forms that the property switch can be understood by in MSBuild
-        new ForwardedOption<string[]>("--property", "-property", "/property", "/p", "-p", "--p")
+    public static Option<bool> YesOption =
+        new DynamicOption<bool>("--yes", "-y")
         {
-            Hidden = true
-        }.ForwardAsProperty()
+            Description = CliStrings.YesOptionDescription,
+            Arity = ArgumentArity.Zero
+        };
+
+    public static Option<ReadOnlyDictionary<string, string>?> PropertiesOption =
+        // these are all of the forms that the property switch can be understood by in MSBuild
+        new ForwardedOption<ReadOnlyDictionary<string, string>?>("--property", "-property", "/property", "/p", "-p", "--p")
+        {
+            Hidden = true,
+            Arity = ArgumentArity.ZeroOrMore,
+            CustomParser = ParseMSBuildTokensIntoDictionary
+        }.ForwardAsMSBuildProperty()
         .AllowSingleArgPerToken();
 
-    public static CliOption<VerbosityOptions> VerbosityOption =
-        new ForwardedOption<VerbosityOptions>("--verbosity", "-v")
+    /// <summary>
+    /// Sets MSBuild Global Property values that are only used during Restore (implicit or explicit)
+    /// </summary>
+    /// <remarks>
+    /// </remarks>
+    public static Option<ReadOnlyDictionary<string, string>?> RestorePropertiesOption =
+        // these are all of the forms that the property switch can be understood by in MSBuild
+        new ForwardedOption<ReadOnlyDictionary<string, string>?>("--restoreProperty", "-restoreProperty", "/restoreProperty", "-rp", "--rp", "/rp")
         {
-            Description = CommonLocalizableStrings.VerbosityOptionDescription,
-            HelpName = CommonLocalizableStrings.LevelArgumentName
-        }.ForwardAsSingle(o => $"-verbosity:{o}");
+            Hidden = true,
+            Arity = ArgumentArity.ZeroOrMore,
+            CustomParser = ParseMSBuildTokensIntoDictionary
+        }
+        .ForwardAsMSBuildProperty()
+        .AllowSingleArgPerToken();
 
-    public static CliOption<VerbosityOptions> HiddenVerbosityOption =
+    private static ReadOnlyDictionary<string, string>? ParseMSBuildTokensIntoDictionary(ArgumentResult result)
+    {
+        if (result.Tokens.Count == 0)
+        {
+            return null;
+        }
+        var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var token in result.Tokens)
+        {
+            foreach (var kvp in MSBuildPropertyParser.ParseProperties(token.Value))
+            {
+                // msbuild properties explicitly have the semantic of being 'overwrite' so we do not check for duplicates
+                // and just overwrite the value if it already exists.
+                dictionary[kvp.key] = kvp.value;
+            }
+        }
+        return new(dictionary);
+    }
+
+    public static Option<string[]?> MSBuildTargetOption(string? defaultTargetName = null, (string key, string value)[]? additionalProperties = null) =>
+        new ForwardedOption<string[]?>("--target", "/target", "-target", "-t", "--t", "/t")
+        {
+            Description = "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
+            HelpName = "TARGET",
+            DefaultValueFactory = _ => defaultTargetName is not null ? [defaultTargetName] : null,
+            CustomParser = r => SplitMSBuildValues(defaultTargetName, r),
+            Hidden = true,
+            Arity = ArgumentArity.ZeroOrMore
+        }
+        .ForwardAsMany(targets => ForwardTargetsAndAdditionalProperties(targets, additionalProperties))
+        .AllowSingleArgPerToken();
+
+    public static Option<string[]> RequiredMSBuildTargetOption(string defaultTargetName, (string key, string value)[]? additionalProperties = null) =>
+        new ForwardedOption<string[]>("--target", "/target", "-target", "-t", "--t", "/t")
+        {
+            Description = "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
+            HelpName = "TARGET",
+            DefaultValueFactory = _ => [defaultTargetName],
+            CustomParser = r => SplitMSBuildValues(defaultTargetName, r),
+            Hidden = true,
+            Arity = ArgumentArity.ZeroOrMore
+        }
+        // we know there will be at least one target, so we return an enumerable with at least one item
+        .ForwardAsMany(targets => ForwardTargetsAndAdditionalProperties(targets, additionalProperties))
+        .AllowSingleArgPerToken();
+
+    public static IEnumerable<string> ForwardTargetsAndAdditionalProperties(string[]? targets, (string key, string value)[]? additionalProperties)
+    {
+        var argsToReturn = new List<string>(targets is null ? 0 : 1 + (additionalProperties?.Length ?? 0));
+        if (targets is not null)
+        {
+            argsToReturn.Add($"--target:{string.Join(";", targets)}");
+        }
+        if (additionalProperties is not null)
+        {
+            argsToReturn.AddRange(additionalProperties.Select(p => $"--property:{p.key}={p.value}"));
+        }
+        return argsToReturn;
+    }
+
+    public static readonly Option<string[]?> GetPropertyOption = MSBuildMultiOption("getProperty");
+
+    public static readonly Option<string[]?> GetItemOption = MSBuildMultiOption("getItem");
+
+    public static readonly Option<string[]?> GetTargetResultOption = MSBuildMultiOption("getTargetResult");
+
+    public static readonly Option<string[]?> GetResultOutputFileOption = MSBuildMultiOption("getResultOutputFile");
+
+    private static Option<string[]?> MSBuildMultiOption(string name)
+        => new ForwardedOption<string[]?>($"--{name}", $"-{name}", $"/{name}")
+        {
+            Hidden = true,
+            Arity = ArgumentArity.OneOrMore,
+            CustomParser = static r => SplitMSBuildValues(null, r),
+        }
+        .ForwardAsMany(xs => (xs ?? []).Select(x => $"--{name}:{x}"))
+        .AllowSingleArgPerToken();
+
+    public static string[] SplitMSBuildValues(string? defaultValue, ArgumentResult argumentResult)
+    {
+        if (argumentResult.Tokens.Count == 0)
+        {
+            return defaultValue is not null ? [defaultValue] : [];
+        }
+        var userValues =
+            argumentResult.Tokens.Select(t => t.Value)
+            .SelectMany(t => t.Split([';', ','], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .Where(t => !string.IsNullOrEmpty(t));
+        var allValues = defaultValue is null ? userValues : [defaultValue, .. userValues];
+        return allValues.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+    }
+
+    public static Option<VerbosityOptions> VerbosityOption(VerbosityOptions defaultVerbosity) =>
         new ForwardedOption<VerbosityOptions>("--verbosity", "-v")
         {
-            Description = CommonLocalizableStrings.VerbosityOptionDescription,
-            HelpName = CommonLocalizableStrings.LevelArgumentName,
+            Description = CliStrings.VerbosityOptionDescription,
+            HelpName = CliStrings.LevelArgumentName,
+            DefaultValueFactory = _ => defaultVerbosity
+        }
+        .ForwardAsSingle(o => $"--verbosity:{o}")
+        .AggregateRepeatedTokens();
+
+    public static Option<VerbosityOptions?> VerbosityOption() =>
+        new ForwardedOption<VerbosityOptions?>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
+        {
+            Description = CliStrings.VerbosityOptionDescription,
+            HelpName = CliStrings.LevelArgumentName
+        }
+        .ForwardAsSingle(o => $"--verbosity:{o}")
+        .AggregateRepeatedTokens();
+
+    public static Option<VerbosityOptions> HiddenVerbosityOption =
+        new ForwardedOption<VerbosityOptions>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
+        {
+            Description = CliStrings.VerbosityOptionDescription,
+            HelpName = CliStrings.LevelArgumentName,
             Hidden = true
-        }.ForwardAsSingle(o => $"-verbosity:{o}");
+        }
+        .ForwardAsSingle(o => $"--verbosity:{o}")
+        .AggregateRepeatedTokens();
 
-    public static CliOption<string> FrameworkOption(string description) =>
+    public static Option<string> FrameworkOption(string description) =>
         new DynamicForwardedOption<string>("--framework", "-f")
         {
             Description = description,
-            HelpName = CommonLocalizableStrings.FrameworkArgumentName
+            HelpName = CliStrings.FrameworkArgumentName
         }
-        .AddCompletions(Complete.TargetFrameworksFromProjectFile)
-        .ForwardAsSingle(o => $"-property:TargetFramework={o}");
+        .AddCompletions(CliCompletion.TargetFrameworksFromProjectFile)
+        .ForwardAsSingle(o => $"--property:TargetFramework={o}");
 
-    public static CliOption<string> ArtifactsPathOption =
+    public static Option<string> ArtifactsPathOption =
         new ForwardedOption<string>(
             //  --artifacts-path is pretty verbose, should we use --artifacts instead (or possibly support both)?
             "--artifacts-path")
         {
-            Description = CommonLocalizableStrings.ArtifactsPathOptionDescription,
-            HelpName = CommonLocalizableStrings.ArtifactsPathArgumentName
-        }.ForwardAsSingle(o => $"-property:ArtifactsPath={CommandDirectoryContext.GetFullPath(o)}");
+            Description = CliStrings.ArtifactsPathOptionDescription,
+            HelpName = CliStrings.ArtifactsPathArgumentName
+        }.ForwardAsSingle(o => $"--property:ArtifactsPath={CommandDirectoryContext.GetFullPath(o)}");
 
-    private static string RuntimeArgName = CommonLocalizableStrings.RuntimeIdentifierArgumentName;
+    private static readonly string RuntimeArgName = CliStrings.RuntimeIdentifierArgumentName;
     public static IEnumerable<string> RuntimeArgFunc(string rid)
     {
         if (GetArchFromRid(rid) == "amd64")
         {
             rid = GetOsFromRid(rid) + "-x64";
         }
-        return new string[] { $"-property:RuntimeIdentifier={rid}", "-property:_CommandLineDefinedRuntimeIdentifier=true" };
+        return [$"--property:RuntimeIdentifier={rid}", "--property:_CommandLineDefinedRuntimeIdentifier=true"];
     }
 
-    public static CliOption<string> RuntimeOption =
-        new DynamicForwardedOption<string>("--runtime", "-r")
+    public const string RuntimeOptionName = "--runtime";
+
+    public static Option<string> RuntimeOption(string description) =>
+        new DynamicForwardedOption<string>(RuntimeOptionName, "-r")
+        {
+            HelpName = RuntimeArgName,
+            Description = description
+        }.ForwardAsMany(RuntimeArgFunc!)
+        .AddCompletions(CliCompletion.RunTimesFromProjectFile);
+
+    public static Option<string> LongFormRuntimeOption =
+        new DynamicForwardedOption<string>(RuntimeOptionName)
         {
             HelpName = RuntimeArgName
-        }.ForwardAsMany(RuntimeArgFunc)
-        .AddCompletions(Complete.RunTimesFromProjectFile);
+        }.ForwardAsMany(RuntimeArgFunc!)
+        .AddCompletions(CliCompletion.RunTimesFromProjectFile);
 
-    public static CliOption<string> LongFormRuntimeOption =
-        new DynamicForwardedOption<string>("--runtime")
-        {
-            HelpName = RuntimeArgName
-        }.ForwardAsMany(RuntimeArgFunc)
-        .AddCompletions(Complete.RunTimesFromProjectFile);
-
-    public static CliOption<bool> CurrentRuntimeOption(string description) =>
+    public static Option<bool> CurrentRuntimeOption(string description) =>
         new ForwardedOption<bool>("--use-current-runtime", "--ucr")
         {
             Description = description,
             Arity = ArgumentArity.Zero
-        }.ForwardAs("-property:UseCurrentRuntimeIdentifier=True");
+        }.ForwardAs("--property:UseCurrentRuntimeIdentifier=True");
 
-    public static CliOption<string> ConfigurationOption(string description) =>
-        new DynamicForwardedOption<string>("--configuration", "-c")
+    public static Option<string?> ConfigurationOption(string description) =>
+        new DynamicForwardedOption<string?>("--configuration", "-c")
         {
             Description = description,
-            HelpName = CommonLocalizableStrings.ConfigurationArgumentName
-        }.ForwardAsSingle(o => $"-property:Configuration={o}")
-        .AddCompletions(Complete.ConfigurationsFromProjectFileOrDefaults);
+            HelpName = CliStrings.ConfigurationArgumentName
+        }.ForwardAsSingle(o => $"--property:Configuration={o}")
+        .AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
 
-    public static CliOption<string> VersionSuffixOption =
+    public static Option<string> VersionSuffixOption =
         new ForwardedOption<string>("--version-suffix")
         {
-            Description = CommonLocalizableStrings.CmdVersionSuffixDescription,
-            HelpName = CommonLocalizableStrings.VersionSuffixArgumentName
-        }.ForwardAsSingle(o => $"-property:VersionSuffix={o}");
+            Description = CliStrings.CmdVersionSuffixDescription,
+            HelpName = CliStrings.VersionSuffixArgumentName
+        }.ForwardAsSingle(o => $"--property:VersionSuffix={o}");
 
     public static Lazy<string> NormalizedCurrentDirectory = new(() => PathUtility.EnsureTrailingSlash(Directory.GetCurrentDirectory()));
 
-    public static CliArgument<string> DefaultToCurrentDirectory(this CliArgument<string> arg)
+    public static Argument<string> DefaultToCurrentDirectory(this Argument<string> arg)
     {
         // we set this lazily so that we don't pay the overhead of determining the
         // CWD multiple times, one for each Argument that uses this.
@@ -109,14 +245,24 @@ internal static class CommonOptions
         return arg;
     }
 
-    public static CliOption<bool> NoRestoreOption = new ForwardedOption<bool>("--no-restore")
+    public static Option<bool> NoRestoreOption = new ForwardedOption<bool>("--no-restore")
     {
-        Description = CommonLocalizableStrings.NoRestoreDescription,
+        Description = CliStrings.NoRestoreDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-restore:false");
 
+
+    public static Option<bool> RestoreOption = new ForwardedOption<bool>("--restore", "-restore")
+    {
+        Description = "Restore the project before building it. This is the default behavior.",
+        Arity = ArgumentArity.Zero,
+        Hidden = true
+    }.ForwardAs("-restore");
+
     private static bool IsCIEnvironmentOrRedirected() =>
         new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected;
+
+    public const string InteractiveOptionName = "--interactive";
 
     /// <summary>
     /// A 'template' for interactive usage across the whole dotnet CLI. Use this as a base and then specialize it for your use cases.
@@ -124,89 +270,93 @@ internal static class CommonOptions
     /// </summary>
     /// <param name="acceptArgument">Whether the option accepts an boolean argument. If false, the option will be a flag.</param>
     /// <remarks>
-    // If not set by a user, this will default to true if the user is not in a CI environment as detected by <see cref="Telemetry.CIEnvironmentDetectorForTelemetry.IsCIEnvironment"/>.
-    // If this is set to function as a flag, then there is no simple user-provided way to circumvent the behavior.
-    // </remarks>
+    /// If not set by a user, this will default to true if the user is not in a CI environment as detected by <see cref="Telemetry.CIEnvironmentDetectorForTelemetry.IsCIEnvironment"/>.
+    /// If this is set to function as a flag, then there is no simple user-provided way to circumvent the behavior.
+    /// </remarks>
     public static ForwardedOption<bool> InteractiveOption(bool acceptArgument = false) =>
-         new("--interactive")
-         {
-             Description = CommonLocalizableStrings.CommandInteractiveOptionDescription,
-             Arity = acceptArgument ? ArgumentArity.ZeroOrOne : ArgumentArity.Zero,
-             // this default is called when no tokens/options are passed on the CLI args
-             DefaultValueFactory = (ar) => IsCIEnvironmentOrRedirected()
-         };
+        new(InteractiveOptionName)
+        {
+            Description = CliStrings.CommandInteractiveOptionDescription,
+            Arity = acceptArgument ? ArgumentArity.ZeroOrOne : ArgumentArity.Zero,
+            // this default is called when no tokens/options are passed on the CLI args
+            DefaultValueFactory = (ar) => !IsCIEnvironmentOrRedirected()
+        };
 
-    public static CliOption<bool> InteractiveMsBuildForwardOption = InteractiveOption(acceptArgument: true).ForwardAsSingle(b => $"-property:NuGetInteractive={(b ? "true" : "false")}");
+    public static Option<bool> InteractiveMsBuildForwardOption = InteractiveOption(acceptArgument: true).ForwardAsSingle(b => $"--property:NuGetInteractive={(b ? "true" : "false")}");
 
-    public static CliOption<bool> DisableBuildServersOption =
+    public static Option<bool> DisableBuildServersOption =
         new ForwardedOption<bool>("--disable-build-servers")
         {
-            Description = CommonLocalizableStrings.DisableBuildServersOptionDescription,
+            Description = CliStrings.DisableBuildServersOptionDescription,
             Arity = ArgumentArity.Zero
         }
-        .ForwardAsMany(_ => ["--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false"]);
+        .ForwardIfEnabled(["--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false"]);
 
-    public static CliOption<string> ArchitectureOption =
+    public static Option<string> ArchitectureOption =
         new ForwardedOption<string>("--arch", "-a")
         {
-            Description = CommonLocalizableStrings.ArchitectureOptionDescription,
-            HelpName = CommonLocalizableStrings.ArchArgumentName
+            Description = CliStrings.ArchitectureOptionDescription,
+            HelpName = CliStrings.ArchArgumentName
         }.SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
 
-    public static CliOption<string> LongFormArchitectureOption =
+    public static Option<string> LongFormArchitectureOption =
         new ForwardedOption<string>("--arch")
         {
-            Description = CommonLocalizableStrings.ArchitectureOptionDescription,
-            HelpName = CommonLocalizableStrings.ArchArgumentName
+            Description = CliStrings.ArchitectureOptionDescription,
+            HelpName = CliStrings.ArchArgumentName
         }.SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
 
-    internal static string ArchOptionValue(ParseResult parseResult) =>
+    internal static string? ArchOptionValue(ParseResult parseResult) =>
         string.IsNullOrEmpty(parseResult.GetValue(ArchitectureOption)) ?
             parseResult.GetValue(LongFormArchitectureOption) :
             parseResult.GetValue(ArchitectureOption);
 
-    public static CliOption<string> OperatingSystemOption =
+    public static Option<string> OperatingSystemOption =
         new ForwardedOption<string>("--os")
         {
-            Description = CommonLocalizableStrings.OperatingSystemOptionDescription,
-            HelpName = CommonLocalizableStrings.OSArgumentName
+            Description = CliStrings.OperatingSystemOptionDescription,
+            HelpName = CliStrings.OSArgumentName
         }.SetForwardingFunction(ResolveOsOptionToRuntimeIdentifier);
 
-    public static CliOption<bool> DebugOption = new("--debug")
+    public static Option<bool> DebugOption = new("--debug")
     {
         Arity = ArgumentArity.Zero,
     };
 
-    public static CliOption<bool> SelfContainedOption =
+    public static Option<bool> SelfContainedOption =
         new ForwardedOption<bool>("--self-contained", "--sc")
         {
-            Description = CommonLocalizableStrings.SelfContainedOptionDescription
+            Description = CliStrings.SelfContainedOptionDescription
         }
-        .SetForwardingFunction(ForwardSelfContainedOptions);
+        .ForwardIfEnabled([$"--property:SelfContained=true", "--property:_CommandLineDefinedSelfContained=true"]);
 
-    public static CliOption<bool> NoSelfContainedOption =
+    public static Option<bool> NoSelfContainedOption =
         new ForwardedOption<bool>("--no-self-contained")
         {
-            Description = CommonLocalizableStrings.FrameworkDependentOptionDescription,
+            Description = CliStrings.FrameworkDependentOptionDescription,
             Arity = ArgumentArity.Zero
         }
-        .SetForwardingFunction((_, p) => ForwardSelfContainedOptions(false, p));
+        .ForwardIfEnabled([$"--property:SelfContained=false", "--property:_CommandLineDefinedSelfContained=true"]);
 
-    public static readonly CliOption<IReadOnlyDictionary<string, string>> EnvOption = new("--environment", "-e")
+    public static Option<IReadOnlyDictionary<string, string>> CreateEnvOption(string description) => new("--environment", "-e")
     {
-        Description = CommonLocalizableStrings.CmdEnvironmentVariableDescription,
-        HelpName = CommonLocalizableStrings.CmdEnvironmentVariableExpression,
+        Description = description,
+        HelpName = CliStrings.CmdEnvironmentVariableExpression,
         CustomParser = ParseEnvironmentVariables,
         // Can't allow multiple arguments because the separator needs to be parsed as part of the environment variable value.
         AllowMultipleArgumentsPerToken = false
     };
+
+    public static readonly Option<IReadOnlyDictionary<string, string>> EnvOption = CreateEnvOption(CliStrings.CmdEnvironmentVariableDescription);
+    
+    public static readonly Option<IReadOnlyDictionary<string, string>> TestEnvOption = CreateEnvOption(CliStrings.CmdTestEnvironmentVariableDescription);
 
     private static IReadOnlyDictionary<string, string> ParseEnvironmentVariables(ArgumentResult argumentResult)
     {
         var result = new Dictionary<string, string>(
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
 
-        List<CliToken>? invalid = null;
+        List<Token>? invalid = null;
 
         foreach (var token in argumentResult.Tokens)
         {
@@ -231,58 +381,58 @@ internal static class CommonOptions
         if (invalid != null)
         {
             argumentResult.AddError(string.Format(
-                CommonLocalizableStrings.IncorrectlyFormattedEnvironmentVariables,
+                CliStrings.IncorrectlyFormattedEnvironmentVariables,
                 string.Join(", ", invalid.Select(x => $"'{x.Value}'"))));
         }
 
         return result;
     }
 
-    public static readonly CliOption<string> TestPlatformOption = new("--Platform");
+    public static readonly Option<string> TestPlatformOption = new("--Platform");
 
-    public static readonly CliOption<string> TestFrameworkOption = new("--Framework");
+    public static readonly Option<string> TestFrameworkOption = new("--Framework");
 
-    public static readonly CliOption<string[]> TestLoggerOption = new("--logger");
+    public static readonly Option<string[]> TestLoggerOption = new("--logger");
 
     public static void ValidateSelfContainedOptions(bool hasSelfContainedOption, bool hasNoSelfContainedOption)
     {
         if (hasSelfContainedOption && hasNoSelfContainedOption)
         {
-            throw new GracefulException(CommonLocalizableStrings.SelfContainAndNoSelfContainedConflict);
+            throw new GracefulException(CliStrings.SelfContainAndNoSelfContainedConflict);
         }
     }
 
-    internal static IEnumerable<string> ResolveArchOptionToRuntimeIdentifier(string arg, ParseResult parseResult)
+    internal static IEnumerable<string> ResolveArchOptionToRuntimeIdentifier(string? arg, ParseResult parseResult)
     {
-        if ((parseResult.GetResult(RuntimeOption) ?? parseResult.GetResult(LongFormRuntimeOption)) is not null)
+        if (parseResult.GetResult(RuntimeOptionName) is not null)
         {
-            throw new GracefulException(CommonLocalizableStrings.CannotSpecifyBothRuntimeAndArchOptions);
+            throw new GracefulException(CliStrings.CannotSpecifyBothRuntimeAndArchOptions);
         }
 
         if (parseResult.BothArchAndOsOptionsSpecified())
         {
             // ResolveOsOptionToRuntimeIdentifier handles resolving the RID when both arch and os are specified
-            return Array.Empty<string>();
+            return [];
         }
 
         return ResolveRidShorthandOptions(null, arg);
     }
 
-    internal static IEnumerable<string> ResolveOsOptionToRuntimeIdentifier(string arg, ParseResult parseResult)
+    internal static IEnumerable<string> ResolveOsOptionToRuntimeIdentifier(string? arg, ParseResult parseResult)
     {
-        if ((parseResult.GetResult(RuntimeOption) ?? parseResult.GetResult(LongFormRuntimeOption)) is not null)
+        if (parseResult.GetResult(RuntimeOptionName) is not null)
         {
-            throw new GracefulException(CommonLocalizableStrings.CannotSpecifyBothRuntimeAndOsOptions);
+            throw new GracefulException(CliStrings.CannotSpecifyBothRuntimeAndOsOptions);
         }
 
         var arch = parseResult.BothArchAndOsOptionsSpecified() ? ArchOptionValue(parseResult) : null;
         return ResolveRidShorthandOptions(arg, arch);
     }
 
-    private static IEnumerable<string> ResolveRidShorthandOptions(string os, string arch) =>
-        new string[] { $"-property:RuntimeIdentifier={ResolveRidShorthandOptionsToRuntimeIdentifier(os, arch)}" };
+    private static IEnumerable<string> ResolveRidShorthandOptions(string? os, string? arch) =>
+        [$"--property:RuntimeIdentifier={ResolveRidShorthandOptionsToRuntimeIdentifier(os, arch)}"];
 
-    internal static string ResolveRidShorthandOptionsToRuntimeIdentifier(string os, string arch)
+    internal static string ResolveRidShorthandOptionsToRuntimeIdentifier(string? os, string? arch)
     {
         var currentRid = GetCurrentRuntimeId();
         arch = arch == "amd64" ? "x64" : arch;
@@ -294,21 +444,21 @@ internal static class CommonOptions
     public static string GetCurrentRuntimeId()
     {
         // Get the dotnet directory, while ignoring custom msbuild resolvers
-        string dotnetRootPath = NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(key =>
+        string? dotnetRootPath = NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(key =>
             key.Equals("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", StringComparison.InvariantCultureIgnoreCase)
                 ? null
                 : Environment.GetEnvironmentVariable(key));
         var ridFileName = "NETCoreSdkRuntimeIdentifierChain.txt";
+        var sdkPath = dotnetRootPath is not null ? Path.Combine(dotnetRootPath, "sdk") : "sdk";
+
         // When running under test the Product.Version might be empty or point to version not installed in dotnetRootPath.
-        string runtimeIdentifierChainPath = string.IsNullOrEmpty(Product.Version) || !Directory.Exists(Path.Combine(dotnetRootPath, "sdk", Product.Version)) ?
-            Path.Combine(Directory.GetDirectories(Path.Combine(dotnetRootPath, "sdk"))[0], ridFileName) :
-            Path.Combine(dotnetRootPath, "sdk", Product.Version, ridFileName);
-        string[] currentRuntimeIdentifiers = File.Exists(runtimeIdentifierChainPath) ?
-            File.ReadAllLines(runtimeIdentifierChainPath).Where(l => !string.IsNullOrEmpty(l)).ToArray() :
-            new string[] { };
+        string runtimeIdentifierChainPath = string.IsNullOrEmpty(Product.Version) || !Directory.Exists(Path.Combine(sdkPath, Product.Version)) ?
+            Path.Combine(Directory.GetDirectories(sdkPath)[0], ridFileName) :
+            Path.Combine(sdkPath, Product.Version, ridFileName);
+        string[] currentRuntimeIdentifiers = File.Exists(runtimeIdentifierChainPath) ? [.. File.ReadAllLines(runtimeIdentifierChainPath).Where(l => !string.IsNullOrEmpty(l))] : [];
         if (currentRuntimeIdentifiers == null || !currentRuntimeIdentifiers.Any() || !currentRuntimeIdentifiers[0].Contains("-"))
         {
-            throw new GracefulException(CommonLocalizableStrings.CannotResolveRuntimeIdentifier);
+            throw new GracefulException(CliStrings.CannotResolveRuntimeIdentifier);
         }
         return currentRuntimeIdentifiers[0]; // First rid is the most specific (ex win-x64)
     }
@@ -317,19 +467,13 @@ internal static class CommonOptions
 
     private static string GetArchFromRid(string rid) => rid.Substring(rid.LastIndexOf("-", StringComparison.InvariantCulture) + 1, rid.Length - rid.LastIndexOf("-", StringComparison.InvariantCulture) - 1);
 
-    private static IEnumerable<string> ForwardSelfContainedOptions(bool isSelfContained, ParseResult parseResult)
-    {
-        IEnumerable<string> selfContainedProperties = new string[] { $"-property:SelfContained={isSelfContained}", "-property:_CommandLineDefinedSelfContained=true" };
-        return selfContainedProperties;
-    }
-
-    internal static CliOption<T> AddCompletions<T>(this CliOption<T> option, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
+    internal static Option<T> AddCompletions<T>(this Option<T> option, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
     {
         option.CompletionSources.Add(completionSource);
         return option;
     }
 
-    internal static CliArgument<T> AddCompletions<T>(this CliArgument<T> argument, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
+    internal static Argument<T> AddCompletions<T>(this Argument<T> argument, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
     {
         argument.CompletionSources.Add(completionSource);
         return argument;
@@ -348,26 +492,10 @@ internal static class CommonOptions
     }
 }
 
-public enum VerbosityOptions
+public class DynamicOption<T>(string name, params string[] aliases) : Option<T>(name, aliases), IDynamicOption
 {
-    quiet,
-    q,
-    minimal,
-    m,
-    normal,
-    n,
-    detailed,
-    d,
-    diagnostic,
-    diag
 }
 
-public class DynamicOption<T> : CliOption<T>, IDynamicOption
+public class DynamicArgument<T>(string name) : Argument<T>(name), IDynamicArgument
 {
-    public DynamicOption(string name, params string[] aliases) : base(name, aliases) { }
-}
-
-public class DynamicArgument<T> : CliArgument<T>, IDynamicArgument
-{
-    public DynamicArgument(string name) : base(name) { }
 }

@@ -55,7 +55,7 @@ public static class ExponentialRetry
                 return result;
             }
         }
-        throw new Exception("Timer should not be exhausted");
+        throw new Exception($"Timer for task {taskDescription} should not be exhausted.");
     }
 
     public static async Task<T> ExecuteWithRetry<T>(Func<T> action,
@@ -72,7 +72,7 @@ public static class ExponentialRetry
         int maxRetryCount = 3,
         Func<IEnumerable<Task>>? timer = null)
     {
-        timer = timer == null ? () => Timer(Intervals) : timer;
+        timer = timer ?? (() => Timer(Intervals));
         return await ExecuteAsyncWithRetry(action, result => result != null && !result.Equals(default), maxRetryCount, timer);
     }
 

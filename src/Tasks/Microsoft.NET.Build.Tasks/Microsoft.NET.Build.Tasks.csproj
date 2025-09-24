@@ -1,6 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
-<Project>
+﻿<Project>
 
   <PropertyGroup>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -14,7 +12,6 @@
     <Description>The MSBuild targets and properties for building .NET Core projects.</Description>
     <OutputType>Library</OutputType>
     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
-    <Nullable>annotations</Nullable>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -101,10 +98,12 @@
     <Compile Include="..\..\Resolvers\Microsoft.DotNet.MSBuildSdkResolver\FXVersion.cs" LinkBase="WorkloadManifestReader" />
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\Polyfills.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
-    <Compile Include="$(RepoRoot)src\Cli\dotnet\commands\dotnet-workload\InstallStateContents.cs" LinkBase="Cli" />
-    <Compile Include="$(RepoRoot)src\Cli\dotnet\commands\dotnet-test\IPC\**\*.cs" />
+    <Compile Include="$(RepoRoot)src\Common\MSBuildUtilities.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\NuGetUtils.NuGet.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Commands\Workload\InstallStateContents.cs" LinkBase="Cli" />
   </ItemGroup>
 
   <ItemGroup>

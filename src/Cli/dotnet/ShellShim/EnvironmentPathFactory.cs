@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -13,10 +15,7 @@ internal static class EnvironmentPathFactory
         bool isDotnetBeingInvokedFromNativeInstaller = false,
         IEnvironmentProvider environmentProvider = null)
     {
-        if (environmentProvider == null)
-        {
-            environmentProvider = new EnvironmentProvider();
-        }
+        environmentProvider ??= new EnvironmentProvider();
 
         IEnvironmentPath environmentPath = new DoNothingEnvironmentPath();
         if (OperatingSystem.IsWindows())
@@ -59,10 +58,7 @@ internal static class EnvironmentPathFactory
     public static IEnvironmentPathInstruction CreateEnvironmentPathInstruction(
         IEnvironmentProvider environmentProvider = null)
     {
-        if (environmentProvider == null)
-        {
-            environmentProvider = new EnvironmentProvider();
-        }
+        environmentProvider ??= new EnvironmentProvider();
 
         if (OperatingSystem.IsMacOS() && ZshDetector.IsZshTheUsersShell(environmentProvider))
         {

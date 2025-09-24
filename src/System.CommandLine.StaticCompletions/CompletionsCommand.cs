@@ -9,7 +9,7 @@ using System.CommandLine.StaticCompletions.Resources;
 using System.CommandLine.StaticCompletions.Shells;
 using System.Linq;
 
-public class CompletionsCommand : CliCommand
+public class CompletionsCommand : Command
 {
     public static IShellProvider[] DefaultShells = [
         new BashShellProvider(),
@@ -30,7 +30,7 @@ public class CompletionsCommand : CliCommand
 
     private CompletionsCommand(Dictionary<string, IShellProvider> shellMap, string commandName, string commandDescription) : base(commandName, commandDescription)
     {
-        var shellArg = new CliArgument<IShellProvider>("shell")
+        var shellArg = new Argument<IShellProvider>("shell")
         {
             Description = Strings.CompletionsCommand_ShellArgument_Description,
             Arity = ArgumentArity.ZeroOrOne,
@@ -104,9 +104,9 @@ public class CompletionsCommand : CliCommand
     }
 }
 
-public class GenerateScriptCommand : CliCommand
+public class GenerateScriptCommand : Command
 {
-    public GenerateScriptCommand(CliArgument<IShellProvider> shellArg)
+    public GenerateScriptCommand(Argument<IShellProvider> shellArg)
         : base("script", Strings.GenerateCommand_Description)
     {
         Arguments.Add(shellArg);
@@ -114,7 +114,7 @@ public class GenerateScriptCommand : CliCommand
         {
             IShellProvider shell = args.GetValue(shellArg)!; // this cannot be null due to the way the shellArg is defined/configured
             var script = shell.GenerateCompletions(args.RootCommandResult.Command);
-            args.Configuration.Output.Write(script);
+            args.InvocationConfiguration.Output.Write(script);
         });
     }
 }

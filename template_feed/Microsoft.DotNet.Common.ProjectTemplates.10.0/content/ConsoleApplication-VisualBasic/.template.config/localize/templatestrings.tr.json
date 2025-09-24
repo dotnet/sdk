@@ -10,7 +10,7 @@
   "symbols/Framework/displayName": "Çerçeve",
   "symbols/langVersion/description": "Oluşturulan proje dosyasında LangVersion özelliğini ayarlar",
   "symbols/langVersion/displayName": "Dil sürümü",
-  "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",
+  "symbols/skipRestore/description": "Belirtilmişse, oluşturma anında projenin otomatik geri yüklenmesini atlar.",
   "symbols/skipRestore/displayName": "Geri yüklemeyi atla",
   "symbols/NativeAot/description": "Projenin yerel AOT olarak yayımlama için etkinleştirilip etkinleştirilmeyeceğini belirtir.",
   "symbols/NativeAot/displayName": "_yerel AOT yayımlamayı etkinleştir",

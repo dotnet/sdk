@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 
@@ -45,14 +47,14 @@ internal static class LockFileTargetExtensions
         Dictionary<string, LockFileTargetLibrary> libraryLookup =
             runtimeLibraries.ToDictionary(e => e.Name, StringComparer.OrdinalIgnoreCase);
 
-        HashSet<string> allExclusionList = new();
+        HashSet<string> allExclusionList = [];
 
         if (lockFileTarget.IsPortable())
         {
             allExclusionList.UnionWith(lockFileTarget.GetPlatformExclusionList(libraryLookup));
         }
 
-        return runtimeLibraries.Filter(allExclusionList).ToArray();
+        return [.. runtimeLibraries.Filter(allExclusionList)];
     }
 
     public static IEnumerable<LockFileTargetLibrary> GetCompileLibraries(this LockFileTarget lockFileTarget)

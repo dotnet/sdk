@@ -96,13 +96,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
    Cross-targeting version of MTP.
 
-   Build each project if $(MTPNoBuild) != 'false'.
-   
   =================================================================================
   -->
 
-  <Target Name="_MTPBuild" DependsOnTargets="_ComputeTargetFrameworkItems">
-    <CallTarget Condition="'$(MTPNoBuild)' != 'true'" Targets="Build" />
+  <Target Name="_MTPBuild">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" />
   </Target>
 
 </Project>

@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <Nullable>enable</Nullable>
     <PublishAot Condition="$(NETCoreSdkPortableRuntimeIdentifier.StartsWith('win-'))">true</PublishAot>
     <ControlFlowGuard>Guard</ControlFlowGuard>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
@@ -11,7 +10,7 @@
     <OptimizationPreference>Size</OptimizationPreference>
     <StackTraceSupport>false</StackTraceSupport>
     <_IsPublishing>true</_IsPublishing>
-    <PublishDir>$(ArtifactsBinDir)finalizer\win-$(Architecture)\$(Configuration)\bin</PublishDir>
+    <PublishDir>$(ArtifactsBinDir)finalizer\win-$(TargetArchitecture)\$(Configuration)\bin</PublishDir>
   </PropertyGroup>
 
   <ItemGroup>

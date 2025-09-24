@@ -23,17 +23,14 @@
       These identifiers are for generating the shim'd core executables for signing. Not all options
       from $(RoslynPortableRuntimeIdentifiers) work or make sense in this context.
     -->
-    <PackAsToolShimRuntimeIdentifiers Condition="'$(DotNetBuild)' != 'true'">win-x64;win-x86;osx-x64</PackAsToolShimRuntimeIdentifiers>
-    <PackAsToolShimRuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true' and $(SignableShimRuntimeIdentifier.Contains('$(TargetRid)'))">$(TargetRid)</PackAsToolShimRuntimeIdentifiers>
+    <PackAsToolShimRuntimeIdentifiers Condition="'$(DotNetBuildSourceOnly)' != 'true'">win-x64;win-x86;osx-x64</PackAsToolShimRuntimeIdentifiers>
 
     <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Build.Locator" />
+    <PackageReference Include="Microsoft.Build" />
 
     <PackageReference Include="Microsoft.CodeAnalysis" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
@@ -57,7 +54,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\README.md" />
+    <None Include="README.md" />
   </ItemGroup>
 
   <ItemGroup>

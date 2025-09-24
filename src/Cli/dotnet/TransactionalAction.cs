@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Reflection;
 using System.Transactions;
 using Microsoft.DotNet.Cli.Utils;
@@ -14,16 +16,10 @@ public sealed class TransactionalAction
         DisableTransactionTimeoutUpperLimit();
     }
 
-    private class EnlistmentNotification : IEnlistmentNotification
+    private class EnlistmentNotification(Action commit, Action rollback) : IEnlistmentNotification
     {
-        private Action _commit;
-        private Action _rollback;
-
-        public EnlistmentNotification(Action commit, Action rollback)
-        {
-            _commit = commit;
-            _rollback = rollback;
-        }
+        private Action _commit = commit;
+        private Action _rollback = rollback;
 
         public void Commit(Enlistment enlistment)
         {

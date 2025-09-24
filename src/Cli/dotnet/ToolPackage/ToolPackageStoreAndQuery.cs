@@ -1,21 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.ToolPackage;
 
-internal class ToolPackageStoreAndQuery : IToolPackageStoreQuery, IToolPackageStore
+internal class ToolPackageStoreAndQuery(DirectoryPath root, IFileSystem fileSystem = null) : IToolPackageStoreQuery, IToolPackageStore
 {
     public const string StagingDirectory = ".stage";
 
-    public ToolPackageStoreAndQuery(DirectoryPath root)
-    {
-        Root = new DirectoryPath(Path.GetFullPath(root.Value));
-    }
+    public DirectoryPath Root { get; private set; } = new DirectoryPath(Path.GetFullPath(root.Value));
 
-    public DirectoryPath Root { get; private set; }
+    private IFileSystem _fileSystem = fileSystem ?? new FileSystemWrapper();
 
     public DirectoryPath GetRandomStagingDirectory()
     {
@@ -26,7 +25,7 @@ internal class ToolPackageStoreAndQuery : IToolPackageStoreQuery, IToolPackageSt
     {
         if (NuGetVersion.TryParse(
             Path.GetFileName(
-                Directory.EnumerateDirectories(
+                _fileSystem.Directory.EnumerateDirectories(
                     stagingDirectory.WithSubDirectories(packageId.ToString()).Value).FirstOrDefault()),
             out var version))
         {
@@ -35,7 +34,7 @@ internal class ToolPackageStoreAndQuery : IToolPackageStoreQuery, IToolPackageSt
 
         throw new ToolPackageException(
             string.Format(
-                CommonLocalizableStrings.FailedToFindStagedToolPackage,
+                CliStrings.FailedToFindStagedToolPackage,
                 packageId));
     }
 
@@ -57,12 +56,12 @@ internal class ToolPackageStoreAndQuery : IToolPackageStoreQuery, IToolPackageSt
 
     public IEnumerable<IToolPackage> EnumeratePackages()
     {
-        if (!Directory.Exists(Root.Value))
+        if (!_fileSystem.Directory.Exists(Root.Value))
         {
             yield break;
         }
 
-        foreach (var subdirectory in Directory.EnumerateDirectories(Root.Value))
+        foreach (var subdirectory in _fileSystem.Directory.EnumerateDirectories(Root.Value))
         {
             var name = Path.GetFileName(subdirectory);
             var packageId = new PackageId(name);
@@ -83,17 +82,17 @@ internal class ToolPackageStoreAndQuery : IToolPackageStoreQuery, IToolPackageSt
     public IEnumerable<IToolPackage> EnumeratePackageVersions(PackageId packageId)
     {
         var packageRootDirectory = Root.WithSubDirectories(packageId.ToString());
-        if (!Directory.Exists(packageRootDirectory.Value))
+        if (!_fileSystem.Directory.Exists(packageRootDirectory.Value))
         {
             yield break;
         }
 
-        foreach (var subdirectory in Directory.EnumerateDirectories(packageRootDirectory.Value))
+        foreach (var subdirectory in _fileSystem.Directory.EnumerateDirectories(packageRootDirectory.Value))
         {
             yield return new ToolPackageInstance(id: packageId,
                 version: NuGetVersion.Parse(Path.GetFileName(subdirectory)),
                 packageDirectory: new DirectoryPath(subdirectory),
-                assetsJsonParentDirectory: new DirectoryPath(subdirectory));
+                assetsJsonParentDirectory: new DirectoryPath(subdirectory), _fileSystem);
         }
     }
 
@@ -105,7 +104,7 @@ internal class ToolPackageStoreAndQuery : IToolPackageStoreQuery, IToolPackageSt
         }
 
         var directory = GetPackageDirectory(packageId, version);
-        if (!Directory.Exists(directory.Value))
+        if (!_fileSystem.Directory.Exists(directory.Value))
         {
             return null;
         }
@@ -113,6 +112,7 @@ internal class ToolPackageStoreAndQuery : IToolPackageStoreQuery, IToolPackageSt
         return new ToolPackageInstance(id: packageId,
             version: version,
             packageDirectory: directory,
-            assetsJsonParentDirectory: directory);
+            assetsJsonParentDirectory: directory,
+            fileSystem: _fileSystem);
     }
 }

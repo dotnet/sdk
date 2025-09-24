@@ -1,11 +1,11 @@
-<Project Sdk="Microsoft.Build.NoTargets">
+﻿<Project Sdk="Microsoft.Build.NoTargets">
 
   <PropertyGroup>
     <BuildSdkRpm Condition="'$(BuildSdkRpm)' == '' and '$(IsRPMBasedDistro)' == 'true'">true</BuildSdkRpm>
     <SkipBuild Condition="'$(BuildSdkDeb)' != 'true' and '$(BuildSdkRpm)' != 'true'">true</SkipBuild>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <RuntimeIdentifier>$(Rid)</RuntimeIdentifier>
-    <GenerateInstallers>true</GenerateInstallers>
+    <RuntimeIdentifier>$(TargetRid)</RuntimeIdentifier>
+    <GenerateInstallers Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</GenerateInstallers>
     <BuildDebPackage Condition="'$(BuildSdkDeb)' == 'true'">true</BuildDebPackage>
     <BuildRpmPackage Condition="'$(BuildSdkRpm)' == 'true'">true</BuildRpmPackage>
     <UseArcadeRpmTooling>true</UseArcadeRpmTooling>
@@ -24,36 +24,52 @@
       All supported installer runtime identifiers should be specified here.
       New arcade infra is only used for Linux installers, at the moment.
     -->
-    <InstallerRuntimeIdentifiers>linux-$(Architecture)</InstallerRuntimeIdentifiers>
+    <InstallerRuntimeIdentifiers>linux-$(TargetArchitecture)</InstallerRuntimeIdentifiers>
     <IsShippingPackage>true</IsShippingPackage>
+    <!-- The PublishToDisk target which depends on ResolveProjectReferences is invoked with OutputPath as an global property
+         which would flow to redist.csproj or sdk-tasks.csproj. -->
+    <_GlobalPropertiesToRemoveFromProjectReferences>$(_GlobalPropertiesToRemoveFromProjectReferences);OutputPath</_GlobalPropertiesToRemoveFromProjectReferences>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\redist\redist.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <!-- These P2Ps ensure that package references for WiX extensions are correctly restored. The MSBuildRestoreSessionId condition makes sure that these
+       projects are only restored. They get built later when computed properties are available. These properties do not exist when projects are evaluated. -->
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT' and '$(MSBuildRestoreSessionId)' != ''">
+    <ProjectReference Include="windows\msis\placeholder\placeholder.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="windows\msis\templates\templates.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="windows\msis\toolset\toolset.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="windows\bundles\sdk\bundle.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <LinuxPackageSymlink Include="/usr/bin/dnx" LinkTarget="../share/dotnet/dnx" />
   </ItemGroup>
 
   <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
 
   <PropertyGroup>
     <ManpagesDirectory>$(RepoRoot)documentation/manpages/sdk</ManpagesDirectory>
-    <CLISdkRoot>$(RedistInstallerLayoutPath)sdk/</CLISdkRoot>
-    <TemplatesRoot>$(RedistInstallerLayoutPath)templates/</TemplatesRoot>
   </PropertyGroup>
 
-  <Target Name="PublishToDisk">
+  <Target Name="PublishToDisk" DependsOnTargets="ResolveProjectReferences">
     <Error Condition="'$(OutputPath)' == ''" Text="Publishing to disk requires the OutputPath to be set to the root of the path to write to." />
 
     <ItemGroup>
-      <CLISdkFiles Include="$(CLISdkRoot)**/*" />
-      <TemplatesFiles Include="$(TemplatesRoot)**/*" />
+      <CLISdkFiles Include="$(RedistInstallerLayoutPath)sdk/**/*" />
+      <TemplatesFiles Include="$(RedistInstallerLayoutPath)templates/**/*" />
       <ManifestFiles Include="$(RedistInstallerLayoutPath)sdk-manifests/**/*" />
+      <DnxShimSource Include="$(RedistInstallerLayoutPath)dnx*" />
     </ItemGroup>
 
     <!-- Create layout: Binaries -->
+    <Error Condition="'@(CLISdkFiles)' == ''" Text="The 'CLISdkFiles' items are empty. This shouldn't happen!" />
     <Copy
       DestinationFiles="@(CLISdkFiles->'$(OutputPath)/sdk/%(RecursiveDir)%(Filename)%(Extension)')"
       SourceFiles="@(CLISdkFiles)"
@@ -62,6 +78,7 @@
       UseHardlinksIfPossible="False" />
 
     <!-- Create layout: Templates -->
+    <Error Condition="'@(TemplatesFiles)' == ''" Text="The 'TemplatesFiles' items are empty. This shouldn't happen!" />
     <Copy
       DestinationFiles="@(TemplatesFiles->'$(OutputPath)/templates/%(RecursiveDir)%(Filename)%(Extension)')"
       SourceFiles="@(TemplatesFiles)"
@@ -70,12 +87,16 @@
       UseHardlinksIfPossible="False" />
 
     <!-- Create layout: Workload Manifests -->
+    <Error Condition="'@(ManifestFiles)' == ''" Text="The 'ManifestFiles' items are empty. This shouldn't happen!" />
     <Copy
       DestinationFiles="@(ManifestFiles->'$(OutputPath)/sdk-manifests/%(RecursiveDir)%(Filename)%(Extension)')"
       SourceFiles="@(ManifestFiles)"
       OverwriteReadOnlyFiles="True"
       SkipUnchangedFiles="False"
       UseHardlinksIfPossible="False" />
+
+    <!-- Create layout: DNX shim -->
+    <Copy SourceFiles="@(DnxShimSource)" DestinationFolder="$(OutputPath)" />
   </Target>
 
   <Target Name="SetCustomPackagingProperties" AfterTargets="_GetInstallerProperties">
@@ -118,7 +139,6 @@
       <LinuxPackageDependency Include="dotnet-runtime-$(MicrosoftNETCoreAppMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRuntimePackageVersionWithTilde)" />
       <LinuxPackageDependency Include="dotnet-targeting-pack-$(MicrosoftNETCoreAppMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRefPackageVersionWithTilde)" />
       <LinuxPackageDependency Include="dotnet-apphost-pack-$(MicrosoftNETCoreAppMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRuntimePackageVersionWithTilde)" />
-      <LinuxPackageDependency Condition="'$(Architecture)' == 'x64'" Include="netstandard-targeting-pack-$(NetStandardTargetingPackMajorMinorVersion)" Version="$(NetStandardTargetingPackPackageVersionWithTilde)" />
       <LinuxPackageDependency Include="aspnetcore-runtime-$(AspNetCoreMajorMinorVersion)" Version="$(AspNetCoreRuntimeVersionWithTilde)" />
       <LinuxPackageDependency Include="aspnetcore-targeting-pack-$(AspNetCoreMajorMinorVersion)" Version="$(AspNetCoreRefVersionWithTilde)" />
       <LinuxPostInstallScript Include="$(DebianPostinstFile)" Condition="'$(BuildDebPackage)' == 'true'" />
@@ -148,12 +168,6 @@
 
     <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(HostFxrVersion)">
       <Output TaskParameter="MajorMinorVersion" PropertyName="HostFxrMajorMinorVersion" />
-    </GetLinuxNativeInstallerDependencyVersions>
-
-    <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(NETStandardLibraryRefPackageVersion)">
-      <Output TaskParameter="VersionWithTilde" PropertyName="NetStandardTargetingPackPackageVersionWithTilde" />
-      <Output TaskParameter="MajorMinorVersion" PropertyName="NetStandardTargetingPackMajorMinorVersion" />
-      <Output TaskParameter="MajorMinorPatchVersion" PropertyName="NetStandardTargetingPackMajorMinorPatchVersion" />
     </GetLinuxNativeInstallerDependencyVersions>
   </Target>
 

@@ -62,11 +62,14 @@ namespace Microsoft.NET.Publish.Tests
             };
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
+            var binlogDestPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot && Environment.GetEnvironmentVariable("HELIX_WORKITEM_ID") is { } helixGuid ?
+                Path.Combine(ciOutputRoot, "binlog", helixGuid, $"{nameof(It_cleans_between_renames)}.binlog") :
+                "./msbuild.binlog";
 
             // Publish as a single file
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
-                .Execute(@"/p:PublishSingleFile=true")
+                .Execute(@"/p:PublishSingleFile=true", $"-bl:{binlogDestPath}")
                 .Should()
                 .Pass();
 
@@ -104,10 +107,14 @@ namespace Microsoft.NET.Publish.Tests
             };
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
-            // Publish as a single file
-            var publishCommand = new PublishCommand(testAsset);
+            var binlogDestPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot && Environment.GetEnvironmentVariable("HELIX_WORKITEM_ID") is { } helixGuid ?
+                Path.Combine(ciOutputRoot, "binlog", helixGuid, $"{nameof(It_cleans_between_single_file_publishes)}.binlog") :
+                "./msbuild.binlog";
+
+
+            var publishCommand = new PublishCommand(testAsset).WithWorkingDirectory(testAsset.Path) as PublishCommand;
             publishCommand
-                .Execute(@"/p:PublishSingleFile=true")
+                .Execute(@"/p:PublishSingleFile=true", $"-bl:{binlogDestPath}")
                 .Should()
                 .Pass();
 

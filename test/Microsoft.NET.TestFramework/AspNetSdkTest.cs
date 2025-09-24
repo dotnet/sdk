@@ -13,7 +13,7 @@ namespace Microsoft.NET.TestFramework
     public abstract class AspNetSdkTest : SdkTest
     {
         public readonly string? DefaultTfm;
-        public const string WasmBootConfigFileName = "dotnet.boot.js";
+        public const string WasmBootConfigFileName = "dotnet.js";
 
 #if !GENERATE_MSBUILD_LOGS
         public static bool GenerateMSbuildLogs = true;
@@ -49,6 +49,7 @@ namespace Microsoft.NET.TestFramework
                     {
                         targetFramework.Value = overrideTfm ?? DefaultTfm ?? string.Empty;
                         targetFramework.AddAfterSelf(new XElement("StaticWebAssetsFingerprintContent", "false"));
+                        targetFramework.AddAfterSelf(new XElement("AttachWeakETagToCompressedAssetsDuringDevelopment", "false"));
                     }
                     var targetFrameworks = project.Descendants()
                         .SingleOrDefault(e => e.Name.LocalName == "TargetFrameworks");
@@ -56,15 +57,7 @@ namespace Microsoft.NET.TestFramework
                     {
                         targetFrameworks.Value = targetFrameworks.Value.Replace("$(AspNetTestTfm)", overrideTfm ?? DefaultTfm);
                         targetFrameworks.AddAfterSelf(new XElement("StaticWebAssetsFingerprintContent", "false"));
-                    }
-
-                    if (project.Root != null)
-                    {
-                        var itemGroup = new XElement("PropertyGroup");
-                        itemGroup.SetAttributeValue("Condition", "'$(TargetFramework)' == 'net10.0'");
-                        var fingerprintAssets = new XElement("WasmBootConfigFileName", WasmBootConfigFileName);
-                        itemGroup.Add(fingerprintAssets);
-                        project.Root.Add(itemGroup);
+                        targetFrameworks.AddAfterSelf(new XElement("AttachWeakETagToCompressedAssetsDuringDevelopment", "false"));
                     }
                 });
 

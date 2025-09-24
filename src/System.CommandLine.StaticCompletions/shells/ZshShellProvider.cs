@@ -17,7 +17,7 @@ public class ZshShellProvider : IShellProvider
     // override the ToString method to return the argument name so that CLI help is cleaner for 'default' values
     public override string ToString() => ArgumentName;
 
-    public string GenerateCompletions(CliCommand command)
+    public string GenerateCompletions(Command command)
     {
         var binaryName = command.Name;
         using var textWriter = new StringWriter { NewLine = "\n" };
@@ -75,7 +75,7 @@ fi
         return textWriter.ToString();
     }
 
-    private static void GenerateOptionsAndArgumentsForCommand(string[] commandPathForThisCommand, CliCommand command, IndentedTextWriter writer)
+    private static void GenerateOptionsAndArgumentsForCommand(string[] commandPathForThisCommand, Command command, IndentedTextWriter writer)
     {
         var shouldWriteDynamicCompleter = false;
         foreach (var option in command.HierarchicalOptions())
@@ -178,7 +178,7 @@ fi
         }
     }
 
-    private static void GenerateSubcommandList(string[] pathToCurrentCommand, CliCommand command, IndentedTextWriter writer)
+    private static void GenerateSubcommandList(string[] pathToCurrentCommand, Command command, IndentedTextWriter writer)
     {
         if (command.Subcommands.Count == 0)
         {
@@ -193,7 +193,7 @@ fi
         // but it's load-bearing and I haven't been able to rip it out yet. No where else seems to have this hidden argument, so for tracking purposes
         // we can skip it here.
         // in addition, optional arguments interfere with position counting, so we need to skip them as well.
-        var parentArguments = command.Parents.OfType<CliCommand>().SelectMany(parent => parent.Arguments).Select(arg => arg.Name).ToHashSet();
+        var parentArguments = command.Parents.OfType<Command>().SelectMany(parent => parent.Arguments).Select(arg => arg.Name).ToHashSet();
         var pos = command.Arguments.Where(a => !parentArguments.Contains(a.Name) && !a.Hidden).Count() + 1;
         writer.WriteLine($$"""words=($line[{{pos}}] "${words[@]}")""");
         writer.WriteLine("(( CURRENT += 1 ))");
@@ -240,7 +240,7 @@ fi
         writer.WriteLine(";;");
     }
 
-    private static void GenerateSubcommandHandlers(string[] pathToThisCommand, CliCommand command, IndentedTextWriter writer)
+    private static void GenerateSubcommandHandlers(string[] pathToThisCommand, Command command, IndentedTextWriter writer)
     {
 
         var unique_command_name = string.Join("__", pathToThisCommand);
@@ -304,7 +304,7 @@ fi
             .Replace(" ", "\\ ")
         ?? "";
 
-    private static string[]? ZshValueExpression(CliOption option)
+    private static string[]? ZshValueExpression(Option option)
     {
         if (option is IDynamicOption)
         {
@@ -312,11 +312,11 @@ fi
         }
         else
         {
-            return ZshValueExpression(option as CliSymbol);
+            return ZshValueExpression(option as Symbol);
         }
     }
 
-    private static string[]? ZshValueExpression(CliArgument arg)
+    private static string[]? ZshValueExpression(Argument arg)
     {
         if (arg is IDynamicArgument)
         {
@@ -324,21 +324,21 @@ fi
         }
         else
         {
-            return ZshValueExpression(arg as CliSymbol);
+            return ZshValueExpression(arg as Symbol);
         }
     }
 
-    private static string[]? ZshValueExpression(CliSymbol sym)
+    private static string[]? ZshValueExpression(Symbol sym)
     {
         var staticCompletions = sym.GetCompletions(Completions.CompletionContext.Empty).ToArray();
         if (staticCompletions.Length == 0)
         {
             //TODO: attempt to do zsh helpers here
-            if (sym is CliOption<FileInfo> || sym is CliArgument<FileInfo>)
+            if (sym is Option<FileInfo> || sym is Argument<FileInfo>)
             {
                 return ["_files"];
             }
-            else if (sym is CliOption<Uri> || sym is CliArgument<Uri>)
+            else if (sym is Option<Uri> || sym is Argument<Uri>)
             {
                 return ["_urls"];
             }
@@ -372,6 +372,6 @@ fi
 
     private static string ArgumentsHandler() => "_arguments \"${_arguments_options[@]}\" : \\";
 
-    private static string[] AppendCommandToPath(string[] path, CliCommand command) =>
+    private static string[] AppendCommandToPath(string[] path, Command command) =>
         path.Length == 0 ? [command.Name] : [.. path, command.Name];
 }

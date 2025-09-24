@@ -18,7 +18,7 @@ parameters:
 - name: enableArm64Job
   displayName: Enables the ARM64 job
   type: boolean
-  default: false
+  default: true
 
 variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
@@ -27,16 +27,8 @@ variables:
 
 resources:
   containers:
-  - container: alpine319WithNode
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
-  - container: centosStream9
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
-  - container: debian12Amd64
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc14-amd64
-  - container: fedora39
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
-  - container: ubuntu2204DebPkg
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-debpkg
+  - container: azureLinux30Amd64
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-build-amd64
 
 stages:
 ############### BUILD STAGE ###############
@@ -68,7 +60,7 @@ stages:
         name: Azure Pipelines
         vmImage: macOS-latest
         os: macOS
-      helixTargetQueue: osx.13.amd64.open
+      helixTargetQueue: osx.15.amd64.open
   ### ARM64 ###
   - ${{ if eq(parameters.enableArm64Job, true) }}:
     - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
@@ -80,7 +72,7 @@ stages:
         helixTargetQueue: osx.13.arm64.open
         macOSJobParameterSets:
         - categoryName: TestBuild
-          buildArchitecture: arm64
+          targetArchitecture: arm64
           runtimeIdentifier: osx-arm64
 
   ############### DOTNET-FORMAT ###############

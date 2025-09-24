@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine.Invocation;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.CommandFactory;
@@ -9,16 +11,10 @@ using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli;
 
-public class DotNetCommandFactory : ICommandFactory
+public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string currentWorkingDirectory = null) : ICommandFactory
 {
-    private bool _alwaysRunOutOfProc;
-    private readonly string _currentWorkingDirectory;
-
-    public DotNetCommandFactory(bool alwaysRunOutOfProc = false, string currentWorkingDirectory = null)
-    {
-        _alwaysRunOutOfProc = alwaysRunOutOfProc;
-        _currentWorkingDirectory = currentWorkingDirectory;
-    }
+    private readonly bool _alwaysRunOutOfProc = alwaysRunOutOfProc;
+    private readonly string _currentWorkingDirectory = currentWorkingDirectory;
 
     public ICommand Create(
         string commandName,
@@ -37,12 +33,12 @@ public class DotNetCommandFactory : ICommandFactory
         return CommandFactoryUsingResolver.CreateDotNet(commandName, args, framework, configuration, _currentWorkingDirectory);
     }
 
-    private bool TryGetBuiltInCommand(string commandName, out Func<string[], int> commandFunc)
+    private static bool TryGetBuiltInCommand(string commandName, out Func<string[], int> commandFunc)
     {
         var command = Parser.GetBuiltInCommand(commandName);
-        if (command?.Action is AsynchronousCliAction action)
+        if (command?.Action is AsynchronousCommandLineAction action)
         {
-            commandFunc = (args) => action.InvokeAsync(Parser.Instance.Parse(args)).Result;
+            commandFunc = (args) => Parser.Invoke([commandName, ..args]);
             return true;
         }
         commandFunc = null;

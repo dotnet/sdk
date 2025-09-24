@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
+using System.Collections.Frozen;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using RuntimeEnvironment = Microsoft.DotNet.Cli.Utils.RuntimeEnvironment;
@@ -8,33 +11,24 @@ using RuntimeInformation = System.Runtime.InteropServices.RuntimeInformation;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-internal class TelemetryCommonProperties
+internal class TelemetryCommonProperties(
+    Func<string> getCurrentDirectory = null,
+    Func<string, string> hasher = null,
+    Func<string> getMACAddress = null,
+    Func<string> getDeviceId = null,
+    IDockerContainerDetector dockerContainerDetector = null,
+    IUserLevelCacheWriter userLevelCacheWriter = null,
+    ICIEnvironmentDetector ciEnvironmentDetector = null,
+    ILLMEnvironmentDetector llmEnvironmentDetector = null)
 {
-    public TelemetryCommonProperties(
-        Func<string> getCurrentDirectory = null,
-        Func<string, string> hasher = null,
-        Func<string> getMACAddress = null,
-        Func<string> getDeviceId = null,
-        IDockerContainerDetector dockerContainerDetector = null,
-        IUserLevelCacheWriter userLevelCacheWriter = null,
-        ICIEnvironmentDetector ciEnvironmentDetector = null)
-    {
-        _getCurrentDirectory = getCurrentDirectory ?? Directory.GetCurrentDirectory;
-        _hasher = hasher ?? Sha256Hasher.Hash;
-        _getMACAddress = getMACAddress ?? MacAddressGetter.GetMacAddress;
-        _getDeviceId = getDeviceId ?? DeviceIdGetter.GetDeviceId;
-        _dockerContainerDetector = dockerContainerDetector ?? new DockerContainerDetectorForTelemetry();
-        _userLevelCacheWriter = userLevelCacheWriter ?? new UserLevelCacheWriter();
-        _ciEnvironmentDetector = ciEnvironmentDetector ?? new CIEnvironmentDetectorForTelemetry();
-    }
-
-    private readonly IDockerContainerDetector _dockerContainerDetector;
-    private readonly ICIEnvironmentDetector _ciEnvironmentDetector;
-    private Func<string> _getCurrentDirectory;
-    private Func<string, string> _hasher;
-    private Func<string> _getMACAddress;
-    private Func<string> _getDeviceId;
-    private IUserLevelCacheWriter _userLevelCacheWriter;
+    private readonly IDockerContainerDetector _dockerContainerDetector = dockerContainerDetector ?? new DockerContainerDetectorForTelemetry();
+    private readonly ICIEnvironmentDetector _ciEnvironmentDetector = ciEnvironmentDetector ?? new CIEnvironmentDetectorForTelemetry();
+    private readonly ILLMEnvironmentDetector _llmEnvironmentDetector = llmEnvironmentDetector ?? new LLMEnvironmentDetectorForTelemetry();
+    private readonly Func<string> _getCurrentDirectory = getCurrentDirectory ?? Directory.GetCurrentDirectory;
+    private readonly Func<string, string> _hasher = hasher ?? Sha256Hasher.Hash;
+    private readonly Func<string> _getMACAddress = getMACAddress ?? MacAddressGetter.GetMacAddress;
+    private readonly Func<string> _getDeviceId = getDeviceId ?? DeviceIdGetter.GetDeviceId;
+    private readonly IUserLevelCacheWriter _userLevelCacheWriter = userLevelCacheWriter ?? new UserLevelCacheWriter();
     private const string OSVersion = "OS Version";
     private const string OSPlatform = "OS Platform";
     private const string OSArchitecture = "OS Architecture";
@@ -52,8 +46,10 @@ internal class TelemetryCommonProperties
     private const string ProductType = "Product Type";
     private const string LibcRelease = "Libc Release";
     private const string LibcVersion = "Libc Version";
+    private const string SessionId = "SessionId";
 
     private const string CI = "Continuous Integration";
+    private const string LLM = "llm";
 
     private const string TelemetryProfileEnvironmentVariable = "DOTNET_CLI_TELEMETRY_PROFILE";
     private const string CannotFindMacAddress = "Unknown";
@@ -61,7 +57,7 @@ internal class TelemetryCommonProperties
     private const string MachineIdCacheKey = "MachineId";
     private const string IsDockerContainerCacheKey = "IsDockerContainer";
 
-    public Dictionary<string, string> GetTelemetryCommonProperties()
+    public FrozenDictionary<string, string> GetTelemetryCommonProperties(string currentSessionId)
     {
         return new Dictionary<string, string>
         {
@@ -74,6 +70,7 @@ internal class TelemetryCommonProperties
             {TelemetryProfile, Environment.GetEnvironmentVariable(TelemetryProfileEnvironmentVariable)},
             {DockerContainer, _userLevelCacheWriter.RunWithCache(IsDockerContainerCacheKey, () => _dockerContainerDetector.IsDockerContainer().ToString("G") )},
             {CI, _ciEnvironmentDetector.IsCIEnvironment().ToString() },
+            {LLM, _llmEnvironmentDetector.GetLLMEnvironment() },
             {CurrentPathHash, _hasher(_getCurrentDirectory())},
             {MachineIdOld, _userLevelCacheWriter.RunWithCache(MachineIdCacheKey, GetMachineId)},
             // we don't want to recalcuate a new id for every new SDK version. Reuse the same path across versions.
@@ -90,8 +87,9 @@ internal class TelemetryCommonProperties
             {InstallationType, ExternalTelemetryProperties.GetInstallationType()},
             {ProductType, ExternalTelemetryProperties.GetProductType()},
             {LibcRelease, ExternalTelemetryProperties.GetLibcRelease()},
-            {LibcVersion, ExternalTelemetryProperties.GetLibcVersion()}
-        };
+            {LibcVersion, ExternalTelemetryProperties.GetLibcVersion()},
+            {SessionId, currentSessionId}
+        }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
     }
 
     private string GetMachineId()

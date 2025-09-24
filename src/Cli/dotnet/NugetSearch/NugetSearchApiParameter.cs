@@ -1,7 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.NugetSearch;
@@ -39,7 +42,7 @@ internal class NugetSearchApiParameter
         Prerelease = prerelease;
     }
 
-    private static int? GetParsedResultAsInt(ParseResult parseResult, CliOption<string> alias)
+    private static int? GetParsedResultAsInt(ParseResult parseResult, Option<string> alias)
     {
         var valueFromParser = parseResult.GetValue(alias);
         if (string.IsNullOrWhiteSpace(valueFromParser))
@@ -55,7 +58,7 @@ internal class NugetSearchApiParameter
         {
             throw new GracefulException(
                 string.Format(
-                    Tools.Tool.Search.LocalizableStrings.InvalidInputTypeInteger,
+                    CliStrings.InvalidInputTypeInteger,
                     alias));
         }
     }

@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli;
@@ -30,7 +32,7 @@ internal class FilePermissionSetter : IFilePermissionSetter
         }
 
         CommandResult result = new CommandFactory.CommandFactory()
-            .Create("chmod", new[] { chmodArgument, path })
+            .Create("chmod", [chmodArgument, path])
             .CaptureStdOut()
             .CaptureStdErr()
             .Execute();

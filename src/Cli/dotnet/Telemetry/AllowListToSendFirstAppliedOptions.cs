@@ -1,21 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-internal class AllowListToSendFirstAppliedOptions : IParseResultLogRule
+internal class AllowListToSendFirstAppliedOptions(
+    HashSet<string> topLevelCommandNameAllowList) : IParseResultLogRule
 {
-    public AllowListToSendFirstAppliedOptions(
-        HashSet<string> topLevelCommandNameAllowList)
-    {
-        _topLevelCommandNameAllowList = topLevelCommandNameAllowList;
-    }
-
-    private HashSet<string> _topLevelCommandNameAllowList { get; }
+    private HashSet<string> _topLevelCommandNameAllowList { get; } = topLevelCommandNameAllowList;
 
     public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult, Dictionary<string, double> measurements = null)
     {

@@ -7,7 +7,7 @@
          verticals that are built in the first build pass. -->
     <ExcludeFromDotNetBuild Condition="'$(DotNetBuildPass)' != '2'">true</ExcludeFromDotNetBuild>
     <IsPackable Condition="'$(OS)' == 'Windows_NT' and
-                           '$(Architecture)' == 'x64' and
+                           '$(TargetArchitecture)' == 'x64' and
                            '$(PgoInstrument)' != 'true'">true</IsPackable>
     <BeforePack>$(BeforePack);GenerateLayout</BeforePack>
     <PackageDescription>MSBuild extensions bundled with .NET Core SDK for internal Visual Studio build consumption</PackageDescription>

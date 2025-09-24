@@ -10,7 +10,7 @@
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <!-- do not import analyzer assemblies from the sdk as they will be double loaded -->
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
-    <!-- Disable the fast up-to-date check as it relies on the redist.dll, which we delete as part of the build process in GereateLayout.targets. -->
+    <!-- Disable the fast up-to-date check as it relies on the redist.dll, which we delete as part of the build process in GenerateLayout.targets. -->
     <!-- Property info: https://github.com/dotnet/project-system/blob/main/docs/up-to-date-check.md#disabling-the-up-to-date-check -->
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
     <!-- NETSDK1205: The Microsoft.Net.Compilers.Toolset.Framework package should not be set directly. -->
@@ -31,9 +31,8 @@
     <PackageReference Include="Microsoft.TestPlatform.Build" />
     <PackageReference Condition=" '$(DotNetBuildSourceOnly)' != 'true' " Include="NuGet.Localization" />
     <PackageReference Include="NuGet.ProjectModel" />
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" ExcludeAssets="All" GeneratePathProperty="true"/>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" ExcludeAssets="All" GeneratePathProperty="true"/>
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.CodeStyle" ExcludeAssets="All" GeneratePathProperty="true"/>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" ExcludeAssets="All" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.CodeStyle" ExcludeAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.FSharp.Compiler" ExcludeAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" GeneratePathProperty="true" />
     <PackageDownload Include="Microsoft.Net.Compilers.Toolset" Version="[$(MicrosoftNetCompilersToolsetVersion)]" />
@@ -63,17 +62,27 @@
     <ProjectReference Include="tools\tool_msbuild.csproj" />
     <ProjectReference Include="tools\tool_nuget.csproj" />
     <ProjectReference Include="..\..\Cli\dotnet\dotnet.csproj" />
+    <ProjectReference Include="..\..\Workloads\Manifests\manifest-packages.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\..\Tasks\Microsoft.NET.Build.Tasks\Microsoft.NET.Build.Tasks.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\..\Tasks\Microsoft.NET.Build.Extensions.Tasks\Microsoft.NET.Build.Extensions.Tasks.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\..\Resolvers\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.csproj" />
     <ProjectReference Include="$(RepoRoot)src\BuiltInTools\dotnet-watch\dotnet-watch.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
-    <ProjectReference Include="$(RepoRoot)src\BuiltInTools\dotnet-format\dotnet-format.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true"  Private="false" />
+    <ProjectReference Include="$(RepoRoot)src\BuiltInTools\dotnet-format\dotnet-format.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
 
     <ProjectReference Include="$(RepoRoot)template_feed\*\*.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
+
+    <ProjectReference Include="$(RepoRoot)src\Microsoft.CodeAnalysis.NetAnalyzers\src\Microsoft.CodeAnalysis.NetAnalyzers.Package.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\finalizer\finalizer.csproj" Condition="'$(OS)' == 'Windows_NT'" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true"  Private="false" />
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+    <ProjectReference Include="..\pkg\windows\bundles\sdk\bundle.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Condition="'$(MSBuildRestoreSessionId)' != ''" />
+    <ProjectReference Include="..\finalizer\finalizer.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
+  </ItemGroup>
+
+  <!-- In .NET product build mode, explicitly build workloads in build pass 2.
+       In the SDK official build, build workloads as part of win-x64. -->
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT' and '$(SkipBuildingInstallers)' != 'true' and '$(DotNetBuild)' != 'true' and '$(BuildWorkloads)' == 'true'">
+    <ProjectReference Include="$(RepoRoot)src\Workloads\VSInsertion\workloads.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -92,7 +101,7 @@
        To break the cycle we remove all analyzers before this compiles. -->
   <Target Name="RemoveAnalyzers" BeforeTargets="CoreCompile">
     <ItemGroup>
-      <Analyzer Remove="@(Analyzer)"/>
+      <Analyzer Remove="@(Analyzer)" />
     </ItemGroup>
   </Target>
 
@@ -110,5 +119,4 @@
   </Target>
 
   <Target Name="ReturnProductVersion" Returns="$(FullNugetVersion)" />
-
 </Project>

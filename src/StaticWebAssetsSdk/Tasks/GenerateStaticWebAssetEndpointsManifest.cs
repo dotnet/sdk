@@ -26,24 +26,60 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
 
     public string CacheFilePath { get; set; }
 
+    public string ExclusionPatterns { get; set; }
+
+    public string ExclusionPatternsCacheFilePath { get; set; }
+
     public override bool Execute()
     {
+        var (patternString, parsedPatterns) = ParseAndSortPatterns(ExclusionPatterns);
+        var existingPatternString = !string.IsNullOrEmpty(ExclusionPatternsCacheFilePath) && File.Exists(ExclusionPatternsCacheFilePath)
+            ? File.ReadAllText(ExclusionPatternsCacheFilePath)
+            : null;
+        existingPatternString = string.IsNullOrEmpty(existingPatternString) ? null : existingPatternString;
         if (!string.IsNullOrEmpty(CacheFilePath) && File.Exists(ManifestPath) && File.GetLastWriteTimeUtc(ManifestPath) > File.GetLastWriteTimeUtc(CacheFilePath))
         {
-            Log.LogMessage(MessageImportance.Low, "Skipping manifest generation because manifest file '{0}' is up to date.", ManifestPath);
-            return true;
+            // Check if exclusion patterns cache is also up to date
+            if (string.Equals(patternString, existingPatternString, StringComparison.Ordinal))
+            {
+                Log.LogMessage(MessageImportance.Low, "Skipping manifest generation because manifest file '{0}' is up to date.", ManifestPath);
+                return true;
+            }
+            else
+            {
+                Log.LogMessage(MessageImportance.Low, "Generating manifest file '{0}' because exclusion patterns changed from '{1}' to '{2}'.", ManifestPath,
+                    existingPatternString ?? "no patterns",
+                    patternString ?? "no patterns");
+            }
+        }
+        else
+        {
+            Log.LogMessage(MessageImportance.Low, "Generating manifest file '{0}' because manifest file is missing or out of date.", ManifestPath);
         }
 
         try
         {
+            // Update exclusion patterns cache if needed
+            UpdateExclusionPatternsCache(existingPatternString, patternString);
+
             // Get the list of the asset that need to be part of the manifest (this is similar to GenerateStaticWebAssetsDevelopmentManifest)
-            var manifestAssets = ComputeManifestAssets(Assets.Select(StaticWebAsset.FromTaskItem), ManifestType)
+            var assets = StaticWebAsset.FromTaskItemGroup(Assets);
+            var manifestAssets = ComputeManifestAssets(assets, ManifestType)
                 .ToDictionary(a => a.ResolvedAsset.Identity, a => a, OSPath.PathComparer);
+
+            // Build exclusion matcher if patterns are provided
+            StaticWebAssetGlobMatcher exclusionMatcher = null;
+            if (parsedPatterns.Length > 0)
+            {
+                var builder = new StaticWebAssetGlobMatcherBuilder();
+                builder.AddIncludePatternsList(parsedPatterns);
+                exclusionMatcher = builder.Build();
+            }
 
             // Filter out the endpoints to those that point to the assets that are part of the manifest
             var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints);
             var filteredEndpoints = new List<StaticWebAssetEndpoint>();
-
+            var updatedManifest = false;
             foreach (var endpoint in endpoints)
             {
                 if (!manifestAssets.TryGetValue(endpoint.AssetFile, out var asset))
@@ -52,14 +88,35 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
                     continue;
                 }
 
+                // Check if endpoint should be excluded based on patterns
+                var route = asset.ResolvedAsset.ReplaceTokens(endpoint.Route, StaticWebAssetTokenResolver.Instance);
+                if (exclusionMatcher != null)
+                {
+                    var match = exclusionMatcher.Match(route);
+                    if (match.IsMatch)
+                    {
+                        if (!updatedManifest && File.Exists(ManifestPath))
+                        {
+                            updatedManifest = true;
+                            // Touch the manifest if we are excluding endpoints to ensure we don't keep reporting out of date
+                            // for the excluded endpoints.
+                            // (The SWA manifest we use as cache might get updated, but if we filter out the new endpoints, we won't
+                            // update the endpoints manifest file and on the next build we will re-enter this loop).
+                            Log.LogMessage(MessageImportance.Low, "Updating manifest timestamp '{0}'.", ManifestPath);
+                            File.SetLastWriteTime(ManifestPath, DateTime.UtcNow);
+                        }
+                        Log.LogMessage(MessageImportance.Low, "Excluding endpoint '{0}' based on exclusion patterns", route);
+                        continue;
+                    }
+                }
+
                 filteredEndpoints.Add(endpoint);
                 // Update the endpoint to use the target path of the asset, this will be relative to the wwwroot
-                var path = endpoint.AssetFile;
 
                 endpoint.AssetFile = asset.ResolvedAsset.ComputeTargetPath("", '/', StaticWebAssetTokenResolver.Instance);
-                endpoint.Route = asset.ResolvedAsset.ReplaceTokens(endpoint.Route, StaticWebAssetTokenResolver.Instance);
+                endpoint.Route = route;
 
-                Log.LogMessage(MessageImportance.Low, "Including endpoint '{0}' for asset '{1}' with final location '{2}'", endpoint.Route, path, asset.TargetPath);
+                Log.LogMessage(MessageImportance.Low, "Including endpoint '{0}' for asset '{1}' with final location '{2}'", endpoint.Route, endpoint.AssetFile, asset.TargetPath);
             }
 
             var manifest = new StaticWebAssetEndpointsManifest()
@@ -78,6 +135,44 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
         }
 
         return !Log.HasLoggedErrors;
+    }
+
+    private static (string, string[]) ParseAndSortPatterns(string patterns)
+    {
+        if (string.IsNullOrEmpty(patterns))
+        {
+            return (null, []);
+        }
+
+        var parsed = patterns.Split([';'], StringSplitOptions.RemoveEmptyEntries);
+        Array.Sort(parsed, StringComparer.OrdinalIgnoreCase);
+
+        return (string.Join(Environment.NewLine, parsed), parsed);
+    }
+
+    private void UpdateExclusionPatternsCache(string existingPatternString, string patternString)
+    {
+        if (string.IsNullOrEmpty(ExclusionPatternsCacheFilePath))
+        {
+            return;
+        }
+
+        if (!File.Exists(ExclusionPatternsCacheFilePath) ||
+            !string.Equals(existingPatternString, patternString, StringComparison.Ordinal))
+        {
+            var directoryName = Path.GetDirectoryName(ExclusionPatternsCacheFilePath);
+            if (directoryName != null)
+            {
+                Directory.CreateDirectory(directoryName);
+            }
+            File.WriteAllText(ExclusionPatternsCacheFilePath, patternString);
+            // We need to touch the file because otherwise we will keep thinking that is out of date in the future.
+            // This file might not be rewritten if the results are unchanged.
+            if (File.Exists(ManifestPath))
+            {
+                File.SetLastWriteTime(ManifestPath, DateTime.UtcNow);
+            }
+        }
     }
 
     private IEnumerable<TargetPathAssetPair> ComputeManifestAssets(IEnumerable<StaticWebAsset> assets, string kind)

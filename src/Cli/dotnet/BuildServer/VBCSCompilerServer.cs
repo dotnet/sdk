@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Reflection;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.Utils;
@@ -24,7 +26,7 @@ internal class VBCSCompilerServer(ICommandFactory commandFactory = null) : IBuil
 
     public int ProcessId => 0; // Not yet used
 
-    public string Name => LocalizableStrings.VBCSCompilerServer;
+    public string Name => CliStrings.VBCSCompilerServer;
 
     public void Shutdown()
     {
@@ -55,7 +57,7 @@ internal class VBCSCompilerServer(ICommandFactory commandFactory = null) : IBuil
         {
             throw new BuildServerException(
                 string.Format(
-                    LocalizableStrings.ShutdownCommandFailed,
+                    CliStrings.ShutdownCommandFailed,
                     string.Join(Environment.NewLine, errors)));
         }
 

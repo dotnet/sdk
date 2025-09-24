@@ -62,22 +62,16 @@ internal class FrameworkDependencyFile
 
         if (!string.IsNullOrEmpty(currentRuntimeIdentifier))
         {
-            runtimeFallbacksCandidates =
-                runtimeGraph
-                .Where(g => string.Equals(g.Runtime, currentRuntimeIdentifier, StringComparison.OrdinalIgnoreCase))
-                .ToArray();
+            runtimeFallbacksCandidates = [.. runtimeGraph.Where(g => string.Equals(g.Runtime, currentRuntimeIdentifier, StringComparison.OrdinalIgnoreCase))];
         }
         else
         {
-            runtimeFallbacksCandidates = Array.Empty<RuntimeFallbacks>();
+            runtimeFallbacksCandidates = [];
         }
 
         if (runtimeFallbacksCandidates.Length == 0 && !string.IsNullOrEmpty(alternativeCurrentRuntimeIdentifier))
         {
-            runtimeFallbacksCandidates =
-                runtimeGraph
-                .Where(g => string.Equals(g.Runtime, alternativeCurrentRuntimeIdentifier, StringComparison.OrdinalIgnoreCase))
-                .ToArray();
+            runtimeFallbacksCandidates = [.. runtimeGraph.Where(g => string.Equals(g.Runtime, alternativeCurrentRuntimeIdentifier, StringComparison.OrdinalIgnoreCase))];
         }
 
         if (runtimeFallbacksCandidates.Length == 0)
@@ -87,8 +81,7 @@ internal class FrameworkDependencyFile
 
         RuntimeFallbacks runtimeFallbacks = runtimeFallbacksCandidates[0];
 
-        var runtimeFallbacksIncludesRuntime = new List<string?>();
-        runtimeFallbacksIncludesRuntime.Add(runtimeFallbacks.Runtime);
+        List<string?> runtimeFallbacksIncludesRuntime = [runtimeFallbacks.Runtime];
         runtimeFallbacksIncludesRuntime.AddRange(runtimeFallbacks.Fallbacks);
 
         var candidateMap = candidateRuntimeIdentifiers

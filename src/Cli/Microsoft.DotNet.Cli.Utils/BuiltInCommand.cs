@@ -63,7 +63,7 @@ public class BuiltInCommand : ICommand
                 var taskOut = _stdOut.BeginRead(new StreamReader(outStream));
                 var taskErr = _stdErr.BeginRead(new StreamReader(errorStream));
 
-                int exitCode = _builtInCommand(_commandArgs.ToArray());
+                int exitCode = _builtInCommand([.. _commandArgs]);
 
                 outStream.DoneWriting();
                 errorStream.DoneWriting();
@@ -178,6 +178,11 @@ public class BuiltInCommand : ICommand
         throw new NotImplementedException();
     }
     public ICommand SetCommandArgs(string commandArgs)
+    {
+        throw new NotImplementedException();
+    }
+
+    public ICommand StandardOutputEncoding(Encoding encoding)
     {
         throw new NotImplementedException();
     }

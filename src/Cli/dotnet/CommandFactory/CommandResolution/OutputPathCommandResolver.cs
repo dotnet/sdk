@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using NuGet.Frameworks;
@@ -58,7 +60,7 @@ public class OutputPathCommandResolver(IEnvironmentProvider environment,
         if (!Directory.Exists(buildOutputPath))
         {
             Reporter.Verbose.WriteLine(
-                string.Format(LocalizableStrings.BuildOutputPathDoesNotExist, buildOutputPath));
+                string.Format(CliStrings.BuildOutputPathDoesNotExist, buildOutputPath));
             return null;
         }
 

@@ -75,7 +75,7 @@ public class BlockFilter : ITelemetryFilter
 {
     public IEnumerable<ApplicationInsightsEntryFormat> Filter(object o)
     {
-        return new List<ApplicationInsightsEntryFormat>();
+        return [];
     }
 }
 
@@ -96,21 +96,14 @@ public class InstrumentationEventArgs : EventArgs
     public IDictionary<string, double>? Measurements { get; }
 }
 
-public class ApplicationInsightsEntryFormat
+public class ApplicationInsightsEntryFormat(
+    string? eventName = null,
+    IDictionary<string, string?>? properties = null,
+    IDictionary<string, double>? measurements = null)
 {
-    public ApplicationInsightsEntryFormat(
-        string? eventName = null,
-        IDictionary<string, string?>? properties = null,
-        IDictionary<string, double>? measurements = null)
-    {
-        EventName = eventName;
-        Properties = properties;
-        Measurements = measurements;
-    }
-
-    public string? EventName { get; }
-    public IDictionary<string, string?>? Properties { get; }
-    public IDictionary<string, double>? Measurements { get; }
+    public string? EventName { get; } = eventName;
+    public IDictionary<string, string?>? Properties { get; } = properties;
+    public IDictionary<string, double>? Measurements { get; } = measurements;
 
     public ApplicationInsightsEntryFormat WithAppliedToPropertiesValue(Func<string?, string> func)
     {

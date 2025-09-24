@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <!-- Crossgen is currently not supported on the s390x, ppc64le architecture as using mono instead of CoreCLR. -->
-    <IsCrossgenSupported Condition="'$(DISABLE_CROSSGEN)' == '' AND '$(Architecture)' != 's390x' AND '$(Architecture)' != 'ppc64le'">true</IsCrossgenSupported>
+    <IsCrossgenSupported Condition="'$(SkipUsingCrossgen)' != 'true' and
+                                    '$(TargetArchitecture)' != 's390x' and
+                                    '$(TargetArchitecture)' != 'ppc64le' and
+                                    '$(DotNetBuildUseMonoRuntime)' != 'true'">true</IsCrossgenSupported>
 
-    <Crossgen2Rid>$(HostOSName)-$(BuildArchitecture)</Crossgen2Rid>
-    <Crossgen2Rid Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(SharedFrameworkRid)</Crossgen2Rid>
-
-    <RuntimeNETCrossgenPackageName>microsoft.netcore.app.crossgen2.$(Crossgen2Rid)</RuntimeNETCrossgenPackageName>
+    <RuntimeNETCrossgenPackageName>microsoft.netcore.app.crossgen2.$(NETCoreSdkRuntimeIdentifier)</RuntimeNETCrossgenPackageName>
   </PropertyGroup>
 
   <!-- Download the runtime package with the crossgen executable in it -->
@@ -21,8 +21,7 @@
       <CreateCrossgenSymbols Condition="'$(CreateCrossgenSymbols)' == ''">true</CreateCrossgenSymbols>
       <!-- When ingesting stable pgo instrumented binaries, the shared framework will be a non-stable version,
            as will the archive file names themselves. -->
-      <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' != 'true' ">$(RedistInstallerLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>
-      <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' == 'true' ">$(RedistInstallerLayoutPath)shared/$(SharedFrameworkName)/$(VSRedistCommonNetCoreTargetingPackx64100PackageVersion)</SharedFrameworkNameVersionPath>
+      <SharedFrameworkNameVersionPath>$(RedistInstallerLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>
     </PropertyGroup>
 
     <!-- This PropertyGroup contains the paths to the various SDK tooling that should be
@@ -33,9 +32,11 @@
     <PropertyGroup>
       <DefaultToolTfm>net10.0</DefaultToolTfm>
 
+      <NetSdkAnalyzers>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk\analyzers\</NetSdkAnalyzers>
       <NetSdkTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk\tools\$(DefaultToolTfm)\</NetSdkTools>
       <BlazorWasmTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\$(DefaultToolTfm)\</BlazorWasmTools>
       <NuGetPackTools>$(InstallerOutputDirectory)Sdks\NuGet.Build.Tasks.Pack\CoreCLR\</NuGetPackTools>
+      <RazorSourceGenerators>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\source-generators\</RazorSourceGenerators>
       <RazorTasks>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tasks\$(DefaultToolTfm)\</RazorTasks>
       <WindowsDesktopTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\$(DefaultToolTfm)\</WindowsDesktopTools>
       <PublishTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Publish\tools\$(DefaultToolTfm)\</PublishTools>
@@ -54,7 +55,7 @@
 
       <RazorToolFiles Include="$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tools\**\*" />
 
-      <RemainingFiles Include="$(InstallerOutputDirectory)**\*" Exclude="$(InstallerOutputDirectory)FSharp\FSharp.Build.dll;@(RoslynFiles);@(FSharpFiles)" />
+      <RemainingFiles Include="$(InstallerOutputDirectory)**\*" Exclude="$(InstallerOutputDirectory)FSharp\FSharp.Build.dll;@(RoslynFiles);@(FSharpFiles);$(InstallerOutputDirectory)Roslyn\binfx\**\*" />
 
       <!-- Don't crossgen VB since the usage doesn't justify the size cost for everyone -->
       <RoslynFiles Remove="$(InstallerOutputDirectory)Roslyn\bincore\Microsoft.CodeAnalysis.VisualBasic.dll" />
@@ -70,9 +71,11 @@
       <RemainingFiles Remove="$(InstallerOutputDirectory)Containers\**\*" />
 
       <!-- Add back the .NET Core assemblies in the Sdks folder -->
+      <RemainingFiles Include="$(NetSdkAnalyzers)**\*" />
       <RemainingFiles Include="$(NetSdkTools)**\*" />
       <RemainingFiles Include="$(BlazorWasmTools)**\*" />
       <RemainingFiles Include="$(NuGetPackTools)**\*" />
+      <RemainingFiles Include="$(RazorSourceGenerators)**\*" />
       <RemainingFiles Include="$(RazorTasks)**\*" />
       <RemainingFiles Include="$(WindowsDesktopTools)**\*" />
       <RemainingFiles Include="$(PublishTools)**\*" />
@@ -80,6 +83,9 @@
       <RemainingFiles Include="$(ProjectSystemTools)**\*" />
       <RemainingFiles Include="$(WorkerTools)**\*" />
       <RemainingFiles Include="$(ContainerTasks)**\*" />
+
+      <!-- Don't crossgen VB since the usage doesn't justify the size cost for everyone -->
+      <RemainingFiles Remove="$(NetSdkAnalyzers)Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll" />
 
       <!-- Don't try to CrossGen .NET Framework support assemblies for .NET Standard -->
       <RemainingFiles Remove="$(InstallerOutputDirectory)Microsoft\Microsoft.NET.Build.Extensions\net*\**\*" />
@@ -150,7 +156,7 @@
     <Crossgen
         SourceAssembly="%(RoslynTargets.FullPath)"
         DestinationPath="%(RoslynTargets.FullPath)"
-        Architecture="$(Architecture)"
+        Architecture="$(TargetArchitecture)"
         CrossgenPath="$(CrossgenPath)"
         ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
@@ -159,7 +165,7 @@
     <Crossgen
         SourceAssembly="%(FSharpTargets.FullPath)"
         DestinationPath="%(FSharpTargets.FullPath)"
-        Architecture="$(Architecture)"
+        Architecture="$(TargetArchitecture)"
         CrossgenPath="$(CrossgenPath)"
         ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
@@ -168,7 +174,7 @@
     <Crossgen
         SourceAssembly="%(RemainingTargets.FullPath)"
         DestinationPath="%(RemainingTargets.FullPath)"
-        Architecture="$(Architecture)"
+        Architecture="$(TargetArchitecture)"
         CrossgenPath="$(CrossgenPath)"
         ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
@@ -177,7 +183,7 @@
     <Crossgen
         SourceAssembly="%(RazorToolTargets.FullPath)"
         DestinationPath="%(RazorToolTargets.FullPath)"
-        Architecture="$(Architecture)"
+        Architecture="$(TargetArchitecture)"
         CrossgenPath="$(CrossgenPath)"
         ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
@@ -191,14 +197,9 @@
     <!-- Move symbols to separate folder, they are not included in the layout but are published separately -->
     <Move SourceFiles="@(PdbsToMove)"
           DestinationFiles="@(PdbsToMove->'$(ArtifactsSymStoreDirectory)/sdk/$(Version)/%(RecursiveDir)%(Filename)%(Extension)')" />
-  </Target>
 
-  <Target Name="ChmodLayout"
-        AfterTargets="CrossgenLayout"
-        Condition=" '$(OSName)' != 'win' ">
-
-    <Exec Command="find $(InstallerOutputDirectory) -type d -exec chmod 755 {} \;" />
-    <Exec Command="find $(InstallerOutputDirectory) -type f -exec chmod 644 {} \;" />
+    <Exec Command="find $(InstallerOutputDirectory) -type d -exec chmod 755 {} \;" Condition="'$(OSName)' != 'win'" />
+    <Exec Command="find $(InstallerOutputDirectory) -type f -exec chmod 644 {} \;" Condition="'$(OSName)' != 'win'" />
   </Target>
 
 </Project>

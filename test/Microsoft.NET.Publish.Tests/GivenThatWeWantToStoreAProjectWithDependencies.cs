@@ -51,7 +51,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/dotnet/sdk/issues/49900")]
         public void compose_dependencies()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager
@@ -78,16 +78,10 @@ namespace Microsoft.NET.Publish.Tests
                "fluentassertions.json/4.12.0/lib/netstandard1.3/FluentAssertions.Json.dll"
                };
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // https://github.com/dotnet/core-setup/issues/2716 - an unintended native shim is getting published to the runtime store
-                files_on_disk.Add($"runtime.{_runtimeRid}.runtime.native.system.security.cryptography/1.0.1/runtimes/{_runtimeRid}/native/System.Security.Cryptography.Native{FileConstants.DynamicLibSuffix}");
-            }
-
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/dotnet/sdk/issues/49900")]
         public void compose_dependencies_noopt()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager
@@ -98,11 +92,24 @@ namespace Microsoft.NET.Publish.Tests
 
             var OutputFolder = Path.Combine(simpleDependenciesAsset.TestRoot, "outdir");
             var WorkingDir = Path.Combine(simpleDependenciesAsset.TestRoot, "w");
-
+            string binlogPath = null;
+            if (Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is string uploadRoot)
+            {
+                binlogPath = Path.Combine(uploadRoot, "compose_dependencies_noopt().binlog");
+            }
+            List<string> args = [$"/p:RuntimeIdentifier={_runtimeRid}", $"/p:TargetFramework={_tfm}", $"/p:ComposeDir={OutputFolder}", "/p:SkipOptimization=true", $"/p:ComposeWorkingDir={WorkingDir}", "/p:DoNotDecorateComposeDir=true", "/p:PreserveComposeWorkingDir=true", "/p:CreateProfilingSymbols=false"];
+            if (binlogPath is not null)
+            {
+                args.Add($"/bl:{binlogPath}");
+            }
             storeCommand
-                .Execute($"/p:RuntimeIdentifier={_runtimeRid}", $"/p:TargetFramework={_tfm}", $"/p:ComposeDir={OutputFolder}", "/p:SkipOptimization=true", $"/p:ComposeWorkingDir={WorkingDir}", "/p:DoNotDecorateComposeDir=true", "/p:PreserveComposeWorkingDir=true", "/p:CreateProfilingSymbols=false")
+                .Execute(args)
                 .Should()
                 .Pass();
+            if (binlogPath is not null)
+            {
+                Log.WriteLine($"Binlog written to {binlogPath}");
+            }
             DirectoryInfo storeDirectory = new(OutputFolder);
 
             List<string> files_on_disk = new()
@@ -114,16 +121,10 @@ namespace Microsoft.NET.Publish.Tests
                "fluentassertions.json/4.12.0/lib/netstandard1.3/FluentAssertions.Json.dll"
                };
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // https://github.com/dotnet/core-setup/issues/2716 - an unintended native shim is getting published to the runtime store
-                files_on_disk.Add($"runtime.{_runtimeRid}.runtime.native.system.security.cryptography/1.0.1/runtimes/{_runtimeRid}/native/System.Security.Cryptography.Native{FileConstants.DynamicLibSuffix}");
-            }
-
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/dotnet/sdk/issues/49900")]
         public void compose_multifile()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager
@@ -156,12 +157,6 @@ namespace Microsoft.NET.Publish.Tests
                "fluentassertions/4.12.0/lib/netstandard1.3/FluentAssertions.dll",
                "fluentassertions.json/4.12.0/lib/netstandard1.3/FluentAssertions.Json.dll",
                };
-
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // https://github.com/dotnet/core-setup/issues/2716 - an unintended native shim is getting published to the runtime store
-                files_on_disk.Add($"runtime.{_runtimeRid}.runtime.native.system.security.cryptography/1.0.1/runtimes/{_runtimeRid}/native/System.Security.Cryptography.Native{FileConstants.DynamicLibSuffix}");
-            }
 
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
 
@@ -211,7 +206,7 @@ namespace Microsoft.NET.Publish.Tests
             // 4.0.0-rc2
             // 4.0.0-rc-2048
             //
-            // and the StarVersion.xml uses Version="4.0.0-*", 
+            // and the StarVersion.xml uses Version="4.0.0-*",
             // so we expect a version greater than 4.0.0-rc2, since there is
             // a higher version on the feed that meets the criteria
             nugetPackage.Version.Should().BeGreaterThan(NuGetVersion.Parse("4.0.0-rc2"));
@@ -231,7 +226,7 @@ namespace Microsoft.NET.Publish.Tests
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // clear the PATH on windows to ensure creating .ni.pdbs works without 
+                // clear the PATH on windows to ensure creating .ni.pdbs works without
                 // being in a VS developer command prompt
                 composeStore.WithEnvironmentVariable("PATH", string.Empty);
             }
@@ -266,7 +261,8 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [Theory]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData(true)]
         [InlineData(false)]
         public void It_stores_when_targeting_netcoreapp3(bool isExe)
@@ -305,7 +301,8 @@ namespace Microsoft.NET.Publish.Tests
             });
         }
 
-        [Fact]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void DotnetStoreWithPrunedPackages()
         {
             const string TargetFramework = "netcoreapp3.1";

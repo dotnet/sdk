@@ -3,7 +3,7 @@
 
 #nullable disable
 
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -235,7 +235,7 @@ namespace Microsoft.DotNet.Tests
                               e.Properties["verb"] == Sha256Hasher.Hash("NUGET"));
         }
 
-        [Fact(Skip = "dotnet new sends the telemetry inside own commands")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/47862")]
         public void DotnetNewCommandLanguageOpinionShouldBeSentToTelemetry()
         {
             const string optionKey = "language";
@@ -358,13 +358,27 @@ namespace Microsoft.DotNet.Tests
                               e.Properties["verb"] == Sha256Hasher.Hash("CLEAN"));
         }
 
+        [Fact]
+        public void DotnetUpdatePackageVulnerableOptionShouldBeSentToTelemetry()
+        {
+            const string optionKey = "vulnerable";
+            string[] args = { "package", "update", "--vulnerable" };
+            Cli.Program.ProcessArgs(args);
+            _fakeTelemetry
+                .LogEntries.Should()
+                .Contain(e => e.EventName == "sublevelparser/command" &&
+                              e.Properties.ContainsKey(optionKey) &&
+                              e.Properties.ContainsKey("verb") &&
+                              e.Properties["verb"] == Sha256Hasher.Hash("PACKAGE UPDATE"));
+        }
+
         [WindowsOnlyFact]
         public void InternalreportinstallsuccessCommandCollectExeNameWithEventname()
         {
             FakeRecordEventNameTelemetry fakeTelemetry = new();
             string[] args = { "c:\\mypath\\dotnet-sdk-latest-win-x64.exe" };
 
-            InternalReportinstallsuccess.ProcessInputAndSendTelemetry(args, fakeTelemetry);
+            InternalReportInstallSuccessCommand.ProcessInputAndSendTelemetry(args, fakeTelemetry);
 
             fakeTelemetry
                 .LogEntries.Should()

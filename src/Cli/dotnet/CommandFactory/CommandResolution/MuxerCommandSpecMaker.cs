@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
@@ -22,7 +24,7 @@ internal static class MuxerCommandSpecMaker
             throw new Exception(LocalizableStrings.UnableToLocateDotnetMultiplexer);
         }
 
-        var rollForwardArgument = (commandArguments ?? Enumerable.Empty<string>()).Where(arg => arg.Equals("--allow-roll-forward", StringComparison.OrdinalIgnoreCase));
+        var rollForwardArgument = (commandArguments ?? []).Where(arg => arg.Equals("--allow-roll-forward", StringComparison.OrdinalIgnoreCase));
 
         if (rollForwardArgument.Any())
         {

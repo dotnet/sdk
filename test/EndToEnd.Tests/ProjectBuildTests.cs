@@ -81,7 +81,7 @@ namespace EndToEnd.Tests
                 .Execute().Should().Pass().And.HaveStdOutContaining("Hello, World!");
         }
 
-        [WindowsOnlyTheory]
+        [Theory]
         [InlineData("current", true)]
         [InlineData("current", false)]
         public void ItCanPublishArm64Winforms(string targetFramework, bool selfContained)
@@ -102,7 +102,8 @@ namespace EndToEnd.Tests
             string[] publishArgs = [
                 "-r",
                 "win-arm64",
-                .. selfContained ? ["--self-contained"] : Array.Empty<string>()
+                .. selfContained ? ["--self-contained"] : Array.Empty<string>(),
+                .. RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Array.Empty<string>() : ["/p:EnableWindowsTargeting=true"],
             ];
             new DotnetPublishCommand(Log, publishArgs)
                 .WithWorkingDirectory(projectDirectory)
@@ -197,13 +198,11 @@ namespace EndToEnd.Tests
 [\w \.\(\)]+mstest\s+\[C#\],F#,VB[\w\ \/]+
 ";
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                expectedOutput +=
+            expectedOutput +=
 @"[\w \.\(\)]+winforms\s+\[C#\],VB[\w\ \/]+
 [\w \.\(\)]+\wpf\s+\[C#\],VB[\w\ \/]+
 ";
-            }
+
             //list should end with new line
             expectedOutput += Environment.NewLine;
 
@@ -288,12 +287,12 @@ namespace EndToEnd.Tests
             Assert.True(directoryInfo.File($"{expectedItemName}.{languageExtensionMap[language]}") != null);
         }
 
-        [WindowsOnlyTheory]
+        [Theory]
         [InlineData("wpf")]
         [InlineData("winforms")]
         public void ItCanBuildDesktopTemplates(string templateName) => TestTemplateCreateAndBuild(templateName);
 
-        [WindowsOnlyTheory]
+        [Theory]
         [InlineData("wpf")]
         public void ItCanBuildDesktopTemplatesSelfContained(string templateName) => TestTemplateCreateAndBuild(templateName, selfContained: true);
 
@@ -349,11 +348,10 @@ namespace EndToEnd.Tests
         }
 
         /// <summary>
-        /// [Windows only tests]
         /// The test checks if the template creates the template for correct framework by default.
         /// For .NET 6 the templates should create the projects targeting net6.0.
         /// </summary>
-        [WindowsOnlyTheory]
+        [Theory]
         [InlineData("wpf")]
         [InlineData("wpf", "C#")]
         [InlineData("wpf", "VB")]
@@ -420,9 +418,8 @@ namespace EndToEnd.Tests
             var directory = InstantiateProjectTemplate(templateName, language);
             string projectDirectory = directory.Path;
 
-            if (!string.IsNullOrWhiteSpace(framework))
+            XDocument GetProjectXml()
             {
-                //check if MSBuild TargetFramework property for *proj is set to expected framework
                 string expectedExtension = language switch
                 {
                     "C#" => "*.csproj",
@@ -432,8 +429,32 @@ namespace EndToEnd.Tests
                 };
                 string projectFile = Directory.GetFiles(projectDirectory, expectedExtension).Single();
                 XDocument projectXml = XDocument.Load(projectFile);
+                return projectXml;
+            }
+
+            if (!string.IsNullOrWhiteSpace(framework))
+            {
+                //check if MSBuild TargetFramework property for *proj is set to expected framework
+                var projectXml = GetProjectXml();
                 XNamespace ns = projectXml.Root.Name.Namespace;
                 Assert.Equal(framework, projectXml.Root.Element(ns + "PropertyGroup").Element(ns + "TargetFramework").Value);
+            }
+
+            bool needsEnableWindowsTargeting = false;
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                string effectiveFramework = framework;
+                if (string.IsNullOrEmpty(effectiveFramework))
+                {
+                    var projectXml = GetProjectXml();
+                    XNamespace ns = projectXml.Root.Name.Namespace;
+                    effectiveFramework = projectXml.Root.Element(ns + "PropertyGroup").Element(ns + "TargetFramework").Value;
+                }
+
+                if (effectiveFramework.Contains("windows"))
+                {
+                    needsEnableWindowsTargeting = true;
+                }
             }
 
             if (build)
@@ -442,7 +463,9 @@ namespace EndToEnd.Tests
                     .. selfContained ? ["-r", RuntimeInformation.RuntimeIdentifier] : Array.Empty<string>(),
                     .. !string.IsNullOrWhiteSpace(framework) ? ["--framework", framework] : Array.Empty<string>(),
                     // Remove this (or formalize it) after https://github.com/dotnet/installer/issues/12479 is resolved.
-                    .. language == "F#" ? ["/p:_NETCoreSdkIsPreview=true"] : Array.Empty<string>()
+                    .. language == "F#" ? ["/p:_NETCoreSdkIsPreview=true"] : Array.Empty<string>(),
+                    .. needsEnableWindowsTargeting ? ["/p:EnableWindowsTargeting=true"] : Array.Empty<string>(),
+                    $"/bl:{templateName}-{(selfContained ? "selfcontained" : "fdd")}-{language}-{framework}-{{}}.binlog"
                 ];
 
                 string dotnetRoot = Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath);

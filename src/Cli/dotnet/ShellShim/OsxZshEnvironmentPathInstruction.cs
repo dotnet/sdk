@@ -1,31 +1,23 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.ShellShim;
 
-internal class OsxZshEnvironmentPathInstruction : IEnvironmentPathInstruction
+internal class OsxZshEnvironmentPathInstruction(
+    BashPathUnderHomeDirectory executablePath,
+    IReporter reporter,
+    IEnvironmentProvider environmentProvider
+    ) : IEnvironmentPathInstruction
 {
     private const string PathName = "PATH";
-    private readonly BashPathUnderHomeDirectory _packageExecutablePath;
-    private readonly IEnvironmentProvider _environmentProvider;
-    private readonly IReporter _reporter;
-
-
-    public OsxZshEnvironmentPathInstruction(
-        BashPathUnderHomeDirectory executablePath,
-        IReporter reporter,
-        IEnvironmentProvider environmentProvider
-    )
-    {
-        _packageExecutablePath = executablePath;
-        _environmentProvider
-            = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
-        _reporter
-            = reporter ?? throw new ArgumentNullException(nameof(reporter));
-    }
+    private readonly BashPathUnderHomeDirectory _packageExecutablePath = executablePath;
+    private readonly IEnvironmentProvider _environmentProvider = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
+    private readonly IReporter _reporter = reporter ?? throw new ArgumentNullException(nameof(reporter));
 
     private bool PackageExecutablePathExists()
     {
@@ -35,9 +27,7 @@ internal class OsxZshEnvironmentPathInstruction : IEnvironmentPathInstruction
             return false;
         }
 
-        return value
-            .Split(':')
-            .Any(p => p == _packageExecutablePath.Path);
+        return value.Split(':').Any(p => p == _packageExecutablePath.Path);
     }
 
     public void PrintAddPathInstructionIfPathDoesNotExist()
@@ -47,7 +37,7 @@ internal class OsxZshEnvironmentPathInstruction : IEnvironmentPathInstruction
             // similar to https://code.visualstudio.com/docs/setup/mac
             _reporter.WriteLine(
                 string.Format(
-                    CommonLocalizableStrings.EnvironmentPathOSXZshManualInstructions,
+                    CliStrings.EnvironmentPathOSXZshManualInstructions,
                     _packageExecutablePath.Path));
         }
     }

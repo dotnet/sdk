@@ -65,7 +65,7 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
     // and other features. This is why we want to bake into the format itself the information that specifies under which paths the file will
     // be available at runtime so that tasks/tools can operate independently and produce correct results.
     // The current token we support is the 'fingerprint' token, which computes a web friendly version of the hash of the file suitable
-    // to be embedded in other contexts.     
+    // to be embedded in other contexts.
     // We might include other tokens in the future, like `[{basepath}]` to give a file the ability to have its path be relative to the consuming
     // project base path, etc.
     public static StaticWebAssetPathPattern Parse(ReadOnlyMemory<char> rawPathMemory, string assetIdentity = null)
@@ -296,7 +296,7 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
     public IEnumerable<StaticWebAssetPathPattern> ExpandPatternExpression()
     {
         // We are going to analyze each segment and produce the following:
-        // - For literals, we just concatenate 
+        // - For literals, we just concatenate
         // - For parameter expressions without '?' we return the parameter expression.
         // - For parameter expressions with '?' we return
         // For example:

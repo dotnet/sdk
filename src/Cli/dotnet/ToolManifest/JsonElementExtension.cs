@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Text.Json;
 
 namespace Microsoft.DotNet.Cli.ToolManifest;
@@ -18,7 +20,7 @@ internal static class JsonElementExtension
             {
                 throw new ToolManifestException(
                     string.Format(
-                        LocalizableStrings.UnexpectedTypeInJson,
+                        CliStrings.UnexpectedTypeInJson,
                         JsonValueKind.String.ToString(),
                         name));
             }
@@ -38,7 +40,7 @@ internal static class JsonElementExtension
             {
                 throw new ToolManifestException(
                     string.Format(
-                        LocalizableStrings.UnexpectedTypeInJson,
+                        CliStrings.UnexpectedTypeInJson,
                         JsonValueKind.Number.ToString(),
                         name));
             }
@@ -58,7 +60,7 @@ internal static class JsonElementExtension
             {
                 throw new ToolManifestException(
                     string.Format(
-                        LocalizableStrings.UnexpectedTypeInJson,
+                        CliStrings.UnexpectedTypeInJson,
                         JsonValueKind.True.ToString() + "|" + JsonValueKind.False.ToString(),
                         name));
             }

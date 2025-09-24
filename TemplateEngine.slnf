@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "sdk.sln",
+    "path": "sdk.slnx",
     "projects": [
       "test\\TestAssets\\TestPackages\\dotnet-new\\Microsoft.TemplateEngine.TestTemplates.csproj",
       "src\\Cli\\Microsoft.DotNet.Cli.Sln.Internal\\Microsoft.DotNet.Cli.Sln.Internal.csproj",
@@ -15,7 +15,7 @@
       "src\\Resolvers\\Microsoft.DotNet.SdkResolver\\Microsoft.DotNet.SdkResolver.csproj",
       "test\\Microsoft.NET.TestFramework\\Microsoft.NET.TestFramework.csproj",
       "test\\Microsoft.TemplateEngine.Cli.UnitTests\\Microsoft.TemplateEngine.Cli.UnitTests.csproj",
-      "test\\dotnet-new.Tests\\dotnet-new.IntegrationTests.csproj",
+      "test\\dotnet-new.IntegrationTests\\dotnet-new.IntegrationTests.csproj",
       "test\\dotnet.Tests\\dotnet.Tests.csproj",
       "template_feed\\Microsoft.DotNet.Common.ItemTemplates\\Microsoft.DotNet.Common.ItemTemplates.csproj",
       "template_feed\\Microsoft.DotNet.Common.ProjectTemplates.10.0\\Microsoft.DotNet.Common.ProjectTemplates.10.0.csproj"

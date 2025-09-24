@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.GenAPI.Tool
         static int Main(string[] args)
         {
             // Global options
-            CliOption<string[]> assembliesOption = new("--assembly")
+            Option<string[]> assembliesOption = new("--assembly")
             {
                 Description = "The path to one or more assemblies or directories with assemblies.",
                 CustomParser = ParseAssemblyArgument,
@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.GenAPI.Tool
                 Recursive = true
             };
 
-            CliOption<string[]?> assemblyReferencesOption = new("--assembly-reference")
+            Option<string[]?> assemblyReferencesOption = new("--assembly-reference")
             {
                 Description = "Paths to assembly references or their underlying directories for a specific target framework in the package.",
                 CustomParser = ParseAssemblyArgument,
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.GenAPI.Tool
                 Recursive = true
             };
 
-            CliOption<string[]?> excludeApiFilesOption = new("--exclude-api-file")
+            Option<string[]?> excludeApiFilesOption = new("--exclude-api-file")
             {
                 Description = "The path to one or more api exclusion files with types in DocId format.",
                 CustomParser = ParseAssemblyArgument,
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.GenAPI.Tool
                 Recursive = true
             };
 
-            CliOption<string[]?> excludeAttributesFilesOption = new("--exclude-attributes-file")
+            Option<string[]?> excludeAttributesFilesOption = new("--exclude-attributes-file")
             {
                 Description = "The path to one or more attribute exclusion files with types in DocId format.",
                 CustomParser = ParseAssemblyArgument,
@@ -50,37 +50,37 @@ namespace Microsoft.DotNet.GenAPI.Tool
                 Recursive = true
             };
 
-            CliOption<string?> outputPathOption = new("--output-path")
+            Option<string?> outputPathOption = new("--output-path")
             {
                 Description = @"Output path. Default is the console. Can specify an existing directory as well
             and then a file will be created for each assembly with the matching name of the assembly.",
                 Recursive = true
             };
 
-            CliOption<string?> headerFileOption = new("--header-file")
+            Option<string?> headerFileOption = new("--header-file")
             {
                 Description = "Specify a file with an alternate header content to prepend to output.",
                 Recursive = true
             };
 
-            CliOption<string?> exceptionMessageOption = new("--exception-message")
+            Option<string?> exceptionMessageOption = new("--exception-message")
             {
                 Description = "If specified - method bodies should throw PlatformNotSupportedException, else `throw null`.",
                 Recursive = true
             };
 
-            CliOption<bool> respectInternalsOption = new("--respect-internals")
+            Option<bool> respectInternalsOption = new("--respect-internals")
             {
                 Description = "If true, includes both internal and public API.",
                 Recursive = true
             };
 
-            CliOption<bool> includeAssemblyAttributesOption = new("--include-assembly-attributes")
+            Option<bool> includeAssemblyAttributesOption = new("--include-assembly-attributes")
             {
                 Description = "Includes assembly attributes which are values that provide information about an assembly. Default is false."
             };
 
-            CliRootCommand rootCommand = new("Microsoft.DotNet.GenAPI v" + FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion)
+            RootCommand rootCommand = new("Microsoft.DotNet.GenAPI v" + FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion)
             {
                 TreatUnmatchedTokensAsErrors = true
             };

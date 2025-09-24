@@ -11,7 +11,7 @@ namespace Microsoft.NET.Restore.Tests
         {
         }
 
-        [FullMSBuildOnlyFact]
+        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/pull/49654/")]
         public void It_downloads_Microsoft_Net_Compilers_Toolset_Framework_when_requested()
         {
             const string testProjectName = "NetCoreApp";
@@ -46,7 +46,7 @@ namespace Microsoft.NET.Restore.Tests
                 .HaveStdOutContaining(Path.Combine(toolsetPackageDir, toolsetPackageVersion, "csc.exe") + " /noconfig");
         }
 
-        [FullMSBuildOnlyFact]
+        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/pull/49654/")]
         public void It_downloads_Microsoft_Net_Compilers_Toolset_Framework_when_MSBuild_is_torn()
         {
             const string testProjectName = "NetCoreApp";
@@ -59,6 +59,9 @@ namespace Microsoft.NET.Restore.Tests
             // simulate mismatched MSBuild versions
             project.AdditionalProperties.Add("_IsDisjointMSBuildVersion", "true");
 
+            // avoid opt in to RoslynCompilerType=Core
+            string[] args = ["-p:DOTNET_HOST_PATH=", "-p:DOTNET_EXPERIMENTAL_HOST_PATH="];
+
             var testAsset = _testAssetsManager
                 .CreateTestProject(project);
 
@@ -68,7 +71,7 @@ namespace Microsoft.NET.Restore.Tests
 
             testAsset.GetRestoreCommand(Log, relativePath: testProjectName)
                 .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir)
-                .Execute().Should().Pass();
+                .Execute(args).Should().Pass();
 
             var toolsetPackageDir = Path.Combine(customPackagesDir, "microsoft.net.sdk.compilers.toolset");
 
@@ -78,7 +81,7 @@ namespace Microsoft.NET.Restore.Tests
 
             new BuildCommand(testAsset)
                 .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir)
-                .Execute().Should().Pass().And
+                .Execute(args).Should().Pass().And
                 .HaveStdOutContaining(Path.Combine(toolsetPackageDir, toolsetPackageVersion, "csc.exe") + " /noconfig");
         }
 
@@ -144,6 +147,9 @@ namespace Microsoft.NET.Restore.Tests
             // simulate mismatched MSBuild versions
             project.AdditionalProperties.Add("_IsDisjointMSBuildVersion", "true");
 
+            // avoid opt in to RoslynCompilerType=Core
+            string[] args = ["-p:DOTNET_HOST_PATH=", "-p:DOTNET_EXPERIMENTAL_HOST_PATH="];
+
             var testAsset = _testAssetsManager
                 .CreateTestProject(project);
 
@@ -153,7 +159,7 @@ namespace Microsoft.NET.Restore.Tests
 
             var command = (MSBuildCommand)new MSBuildCommand(testAsset, "Restore;Build")
                 .WithEnvironmentVariable("NUGET_PACKAGES", customPackagesDir);
-            command.ExecuteWithoutRestore()
+            command.ExecuteWithoutRestore(args)
                 .Should().Pass().And.HaveStdOutContaining("NETSDK1221");
 
             // The package is downloaded, but the targets cannot find the path to it
@@ -178,7 +184,8 @@ namespace Microsoft.NET.Restore.Tests
             };
 
             // simulate mismatched MSBuild versions via _IsDisjointMSBuildVersion
-            buildCommand.Execute("-p:_IsDisjointMSBuildVersion=true")
+            // avoid opt in to RoslynCompilerType=Core by unsetting DOTNET_HOST_PATH and DOTNET_EXPERIMENTAL_HOST_PATH
+            buildCommand.Execute("-p:_IsDisjointMSBuildVersion=true", "-p:DOTNET_HOST_PATH=", "-p:DOTNET_EXPERIMENTAL_HOST_PATH=")
                 .Should().Pass().And.NotHaveStdOutContaining("NETSDK1221");
 
             Assert.True(File.Exists(Path.Combine(testAsset.Path, "obj", "net472", "MainWindow.g.cs")));

@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -64,14 +66,14 @@ internal class LinuxEnvironmentPath : IEnvironmentPath
             if (_fileSystem.Exists(DotnetCliToolsProfilePath))
             {
                 _reporter.WriteLine(
-                    CommonLocalizableStrings.EnvironmentPathLinuxNeedLogout);
+                    CliStrings.EnvironmentPathLinuxNeedLogout);
             }
             else
             {
                 // similar to https://code.visualstudio.com/docs/setup/mac
                 _reporter.WriteLine(
                     string.Format(
-                        CommonLocalizableStrings.EnvironmentPathLinuxManualInstructions,
+                        CliStrings.EnvironmentPathLinuxManualInstructions,
                         _packageExecutablePath.Path));
             }
         }

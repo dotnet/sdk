@@ -3,15 +3,8 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
 
   <PropertyGroup>
-    <DownloadsFolder>$(ArtifactsObjDir)redist-downloads\</DownloadsFolder>
-
-    <SdkLayoutOutputDirectory>$(ArtifactsBinDir)redist\$(Configuration)\layouts\dotnet-toolset-internal\</SdkLayoutOutputDirectory>
-    <RedistLayoutPath>$(ArtifactsBinDir)redist\$(Configuration)\dotnet\</RedistLayoutPath>
-    <SdkOutputDirectory>$(RedistLayoutPath)sdk\$(Version)</SdkOutputDirectory>
-
-    <RedistInstallerBaseOutputPath>$(ArtifactsBinDir)redist-installer\$(Configuration)\</RedistInstallerBaseOutputPath>
-    <RedistInstallerLayoutPath>$(RedistInstallerBaseOutputPath)dotnet\</RedistInstallerLayoutPath>
-    <SdkInternalLayoutPath>$(RedistInstallerBaseOutputPath)i\</SdkInternalLayoutPath>
+    <DownloadsFolder>$(IntermediateOutputPath)\redist-downloads\</DownloadsFolder>
+    <RedistInstallerLayoutPath>$(ArtifactsBinDir)redist\$(Configuration)\dotnet-installer\</RedistInstallerLayoutPath>
     <InstallerOutputDirectory>$(RedistInstallerLayoutPath)sdk\$(Version)\</InstallerOutputDirectory>
   </PropertyGroup>
 
@@ -21,7 +14,7 @@
     <FullNugetVersion Condition="'$(VersionSuffixDateStamp)' != '' and '$(VersionSuffixBuildOfTheDay)' != ''">$(FullNugetVersion).$(VersionSuffixDateStamp).$(VersionSuffixBuildOfTheDay)</FullNugetVersion>
 
     <PgoTerm Condition="'$(PgoInstrument)' == 'true'">-pgo</PgoTerm>
-    <ArtifactNameWithVersionSdk>dotnet-sdk-internal$(PgoTerm)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionSdk>
+    <ArtifactNameWithVersionSdk>dotnet-sdk-internal$(PgoTerm)-$(FullNugetVersion)-$(ProductMonikerRid)</ArtifactNameWithVersionSdk>
     <ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>dotnet-sdk$(PgoTerm)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
 
     <SdkMSIInstallerFileName>$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFileName>
@@ -37,7 +30,6 @@
     <ToolsetBrandName>Microsoft .NET Toolset $(Version)</ToolsetBrandName>
     <SharedFrameworkBrandName>Microsoft .NET Runtime $(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkBrandName>
     <NetCoreAppTargetingPackBrandName>Microsoft .NET Targeting Pack $(MicrosoftNETCoreAppRefPackageVersion)</NetCoreAppTargetingPackBrandName>
-    <NetStandardTargetingPackBrandName>Microsoft .NET Standard 2.1 Targeting Pack $(NETStandardLibraryRefPackageVersion)</NetStandardTargetingPackBrandName>
     <NetCoreAppHostPackBrandName>Microsoft .NET AppHost Pack $(MicrosoftNETCoreAppHostHostPackageVersion)</NetCoreAppHostPackBrandName>
     <SharedHostBrandName>Microsoft .NET Host $(SharedHostVersion)</SharedHostBrandName>
     <HostFxrBrandName>Microsoft .NET Host FX Resolver $(HostFxrVersion)</HostFxrBrandName>

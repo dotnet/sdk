@@ -1,31 +1,25 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using NuGet.Versioning;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.ShellShim;
 
-internal class ShellShimTemplateFinder
+internal class ShellShimTemplateFinder(
+    INuGetPackageDownloader nugetPackageDownloader,
+    DirectoryPath tempDir,
+    PackageSourceLocation packageSourceLocation)
 {
-    private readonly DirectoryPath _tempDir;
-    private readonly INuGetPackageDownloader _nugetPackageDownloader;
-    private readonly PackageSourceLocation _packageSourceLocation;
-
-    public ShellShimTemplateFinder(
-        INuGetPackageDownloader nugetPackageDownloader,
-        DirectoryPath tempDir,
-        PackageSourceLocation packageSourceLocation)
-    {
-        _tempDir = tempDir;
-        _nugetPackageDownloader = nugetPackageDownloader;
-        _packageSourceLocation = packageSourceLocation;
-    }
+    private readonly DirectoryPath _tempDir = tempDir;
+    private readonly INuGetPackageDownloader _nugetPackageDownloader = nugetPackageDownloader;
+    private readonly PackageSourceLocation _packageSourceLocation = packageSourceLocation;
 
     public async Task<string> ResolveAppHostSourceDirectoryAsync(string archOption, NuGetFramework targetFramework, Architecture arch)
     {
@@ -53,13 +47,13 @@ internal class ShellShimTemplateFinder
 
         if (!validRids.Contains(rid))
         {
-            throw new GracefulException(string.Format(LocalizableStrings.InvalidRuntimeIdentifier, rid, string.Join(" ", validRids)));
+            throw new GracefulException(string.Format(CliStrings.InvalidRuntimeIdentifier, rid, string.Join(" ", validRids)));
         }
 
         var packageId = new PackageId($"microsoft.netcore.app.host.{rid}");
         NuGetVersion packageVersion = null;
         var packagePath = await _nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation: _packageSourceLocation);
-        var content = await _nugetPackageDownloader.ExtractPackageAsync(packagePath, _tempDir);
+        _ = await _nugetPackageDownloader.ExtractPackageAsync(packagePath, _tempDir);
 
         return Path.Combine(_tempDir.Value, "runtimes", rid, "native");
     }

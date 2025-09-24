@@ -1,32 +1,44 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using System.Globalization;
+using Microsoft.DotNet.Cli.Commands.Build;
+using Microsoft.DotNet.Cli.Commands.Clean;
+using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
+using Microsoft.DotNet.Cli.Commands.Pack;
+using Microsoft.DotNet.Cli.Commands.Publish;
+using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-internal class TelemetryFilter : ITelemetryFilter
+internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
 {
     private const string ExceptionEventName = "mainCatchException/exception";
-    private readonly Func<string, string> _hash;
-
-    public TelemetryFilter(Func<string, string> hash)
-    {
-        _hash = hash ?? throw new ArgumentNullException(nameof(hash));
-    }
+    private readonly Func<string, string> _hash = hash ?? throw new ArgumentNullException(nameof(hash));
 
     public IEnumerable<ApplicationInsightsEntryFormat> Filter(object objectToFilter)
     {
         var result = new List<ApplicationInsightsEntryFormat>();
         Dictionary<string, double> measurements = null;
+        string globalJsonState = string.Empty;
         if (objectToFilter is Tuple<ParseResult, Dictionary<string, double>> parseResultWithMeasurements)
         {
             objectToFilter = parseResultWithMeasurements.Item1;
             measurements = parseResultWithMeasurements.Item2;
             measurements = RemoveZeroTimes(measurements);
+        }
+        else if (objectToFilter is Tuple<ParseResult, Dictionary<string, double>, string> parseResultWithMeasurementsAndGlobalJsonState)
+        {
+            objectToFilter = parseResultWithMeasurementsAndGlobalJsonState.Item1;
+            measurements = parseResultWithMeasurementsAndGlobalJsonState.Item2;
+            measurements = RemoveZeroTimes(measurements);
+            globalJsonState = parseResultWithMeasurementsAndGlobalJsonState.Item3;
         }
 
         if (objectToFilter is ParseResult parseResult)
@@ -34,14 +46,23 @@ internal class TelemetryFilter : ITelemetryFilter
             var topLevelCommandName = parseResult.RootSubCommandResult();
             if (topLevelCommandName != null)
             {
+                Dictionary<string, string> properties = new()
+                {
+                    ["verb"] = topLevelCommandName
+                };
+                if (!string.IsNullOrEmpty(globalJsonState))
+                {
+                    properties["globalJson"] = globalJsonState;
+                }
+
                 result.Add(new ApplicationInsightsEntryFormat(
                     "toplevelparser/command",
-                    new Dictionary<string, string>()
-                    {{ "verb", topLevelCommandName }}
-                    , measurements
-                    ));
+                    properties,
+                    measurements
+                ));
 
                 LogVerbosityForAllTopLevelCommand(result, parseResult, topLevelCommandName, measurements);
+                LogVulnerableOptionForPackageUpdateCommand(result, parseResult, topLevelCommandName, measurements);
 
                 foreach (IParseResultLogRule rule in ParseResultLogRules)
                 {
@@ -68,56 +89,76 @@ internal class TelemetryFilter : ITelemetryFilter
             ));
         }
 
-        return result
-            .Select(r =>
+        return [.. result.Select(r =>
+        {
+            if (r.EventName == ExceptionEventName)
             {
-                if (r.EventName == ExceptionEventName)
-                {
-                    return r;
-                }
-                else
-                {
-                    return r.WithAppliedToPropertiesValue(_hash);
-                }
-            }).ToList();
+                return r;
+            }
+            else
+            {
+                return r.WithAppliedToPropertiesValue(_hash);
+            }
+        })];
     }
 
-    private static List<IParseResultLogRule> ParseResultLogRules => new()
-    {
-        new AllowListToSendFirstArgument(new HashSet<string> {"new", "help"}),
-        new AllowListToSendFirstAppliedOptions(new HashSet<string> {"add", "remove", "list", "solution", "nuget"}),
+    private static List<IParseResultLogRule> ParseResultLogRules =>
+    [
+        new AllowListToSendFirstArgument(["new", "help"]),
+        new AllowListToSendFirstAppliedOptions(["add", "remove", "list", "solution", "nuget"]),
         new TopLevelCommandNameAndOptionToLog
         (
-            topLevelCommandName: new HashSet<string> {"build", "publish"},
-            optionsToLog: new HashSet<CliOption> { BuildCommandParser.FrameworkOption, PublishCommandParser.FrameworkOption,
+            topLevelCommandName: ["build", "publish"],
+            optionsToLog: [ BuildCommandParser.FrameworkOption, PublishCommandParser.FrameworkOption,
                 BuildCommandParser.RuntimeOption, PublishCommandParser.RuntimeOption, BuildCommandParser.ConfigurationOption,
-                PublishCommandParser.ConfigurationOption }
+                PublishCommandParser.ConfigurationOption ]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
-            topLevelCommandName: new HashSet<string> {"run", "clean", "test"},
-            optionsToLog: new HashSet<CliOption> { RunCommandParser.FrameworkOption, CleanCommandParser.FrameworkOption,
+            topLevelCommandName: ["run", "clean", "test"],
+            optionsToLog: [ RunCommandParser.FrameworkOption, CleanCommandParser.FrameworkOption,
                 TestCommandParser.FrameworkOption, RunCommandParser.ConfigurationOption, CleanCommandParser.ConfigurationOption,
-                TestCommandParser.ConfigurationOption }
+                TestCommandParser.ConfigurationOption ]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
-            topLevelCommandName: new HashSet<string> {"pack"},
-            optionsToLog: new HashSet<CliOption> { PackCommandParser.ConfigurationOption }
+            topLevelCommandName: ["pack"],
+            optionsToLog: [PackCommandParser.ConfigurationOption]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
-            topLevelCommandName: new HashSet<string> {"vstest"},
-            optionsToLog: new HashSet<CliOption> { CommonOptions.TestPlatformOption,
-                CommonOptions.TestFrameworkOption, CommonOptions.TestLoggerOption }
+            topLevelCommandName: ["vstest"],
+            optionsToLog: [ CommonOptions.TestPlatformOption,
+                CommonOptions.TestFrameworkOption, CommonOptions.TestLoggerOption ]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
-            topLevelCommandName: new HashSet<string> {"publish"},
-            optionsToLog: new HashSet<CliOption> { PublishCommandParser.RuntimeOption }
+            topLevelCommandName: ["publish"],
+            optionsToLog: [PublishCommandParser.RuntimeOption]
         ),
-        new AllowListToSendVerbSecondVerbFirstArgument(new HashSet<string> {"workload", "tool", "new"}),
-    };
+        new AllowListToSendVerbSecondVerbFirstArgument(["workload", "tool", "new"]),
+    ];
+
+    private static void LogVulnerableOptionForPackageUpdateCommand(
+        ICollection<ApplicationInsightsEntryFormat> result,
+        ParseResult parseResult,
+        string topLevelCommandName,
+        Dictionary<string, double> measurements = null)
+    {
+        if (topLevelCommandName == "package" && parseResult.CommandResult.Command != null && parseResult.CommandResult.Command.Name == "update")
+        {
+            var hasVulnerableOption = parseResult.HasOption("--vulnerable");
+
+            result.Add(new ApplicationInsightsEntryFormat(
+                "sublevelparser/command",
+                new Dictionary<string, string>()
+                {
+                    { "verb", "package update" },
+                    { "vulnerable", hasVulnerableOption.ToString()}
+                },
+                measurements));
+        }
+    }
 
     private static void LogVerbosityForAllTopLevelCommand(
         ICollection<ApplicationInsightsEntryFormat> result,
@@ -126,7 +167,7 @@ internal class TelemetryFilter : ITelemetryFilter
         Dictionary<string, double> measurements = null)
     {
         if (parseResult.IsDotnetBuiltInCommand() &&
-            parseResult.SafelyGetValueForOption(CommonOptions.VerbosityOption) is VerbosityOptions verbosity)
+            parseResult.SafelyGetValueForOption<VerbosityOptions>("--verbosity") is VerbosityOptions verbosity)
         {
             result.Add(new ApplicationInsightsEntryFormat(
                 "sublevelparser/command",
@@ -191,7 +232,7 @@ internal class TelemetryFilter : ITelemetryFilter
         return s;
     }
 
-    private Dictionary<string, double> RemoveZeroTimes(Dictionary<string, double> measurements)
+    private static Dictionary<string, double> RemoveZeroTimes(Dictionary<string, double> measurements)
     {
         if (measurements != null)
         {

@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.Versioning;
 using Microsoft.Win32.Msi;
 
@@ -53,7 +55,7 @@ internal static class InstallProperties
     /// <returns>A string containing all the properties or <see langword="null" /> if <paramref name="properties"/> contain no values.</returns>
     internal static string Create(params string[] properties)
     {
-        string[] props = properties.Where(p => !string.IsNullOrWhiteSpace(p)).ToArray();
+        string[] props = [.. properties.Where(p => !string.IsNullOrWhiteSpace(p))];
 
         return props.Length > 0 ? string.Join(' ', props) : null;
     }

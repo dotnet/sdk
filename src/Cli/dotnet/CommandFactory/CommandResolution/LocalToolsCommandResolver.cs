@@ -1,31 +1,28 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
+using Microsoft.DotNet.Cli.Commands.Tool;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
-internal class LocalToolsCommandResolver : ICommandResolver
+internal class LocalToolsCommandResolver(
+    ToolManifestFinder toolManifest = null,
+    ILocalToolsResolverCache localToolsResolverCache = null,
+    IFileSystem fileSystem = null,
+    string currentWorkingDirectory = null) : ICommandResolver
 {
-    private readonly ToolManifestFinder _toolManifest;
-    private readonly ILocalToolsResolverCache _localToolsResolverCache;
-    private readonly IFileSystem _fileSystem;
+    private readonly ToolManifestFinder _toolManifest = toolManifest ?? new ToolManifestFinder(new DirectoryPath(currentWorkingDirectory ?? Directory.GetCurrentDirectory()));
+    private readonly ILocalToolsResolverCache _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
+    private readonly IFileSystem _fileSystem = fileSystem ?? new FileSystemWrapper();
     private const string LeadingDotnetPrefix = "dotnet-";
-
-    public LocalToolsCommandResolver(
-        ToolManifestFinder toolManifest = null,
-        ILocalToolsResolverCache localToolsResolverCache = null,
-        IFileSystem fileSystem = null,
-        string currentWorkingDirectory = null)
-    {
-        _toolManifest = toolManifest ?? new ToolManifestFinder(new DirectoryPath(currentWorkingDirectory ?? Directory.GetCurrentDirectory()));
-        _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
-        _fileSystem = fileSystem ?? new FileSystemWrapper();
-    }
 
     public CommandSpec ResolveStrict(CommandResolverArguments arguments, bool allowRollForward = false)
     {
@@ -87,26 +84,20 @@ internal class LocalToolsCommandResolver : ICommandResolver
                 NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                 Constants.AnyRid,
                 toolCommandName),
-            out var restoredCommand))
+            out var toolCommand))
         {
-            if (!_fileSystem.File.Exists(restoredCommand.Executable.Value))
+            if (!_fileSystem.File.Exists(toolCommand.Executable.Value))
             {
-                throw new GracefulException(string.Format(LocalizableStrings.NeedRunToolRestore,
+                throw new GracefulException(string.Format(CliStrings.NeedRunToolRestore,
                     toolCommandName.ToString()));
             }
 
-            if (toolManifestPackage.RollForward || allowRollForward)
-            {
-                arguments.CommandArguments = ["--allow-roll-forward", .. arguments.CommandArguments];
-            }
-
-            return MuxerCommandSpecMaker.CreatePackageCommandSpecUsingMuxer(
-                restoredCommand.Executable.Value,
-                arguments.CommandArguments);
+            return ToolCommandSpecCreator.CreateToolCommandSpec(toolCommand.Name.Value, toolCommand.Executable.Value, toolCommand.Runner,
+                toolManifestPackage.RollForward || allowRollForward, arguments.CommandArguments);
         }
         else
         {
-            throw new GracefulException(string.Format(LocalizableStrings.NeedRunToolRestore,
+            throw new GracefulException(string.Format(CliStrings.NeedRunToolRestore,
                     toolCommandName.ToString()));
         }
     }

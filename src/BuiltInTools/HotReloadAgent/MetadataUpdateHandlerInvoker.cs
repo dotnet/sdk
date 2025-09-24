@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -19,7 +21,7 @@ namespace Microsoft.DotNet.HotReload;
 #endif
 internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
 {
-    internal delegate void ContentUpdateAction(StaticAssetUpdate update);
+    internal delegate void ContentUpdateAction(RuntimeStaticAssetUpdate update);
     internal delegate void MetadataUpdateAction(Type[]? updatedTypes);
 
     internal readonly struct UpdateHandler<TAction>(TAction action, MethodInfo method)
@@ -52,7 +54,7 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
             }
         }
 
-        public void UpdateContent(AgentReporter reporter, StaticAssetUpdate update)
+        public void UpdateContent(AgentReporter reporter, RuntimeStaticAssetUpdate update)
         {
             foreach (var handler in updateContentHandlers)
             {
@@ -127,7 +129,7 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
     /// <summary>
     /// Invokes all registered content update handlers.
     /// </summary>
-    internal void ContentUpdated(StaticAssetUpdate update)
+    internal void ContentUpdated(RuntimeStaticAssetUpdate update)
     {
         try
         {
@@ -318,7 +320,7 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
     {
         var sortedAssemblies = new List<Assembly>(assemblies.Length);
 
-        var visited = new HashSet<string>(StringComparer.Ordinal);
+        var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var assembly in assemblies)
         {
@@ -327,15 +329,46 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
 
         static void Visit(Assembly[] assemblies, Assembly assembly, List<Assembly> sortedAssemblies, HashSet<string> visited)
         {
-            var assemblyIdentifier = assembly.GetName().Name!;
-            if (!visited.Add(assemblyIdentifier))
+            string? assemblyIdentifier;
+
+            try
+            {
+                assemblyIdentifier = assembly.GetName().Name;
+            }
+            catch
             {
                 return;
             }
 
-            foreach (var dependencyName in assembly.GetReferencedAssemblies())
+            if (assemblyIdentifier == null || !visited.Add(assemblyIdentifier))
             {
-                var dependency = Array.Find(assemblies, a => a.GetName().Name == dependencyName.Name);
+                return;
+            }
+
+            AssemblyName[] referencedAssemblies;
+            try
+            {
+                referencedAssemblies = assembly.GetReferencedAssemblies();
+            }
+            catch
+            {
+                referencedAssemblies = [];
+            }
+
+            foreach (var dependencyName in referencedAssemblies)
+            {
+                var dependency = Array.Find(assemblies, a =>
+                {
+                    try
+                    {
+                        return string.Equals(a.GetName().Name, dependencyName.Name, StringComparison.OrdinalIgnoreCase);
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                });
+
                 if (dependency is not null)
                 {
                     Visit(assemblies, dependency, sortedAssemblies, visited);
