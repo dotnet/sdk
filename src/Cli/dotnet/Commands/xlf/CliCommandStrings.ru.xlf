@@ -4026,8 +4026,8 @@ To display a value, specify the corresponding command-line option without provid
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSearchCommandDescription">
-        <source>Search for available workloads.</source>
-        <target state="translated">Поиск доступных рабочих нагрузок.</target>
+        <source>Search for available workloads or workload versions.</source>
+        <target state="needs-review-translation">Поиск доступных рабочих нагрузок.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">
