@@ -192,6 +192,44 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
         }
 
         [Fact]
+        public void GivenMultipleFeedsWithSameVersionSearchVersionsShowsNoDuplicates()
+        {
+            _reporter.Clear();
+
+            // Create a mock package downloader that simulates duplicate versions from different feeds
+            var duplicateVersions = new List<NuGetVersion>
+            {
+                new NuGetVersion("9.100.0"), // Same version from feed 1
+                new NuGetVersion("9.100.0"), // Same version from feed 2 (duplicate)
+                new NuGetVersion("9.101.0"),
+                new NuGetVersion("9.102.0")
+            };
+
+            MockNuGetPackageDownloader nugetPackageDownloader = new(packageVersions: duplicateVersions);
+            MockPackWorkloadInstaller installer = new();
+
+            var parseResult = Parser.Parse("dotnet workload search version --take 4");
+            var workloadResolver = new MockWorkloadResolver(Enumerable.Empty<WorkloadResolver.WorkloadInfo>());
+            var command = new WorkloadSearchVersionsCommand(parseResult, _reporter, installer: installer, nugetPackageDownloader: nugetPackageDownloader, resolver: workloadResolver, sdkVersion: new ReleaseVersion(9, 0, 100));
+
+            command.Execute();
+
+            // The output should be a single line containing all versions separated by newlines
+            _reporter.Lines.Should().HaveCount(1, "Should have one output line");
+            var outputLine = _reporter.Lines[0];
+            var versions = outputLine.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+            // Verify no duplicates in output - should only show unique versions
+            versions.Should().HaveCount(3, "Should show only unique versions: 9.0.102, 9.0.101, 9.0.100");
+            versions.Should().Contain("9.0.102");
+            versions.Should().Contain("9.0.101");
+            versions.Should().Contain("9.0.100");
+
+            // Verify that 9.0.100 appears only once
+            versions.Count(v => v == "9.0.100").Should().Be(1, "Version 9.0.100 should appear only once");
+        }
+
+        [Fact]
         public void GivenWorkloadSearchItSearchesDescription()
         {
             _reporter.Clear();

@@ -3,13 +3,13 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
-using Microsoft.DotNet.Cli;
 
 namespace Microsoft.DotNet.Tests
 {

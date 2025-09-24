@@ -13,7 +13,7 @@ public class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = null) :
 {
     public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
-        var result = Parser.Parse(["dotnet", "clean", ..args]);
+        var result = Parser.Parse(["dotnet", "clean", .. args]);
         return FromParseResult(result, msbuildPath);
     }
 
@@ -33,7 +33,7 @@ public class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = null) :
                 NoWriteBuildMarkers = true,
             },
             static (msbuildArgs, msbuildPath) => new CleanCommand(msbuildArgs, msbuildPath),
-            [ CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CleanCommandParser.TargetOption, CleanCommandParser.VerbosityOption ],
+            [CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CleanCommandParser.TargetOption, CleanCommandParser.VerbosityOption],
             result,
             msbuildPath
         );

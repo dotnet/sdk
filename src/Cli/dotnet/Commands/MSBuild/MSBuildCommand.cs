@@ -10,11 +10,11 @@ namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 public class MSBuildCommand(
     IEnumerable<string> msbuildArgs,
     string? msbuildPath = null
-) : MSBuildForwardingApp(MSBuildArgs.AnalyzeMSBuildArguments([..msbuildArgs], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, MSBuildCommandParser.TargetOption, CommonOptions.VerbosityOption()), msbuildPath, includeLogo: true)
+) : MSBuildForwardingApp(MSBuildArgs.AnalyzeMSBuildArguments([.. msbuildArgs], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, MSBuildCommandParser.TargetOption, CommonOptions.VerbosityOption()), msbuildPath, includeLogo: true)
 {
     public static MSBuildCommand FromArgs(string[] args, string? msbuildPath = null)
     {
-        var result = Parser.Parse(["dotnet", "msbuild", ..args]);
+        var result = Parser.Parse(["dotnet", "msbuild", .. args]);
         return FromParseResult(result, msbuildPath);
     }
 

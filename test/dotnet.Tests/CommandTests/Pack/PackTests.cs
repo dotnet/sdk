@@ -329,7 +329,7 @@ namespace Microsoft.DotNet.Pack.Tests
             string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
             var result = new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute(nuspecPath, "--property", "id=PackNoCsproj","--property", "authors=author", "--version");
+                .Execute(nuspecPath, "--property", "id=PackNoCsproj", "--property", "authors=author", "--version");
 
             result.Should().Fail();
             result.StdErr.Should().Contain("Required argument missing for option: '--version'.");
@@ -429,7 +429,7 @@ namespace Microsoft.DotNet.Pack.Tests
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute(nuspecPath);
 
-            result.Should().Fail();            
+            result.Should().Fail();
         }
     }
 }

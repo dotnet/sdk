@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.InteropServices;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Newtonsoft.Json.Linq;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.DotNet.Restore.Test
 {
@@ -170,7 +170,7 @@ namespace Microsoft.DotNet.Restore.Test
                  .Should()
                  .Pass();
         }
-        
+
         /// <summary>
         /// Tests for RID-specific restore options: -r/--runtime, --os, and -a/--arch
         /// </summary>
@@ -191,9 +191,9 @@ namespace Microsoft.DotNet.Restore.Test
             };
 
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
-            
+
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: string.Join("_", ridOptions));
-            
+
             var rootPath = Path.Combine(testAsset.TestRoot, testProject.Name);
 
             // Create the command with the RID-specific options
@@ -203,7 +203,7 @@ namespace Microsoft.DotNet.Restore.Test
 
             // Verify that the command runs successfully
             restoreCommand.Should().Pass();
-            
+
             // Verify that assets file was created
             var assetsFilePath = Path.Combine(rootPath, "obj", "project.assets.json");
             File.Exists(assetsFilePath).Should().BeTrue();
@@ -212,11 +212,11 @@ namespace Microsoft.DotNet.Restore.Test
             var assetsContents = JObject.Parse(File.ReadAllText(assetsFilePath));
             var targets = assetsContents["targets"];
             targets.Should().NotBeNull("assets file should contain targets section");
-            
+
             // Determine the expected RID based on the options provided
             string expectedRid = GetExpectedRid(ridOptions);
             string expectedTarget = $"{ToolsetInfo.CurrentTargetFramework}/{expectedRid}";
-            
+
             // Check that the specific target exists
             var specificTarget = targets[expectedTarget];
             specificTarget.Should().NotBeNull($"assets file should contain target '{expectedTarget}' when using RID options: {string.Join(" ", ridOptions)}");

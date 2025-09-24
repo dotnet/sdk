@@ -84,7 +84,7 @@ internal class LaunchSettingsManager
                         {
                             if (prop.Value.TryGetProperty(CommandNameKey, out var commandNameElement) && commandNameElement.ValueKind == JsonValueKind.String)
                             {
-                                if (commandNameElement.GetString() is { } commandNameElementKey &&  _providers.ContainsKey(commandNameElementKey))
+                                if (commandNameElement.GetString() is { } commandNameElementKey && _providers.ContainsKey(commandNameElementKey))
                                 {
                                     profileObject = prop.Value;
                                     break;
@@ -120,7 +120,7 @@ internal class LaunchSettingsManager
         }
     }
 
-    private static bool TryLocateHandler(string? commandName, [NotNullWhen(true)]out ILaunchSettingsProvider? provider)
+    private static bool TryLocateHandler(string? commandName, [NotNullWhen(true)] out ILaunchSettingsProvider? provider)
     {
         if (commandName == null)
         {

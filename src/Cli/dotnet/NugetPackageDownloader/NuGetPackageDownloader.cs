@@ -73,7 +73,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         _retryTimer = timer;
         _sourceRepositories = new();
         // If windows or env variable is set, verify signatures
-        _verifySignatures = verifySignatures && (OperatingSystem.IsWindows() ? true 
+        _verifySignatures = verifySignatures && (OperatingSystem.IsWindows() ? true
             : bool.TryParse(Environment.GetEnvironmentVariable(NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification), out var shouldVerifySignature) ? shouldVerifySignature : OperatingSystem.IsLinux());
 
         _cacheSettings = new SourceCacheContext
@@ -120,7 +120,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             throw new ArgumentException($"Package download folder must be specified either via {nameof(NuGetPackageDownloader)} constructor or via {nameof(downloadFolder)} method argument.");
         }
         var pathResolver = new VersionFolderPathResolver(resolvedDownloadFolder);
-        
+
         string nupkgPath = pathResolver.GetPackageFilePath(packageId.ToString(), resolvedPackageVersion);
         Directory.CreateDirectory(Path.GetDirectoryName(nupkgPath));
 
@@ -766,9 +766,18 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         CancellationToken cancellationToken = CancellationToken.None;
         IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);
 
-        return (await GetLatestVersionsInternalAsync(packageId.ToString(), packagesSources,
-            includePreview, cancellationToken, numberOfResults).ConfigureAwait(false)).Select(result =>
-            result.Item2.Identity.Version);
+        // When numberOfResults is 0, it means "all results", otherwise we need to handle potential duplicates 
+        // by getting more results than requested, then deduplicating and taking the requested count
+        int internalResultsCount = numberOfResults == 0 ? 0 : numberOfResults * 2; // Get double to account for potential duplicates
+
+        var allResults = await GetLatestVersionsInternalAsync(packageId.ToString(), packagesSources,
+            includePreview, cancellationToken, internalResultsCount).ConfigureAwait(false);
+
+        var uniqueVersions = allResults.Select(result => result.Item2.Identity.Version)
+            .Distinct()
+            .OrderByDescending(v => v);
+
+        return numberOfResults == 0 ? uniqueVersions : uniqueVersions.Take(numberOfResults);
     }
 
     public async Task<IEnumerable<string>> GetPackageIdsAsync(string idStem, bool allowPrerelease, PackageSourceLocation packageSourceLocation = null, CancellationToken cancellationToken = default)

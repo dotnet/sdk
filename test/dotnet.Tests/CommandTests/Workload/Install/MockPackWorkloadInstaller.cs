@@ -3,15 +3,15 @@
 
 #nullable disable
 
+using System.Reflection;
+using Microsoft.DotNet.Cli.Commands.Workload;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
-using System.Reflection;
 using NuGet.Packaging;
-using Microsoft.DotNet.Cli.Commands.Workload.Install;
-using Microsoft.DotNet.Cli.Commands.Workload;
-using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
+using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
