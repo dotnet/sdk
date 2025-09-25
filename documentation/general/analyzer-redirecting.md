@@ -29,6 +29,7 @@ Targeting an SDK (and hence also loading analyzers) with newer major version in 
 - Note that when `IAnalyzerAssemblyRedirector` is involved, Roslyn is free to not use shadow copy loading and instead load the DLLs directly.
 
 - It is possible to opt out of analyzer redirecting by setting environment variable `DOTNET_ANALYZER_REDIRECTING=0`.
+  That is an unsupported scenario though and compiler version mismatch errors will likely occur.
 
 ## Details
 
