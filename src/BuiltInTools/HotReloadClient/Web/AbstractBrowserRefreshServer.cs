@@ -163,7 +163,7 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
         }, progressCancellationSource.Token);
 
         // Work around lack of Task.WaitAsync(cancellationToken) on .NET Framework:
-        cancellationToken.Register(() => _browserConnected.SetCanceled());
+        cancellationToken.Register(() => _browserConnected.TrySetCanceled());
 
         try
         {
