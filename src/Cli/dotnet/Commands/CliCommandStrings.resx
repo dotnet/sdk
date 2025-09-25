@@ -1733,6 +1733,9 @@ The default is to publish a framework-dependent application.</value>
   <data name="RestoreSuccessful" xml:space="preserve">
     <value>Tool '{0}' (version '{1}') was restored. Available commands: {2}</value>
   </data>
+  <data name="RestoreNewVersionAvailable" xml:space="preserve">
+    <value>A newer version of tool '{0}' is available (version '{1}'). Consider updating your manifest file.</value>
+  </data>
   <data name="RollbackDefinitionContainsExtraneousManifestIds" xml:space="preserve">
     <value>Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</value>
   </data>

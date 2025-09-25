@@ -142,7 +142,14 @@ internal class ToolRestoreCommand : CommandBase
             {
                 _reporter.WriteLine();
                 _reporter.WriteLine(string.Join(Environment.NewLine, successMessage));
-
+                
+                // Display warnings for successful restorations even in partial failure case
+                var warnings = toolRestoreResults.Where(r => r.IsSuccess && !string.IsNullOrEmpty(r.Warning)).Select(r => r.Warning);
+                if (warnings.Any())
+                {
+                    _reporter.WriteLine();
+                    _reporter.WriteLine(string.Join(Environment.NewLine, warnings).Yellow());
+                }
             }
 
             _errorReporter.WriteLine(Environment.NewLine +
@@ -156,6 +163,15 @@ internal class ToolRestoreCommand : CommandBase
         {
             _reporter.WriteLine(string.Join(Environment.NewLine,
                 toolRestoreResults.Where(r => r.IsSuccess).Select(r => r.Message)));
+            
+            // Display warnings for newer versions available
+            var warnings = toolRestoreResults.Where(r => r.IsSuccess && !string.IsNullOrEmpty(r.Warning)).Select(r => r.Warning);
+            if (warnings.Any())
+            {
+                _reporter.WriteLine();
+                _reporter.WriteLine(string.Join(Environment.NewLine, warnings).Yellow());
+            }
+            
             _reporter.WriteLine();
             _reporter.WriteLine(CliCommandStrings.LocalToolsRestoreWasSuccessful.Green());
 
@@ -205,10 +221,11 @@ internal class ToolRestoreCommand : CommandBase
         public (RestoredCommandIdentifier restoredCommandIdentifier, ToolCommand toolCommand)? SaveToCache { get; }
         public bool IsSuccess { get; }
         public string Message { get; }
+        public string Warning { get; }
 
         private ToolRestoreResult(
             (RestoredCommandIdentifier, ToolCommand)? saveToCache,
-            bool isSuccess, string message)
+            bool isSuccess, string message, string warning = null)
         {
             if (string.IsNullOrWhiteSpace(message))
             {
@@ -218,18 +235,20 @@ internal class ToolRestoreCommand : CommandBase
             SaveToCache = saveToCache;
             IsSuccess = isSuccess;
             Message = message;
+            Warning = warning;
         }
 
         public static ToolRestoreResult Success(
             (RestoredCommandIdentifier, ToolCommand)? saveToCache,
-            string message)
+            string message,
+            string warning = null)
         {
-            return new ToolRestoreResult(saveToCache, true, message);
+            return new ToolRestoreResult(saveToCache, true, message, warning);
         }
 
         public static ToolRestoreResult Failure(string message)
         {
-            return new ToolRestoreResult(null, false, message);
+            return new ToolRestoreResult(null, false, message, null);
         }
 
         public static ToolRestoreResult Failure(
@@ -238,7 +257,7 @@ internal class ToolRestoreCommand : CommandBase
         {
             return new ToolRestoreResult(null, false,
                 string.Format(CliCommandStrings.PackageFailedToRestore,
-                    packageId.ToString(), toolPackageException.ToString()));
+                    packageId.ToString(), toolPackageException.ToString()), null);
         }
     }
 }
