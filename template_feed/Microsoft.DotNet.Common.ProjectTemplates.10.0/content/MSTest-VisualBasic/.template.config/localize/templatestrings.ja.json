@@ -52,7 +52,7 @@
   "symbols/Fixture/choices/TestCleanup/description": "TestCleanup フィクスチャ メソッド",
   "postActions/restoreNugetPackages/description": "このプロジェクトに必要な NuGet パッケージを復元します。",
   "postActions/restoreNugetPackages/manualInstructions/default/text": "'dotnet restore' を実行する",
-  "postActions/addJsonProperty/description": "Create or update 'global.json' file required by Microsoft.Testing.Platform.",
-  "postActions/addJsonProperty/manualInstructions/default/text": "Manually update or create 'global.json' file setting the test runner to Microsoft.Testing.Platform",
+  "postActions/addJsonProperty/description": "Microsoft.Testing.Platform に必要な 'global.json' ファイルを作成または更新します。",
+  "postActions/addJsonProperty/manualInstructions/default/text": "テスト ランナーを Microsoft.Testing.Platform に設定する 'global.json' ファイルを手動で更新または作成する",
   "postActions/openInEditor/description": "エディターで Test1.vb を開きます"
 }
