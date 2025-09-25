@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Update;
 
 internal static class ToolUpdateCommandParser
 {
-    public static readonly Argument<PackageIdentityWithRange?> PackageIdentityArgument = CommonArguments.OptionalPackageIdentityArgument();
+    public static readonly Argument<PackageIdentityWithRange?> PackageIdentityArgument = CommonArguments.OptionalPackageIdentityArgument(CliStrings.ToolPackageIdentityArgumentDescription);
 
     public static readonly Option<bool> UpdateAllOption = ToolAppliedOption.UpdateAllOption;
 

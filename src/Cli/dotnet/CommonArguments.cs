@@ -12,25 +12,23 @@ namespace Microsoft.DotNet.Cli
     internal class CommonArguments
     {
         public static DynamicArgument<PackageIdentityWithRange?> OptionalPackageIdentityArgument() =>
+            OptionalPackageIdentityArgument(CliStrings.PackageIdentityArgumentDescription);
+
+        public static DynamicArgument<PackageIdentityWithRange?> OptionalPackageIdentityArgument(string description) =>
             new("packageId")
             {
-                Description = CliStrings.PackageIdentityArgumentDescription,
+                Description = description,
                 CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value),
                 Arity = ArgumentArity.ZeroOrOne,
             };
 
         public static DynamicArgument<PackageIdentityWithRange> RequiredPackageIdentityArgument() =>
-            new("packageId")
-            {
-                Description = CliStrings.PackageIdentityArgumentDescription,
-                CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value)!.Value,
-                Arity = ArgumentArity.ExactlyOne,
-            };
+            RequiredPackageIdentityArgument(CliStrings.PackageIdentityArgumentDescription);
 
-        public static DynamicArgument<PackageIdentityWithRange> RequiredToolPackageIdentityArgument() =>
+        public static DynamicArgument<PackageIdentityWithRange> RequiredPackageIdentityArgument(string description) =>
             new("packageId")
             {
-                Description = CliStrings.ToolPackageIdentityArgumentDescription,
+                Description = description,
                 CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value)!.Value,
                 Arity = ArgumentArity.ExactlyOne,
             };
