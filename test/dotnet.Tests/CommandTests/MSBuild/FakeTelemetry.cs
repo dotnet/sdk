@@ -10,11 +10,13 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     public class FakeTelemetry : ITelemetry
     {
         public bool Enabled { get; set; }
+        
+        private readonly List<LogEntry> _logEntries = new List<LogEntry>();
 
         public void TrackEvent(string eventName, IDictionary<string, string> properties, IDictionary<string, double> measurements)
         {
-            LogEntry = new LogEntry { EventName = eventName, Properties = properties, Measurement = measurements };
-
+            var entry = new LogEntry { EventName = eventName, Properties = properties, Measurement = measurements };
+            _logEntries.Add(entry);
         }
 
         public void Flush()
@@ -25,8 +27,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
         }
 
-        public LogEntry LogEntry { get; private set; }
+        public LogEntry LogEntry => _logEntries.Count > 0 ? _logEntries[_logEntries.Count - 1] : null;
 
+        public IReadOnlyList<LogEntry> LogEntries => _logEntries.AsReadOnly();
     }
-
 }
