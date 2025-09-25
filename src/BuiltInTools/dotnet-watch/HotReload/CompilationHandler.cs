@@ -363,7 +363,7 @@ namespace Microsoft.DotNet.Watch
                 _logger.Log(MessageDescriptor.RestartNeededToApplyChanges);
             }
 
-            var diagnosticsToDisplayInApp = new List<string>();
+            var errorsToDisplayInApp = new List<string>();
 
             // Display errors first, then warnings:
             ReportCompilationDiagnostics(DiagnosticSeverity.Error);
@@ -373,7 +373,7 @@ namespace Microsoft.DotNet.Watch
             // report or clear diagnostics in the browser UI
             await ForEachProjectAsync(
                 _runningProjects,
-                (project, cancellationToken) => project.Clients.ReportCompilationErrorsInApplicationAsync([.. diagnosticsToDisplayInApp], cancellationToken).AsTask() ?? Task.CompletedTask,
+                (project, cancellationToken) => project.Clients.ReportCompilationErrorsInApplicationAsync([.. errorsToDisplayInApp], cancellationToken).AsTask() ?? Task.CompletedTask,
                 cancellationToken);
 
             void ReportCompilationDiagnostics(DiagnosticSeverity severity)
@@ -437,16 +437,20 @@ namespace Microsoft.DotNet.Watch
             bool IsAutoRestartEnabled(ProjectId id)
                 => runningProjectInfos.TryGetValue(id, out var info) && info.RestartWhenChangesHaveNoEffect;
 
-            void ReportDiagnostic(Diagnostic diagnostic, MessageDescriptor descriptor, string prefix = "")
+            void ReportDiagnostic(Diagnostic diagnostic, MessageDescriptor descriptor, string autoPrefix = "")
             {
                 var display = CSharpDiagnosticFormatter.Instance.Format(diagnostic);
-                var args = new[] { prefix, display };
+                var args = new[] { autoPrefix, display };
 
                 _logger.Log(descriptor, args);
 
-                if (descriptor.Severity != MessageSeverity.None)
+                if (autoPrefix != "")
                 {
-                    diagnosticsToDisplayInApp.Add(descriptor.GetMessage(args));
+                    errorsToDisplayInApp.Add(MessageDescriptor.RestartingApplicationToApplyChanges.GetMessage());
+                }
+                else if (descriptor.Severity != MessageSeverity.None)
+                {
+                    errorsToDisplayInApp.Add(descriptor.GetMessage(args));
                 }
             }
 
