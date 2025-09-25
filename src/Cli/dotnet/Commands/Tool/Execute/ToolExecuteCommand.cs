@@ -41,7 +41,7 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
 
     public override int Execute()
     {
-        VersionRange versionRange = _parseResult.GetVersionRange();
+        VersionRange? versionRange = _parseResult.GetVersionRange();
         PackageId packageId = new PackageId(_packageToolIdentityArgument.Id);
 
         //  Look in local tools manifest first, but only if version is not specified
@@ -81,48 +81,78 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
                 sourceFeedOverrides: _sources,
                 additionalFeeds: _addSource);
 
-        (var bestVersion, var packageSource) = _toolPackageDownloader.GetNuGetVersion(packageLocation, packageId, _verbosity, versionRange, _restoreActionConfig);
-
-        //  TargetFramework is null, which means to use the current framework.  Global tools can override the target framework to use (or select assets for),
-        //  but we don't support this for local or one-shot tools.
-        if (!_toolPackageDownloader.TryGetDownloadedTool(packageId, bestVersion, targetFramework: null, verbosity: _verbosity, out var toolPackage))
+        if (GetBestVersionAndSource(packageLocation, packageId, versionRange) is (var bestVersion, var packageSource))
         {
-            if (!UserAgreedToRunFromSource(packageId, bestVersion, packageSource))
+            //  TargetFramework is null, which means to use the current framework.  Global tools can override the target framework to use (or select assets for),
+            //  but we don't support this for local or one-shot tools.
+            if (!_toolPackageDownloader.TryGetDownloadedTool(packageId, bestVersion, targetFramework: null, verbosity: _verbosity, out var toolPackage))
             {
-                if (_interactive)
+                if (!UserAgreedToRunFromSource(packageId, bestVersion, packageSource))
                 {
-                    Reporter.Error.WriteLine(CliCommandStrings.ToolDownloadCanceled.Red().Bold());
-                    return ERROR_CANCELLED;
+                    if (_interactive)
+                    {
+                        Reporter.Error.WriteLine(CliCommandStrings.ToolDownloadCanceled.Red().Bold());
+                        return ERROR_CANCELLED;
+                    }
+                    else
+                    {
+                        Reporter.Error.WriteLine(CliCommandStrings.ToolDownloadNeedsConfirmation.Red().Bold());
+                        return 1;
+                    }
                 }
-                else
-                {
-                    Reporter.Error.WriteLine(CliCommandStrings.ToolDownloadNeedsConfirmation.Red().Bold());
-                    return 1;
-                }
+
+                //  We've already determined which source we will use and displayed that in a confirmation message to the user.
+                //  So set the package location here to override the source feeds to just the source we already resolved to.
+                //  This does mean that we won't work with feeds that have a primary package but where the RID-specific packages are on
+                //  other feeds, but this is probably OK.
+                var downloadPackageLocation = new PackageLocation(
+                    nugetConfig: _configFile != null ? new(_configFile) : null,
+                    sourceFeedOverrides: [packageSource.Source],
+                    additionalFeeds: _addSource);
+
+                toolPackage = _toolPackageDownloader.InstallPackage(
+                    downloadPackageLocation,
+                    packageId: packageId,
+                    verbosity: _verbosity,
+                    versionRange: new VersionRange(bestVersion, true, bestVersion, true),
+                    isGlobalToolRollForward: false,
+                    restoreActionConfig: _restoreActionConfig);
             }
 
-            //  We've already determined which source we will use and displayed that in a confirmation message to the user.
-            //  So set the package location here to override the source feeds to just the source we already resolved to.
-            //  This does mean that we won't work with feeds that have a primary package but where the RID-specific packages are on
-            //  other feeds, but this is probably OK.
-            var downloadPackageLocation = new PackageLocation(
-                nugetConfig: _configFile != null ? new(_configFile) : null,
-                sourceFeedOverrides: [packageSource.Source],
-                additionalFeeds: _addSource);
-
-            toolPackage = _toolPackageDownloader.InstallPackage(
-                downloadPackageLocation,
-                packageId: packageId,
-                verbosity: _verbosity,
-                versionRange: new VersionRange(bestVersion, true, bestVersion, true),
-                isGlobalToolRollForward: false,
-                restoreActionConfig: _restoreActionConfig);
+            var commandSpec = ToolCommandSpecCreator.CreateToolCommandSpec(toolPackage.Command.Name.Value, toolPackage.Command.Executable.Value, toolPackage.Command.Runner, _allowRollForward, _forwardArguments);
+            var command = CommandFactoryUsingResolver.Create(commandSpec);
+            var result = command.Execute();
+            return result.ExitCode;
+        }
+        else
+        {
+            return 1;
         }
 
-        var commandSpec = ToolCommandSpecCreator.CreateToolCommandSpec(toolPackage.Command.Name.Value, toolPackage.Command.Executable.Value, toolPackage.Command.Runner, _allowRollForward, _forwardArguments);
-        var command = CommandFactoryUsingResolver.Create(commandSpec);
-        var result = command.Execute();
-        return result.ExitCode;
+    }
+
+    /// <summary>
+    /// Try to locate the package the user requested, and return the best version and the source it was found on.
+    /// If the package cannot be found, and the user did not specify a version, probe for prerelease versions to
+    /// give the user a nice message.
+    /// </summary>
+    private (NuGetVersion bestVersion, PackageSource packageSource)? GetBestVersionAndSource(PackageLocation packageLocation, PackageId packageId, VersionRange? versionRange)
+    {
+        try
+        {
+            (var bestVersion, var packageSource) = _toolPackageDownloader.GetNuGetVersion(packageLocation, packageId, _verbosity, versionRange, _restoreActionConfig);
+            return (bestVersion, packageSource);
+        }
+        catch (NuGetPackageNotFoundException) when (versionRange is null)
+        {
+            // if the package wasn't found and the user did an implied 'latest' (no version specified), try again with 'prerelease' support enabled
+            (var bestVersion, var packageSource) = _toolPackageDownloader.GetNuGetVersion(packageLocation, packageId, _verbosity, VersionRange.All, _restoreActionConfig);
+            if (bestVersion is not null && bestVersion.IsPrerelease)
+            {
+                Reporter.Error.WriteLine(string.Format(CliCommandStrings.ToolDownloadPackageNotFoundButHasPrerelease, packageId, bestVersion.ToString()).Yellow());
+            }
+            return null;
+        }
     }
 
     private bool UserAgreedToRunFromSource(PackageId packageId, NuGetVersion version, PackageSource source)
