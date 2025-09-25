@@ -182,6 +182,30 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         [Theory]
         [InlineData("frame")]
         [InlineData("iframe")]
+        public void IsBrowserDocumentRequest_ReturnsTrue_IfRequestFetchMetadataRequestHeaderIsFrame(string headerValue)
+        {
+            // Arrange
+            var context = new DefaultHttpContext
+            {
+                Request =
+                {
+                    Method = "Post",
+                    Headers =
+                    {
+                        ["Accept"] = "text/html",
+                        ["Sec-Fetch-Dest"] = headerValue,
+                    },
+                },
+            };
+
+            // Act
+            var result = BrowserRefreshMiddleware.IsBrowserDocumentRequest(context);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Theory]
         [InlineData("serviceworker")]
         public void IsBrowserDocumentRequest_ReturnsFalse_IfRequestFetchMetadataRequestHeaderIsNotDocument(string headerValue)
         {
