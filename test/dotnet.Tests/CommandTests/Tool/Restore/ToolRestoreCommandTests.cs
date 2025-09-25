@@ -532,6 +532,61 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 l.Contains(AnsiExtensions.Yellow(CliCommandStrings.NoToolsWereRestored)));
         }
 
+        [Fact]
+        public void WhenNewerVersionIsAvailableItShowsWarning()
+        {
+            var newerPackageVersion = NuGetVersion.Parse("2.1.4");
+            var manifestPackage = new ToolManifestPackage(
+                _packageIdA,
+                _packageVersionA,
+                new[] { _toolCommandNameA },
+                new DirectoryPath(_temporaryDirectory),
+                rollForward: false);
+
+            // Create a mock feed with both the current version and a newer version
+            var feeds = new List<MockFeed>
+            {
+                new MockFeed
+                {
+                    Type = MockFeedType.FeedFromGlobalNugetConfig,
+                    Packages = new List<MockFeedPackage>
+                    {
+                        new MockFeedPackage
+                        {
+                            PackageId = _packageIdA.ToString(),
+                            Version = _packageVersionA.ToNormalizedString(),
+                            ToolCommandName = _toolCommandNameA.Value,
+                        },
+                        new MockFeedPackage
+                        {
+                            PackageId = _packageIdA.ToString(),
+                            Version = newerPackageVersion.ToNormalizedString(),
+                            ToolCommandName = _toolCommandNameA.Value,
+                        }
+                    }
+                }
+            };
+
+            var toolPackageDownloaderMockWithFeeds = new ToolPackageDownloaderMock(
+                _toolPackageStore, _fileSystem, feeds: feeds);
+
+            IToolManifestFinder fakeManifestFinder =
+                new MockManifestFinder(new[] { manifestPackage });
+
+            ToolRestoreCommand toolRestoreCommand = new(_parseResult,
+                toolPackageDownloaderMockWithFeeds,
+                fakeManifestFinder,
+                _localToolsResolverCache,
+                _fileSystem,
+                _reporter
+            );
+
+            toolRestoreCommand.Execute().Should().Be(0);
+
+            _reporter.Lines.Should().Contain(l =>
+                l.Contains(string.Format(CliCommandStrings.RestoreNewVersionAvailable, _packageIdA, newerPackageVersion.ToNormalizedString())));
+        }
+
         private class MockManifestFinder : IToolManifestFinder
         {
             private readonly IReadOnlyCollection<ToolManifestPackage> _toReturn;
