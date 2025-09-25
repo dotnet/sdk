@@ -1088,6 +1088,11 @@ Il valore predefinito è 'false'. Tuttavia, quando la destinazione è .NET 7 o u
         <target state="translated">Lo strumento '{0}' (versione '{1}') è già installato.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolPackageIdentityArgumentDescription">
+        <source>Package reference in the form of a package identifier like 'dotnetsay' or package identifier and version separated by '@' like 'dotnetsay@2.1.7'.</source>
+        <target state="new">Package reference in the form of a package identifier like 'dotnetsay' or package identifier and version separated by '@' like 'dotnetsay@2.1.7'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolPackageNotATool">
         <source>Package {0} is not a .NET tool.</source>
         <target state="translated">Il pacchetto {0} non è uno strumento .NET.</target>

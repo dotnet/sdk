@@ -27,6 +27,14 @@ namespace Microsoft.DotNet.Cli
                 Arity = ArgumentArity.ExactlyOne,
             };
 
+        public static DynamicArgument<PackageIdentityWithRange> RequiredToolPackageIdentityArgument() =>
+            new("packageId")
+            {
+                Description = CliStrings.ToolPackageIdentityArgumentDescription,
+                CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value)!.Value,
+                Arity = ArgumentArity.ExactlyOne,
+            };
+
         private static PackageIdentityWithRange? ParsePackageIdentityWithVersionSeparator(string? packageIdentity, char versionSeparator = '@')
         {
             if (string.IsNullOrEmpty(packageIdentity))

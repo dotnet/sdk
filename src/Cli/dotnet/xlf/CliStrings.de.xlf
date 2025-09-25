@@ -1088,6 +1088,11 @@ Der Standardwert lautet FALSE. Wenn sie jedoch auf .NET 7 oder niedriger abziele
         <target state="translated">Das Tool "{0}" (Version "{1}") ist bereits installiert.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolPackageIdentityArgumentDescription">
+        <source>Package reference in the form of a package identifier like 'dotnetsay' or package identifier and version separated by '@' like 'dotnetsay@2.1.7'.</source>
+        <target state="new">Package reference in the form of a package identifier like 'dotnetsay' or package identifier and version separated by '@' like 'dotnetsay@2.1.7'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolPackageNotATool">
         <source>Package {0} is not a .NET tool.</source>
         <target state="translated">Paket {0} ist kein .NET-Tool.</target>

@@ -1088,6 +1088,11 @@ Varsayılan değer 'false.' Ancak çalışma zamanı tanımlayıcısı belirtild
         <target state="translated">'{0}' aracı (sürüm '{1}') zaten yüklü.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolPackageIdentityArgumentDescription">
+        <source>Package reference in the form of a package identifier like 'dotnetsay' or package identifier and version separated by '@' like 'dotnetsay@2.1.7'.</source>
+        <target state="new">Package reference in the form of a package identifier like 'dotnetsay' or package identifier and version separated by '@' like 'dotnetsay@2.1.7'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolPackageNotATool">
         <source>Package {0} is not a .NET tool.</source>
         <target state="translated">{0} paketi bir .NET aracı değil.</target>
