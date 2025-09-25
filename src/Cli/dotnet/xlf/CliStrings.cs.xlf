@@ -1084,6 +1084,11 @@ Výchozí hodnota je false. Pokud však cílíte na .NET 7 nebo nižší a je za
         <target state="translated">Nástroj {0} (verze {1}) je už nainstalovaný.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolPackageIdentityArgumentDescription">
+        <source>Package reference in the form of a package identifier like 'dotnetsay' or package identifier and version separated by '@' like 'dotnetsay@2.1.7'.</source>
+        <target state="new">Package reference in the form of a package identifier like 'dotnetsay' or package identifier and version separated by '@' like 'dotnetsay@2.1.7'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolPackageNotATool">
         <source>Package {0} is not a .NET tool.</source>
         <target state="translated">Balíček {0} není nástroj .NET.</target>
