@@ -783,8 +783,8 @@ setx PATH "%PATH%;{0}"
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentDescription">
-        <source>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</source>
-        <target state="translated">Référence de package sous la forme d’un identificateur de package tel que « Newtonsoft.Json » ou d’un identificateur de package et d’une version séparés par « @ », comme « Newtonsoft.Json@13.0.3 ».</target>
+        <source>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</source>
+        <target state="new">Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">
@@ -1086,11 +1086,6 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 o
       <trans-unit id="ToolPackageConflictPackageId">
         <source>Tool '{0}' (version '{1}') is already installed.</source>
         <target state="translated">L'outil '{0}' (version '{1}') est déjà installé.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolPackageIdentityArgumentDescription">
-        <source>Package reference in the form of a package identifier like 'dotnetsay' or package identifier and version separated by '@' like 'dotnetsay@2.1.7'.</source>
-        <target state="new">Package reference in the form of a package identifier like 'dotnetsay' or package identifier and version separated by '@' like 'dotnetsay@2.1.7'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolPackageNotATool">

@@ -12,23 +12,23 @@ namespace Microsoft.DotNet.Cli
     internal class CommonArguments
     {
         public static DynamicArgument<PackageIdentityWithRange?> OptionalPackageIdentityArgument() =>
-            OptionalPackageIdentityArgument(CliStrings.PackageIdentityArgumentDescription);
+            OptionalPackageIdentityArgument("Newtonsoft.Json", "13.0.3");
 
-        public static DynamicArgument<PackageIdentityWithRange?> OptionalPackageIdentityArgument(string description) =>
+        public static DynamicArgument<PackageIdentityWithRange?> OptionalPackageIdentityArgument(string examplePackage, string exampleVersion) =>
             new("packageId")
             {
-                Description = description,
+                Description = string.Format(CliStrings.PackageIdentityArgumentDescription, examplePackage, exampleVersion),
                 CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value),
                 Arity = ArgumentArity.ZeroOrOne,
             };
 
         public static DynamicArgument<PackageIdentityWithRange> RequiredPackageIdentityArgument() =>
-            RequiredPackageIdentityArgument(CliStrings.PackageIdentityArgumentDescription);
+            RequiredPackageIdentityArgument("Newtonsoft.Json", "13.0.3");
 
-        public static DynamicArgument<PackageIdentityWithRange> RequiredPackageIdentityArgument(string description) =>
+        public static DynamicArgument<PackageIdentityWithRange> RequiredPackageIdentityArgument(string examplePackage, string exampleVersion) =>
             new("packageId")
             {
-                Description = description,
+                Description = string.Format(CliStrings.PackageIdentityArgumentDescription, examplePackage, exampleVersion),
                 CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value)!.Value,
                 Arity = ArgumentArity.ExactlyOne,
             };
