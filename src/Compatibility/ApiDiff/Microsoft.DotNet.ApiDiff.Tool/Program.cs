@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.ApiDiff.Tool;
 public static class Program
 {
     private static readonly string AttributesToExcludeDefaultFileName = "AttributesToExclude.txt";
-    
+
     private static readonly string[] DefaultAttributesToExclude =
     [
         "T:System.AttributeUsageAttribute",

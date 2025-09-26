@@ -569,8 +569,8 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         {
             return parentChangeType switch
             {
-                ChangeType.Inserted  => GenerateAddedDiff(codeToDiff),
-                ChangeType.Deleted   => GenerateDeletedDiff(codeToDiff),
+                ChangeType.Inserted => GenerateAddedDiff(codeToDiff),
+                ChangeType.Deleted => GenerateDeletedDiff(codeToDiff),
                 ChangeType.Unchanged => codeToDiff,
                 _ => throw new InvalidOperationException($"Unexpected change type '{parentChangeType}'."),
             };
@@ -690,16 +690,16 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         ISymbol? symbol = node switch
         {
             DestructorDeclarationSyntax destructorDeclaration => model.GetDeclaredSymbol(destructorDeclaration),
-            FieldDeclarationSyntax fieldDeclaration           => model.GetDeclaredSymbol(fieldDeclaration.Declaration.Variables.First()),
-            EventDeclarationSyntax eventDeclaration           => model.GetDeclaredSymbol(eventDeclaration),
+            FieldDeclarationSyntax fieldDeclaration => model.GetDeclaredSymbol(fieldDeclaration.Declaration.Variables.First()),
+            EventDeclarationSyntax eventDeclaration => model.GetDeclaredSymbol(eventDeclaration),
             EventFieldDeclarationSyntax eventFieldDeclaration => model.GetDeclaredSymbol(eventFieldDeclaration.Declaration.Variables.First()),
-            PropertyDeclarationSyntax propertyDeclaration     => model.GetDeclaredSymbol(propertyDeclaration),
+            PropertyDeclarationSyntax propertyDeclaration => model.GetDeclaredSymbol(propertyDeclaration),
             _ => model.GetDeclaredSymbol(node)
         };
 
         if (symbol?.GetDocumentationCommentId() is string docId)
         {
-            if (node is RecordDeclarationSyntax record && record.ParameterList !=  null && record.ParameterList.Parameters.Any())
+            if (node is RecordDeclarationSyntax record && record.ParameterList != null && record.ParameterList.Parameters.Any())
             {
                 // Special case for when a record has a parameter list, we need to be able to differentiate the signature's parameters too,
                 // but the regular DocId does not differentiate that.
@@ -722,7 +722,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         GenerateDiff(InlineDiffBuilder.Diff(oldText: string.Empty, newText: afterNodeText));
 
     private static string? GenerateDeletedDiff(string beforeNodeText) =>
-        GenerateDiff(InlineDiffBuilder.Diff(oldText:beforeNodeText, newText: string.Empty));
+        GenerateDiff(InlineDiffBuilder.Diff(oldText: beforeNodeText, newText: string.Empty));
 
     private static string? GenerateUnchangedDiff(SyntaxNode unchangedNode)
     {
@@ -769,7 +769,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
                 beforeMember.EqualsValue is EqualsValueClauseSyntax beforeEVCS && afterMember.EqualsValue is EqualsValueClauseSyntax afterEVCS &&
                 beforeEVCS.Value is LiteralExpressionSyntax beforeLes && afterEVCS.Value is LiteralExpressionSyntax afterLes)
             {
-                    return beforeLes.Token.ValueText.CompareTo(afterLes.Token.ValueText);
+                return beforeLes.Token.ValueText.CompareTo(afterLes.Token.ValueText);
             }
 
             // Everything else is shown alphabetically.
