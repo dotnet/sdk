@@ -1,0 +1,8 @@
+{
+  "solution": {
+    "path": "sdk.slnx",
+    "projects": [
+      "src\\Installer\\dnup\\dnup.csproj",
+    ]
+  }
+}

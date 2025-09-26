@@ -35,6 +35,8 @@ using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Run.Api;
 using Microsoft.DotNet.Cli.Commands.Sdk;
+//using Microsoft.DotNet.Cli.Commands.Sdk.Install;
+using Microsoft.DotNet.Cli.Commands.Sdk.Update;
 using Microsoft.DotNet.Cli.Commands.Solution;
 using Microsoft.DotNet.Cli.Commands.Store;
 using Microsoft.DotNet.Cli.Commands.Test;
@@ -87,6 +89,8 @@ public static class Parser
         VSTestCommandParser.GetCommand(),
         HelpCommandParser.GetCommand(),
         SdkCommandParser.GetCommand(),
+        //SdkInstallCommandParser.GetRootInstallCommand(),
+        SdkUpdateCommandParser.GetRootUpdateCommand(),
         InstallSuccessCommand,
         WorkloadCommandParser.GetCommand(),
         new System.CommandLine.StaticCompletions.CompletionsCommand()

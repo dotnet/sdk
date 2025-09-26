@@ -43,6 +43,7 @@ sdk-options:
   clean             {CliCommandStrings.CleanDefinition}
   format            {CliCommandStrings.FormatDefinition}
   help              {CliCommandStrings.HelpDefinition}
+  install           Installs the .NET SDK
   msbuild           {CliCommandStrings.MsBuildDefinition}
   new               {CliCommandStrings.NewDefinition}
   nuget             {CliCommandStrings.NugetDefinition}
@@ -57,6 +58,7 @@ sdk-options:
   store             {CliCommandStrings.StoreDefinition}
   test              {CliCommandStrings.TestDefinition}
   tool              {CliCommandStrings.ToolDefinition}
+  update            Updates the .NET SDK
   vstest            {CliCommandStrings.VsTestDefinition}
   workload          {CliCommandStrings.WorkloadDefinition}
 

@@ -5,6 +5,8 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Sdk.Check;
+//using Microsoft.DotNet.Cli.Commands.Sdk.Install;
+using Microsoft.DotNet.Cli.Commands.Sdk.Update;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Sdk;
@@ -24,8 +26,10 @@ internal static class SdkCommandParser
     {
         DocumentedCommand command = new("sdk", DocsLink, CliCommandStrings.SdkAppFullName);
         command.Subcommands.Add(SdkCheckCommandParser.GetCommand());
+        //command.Subcommands.Add(SdkInstallCommandParser.GetSdkInstallCommand());
+        command.Subcommands.Add(SdkUpdateCommandParser.GetSdkUpdateCommand());
 
-        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
+        //command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
         return command;
     }

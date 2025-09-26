@@ -3,7 +3,6 @@
     <File Path="eng/dogfood.cmd" />
     <File Path="eng/dogfood.sh" />
     <File Path="eng/Versions.props" />
-    <File Path="eng/Version.Details.props" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
@@ -87,6 +86,9 @@
     <Project Path="src/Containers/containerize/containerize.csproj" />
     <Project Path="src/Containers/Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj" />
     <Project Path="src/Containers/packaging/package.csproj" />
+  </Folder>
+  <Folder Name="/src/Installer/">
+    <Project Path="src/Installer/dnup/dnup.csproj" />
   </Folder>
   <Folder Name="/src/Layout/">
     <Project Path="src/Layout/finalizer/finalizer.csproj" />
@@ -314,6 +316,7 @@
     <Project Path="test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj" />
     <Project Path="test/dotnet-watch.Tests/dotnet-watch.Tests.csproj" />
     <Project Path="test/dotnet.Tests/dotnet.Tests.csproj" />
+    <Project Path="test/dnup.Tests/dnup.Tests.csproj" />
     <Project Path="test/EndToEnd.Tests/EndToEnd.Tests.csproj" />
     <Project Path="test/HelixTasks/HelixTasks.csproj" />
     <Project Path="test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests.csproj" />

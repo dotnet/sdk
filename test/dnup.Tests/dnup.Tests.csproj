@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Microsoft.DotNet.Tools.Bootstrapper</RootNamespace>
+    <IsUnitTestProject>true</IsUnitTestProject>
+    <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Installer\dnup\dnup.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+  </ItemGroup>
+
+</Project>
