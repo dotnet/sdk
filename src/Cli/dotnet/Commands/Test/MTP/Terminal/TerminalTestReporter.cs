@@ -280,13 +280,13 @@ internal sealed partial class TerminalTestReporter : IDisposable
         bool colorizePassed = passed > 0 && _buildErrorsCount == 0 && failed == 0 && error == 0;
         bool colorizeSkipped = skipped > 0 && skipped == total && _buildErrorsCount == 0 && failed == 0 && error == 0;
 
-        string errorText = $"{SingleIndentation}error: {error}";
-        string totalText = $"{SingleIndentation}total: {total}";
-        string retriedText = $" (+{retried} retried)";
-        string failedText = $"{SingleIndentation}failed: {failed}";
-        string passedText = $"{SingleIndentation}succeeded: {passed}";
-        string skippedText = $"{SingleIndentation}skipped: {skipped}";
-        string durationText = $"{SingleIndentation}duration: ";
+        string errorText = $"{SingleIndentation}{CliCommandStrings.ErrorColon} {error}";
+        string totalText = $"{SingleIndentation}{CliCommandStrings.TotalColon} {total}";
+        string retriedText = $" (+{retried} {CliCommandStrings.Retried})";
+        string failedText = $"{SingleIndentation}{CliCommandStrings.FailedColon} {failed}";
+        string passedText = $"{SingleIndentation}{CliCommandStrings.SucceededColon} {passed}";
+        string skippedText = $"{SingleIndentation}{CliCommandStrings.SkippedColon} {skipped}";
+        string durationText = $"{SingleIndentation}{CliCommandStrings.DurationColon} ";
 
         if (error > 0)
         {
