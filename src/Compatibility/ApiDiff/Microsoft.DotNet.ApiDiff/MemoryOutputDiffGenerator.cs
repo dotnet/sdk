@@ -71,7 +71,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         _afterAssemblySymbols = new ConcurrentDictionary<string, IAssemblySymbol>(afterAssemblySymbols);
         _addPartialModifier = addPartialModifier;
         _diagnosticOptions = diagnosticOptions ?? DiffGeneratorFactory.DefaultDiagnosticOptions;
-        _attributeSymbolFilter = SymbolFilterFactory.GetFilterFromList(attributesToExclude ?? [], includeExplicitInterfaceImplementationSymbols: true);
+        _attributeSymbolFilter = SymbolFilterFactory.GetFilterFromList(GetAttributesToExcludeOrDefaults(attributesToExclude), includeExplicitInterfaceImplementationSymbols: true);
         _symbolFilter = SymbolFilterFactory.GetFilterFromList(apisToExclude ?? [], includeExplicitInterfaceImplementationSymbols: true);
         _twoSpacesTrivia = SyntaxFactory.TriviaList(SyntaxFactory.Space, SyntaxFactory.Space);
         _missingCloseBrace = SyntaxFactory.MissingToken(SyntaxKind.CloseBraceToken);
@@ -569,8 +569,8 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         {
             return parentChangeType switch
             {
-                ChangeType.Inserted => GenerateAddedDiff(codeToDiff),
-                ChangeType.Deleted => GenerateDeletedDiff(codeToDiff),
+                ChangeType.Inserted  => GenerateAddedDiff(codeToDiff),
+                ChangeType.Deleted   => GenerateDeletedDiff(codeToDiff),
                 ChangeType.Unchanged => codeToDiff,
                 _ => throw new InvalidOperationException($"Unexpected change type '{parentChangeType}'."),
             };
@@ -690,16 +690,16 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         ISymbol? symbol = node switch
         {
             DestructorDeclarationSyntax destructorDeclaration => model.GetDeclaredSymbol(destructorDeclaration),
-            FieldDeclarationSyntax fieldDeclaration => model.GetDeclaredSymbol(fieldDeclaration.Declaration.Variables.First()),
-            EventDeclarationSyntax eventDeclaration => model.GetDeclaredSymbol(eventDeclaration),
+            FieldDeclarationSyntax fieldDeclaration           => model.GetDeclaredSymbol(fieldDeclaration.Declaration.Variables.First()),
+            EventDeclarationSyntax eventDeclaration           => model.GetDeclaredSymbol(eventDeclaration),
             EventFieldDeclarationSyntax eventFieldDeclaration => model.GetDeclaredSymbol(eventFieldDeclaration.Declaration.Variables.First()),
-            PropertyDeclarationSyntax propertyDeclaration => model.GetDeclaredSymbol(propertyDeclaration),
+            PropertyDeclarationSyntax propertyDeclaration     => model.GetDeclaredSymbol(propertyDeclaration),
             _ => model.GetDeclaredSymbol(node)
         };
 
         if (symbol?.GetDocumentationCommentId() is string docId)
         {
-            if (node is RecordDeclarationSyntax record && record.ParameterList != null && record.ParameterList.Parameters.Any())
+            if (node is RecordDeclarationSyntax record && record.ParameterList !=  null && record.ParameterList.Parameters.Any())
             {
                 // Special case for when a record has a parameter list, we need to be able to differentiate the signature's parameters too,
                 // but the regular DocId does not differentiate that.
@@ -722,7 +722,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         GenerateDiff(InlineDiffBuilder.Diff(oldText: string.Empty, newText: afterNodeText));
 
     private static string? GenerateDeletedDiff(string beforeNodeText) =>
-        GenerateDiff(InlineDiffBuilder.Diff(oldText: beforeNodeText, newText: string.Empty));
+        GenerateDiff(InlineDiffBuilder.Diff(oldText:beforeNodeText, newText: string.Empty));
 
     private static string? GenerateUnchangedDiff(SyntaxNode unchangedNode)
     {
@@ -760,6 +760,24 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         return sb.Length == 0 ? null : sb.ToString();
     }
 
+    private static string[] GetAttributesToExcludeOrDefaults(string[]? attributesToExclude)
+    {
+        // If no attributes are specified, use default attributes
+        if (attributesToExclude == null)
+        {
+            return [
+                "T:System.AttributeUsageAttribute",
+                "T:System.ComponentModel.EditorBrowsableAttribute",
+                "T:System.Diagnostics.CodeAnalysis.RequiresDynamicCodeAttribute",
+                "T:System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute",
+                "T:System.Windows.Markup.ContentWrapperAttribute",
+                "T:System.Windows.TemplatePartAttribute"
+            ];
+        }
+
+        return attributesToExclude;
+    }
+
     private class ChildrenNodesComparer : IComparer<KeyValuePair<string, MemberDeclarationSyntax>>
     {
         public int Compare(KeyValuePair<string, MemberDeclarationSyntax> first, KeyValuePair<string, MemberDeclarationSyntax> second)
@@ -769,7 +787,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
                 beforeMember.EqualsValue is EqualsValueClauseSyntax beforeEVCS && afterMember.EqualsValue is EqualsValueClauseSyntax afterEVCS &&
                 beforeEVCS.Value is LiteralExpressionSyntax beforeLes && afterEVCS.Value is LiteralExpressionSyntax afterLes)
             {
-                return beforeLes.Token.ValueText.CompareTo(afterLes.Token.ValueText);
+                    return beforeLes.Token.ValueText.CompareTo(afterLes.Token.ValueText);
             }
 
             // Everything else is shown alphabetically.
