@@ -105,10 +105,6 @@ jobs:
           BuildConfig: $(buildConfiguration)
           TestFullMSBuild: ${{ parameters.testFullMSBuild }}
 
-      - ${{ if eq(parameters.targetArchitecture, 'x64') }}:
-        - powershell: build/RunTestTemplateTests.ps1
-          displayName: 🟣 Run Test Templates Tests
-
     - ${{ else }}:
       - script: |
           source $(Build.SourcesDirectory)/eng/common/native/init-os-and-arch.sh
@@ -135,6 +131,17 @@ jobs:
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
 
     ############### TESTING ###############
+    - ${{ if eq(parameters.pool.os, 'windows') }}:
+      - ${{ if eq(parameters.targetArchitecture, 'x64') }}:
+        - powershell: eng/common/build.ps1
+            -restore -test -ci -prepareMachine -nativeToolsOnMachine
+            -configuration $(buildConfiguration)
+            /p:Projects="test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj"
+            ${{ parameters.runtimeSourceProperties }}
+            /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/TestTemplateTests.binlog
+          displayName: 🟣 Run Test Templates Tests
+          condition: succeeded()
+
     - ${{ if eq(parameters.runTests, true) }}:
       - ${{ if eq(parameters.runAoTTests, true) }}:
         # For the reason this is here, see: https://github.com/dotnet/sdk/issues/22655
