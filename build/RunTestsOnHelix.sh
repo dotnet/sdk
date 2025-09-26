@@ -17,6 +17,64 @@ export DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory
 export DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=$HELIX_CORRELATION_PAYLOAD/r
 export DOTNET_SDK_TEST_ASSETS_DIRECTORY=$TestExecutionDirectory/TestAssets
 
+# Ensure Docker uses the containerd snapshotter so multi-arch tests can run.
+if [[ "$(uname -s)" == "Linux" ]] && command -v docker >/dev/null 2>&1; then
+	if ! docker info --format '{{json .DriverStatus}}' 2>/dev/null | grep -q 'io.containerd.snapshotter'; then
+		echo "Enabling Docker containerd snapshotter for test run"
+
+		if command -v sudo >/dev/null 2>&1; then
+			sudo mkdir -p /etc/docker
+			sudo python3 - <<'PY'
+import json
+import os
+
+path = "/etc/docker/daemon.json"
+data = {}
+
+if os.path.exists(path):
+		try:
+				with open(path, "r", encoding="utf-8") as f:
+						content = f.read().strip()
+				if content:
+						data = json.loads(content)
+		except Exception:
+				pass
+
+if not isinstance(data.get("features"), dict):
+		data["features"] = {}
+
+changed = data["features"].get("containerd-snapshotter") is not True
+
+if changed:
+		data["features"]["containerd-snapshotter"] = True
+		with open(path, "w", encoding="utf-8") as f:
+				json.dump(data, f, indent=2)
+				f.write("\n")
+PY
+
+			if sudo systemctl restart docker; then
+				echo "Docker daemon restarted after enabling containerd snapshotter."
+			else
+				echo "systemctl restart docker failed; attempting service restart."
+				sudo service docker restart || true
+			fi
+
+			for attempt in {1..10}; do
+				if docker info >/dev/null 2>&1; then
+					break
+				fi
+				sleep 3
+			done
+
+			if ! docker info --format '{{json .DriverStatus}}' 2>/dev/null | grep -q 'io.containerd.snapshotter'; then
+				echo "Warning: Docker containerd snapshotter still not reported as enabled."
+			fi
+		else
+			echo "Warning: sudo not available; cannot enable Docker containerd snapshotter."
+		fi
+	fi
+fi
+
 # call dotnet new so the first run message doesn't interfere with the first test
 dotnet new --debug:ephemeral-hive
 
