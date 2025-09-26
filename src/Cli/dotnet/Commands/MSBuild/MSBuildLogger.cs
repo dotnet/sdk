@@ -1,5 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+﻿﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 using System.Globalization;
 using Microsoft.Build.Framework;
@@ -13,7 +15,7 @@ public sealed class MSBuildLogger : INodeLogger
 {
     private readonly IFirstTimeUseNoticeSentinel _sentinel =
         new FirstTimeUseNoticeSentinel();
-    private readonly ITelemetry? _telemetry = null;
+    private readonly ITelemetry _telemetry;
 
     internal const string TargetFrameworkTelemetryEventName = "targetframeworkeval";
     internal const string BuildTelemetryEventName = "build";
@@ -21,6 +23,10 @@ public sealed class MSBuildLogger : INodeLogger
     internal const string BuildcheckAcquisitionFailureEventName = "buildcheck/acquisitionfailure";
     internal const string BuildcheckRunEventName = "buildcheck/run";
     internal const string BuildcheckRuleStatsEventName = "buildcheck/rule";
+
+    // These two events are aggregated and sent at the end of the build.
+    internal const string TaskFactoryTelemetryAggregatedEventName = "build/tasks/taskfactory";
+    internal const string TasksTelemetryAggregatedEventName = "build/tasks";
 
     internal const string SdkTaskBaseCatchExceptionTelemetryEventName = "taskBaseCatchException";
     internal const string PublishPropertiesTelemetryEventName = "PublishProperties";
@@ -48,11 +54,20 @@ public sealed class MSBuildLogger : INodeLogger
     /// </summary>
     internal const string SdkContainerPublishErrorEventName = "sdk/container/publish/error";
 
+    /// <summary>
+    /// Stores aggregated telemetry data by event name and property name.
+    /// </summary>
+    /// <remarks>
+    /// Key: event name, Value: property name to aggregated count.
+    /// Aggregation is very basic. Only integer properties are aggregated by summing values. Non-integer properties are ignored.
+    /// </remarks>
+    private Dictionary<string, Dictionary<string, int>> _aggregatedEvents = new();
+
     public MSBuildLogger()
     {
         try
         {
-            string? sessionId =
+            string sessionId =
                 Environment.GetEnvironmentVariable(MSBuildForwardingApp.TelemetrySessionIdEnvironmentVariableName);
 
             if (sessionId != null)
@@ -71,6 +86,14 @@ public sealed class MSBuildLogger : INodeLogger
         {
             // Exceptions during telemetry shouldn't cause anything else to fail
         }
+    }
+
+    /// <summary>
+    /// Constructor for testing purposes.
+    /// </summary>
+    internal MSBuildLogger(ITelemetry telemetry)
+    {
+        _telemetry = telemetry;
     }
 
     public void Initialize(IEventSource eventSource, int nodeCount)
@@ -95,6 +118,8 @@ public sealed class MSBuildLogger : INodeLogger
                 {
                     eventSource2.TelemetryLogged += OnTelemetryLogged;
                 }
+
+                eventSource.BuildFinished += OnBuildFinished;
             }
         }
         catch (Exception)
@@ -103,13 +128,93 @@ public sealed class MSBuildLogger : INodeLogger
         }
     }
 
-    internal static void FormatAndSend(ITelemetry? telemetry, TelemetryEventArgs args)
+    private void OnBuildFinished(object sender, BuildFinishedEventArgs e)
+    {
+        SendAggregatedEventsOnBuildFinished(_telemetry);
+    }
+
+    internal void SendAggregatedEventsOnBuildFinished(ITelemetry telemetry)
+    {
+        if (_aggregatedEvents.TryGetValue(TaskFactoryTelemetryAggregatedEventName, out var taskFactoryData))
+        {
+            Dictionary<string, string> taskFactoryProperties = ConvertToStringDictionary(taskFactoryData);
+
+            TrackEvent(telemetry, $"msbuild/{TaskFactoryTelemetryAggregatedEventName}", taskFactoryProperties, toBeHashed: [], toBeMeasured: []);
+            _aggregatedEvents.Remove(TaskFactoryTelemetryAggregatedEventName);
+        }
+
+        if (_aggregatedEvents.TryGetValue(TasksTelemetryAggregatedEventName, out var tasksData))
+        {
+            Dictionary<string, string> tasksProperties = ConvertToStringDictionary(tasksData);
+
+            TrackEvent(telemetry, $"msbuild/{TasksTelemetryAggregatedEventName}", tasksProperties, toBeHashed: [], toBeMeasured: []);
+            _aggregatedEvents.Remove(TasksTelemetryAggregatedEventName);
+        }
+    }
+
+    private static Dictionary<string, string> ConvertToStringDictionary(Dictionary<string, int> properties)
+    {
+        Dictionary<string, string> stringProperties = new();
+        foreach (var kvp in properties)
+        {
+            stringProperties[kvp.Key] = kvp.Value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        return stringProperties;
+    }
+
+    internal void AggregateEvent(TelemetryEventArgs args)
+    {
+        if (!_aggregatedEvents.TryGetValue(args.EventName, out Dictionary<string, int> eventData))
+        {
+            eventData = new Dictionary<string, int>();
+            _aggregatedEvents[args.EventName] = eventData;
+        }
+
+        foreach (var kvp in args.Properties)
+        {
+            if (int.TryParse(kvp.Value, CultureInfo.InvariantCulture, out int count))
+            {
+                if (!eventData.ContainsKey(kvp.Key))
+                {
+                    eventData[kvp.Key] = count;
+                }
+                else
+                {
+                    eventData[kvp.Key] += count;
+                }
+            }
+        }
+    }
+
+    internal static void FormatAndSend(ITelemetry telemetry, TelemetryEventArgs args)
     {
         switch (args.EventName)
         {
             case TargetFrameworkTelemetryEventName:
-                TrackEvent(telemetry, $"msbuild/{TargetFrameworkTelemetryEventName}", args.Properties, [], []);
-                break;
+                {
+                    var newEventName = $"msbuild/{TargetFrameworkTelemetryEventName}";
+                    Dictionary<string, string> maskedProperties = [];
+
+                    foreach (var key in new[] {
+                        TargetFrameworkVersionTelemetryPropertyKey,
+                        RuntimeIdentifierTelemetryPropertyKey,
+                        SelfContainedTelemetryPropertyKey,
+                        UseApphostTelemetryPropertyKey,
+                        OutputTypeTelemetryPropertyKey,
+                        UseArtifactsOutputTelemetryPropertyKey,
+                        ArtifactsPathLocationTypeTelemetryPropertyKey
+                    })
+                    {
+                        if (args.Properties.TryGetValue(key, out string value))
+                        {
+                            maskedProperties.Add(key, Sha256Hasher.HashWithNormalizedCasing(value));
+                        }
+                    }
+
+                    telemetry.TrackEvent(newEventName, maskedProperties, measurements: null);
+                    break;
+                }
             case BuildTelemetryEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildTelemetryEventName}", args.Properties,
                     toBeHashed: ["ProjectPath", "BuildTarget"],
@@ -151,44 +256,33 @@ public sealed class MSBuildLogger : INodeLogger
         }
     }
 
-    private static void TrackEvent(ITelemetry? telemetry, string eventName, IDictionary<string, string?> eventProperties, string[]? toBeHashed, string[]? toBeMeasured)
+    private static void TrackEvent(ITelemetry telemetry, string eventName, IDictionary<string, string> eventProperties, string[] toBeHashed, string[] toBeMeasured)
     {
-        if (telemetry == null || !telemetry.Enabled)
-        {
-            return;
-        }
+        Dictionary<string, string> properties = null;
+        Dictionary<string, double> measurements = null;
 
-        Dictionary<string, string?>? properties = null;
-        Dictionary<string, double>? measurements = null;
-
-        if (toBeHashed is not null)
+        foreach (var propertyToBeHashed in toBeHashed)
         {
-            foreach (var propertyToBeHashed in toBeHashed)
+            if (eventProperties.TryGetValue(propertyToBeHashed, out string value))
             {
-                if (eventProperties.TryGetValue(propertyToBeHashed, out var value))
-                {
-                    // Lets lazy allocate in case there is tons of telemetry
-                    properties ??= new Dictionary<string, string?>(eventProperties);
-                    properties[propertyToBeHashed] = Sha256Hasher.HashWithNormalizedCasing(value!);
-                }
+                // Lets lazy allocate in case there is tons of telemetry
+                properties ??= new Dictionary<string, string>(eventProperties);
+                properties[propertyToBeHashed] = Sha256Hasher.HashWithNormalizedCasing(value);
             }
         }
 
-        if (toBeMeasured is not null)
+        foreach (var propertyToBeMeasured in toBeMeasured)
         {
-            foreach (var propertyToBeMeasured in toBeMeasured)
+            if (eventProperties.TryGetValue(propertyToBeMeasured, out string value))
             {
-                if (eventProperties.TryGetValue(propertyToBeMeasured, out string? value))
+                // Lets lazy allocate in case there is tons of telemetry
+                properties ??= new Dictionary<string, string>(eventProperties);
+                properties.Remove(propertyToBeMeasured);
+                if (double.TryParse(value, CultureInfo.InvariantCulture, out double realValue))
                 {
                     // Lets lazy allocate in case there is tons of telemetry
-                    properties ??= new Dictionary<string, string?>(eventProperties);
-                    properties.Remove(propertyToBeMeasured);
-                    if (double.TryParse(value, CultureInfo.InvariantCulture, out double realValue))
-                    {
-                        // Lets lazy allocate in case there is tons of telemetry
-                        measurements ??= [];
-                        measurements[propertyToBeMeasured] = realValue;
-                    }
+                    measurements ??= [];
+                    measurements[propertyToBeMeasured] = realValue;
                 }
             }
         }
@@ -198,7 +292,14 @@ public sealed class MSBuildLogger : INodeLogger
 
     private void OnTelemetryLogged(object sender, TelemetryEventArgs args)
     {
-        FormatAndSend(_telemetry, args);
+        if (args.EventName == TaskFactoryTelemetryAggregatedEventName || args.EventName == TasksTelemetryAggregatedEventName)
+        {
+            AggregateEvent(args);
+        }
+        else
+        {
+            FormatAndSend(_telemetry, args);
+        }
     }
 
     public void Shutdown()
@@ -214,5 +315,6 @@ public sealed class MSBuildLogger : INodeLogger
     }
 
     public LoggerVerbosity Verbosity { get; set; }
-    public string? Parameters { get; set; }
+
+    public string Parameters { get; set; }
 }
