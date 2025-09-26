@@ -28,6 +28,7 @@
   <UsingTask TaskName="GetRuntimePackRids" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="GetWorkloadSetFeatureBand" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="OverrideAndCreateBundledNETCoreAppPackageVersion" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="ProcessRuntimeAnalyzerVersions" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="RemoveAssetFromDepsPackages" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="ReplaceFileContents" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="ReplaceFilesWithSymbolicLinks" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
