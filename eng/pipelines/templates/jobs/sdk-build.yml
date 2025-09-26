@@ -137,6 +137,7 @@ jobs:
             -restore -test -ci -prepareMachine -nativeToolsOnMachine
             -configuration $(buildConfiguration)
             /p:Projects="$(Build.SourcesDirectory)/test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj"
+            /p:TestRunnerAdditionalArguments="-class Microsoft.DotNet.Cli.New.IntegrationTests.DotnetNewTestTemplatesTests"
             ${{ parameters.runtimeSourceProperties }}
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/TestTemplateTests.binlog
           displayName: 🟣 Run Test Templates Tests
