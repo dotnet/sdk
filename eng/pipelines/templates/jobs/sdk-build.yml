@@ -136,7 +136,7 @@ jobs:
         - powershell: eng/common/build.ps1
             -restore -test -ci -prepareMachine -nativeToolsOnMachine
             -configuration $(buildConfiguration)
-            /p:Projects="test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj"
+            /p:Projects="$(Build.SourcesDirectory)/test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj"
             ${{ parameters.runtimeSourceProperties }}
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/TestTemplateTests.binlog
           displayName: 🟣 Run Test Templates Tests
