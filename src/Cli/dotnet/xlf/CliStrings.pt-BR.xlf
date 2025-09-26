@@ -105,10 +105,10 @@ Criará a variável quando ela não existir e a substituirá quando existir.
 Isso forçará a execução dos testes em um processo isolado. 
 Esse argumento pode ser especificado várias vezes para fornecer várias variáveis.
 
-Exemplos:
+Examples:
 -e VARIABLE=abc
--e VARIABLE="valor com espaços"
--e VARIABLE="valor;separado com;ponto e vírgula"
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />

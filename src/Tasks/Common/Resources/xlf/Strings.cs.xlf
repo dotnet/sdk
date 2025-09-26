@@ -914,7 +914,7 @@ The following are names of parameters or literal values and should not be transl
       <trans-unit id="SolutionProjectConfigurationsConflict">
         <source>NETSDK1197: Multiple solution project(s) contain conflicting '{0}' values; ensure the values match. Consider using a Directory.build.props file to set the property for all projects. Conflicting projects:
 {1}</source>
-        <target state="needs-review-translation">NETSDK1197: Projekt(y) několika řešení obsahuj(e/í) konfliktní hodnoty „{0}“; ujistěte se, že se hodnoty shodují. Zvažte použití souboru Directory.build.props k nastavení vlastnosti pro všechny projekty. Konfliktní projekty:
+        <target state="translated">NETSDK1197: Projekt(y) několika řešení obsahuj(e/í) konfliktní hodnoty „{0}“; ujistěte se, že se hodnoty shodují. Zvažte použití souboru Directory.build.props k nastavení vlastnosti pro všechny projekty. Konfliktní projekty:
 {1}</target>
         <note>{StrBegins="NETSDK1197: "}</note>
       </trans-unit>

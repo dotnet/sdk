@@ -75,7 +75,7 @@ Tento produkt shromažďuje data o využití
   <String Id="WelcomeHeader" Value="Sada .NET SDK" Localizable="no"/>
   
   <String Id="WelcomeDescription" Value="Sada .NET SDK slouží k sestavování, spouštění a testování aplikací .NET. Můžete si vybrat z několika jazyků, editorů a vývojářských nástrojů a využít rozsáhlého ekosystému knihoven k vytváření aplikací pro web, mobilní zařízení, stolní počítače, hry a IoT. Doufáme, že se vám bude líbit!"/>
-  <String Id="VisualStudioWarning" Value="Pokud plánujete používat rozhraní .NET [VERSIONMAJOR].[VERSIONMINOR] se sadou Visual Studio, je vyžadována verze Visual Studio 2022 [MINIMUMVSVERSION] nebo novější. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Přečtěte si další informace&lt;/A&gt;."/>
+  <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2026 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;."/>
   <String Id="LicenseAssent" Value="Kliknutím na Nainstalovat vyjadřujete souhlas s následujícími podmínkami:"/>
   <String Id="LearnMoreTitle" Value="Další informace o .NET"/>
   <String Id="ResourcesHeader" Value="Prostředky"/>
@@ -87,7 +87,7 @@ Tento produkt shromažďuje data o využití
   <String Id="InstallationNoteTitle" Value="Poznámka k instalaci"/>
   <String Id="InstallationNote" Value="Během procesu instalace se spustí příkaz, který zlepší rychlost obnovení projektu a povolí offline přístup. Dokončení bude trvat až minutu."/>
   
-  <String Id="VisualStudioWarning" Value="Pokud plánujete používat rozhraní .NET [VERSIONMAJOR].[VERSIONMINOR] se sadou Visual Studio, je vyžadována verze Visual Studio 2022 [MINIMUMVSVERSION] nebo novější. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Přečtěte si další informace&lt;/A&gt;."/>
+  <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2026 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;."/>
   <String Id="LicenseAssent" Value="Kliknutím na Nainstalovat vyjadřujete souhlas s následujícími podmínkami:"/>
   <String Id="InstallPathx64x86" Value="Instalační cesta pro instalace sady x64 SDK[ DOTNETHOME_X64] nemůže být stejná jako u instalací sady x86 SDK: [DOTNETHOME_X86]."/>
   <String Id="InstallPathARM64x86" Value="Instalační cesta pro instalace sady ARM64 SDK[ DOTNETHOME_ARM64] nemůže být stejná jako u instalací sady x86 SDK: [DOTNETHOME_X86]"/>

@@ -105,8 +105,9 @@ jobs:
           BuildConfig: $(buildConfiguration)
           TestFullMSBuild: ${{ parameters.testFullMSBuild }}
 
-      - powershell: build/RunTestTemplateTests.ps1
-        displayName: 🟣 Run Test Templates Tests
+      - ${{ if eq(parameters.targetArchitecture, 'x64') }}:
+        - powershell: build/RunTestTemplateTests.ps1
+          displayName: 🟣 Run Test Templates Tests
 
     - ${{ else }}:
       - script: |

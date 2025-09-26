@@ -30,8 +30,8 @@
 /src/WasmSdk @lewing @akoeplinger @pavelsavara @maraf
 
 # Area-Format
-/src/Cli/dotnet/commands/dotnet-format @arunchndr
-/test/dotnet-format.UnitTests @arunchndr
+/src/Cli/dotnet/commands/dotnet-format @phil-allen-msft
+/test/dotnet-format.UnitTests @phil-allen-msft
 
 # Area-NuGet
 /src/Cli/dotnet/Commands/NuGet @dotnet/nuget-team
@@ -76,10 +76,10 @@
 /src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ClickOnce.targets @sujitnayak
 
 # Area-Watch
-/test/TestAssets/TestProjects/Watch*/ @tmat @arunchndr @dotnet/roslyn-ide
-/test/dotnet-watch.Tests/ @tmat @arunchndr @dotnet/roslyn-ide
+/test/TestAssets/TestProjects/Watch*/ @tmat @dotnet/roslyn-ide
+/test/dotnet-watch.Tests/ @tmat @dotnet/roslyn-ide
 /test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/ @dotnet/aspnet-blazor-eng
-/src/BuiltInTools/* @tmat @arunchndr @dotnet/roslyn-ide
+/src/BuiltInTools/* @tmat @dotnet/roslyn-ide
 /src/BuiltInTools/BrowserRefresh @dotnet/aspnet-blazor-eng
 /src/BuiltInTools/AspireService @dotnet/aspnet-blazor-eng
 

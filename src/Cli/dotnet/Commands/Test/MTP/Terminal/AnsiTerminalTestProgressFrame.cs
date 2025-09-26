@@ -26,59 +26,77 @@ internal sealed class AnsiTerminalTestProgressFrame(int width, int height)
 
         int nonReservedWidth = Width - (durationString.Length + 2);
 
+        int discovered = progress.DiscoveredTests;
         int passed = progress.PassedTests;
         int failed = progress.FailedTests;
         int skipped = progress.SkippedTests;
         int retried = progress.RetriedFailedTests;
         int charsTaken = 0;
 
-        terminal.Append('[');
-        charsTaken++;
-        terminal.SetColor(TerminalColor.DarkGreen);
-        terminal.Append('✓');
-        charsTaken++;
-        string passedText = passed.ToString(CultureInfo.CurrentCulture);
-        terminal.Append(passedText);
-        charsTaken += passedText.Length;
-        terminal.ResetColor();
-
-        terminal.Append('/');
-        charsTaken++;
-
-        terminal.SetColor(TerminalColor.DarkRed);
-        terminal.Append('x');
-        charsTaken++;
-        string failedText = failed.ToString(CultureInfo.CurrentCulture);
-        terminal.Append(failedText);
-        charsTaken += failedText.Length;
-        terminal.ResetColor();
-
-        terminal.Append('/');
-        charsTaken++;
-
-        terminal.SetColor(TerminalColor.DarkYellow);
-        terminal.Append('↓');
-        charsTaken++;
-        string skippedText = skipped.ToString(CultureInfo.CurrentCulture);
-        terminal.Append(skippedText);
-        charsTaken += skippedText.Length;
-        terminal.ResetColor();
-
-        if (retried > 0)
+        if (!progress.IsDiscovery)
         {
+            terminal.Append('[');
+            charsTaken++;
+            terminal.SetColor(TerminalColor.DarkGreen);
+            terminal.Append('✓');
+            charsTaken++;
+            string passedText = passed.ToString(CultureInfo.CurrentCulture);
+            terminal.Append(passedText);
+            charsTaken += passedText.Length;
+            terminal.ResetColor();
+
             terminal.Append('/');
             charsTaken++;
-            terminal.SetColor(TerminalColor.Gray);
-            terminal.Append('r');
-            charsTaken++;
-            string retriedText = retried.ToString(CultureInfo.CurrentCulture);
-            terminal.Append(retriedText);
-            charsTaken += retriedText.Length;
-            terminal.ResetColor();
-        }
 
-        terminal.Append(']');
-        charsTaken++;
+            terminal.SetColor(TerminalColor.DarkRed);
+            terminal.Append('x');
+            charsTaken++;
+            string failedText = failed.ToString(CultureInfo.CurrentCulture);
+            terminal.Append(failedText);
+            charsTaken += failedText.Length;
+            terminal.ResetColor();
+
+            terminal.Append('/');
+            charsTaken++;
+
+            terminal.SetColor(TerminalColor.DarkYellow);
+            terminal.Append('↓');
+            charsTaken++;
+            string skippedText = skipped.ToString(CultureInfo.CurrentCulture);
+            terminal.Append(skippedText);
+            charsTaken += skippedText.Length;
+            terminal.ResetColor();
+
+            if (retried > 0)
+            {
+                terminal.Append('/');
+                charsTaken++;
+                terminal.SetColor(TerminalColor.Gray);
+                terminal.Append('r');
+                charsTaken++;
+                string retriedText = retried.ToString(CultureInfo.CurrentCulture);
+                terminal.Append(retriedText);
+                charsTaken += retriedText.Length;
+                terminal.ResetColor();
+            }
+
+            terminal.Append(']');
+            charsTaken++;
+        }
+        else
+        {
+            string discoveredText = progress.DiscoveredTests.ToString(CultureInfo.CurrentCulture);
+            terminal.Append('[');
+            charsTaken++;
+            terminal.SetColor(TerminalColor.DarkMagenta);
+            terminal.Append('+');
+            charsTaken++;
+            terminal.Append(discoveredText);
+            charsTaken += discoveredText.Length;
+            terminal.ResetColor();
+            terminal.Append(']');
+            charsTaken++;
+        }
 
         terminal.Append(' ');
         charsTaken++;

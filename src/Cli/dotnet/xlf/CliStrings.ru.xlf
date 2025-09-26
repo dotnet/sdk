@@ -107,8 +107,8 @@ Examples:
 
 Примеры:
 -e VARIABLE=abc
--e VARIABLE="значение с пробелами"
--e VARIABLE="значение;разделенное;точками;с;запятыми"
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
