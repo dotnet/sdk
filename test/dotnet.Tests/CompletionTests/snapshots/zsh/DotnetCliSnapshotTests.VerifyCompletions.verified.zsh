@@ -1493,7 +1493,7 @@ _testhost_commands() {
         'run:.NET Run Command' \
         'solution:.NET modify solution file command' \
         'store:Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.' \
-        'test:.NET Test Driver' \
+        'test:.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https\://aka.ms/dotnet-test.' \
         'tool:Install or work with tools that extend the .NET experience.' \
         'vstest:' \
         'help:.NET CLI help utility' \
