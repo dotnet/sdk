@@ -850,15 +850,6 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">솔루션에서 json 파일을 찾을 수 없습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PostAction_ModifyJson_Error_NullJson">
-        <source>The result of parsing the following JSON was 'null':
-
-{0}</source>
-        <target state="new">The result of parsing the following JSON was 'null':
-
-{0}</target>
-        <note>{0} is the JSON that is being parsed.</note>
-      </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ParentPropertyPathInvalid">
         <source>Parent property path '{0}' could not be traversed.</source>
         <target state="translated">'{0}' 부모 속성 경로를 트래버스할 수 없습니다.</target>
