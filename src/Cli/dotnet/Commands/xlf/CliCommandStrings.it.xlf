@@ -1162,10 +1162,15 @@ Per altre informazioni, vedere https://aka.ms/dotnet-test/mtp.</target>
         <target state="translated">Individuazione di test da</target>
         <note />
       </trans-unit>
-      <trans-unit id="DotnetTestCommand">
-        <source>.NET Test Command</source>
-        <target state="translated">Comando di test .NET</target>
-        <note />
+      <trans-unit id="DotnetTestCommandMTPDescription">
+        <source>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="new">.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
+      </trans-unit>
+      <trans-unit id="DotnetTestCommandVSTestDescription">
+        <source>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="new">.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
         <source>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</source>
@@ -1231,6 +1236,16 @@ Rendi distinti i nomi profilo.</target>
         <target state="translated">Le direttive duplicate non supportate: {0}</target>
         <note>{0} is the directive type and name.</note>
       </trans-unit>
+      <trans-unit id="DurationColon">
+        <source>duration:</source>
+        <target state="new">duration:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ErrorColon">
+        <source>error:</source>
+        <target state="new">error:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
         <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
 
@@ -1279,6 +1294,11 @@ Rendi distinti i nomi profilo.</target>
       <trans-unit id="FailedAdManifestUpdate">
         <source>Failed to update the advertising manifest {0}: {1}.</source>
         <target state="translated">Non è stato possibile scaricare il manifesto di pubblicità {0}: {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedColon">
+        <source>failed:</source>
+        <target state="new">failed:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -2672,6 +2692,11 @@ Per impostazione predefinita, viene generato un pacchetto dipendente dal framewo
         <target state="translated">Lo strumento '{0}' (versione '{1}') è stato ripristinato. Comandi disponibili: {2}</target>
         <note />
       </trans-unit>
+      <trans-unit id="Retried">
+        <source>retried</source>
+        <target state="new">retried</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RollForwardDefinition">
         <source>Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</source>
         <target state="translated">Esegue il roll forward alla versione del framework (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</target>
@@ -2951,6 +2976,11 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <target state="translated">Non crea i file di simboli che è possibile usare per la profilatura degli assembly ottimizzati.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SkippedColon">
+        <source>skipped:</source>
+        <target state="new">skipped:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SkippedLowercase">
         <source>skipped</source>
         <target state="translated">ignorato</target>
@@ -3086,6 +3116,11 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <target state="translated">Runtime di destinazione per cui archiviare i pacchetti.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SucceededColon">
+        <source>succeeded:</source>
+        <target state="new">succeeded:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Summary">
         <source>Summary</source>
         <target state="translated">Riepilogo</target>
@@ -3099,11 +3134,6 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
       <trans-unit id="TempDirOptionDescription">
         <source>Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</source>
         <target state="translated">Specificare una directory temporanea per questo comando per scaricare ed estrarre i pacchetti NuGet (deve essere protetta).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TestAppFullName">
-        <source>.NET Test Driver</source>
-        <target state="translated">Driver di test .NET</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCmdNoLogo">
@@ -3550,6 +3580,11 @@ e gli ID pacchetto corrispondenti per gli strumenti installati usando il comando
       <trans-unit id="ToolUpdateUpdateSucceeded">
         <source>Tool '{0}' was successfully updated from version '{1}' to version '{2}'.</source>
         <target state="translated">Lo strumento '{0}' è stato aggiornato dalla versione '{1}' alla versione '{2}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TotalColon">
+        <source>total:</source>
+        <target state="new">total:</target>
         <note />
       </trans-unit>
       <trans-unit id="Try">

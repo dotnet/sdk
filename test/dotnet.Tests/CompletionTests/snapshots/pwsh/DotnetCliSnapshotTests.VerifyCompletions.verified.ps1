@@ -48,7 +48,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('solution', 'solution', [CompletionResultType]::ParameterValue, ".NET modify solution file command")
                 [CompletionResult]::new('solution', 'sln', [CompletionResultType]::ParameterValue, ".NET modify solution file command")
                 [CompletionResult]::new('store', 'store', [CompletionResultType]::ParameterValue, "Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.")
-                [CompletionResult]::new('test', 'test', [CompletionResultType]::ParameterValue, ".NET Test Driver")
+                [CompletionResult]::new('test', 'test', [CompletionResultType]::ParameterValue, ".NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.")
                 [CompletionResult]::new('tool', 'tool', [CompletionResultType]::ParameterValue, "Install or work with tools that extend the .NET experience.")
                 [CompletionResult]::new('vstest', 'vstest', [CompletionResultType]::ParameterValue, "vstest")
                 [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, ".NET CLI help utility")
