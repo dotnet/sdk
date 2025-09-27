@@ -16,6 +16,11 @@ Testing:
   - Examples:
     - `dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "Name~ItShowsTheAppropriateMessageToTheUser"`
     - `dotnet exec artifacts/bin/redist/Debug/dotnet.Tests.dll -method "*ItShowsTheAppropriateMessageToTheUser*"`
+- To test CLI command changes:
+  - Build the redist SDK: `./build.sh` from repo root
+  - Create a dogfood environment: `source eng/dogfood.sh` 
+  - Test commands in the dogfood shell (e.g., `dnx --help`, `dotnet tool install --help`)
+  - The dogfood script sets up PATH and environment to use the newly built SDK
 
 Output Considerations:
 - When considering how output should look, solicit advice from baronfel.

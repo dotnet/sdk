@@ -12,17 +12,23 @@ namespace Microsoft.DotNet.Cli
     internal class CommonArguments
     {
         public static DynamicArgument<PackageIdentityWithRange?> OptionalPackageIdentityArgument() =>
+            OptionalPackageIdentityArgument("Newtonsoft.Json", "13.0.3");
+
+        public static DynamicArgument<PackageIdentityWithRange?> OptionalPackageIdentityArgument(string examplePackage, string exampleVersion) =>
             new("packageId")
             {
-                Description = CliStrings.PackageIdentityArgumentDescription,
+                Description = string.Format(CliStrings.PackageIdentityArgumentDescription, examplePackage, exampleVersion),
                 CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value),
                 Arity = ArgumentArity.ZeroOrOne,
             };
 
         public static DynamicArgument<PackageIdentityWithRange> RequiredPackageIdentityArgument() =>
+            RequiredPackageIdentityArgument("Newtonsoft.Json", "13.0.3");
+
+        public static DynamicArgument<PackageIdentityWithRange> RequiredPackageIdentityArgument(string examplePackage, string exampleVersion) =>
             new("packageId")
             {
-                Description = CliStrings.PackageIdentityArgumentDescription,
+                Description = string.Format(CliStrings.PackageIdentityArgumentDescription, examplePackage, exampleVersion),
                 CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value)!.Value,
                 Arity = ArgumentArity.ExactlyOne,
             };
