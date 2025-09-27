@@ -31,12 +31,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         {
             var testAsset = "RazorComponentApp";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset)
-                .WithProjectChanges(p =>
-                {
-                    var fingerprintContent = p.Descendants()
-                        .SingleOrDefault(e => e.Name.LocalName == "StaticWebAssetsFingerprintContent");
-                    fingerprintContent.Value = "true";
-                });
+                .WithProjectChanges(p => {
+                     var fingerprintContent = p.Descendants()
+                         .SingleOrDefault(e => e.Name.LocalName == "StaticWebAssetsFingerprintContent");
+                     fingerprintContent.Value = "true";
+                 });
 
             Directory.CreateDirectory(Path.Combine(projectDirectory.TestRoot, "wwwroot"));
             File.WriteAllText(Path.Combine(projectDirectory.TestRoot, "wwwroot", "ComponentApp.lib.module.js"), "console.log('Hello world!');");
@@ -90,8 +89,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         {
             var testAsset = "RazorComponentApp";
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
-                .WithProjectChanges(p =>
-                {
+                .WithProjectChanges(p => {
                     var fingerprintContent = p.Descendants()
                         .SingleOrDefault(e => e.Name.LocalName == "StaticWebAssetsFingerprintContent");
                     fingerprintContent.Value = "true";

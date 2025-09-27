@@ -74,7 +74,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 endpoint.ResponseHeaders.Where(e => e.Name == "Content-Encoding").Select(e => e.Value).Single().Should().Be("gzip");
 
                 var etags = endpoint.ResponseHeaders.Where(e => e.Name == "ETag").Select(e => EntityTagHeaderValue.Parse(e.Value));
-                etags.Where(e => !e.IsWeak).Select(e => e.Tag).Single().Should().BeEquivalentTo($"\"{gzipAsset.Integrity}\"");
+                etags.Where(e=> !e.IsWeak).Select(e => e.Tag).Single().Should().BeEquivalentTo($"\"{gzipAsset.Integrity}\"");
                 if (endpoint.Route.EndsWith(".gz"))
                 {
                     continue;

@@ -3,15 +3,15 @@
 
 #nullable disable
 
-using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using System.Globalization;
-using System.Net;
+using System.Diagnostics;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Moq;
 using NuGet.Packaging.Core;
+using System.Net;
+using System.Globalization;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 

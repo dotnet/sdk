@@ -157,7 +157,7 @@ public class GenerateStaticWebAssetEndpointsPropsFileTest
 
         result.Should().BeFalse();
         errorMessages.Should().ContainSingle();
-        errorMessages[0].Should().Be($"""The asset file '{Path.GetFullPath(Path.Combine("wwwroot", "js", "sample.js"))}' specified in the endpoint '{Path.Combine("js", "sample.js").Replace('\\', '/')}' does not exist.""");
+        errorMessages[0].Should().Be($"""The asset file '{Path.GetFullPath(Path.Combine("wwwroot", "js", "sample.js"))}' specified in the endpoint '{Path.Combine("js","sample.js").Replace('\\', '/')}' does not exist.""");
     }
 
     private static ITaskItem CreateStaticWebAsset(

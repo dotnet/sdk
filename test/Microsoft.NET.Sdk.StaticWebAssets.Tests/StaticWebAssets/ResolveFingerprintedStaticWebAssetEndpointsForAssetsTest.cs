@@ -41,7 +41,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
         var resolvedEndpoints = new ResolveFingerprintedStaticWebAssetEndpointsForAssets
         {
             CandidateAssets = [.. candidateAssets],
-            CandidateEndpoints = [.. endpoints.Select(e => e.ToTaskItem())],
+            CandidateEndpoints = [..endpoints.Select(e => e.ToTaskItem())],
             IsStandalone = true,
             BuildEngine = buildEngine.Object
         };

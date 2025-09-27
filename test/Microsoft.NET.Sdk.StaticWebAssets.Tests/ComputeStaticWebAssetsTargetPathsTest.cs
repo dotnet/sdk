@@ -13,7 +13,6 @@ using Microsoft.Build.Framework;
 using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
-
 public class ComputeStaticWebAssetsTargetPathsTest
 {
     [Fact]
