@@ -35,9 +35,14 @@ namespace Microsoft.DotNet.HotReload
 
         private void DisposePipe()
         {
-            Logger.LogDebug("Disposing agent communication pipe");
-            _pipe?.Dispose();
-            _pipe = null;
+            if (_pipe != null)
+            {
+                Logger.LogDebug("Disposing agent communication pipe");
+
+                // Dispose the pipe but do not set it to null, so that any in-progress 
+                // operations throw the appropriate exception type.
+                _pipe.Dispose();
+            }
         }
 
         // for testing
@@ -101,8 +106,7 @@ namespace Microsoft.DotNet.HotReload
             // should only be called after connection has been created:
             _ = GetCapabilitiesTask();
 
-            if (_pipe == null)
-                throw new InvalidOperationException("Pipe has been disposed.");
+            Debug.Assert(_pipe != null);
         }
 
         public override void ConfigureLaunchEnvironment(IDictionary<string, string> environmentBuilder)
@@ -152,7 +156,13 @@ namespace Microsoft.DotNet.HotReload
             {
                 if (!success)
                 {
-                    Logger.LogWarning("Further changes won't be applied to this process.");
+                    // Don't report a warning when cancelled. The process has terminated or the host is shutting down in that case.
+                    // Best effort: There is an inherent race condition due to time between the process exiting and the cancellation token triggering.
+                    if (!cancellationToken.IsCancellationRequested)
+                    {
+                        Logger.LogWarning("Further changes won't be applied to this process.");
+                    }
+
                     _managedCodeUpdateFailedOrCancelled = true;
                     DisposePipe();
                 }
@@ -216,7 +226,7 @@ namespace Microsoft.DotNet.HotReload
         private ValueTask<bool> SendAndReceiveUpdateAsync<TRequest>(TRequest request, bool isProcessSuspended, CancellationToken cancellationToken)
             where TRequest : IUpdateRequest
         {
-            // Should not be disposed:
+            // Should not initialized:
             Debug.Assert(_pipe != null);
 
             return SendAndReceiveUpdateAsync(
@@ -241,8 +251,10 @@ namespace Microsoft.DotNet.HotReload
 
                     Logger.LogDebug("Update batch #{UpdateId} failed.", batchId);
                 }
-                catch (Exception e) when (e is not OperationCanceledException || isProcessSuspended)
+                catch (Exception e)
                 {
+                    // Don't report an error when cancelled. The process has terminated or the host is shutting down in that case.
+                    // Best effort: There is an inherent race condition due to time between the process exiting and the cancellation token triggering.
                     if (cancellationToken.IsCancellationRequested)
                     {
                         Logger.LogDebug("Update batch #{UpdateId} canceled.", batchId);
@@ -267,7 +279,7 @@ namespace Microsoft.DotNet.HotReload
 
         private async ValueTask<bool> ReceiveUpdateResponseAsync(CancellationToken cancellationToken)
         {
-            // Should not be disposed:
+            // Should be initialized:
             Debug.Assert(_pipe != null);
 
             var (success, log) = await UpdateResponse.ReadAsync(_pipe, cancellationToken);
@@ -296,10 +308,12 @@ namespace Microsoft.DotNet.HotReload
             }
             catch (Exception e) when (e is not OperationCanceledException)
             {
-                // pipe might throw another exception when forcibly closed on process termination:
+                // Pipe might throw another exception when forcibly closed on process termination.
+                // Don't report an error when cancelled. The process has terminated or the host is shutting down in that case.
+                // Best effort: There is an inherent race condition due to time between the process exiting and the cancellation token triggering.
                 if (!cancellationToken.IsCancellationRequested)
                 {
-                    Logger.LogError("Failed to send InitialUpdatesCompleted: {Message}", e.Message);
+                    Logger.LogError("Failed to send {RequestType}: {Message}", nameof(RequestType.InitialUpdatesCompleted), e.Message);
                 }
             }
         }

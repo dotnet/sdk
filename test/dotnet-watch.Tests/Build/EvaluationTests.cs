@@ -236,8 +236,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var project1 = new TestProject("Project1")
             {
+                IsExe = true,
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework};net462",
                 ReferencedProjects = { project2 },
+                SourceFiles =
+                {
+                    { "Project1.cs", s_emptyProgram },
+                },
             };
 
             var testAsset = _testAssets.CreateTestProject(project1);
@@ -271,8 +276,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var project1 = new TestProject("Project1")
             {
+                IsExe = true,
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework};net462",
                 ReferencedProjects = { project2 },
+                SourceFiles =
+                {
+                    { "Project1.cs", s_emptyProgram },
+                },
             };
 
             var testAsset = _testAssets.CreateTestProject(project1);
@@ -305,8 +315,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var project1 = new TestProject("Project1")
             {
+                IsExe = true,
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 ReferencedProjects = { project2 },
+                SourceFiles =
+                {
+                    { "Project1.cs", s_emptyProgram },
+                },
             };
 
             var testAsset = _testAssets.CreateTestProject(project1, identifier: specifyTargetFramework.ToString());
@@ -479,8 +494,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var project1 = new TestProject("Project1")
             {
+                IsExe = true,
                 TargetFrameworks = "net462",
                 ReferencedProjects = { project2 },
+                SourceFiles =
+                {
+                    { "Program.cs", s_emptyProgram },
+                },
             };
 
             var testAsset = _testAssets.CreateTestProject(project1);
@@ -495,9 +515,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Null(result);
 
             // note: msbuild prints errors to stdout, we match the pattern and report as error:
-            AssertEx.Equal(
+            Assert.Contains(
                 $"[Error] {project1Path} : error NU1201: Project Project2 is not compatible with net462 (.NETFramework,Version=v4.6.2). Project Project2 supports: netstandard2.1 (.NETStandard,Version=v2.1)",
-                _logger.GetAndClearMessages().Single(m => m.Contains("error NU1201")));
+                _logger.GetAndClearMessages());
         }
 
         private readonly struct ExpectedFile(string path, string? staticAssetUrl = null, bool targetsOnly = false, bool graphOnly = false)

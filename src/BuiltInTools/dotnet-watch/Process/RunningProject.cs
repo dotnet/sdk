@@ -3,8 +3,10 @@
 
 
 using System.Collections.Immutable;
+using System.Diagnostics;
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.HotReload;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -19,7 +21,6 @@ namespace Microsoft.DotNet.Watch
         CancellationTokenSource processExitedSource,
         CancellationTokenSource processTerminationSource,
         RestartOperation restartOperation,
-        IReadOnlyList<IDisposable> disposables,
         ImmutableArray<string> capabilities) : IDisposable
     {
         public readonly ProjectGraphNode ProjectNode = projectNode;
@@ -31,44 +32,64 @@ namespace Microsoft.DotNet.Watch
         public readonly RestartOperation RestartOperation = restartOperation;
 
         /// <summary>
-        /// Cancellation source triggered when the process exits.
+        /// Cancellation token triggered when the process exits.
+        /// Stores the token to allow callers to use the token even after the source has been disposed.
         /// </summary>
-        public readonly CancellationTokenSource ProcessExitedSource = processExitedSource;
+        public CancellationToken ProcessExitedCancellationToken = processExitedSource.Token;
 
         /// <summary>
-        /// Cancellation source to use to terminate the process.
+        /// Set to true when the process termination is being requested so that it can be restarted within
+        /// the Hot Reload session (i.e. without restarting the root project).
         /// </summary>
-        public readonly CancellationTokenSource ProcessTerminationSource = processTerminationSource;
+        public bool IsRestarting { get; private set; }
+
+        private volatile bool _isDisposed;
 
         /// <summary>
-        /// Misc disposable object to dispose when the object is disposed.
+        /// Disposes the project. Can occur unexpectedly whenever the process exits.
+        /// Must only be called once per project.
         /// </summary>
-        private readonly IReadOnlyList<IDisposable> _disposables = disposables;
-
         public void Dispose()
         {
-            Clients.Dispose();
-            ProcessTerminationSource.Dispose();
-            ProcessExitedSource.Dispose();
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
 
-            foreach (var disposable in _disposables)
-            {
-                disposable.Dispose();
-            }
+            _isDisposed = true;
+            processExitedSource.Cancel();
+
+            Clients.Dispose();
+            processTerminationSource.Dispose();
+            processExitedSource.Dispose();
         }
 
         /// <summary>
         /// Waits for the application process to start.
         /// Ensures that the build has been complete and the build outputs are available.
+        /// Returns false if the process has exited before the connection was established.
         /// </summary>
-        public async ValueTask WaitForProcessRunningAsync(CancellationToken cancellationToken)
+        public async ValueTask<bool> WaitForProcessRunningAsync(CancellationToken cancellationToken)
         {
-            await Clients.WaitForConnectionEstablishedAsync(cancellationToken);
+            using var processCommunicationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ProcessExitedCancellationToken);
+
+            try
+            {
+                await Clients.WaitForConnectionEstablishedAsync(processCommunicationCancellationSource.Token);
+                return true;
+            }
+            catch (OperationCanceledException) when (ProcessExitedCancellationToken.IsCancellationRequested)
+            {
+                return false;
+            }
         }
 
-        public async ValueTask<int> TerminateAsync()
+        public async Task<int> TerminateAsync(bool isRestarting)
         {
-            ProcessTerminationSource.Cancel();
+            IsRestarting = isRestarting;
+
+            if (!_isDisposed)
+            {
+                processTerminationSource.Cancel();
+            }
+
             return await RunningProcess;
         }
     }
