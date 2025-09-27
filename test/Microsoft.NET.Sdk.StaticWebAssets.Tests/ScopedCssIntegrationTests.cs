@@ -636,8 +636,14 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             // Add assembly name property to ensure consistent naming
             var libProjectContent = File.ReadAllText(newLibProjectFile);
-            libProjectContent = libProjectContent.Replace("</PropertyGroup>", 
-                "    <AssemblyName>项目</AssemblyName>\n    <PackageId>项目</PackageId>\n  </PropertyGroup>", 1);
+            // Find the first PropertyGroup closing tag and replace it
+            var targetPattern = "</PropertyGroup>";
+            var replacement = "    <AssemblyName>项目</AssemblyName>\n    <PackageId>项目</PackageId>\n  </PropertyGroup>";
+            var index = libProjectContent.IndexOf(targetPattern);
+            if (index >= 0)
+            {
+                libProjectContent = libProjectContent.Substring(0, index) + replacement + libProjectContent.Substring(index + targetPattern.Length);
+            }
             File.WriteAllText(newLibProjectFile, libProjectContent);
 
             // Update the main project to reference the renamed library
