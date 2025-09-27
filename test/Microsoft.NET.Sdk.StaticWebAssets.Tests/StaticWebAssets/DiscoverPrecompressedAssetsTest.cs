@@ -44,7 +44,7 @@ public class DiscoverPrecompressedAssetsTest
             CopyToOutputDirectory = StaticWebAsset.AssetCopyOptions.Never,
             Fingerprint = "uncompressed",
             RelatedAsset = string.Empty,
-            ContentRoot = Path.Combine(Environment.CurrentDirectory,"wwwroot"),
+            ContentRoot = Path.Combine(Environment.CurrentDirectory, "wwwroot"),
             SourceType = StaticWebAsset.SourceTypes.Discovered,
             Integrity = "uncompressed-integrity",
             AssetRole = StaticWebAsset.AssetRoles.Primary,

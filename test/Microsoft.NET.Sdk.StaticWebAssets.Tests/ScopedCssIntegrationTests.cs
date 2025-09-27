@@ -634,16 +634,16 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             ExecuteCommand(build, "/p:PackageId=项目").Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
-            
+
             // Check that the staticwebassets.build.endpoints.json file contains URL-encoded characters
             var endpointsFile = Path.Combine(intermediateOutputPath, "staticwebassets.build.endpoints.json");
             new FileInfo(endpointsFile).Should().Exist();
-            
+
             var endpointsContent = File.ReadAllText(endpointsFile);
-            
+
             // Verify that the Link header contains URL-encoded characters (%E9%A1%B9%E7%9B%AE is "项目" encoded)
             endpointsContent.Should().Contain("%E9%A1%B9%E7%9B%AE");
-            
+
             // Verify it doesn't contain the unencoded characters 
             endpointsContent.Should().NotContain("项目");
         }

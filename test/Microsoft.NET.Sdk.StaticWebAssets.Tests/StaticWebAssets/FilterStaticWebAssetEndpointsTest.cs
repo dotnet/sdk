@@ -9,6 +9,7 @@ using Microsoft.Build.Utilities;
 using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests.StaticWebAssets;
+
 public class FilterStaticWebAssetEndpointsTest
 {
     [Fact]

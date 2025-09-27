@@ -217,9 +217,9 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             asset.GetMetadata(nameof(StaticWebAsset.OriginalItemSpec)).Should().Be(Path.Combine("wwwroot", fileName));
         }
 
-    [Fact]
-    [Trait("Category", "FingerprintIdentity")]
-    public void ComputesIdentity_UsingFingerprintPattern_ForComputedAssets_WhenIdentityNeedsComputation()
+        [Fact]
+        [Trait("Category", "FingerprintIdentity")]
+        public void ComputesIdentity_UsingFingerprintPattern_ForComputedAssets_WhenIdentityNeedsComputation()
         {
             // Arrange: simulate a packaged asset (outside content root) with a RelativePath inside the app
             var errorMessages = new List<string>();
@@ -251,7 +251,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                     })
                 ],
                 // No RelativePathPattern, we trigger the branch that synthesizes identity under content root.
-                FingerprintPatterns = [ new TaskItem("Js", new Dictionary<string,string>{{"Pattern","*.js"},{"Expression","#[.{fingerprint}]!"}})],
+                FingerprintPatterns = [new TaskItem("Js", new Dictionary<string, string> { { "Pattern", "*.js" }, { "Expression", "#[.{fingerprint}]!" } })],
                 FingerprintCandidates = true,
                 SourceType = "Computed",
                 SourceId = "Client",
