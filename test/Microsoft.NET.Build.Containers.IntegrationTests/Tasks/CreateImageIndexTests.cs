@@ -22,7 +22,7 @@ public class CreateImageIndexTests
         _testOutput = testOutput;
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableFact()]
     public async Task CreateImageIndex_Baseline()
     {
         DirectoryInfo newProjectDir = CreateNewProject();
@@ -84,6 +84,20 @@ public class CreateImageIndexTests
         return newProjectDir;
     }
 
+    private static ITaskItem[] MakeItemsForPublishDir(string publishDir)
+    {
+        var files = Directory.GetFiles(publishDir, "*", new EnumerationOptions()
+        {
+            RecurseSubdirectories=true
+        });
+
+        return files.Select(f => new TaskItem(f, new Dictionary<string, string>
+        {
+            ["RelativePath"] = Path.GetRelativePath(publishDir, f)
+        })).ToArray();
+    }
+
+
     private TaskItem PublishAndCreateNewImage(
         string rid,
         string outputRegistry,
@@ -108,13 +122,11 @@ public class CreateImageIndexTests
 
         cni.OutputRegistry = outputRegistry;
         cni.LocalRegistry = DockerAvailableFactAttribute.LocalRegistry;
-        cni.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, rid, "publish");
+        // cni.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, rid, "publish"));
         cni.Repository = repository;
         cni.ImageTags = tags.Select(t => $"{t}-{rid}").ToArray();
         cni.WorkingDirectory = "app/";
-        cni.ContainerRuntimeIdentifier = rid;
         cni.Entrypoint = new TaskItem[] { new("dotnet"), new("build") };
-        cni.RuntimeIdentifierGraphPath = ToolsetUtils.GetRuntimeGraphFilePath();
 
         Assert.True(cni.Execute(), FormatBuildMessages(errors));
 
