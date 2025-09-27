@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -625,12 +626,12 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             // Rename the ClassLibrary project to have non-ASCII characters
-            var originalLibPath = Path.Combine(ProjectDirectory.Path, "ClassLibrary");
+            var originalLibPath = Path.Combine(ProjectDirectory.Path, "AnotherClassLib");
             var newLibPath = Path.Combine(ProjectDirectory.Path, "项目");
             Directory.Move(originalLibPath, newLibPath);
 
             // Update the project file to set the assembly name and package ID
-            var libProjectFile = Path.Combine(newLibPath, "ClassLibrary.csproj");
+            var libProjectFile = Path.Combine(newLibPath, "AnotherClassLib.csproj");
             var newLibProjectFile = Path.Combine(newLibPath, "项目.csproj");
             File.Move(libProjectFile, newLibProjectFile);
 
@@ -649,11 +650,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             // Update the main project to reference the renamed library
             var mainProjectFile = Path.Combine(ProjectDirectory.Path, "AppWithPackageAndP2PReference", "AppWithPackageAndP2PReference.csproj");
             var mainProjectContent = File.ReadAllText(mainProjectFile);
-            mainProjectContent = mainProjectContent.Replace(@"..\ClassLibrary\ClassLibrary.csproj", @"..\项目\项目.csproj");
+            mainProjectContent = mainProjectContent.Replace(@"..\AnotherClassLib\AnotherClassLib.csproj", @"..\项目\项目.csproj");
             File.WriteAllText(mainProjectFile, mainProjectContent);
 
             // Ensure library has scoped CSS
-            var libCssFile = Path.Combine(newLibPath, "Components", "Component1.razor.css");
+            var libCssFile = Path.Combine(newLibPath, "Views", "Shared", "Index.cshtml.css");
             if (!File.Exists(libCssFile))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(libCssFile));
@@ -675,9 +676,14 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(endpointsFile).Should().Exist();
 
             var endpointsContent = File.ReadAllText(endpointsFile);
+            var json = JsonSerializer.Deserialize<StaticWebAssetEndpointsManifest>(endpointsContent, new JsonSerializerOptions(JsonSerializerDefaults.Web));
 
-            // Verify that the Link header contains URL-encoded characters (%E9%A1%B9%E7%9B%AE is "项目" encoded)
-            endpointsContent.Should().Contain("%E9%A1%B9%E7%9B%AE");
+            var styles = json.Endpoints.Where(e => e.Route.EndsWith("styles.css"));
+
+            foreach (var styleEndpoint in styles)
+            {
+                styleEndpoint.ResponseHeaders.Should().Contain(h => h.Name.Equals("Link", StringComparison.OrdinalIgnoreCase) && h.Value.Contains("%E9%A1%B9%E7%9B%AE"));
+            }
         }
     }
 }

@@ -244,7 +244,7 @@ Integration with static web assets:
     <_AddLinkHeaderToAppBundle Include="Append" Condition="'@(_ResolvedScopedCssBundleEndpoints)' != ''">
       <UpdateTarget>Header</UpdateTarget>
       <Name>Link</Name>
-      <Value>@(_ResolvedScopedCssBundleEndpoints->'&lt;$([System.Uri]::EscapeDataString(%(Identity)))&gt;; rel="preload"; as="style"', ', ')</Value>
+      <Value>@(_ResolvedScopedCssBundleEndpoints->'&lt;%(Identity)&gt;; rel="preload"; as="style"', ', ')</Value>
     </_AddLinkHeaderToAppBundle>
   </ItemGroup>
 
