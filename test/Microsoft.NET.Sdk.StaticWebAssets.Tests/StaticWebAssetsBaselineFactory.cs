@@ -10,6 +10,7 @@ using NuGet.Frameworks;
 using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
+
 public partial class StaticWebAssetsBaselineFactory
 {
     [GeneratedRegex("""(.*\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})(\.bundle\.scp\.css)((?:\.gz)|(?:\.br))?$""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]

@@ -23,7 +23,7 @@ public class UpdateExternallyDefinedStaticWebAssetsTest
         Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "dist", "assets"));
         File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "dist", "assets", "index-C5tBAdQX.css"), "body { color: red; }");
         File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "dist", "index.html"), "<html><body></body></html>");
-        var assets = new ITaskItem [] {
+        var assets = new ITaskItem[] {
             new TaskItem(
                 Path.Combine(AppContext.BaseDirectory, @"dist\assets\index-C5tBAdQX.css"),
                 new Dictionary<string, string>

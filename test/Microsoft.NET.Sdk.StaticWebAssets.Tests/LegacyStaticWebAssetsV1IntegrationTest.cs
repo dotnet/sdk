@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-[assembly:CollectionBehavior(DisableTestParallelization = true)]
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {

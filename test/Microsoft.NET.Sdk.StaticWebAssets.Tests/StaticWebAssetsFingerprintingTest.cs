@@ -3,9 +3,9 @@
 
 #nullable disable
 
-using Microsoft.AspNetCore.StaticWebAssets.Tasks;
-using System.Text.Json;
 using System.IO.Compression;
+using System.Text.Json;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
@@ -17,7 +17,8 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
         var expectedManifest = LoadBuildManifest();
         var testAsset = "RazorComponentApp";
         ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
-            .WithProjectChanges(p => {
+            .WithProjectChanges(p =>
+            {
                 var fingerprintContent = p.Descendants()
                     .SingleOrDefault(e => e.Name.LocalName == "StaticWebAssetsFingerprintContent");
                 fingerprintContent.Value = "true";

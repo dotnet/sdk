@@ -85,9 +85,9 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         Success: true,
         Groups: [
             var _,
-            { Name: "project", Value: "ComponentApp", Success: true, },
-            { Name: "fingerprint", Value: "", Success: false },
-            { Name: "compress", Value: "", Success: false }
+        { Name: "project", Value: "ComponentApp", Success: true, },
+        { Name: "fingerprint", Value: "", Success: false },
+        { Name: "compress", Value: "", Success: false }
         ]
     };
 
@@ -96,9 +96,9 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         Success: true,
         Groups: [
             var _,
-            { Name: "project", Value: "ComponentApp", Success: true, },
-            { Name: "fingerprint", Value: "", Success: false },
-            { Name: "compress", Value: var compress, Success: true }
+        { Name: "project", Value: "ComponentApp", Success: true, },
+        { Name: "fingerprint", Value: "", Success: false },
+        { Name: "compress", Value: var compress, Success: true }
         ]
     } && (compress == ".gz" || compress == ".br");
 
@@ -107,9 +107,9 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         Success: true,
         Groups: [
             var m,
-            { Name: "project", Value: "ComponentApp", Success: true, },
-            { Name: "fingerprint", Value: var fingerprint, Success: true },
-            { Name: "compress", Value: "", Success: false }
+        { Name: "project", Value: "ComponentApp", Success: true, },
+        { Name: "fingerprint", Value: var fingerprint, Success: true },
+        { Name: "compress", Value: "", Success: false }
         ]
     } && fingerprint == ep.EndpointProperties.Single(p => p.Name == "fingerprint").Value;
 
@@ -118,9 +118,9 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         Success: true,
         Groups: [
             var m,
-            { Name: "project", Value: "ComponentApp", Success: true, },
-            { Name: "fingerprint", Value: var fingerprint, Success: true },
-            { Name: "compress", Value: var compress, Success: true }
+        { Name: "project", Value: "ComponentApp", Success: true, },
+        { Name: "fingerprint", Value: var fingerprint, Success: true },
+        { Name: "compress", Value: var compress, Success: true }
         ]
     } && !string.IsNullOrWhiteSpace(fingerprint)
       && (compress == ".gz" || compress == ".br");
@@ -130,9 +130,9 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         Success: true,
         Groups: [
             var _,
-            { Name: "project", Value: "ComponentApp", Success: true, },
-            { Name: "fingerprint", Value: "", Success: false },
-            { Name: "compress", Value: "", Success: false }
+        { Name: "project", Value: "ComponentApp", Success: true, },
+        { Name: "fingerprint", Value: "", Success: false },
+        { Name: "compress", Value: "", Success: false }
         ]
     };
 
@@ -141,9 +141,9 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         Success: true,
         Groups: [
             var _,
-            { Name: "project", Value: "ComponentApp", Success: true, },
-            { Name: "fingerprint", Value: "", Success: false },
-            { Name: "compress", Value: var compress, Success: true }
+        { Name: "project", Value: "ComponentApp", Success: true, },
+        { Name: "fingerprint", Value: "", Success: false },
+        { Name: "compress", Value: var compress, Success: true }
         ]
     } && (compress == ".gz" || compress == ".br");
 
@@ -152,9 +152,9 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         Success: true,
         Groups: [
             var m,
-            { Name: "project", Value: "ComponentApp", Success: true, },
-            { Name: "fingerprint", Value: var fingerprint, Success: true },
-            { Name: "compress", Value: "", Success: false }
+        { Name: "project", Value: "ComponentApp", Success: true, },
+        { Name: "fingerprint", Value: var fingerprint, Success: true },
+        { Name: "compress", Value: "", Success: false }
         ]
     } && fingerprint == ep.EndpointProperties.Single(p => p.Name == "fingerprint").Value;
 
@@ -163,9 +163,9 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         Success: true,
         Groups: [
             var m,
-            { Name: "project", Value: "ComponentApp", Success: true, },
-            { Name: "fingerprint", Value: var fingerprint, Success: true },
-            { Name: "compress", Value: var compress, Success: true }
+        { Name: "project", Value: "ComponentApp", Success: true, },
+        { Name: "fingerprint", Value: var fingerprint, Success: true },
+        { Name: "compress", Value: var compress, Success: true }
         ]
     } && !string.IsNullOrWhiteSpace(fingerprint)
       && (compress == ".gz" || compress == ".br");

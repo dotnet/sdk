@@ -96,7 +96,7 @@ public class ResolveCompressedAssetsTest
             CopyToOutputDirectory = StaticWebAsset.AssetCopyOptions.Never,
             Fingerprint = "xtxxf3hu2r",
             RelatedAsset = string.Empty,
-            ContentRoot = Path.Combine(Environment.CurrentDirectory,"wwwroot"),
+            ContentRoot = Path.Combine(Environment.CurrentDirectory, "wwwroot"),
             SourceType = StaticWebAsset.SourceTypes.Discovered,
             Integrity = "hRQyftXiu1lLX2P9Ly9xa4gHJgLeR1uGN5qegUobtGo=",
             FileLength = 10,
@@ -206,7 +206,7 @@ public class ResolveCompressedAssetsTest
         {
             Identity = ItemSpec,
             OriginalItemSpec = OriginalItemSpec,
-            RelativePath = Path.GetFileNameWithoutExtension(ItemSpec)+"#[.{fingerprint}]" + Path.GetExtension(ItemSpec),
+            RelativePath = Path.GetFileNameWithoutExtension(ItemSpec) + "#[.{fingerprint}]" + Path.GetExtension(ItemSpec),
             ContentRoot = Path.GetDirectoryName(ItemSpec),
             SourceType = StaticWebAsset.SourceTypes.Discovered,
             SourceId = "App",

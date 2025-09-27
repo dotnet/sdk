@@ -256,7 +256,7 @@ public class UpdateStaticWebAssetEndpointsTest
             EndpointProperties = [.. fingerprintedEndpoints[0].EndpointProperties]
         };
 
-        endpoints = [..endpoints, unmodifiedEndpoint];
+        endpoints = [.. endpoints, unmodifiedEndpoint];
 
         foreach (var endpoint in fingerprintedEndpoints)
         {
