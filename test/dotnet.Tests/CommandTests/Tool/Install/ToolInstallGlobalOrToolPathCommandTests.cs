@@ -18,6 +18,7 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using Xunit;
 using CreateShellShimRepository = Microsoft.DotNet.Cli.Commands.Tool.Install.CreateShellShimRepository;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
@@ -197,7 +198,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithPackageIdWithSourceItShouldCreateValidShim()
         {
-            const string sourcePath = "http://mysource.com";
+            const string sourcePath = "https://mysource.com";
             ParseResult result = Parser.Parse($"dotnet tool install -g {PackageId} --add-source {sourcePath}");
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
@@ -666,7 +667,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var testDir = _testAssetsManager.CreateTestDirectory().Path;
 
             var toolInstallGlobalOrToolPathCommand = new DotnetCommand(Log, "tool", "install", "-g", UnlistedPackageId, "--add-source", nugetSourcePath)
-                .WithEnvironmentVariable("DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK", "true")
                 .WithWorkingDirectory(testDir);
 
             toolInstallGlobalOrToolPathCommand.Execute().Should().Fail();
@@ -956,8 +956,77 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
   </packageSources>
 </configuration>
 }";
+
+        [Fact]
+        public void WhenRunWithHttpSourceViaAddSourceItShouldShowNU1302Error()
+        {
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+
+            var toolInstallCommand = new DotnetCommand(Log, "tool", "install", "-g", "fake-tool", "--add-source", "http://test.example.com/nuget")
+                .WithWorkingDirectory(testDir);
+
+            var result = toolInstallCommand.Execute();
+            
+            result.Should().Fail();
+            result.StdErr.Should().Contain("You are running the 'tool install' operation with an 'HTTP' source: http://test.example.com/nuget");
+            result.StdErr.Should().Contain("NuGet requires HTTPS sources");
+            result.StdErr.Should().Contain("allowInsecureConnections");
+        }
+
+        [Fact]
+        public void WhenRunWithHttpSourceInNuGetConfigItShouldShowNU1302Error()
+        {
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var nugetConfigPath = Path.Combine(testDir, "nuget.config");
+            
+            var nugetConfigContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key=""http-source"" value=""http://test.example.com/nuget"" />
+  </packageSources>
+</configuration>";
+            
+            File.WriteAllText(nugetConfigPath, nugetConfigContent);
+
+            var toolInstallCommand = new DotnetCommand(Log, "tool", "install", "-g", "fake-tool")
+                .WithWorkingDirectory(testDir);
+
+            var result = toolInstallCommand.Execute();
+            
+            result.Should().Fail();
+            result.StdErr.Should().Contain("You are running the 'tool install' operation with an 'HTTP' source: http://test.example.com/nuget");
+            result.StdErr.Should().Contain("NuGet requires HTTPS sources");
+            result.StdErr.Should().Contain("allowInsecureConnections");
+        }
+
+        [Fact]
+        public void WhenRunWithHttpSourceAndAllowInsecureConnectionsItShouldSucceed()
+        {
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            var nugetConfigPath = Path.Combine(testDir, "nuget.config");
+            
+            var nugetConfigContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key=""http-source-allowed"" value=""http://test.example.com/nuget"" allowInsecureConnections=""true"" />
+  </packageSources>
+</configuration>";
+            
+            File.WriteAllText(nugetConfigPath, nugetConfigContent);
+
+            var toolInstallCommand = new DotnetCommand(Log, "tool", "install", "-g", "fake-tool")
+                .WithWorkingDirectory(testDir);
+
+            var result = toolInstallCommand.Execute();
+            
+            // Should fail for other reasons (unable to load service index) but not due to HTTP source validation
+            result.Should().Fail();
+            result.StdErr.Should().NotContain("You are running the 'tool install' operation with an 'HTTP' source:");
+            result.StdErr.Should().NotContain("NuGet requires HTTPS sources");
+            // Should fail because the service index can't be loaded, not because of HTTP validation
+            result.StdErr.Should().Contain("Unable to load the service index");
+        }
     }
 }
-
-
-
