@@ -71,7 +71,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         _afterAssemblySymbols = new ConcurrentDictionary<string, IAssemblySymbol>(afterAssemblySymbols);
         _addPartialModifier = addPartialModifier;
         _diagnosticOptions = diagnosticOptions ?? DiffGeneratorFactory.DefaultDiagnosticOptions;
-        _attributeSymbolFilter = SymbolFilterFactory.GetFilterFromList(attributesToExclude ?? [], includeExplicitInterfaceImplementationSymbols: true);
+        _attributeSymbolFilter = SymbolFilterFactory.GetFilterFromList(GetAttributesToExcludeOrDefaults(attributesToExclude), includeExplicitInterfaceImplementationSymbols: true);
         _symbolFilter = SymbolFilterFactory.GetFilterFromList(apisToExclude ?? [], includeExplicitInterfaceImplementationSymbols: true);
         _twoSpacesTrivia = SyntaxFactory.TriviaList(SyntaxFactory.Space, SyntaxFactory.Space);
         _missingCloseBrace = SyntaxFactory.MissingToken(SyntaxKind.CloseBraceToken);
@@ -758,6 +758,24 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
             }
         }
         return sb.Length == 0 ? null : sb.ToString();
+    }
+
+    private static string[] GetAttributesToExcludeOrDefaults(string[]? attributesToExclude)
+    {
+        // If no attributes are specified, use default attributes
+        if (attributesToExclude == null)
+        {
+            return [
+                "T:System.AttributeUsageAttribute",
+                "T:System.ComponentModel.EditorBrowsableAttribute",
+                "T:System.Diagnostics.CodeAnalysis.RequiresDynamicCodeAttribute",
+                "T:System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute",
+                "T:System.Windows.Markup.ContentWrapperAttribute",
+                "T:System.Windows.TemplatePartAttribute"
+            ];
+        }
+
+        return attributesToExclude;
     }
 
     private class ChildrenNodesComparer : IComparer<KeyValuePair<string, MemberDeclarationSyntax>>
