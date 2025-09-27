@@ -197,6 +197,7 @@
 
     <Exec Command="find $(InstallerOutputDirectory) -type d -exec chmod 755 {} \;" Condition="'$(OSName)' != 'win'" />
     <Exec Command="find $(InstallerOutputDirectory) -type f -exec chmod 644 {} \;" Condition="'$(OSName)' != 'win'" />
+    <Exec Command="chmod 755 $(InstallerOutputDirectory)Roslyn/bincore/%(_RoslynAppHost.Filename)" Condition="'$(OSName)' != 'win'" />
   </Target>
 
 </Project>
