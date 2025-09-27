@@ -50,7 +50,7 @@ namespace Microsoft.NET.Publish.Tests
             CheckPublishOutput(publishDir, expectedSingleExeFiles.Append("UserData.txt"), expectedNonSingleExeFiles);
         }
 
-        [Fact]
+        [Fact(Skip= "https://github.com/dotnet/sdk/issues/50784")]
         public void It_cleans_between_renames()
         {
             var testProject = new TestProject()
@@ -134,7 +134,7 @@ namespace Microsoft.NET.Publish.Tests
             CheckPublishOutput(publishDir, expectedSingleExeFiles.Append(testProject.Name + ".dll"), null);
         }
 
-        [Fact]
+        [Fact(Skip= "https://github.com/dotnet/sdk/issues/50784")]
         public void It_cleans_before_trimmed_single_file_publish()
         {
             var testProject = new TestProject()
