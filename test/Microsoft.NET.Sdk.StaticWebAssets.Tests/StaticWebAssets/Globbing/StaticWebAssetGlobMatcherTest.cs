@@ -27,29 +27,29 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks.Test;
 // Recursive wildcard in the middle 'a/**/c'
 public partial class StaticWebAssetGlobMatcherTest
 {
-    [Theory]
-    [InlineData("**/*.razor.js", "Components/Pages/RegularComponent.razor.js", "Components/Pages/RegularComponent.razor.js")]
-    [InlineData("**/*.razor.js", "Components/User.Profile.Details.razor.js", "Components/User.Profile.Details.razor.js")]
-    [InlineData("**/*.razor.js", "Components/Area/Sub/Feature/User.Profile.Details.razor.js", "Components/Area/Sub/Feature/User.Profile.Details.razor.js")]
-    [InlineData("**/*.razor.js", "Components/Area/Sub/Feature/Deep.Component.Name.With.Many.Parts.razor.js", "Components/Area/Sub/Feature/Deep.Component.Name.With.Many.Parts.razor.js")]
-    [InlineData("**/*.cshtml.js", "Pages/Shared/_Host.cshtml.js", "Pages/Shared/_Host.cshtml.js")]
-    [InlineData("**/*.cshtml.js", "Areas/Admin/Pages/Dashboard.cshtml.js", "Areas/Admin/Pages/Dashboard.cshtml.js")]
-    [InlineData("*.lib.module.js", "Widget.lib.module.js", "Widget.lib.module.js")]
-    [InlineData("*.razor.css", "Component.razor.css", "Component.razor.css")]
-    [InlineData("*.cshtml.css", "View.cshtml.css", "View.cshtml.css")]
-    [InlineData("*.modules.json", "app.modules.json", "app.modules.json")]
-    [InlineData("*.lib.module.js", "Rcl.Client.Feature.lib.module.js", "Rcl.Client.Feature.lib.module.js")]
-    public void Can_Match_WellKnownExistingPatterns(string pattern, string path, string expectedStem)
-    {
-        var matcher = new StaticWebAssetGlobMatcherBuilder();
-        matcher.AddIncludePatterns(pattern);
-        var globMatcher = matcher.Build();
+        [Theory]
+        [InlineData("**/*.razor.js", "Components/Pages/RegularComponent.razor.js", "Components/Pages/RegularComponent.razor.js")]
+        [InlineData("**/*.razor.js", "Components/User.Profile.Details.razor.js", "Components/User.Profile.Details.razor.js")]
+        [InlineData("**/*.razor.js", "Components/Area/Sub/Feature/User.Profile.Details.razor.js", "Components/Area/Sub/Feature/User.Profile.Details.razor.js")]
+        [InlineData("**/*.razor.js", "Components/Area/Sub/Feature/Deep.Component.Name.With.Many.Parts.razor.js", "Components/Area/Sub/Feature/Deep.Component.Name.With.Many.Parts.razor.js")]
+        [InlineData("**/*.cshtml.js", "Pages/Shared/_Host.cshtml.js", "Pages/Shared/_Host.cshtml.js")]
+        [InlineData("**/*.cshtml.js", "Areas/Admin/Pages/Dashboard.cshtml.js", "Areas/Admin/Pages/Dashboard.cshtml.js")]
+        [InlineData("*.lib.module.js", "Widget.lib.module.js", "Widget.lib.module.js")]
+        [InlineData("*.razor.css", "Component.razor.css", "Component.razor.css")]
+        [InlineData("*.cshtml.css", "View.cshtml.css", "View.cshtml.css")]
+        [InlineData("*.modules.json", "app.modules.json", "app.modules.json")]
+        [InlineData("*.lib.module.js", "Rcl.Client.Feature.lib.module.js", "Rcl.Client.Feature.lib.module.js")]
+        public void Can_Match_WellKnownExistingPatterns(string pattern, string path, string expectedStem)
+        {
+            var matcher = new StaticWebAssetGlobMatcherBuilder();
+            matcher.AddIncludePatterns(pattern);
+            var globMatcher = matcher.Build();
 
-        var match = globMatcher.Match(path);
-        Assert.True(match.IsMatch);
-        Assert.Equal(pattern, match.Pattern);
-        Assert.Equal(expectedStem, match.Stem);
-    }
+            var match = globMatcher.Match(path);
+            Assert.True(match.IsMatch);
+            Assert.Equal(pattern, match.Pattern);
+            Assert.Equal(expectedStem, match.Stem);
+        }
     [Fact]
     public void CanMatchLiterals()
     {
@@ -175,7 +175,7 @@ public partial class StaticWebAssetGlobMatcherTest
         var globMatcher = matcher.Build();
         var match = globMatcher.Match(input);
         Assert.Equal(expectedMatchResult, match.IsMatch);
-        if (expectedMatchResult)
+        if(expectedMatchResult)
         {
             Assert.Equal(pattern, match.Pattern);
             Assert.Equal(input, match.Stem);

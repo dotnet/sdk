@@ -621,17 +621,46 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         [Fact]
         public void Build_GeneratesUrlEncodedLinkHeaderForNonAsciiProjectName()
         {
-            var testAsset = "RazorComponentApp";
-            var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            var testAsset = "RazorAppWithPackageAndP2PReference";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            // Create a CSS file to trigger scoped CSS processing
-            var cssFile = Path.Combine(projectDirectory.Path, "Components", "Pages", "Index.razor.css");
-            Directory.CreateDirectory(Path.GetDirectoryName(cssFile));
-            File.WriteAllText(cssFile, ".test { color: red; }");
+            // Rename the ClassLibrary project to have non-ASCII characters
+            var originalLibPath = Path.Combine(ProjectDirectory.Path, "ClassLibrary");
+            var newLibPath = Path.Combine(ProjectDirectory.Path, "项目");
+            Directory.Move(originalLibPath, newLibPath);
 
-            var build = CreateBuildCommand(projectDirectory);
-            // Set PackageId to contain non-ASCII characters (Chinese characters meaning "project")
-            ExecuteCommand(build, "/p:PackageId=项目").Should().Pass();
+            // Update the project file to set the assembly name and package ID
+            var libProjectFile = Path.Combine(newLibPath, "ClassLibrary.csproj");
+            var newLibProjectFile = Path.Combine(newLibPath, "项目.csproj");
+            File.Move(libProjectFile, newLibProjectFile);
+
+            // Add assembly name property to ensure consistent naming
+            var libProjectContent = File.ReadAllText(newLibProjectFile);
+            libProjectContent = libProjectContent.Replace("</PropertyGroup>", 
+                "    <AssemblyName>项目</AssemblyName>\n    <PackageId>项目</PackageId>\n  </PropertyGroup>", 1);
+            File.WriteAllText(newLibProjectFile, libProjectContent);
+
+            // Update the main project to reference the renamed library
+            var mainProjectFile = Path.Combine(ProjectDirectory.Path, "AppWithPackageAndP2PReference", "AppWithPackageAndP2PReference.csproj");
+            var mainProjectContent = File.ReadAllText(mainProjectFile);
+            mainProjectContent = mainProjectContent.Replace(@"..\ClassLibrary\ClassLibrary.csproj", @"..\项目\项目.csproj");
+            File.WriteAllText(mainProjectFile, mainProjectContent);
+
+            // Ensure library has scoped CSS
+            var libCssFile = Path.Combine(newLibPath, "Components", "Component1.razor.css");
+            if (!File.Exists(libCssFile))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(libCssFile));
+                File.WriteAllText(libCssFile, ".test { color: red; }");
+            }
+
+            EnsureLocalPackagesExists();
+
+            var restore = CreateRestoreCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(restore).Should().Pass();
+
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
 
@@ -643,9 +672,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             // Verify that the Link header contains URL-encoded characters (%E9%A1%B9%E7%9B%AE is "项目" encoded)
             endpointsContent.Should().Contain("%E9%A1%B9%E7%9B%AE");
-
-            // Verify it doesn't contain the unencoded characters 
-            endpointsContent.Should().NotContain("项目");
         }
     }
 }

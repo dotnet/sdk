@@ -751,7 +751,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             // Second build
             var secondBuild = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            ExecuteCommand(secondBuild, "/p:BuildProjectReferences=false").Should().Pass();
+            ExecuteCommand(secondBuild,"/p:BuildProjectReferences=false").Should().Pass();
 
             // GenerateStaticWebAssetsManifest should generate the manifest file.
             new FileInfo(path).Should().Exist();

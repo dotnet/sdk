@@ -233,12 +233,12 @@ Integration with static web assets:
 
   <ItemGroup>
     <_ScopedCssAppBundleStaticWebAssetCandidate Include="$(_ScopedCssOutputPath)">
-      <RelativePath Condition="'$(StaticWebAssetFingerprintingEnabled)' == 'true'">$([System.Uri]::EscapeDataString($(PackageId)))#[.{fingerprint}]?.styles.css</RelativePath>
-      <RelativePath Condition="'$(StaticWebAssetFingerprintingEnabled)' != 'true'">$([System.Uri]::EscapeDataString($(PackageId))).styles.css</RelativePath>
+      <RelativePath Condition="'$(StaticWebAssetFingerprintingEnabled)' == 'true'">$(PackageId)#[.{fingerprint}]?.styles.css</RelativePath>
+      <RelativePath Condition="'$(StaticWebAssetFingerprintingEnabled)' != 'true'">$(PackageId).styles.css</RelativePath>
     </_ScopedCssAppBundleStaticWebAssetCandidate>
     <_ScopedCssProjectBundleStaticWebAssetCandidate Include="$(_ScopedCssProjectOutputPath)">
-      <RelativePath Condition="'$(StaticWebAssetFingerprintingEnabled)' == 'true'">$([System.Uri]::EscapeDataString($(PackageId)))#[.{fingerprint}]!.bundle.scp.css</RelativePath>
-      <RelativePath Condition="'$(StaticWebAssetFingerprintingEnabled)' != 'true'">$([System.Uri]::EscapeDataString($(PackageId))).bundle.scp.css</RelativePath>
+      <RelativePath Condition="'$(StaticWebAssetFingerprintingEnabled)' == 'true'">$(PackageId)#[.{fingerprint}]!.bundle.scp.css</RelativePath>
+      <RelativePath Condition="'$(StaticWebAssetFingerprintingEnabled)' != 'true'">$(PackageId).bundle.scp.css</RelativePath>
     </_ScopedCssProjectBundleStaticWebAssetCandidate>
     <!-- Adds a Link: <bundle1>; rel="preload", <bundle2>; rel="preload", <bundle3>; rel="preload" -->
     <_AddLinkHeaderToAppBundle Include="Append" Condition="'@(_ResolvedScopedCssBundleEndpoints)' != ''">

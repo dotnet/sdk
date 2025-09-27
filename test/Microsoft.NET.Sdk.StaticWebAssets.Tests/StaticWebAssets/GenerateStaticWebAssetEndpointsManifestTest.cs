@@ -253,11 +253,11 @@ public class GenerateStaticWebAssetEndpointsManifestTest
             // Assert
             new FileInfo(path).Should().Exist();
             new FileInfo(exclusionCachePath).Should().Exist();
-
+            
             var manifest = File.ReadAllText(path);
             var json = JsonSerializer.Deserialize<StaticWebAssetEndpointsManifest>(manifest);
             json.Should().NotBeNull();
-
+            
             // Only styles.css endpoint should remain as others match _content/MyApp/**
             json.Endpoints.Should().HaveCount(1);
             json.Endpoints[0].Route.Should().Contain("styles.css");
@@ -406,7 +406,7 @@ public class GenerateStaticWebAssetEndpointsManifestTest
             // Assert - File should be regenerated
             var secondWriteTime = File.GetLastWriteTimeUtc(endpointsManifestPath);
             secondWriteTime.Should().BeAfter(firstWriteTime);
-
+            
             // Verify cache file was updated
             var cacheContent = File.ReadAllText(exclusionCachePath);
             cacheContent.Should().Contain("different/**");

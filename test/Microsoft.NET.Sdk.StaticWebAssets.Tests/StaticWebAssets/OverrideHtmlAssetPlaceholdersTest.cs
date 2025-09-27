@@ -3,8 +3,8 @@
 
 #nullable disable
 
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Razor.Tasks;
 
