@@ -878,6 +878,128 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("Hello from TestName");
     }
 
+    /// <summary>
+    /// Overriding default (implicit) properties of file-based apps via implicit build files.
+    /// </summary>
+    [Fact]
+    public void DefaultProps_DirectoryBuildProps()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine("Hi");
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <ImplicitUsings>disable</ImplicitUsings>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            // error CS0103: The name 'Console' does not exist in the current context
+            .And.HaveStdOutContaining("error CS0103");
+
+        // Converting to a project should not change the behavior.
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(Path.Join(testInstance.Path, "Program"))
+            .Execute()
+            .Should().Fail()
+            // error CS0103: The name 'Console' does not exist in the current context
+            .And.HaveStdOutContaining("error CS0103");
+    }
+
+    /// <summary>
+    /// Overriding default (implicit) properties of file-based apps from custom SDKs.
+    /// </summary>
+    [Fact]
+    public void DefaultProps_CustomSdk()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var sdkDir = Path.Join(testInstance.Path, "MySdk");
+        Directory.CreateDirectory(sdkDir);
+        File.WriteAllText(Path.Join(sdkDir, "Sdk.props"), """
+            <Project>
+              <PropertyGroup>
+                <ImplicitUsings>disable</ImplicitUsings>
+              </PropertyGroup>
+            </Project>
+            """);
+        File.WriteAllText(Path.Join(sdkDir, "Sdk.targets"), """
+            <Project />
+            """);
+        File.WriteAllText(Path.Join(sdkDir, "MySdk.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                <PackageType>MSBuildSdk</PackageType>
+                <IncludeBuildOutput>false</IncludeBuildOutput>
+              </PropertyGroup>
+              <ItemGroup>
+                <None Include="Sdk.*" Pack="true" PackagePath="Sdk" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "pack")
+            .WithWorkingDirectory(sdkDir)
+            .Execute()
+            .Should().Pass();
+
+        var appDir = Path.Join(testInstance.Path, "app");
+        Directory.CreateDirectory(appDir);
+        File.WriteAllText(Path.Join(appDir, "NuGet.config"), $"""
+            <configuration>
+              <packageSources>
+                <add key="local" value="{Path.Join(sdkDir, "bin", "Release")}" />
+                <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+              </packageSources>
+            </configuration>
+            """);
+        File.WriteAllText(Path.Join(appDir, "Program.cs"), """
+            #:sdk Microsoft.NET.Sdk
+            #:sdk MySdk@1.0.0
+            Console.WriteLine("Hi");
+            """);
+
+        // Use custom package cache to avoid reuse of the custom SDK packed by previous test runs.
+        var packagesDir = Path.Join(testInstance.Path, ".packages");
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithEnvironmentVariable("NUGET_PACKAGES", packagesDir)
+            .WithWorkingDirectory(appDir)
+            .Execute()
+            .Should().Fail()
+            // error CS0103: The name 'Console' does not exist in the current context
+            .And.HaveStdOutContaining("error CS0103");
+
+        // Converting to a project should not change the behavior.
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithEnvironmentVariable("NUGET_PACKAGES", packagesDir)
+            .WithWorkingDirectory(appDir)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run")
+            .WithEnvironmentVariable("NUGET_PACKAGES", packagesDir)
+            .WithWorkingDirectory(Path.Join(appDir, "Program"))
+            .Execute()
+            .Should().Fail()
+            // error CS0103: The name 'Console' does not exist in the current context
+            .And.HaveStdOutContaining("error CS0103");
+    }
+
     [Fact]
     public void ComputeRunArguments_Success()
     {
@@ -3441,6 +3563,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                         <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
+                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                        <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                        <PublishAot>true</PublishAot>
+                        <PackAsTool>true</PackAsTool>
                       </PropertyGroup>
 
                       <ItemGroup>
@@ -3451,16 +3581,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <Import Project="Sdk.props" Sdk="Aspire.Hosting.Sdk" Version="9.1.0" />
 
                       <PropertyGroup>
-                        <OutputType>Exe</OutputType>
-                        <ImplicitUsings>enable</ImplicitUsings>
-                        <Nullable>enable</Nullable>
-                        <PublishAot>true</PublishAot>
-                        <PackAsTool>true</PackAsTool>
-                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
-                        <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
                         <TargetFramework>net11.0</TargetFramework>
                         <LangVersion>preview</LangVersion>
+                        <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
 
@@ -3512,6 +3635,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                         <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
+                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                        <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                        <PublishAot>true</PublishAot>
+                        <PackAsTool>true</PackAsTool>
                       </PropertyGroup>
 
                       <ItemGroup>
@@ -3521,14 +3652,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
                       <PropertyGroup>
-                        <OutputType>Exe</OutputType>
-                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
-                        <ImplicitUsings>enable</ImplicitUsings>
-                        <Nullable>enable</Nullable>
-                        <PublishAot>true</PublishAot>
-                        <PackAsTool>true</PackAsTool>
-                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
@@ -3580,6 +3703,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                         <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
+                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                        <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                        <PublishAot>true</PublishAot>
+                        <PackAsTool>true</PackAsTool>
                       </PropertyGroup>
 
                       <ItemGroup>
@@ -3589,14 +3720,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
                       <PropertyGroup>
-                        <OutputType>Exe</OutputType>
-                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
-                        <ImplicitUsings>enable</ImplicitUsings>
-                        <Nullable>enable</Nullable>
-                        <PublishAot>true</PublishAot>
-                        <PackAsTool>true</PackAsTool>
-                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
                         <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
