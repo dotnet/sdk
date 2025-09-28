@@ -75,7 +75,7 @@
   <String Id="WelcomeHeader" Value=".NET SDK" Localizable="no"/>
   
   <String Id="WelcomeDescription" Value=".Net SDK は、.NET アプリケーションをビルド、実行、テストするために使用されます。複数の言語、エディター、開発者ツールから選択し、ライブラリの大規模なエコシステムを利用して、Web、モバイル、デスクトップ、ゲーム、IoT 用のアプリを作成できます。ぜひご利用ください。"/>
-  <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2026 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;."/>
+  <String Id="VisualStudioWarning" Value=".NET [VERSIONMAJOR].[VERSIONMINOR] を Visual Studio と使用する場合は、Visual Studio 2026 [MINIMUMVSVERSION] 以降が必要です。&lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;詳細情報&lt;/A&gt;。"/>
   <String Id="LicenseAssent" Value="インストール をクリックすると、次の条項に同意したものと見なされます:"/>
   <String Id="LearnMoreTitle" Value=".Net の詳細情報"/>
   <String Id="ResourcesHeader" Value="リソース"/>
@@ -87,7 +87,7 @@
   <String Id="InstallationNoteTitle" Value="インストール メモ"/>
   <String Id="InstallationNote" Value="コマンドはインストール処理中に実行されるので、プロジェクトの復元速度が向上し、オフラインでアクセスできます。完了するまでに最大 1 分かかります。"/>
   
-  <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2026 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;."/>
+  <String Id="VisualStudioWarning" Value=".NET [VERSIONMAJOR].[VERSIONMINOR] を Visual Studio と使用する場合は、Visual Studio 2026 [MINIMUMVSVERSION] 以降が必要です。&lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;詳細情報&lt;/A&gt;。"/>
   <String Id="LicenseAssent" Value="インストール をクリックすると、次の条項に同意したものと見なされます:"/>
   <String Id="InstallPathx64x86" Value="x64 SDK インストールのインストール パス: &quot;[DOTNETHOME_X64]&quot; を x86 SDK インストールの場合と同じにすることはできません: &quot;[DOTNETHOME_X86]&quot;"/>
   <String Id="InstallPathARM64x86" Value="ARM64 SDK インストールのインストール パス: &quot;[DOTNETHOME_ARM64]&quot; を x86 SDK インストールの場合と同じにすることはできません: &quot;[DOTNETHOME_X86]&quot;"/>

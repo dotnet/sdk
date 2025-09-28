@@ -75,7 +75,7 @@ Este producto recopila datos de uso
   <String Id="WelcomeHeader" Value="SDK de .NET" Localizable="no"/>
   
   <String Id="WelcomeDescription" Value="El SDK de .NET se usa para compilar, ejecutar y probar las aplicaciones .NET. Puede elegir entre varios lenguajes, editores y herramientas de desarrollo y aprovechar las ventajas de un amplio ecosistema de bibliotecas para compilar aplicaciones web, móviles, de escritorio, juegos e IoT. Esperamos que lo disfrute."/>
-  <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2026 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;."/>
+  <String Id="VisualStudioWarning" Value="Si tiene previsto usar .NET [VERSIONMAJOR]. [VERSIONMINOR] con Visual Studio, se requiere Visual Studio 2026 [MINIMUMVSVERSION] o posterior. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Más información&lt;/A&gt;."/>
   <String Id="LicenseAssent" Value="Al hacer clic en Instalar, acepta los siguientes términos:"/>
   <String Id="LearnMoreTitle" Value="Más información sobre .NET"/>
   <String Id="ResourcesHeader" Value="Recursos"/>
@@ -87,7 +87,7 @@ Este producto recopila datos de uso
   <String Id="InstallationNoteTitle" Value="Nota de instalación"/>
   <String Id="InstallationNote" Value="Durante el proceso de instalación se ejecutará un comando que mejorará la velocidad de restauración del proyecto y permitirá el acceso sin conexión. Tardará hasta un minuto en completarse."/>
   
-  <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2026 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;."/>
+  <String Id="VisualStudioWarning" Value="Si tiene previsto usar .NET [VERSIONMAJOR]. [VERSIONMINOR] con Visual Studio, se requiere Visual Studio 2026 [MINIMUMVSVERSION] o posterior. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Más información&lt;/A&gt;."/>
   <String Id="LicenseAssent" Value="Al hacer clic en Instalar, acepta los siguientes términos:"/>
   <String Id="InstallPathx64x86" Value="La ruta de instalación para las instalaciones del SDK x64: &quot;[DOTNETHOME_X64]&quot; no puede ser la misma que para las instalaciones del SDK x86: &quot;[DOTNETHOME_X86]&quot;"/>
   <String Id="InstallPathARM64x86" Value="La ruta de instalación para las instalaciones del SDK ARM64: &quot;[DOTNETHOME_ARM64]&quot; no puede ser la misma que para las instalaciones del SDK x86: &quot;[DOTNETHOME_X86]&quot;"/>

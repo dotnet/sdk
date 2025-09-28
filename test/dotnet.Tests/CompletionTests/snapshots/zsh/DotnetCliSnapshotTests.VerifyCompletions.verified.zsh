@@ -669,6 +669,7 @@ _testhost() {
                                     (update)
                                         _arguments "${_arguments_options[@]}" : \
                                             '--project=[Path to a project or solution file, or a directory.]: : ' \
+                                            '--vulnerable=[Upgrade packages with known vulnerabilities.]: :((False\:"False" True\:"True" ))' \
                                             '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
                                             '--verbosity=[Set the verbosity level of the command. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]: :((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '-v=[Set the verbosity level of the command. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]: :((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
@@ -1493,7 +1494,7 @@ _testhost_commands() {
         'run:.NET Run Command' \
         'solution:.NET modify solution file command' \
         'store:Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.' \
-        'test:.NET Test Driver' \
+        'test:.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https\://aka.ms/dotnet-test.' \
         'tool:Install or work with tools that extend the .NET experience.' \
         'vstest:' \
         'help:.NET CLI help utility' \

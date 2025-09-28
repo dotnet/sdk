@@ -5,6 +5,7 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
@@ -44,6 +45,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
             MSBuildLogger.FormatAndSend(fakeTelemetry, telemetryEventArgs);
 
+            fakeTelemetry.LogEntry.Should().NotBeNull();
             fakeTelemetry.LogEntry.EventName.Should().Be(MSBuildLogger.SdkTaskBaseCatchExceptionTelemetryEventName);
             fakeTelemetry.LogEntry.Properties.Keys.Count.Should().Be(2);
             fakeTelemetry.LogEntry.Properties["exceptionType"].Should().Be("System.Exception");
@@ -108,20 +110,13 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     { "RuntimeIdentifier", "null"},
                     { "SelfContained", "null"},
                     { "UseApphost", "null"},
-                    { "OutputType", "Library"},
+                    { "OutputType", "Library"}
                 }
             };
 
             MSBuildLogger.FormatAndSend(fakeTelemetry, telemetryEventArgs);
 
-            fakeTelemetry.LogEntry.Properties.Should().BeEquivalentTo(new Dictionary<string, string>
-                {
-                    { "TargetFrameworkVersion", "9a871d7066260764d4cb5047e4b10570271d04bd1da275681a4b12bce0b27496"},
-                    { "RuntimeIdentifier", "fb329000228cc5a24c264c57139de8bf854fc86fc18bf1c04ab61a2b5cb4b921"},
-                    { "SelfContained", "fb329000228cc5a24c264c57139de8bf854fc86fc18bf1c04ab61a2b5cb4b921"},
-                    { "UseApphost", "fb329000228cc5a24c264c57139de8bf854fc86fc18bf1c04ab61a2b5cb4b921"},
-                    { "OutputType", "d77982267d9699c2a57bcab5bb975a1935f6427002f52fd4569762fd72db3a94"},
-                });
+            fakeTelemetry.LogEntry.Properties.Should().BeEquivalentTo(telemetryEventArgs.Properties);
         }
 
         [Fact]

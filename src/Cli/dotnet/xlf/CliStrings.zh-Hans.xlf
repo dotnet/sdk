@@ -100,11 +100,11 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="new">Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This argument can be specified multiple times to provide multiple variables.
+        <target state="translated">设置环境变量的值。
+如果该变量不存在，则创建它; 如果它已存在，则替代它。
+可多次指定此参数来提供多个变量。
 
-Examples:
+示例:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
 -e VARIABLE="value;seperated with;semicolons"
@@ -129,12 +129,12 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="new">Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This will force the tests to be run in an isolated process. 
-This argument can be specified multiple times to provide multiple variables.
+        <target state="translated">设置环境变量的值。
+如果该变量不存在，则创建它；如果它已存在，则替代它。
+这将在隔离的进程中强制运行测试。
+可多次指定此参数来提供多个变量。
 
-Examples:
+示例:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
 -e VARIABLE="value;seperated with;semicolons"
@@ -370,6 +370,11 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="Error">
         <source>Error</source>
         <target state="translated">错误</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Error_NU1302_HttpSourceUsed">
+        <source>You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
+        <target state="translated">正在通过 "HTTP" 源运行“工具安装”操作: {0}。NuGet 需要 HTTPS 源。要使用 HTTP 源，必须在 NuGet.Config 文件中将 "allowInsecureConnections" 显式设置为 true。有关详细信息，请参阅 https://aka.ms/nuget-https-everywhere。</target>
         <note />
       </trans-unit>
       <trans-unit id="ExpectDepsJsonAt">

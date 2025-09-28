@@ -100,11 +100,11 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="new">Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This argument can be specified multiple times to provide multiple variables.
+        <target state="translated">환경 변수의 값을 설정합니다. 
+변수가 없는 경우 변수를 만들고, 변수가 있으면 재정의합니다. 
+이 인수를 여러 번 지정하여 여러 변수를 제공할 수 있습니다.
 
-Examples:
+예:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
 -e VARIABLE="value;seperated with;semicolons"
@@ -129,12 +129,12 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="new">Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This will force the tests to be run in an isolated process. 
-This argument can be specified multiple times to provide multiple variables.
+        <target state="translated">환경 변수의 값을 설정합니다. 
+변수가 없는 경우 변수를 만들고, 변수가 있으면 재정의합니다. 
+이는 테스트가 격리된 프로세스에서 강제로 실행되도록 합니다. 
+이 인수를 여러 번 지정하여 여러 변수를 제공할 수 있습니다.
 
-Examples:
+예:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
 -e VARIABLE="value;seperated with;semicolons"
@@ -370,6 +370,11 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="Error">
         <source>Error</source>
         <target state="translated">오류</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Error_NU1302_HttpSourceUsed">
+        <source>You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
+        <target state="translated">여러분은 'tool install' 작업을 'HTTP' 원본 {0}(으)로 실행하고 있습니다. NuGet에는 HTTPS 원본이 필요합니다. HTTP 원본을 사용하려면 NuGet.Config 파일에서 'allowInsecureConnections'를 명시적으로 true로 설정해야 합니다. https://aka.ms/nuget-https-everywhere에서 자세한 내용을 참조하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExpectDepsJsonAt">

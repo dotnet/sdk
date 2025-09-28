@@ -100,15 +100,15 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="new">Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This argument can be specified multiple times to provide multiple variables.
+        <target state="translated">Ustawia wartość zmiennej środowiskowej. 
+Jeśli zmienna nie istnieje, tworzy ją, a jeśli istnieje, przesłania. 
+Ten argument można określić wiele razy w celu podania wielu wartości.
 
-Examples:
--e VARIABLE=abc
--e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
--e VAR1=abc -e VAR2=def -e VAR3=ghi
+Przykłady:
+-e ZMIENNA=abc
+-e ZMIENNA=”wartość ze spacjami”
+-e ZMIENNA=”wartości;rozdzielone;średnikami”
+-e ZM1=abc -e ZM2=def -e ZM3=ghi
 </target>
         <note />
       </trans-unit>
@@ -129,16 +129,16 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="new">Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This will force the tests to be run in an isolated process. 
-This argument can be specified multiple times to provide multiple variables.
+        <target state="translated">Ustawia wartość zmiennej środowiskowej. 
+Jeśli zmienna nie istnieje, tworzy ją, a jeśli istnieje, przesłania. 
+Wymusi to uruchamianie testów w izolowanym procesie. 
+Ten argument można określić wiele razy w celu podania wielu wartości.
 
-Examples:
--e VARIABLE=abc
--e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
--e VAR1=abc -e VAR2=def -e VAR3=ghi
+Przykłady:
+-e ZMIENNA=abc
+-e ZMIENNA="wartość ze spacjami"
+-e ZMIENNA="wartości;rozdzielone;średnikami"
+-e ZM1=abc -e ZM2=def -e ZM3=ghi
 </target>
         <note />
       </trans-unit>
@@ -370,6 +370,11 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="Error">
         <source>Error</source>
         <target state="translated">Błąd</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Error_NU1302_HttpSourceUsed">
+        <source>You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
+        <target state="translated">Operację „instalacji narzędzia” wykonujesz ze źródłem „HTTP”: {0}. Menedżer NuGet wymaga źródeł HTTPS. Aby użyć źródła HTTP, musisz wyraźnie ustawić właściwość „allowInsecureConnections” na wartość true w pliku NuGet.Config. Aby uzyskać więcej informacji, sprawdź witrynę https://aka.ms/nuget-https-everywhere.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExpectDepsJsonAt">
