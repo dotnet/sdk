@@ -228,6 +228,11 @@ Exécutez « dotnet {1} --show-aliases » sans arguments pour afficher tous le
         <target state="translated">Recherche des modèles en cours... Merci de patienter.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Colon_Separator_Deprecated">
+        <source>The colon separator "::" has been deprecated in favor of the at symbol "@" for separating the package from the version in dotnet new install. In your case, this means {0}@{1} instead of {0}::{1}.</source>
+        <target state="translated">Le séparateur deux-points « :: » a été déprécié en faveur du symbole at « @ » pour séparer le package de la version dans la commande dotnet new install. Dans votre cas, cela signifie {0}@{1} au lieu de {0}::{1}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ColumnNameAuthor">
         <source>Author</source>
         <target state="translated">Auteur</target>
@@ -845,6 +850,15 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">Impossible de trouver le fichier json dans la solution</target>
         <note />
       </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_NullJson">
+        <source>The result of parsing the following JSON was 'null':
+
+{0}</source>
+        <target state="new">The result of parsing the following JSON was 'null':
+
+{0}</target>
+        <note>{0} is the JSON that is being parsed.</note>
+      </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ParentPropertyPathInvalid">
         <source>Parent property path '{0}' could not be traversed.</source>
         <target state="translated">Le chemin de la propriété parente '{0}' n'a pas pu être traversé.</target>
@@ -901,8 +915,8 @@ The header is followed by the list of parameters and their errors (might be seve
         <note />
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Error">
-        <source>Failed to instatiate template '{0}', the following constraints are not met:</source>
-        <target state="translated">Échec de l’initialisation du modèle « {0} », les contraintes suivantes ne sont pas remplies :</target>
+        <source>Failed to instantiate template '{0}', the following constraints are not met:</source>
+        <target state="translated">Échec de l’instanciation du modèle « {0} », les contraintes suivantes ne sont pas respectées :</target>
         <note>{0} - template name (user friendly)</note>
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Hint">

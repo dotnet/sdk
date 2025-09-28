@@ -228,6 +228,11 @@ Run 'dotnet {1} --show-aliases' with no args to show all aliases.</source>
         <target state="translated">正在搜尋範本...</target>
         <note />
       </trans-unit>
+      <trans-unit id="Colon_Separator_Deprecated">
+        <source>The colon separator "::" has been deprecated in favor of the at symbol "@" for separating the package from the version in dotnet new install. In your case, this means {0}@{1} instead of {0}::{1}.</source>
+        <target state="translated">冒號分隔符「::」已被棄用，並改為使用「@」符號來分隔 dotnet 新安裝中的套件與版本。在您的案例中，這表示其使用 {0}@{1} 而不是 {0}::{1}。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ColumnNameAuthor">
         <source>Author</source>
         <target state="translated">作者</target>
@@ -845,6 +850,15 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">在解決方案中找不到 JSON 檔案</target>
         <note />
       </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_NullJson">
+        <source>The result of parsing the following JSON was 'null':
+
+{0}</source>
+        <target state="new">The result of parsing the following JSON was 'null':
+
+{0}</target>
+        <note>{0} is the JSON that is being parsed.</note>
+      </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ParentPropertyPathInvalid">
         <source>Parent property path '{0}' could not be traversed.</source>
         <target state="translated">無法周遊父屬性路徑 '{0}'。</target>
@@ -901,8 +915,8 @@ The header is followed by the list of parameters and their errors (might be seve
         <note />
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Error">
-        <source>Failed to instatiate template '{0}', the following constraints are not met:</source>
-        <target state="translated">無法設定範本 '{0}'，不符合下列條件約束:</target>
+        <source>Failed to instantiate template '{0}', the following constraints are not met:</source>
+        <target state="translated">無法具現化範本 '{0}'，不符合下列條件約束:</target>
         <note>{0} - template name (user friendly)</note>
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Hint">

@@ -1,5 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 using System.Diagnostics;
 
@@ -503,4 +505,71 @@ public sealed class StaticWebAssetPathPattern : IEquatable<StaticWebAssetPathPat
     private static bool IsLiteralSegment(StaticWebAssetPathSegment segment) => segment.Parts.Count == 1 && segment.Parts[0].IsLiteral;
 
     internal static string PathWithoutTokens(string path) => Parse(path).ComputePatternLabel();
+
+    internal static string ExpandIdentityFileNameForFingerprint(string fileNamePattern, string fingerprint)
+    {
+        var pattern = Parse(fileNamePattern);
+        var sb = new StringBuilder();
+        foreach (var segment in pattern.Segments)
+        {
+            var isLiteral = segment.Parts.Count == 1 && segment.Parts[0].IsLiteral;
+            if (isLiteral)
+            {
+                sb.Append(segment.Parts[0].Name);
+                continue;
+            }
+
+            if (segment.IsOptional && !segment.IsPreferred)
+            {
+                continue; // skip non-preferred optional segments
+            }
+
+            bool missingRequired = false;
+            foreach (var part in segment.Parts)
+            {
+                if (!part.IsLiteral && part.Value.IsEmpty)
+                {
+                    var tokenName = part.Name.ToString();
+                    if (string.Equals(tokenName, "fingerprint", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(fingerprint))
+                    {
+                        missingRequired = true;
+                        break;
+                    }
+                }
+            }
+            if (missingRequired)
+            {
+                if (!segment.IsOptional)
+                {
+                    throw new InvalidOperationException($"Token 'fingerprint' not provided for '{fileNamePattern}'.");
+                }
+                continue;
+            }
+
+            foreach (var part in segment.Parts)
+            {
+                if (part.IsLiteral)
+                {
+                    sb.Append(part.Name);
+                }
+                else if (!part.Value.IsEmpty)
+                {
+                    sb.Append(part.Value);
+                }
+                else
+                {
+                    var tokenName = part.Name.ToString();
+                    if (string.Equals(tokenName, "fingerprint", StringComparison.OrdinalIgnoreCase))
+                    {
+                        sb.Append(fingerprint);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Unsupported token '{tokenName}' in '{fileNamePattern}'.");
+                    }
+                }
+            }
+        }
+        return sb.ToString();
+    }
 }

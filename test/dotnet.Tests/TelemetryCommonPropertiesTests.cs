@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Configurer;
 
@@ -16,35 +18,35 @@ namespace Microsoft.DotNet.Tests
         public void TelemetryCommonPropertiesShouldContainIfItIsInDockerOrNot()
         {
             var unitUnderTest = new TelemetryCommonProperties(userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties().Should().ContainKey("Docker Container");
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId").Should().ContainKey("Docker Container");
         }
 
         [Fact]
         public void TelemetryCommonPropertiesShouldReturnHashedPath()
         {
             var unitUnderTest = new TelemetryCommonProperties(() => "ADirectory", userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["Current Path Hash"].Should().NotBe("ADirectory");
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Current Path Hash"].Should().NotBe("ADirectory");
         }
 
         [Fact]
         public void TelemetryCommonPropertiesShouldReturnHashedMachineId()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => "plaintext", userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["Machine ID"].Should().NotBe("plaintext");
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID"].Should().NotBe("plaintext");
         }
 
         [Fact]
         public void TelemetryCommonPropertiesShouldReturnDevDeviceId()
         {
             var unitUnderTest = new TelemetryCommonProperties(getDeviceId: () => "plaintext", userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["devdeviceid"].Should().Be("plaintext");
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["devdeviceid"].Should().Be("plaintext");
         }
 
         [Fact]
         public void TelemetryCommonPropertiesShouldReturnNewGuidWhenCannotGetMacAddress()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties()["Machine ID"];
+            var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID"];
 
             Guid.TryParse(assignedMachineId, out var _).Should().BeTrue("it should be a guid");
         }
@@ -53,10 +55,10 @@ namespace Microsoft.DotNet.Tests
         public void TelemetryCommonPropertiesShouldEnsureDevDeviceIDIsCached()
         {
             var unitUnderTest = new TelemetryCommonProperties(userLevelCacheWriter: new NothingCache());
-            var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties()["devdeviceid"];
+            var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["devdeviceid"];
 
             Guid.TryParse(assignedMachineId, out var _).Should().BeTrue("it should be a guid");
-            var secondAssignedMachineId = unitUnderTest.GetTelemetryCommonProperties()["devdeviceid"];
+            var secondAssignedMachineId = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["devdeviceid"];
 
             Guid.TryParse(secondAssignedMachineId, out var _).Should().BeTrue("it should be a guid");
             secondAssignedMachineId.Should().Be(assignedMachineId, "it should match the previously assigned guid");
@@ -66,14 +68,14 @@ namespace Microsoft.DotNet.Tests
         public void TelemetryCommonPropertiesShouldReturnHashedMachineIdOld()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => "plaintext", userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["Machine ID Old"].Should().NotBe("plaintext");
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID Old"].Should().NotBe("plaintext");
         }
 
         [Fact]
         public void TelemetryCommonPropertiesShouldReturnNewGuidWhenCannotGetMacAddressOld()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties()["Machine ID Old"];
+            var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Machine ID Old"];
 
             Guid.TryParse(assignedMachineId, out var _).Should().BeTrue("it should be a guid");
         }
@@ -82,72 +84,72 @@ namespace Microsoft.DotNet.Tests
         public void TelemetryCommonPropertiesShouldReturnIsOutputRedirected()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["Output Redirected"].Should().BeOneOf("True", "False");
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Output Redirected"].Should().BeOneOf("True", "False");
         }
 
         [Fact]
         public void TelemetryCommonPropertiesShouldReturnIsCIDetection()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["Continuous Integration"].Should().BeOneOf("True", "False");
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Continuous Integration"].Should().BeOneOf("True", "False");
         }
 
         [Fact]
         public void TelemetryCommonPropertiesShouldContainKernelVersion()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["Kernel Version"].Should().Be(RuntimeInformation.OSDescription);
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Kernel Version"].Should().Be(RuntimeInformation.OSDescription);
         }
 
         [Fact]
         public void TelemetryCommonPropertiesShouldContainArchitectureInformation()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["OS Architecture"].Should().Be(RuntimeInformation.OSArchitecture.ToString());
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["OS Architecture"].Should().Be(RuntimeInformation.OSArchitecture.ToString());
         }
 
         [WindowsOnlyFact]
         public void TelemetryCommonPropertiesShouldContainWindowsInstallType()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["Installation Type"].Should().NotBeEmpty();
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Installation Type"].Should().NotBeEmpty();
         }
 
         [UnixOnlyFact]
         public void TelemetryCommonPropertiesShouldContainEmptyWindowsInstallType()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["Installation Type"].Should().BeEmpty();
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Installation Type"].Should().BeEmpty();
         }
 
         [WindowsOnlyFact]
         public void TelemetryCommonPropertiesShouldContainWindowsProductType()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["Product Type"].Should().NotBeEmpty();
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Product Type"].Should().NotBeEmpty();
         }
 
         [UnixOnlyFact]
         public void TelemetryCommonPropertiesShouldContainEmptyWindowsProductType()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["Product Type"].Should().BeEmpty();
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Product Type"].Should().BeEmpty();
         }
 
         [WindowsOnlyFact]
         public void TelemetryCommonPropertiesShouldContainEmptyLibcReleaseAndVersion()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["Libc Release"].Should().BeEmpty();
-            unitUnderTest.GetTelemetryCommonProperties()["Libc Version"].Should().BeEmpty();
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Release"].Should().BeEmpty();
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Version"].Should().BeEmpty();
         }
 
         [MacOsOnlyFact]
         public void TelemetryCommonPropertiesShouldContainEmptyLibcReleaseAndVersion2()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["Libc Release"].Should().BeEmpty();
-            unitUnderTest.GetTelemetryCommonProperties()["Libc Version"].Should().BeEmpty();
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Release"].Should().BeEmpty();
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Version"].Should().BeEmpty();
         }
 
         [LinuxOnlyFact]
@@ -156,9 +158,16 @@ namespace Microsoft.DotNet.Tests
             if (!RuntimeInformation.RuntimeIdentifier.Contains("alpine", StringComparison.OrdinalIgnoreCase))
             {
                 var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-                unitUnderTest.GetTelemetryCommonProperties()["Libc Release"].Should().NotBeEmpty();
-                unitUnderTest.GetTelemetryCommonProperties()["Libc Version"].Should().NotBeEmpty();
+                unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Release"].Should().NotBeEmpty();
+                unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["Libc Version"].Should().NotBeEmpty();
             }
+        }
+
+        [Fact]
+        public void TelemetryCommonPropertiesShouldReturnIsLLMDetection()
+        {
+            var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
+            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["llm"].Should().BeOneOf("claude", null);
         }
 
         [Theory]
@@ -181,6 +190,47 @@ namespace Microsoft.DotNet.Tests
                 }
             }
         }
+
+        [Theory]
+        [MemberData(nameof(LLMTelemetryTestCases))]
+        public void CanDetectLLMStatusForEnvVars(Dictionary<string, string> envVars, string expected)
+        {
+            try
+            {
+                foreach (var (key, value) in envVars)
+                {
+                    Environment.SetEnvironmentVariable(key, value);
+                }
+                new LLMEnvironmentDetectorForTelemetry().GetLLMEnvironment().Should().Be(expected);
+            }
+            finally
+            {
+                foreach (var (key, value) in envVars)
+                {
+                    Environment.SetEnvironmentVariable(key, null);
+                }
+            }
+        }
+        
+        [Theory]
+        [InlineData("dummySessionId")]
+        [InlineData(null)]
+        public void TelemetryCommonPropertiesShouldContainSessionId(string sessionId)
+        {
+            var unitUnderTest = new TelemetryCommonProperties(userLevelCacheWriter: new NothingCache());
+            var commonProperties = unitUnderTest.GetTelemetryCommonProperties(sessionId);
+
+            commonProperties.Should().ContainKey("SessionId");
+            commonProperties["SessionId"].Should().Be(sessionId);
+        }
+
+
+        public static IEnumerable<object[]> LLMTelemetryTestCases => new List<object[]>{
+            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "1" } }, "claude" },
+            new object[] { new Dictionary<string, string> { { "CURSOR_EDITOR", "1" } }, "cursor" },
+            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" } }, "claude, cursor" },
+            new object[] { new Dictionary<string, string>(), null },
+        };
 
         public static IEnumerable<object[]> CITelemetryTestCases => new List<object[]>{
             new object[] { new Dictionary<string, string> { { "TF_BUILD", "true" } }, true },

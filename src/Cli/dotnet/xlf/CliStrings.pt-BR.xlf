@@ -1,0 +1,1228 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="pt-BR" original="../CliStrings.resx">
+    <body>
+      <trans-unit id="Add">
+        <source>Add</source>
+        <target state="translated">adicionar</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AmbiguousCommandName">
+        <source>Ambiguous command name: {0}</source>
+        <target state="translated">Nome de comando ambíguo: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArchArgumentName">
+        <source>ARCH</source>
+        <target state="translated">ARCH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArchitectureOptionDescription">
+        <source>The target architecture.</source>
+        <target state="translated">A arquitetura de destino.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArtifactsPathArgumentName">
+        <source>ARTIFACTS_DIR</source>
+        <target state="translated">ARTIFACTS_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArtifactsPathOptionDescription">
+        <source>The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.</source>
+        <target state="translated">O caminho dos artefatos. Toda a saída do projeto, incluindo compilação, publicação e saída do pacote, irá para subpastas no caminho especificado.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttemptingToCreateCommandSpec">
+        <source>{0}: attempting to create commandspec</source>
+        <target state="translated">{0}: tentando criar commandspec</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttemptingToFindCommand">
+        <source>{0}: attempting to find command {1} in {2}</source>
+        <target state="translated">{0}: tentando encontrar o comando {1} em {2}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttemptingToResolve">
+        <source>{0}: attempting to resolve {1}</source>
+        <target state="translated">{0}: tentando resolver {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AttemptingToResolveCommandSpec">
+        <source>{0}: Attempting to resolve command spec from tool {1}</source>
+        <target state="translated">{0}: tentando resolver commandspec por meio da ferramenta {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BuildOutputPathDoesNotExist">
+        <source>outputpathresolver: {0} does not exist</source>
+        <target state="translated">outputpathresolver: {0} não existe</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotCreateShimForEmptyExecutablePath">
+        <source>Cannot create shell shim for an empty executable path.</source>
+        <target state="translated">Não é possível criar o shim do shell para um caminho executável vazio.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotFindAManifestFile">
+        <source>Cannot find a manifest file. The list of searched paths:
+{0}</source>
+        <target state="translated">Não é possível localizar um arquivo de manifesto. A lista de caminhos pesquisados:
+{0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotFindPackageIdInManifest">
+        <source>Cannot find a package with the package id {0} in the manifest file.</source>
+        <target state="translated">Não é possível localizar um pacote com a ID {0} no arquivo de manifesto.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotResolveRuntimeIdentifier">
+        <source>Resolving the current runtime identifier failed.</source>
+        <target state="translated">Falha ao resolver o identificador de tempo de execução atual.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotSpecifyBothRuntimeAndArchOptions">
+        <source>Specifying both the `-r|--runtime` and `-a|--arch` options is not supported.</source>
+        <target state="translated">Não há suporte para especificar as opções '-r |--runtime ' e '-a |--arch '.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotSpecifyBothRuntimeAndOsOptions">
+        <source>Specifying both the `-r|--runtime` and `-os` options is not supported.</source>
+        <target state="translated">Não há suporte para especificar as opções '-r |--runtime ' e '-a |--os '.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdEnvironmentVariableDescription">
+        <source>Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</source>
+        <target state="translated">Define o valor de uma variável de ambiente. 
+Cria a variável se ela não existir, substitui se existir. 
+Este argumento pode ser especificado várias vezes para fornecer múltiplas variáveis.
+
+Exemplos:
+-e VARIABLE=abc
+-e VARIABLE="valor com espaços"
+-e VARIABLE="valor;separado com;ponto e vírgula"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdEnvironmentVariableExpression">
+        <source>NAME="VALUE"</source>
+        <target state="translated">NAME="VALUE"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestEnvironmentVariableDescription">
+        <source>Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</source>
+        <target state="translated">Define o valor de uma variável de ambiente. 
+Criará a variável quando ela não existir e a substituirá quando existir. 
+Isso forçará a execução dos testes em um processo isolado. 
+Esse argumento pode ser especificado várias vezes para fornecer várias variáveis.
+
+Exemplos:
+-e VARIABLE=abc
+-e VARIABLE="valor com espaços"
+-e VARIABLE="valor;separado com;ponto e vírgula"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdVersionSuffixDescription">
+        <source>Set the value of the $(VersionSuffix) property to use when building the project.</source>
+        <target state="translated">Definir o valor da propriedade $(VersionSuffix) a ser usado ao compilar o projeto.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ColumnMaxWidthMustBeGreaterThanZero">
+        <source>Column maximum width must be greater than zero.</source>
+        <target state="translated">A largura máxima da coluna deve ser maior que zero.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandAssembliesNotFound">
+        <source>The command executable for "{0}" was not found. The project may not have been restored or restore failed - run `dotnet restore`</source>
+        <target state="translated">O comando executável para "{0}" não foi encontrado. O projeto pode não ter sido restaurado ou a restauração falhou – execute `dotnet restore`</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandInteractiveOptionDescription">
+        <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
+        <target state="translated">Permite que o comando seja interrompido e aguarde a ação ou entrada do usuário (por exemplo, para concluir a autenticação).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandPrereleaseOptionDescription">
+        <source>Allows prerelease packages to be installed.</source>
+        <target state="translated">Permite a instalação de pacotes de pré-lançamento.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandSpecIsNull">
+        <source>{0}: commandSpec is null.</source>
+        <target state="translated">{0}: commandSpec é nulo.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommonCmdFramework">
+        <source>FRAMEWORK</source>
+        <target state="translated">ESTRUTURA</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommonFileNotFound">
+        <source>File `{0}` not found.</source>
+        <target state="translated">Arquivo ‘{0}’ não encontrado.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigurationArgumentName">
+        <source>CONFIGURATION</source>
+        <target state="translated">CONFIGURATION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CouldNotFindAnyProjectInDirectory">
+        <source>Could not find any project in `{0}`.</source>
+        <target state="translated">Não foi possível encontrar nenhum projeto em ‘{0}’.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CouldNotFindProjectOrDirectory">
+        <source>Could not find project or directory `{0}`.</source>
+        <target state="translated">Não foi possível encontrar o projeto ou diretório ‘{0}’.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CouldNotFindSolutionIn">
+        <source>Specified solution file {0} does not exist, or there is no solution file in the directory.</source>
+        <target state="translated">O arquivo de solução {0} especificado não existe ou não há um arquivo de solução no diretório.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CouldNotFindSolutionOrDirectory">
+        <source>Could not find solution or directory `{0}`.</source>
+        <target state="translated">Não foi possível encontrar a solução ou o diretório ‘{0}’.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CouldNotFindToolRuntimeConfigFile">
+        <source>{0}: Could not find runtimeconfig.json file for tool {1}</source>
+        <target state="translated">{0}: não foi possível localizar o arquivo runtimeconfig.json para a ferramenta {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Delete">
+        <source>Delete</source>
+        <target state="translated">Excluir</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DepsJsonGeneratorProjectNotSet">
+        <source>Unable to find deps.json generator project.</source>
+        <target state="translated">Não é possível localizar o projeto do gerador deps.json.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DidNotFindAMatchingProject">
+        <source>{0}: Did not find a matching project {1}.</source>
+        <target state="translated">{0}: não encontrou um projeto {1} correspondente.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DidNotFindProject">
+        <source>{0}: ProjectFactory did not find Project.</source>
+        <target state="translated">{0}: ProjectFactory não encontrou o Projeto.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DidYouMean">
+        <source>Did you mean the following command?</source>
+        <target state="translated">Você quis dizer o seguinte comando?</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Directory">
+        <source>Directory</source>
+        <target state="translated">Diretório</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DisableBuildServersOptionDescription">
+        <source>Force the command to ignore any persistent build servers.</source>
+        <target state="translated">Force o comando a ignorar quaisquer servidores de compilação persistentes.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoesNotExist">
+        <source>{0}: {1} does not exist</source>
+        <target state="translated">{0}: {1} não existe</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvironmentPathLinuxManualInstructions">
+        <source>Tools directory '{0}' is not currently on the PATH environment variable.
+If you are using bash, you can add it to your profile by running the following command:
+
+cat &lt;&lt; \EOF &gt;&gt; ~/.bash_profile
+# Add .NET Core SDK tools
+export PATH="$PATH:{0}"
+EOF
+
+You can add it to the current session by running the following command:
+
+export PATH="$PATH:{0}"
+</source>
+        <target state="translated">O diretório de ferramentas '{0}' não está atualmente na variável de ambiente PATH.
+Se você estiver usando bash, pode adicioná-lo ao seu perfil executando o seguinte comando:
+
+gato &lt;&lt; \EOF &gt;&gt; ~/.bash_profile
+# Adicionar ferramentas do SDK do .NET Core
+exportar PATH="$PATH:{0}"
+EOF
+
+Você pode adicioná-lo à sessão atual executando o seguinte comando:
+
+exportar PATH="$PATH:{0}"
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvironmentPathLinuxNeedLogout">
+        <source>Since you just installed the .NET SDK, you will need to logout or restart your session before running the tool you installed.</source>
+        <target state="translated">Já que você acabou de instalar o SDK do .NET, ainda precisará fazer logoff ou reiniciar a sessão antes de executar a ferramenta instalada.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvironmentPathOSXBashManualInstructions">
+        <source>Tools directory '{0}' is not currently on the PATH environment variable.
+If you are using bash, you can add it to your profile by running the following command:
+
+cat &lt;&lt; \EOF &gt;&gt; ~/.bash_profile
+# Add .NET Core SDK tools
+export PATH="$PATH:{0}"
+EOF
+
+You can add it to the current session by running the following command:
+
+export PATH="$PATH:{0}"
+</source>
+        <target state="translated">O diretório de ferramentas '{0}' não está atualmente na variável de ambiente PATH.
+Se você estiver usando bash, pode adicioná-lo ao seu perfil executando o seguinte comando:
+
+gato &lt;&lt; \EOF &gt;&gt; ~/.bash_profile
+# Adicionar ferramentas do SDK do .NET Core
+exportar PATH="$PATH:{0}"
+EOF
+
+Você pode adicioná-lo à sessão atual executando o seguinte comando:
+
+exportar PATH="$PATH:{0}"
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvironmentPathOSXNeedReopen">
+        <source>Since you just installed the .NET SDK, you will need to reopen terminal before running the tool you installed.</source>
+        <target state="translated">Já que você acabou de instalar o SDK do .NET, ainda precisará reabrir o terminal antes de executar a ferramenta instalada.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvironmentPathOSXZshManualInstructions">
+        <source>Tools directory '{0}' is not currently on the PATH environment variable.
+If you are using zsh, you can add it to your profile by running the following command:
+
+cat &lt;&lt; \EOF &gt;&gt; ~/.zprofile
+# Add .NET Core SDK tools
+export PATH="$PATH:{0}"
+EOF
+
+And run `zsh -l` to make it available for current session.
+
+You can only add it to the current session by running the following command:
+
+export PATH="$PATH:{0}"
+</source>
+        <target state="translated">O diretório de ferramentas '{0}' não está atualmente na variável de ambiente PATH.
+Se você estiver usando zsh, pode adicioná-lo ao seu perfil executando o seguinte comando:
+
+gato &lt;&lt; \EOF &gt;&gt; ~/.zprofile
+# Adicionar ferramentas do SDK do .NET Core
+exportar PATH="$PATH:{0}"
+EOF
+
+E execute `zsh -l` para torná-lo disponível na sessão atual.
+
+Você só pode adicioná-lo à sessão atual executando o seguinte comando:
+
+exportar PATH="$PATH:{0}"
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvironmentPathWindowsManualInstructions">
+        <source>Tools directory '{0}' is not currently on the PATH environment variable.
+
+You can add the directory to the PATH by running the following command:
+
+setx PATH "%PATH%;{0}"
+</source>
+        <target state="translated">O diretório de ferramentas '{0}' não está na variável de ambiente PATH no momento.
+
+Você pode adicionar o diretório à variável PATH executando o seguinte comando:
+
+setx PATH "%PATH%;{0}"
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvironmentPathWindowsNeedReopen">
+        <source>Since you just installed the .NET SDK, you will need to reopen the Command Prompt window before running the tool you installed.</source>
+        <target state="translated">Já que você acabou de instalar o SDK do .NET, ainda precisará reabrir a janela do Prompt de Comando antes de executar a ferramenta instalada.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Error">
+        <source>Error</source>
+        <target state="translated">Erro</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Error_NU1302_HttpSourceUsed">
+        <source>You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
+        <target state="translated">Você está executando a operação 'tool install' com uma fonte 'HTTP': {0}. O NuGet requer fontes HTTPS. Para usar uma fonte HTTP, você deve definir explicitamente 'allowInsecureConnections' como true no arquivo NuGet.Config. Consulte https://aka.ms/nuget-https-everywhere para mais informações.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExpectDepsJsonAt">
+        <source>{0}: expect deps.json at: {1}</source>
+        <target state="translated">{0}: espera de deps.json em: {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedSettingShimPermissions">
+        <source>Failed to set user executable permissions for shell shim: {0}</source>
+        <target state="translated">Falha ao definir as permissões do executável do usuário para o shim do shell: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToCreateShellShim">
+        <source>Failed to create tool shim for command '{0}': {1}</source>
+        <target state="translated">Falha ao criar o shim da ferramenta para o comando '{0}': {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToFindCommandPath">
+        <source>{0}: failed to find commandPath {1}</source>
+        <target state="translated">{0}: falha ao encontrar commandPath {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToFindLibraryInAssetsFile">
+        <source>Failed to find library in NuGet assets file for tool package '{0}': {1}</source>
+        <target state="translated">Falha ao encontrar a biblioteca no arquivo de ativos do NuGet para o pacote de ferramenta '{0}': {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToFindSourceUnderPackageSourceMapping">
+        <source>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
+        <target state="translated">O Mapeamento de Origem do Pacote está habilitado, mas nenhuma origem foi encontrada na ID de pacote especificada: {0}. Consulte a documentação do Mapeamento de Origem do Pacote em https://aka.ms/nuget-package-source-mapping para obter mais detalhes.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToFindStagedToolPackage">
+        <source>Failed to find staged tool package '{0}'.</source>
+        <target state="translated">Falha ao encontrar o pacote de ferramentas preparado '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToFindToolAssembly">
+        <source>{0}: failed to find toolAssembly for {1}</source>
+        <target state="translated">{0}: falha ao encontrar toolAssembly para {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToLoadNuGetSource">
+        <source>Failed to load NuGet source {0}</source>
+        <target state="translated">Falha no carregamento da fonte NuGet {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToMapSourceUnderPackageSourceMapping">
+        <source>Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
+        <target state="translated">O Mapeamento de Origem do Pacote está habilitado, mas nenhuma origem foi mapeada na ID de pacote especificada: {0}. Consulte a documentação do Mapeamento de Origem do Pacote em https://aka.ms/nuget-package-source-mapping para obter mais detalhes.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToReadNuGetLockFile">
+        <source>Failed to read NuGet assets file for tool package '{0}': {1}</source>
+        <target state="translated">Falha ao ler o arquivo de ativos do NuGet para o pacote de ferramenta '{0}': {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToReadPidFile">
+        <source>Failed to read pid file '{0}': {1}</source>
+        <target state="translated">Falha ao ler o arquivo PID '{0}': {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToRemoveShellShim">
+        <source>Failed to remove tool shim for command '{0}': {1}</source>
+        <target state="translated">Falha ao remover o shim da ferramenta para o comando '{0}': {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToResolveCommandSpec">
+        <source>{0}: failed to resolve commandspec from library.</source>
+        <target state="translated">{0}: falha ao resolver commandspec por meio da biblioteca.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToRetrieveToolConfiguration">
+        <source>Failed to retrieve tool configuration: {0}</source>
+        <target state="translated">Falha ao recuperar a configuração da ferramenta: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToSetToolsPathEnvironmentVariable">
+        <source>Failed to add '{0}' to the PATH environment variable. Add this directory to your PATH to use tools installed with 'dotnet tool install'.</source>
+        <target state="translated">Falha ao adicionar '{0}' à variável de ambiente PATH. Adicione este diretório ao seu PATH para usar as ferramentas instaladas com 'dotnet tool install'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToUninstallToolPackage">
+        <source>Failed to uninstall tool package '{0}': {1}</source>
+        <target state="translated">Falha ao desinstalar o pacote da ferramenta '{0}': {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToValidatePackageSigning">
+        <source>Failed to validate package signing.
+{0}</source>
+        <target state="translated">Falha na validação da assinatura do pacote.
+{0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FieldCommandsIsMissing">
+        <source>Missing 'commands' entry.</source>
+        <target state="translated">Entrada 'commands' ausente.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="File">
+        <source>File</source>
+        <target state="translated">Arquivo</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FileArgumentDescription">
+        <source>The file-based app to operate on.</source>
+        <target state="translated">O aplicativo baseado no arquivo a ser operado.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FormatVersionIsHigher">
+        <source>Format version is higher than supported. This tool may not be supported in this SDK version. Update your SDK.</source>
+        <target state="translated">A versão do formato é superior à versão compatível. Pode não haver suporte para esta ferramenta nesta versão do SDK. Atualize o SDK.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FormatVersionIsMalformed">
+        <source>Format version is malformed. This tool may not be supported in this SDK version. Contact the author of the tool.</source>
+        <target state="translated">A versão do formato está malformada. Pode não haver suporte para esta ferramenta nesta versão do SDK. Entre em contato com o autor da ferramenta.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FormatVersionIsMissing">
+        <source>Format version is missing. This tool may not be supported in this SDK version. Contact the author of the tool.</source>
+        <target state="translated">A versão do formato está ausente. Pode não haver suporte para esta ferramenta nesta versão do SDK. Entre em contato com o autor da ferramenta.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FoundInvalidProject">
+        <source>Found a project `{0}` but it is invalid.</source>
+        <target state="translated">Foi encontrado um projeto ‘{0}’, mas ele é inválido.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FoundToolLockFile">
+        <source>{0}: found tool lockfile at : {1}</source>
+        <target state="translated">{0}: arquivo de bloqueio de ferramenta encontrado em: {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FrameworkArgumentName">
+        <source>FRAMEWORK</source>
+        <target state="translated">FRAMEWORK</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FrameworkDependentOptionDescription">
+        <source>Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.</source>
+        <target state="translated">Publique o seu aplicativo como um aplicativo dependente de estrutura. Um runtime do .NET compatível precisa ser instalado no computador de destino para executar o aplicativo.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GeneratingDepsJson">
+        <source>Generating deps.json at: {0}</source>
+        <target state="translated">Gerando deps.json em: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IgnoringPreferCLIRuntimeFile">
+        <source>{0}: Ignoring prefercliruntime file as the tool target framework ({1}) has a different major version than the current CLI runtime ({2})</source>
+        <target state="translated">{0}: ignorando o arquivo prefercliruntime, uma vez que a estrutura de destino da ferramenta ({1}) tem uma versão principal diferente daquela do tempo de execução atual da CLI ({2})</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InPackage">
+        <source>In package {0}:
+{1}</source>
+        <target state="translated">No pacote {0}:
+{1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IncorrectlyFormattedEnvironmentVariables">
+        <source>Incorrectly formatted environment variables: {0}</source>
+        <target state="translated">Variáveis de ambiente formatadas incorretamente: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidCommandResolverArguments">
+        <source>{0}: invalid commandResolverArguments</source>
+        <target state="translated">{0}: commandResolverArguments inválido</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidInputTypeInteger">
+        <source>{0} should be an integer</source>
+        <target state="translated">{0} deve ser um inteiro</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidManifestFilePrefix">
+        <source>Invalid manifest file. Path {0}:
+{1}</source>
+        <target state="translated">Arquivo de manifesto inválido. Caminho de {0}:
+{1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidProject">
+        <source>Invalid project `{0}`.</source>
+        <target state="translated">Projeto ‘{0}’ inválido.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidProjectWithExceptionMessage">
+        <source>Invalid project `{0}`. {1}.</source>
+        <target state="translated">Projeto inválido `{0}`. {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidRuntimeIdentifier">
+        <source>The runtime identifier {0} is invalid. Valid runtime identifiers are: {1}.</source>
+        <target state="translated">O identificador de tempo de execução {0} é inválido. Os identificadores de tempo de execução válidos são: {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidSolutionFormatString">
+        <source>Invalid solution `{0}`. {1}.</source>
+        <target state="translated">Solução inválida `{0}`. {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidVersion">
+        <source>Invalid version string: {0}</source>
+        <target state="translated">Cadeia de caracteres de versão inválida: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IsNotFoundInNuGetFeeds">
+        <source>{0} is not found in NuGet feeds {1}.</source>
+        <target state="translated">{0} não é encontrado no NuGet feeds {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="JsonParsingError">
+        <source>Json parsing error in file {0} : {1}</source>
+        <target state="translated">Erro no arquivo de análise JSON {0} : {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LevelArgumentName">
+        <source>LEVEL</source>
+        <target state="translated">LEVEL</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Library">
+        <source>Library</source>
+        <target state="translated">Biblioteca</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LibraryNotFoundInLockFile">
+        <source>{0}: library not found in lock file.</source>
+        <target state="translated">{0}: biblioteca não encontrada no arquivo de bloqueio.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="List">
+        <source>List</source>
+        <target state="translated">Listar</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LookingForPreferCliRuntimeFile">
+        <source>{0}: Looking for prefercliruntime file at `{1}`</source>
+        <target state="translated">{0}: procurando o arquivo prefercliruntime em '{1}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MSBuildAdditionalOptionTitle">
+        <source>.NET Cli Options:</source>
+        <target state="translated">Opções da CLI do .NET:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MSBuildArgs">
+        <source>MSBuild arguments: {0}</source>
+        <target state="translated">Argumentos do MSBuild: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MSBuildExePath">
+        <source>{0}: MSBUILD_EXE_PATH = {1}</source>
+        <target state="translated">{0}: MSBUILD_EXE_PATH = {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MSBuildProjectPath">
+        <source>{0}: MSBuild project path = {1}</source>
+        <target state="translated">{0}: caminho de projeto do MSBuild = {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MSBuildServer">
+        <source>MSBuild server</source>
+        <target state="translated">Servidor MSBuild</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManifestHasMarkOfTheWeb">
+        <source>File {0} came from another computer and might be blocked to help protect this computer. For more information, including how to unblock, see https://aka.ms/motw</source>
+        <target state="translated">O arquivo {0} veio de outro computador e pode estar bloqueado para ajudar a proteger este computador. Para obter mais informações, incluindo como desbloquear, consulte https://aka.ms/motw</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManifestMissingIsRoot">
+        <source>Missing 'isRoot' entry.</source>
+        <target state="translated">Entrada 'isRoot' ausente.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManifestPackageIdCollision">
+        <source>Cannot add package. Manifest file already contains version {0} of the package {1}. Uninstall/install or edit manifest file {2} to specify the new version {3}.</source>
+        <target state="translated">Não é possível adicionar o pacote. O arquivo de manifesto já contém a versão {0} do pacote {1}. Instale/desinstale ou edite o arquivo de manifesto {2} para especificar a nova versão {3}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManifestVersion0">
+        <source>Manifest version 0 is not supported.</source>
+        <target state="translated">Não há suporte para a versão de manifesto 0.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManifestVersionHigherThanSupported">
+        <source>Manifest version is {0}. This manifest may not be supported in this SDK version that can support up to manifest version {1}.</source>
+        <target state="translated">A versão de manifesto é {0}. Este manifesto pode não ter suporte nesta versão do SDK, que dá suporte até a versão de manifesto {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingToolEntryPointFile">
+        <source>Entry point file '{0}' for command '{1}' was not found in the package.</source>
+        <target state="translated">O arquivo de ponto de entrada '{0}' do comando '{1}' não foi encontrado no pacote.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingToolSettingsFile">
+        <source>Settings file 'DotnetToolSettings.xml' was not found in the package.</source>
+        <target state="translated">O arquivo de configurações 'DotnetToolSettings.xml' não foi encontrado no pacote.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MoreThanOnePackagedShimAvailable">
+        <source>More than one packaged shim is available: {0}.</source>
+        <target state="translated">Há mais de um shim empacotado disponível: {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MoreThanOneProjectInDirectory">
+        <source>Found more than one project in `{0}`. Specify which one to use.</source>
+        <target state="translated">Foi encontrado mais de um projeto em ‘{0}’. Especifique qual deve ser usado.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MoreThanOneSolutionInDirectory">
+        <source>Found more than one solution file in {0}. Specify which one to use.</source>
+        <target state="translated">Foi encontrado mais de um arquivo de solução em {0}. Especifique qual deve ser usado.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MultipleProjectFilesFound">
+        <source>Specify which project file to use because this '{0}' contains more than one project file.</source>
+        <target state="translated">Especifique qual arquivo de projeto será usado, pois este '{0}' contém mais de um arquivo de projeto.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MultipleSamePackageId">
+        <source>More than one entry exists for package(s): {0}.</source>
+        <target state="translated">Existe mais de uma entrada para os pacotes: {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NeedRunToolRestore">
+        <source>Run "dotnet tool restore" to make the "{0}" command available.</source>
+        <target state="translated">Execute "dotnet tool restore" para tornar o comando "{0}" disponível.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="New">
+        <source>New</source>
+        <target state="translated">Novo</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoProjectsFound">
+        <source>No projects found in the solution.</source>
+        <target state="translated">Não foi encontrado nenhum projeto na solução.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoReferencesFound">
+        <source>There are no {0} references in project {1}.</source>
+        <target state="translated">Não há nenhuma referência {0} no projeto {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoRestoreDescription">
+        <source>Do not restore the project before building.</source>
+        <target state="translated">Não restaurar o projeto antes de compilar.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NonRetriableNugetSearchFailure">
+        <source>Failed to search. NuGet Search API response detail:
+    RequestUrl: {0}. ReasonPhrase: {1}. StatusCode: {2}.</source>
+        <target state="translated">Falha na pesquisa. Detalhe da resposta da API de Pesquisa do NuGet:
+    RequestUrl: {0}. ReasonPhrase: {1}. StatusCode: {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetPackageShouldNotBeSigned">
+        <source>Skipping signature verification for NuGet package "{0}" because it comes from a source that does not require signature validation.</source>
+        <target state="translated">Ignorando a verificação de assinatura para o pacote NuGet "{0}" porque ele vem de uma origem que não requer validação de assinatura.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetPackageSignatureVerificationSkipped">
+        <source>Skipping NuGet package signature verification.</source>
+        <target state="translated">Ignorando a verificação de assinatura do pacote NuGet.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NuGetPackagesRoot">
+        <source>{0}: nuget packages root:
+{1}</source>
+        <target state="translated">{0}: raiz de pacotes NuGet:
+{1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OSArgumentName">
+        <source>OS</source>
+        <target state="translated">SO</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OnlyOneProjectAllowed">
+        <source>Only one project can be specified at a time using the -p option.</source>
+        <target state="translated">Somente um projeto pode ser especificado por vez usando a opção -p.</target>
+        <note>{Locked="-p"}</note>
+      </trans-unit>
+      <trans-unit id="OperatingSystemOptionDescription">
+        <source>The target operating system.</source>
+        <target state="translated">O sistema operacional de destino.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="P2P">
+        <source>Project to Project</source>
+        <target state="translated">Projeto para Projeto</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmd_OneNuspecAllowed">
+        <source>Only one .nuspec file can be packed at a time</source>
+        <target state="translated">Somente um arquivo .nuspec pode ser empacotado por vez</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Package">
+        <source>Package</source>
+        <target state="translated">Pacote</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageIdentityArgumentDescription">
+        <source>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</source>
+        <target state="translated">Referência do pacote na forma de um identificador de pacote como 'Newtonsoft.Json' ou identificador e versão do pacote separados por '@', como 'Newtonsoft.Json\@13.0.3'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">
+        <source>Package reference id and version must not be null.</source>
+        <target state="translated">O ID e a versão da referência do pacote não podem ser nulos.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageIdentityArgumentVersionOptionConflict">
+        <source>Cannot specify --version when the package argument already contains a version.</source>
+        <target state="translated">Não é possível especificar --version quando o argumento do pacote já contém uma versão.</target>
+        <note>{Locked="--version"}</note>
+      </trans-unit>
+      <trans-unit id="PackageReference">
+        <source>Package reference</source>
+        <target state="translated">Referência do pacote</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionDefault">
+        <source>A version of {0} of package {1}</source>
+        <target state="translated">Uma versão do {0} do pacote {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForExactVersionMatch">
+        <source>Version {0} of package {1}</source>
+        <target state="translated">Versão {0} do pacote {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForVersionWithLowerAndUpperBounds">
+        <source>A version between {0} and {1} of package {2}</source>
+        <target state="translated">Uma versão entre {0} e {1} do pacote {2}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForVersionWithLowerBound">
+        <source>A version higher than {0} of package {1}</source>
+        <target state="translated">Uma versão superior a {0} do pacote {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForVersionWithUpperBound">
+        <source>A version less than {0} of package {1}</source>
+        <target state="translated">Uma versão anterior a {0} do pacote {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Project">
+        <source>Project</source>
+        <target state="translated">Projeto</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectAddedToTheSolution">
+        <source>Project `{0}` added to the solution.</source>
+        <target state="translated">O projeto ‘{0}’ foi adicionado à solução.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectAlreadyHasAreference">
+        <source>Project already has a reference to `{0}`.</source>
+        <target state="translated">O projeto já tem uma referência a ‘{0}’.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectArgumentDescription">
+        <source>The project file to operate on. If a file is not specified, the command will search the current directory for one.</source>
+        <target state="translated">O arquivo de projeto no qual operar. Se um arquivo não for especificado, o comando pesquisará um no diretório atual.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectArgumentName">
+        <source>PROJECT</source>
+        <target state="translated">PROJECT</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectCouldNotBeEvaluated">
+        <source>Project `{0}` could not be evaluated. Evaluation failed with following error:
+{1}.</source>
+        <target state="translated">O projeto '{0}' não pôde ser avaliado. A avaliação falhou com o seguinte erro:
+{1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectDoesNotExist">
+        <source>Project `{0}` does not exist.</source>
+        <target state="translated">O projeto ‘{0}’ não existe.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectDoesNotTargetFramework">
+        <source>Project `{0}` does not target framework `{1}`.</source>
+        <target state="translated">O projeto '{0}' não tem como destino a estrutura '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectIsInvalid">
+        <source>Project `{0}` is invalid.</source>
+        <target state="translated">O projeto ‘{0}’ é inválido.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectNotCompatibleWithFrameworks">
+        <source>Project `{0}` cannot be added due to incompatible targeted frameworks between the two projects. Review the project you are trying to add and verify that is compatible with the following targets:</source>
+        <target state="translated">O projeto '{0}' não pode ser adicionado por causa de estruturas de destino incompatíveis entre os dois projetos. Examine o projeto que você está tentando adicionar e verifique se ele é compatível com os seguintes destinos:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectNotFoundInTheSolution">
+        <source>Project `{0}` could not be found in the solution.</source>
+        <target state="translated">Não foi possível encontrar o projeto ‘{0}’ na solução.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectOrFileArgumentDescription">
+        <source>The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file.</source>
+        <target state="translated">O arquivo do projeto ou aplicativo baseado em arquivo C# a ser operado. Se um arquivo não for especificado, o comando pesquisará um arquivo de projeto no diretório atual.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectOrFileArgumentName">
+        <source>PROJECT | FILE</source>
+        <target state="translated">PROJETO | ARQUIVO</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectReference">
+        <source>Project reference</source>
+        <target state="translated">Referência do projeto</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectReferenceCouldNotBeFound">
+        <source>Project reference `{0}` could not be found.</source>
+        <target state="translated">Não foi possível encontrar a referência de projeto ‘{0}’.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectReferenceOneOrMore">
+        <source>Project reference(s)</source>
+        <target state="translated">Referências de projeto</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectReferenceRemoved">
+        <source>Project reference `{0}` removed.</source>
+        <target state="translated">Referência de projeto ‘{0}’ removida.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectRemoved">
+        <source>Project `{0}` removed from solution.</source>
+        <target state="translated">O projeto ‘{0}’ foi removido da solução.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectRemovedFromTheSolution">
+        <source>Project `{0}` removed from the solution.</source>
+        <target state="translated">O projeto `{0}` foi removido da solução.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RazorServer">
+        <source>Razor build server</source>
+        <target state="translated">Servidor de build Razor</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Reference">
+        <source>Reference</source>
+        <target state="translated">Referência</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReferenceAddedToTheProject">
+        <source>Reference `{0}` added to the project.</source>
+        <target state="translated">A referência ‘{0}’ foi adicionada ao projeto.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Remove">
+        <source>Remove</source>
+        <target state="translated">Remover</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RequiredCommandNotPassed">
+        <source>Required command was not provided.</source>
+        <target state="translated">O comando necessário não foi fornecido.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ResolvingCommandSpec">
+        <source>{0}: resolving commandspec from {1} Tool Libraries.</source>
+        <target state="translated">{0}: resolvendo commandspec por meio das Bibliotecas de Ferramentas de {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ResponseFileNotFound">
+        <source>Response file '{0}' does not exist.</source>
+        <target state="translated">O arquivo de resposta '{0}' não existe.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RetriableNugetSearchFailure">
+        <source>Failed to search. Retry later may resolve the issue. NuGet Search API response detail:
+    RequestUrl: {0}. ReasonPhrase: {1}. StatusCode: {2}.</source>
+        <target state="translated">Falha na pesquisa. Uma nova tentativa mais tarde poderá resolver o problema. Detalhe da resposta da API de Pesquisa do NuGet:
+    RequestUrl: {0}. ReasonPhrase: {1}. StatusCode: {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RuntimeIdentifierArgumentName">
+        <source>RUNTIME_IDENTIFIER</source>
+        <target state="translated">RUNTIME_IDENTIFIER</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SDKDiagnosticsCommandDefinition">
+        <source>Enable diagnostic output.</source>
+        <target state="translated">Habilitar saída de diagnóstico.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SDKSchemaCommandDefinition">
+        <source>Display the command schema as JSON.</source>
+        <target state="translated">Exibir o esquema do comando em JSON.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SelfContainAndNoSelfContainedConflict">
+        <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
+        <target state="translated">As opções '--self-contained' e '--no-self-contained' não podem ser usadas juntas.</target>
+        <note>{Locked="--self-contained"}{Locked="--no-self-contained"}</note>
+      </trans-unit>
+      <trans-unit id="SelfContainedOptionDescription">
+        <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
+The default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.</source>
+        <target state="translated">Publique o tempo de execução do .NET junto com sua aplicação para que o tempo de execução não precise ser instalado na máquina de destino.
+O padrão é 'false.' No entanto, ao direcionar para .NET 7 ou inferior, o padrão é 'true' se um identificador de tempo de execução for especificado.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ShellShimConflict">
+        <source>Command '{0}' conflicts with an existing command from another tool.</source>
+        <target state="translated">O comando '{0}' conflita com um comando existente de outra ferramenta.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ShortWorkloadSearchVersionDescription">
+        <source>Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</source>
+        <target state="translated">Pesquisar por versões disponíveis da carga de trabalho ou pelo que compõe uma versão da carga de trabalho. Use 'dotnet workload search version --help' para mais informações.</target>
+        <note>{Locked="dotnet workload search version --help"}</note>
+      </trans-unit>
+      <trans-unit id="ShowHelpDescription">
+        <source>Show command line help.</source>
+        <target state="translated">Mostrar a ajuda da linha de comando.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ShutdownCommandFailed">
+        <source>The shutdown command failed: {0}</source>
+        <target state="translated">O comando de desligamento falhou: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Solution">
+        <source>Solution</source>
+        <target state="translated">Solução</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionAlreadyContainsProject">
+        <source>Solution {0} already contains project {1}.</source>
+        <target state="translated">A solução {0} já contém o projeto {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionArgumentMisplaced">
+        <source>Solution argument '{0}' is misplaced.</source>
+        <target state="translated">O argumento da solução '{0}' está mal colocado.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionDoesNotExist">
+        <source>Specified solution file {0} does not exist, or there is no solution file in the directory.</source>
+        <target state="translated">O arquivo de solução {0} especificado não existe ou não há um arquivo de solução no diretório.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionOrProjectArgumentDescription">
+        <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
+        <target state="translated">O arquivo de solução ou projeto para operar. Se um arquivo não for especificado, o comando pesquisará um no diretório atual.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionOrProjectArgumentName">
+        <source>PROJECT | SOLUTION</source>
+        <target state="translated">PROJECT | SOLUTION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionOrProjectOrFileArgumentDescription">
+        <source>The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</source>
+        <target state="translated">O projeto, solução ou arquivo C# (programa baseado em arquivo) para operar. Se um arquivo não for especificado, o comando buscará na pasta atual por um projeto ou solução.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionOrProjectOrFileArgumentName">
+        <source>PROJECT | SOLUTION | FILE</source>
+        <target state="translated">PROJETO | SOLUÇÃO | ARQUIVO</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyAtLeastOne">
+        <source>Specify at least one {0}.</source>
+        <target state="translated">Especifique pelo menos um {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyAtLeastOneProjectToAdd">
+        <source>You must specify at least one project to add.</source>
+        <target state="translated">É necessário especificar pelo menos um projeto a ser adicionado.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyAtLeastOneProjectToRemove">
+        <source>You must specify at least one project to remove.</source>
+        <target state="translated">É necessário especificar pelo menos um projeto para ser removido.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyAtLeastOneReferenceToRemove">
+        <source>You must specify at least one reference to remove.</source>
+        <target state="translated">É necessário especificar pelo menos uma referência a ser removida.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolLibraryFound">
+        <source>{0}: tool library found {1}</source>
+        <target state="translated">{0}: a biblioteca de ferramentas encontrou {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolMissingVersion">
+        <source>Missing 'version' entry.</source>
+        <target state="translated">Entrada 'version' ausente.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolPackageConflictPackageId">
+        <source>Tool '{0}' (version '{1}') is already installed.</source>
+        <target state="translated">A ferramenta '{0}' (versão '{1}') já está instalada.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolPackageNotATool">
+        <source>Package {0} is not a .NET tool.</source>
+        <target state="translated">O pacote {0} não é uma ferramenta .NET.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSettingsInvalidCommandName">
+        <source>Command '{0}' contains one or more of the following invalid characters: {1}.</source>
+        <target state="translated">O comando '{0}' contém um ou mais dos seguintes caracteres inválidos: {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSettingsInvalidLeadingDotCommandName">
+        <source>The command name '{0}' cannot begin with a leading dot (.).</source>
+        <target state="translated">O nome do comando '{0}' não pode começar com ponto final (.) à esquerda.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSettingsInvalidXml">
+        <source>Invalid XML: {0}</source>
+        <target state="translated">XML inválido: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSettingsMissingCommandName">
+        <source>Tool defines a command with a missing name setting.</source>
+        <target state="translated">A ferramenta define um comando com uma configuração de nome ausente.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSettingsMissingEntryPoint">
+        <source>Command '{0}' is missing an entry point setting.</source>
+        <target state="translated">Há uma configuração de ponto de entrada ausente no comando '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSettingsMoreThanOneCommand">
+        <source>More than one command is defined for the tool.</source>
+        <target state="translated">Há mais de um comando definido para a ferramenta.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSettingsUnsupportedRunner">
+        <source>Tool '{0}' uses unsupported runner '{1}'."</source>
+        <target state="translated">A ferramenta '{0}' usa o executor '{1}' que não é suportado."</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolUnsupportedRuntimeIdentifier">
+        <source>The tool does not support the current architecture or operating system ({0}). Supported runtimes: {1}</source>
+        <target state="translated">A ferramenta não suporta a arquitetura ou sistema operacional atual ({0}). Runtimes com suporte: {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Type">
+        <source>Type</source>
+        <target state="translated">Tipo</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnableToCheckCertificateChainPolicy">
+        <source>The requested certificate chain policy could not be checked: {0}</source>
+        <target state="translated">Não foi possível verificar a política de cadeia de certificados solicitada: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnableToDeleteTemporaryDepsJson">
+        <source>unable to delete temporary deps.json file: {0}</source>
+        <target state="translated">não é possível excluir o arquivo temporário deps.json: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnableToGenerateDepsJson">
+        <source>Unable to generate deps.json, it may have been already generated.  You can specify the "-d" option option after "dotnet" for diagnostic output (for example, "dotnet -d &lt;toolname&gt;": {0}</source>
+        <target state="translated">Não é possível gerar deps.json, ele pode já ter sido gerado.  Você pode especificar a opção "-d" após "dotnet" para a saída de diagnóstico (por exemplo, "dotnet -d &lt;toolname&gt;": {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnableToLocateDotnetMultiplexer">
+        <source>Unable to locate dotnet multiplexer</source>
+        <target state="translated">Não é possível localizar o multiplexador do dotnet</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedTypeInJson">
+        <source>Expected a {0} for property '{1}'.</source>
+        <target state="translated">Um {0} era esperado para a propriedade '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnrecognizedCommandOrArgument">
+        <source>Unrecognized command or argument '{0}'</source>
+        <target state="translated">Comando ou argumento '{0}' não reconhecido</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnsupportedProjectType">
+        <source>Project '{0}' has an unknown project type and cannot be added to the solution file. Contact your SDK provider for support.</source>
+        <target state="translated">O projeto '{0}' tem um tipo de projeto desconhecido e não pode ser adicionado ao arquivo da solução. Entre em contato com o provedor do SDK para obter suporte.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Update">
+        <source>Update</source>
+        <target state="translated">Atualização</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VBCSCompilerServer">
+        <source>VB/C# compiler server</source>
+        <target state="translated">Servidor do compilador VB/C#</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Value">
+        <source>Value</source>
+        <target state="translated">Valor</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbosityOptionDescription">
+        <source>Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].</source>
+        <target state="translated">Definir o nível de detalhamento do MSBuild. Os valores permitidos são q[uiet], m[inimal], n[ormal], d[etailed] e diag[nostic].</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerifyingNuGetPackageSignature">
+        <source>Verified that the NuGet package "{0}" has a valid signature.</source>
+        <target state="translated">Verificado que o pacote NuGet "{0}" tem uma assinatura válida.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VersionForPackageCouldNotBeResolved">
+        <source>Version for package `{0}` could not be resolved.</source>
+        <target state="translated">A versão do pacote '{0}' não pôde ser resolvida.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VersionIsInvalid">
+        <source>Version {0} is invalid.</source>
+        <target state="translated">A versão {0} não é válida.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VersionSuffixArgumentName">
+        <source>VERSION_SUFFIX</source>
+        <target state="translated">VERSION_SUFFIX</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadIntegrityCheckError">
+        <source>An issue was encountered verifying workloads. For more information, run "dotnet workload update".</source>
+        <target state="translated">Foi encontrado um problema ao verificar as cargas de trabalho. Para obter mais informações, execute "dotnet workload update".</target>
+        <note>{Locked="dotnet workload update"}</note>
+      </trans-unit>
+      <trans-unit id="YesOptionDescription">
+        <source>Accept all confirmation prompts using "yes."</source>
+        <target state="translated">Aceite todas as solicitações de confirmação usando "sim."</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

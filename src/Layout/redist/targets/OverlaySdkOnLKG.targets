@@ -1,7 +1,10 @@
-<Project ToolsVersion="14.0" DefaultTargets="Test">
-  <Target Name="OverlaySdkOnLKG" AfterTargets="Build" DependsOnTargets="GenerateLayout">
+<Project>
+
+  <Target Name="OverlaySdkOnLKG" AfterTargets="AfterBuild" DependsOnTargets="GenerateInstallerLayout">
     <PropertyGroup>
-      <RedistLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet\</RedistLayoutPath>
+      <_DotNetHiveRoot>$(DOTNET_INSTALL_DIR)</_DotNetHiveRoot>
+      <_DotNetHiveRoot Condition="'$(_DotNetHiveRoot)' == ''">$(RepoRoot).dotnet/</_DotNetHiveRoot>
+      <_DotNetHiveRoot Condition="!HasTrailingSlash('$(_DotNetHiveRoot)')">$(_DotNetHiveRoot)/</_DotNetHiveRoot>
     </PropertyGroup>
 
     <!-- Get stage 0 SDK version without having to duplicate the LKG SDK property between the global.json
@@ -10,104 +13,33 @@
       <Output TaskParameter="ConsoleOutput" PropertyName="Stage0SdkVersion"/>
     </Exec>
 
-    <PropertyGroup>
-      <Stage0IncludedWorkloadManifestsFile>$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/IncludedWorkloadManifests.txt</Stage0IncludedWorkloadManifestsFile>
-      <Stage0KnownWorkloadManifestsFile>$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/KnownWorkloadManifests.txt</Stage0KnownWorkloadManifestsFile>
-    </PropertyGroup>
-
-    <!-- Prepare the templates -->
-    <!-- 1. Pack the template packages in the repo -->
-    <!-- the templates packages are located in <sdk root>\templates\<runtime version> folder. Get the runtime version of SDK Stage 0. -->
+    <!-- Copy artifacts from the stage0 SDK folder.
+         Ignore the sdk, templates and host files for which only live built artifacts should be used. -->
     <ItemGroup>
-      <TemplatesFolderPath Include="$([System.IO.Directory]::GetDirectories(`$(_DotNetHiveRoot)templates`,`*.*`))" />
-      <TemplatesFolderPath>
-        <FolderName>$([System.IO.Path]::GetFileName(`%(Identity)`))</FolderName>
-      </TemplatesFolderPath>
-    </ItemGroup>
-    <Error Text="SDK Stage 0 has more than one folder with templates: @(TemplatesFolderPath->'%(Identity)'). Please delete all but one and rebuild" Condition="@(TemplatesFolderPath->Count()) > 1"></Error>
-
-    <!--Prepare Microsoft.DotNet.Common.*.nupkg and pack them directly to target <redist root>\templates\<runtime version> folder. -->
-    <Exec Command="$(DotnetTool) pack $(RepoRoot)template_feed\Microsoft.DotNet.Common.ProjectTemplates.9.0 --configuration $(Configuration) --output $(RedistLayoutPath)\templates\@(TemplatesFolderPath->'%(FolderName)')\" />
-    <Exec Command="$(DotnetTool) pack $(RepoRoot)template_feed\Microsoft.DotNet.Common.ItemTemplates --configuration $(Configuration) --output $(RedistLayoutPath)\templates\@(TemplatesFolderPath->'%(FolderName)')\"  />
-
-    <!-- 2. Other template packages will be included from SDK Stage 0. -->
-    <ItemGroup>
-      <OverlaySDK Include="$(_DotNetHiveRoot)/**/*" Exclude="$(_DotNetHiveRoot)sdk/**/*;$(_DotNetHiveRoot)templates/**/microsoft.dotnet.common.*.nupkg"/>
-      <OverlaySdkFilesFromStage0 Include="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/Microsoft.NETCoreSdk.BundledCliTools.props" />
-      <OverlaySdkFilesFromStage0 Include="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/Microsoft.NETCoreSdk.BundledMSBuildInformation.props" />
-      <OverlaySdkFilesFromStage0 Include="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/RuntimeIdentifierGraph.json" />
-      <OverlaySdkFilesFromStage0 Include="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/NETCoreSdkRuntimeIdentifierChain.txt" />
-      <OverlaySdkFilesFromStage0 Include="$(Stage0IncludedWorkloadManifestsFile)" Condition="Exists('$(Stage0IncludedWorkloadManifestsFile)')"/>
-      <OverlaySdkFilesFromStage0 Include="$(Stage0KnownWorkloadManifestsFile)" Condition="Exists('$(Stage0KnownWorkloadManifestsFile)')"/>
-      <!-- Ignore dotnet-watch files from the SDK since we're building a newer version of it in this repo. -->
-      <OverlaySdkFilesFromStage0 Include="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/DotnetTools/**/*" RelativeDestination="DotnetTools"
-        Exclude="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/DotnetTools/dotnet-watch/**;$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/DotnetTools/dotnet-format/**" />
-      <OverlaySdkFilesFromStage0 Include="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/AppHostTemplate/**/*" RelativeDestination="AppHostTemplate"/>
-      <ToolsetToOverlay Include="$(OutputPath)/**/*"
-        Exclude="$(OutputPath)/DotnetTools/dotnet-watch/**" />
+      <_OverlaySDKFile Include="$(_DotNetHiveRoot)\**\*"
+                       Exclude="$(_DotNetHiveRoot)sdk\**\*;
+                                $(_DotNetHiveRoot)templates\**\*;
+                                $(_DotNetHiveRoot)host\**\*"/>
+      <OverlaySDKFile Include="@(_OverlaySDKFile->'$(TestHostDotNetRoot)%(RecursiveDir)%(Filename)%(Extension)')" Source="%(Identity)" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(OverlaySDK)"
-          DestinationFiles="@(OverlaySDK->'$(RedistLayoutPath)\%(RecursiveDir)%(Filename)%(Extension)')"
-          SkipUnchangedFiles="true"/>
-
-    <PropertyGroup>
-      <SdkOutputDirectory>$(RedistLayoutPath)sdk\$(Version)</SdkOutputDirectory>
-    </PropertyGroup>
-
-    <Copy SourceFiles="@(OverlaySdkFilesFromStage0)"
-          DestinationFiles="@(OverlaySdkFilesFromStage0->'$(SdkOutputDirectory)\%(RelativeDestination)\%(RecursiveDir)%(Filename)%(Extension)')"/>
-
-    <!-- If the stage 0 SDK doesn't have KnownWorkloadManifests.txt, then write a default version -->
-    <WriteLinesToFile File="$(SdkOutputDirectory)\KnownWorkloadManifests.txt"
-                      Lines="microsoft.net.sdk.android;microsoft.net.sdk.aspire;microsoft.net.sdk.ios;microsoft.net.sdk.maccatalyst;microsoft.net.sdk.macos;microsoft.net.sdk.maui;microsoft.net.sdk.tvos;microsoft.net.workload.mono.toolchain.current;microsoft.net.workload.emscripten.current;microsoft.net.workload.emscripten.net6;microsoft.net.workload.emscripten.net7;microsoft.net.workload.emscripten.net8;microsoft.net.workload.mono.toolchain.net6;microsoft.net.workload.mono.toolchain.net7;microsoft.net.workload.mono.toolchain.net8"/>
-
     <ItemGroup>
-      <WasmWorkloads Include="microsoft.net.workload.mono.toolchain.current" Version="$(MonoWorkloadManifestVersion)/$(MonoWorkloadFeatureBand)"/>
-      <WasmWorkloads Include="microsoft.net.workload.mono.toolchain.net6" Version="$(MonoWorkloadManifestVersion)/$(MonoWorkloadFeatureBand)"/>
-      <WasmWorkloads Include="microsoft.net.workload.mono.toolchain.net7" Version="$(MonoWorkloadManifestVersion)/$(MonoWorkloadFeatureBand)"/>
-      <WasmWorkloads Include="microsoft.net.workload.mono.toolchain.net8" Version="$(MonoWorkloadManifestVersion)/$(MonoWorkloadFeatureBand)"/>
-      <WasmWorkloads Include="microsoft.net.workload.emscripten.current" Version="$(EmscriptenWorkloadManifestVersion)/$(EmscriptenWorkloadFeatureBand)"/>
-	    <WasmWorkloads Include="microsoft.net.workload.emscripten.net6" Version="$(EmscriptenWorkloadManifestVersion)/$(EmscriptenWorkloadFeatureBand)"/>
-	    <WasmWorkloads Include="microsoft.net.workload.emscripten.net7" Version="$(EmscriptenWorkloadManifestVersion)/$(EmscriptenWorkloadFeatureBand)"/>
-      <WasmWorkloads Include="microsoft.net.workload.emscripten.net8" Version="$(EmscriptenWorkloadManifestVersion)/$(EmscriptenWorkloadFeatureBand)"/>
-
-      <WasmRuntimePackVersion Include="_RuntimePackInWorkloadVersion6" Version="$(_RuntimePackInWorkloadVersion6)" />
-      <WasmRuntimePackVersion Include="_RuntimePackInWorkloadVersion7" Version="$(_RuntimePackInWorkloadVersion7)" />
+      <_InstallerOutputFile Include="$(RedistInstallerLayoutPath)**\*" />
+      <InstallerOutputFile Include="@(_InstallerOutputFile->'$(TestHostDotNetRoot)%(RecursiveDir)%(Filename)%(Extension)')" Source="%(Identity)" />
+      <!-- Use available live built artifacts instead of stage0 files. -->
+      <InstallerOutputFile Include="@(OverlaySDKFile)" Exclude="@(InstallerOutputFile)" />
     </ItemGroup>
 
-    <!-- Create a rollback file for installing workloads during the build  -->
-    <WriteLinesToFile File="$(RedistLayoutPath)TestRollback.json"
-                      Overwrite="true"
-                      Lines="{;@(WasmWorkloads->'&quot;%(Identity)&quot;: &quot;%(Version)&quot;', ', ');}"/>
+    <!-- Copy artifacts to the testhost folder. -->
+    <Copy DestinationFiles="@(InstallerOutputFile)"
+          SourceFiles="@(InstallerOutputFile->Metadata('Source'))"
+          SkipUnchangedFiles="true"
+          UseHardLinksIfPossible="true" />
 
     <OverrideAndCreateBundledNETCoreAppPackageVersion
-      Stage0MicrosoftNETCoreAppRefPackageVersionPath="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/Microsoft.NETCoreSdk.BundledVersions.props"
-      MicrosoftNETCoreAppRefPackageVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
-      NewSDKVersion="$(Version)"
-      OutputPath="$(SdkOutputDirectory)/Microsoft.NETCoreSdk.BundledVersions.props"/>
-
-    <Copy SourceFiles="@(ToolsetToOverlay)"
-          DestinationFiles="@(ToolsetToOverlay->'$(SdkOutputDirectory)\%(RecursiveDir)%(Filename)%(Extension)')" />
-
-    <!-- Run "dotnet new" (which will just display usage and available templates) in order to print first time
-         use message so that it doesn't interfere with tests which check the output of commands. -->
-    <Exec Command="$(RedistLayoutPath)dotnet new"
-          EnvironmentVariables="DOTNET_CLI_HOME=$(ArtifactsTmpDir)" />
-
-    <!-- Install a coherent set of workload manifests -->
-    <Exec Condition="Exists('$(RedistLayoutPath)TestRollback.json')"
-          Command="$(RedistLayoutPath)dotnet workload update --from-rollback-file $(RedistLayoutPath)TestRollback.json"
-          EnvironmentVariables="DOTNET_CLI_HOME=$(ArtifactsTmpDir)"/>
-
-    <ItemGroup>
-      <MonoToolchainCurrentWorkloadManifests Include="$(RedistLayoutPath)\sdk-manifests\$(MonoWorkloadFeatureBand)\microsoft.net.workload.mono.toolchain.current\*\WorkloadManifest.targets" />
-    </ItemGroup>
-
-    <OverrideWasmRuntimePackVersions Properties="@(WasmRuntimePackVersion)"
-      WorkloadManifestPath="%(MonoToolchainCurrentWorkloadManifests.FullPath)" />
+      Stage0BundledVersionsPath="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/Microsoft.NETCoreSdk.BundledVersions.props"
+      Stage2BundledVersionsPath="$(TestHostDotNetRoot)/sdk/$(Version)/Microsoft.NETCoreSdk.BundledVersions.props"/>
   </Target>
-
 
   <Target Name="PublishTestWorkloads"
           AfterTargets="OverlaySdkOnLKG">
@@ -122,15 +54,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <WorkloadManifestContent Include="$(RepoRoot)\test\TestAssets\TestWorkloads\manifests\**\*.*" />
-      <WorkloadPackContent Include="$(RepoRoot)\test\TestAssets\TestWorkloads\packs\**\*.*" />
+      <WorkloadManifestContent Include="$(RepoRoot)test\TestAssets\TestWorkloads\manifests\**\*.*" />
+      <WorkloadPackContent Include="$(RepoRoot)test\TestAssets\TestWorkloads\packs\**\*.*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(WorkloadManifestContent)"
-          DestinationFiles="@(WorkloadManifestContent->'$(RedistLayoutPath)\sdk-manifests\$(VersionBand)\%(RecursiveDir)%(Filename)%(Extension)')" />
+          DestinationFiles="@(WorkloadManifestContent->'$(TestHostDotNetRoot)sdk-manifests\$(VersionBand)\%(RecursiveDir)%(Filename)%(Extension)')" />
 
     <Copy SourceFiles="@(WorkloadPackContent)"
-      DestinationFiles="@(WorkloadPackContent->'$(RedistLayoutPath)\packs\%(RecursiveDir)%(Filename)%(Extension)')" />
-
+          DestinationFiles="@(WorkloadPackContent->'$(TestHostDotNetRoot)packs\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
+
 </Project>

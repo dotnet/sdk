@@ -228,6 +228,11 @@ Ejecute "dotnet {1} --show-aliases" sin argumentos para mostrar todos los alias.
         <target state="translated">Buscando las plantillas...</target>
         <note />
       </trans-unit>
+      <trans-unit id="Colon_Separator_Deprecated">
+        <source>The colon separator "::" has been deprecated in favor of the at symbol "@" for separating the package from the version in dotnet new install. In your case, this means {0}@{1} instead of {0}::{1}.</source>
+        <target state="translated">El separador de dos puntos "::" está en desuso en favor del símbolo de "@" para separar el paquete de la versión en la nueva instalación de dotnet. En su caso, esto significa {0}@{1} en lugar de {0}::{1}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ColumnNameAuthor">
         <source>Author</source>
         <target state="translated">Autor</target>
@@ -845,6 +850,15 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">No se encuentra el archivo JSON en la solución</target>
         <note />
       </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_NullJson">
+        <source>The result of parsing the following JSON was 'null':
+
+{0}</source>
+        <target state="new">The result of parsing the following JSON was 'null':
+
+{0}</target>
+        <note>{0} is the JSON that is being parsed.</note>
+      </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ParentPropertyPathInvalid">
         <source>Parent property path '{0}' could not be traversed.</source>
         <target state="translated">No se pudo atravesar la ruta de acceso de la propiedad primaria '{0}'.</target>
@@ -901,8 +915,8 @@ The header is followed by the list of parameters and their errors (might be seve
         <note />
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Error">
-        <source>Failed to instatiate template '{0}', the following constraints are not met:</source>
-        <target state="translated">No se pudo crear la instancia de la plantilla '{0}', no se cumplen las restricciones siguientes:</target>
+        <source>Failed to instantiate template '{0}', the following constraints are not met:</source>
+        <target state="translated">No se pudo crear una instancia de la plantilla ''{0}". No se cumplen las restricciones siguientes:</target>
         <note>{0} - template name (user friendly)</note>
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Hint">

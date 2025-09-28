@@ -228,6 +228,11 @@ Execute 'dotnet {1} --mostrar- aliases' sem nenhum args para mostrar todos os al
         <target state="translated">Procurando modelos...</target>
         <note />
       </trans-unit>
+      <trans-unit id="Colon_Separator_Deprecated">
+        <source>The colon separator "::" has been deprecated in favor of the at symbol "@" for separating the package from the version in dotnet new install. In your case, this means {0}@{1} instead of {0}::{1}.</source>
+        <target state="translated">O separador de dois-pontos "::" foi preterido em favor do símbolo de arroba "@" para separar o pacote da versão na nova instalação do dotnet. No seu caso, isso significa {0}@{1} em vez de {0}::{1}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ColumnNameAuthor">
         <source>Author</source>
         <target state="translated">Autor</target>
@@ -845,6 +850,15 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">Não é possível encontrar o arquivo json na solução</target>
         <note />
       </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_NullJson">
+        <source>The result of parsing the following JSON was 'null':
+
+{0}</source>
+        <target state="new">The result of parsing the following JSON was 'null':
+
+{0}</target>
+        <note>{0} is the JSON that is being parsed.</note>
+      </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ParentPropertyPathInvalid">
         <source>Parent property path '{0}' could not be traversed.</source>
         <target state="translated">O caminho da propriedade pai '{0}' não pôde ser percorrido.</target>
@@ -901,8 +915,8 @@ The header is followed by the list of parameters and their errors (might be seve
         <note />
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Error">
-        <source>Failed to instatiate template '{0}', the following constraints are not met:</source>
-        <target state="translated">Falha ao instanciar o modelo '{0}', as seguintes restrições não são atendidas:</target>
+        <source>Failed to instantiate template '{0}', the following constraints are not met:</source>
+        <target state="translated">Falha ao instanciar o modelo '{0}', as seguintes restrições não foram atendidas:</target>
         <note>{0} - template name (user friendly)</note>
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Hint">
