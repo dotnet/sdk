@@ -6,6 +6,7 @@
 
 using System.CommandLine.StaticCompletions.Shells;
 using Microsoft.DotNet.Cli.Commands.BuildServer.Shutdown;
+using Microsoft.Extensions.Options;
 using Xunit;
 using Xunit.Abstractions;
 using Parser = Microsoft.DotNet.Cli.Parser;
@@ -17,7 +18,7 @@ public class ShellDiscoveryTests
     [Fact]
     public void StaticCompletionsCanParseWithoutAShell()
     {
-        var result = Parser.Instance.Parse(@"dotnet completions script");
+        ParseResult result = Parser.Parse(["dotnet", "completions", "script"]);
         result.Errors.Should().BeEmpty();
         result.GetValue<IShellProvider>("@CompletionsCommand_ShellArgument_Description").Should().NotBeNull();
     }
