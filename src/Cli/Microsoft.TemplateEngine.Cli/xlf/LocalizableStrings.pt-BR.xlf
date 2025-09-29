@@ -851,8 +851,12 @@ The header is followed by the list of parameters and their errors (might be seve
         <note />
       </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_NullJson">
-        <source>The result of parsing the following JSON was 'null': {0}</source>
-        <target state="new">The result of parsing the following JSON was 'null': {0}</target>
+        <source>The result of parsing the following JSON was 'null':
+
+{0}</source>
+        <target state="new">The result of parsing the following JSON was 'null':
+
+{0}</target>
         <note>{0} is the JSON that is being parsed.</note>
       </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ParentPropertyPathInvalid">

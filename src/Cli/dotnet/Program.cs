@@ -6,6 +6,7 @@
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -29,6 +30,10 @@ public class Program
     public static ITelemetry TelemetryClient;
     public static int Main(string[] args)
     {
+        // Register a handler for SIGTERM to allow graceful shutdown of the application on Unix.
+        // See https://github.com/dotnet/docs/issues/46226.
+        using var termSignalRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, _ => Environment.Exit(0));
+
         using AutomaticEncodingRestorer _ = new();
 
         // Setting output encoding is not available on those platforms
@@ -237,8 +242,8 @@ public class Program
             // Get the global.json state to report in telemetry along with this command invocation.
             // We don't care about the actual SDK resolution, just the global.json information,
             // so just pass empty string as executable directory for resolution.
-            NativeWrapper.SdkResolutionResult result = NativeWrapper.NETCoreSdkResolverNativeWrapper.ResolveSdk(string.Empty, Environment.CurrentDirectory);
-            globalJsonState = result.GlobalJsonState;
+            // NativeWrapper.SdkResolutionResult result = NativeWrapper.NETCoreSdkResolverNativeWrapper.ResolveSdk(string.Empty, Environment.CurrentDirectory);
+            // globalJsonState = result.GlobalJsonState;
         }
 
         TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, performanceData, globalJsonState));

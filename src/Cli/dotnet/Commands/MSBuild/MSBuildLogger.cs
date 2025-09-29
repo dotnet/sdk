@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Telemetry;
@@ -15,7 +13,7 @@ public sealed class MSBuildLogger : INodeLogger
 {
     private readonly IFirstTimeUseNoticeSentinel _sentinel =
         new FirstTimeUseNoticeSentinel();
-    private readonly ITelemetry _telemetry;
+    private readonly ITelemetry? _telemetry = null;
 
     internal const string TargetFrameworkTelemetryEventName = "targetframeworkeval";
     internal const string BuildTelemetryEventName = "build";
@@ -54,7 +52,7 @@ public sealed class MSBuildLogger : INodeLogger
     {
         try
         {
-            string sessionId =
+            string? sessionId =
                 Environment.GetEnvironmentVariable(MSBuildForwardingApp.TelemetrySessionIdEnvironmentVariableName);
 
             if (sessionId != null)
@@ -105,34 +103,13 @@ public sealed class MSBuildLogger : INodeLogger
         }
     }
 
-    internal static void FormatAndSend(ITelemetry telemetry, TelemetryEventArgs args)
+    internal static void FormatAndSend(ITelemetry? telemetry, TelemetryEventArgs args)
     {
         switch (args.EventName)
         {
             case TargetFrameworkTelemetryEventName:
-                {
-                    var newEventName = $"msbuild/{TargetFrameworkTelemetryEventName}";
-                    Dictionary<string, string> maskedProperties = [];
-
-                    foreach (var key in new[] {
-                        TargetFrameworkVersionTelemetryPropertyKey,
-                        RuntimeIdentifierTelemetryPropertyKey,
-                        SelfContainedTelemetryPropertyKey,
-                        UseApphostTelemetryPropertyKey,
-                        OutputTypeTelemetryPropertyKey,
-                        UseArtifactsOutputTelemetryPropertyKey,
-                        ArtifactsPathLocationTypeTelemetryPropertyKey
-                    })
-                    {
-                        if (args.Properties.TryGetValue(key, out string value))
-                        {
-                            maskedProperties.Add(key, Sha256Hasher.HashWithNormalizedCasing(value));
-                        }
-                    }
-
-                    telemetry.TrackEvent(newEventName, maskedProperties, measurements: null);
-                    break;
-                }
+                TrackEvent(telemetry, $"msbuild/{TargetFrameworkTelemetryEventName}", args.Properties, [], []);
+                break;
             case BuildTelemetryEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildTelemetryEventName}", args.Properties,
                     toBeHashed: ["ProjectPath", "BuildTarget"],
@@ -174,33 +151,44 @@ public sealed class MSBuildLogger : INodeLogger
         }
     }
 
-    private static void TrackEvent(ITelemetry telemetry, string eventName, IDictionary<string, string> eventProperties, string[] toBeHashed, string[] toBeMeasured)
+    private static void TrackEvent(ITelemetry? telemetry, string eventName, IDictionary<string, string?> eventProperties, string[]? toBeHashed, string[]? toBeMeasured)
     {
-        Dictionary<string, string> properties = null;
-        Dictionary<string, double> measurements = null;
-
-        foreach (var propertyToBeHashed in toBeHashed)
+        if (telemetry == null || !telemetry.Enabled)
         {
-            if (eventProperties.TryGetValue(propertyToBeHashed, out string value))
+            return;
+        }
+
+        Dictionary<string, string?>? properties = null;
+        Dictionary<string, double>? measurements = null;
+
+        if (toBeHashed is not null)
+        {
+            foreach (var propertyToBeHashed in toBeHashed)
             {
-                // Lets lazy allocate in case there is tons of telemetry
-                properties ??= new Dictionary<string, string>(eventProperties);
-                properties[propertyToBeHashed] = Sha256Hasher.HashWithNormalizedCasing(value);
+                if (eventProperties.TryGetValue(propertyToBeHashed, out var value))
+                {
+                    // Lets lazy allocate in case there is tons of telemetry
+                    properties ??= new Dictionary<string, string?>(eventProperties);
+                    properties[propertyToBeHashed] = Sha256Hasher.HashWithNormalizedCasing(value!);
+                }
             }
         }
 
-        foreach (var propertyToBeMeasured in toBeMeasured)
+        if (toBeMeasured is not null)
         {
-            if (eventProperties.TryGetValue(propertyToBeMeasured, out string value))
+            foreach (var propertyToBeMeasured in toBeMeasured)
             {
-                // Lets lazy allocate in case there is tons of telemetry
-                properties ??= new Dictionary<string, string>(eventProperties);
-                properties.Remove(propertyToBeMeasured);
-                if (double.TryParse(value, CultureInfo.InvariantCulture, out double realValue))
+                if (eventProperties.TryGetValue(propertyToBeMeasured, out string? value))
                 {
                     // Lets lazy allocate in case there is tons of telemetry
-                    measurements ??= [];
-                    measurements[propertyToBeMeasured] = realValue;
+                    properties ??= new Dictionary<string, string?>(eventProperties);
+                    properties.Remove(propertyToBeMeasured);
+                    if (double.TryParse(value, CultureInfo.InvariantCulture, out double realValue))
+                    {
+                        // Lets lazy allocate in case there is tons of telemetry
+                        measurements ??= [];
+                        measurements[propertyToBeMeasured] = realValue;
+                    }
                 }
             }
         }
@@ -226,6 +214,5 @@ public sealed class MSBuildLogger : INodeLogger
     }
 
     public LoggerVerbosity Verbosity { get; set; }
-
-    public string Parameters { get; set; }
+    public string? Parameters { get; set; }
 }

@@ -427,9 +427,7 @@ public static class Parser
 
     private class PrintCliSchemaAction : SynchronousCommandLineAction
     {
-        public PrintCliSchemaAction()
-        {
-        }
+        public override bool Terminating => true;
 
         public override int Invoke(ParseResult parseResult)
         {

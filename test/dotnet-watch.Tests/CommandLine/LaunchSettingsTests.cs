@@ -92,22 +92,15 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.Start(testAsset, []);
 
-            await App.AssertStarted();
-
-            var source = Path.Combine(testAsset.Path, "Program.cs");
-            var contents = File.ReadAllText(source);
-            const string messagePrefix = "DOTNET_WATCH_ITERATION = ";
-
-            var value = await App.AssertOutputLineStartsWith(messagePrefix);
-            Assert.Equal(1, int.Parse(value, CultureInfo.InvariantCulture));
-
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
-            UpdateSourceFile(source);
-            await App.AssertStarted();
+            App.AssertOutputContains("DOTNET_WATCH_ITERATION = 1");
+            App.Process.ClearOutput();
 
-            value = await App.AssertOutputLineStartsWith(messagePrefix);
-            Assert.Equal(2, int.Parse(value, CultureInfo.InvariantCulture));
+            UpdateSourceFile(Path.Combine(testAsset.Path, "Program.cs"));
+
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+            App.AssertOutputContains("DOTNET_WATCH_ITERATION = 2");
         }
 
         [Fact]
