@@ -1,0 +1,111 @@
+name: Update Static Web Assets Baselines
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Pull Request number'
+        required: true
+        type: string
+
+jobs:
+  update-baselines:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+      
+      - name: Checkout PR branch
+        run: |
+          gh pr checkout ${{ github.event.inputs.pr_number }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Run build script
+        id: build
+        run: |
+          chmod +x ./build.sh
+          ./build.sh -c Release
+        continue-on-error: true
+      
+      - name: Update baselines
+        id: update
+        if: steps.build.outcome == 'success'
+        run: |
+          # Set DOTNET_ROOT to the local dotnet installation
+          export DOTNET_ROOT="$(pwd)/.dotnet"
+          # Prepend DOTNET_ROOT to PATH
+          export PATH="$DOTNET_ROOT:$PATH"
+          
+          # Run the update baselines script
+          chmod +x src/RazorSdk/update-test-baselines.sh
+          src/RazorSdk/update-test-baselines.sh
+        continue-on-error: true
+      
+      - name: Check for changes
+        id: check-changes
+        if: steps.update.outcome == 'success'
+        run: |
+          # Check if there are changes to any *.json files under the test folder
+          if git diff --name-only | grep -E '^test/.*\.json$'; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Commit and push changes
+        id: commit
+        if: steps.update.outcome == 'success' && steps.check-changes.outputs.changes == 'true'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # Create commit with formatted date
+          COMMIT_DATE=$(date -u +"%Y-%m-%d")
+          git add test/**/*.json
+          git commit -m "[Infrastructure] Update baselines $COMMIT_DATE"
+          
+          # Push to the PR branch
+          git push
+        continue-on-error: true
+      
+      - name: Comment on PR - No changes
+        if: steps.update.outcome == 'success' && steps.check-changes.outputs.changes == 'false'
+        run: |
+          gh pr comment ${{ github.event.inputs.pr_number }} \
+            --body "No baselines were updated."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Comment on PR - Changes pushed
+        if: steps.commit.outcome == 'success'
+        run: |
+          gh pr comment ${{ github.event.inputs.pr_number }} \
+            --body "Baselines updated."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Comment on PR - Failure
+        if: steps.build.outcome == 'failure' || steps.update.outcome == 'failure' || (steps.check-changes.outputs.changes == 'true' && steps.commit.outcome == 'failure')
+        run: |
+          ERROR_MSG="Update baselines failed"
+          
+          if [[ "${{ steps.build.outcome }}" == "failure" ]]; then
+            ERROR_MSG="$ERROR_MSG: Build script failed"
+          elif [[ "${{ steps.update.outcome }}" == "failure" ]]; then
+            ERROR_MSG="$ERROR_MSG: Update baselines script failed"
+          elif [[ "${{ steps.commit.outcome }}" == "failure" ]]; then
+            ERROR_MSG="$ERROR_MSG: Failed to commit or push changes"
+          fi
+          
+          gh pr comment ${{ github.event.inputs.pr_number }} \
+            --body "$ERROR_MSG"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

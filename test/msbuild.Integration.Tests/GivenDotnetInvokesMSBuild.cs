@@ -91,7 +91,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.IntegrationTests
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute("msbuild", "-v", "diag");
+                .Execute("msbuild", "-v", "unknown");
 
             cmd.ExitCode.Should().NotBe(0);
         }

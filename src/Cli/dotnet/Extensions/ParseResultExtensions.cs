@@ -1,16 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using static Microsoft.DotNet.Cli.Parser;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
 
 namespace Microsoft.DotNet.Cli.Extensions;
@@ -32,9 +30,10 @@ public static class ParseResultExtensions
     {
         // take from the start of the list until we hit an option/--/unparsed token
         // since commands can have arguments, we must take those as well in order to get accurate help
-        var tokenList = parseResult.Tokens.TakeWhile(token => token.Type == TokenType.Argument || token.Type == TokenType.Command || token.Type == TokenType.Directive).Select(t => t.Value).ToList();
-        tokenList.Add("-h");
-        Instance.Parse(tokenList).Invoke();
+        Parser.Parse([
+            ..parseResult.Tokens.TakeWhile(token => token.Type == TokenType.Argument || token.Type == TokenType.Command || token.Type == TokenType.Directive).Select(t => t.Value),
+            "-h"
+        ]).Invoke();
     }
 
     public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
@@ -94,19 +93,19 @@ public static class ParseResultExtensions
     public static bool IsDotnetBuiltInCommand(this ParseResult parseResult)
     {
         return string.IsNullOrEmpty(parseResult.RootSubCommandResult()) ||
-            GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
+            Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
     }
 
     public static bool IsTopLevelDotnetCommand(this ParseResult parseResult)
     {
-        return parseResult.CommandResult.Command.Equals(Microsoft.DotNet.Cli.Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
+        return parseResult.CommandResult.Command.Equals(Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
     }
 
     public static bool CanBeInvoked(this ParseResult parseResult)
     {
-        return GetBuiltInCommand(parseResult.RootSubCommandResult()) != null ||
+        return Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null ||
             parseResult.Tokens.Any(token => token.Type == TokenType.Directive) ||
-            (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(DotnetSubCommand)));
+            (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(Parser.DotnetSubCommand)));
     }
 
     public static int HandleMissingCommand(this ParseResult parseResult)
@@ -136,7 +135,7 @@ public static class ParseResultExtensions
         return
         [
             .. subargs
-                .SkipWhile(arg => DiagOption.Name.Equals(arg) || DiagOption.Aliases.Contains(arg) || arg.Equals("dotnet"))
+                .SkipWhile(arg => Parser.DiagOption.Name.Equals(arg) || Parser.DiagOption.Aliases.Contains(arg) || arg.Equals("dotnet"))
                 .Skip(1), // remove top level command (ex build or publish)
             .. runArgs
         ];
@@ -155,7 +154,7 @@ public static class ParseResultExtensions
             {
                 return false;
             }
-            else if (DiagOption.Name.Equals(args) || DiagOption.Aliases.Contains(args[i]))
+            else if (Parser.DiagOption.Name.Equals(args) || Parser.DiagOption.Aliases.Contains(args[i]))
             {
                 return true;
             }
@@ -164,11 +163,11 @@ public static class ParseResultExtensions
         return false;
     }
 
-    private static string GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
+    private static string? GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
     {
         CommandResult commandResult => commandResult.Command.Name,
-        ArgumentResult argResult => argResult.Tokens.FirstOrDefault()?.Value ?? string.Empty,
-        _ => parseResult.GetResult(DotnetSubCommand)?.GetValueOrDefault<string>()
+        ArgumentResult argResult => argResult.Tokens.FirstOrDefault()?.Value,
+        _ => parseResult.GetResult(Parser.DotnetSubCommand)?.GetValueOrDefault<string>()
     };
 
     public static bool BothArchAndOsOptionsSpecified(this ParseResult parseResult) =>
@@ -176,25 +175,12 @@ public static class ParseResultExtensions
         parseResult.HasOption(CommonOptions.LongFormArchitectureOption)) &&
         parseResult.HasOption(CommonOptions.OperatingSystemOption);
 
-    internal static string GetCommandLineRuntimeIdentifier(this ParseResult parseResult)
-    {
-        return parseResult.HasOption(CommonOptions.RuntimeOption) ?
-            parseResult.GetValue(CommonOptions.RuntimeOption) :
-            parseResult.HasOption(CommonOptions.OperatingSystemOption) ||
-            parseResult.HasOption(CommonOptions.ArchitectureOption) ||
-            parseResult.HasOption(CommonOptions.LongFormArchitectureOption) ?
-            CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(
-                parseResult.GetValue(CommonOptions.OperatingSystemOption),
-                CommonOptions.ArchOptionValue(parseResult)) :
-            null;
-    }
-
     public static bool UsingRunCommandShorthandProjectOption(this ParseResult parseResult)
     {
-        if (parseResult.HasOption(RunCommandParser.PropertyOption) && parseResult.GetValue(RunCommandParser.PropertyOption).Any())
+        if (parseResult.HasOption(RunCommandParser.PropertyOption) && parseResult.GetValue(RunCommandParser.PropertyOption)!.Any())
         {
             var projVals = parseResult.GetRunCommandShorthandProjectValues();
-            if (projVals.Any())
+            if (projVals?.Any() is true)
             {
                 if (projVals.Count() != 1 || parseResult.HasOption(RunCommandParser.ProjectOption))
                 {
@@ -206,28 +192,33 @@ public static class ParseResultExtensions
         return false;
     }
 
-    public static IEnumerable<string> GetRunCommandShorthandProjectValues(this ParseResult parseResult)
+    public static IEnumerable<string>? GetRunCommandShorthandProjectValues(this ParseResult parseResult)
     {
         var properties = GetRunPropertyOptions(parseResult, true);
-        return properties.Where(property => !property.Contains("="));
+        return properties?.Where(property => !property.Contains("="));
     }
 
     public static IEnumerable<string> GetRunCommandPropertyValues(this ParseResult parseResult)
     {
-        var shorthandProperties = GetRunPropertyOptions(parseResult, true)
-            .Where(property => property.Contains("="));
+        var shorthandProperties = GetRunPropertyOptions(parseResult, true)?.Where(property => property.Contains("="));
         var longhandProperties = GetRunPropertyOptions(parseResult, false);
-        return longhandProperties.Concat(shorthandProperties);
+        return (shorthandProperties, longhandProperties) switch
+        {
+            (null, null) => Enumerable.Empty<string>(),
+            (null, var longhand) => longhand,
+            (var shorthand, null) => shorthand,
+            (var shorthand, var longhand) => shorthand.Concat(longhand)
+        };
     }
 
-    private static IEnumerable<string> GetRunPropertyOptions(ParseResult parseResult, bool shorthand)
+    private static IEnumerable<string>? GetRunPropertyOptions(ParseResult parseResult, bool shorthand)
     {
         var optionString = shorthand ? "-p" : "--property";
         var propertyOptions = parseResult.CommandResult.Children.Where(c => GetOptionTokenOrDefault(c)?.Value.Equals(optionString) ?? false);
         var propertyValues = propertyOptions.SelectMany(o => o.Tokens.Select(t => t.Value)).ToArray();
         return propertyValues;
 
-        static Token GetOptionTokenOrDefault(SymbolResult symbolResult)
+        static Token? GetOptionTokenOrDefault(SymbolResult symbolResult)
         {
             if (symbolResult is not OptionResult optionResult)
             {
@@ -253,12 +244,34 @@ public static class ParseResultExtensions
     /// If you are inside a command handler or 'normal' System.CommandLine code then you don't need this - the parse error handling
     /// will have covered these cases.
     /// </summary>
-    public static T SafelyGetValueForOption<T>(this ParseResult parseResult, Option<T> optionToGet)
+    public static T? SafelyGetValueForOption<T>(this ParseResult parseResult, Option<T> optionToGet)
     {
         if (parseResult.GetResult(optionToGet) is OptionResult optionResult &&
             !parseResult.Errors.Any(e => e.SymbolResult == optionResult))
         {
             return optionResult.GetValue(optionToGet);
+        }
+        else
+        {
+            return default;
+        }
+    }
+    public static T? SafelyGetValueForOption<T>(this ParseResult parseResult, string name)
+    {
+        if (parseResult.GetResult(name) is OptionResult optionResult && // only return a value if there _is_ a value - default or otherwise
+            !parseResult.Errors.Any(e => e.SymbolResult == optionResult) // only return a value if this isn't a parsing error
+            && optionResult.Option.ValueType.IsAssignableTo(typeof(T))) // only return a value if coercing the type won't error
+        {
+            // shouldn't happen because of the above checks, but we can be safe since this is only used in telemetry, and should
+            // be resistant to errors
+            try
+            {
+                return optionResult.GetValue<T>(name);
+            }
+            catch
+            {
+                return default;
+            }
         }
         else
         {
@@ -271,4 +284,24 @@ public static class ParseResultExtensions
     /// This is useful for checking if the user has explicitly set an option, as opposed to it being set by default.
     /// </summary>
     public static bool HasOption(this ParseResult parseResult, Option option) => parseResult.GetResult(option) is OptionResult or && !or.Implicit;
+
+    /// <summary>
+    /// Checks if the option with given name is present and not implicit (i.e. not set by default).
+    /// This is useful for checking if the user has explicitly set an option, as opposed to it being set by default.
+    /// </summary>
+    public static bool HasOption(this ParseResult parseResult, string name)
+        => parseResult.GetResult(name) is OptionResult or && !or.Implicit;
+
+    /// <summary>
+    /// Checks if the option is present and not implicit (i.e. not set by default).
+    /// This is useful for checking if the user has explicitly set an option, as opposed to it being set by default.
+    /// </summary>
+    public static bool HasOption(this SymbolResult symbolResult, Option option) => symbolResult.GetResult(option) is OptionResult or && !or.Implicit;
+
+    /// <summary>
+    /// Checks if the option with given name is present and not implicit (i.e. not set by default).
+    /// This is useful for checking if the user has explicitly set an option, as opposed to it being set by default.
+    /// </summary>
+    public static bool HasOption(this SymbolResult symbolResult, string name)
+        => symbolResult.GetResult(name) is OptionResult or && !or.Implicit;
 }

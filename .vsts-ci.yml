@@ -5,7 +5,7 @@ trigger:
   branches:
     include:
     - main
-    - release/10.0.1xx-*
+    - release/10.0.1*
     - internal/release/*
     - exp/*
 
@@ -21,7 +21,7 @@ parameters:
 - name: runTestBuild
   displayName: Run A Test Build
   type: boolean
-  default: true
+  default: false
 - name: enableArm64Job
   displayName: Enables the ARM64 job
   type: boolean
@@ -61,19 +61,15 @@ resources:
     ref: refs/tags/release
 
 extends:
-  template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
+  ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+    template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
+  ${{ else }}:
+    template: v1/1ES.Unofficial.PipelineTemplate.yml@1esPipelines
   parameters:
     containers:
-      alpine319WithNode:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
-      centosStream9:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
-      debian12Amd64:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc15-amd64
-      fedora39:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
-      mariner20CrossArm:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-arm
+      azureLinux30Amd64:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-build-amd64
+
     sdl:
       sourceAnalysisPool:
         name: $(DncEngInternalBuildPool)
@@ -107,7 +103,7 @@ extends:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
-          locBranch: release/9.0.3xx
+          locBranch: release/10.0.1xx
           # WORKAROUND: BinSkim requires the folder exist prior to scanning.
           preSteps:
           - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
@@ -162,60 +158,44 @@ extends:
             timeoutInMinutes: 90
             linuxJobParameterSets:
             ### OFFICIAL ###
-            # Note: These builds are also portable like the Portable category, but that category uses containers, and doesn't publish zips and tarballs.
+            # Note: These builds are also glibc like the glibc category, but that category uses containers, and doesn't publish zips and tarballs.
             - categoryName: Official
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties)
+              osProperties: $(linuxOsglibcProperties)
               runTests: false
             - categoryName: Official
               targetArchitecture: arm
               runtimeIdentifier: linux-arm
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties)
+              osProperties: $(linuxOsglibcProperties)
               runTests: false
             - categoryName: Official
               targetArchitecture: arm64
               runtimeIdentifier: linux-arm64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties)
+              osProperties: $(linuxOsglibcProperties)
               runTests: false
-            ### PORTABLE ###
-            - categoryName: Portable
+            ### glibc ###
+            - categoryName: glibc
               # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties) /p:BuildSdkDeb=true
+              osProperties: $(linuxOsglibcProperties) /p:BuildSdkDeb=true
               runTests: false
-            - categoryName: Portable
+            - categoryName: glibc
               targetArchitecture: arm64
               runtimeIdentifier: linux-arm64
               # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties) /p:BuildSdkDeb=true
+              osProperties: $(linuxOsglibcProperties) /p:BuildSdkDeb=true
               runTests: false
-            - categoryName: Portable
-              container: centosStream9
-              # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
-              publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
-              officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties) /p:IsRPMBasedDistro=true
-              runTests: false
-            - categoryName: Portable
-              container: centosStream9
-              targetArchitecture: arm64
-              runtimeIdentifier: linux-arm64
-              # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
-              publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
-              officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties) /p:IsRPMBasedDistro=true
-              runTests: false
-            ### MUSL ###
-            - categoryName: Musl
-              container: alpine319WithNode
+            ### musl ###
+            - categoryName: musl
+              container: azureLinux30Amd64
               runtimeIdentifier: linux-musl-x64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
@@ -224,15 +204,19 @@ extends:
               # SBOM generation is not supported for alpine.
               enableSbom: false
               runTests: false
-            - categoryName: Musl
-              container: mariner20CrossArm
+              # Helix is hanging on this job using the container. See: https://github.com/dotnet/dnceng/issues/6000
+              disableJob: true
+            - categoryName: musl
+              container: azureLinux30Amd64
               targetArchitecture: arm
               runtimeIdentifier: linux-musl-arm
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: /p:OSName=linux-musl
               runTests: false
-            - categoryName: Musl
+              # Helix is hanging on this job using the container. See: https://github.com/dotnet/dnceng/issues/6000
+              disableJob: true
+            - categoryName: musl
               targetArchitecture: arm64
               runtimeIdentifier: linux-musl-arm64
               publishArgument: $(_publishArgument)
@@ -300,11 +284,8 @@ extends:
             publishUsingPipelines: true
             publishAssetsImmediately: true
             isAssetlessBuild: true
+            repositoryAlias: self
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022
               os: windows
-
-        - template: /eng/pipelines/templates/jobs/promote-nuget-client.yml@self
-          parameters:
-            assetName: NuGet.Protocol

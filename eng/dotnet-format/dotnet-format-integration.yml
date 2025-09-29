@@ -17,7 +17,7 @@ parameters:
   - Name: sdk
     _repo: "https://github.com/dotnet/sdk"
     _repoName: "dotnet/sdk"
-    _targetSolution: "sdk.sln"
+    _targetSolution: "sdk.slnx"
     _branchName: "main"
     _sha: "be25db95c376bffd508a023399ddd34392fe6458"
     _useParentSdk: 0

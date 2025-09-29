@@ -17,8 +17,15 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void RunParserCanGetArgumentFromDoubleDash()
         {
-            var runCommand = RunCommand.FromArgs(new[] { "--project", "foo.csproj", "--", "foo" });
-            runCommand.Args.Single().Should().Be("foo");
+            var tam = new TestAssetsManager(output);
+            var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
+            var newWorkingDir = testAsset.Path;
+
+            Directory.SetCurrentDirectory(newWorkingDir);
+            var projectPath = Path.Combine(newWorkingDir, "HelloWorld.csproj");
+                
+            var runCommand = RunCommand.FromArgs(new[] { "--project", projectPath, "--", "foo" });
+            runCommand.ApplicationArgs.Single().Should().Be("foo");
         }
     }
 }

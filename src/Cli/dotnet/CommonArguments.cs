@@ -3,24 +3,37 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Utils;
-using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli
 {
     internal class CommonArguments
     {
-        public static DynamicArgument<PackageIdentity?> PackageIdentityArgument(bool requireArgument = true) =>
+        public static DynamicArgument<PackageIdentityWithRange?> OptionalPackageIdentityArgument() =>
+            OptionalPackageIdentityArgument("Newtonsoft.Json", "13.0.3");
+
+        public static DynamicArgument<PackageIdentityWithRange?> OptionalPackageIdentityArgument(string examplePackage, string exampleVersion) =>
             new("packageId")
             {
-                HelpName = "PACKAGE_ID",
-                Description = CliStrings.PackageIdentityArgumentDescription,
+                Description = string.Format(CliStrings.PackageIdentityArgumentDescription, examplePackage, exampleVersion),
                 CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value),
-                Arity = requireArgument ? ArgumentArity.ExactlyOne : ArgumentArity.ZeroOrOne,
+                Arity = ArgumentArity.ZeroOrOne,
             };
 
-        private static PackageIdentity? ParsePackageIdentityWithVersionSeparator(string? packageIdentity, char versionSeparator = '@')
+        public static DynamicArgument<PackageIdentityWithRange> RequiredPackageIdentityArgument() =>
+            RequiredPackageIdentityArgument("Newtonsoft.Json", "13.0.3");
+
+        public static DynamicArgument<PackageIdentityWithRange> RequiredPackageIdentityArgument(string examplePackage, string exampleVersion) =>
+            new("packageId")
+            {
+                Description = string.Format(CliStrings.PackageIdentityArgumentDescription, examplePackage, exampleVersion),
+                CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value)!.Value,
+                Arity = ArgumentArity.ExactlyOne,
+            };
+
+        private static PackageIdentityWithRange? ParsePackageIdentityWithVersionSeparator(string? packageIdentity, char versionSeparator = '@')
         {
             if (string.IsNullOrEmpty(packageIdentity))
             {
@@ -37,15 +50,21 @@ namespace Microsoft.DotNet.Cli
 
             if (string.IsNullOrEmpty(versionString))
             {
-                return new PackageIdentity(packageId, null);
+                return new PackageIdentityWithRange(packageId, null);
             }
 
-            if (!NuGetVersion.TryParse(versionString, out var version))
+            if (!VersionRange.TryParse(versionString, out var versionRange))
             {
                 throw new GracefulException(string.Format(CliStrings.InvalidVersion, versionString));
             }
 
-            return new PackageIdentity(packageId, new NuGetVersion(version));
+            return new PackageIdentityWithRange(packageId, versionRange);
         }
+    }
+
+    public readonly record struct PackageIdentityWithRange(string Id, VersionRange? VersionRange)
+    {
+        [MemberNotNullWhen(returnValue: true, nameof(VersionRange))]
+        public bool HasVersion => VersionRange != null;
     }
 }

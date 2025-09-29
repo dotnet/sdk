@@ -1,4 +1,3 @@
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <!-- Platform needs to be set with TreatAsLocalProperty since it is a global property and cannot be overridden otherwise. -->
 <Project TreatAsLocalProperty="Platform">
 
@@ -23,6 +22,7 @@
     <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('ILLUMOS'))">illumos</HostOSName>
     <HostOSName Condition="'$(HostOSName)' == '' AND '$(IsLinux)' == 'true'">linux</HostOSName>
 
+    <OSName Condition="'$(OSName)' == '' AND $(PortableTargetRid) != ''">$(PortableTargetRid.Substring(0, $(PortableTargetRid.LastIndexOf('-'))))</OSName>
     <OSName Condition="'$(OSName)' == '' AND $(TargetRid) != ''">$(TargetRid.Substring(0, $(TargetRid.LastIndexOf('-'))))</OSName>
     <OSName Condition="'$(OSName)' == ''">$(HostOSName)</OSName>
   </PropertyGroup>
@@ -32,10 +32,12 @@
     <TestHostFolder>$([MSBuild]::NormalizeDirectory('$(ArtifactsBinDir)', 'redist', '$(Configuration)'))</TestHostFolder>
     <TestHostDotNetRoot>$([MSBuild]::NormalizeDirectory('$(TestHostFolder)', 'dotnet'))</TestHostDotNetRoot>
     <TestHostDotNetTool>$(TestHostDotNetRoot)$([System.IO.Path]::GetFileName('$(DotNetTool)'))</TestHostDotNetTool>
+    <TestLayoutDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsTmpDir)', 'testing'))</TestLayoutDir>
 
     <PackageProjectUrl>https://github.com/dotnet/sdk</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <LangVersion>Preview</LangVersion>
+    <LangVersion Condition="'$(Language)' == 'VB'">16</LangVersion>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <DebugSymbols>true</DebugSymbols>
     <!-- Default to all packages generating a corresponding symbol package -->
@@ -46,7 +48,8 @@
     <NetCurrent>net10.0</NetCurrent>
     <NetToolMinimum Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetCurrent)</NetToolMinimum>
     <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
-    <VisualStudioServiceTargetFramework>net8.0</VisualStudioServiceTargetFramework>
+    <VisualStudioServiceTargetFramework>net9.0</VisualStudioServiceTargetFramework>
+    <VisualStudioTargetFramework>net472</VisualStudioTargetFramework>
 
     <!-- We used to have scenarios where the MSBuild host (VSMac) had an older .NET, but don't any more. -->
     <ResolverTargetFramework>$(SdkTargetFramework)</ResolverTargetFramework>
@@ -54,15 +57,16 @@
     <!-- NU1701 Disable implicit package target fallback, and disable warning for when we explicitly add it (currently needed for
          Microsoft.ApplicationInsights) -->
     <!-- NU1507 Disable multi-feed check as .NET uses multiple internal feeds intentionally -->
-    <NoWarn>$(NoWarn);NU1701;NU1507;NU1202</NoWarn>
+    <!-- NU5039 Disable NuGet is unable to find the readme file in the package. -->
+    <NoWarn>$(NoWarn);NU1701;NU1507;NU1202;NU5039</NoWarn>
     <!-- do not enable analyzers on source build-->
     <EnforceCodeStyleInBuild Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</EnforceCodeStyleInBuild>
     <UseSharedCompilation Condition="'$(DotNetBuildSourceOnly)' == 'true'">false</UseSharedCompilation>
     <DisableImplicitPackageTargetFallback>true</DisableImplicitPackageTargetFallback>
 
-    <DefineConstants Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(DefineConstants);CI_BUILD</DefineConstants>
-    <DefineConstants Condition="'$(OfficialBuilder)' == 'Microsoft'">$(DefineConstants);MICROSOFT_ENABLE_TELEMETRY</DefineConstants>
-    <DefineConstants Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefineConstants);DOT_NET_BUILD_FROM_SOURCE</DefineConstants>
+    <DefineConstants Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(DefineConstants),CI_BUILD</DefineConstants>
+    <DefineConstants Condition="'$(OfficialBuilder)' == 'Microsoft'">$(DefineConstants),MICROSOFT_ENABLE_TELEMETRY</DefineConstants>
+    <DefineConstants Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefineConstants),DOT_NET_BUILD_FROM_SOURCE</DefineConstants>
 
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
@@ -95,10 +99,18 @@
     <MicrosoftNETCoreAppHostPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftNETCoreAppHostPackageVersion>
     <MicrosoftNETCoreAppRuntimePackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftNETCoreAppRuntimePackageVersion>
     <MicrosoftAspNetCoreAppRuntimePackageVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</MicrosoftAspNetCoreAppRuntimePackageVersion>
-    <MicrosoftWindowsDesktopAppRuntimePackageVersion>$(MicrosoftWindowsDesktopAppRefPackageVersion)</MicrosoftWindowsDesktopAppRuntimePackageVersion>
+    <!-- These are set based on the runtime shared framework and internal versions. This is because windowsdesktop is not built in
+         all VMR builds, but its version numbers are used to generate various bits of information. The VMR always aligns the version
+         numbers of the shared frameworks. -->
+    <MicrosoftWindowsDesktopAppRuntimePackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftWindowsDesktopAppRuntimePackageVersion>
+    <MicrosoftWindowsDesktopAppRefPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftWindowsDesktopAppRefPackageVersion>
+    <MicrosoftWindowsDesktopAppInternalPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</MicrosoftWindowsDesktopAppInternalPackageVersion>
 
     <HostFxrVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</HostFxrVersion>
     <SharedHostVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedHostVersion>
+
+    <MicrosoftCodeAnalysisVersionForNetAnalyzers Condition="'$(DotNetBuildSourceOnly)' != 'true'">3.11.0</MicrosoftCodeAnalysisVersionForNetAnalyzers>
+    <MicrosoftCodeAnalysisVersionForNetAnalyzers Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(MicrosoftCodeAnalysisVersion)</MicrosoftCodeAnalysisVersionForNetAnalyzers>
   </PropertyGroup>
 
   <Import Project="build/GenerateResxSource.targets" />

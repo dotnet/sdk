@@ -60,6 +60,10 @@ namespace Microsoft.NET.TestFramework
             }
         }
 
+        /// <summary>
+        ///  Copies all of the source code from the TestAsset's original location to the previously-configured destination directory.
+        /// </summary>
+        /// <returns></returns>
         public TestAsset WithSource()
         {
             _projectFiles = new List<string>();
@@ -127,6 +131,20 @@ namespace Microsoft.NET.TestFramework
                     {
                         node.SetValue(node.Value.Replace($"$({variableName})", targetValue));
                     }
+                }
+            });
+        }
+
+        public TestAsset SetProjProperty(string propertyName, string value)
+        {
+            return WithProjectChanges(
+            p =>
+            {
+                if (p.Root is not null)
+                {
+                    var ns = p.Root.Name.Namespace;
+                    var pg = p.Root.Elements(ns + "PropertyGroup").First();
+                    pg.Add(new XElement(ns + propertyName, value));
                 }
             });
         }
@@ -270,14 +288,14 @@ namespace Microsoft.NET.TestFramework
             return this;
         }
 
-        public string ReadMSTestVersionFromProps(string propsFilePath)
+        public string ReadMSTestPackageVersionFromProps(string propsFilePath)
         {
             XDocument doc = XDocument.Load(propsFilePath);
-            XElement? msTestVersionElement = doc.Descendants("MSTestVersion").FirstOrDefault();
-            return msTestVersionElement?.Value ?? throw new InvalidOperationException("MSTestVersion not found in Version.props");
+            XElement? msTestVersionElement = doc.Descendants("MSTestPackageVersion").FirstOrDefault();
+            return msTestVersionElement?.Value ?? throw new InvalidOperationException("MSTestPackageVersion not found in Version.props");
         }
 
-        public void UpdateProjectFileWithMSTestVersion(string projectPath, string msTestVersion)
+        public void UpdateProjectFileWithMSTestPackageVersion(string projectPath, string msTestVersion)
         {
             if (projectPath is null)
             {

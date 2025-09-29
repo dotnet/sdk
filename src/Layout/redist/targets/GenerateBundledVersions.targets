@@ -1,7 +1,6 @@
 <Project>
 
   <Target Name="GenerateBundledVersions"
-          Condition="'$(PgoInstrument)' != 'true'"
           DependsOnTargets="GenerateBundledVersionsProps;GenerateBundledCliToolsProps;GenerateBundledMSBuildProps" >
     <WriteLinesToFile
       File="$(ArtifactsShippingPackagesDir)productVersion.txt"
@@ -15,12 +14,12 @@
       Overwrite="true"
       Encoding="ASCII" />
 
-    <!-- The Version.Details file doesn't contain live information when building the
-         .NET product inside the orchestrator. Therefore don't read from it in that mode. -->
+    <!-- The Version.Details file doesn't contain live information when building
+         inside the VMR. Therefore don't read from it in that mode. -->
     <GetDependencyInfo
       VersionDetailsXmlFile="$(RepositoryEngineeringDir)Version.Details.xml"
       DependencyName="Microsoft.NETCore.App.Ref"
-      Condition="'$(DotNetBuildOrchestrator)' != 'true'">
+      Condition="'$(DotNetBuildFromVMR)' != 'true'">
        <Output TaskParameter="DependencyVersion" PropertyName="DepRuntimeVersion" />
        <Output TaskParameter="DependencyCommit" PropertyName="DepRuntimeCommit" />
     </GetDependencyInfo>
@@ -28,23 +27,19 @@
     <GetDependencyInfo
       VersionDetailsXmlFile="$(RepositoryEngineeringDir)Version.Details.xml"
       DependencyName="Microsoft.AspNetCore.App.Ref"
-      Condition="'$(DotNetBuildOrchestrator)' != 'true'">
+      Condition="'$(DotNetBuildFromVMR)' != 'true'">
        <Output TaskParameter="DependencyVersion" PropertyName="DepAspNetCoreVersion" />
        <Output TaskParameter="DependencyCommit" PropertyName="DepAspNetCoreCommit" />
-    </GetDependencyInfo>
-
-    <GetDependencyInfo
-      VersionDetailsXmlFile="$(RepositoryEngineeringDir)Version.Details.xml"
-      DependencyName="Microsoft.WindowsDesktop.App.Ref"
-      Condition="'$(DotNetBuildOrchestrator)' != 'true'">
-       <Output TaskParameter="DependencyVersion" PropertyName="DepWindowsDesktopVersion" />
-       <Output TaskParameter="DependencyCommit" PropertyName="DepWindowsDesktopCommit" />
     </GetDependencyInfo>
 
     <ItemGroup Label="Version info">
       <Line Include="runtime" Version="$(MicrosoftNETCoreAppRefPackageVersion)" Commit="$([MSBuild]::ValueOrDefault('$(DepRuntimeCommit)', '$(BUILD_SOURCEVERSION)'))" />
       <Line Include="aspnetcore" Version="$(MicrosoftAspNetCoreAppRefPackageVersion)" Commit="$([MSBuild]::ValueOrDefault('$(DepAspNetCoreCommit)', '$(BUILD_SOURCEVERSION)'))" />
-      <Line Include="windowsdesktop" Version="$(MicrosoftWindowsDesktopAppRefPackageVersion)" Commit="$([MSBuild]::ValueOrDefault('$(DepWindowsDesktopCommit)', '$(BUILD_SOURCEVERSION)'))" />
+      <!-- For the WindowsDesktop commit, use the Microsoft.NETCore.App.Ref commit.
+           These will always be the same and the Microsoft.WindowsDesktop.App.Ref dependency has been eliminated from Version.Details.xml
+           so the info cannot be used since in VMR builds Linux/Mac do not build WindowsDesktop, even though
+           info about WindowsDesktop **does** leak into those SDKs. -->
+      <Line Include="windowsdesktop" Version="$(MicrosoftWindowsDesktopAppRefPackageVersion)" Commit="$([MSBuild]::ValueOrDefault('$(DepRuntimeCommit)', '$(BUILD_SOURCEVERSION)'))" />
       <Line Include="sdk" Version="$(PackageVersion)" Commit="$(BUILD_SOURCEVERSION)" />
     </ItemGroup>
 
@@ -88,6 +83,14 @@
       <_NETCoreAppPackageVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</_NETCoreAppPackageVersion>
       <_NETStandardLibraryPackageVersion>$(NETStandardLibraryRefPackageVersion)</_NETStandardLibraryPackageVersion>
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
+
+      <!-- TODO: Once .NET 10.0.X has released, update these version numbers to 10.0.$(VersionFeature100) -->
+      <_NET100RuntimePackVersion>10.0.100-preview.7.25380.108</_NET100RuntimePackVersion>
+      <_NET100TargetingPackVersion>10.0.100-preview.7.25380.108</_NET100TargetingPackVersion>
+      <_WindowsDesktop100RuntimePackVersion>10.0.0-preview.7.25380.108</_WindowsDesktop100RuntimePackVersion>
+      <_WindowsDesktop100TargetingPackVersion>10.0.0-preview.7.25380.108</_WindowsDesktop100TargetingPackVersion>
+      <_AspNet100RuntimePackVersion>10.0.0-preview.7.25380.108</_AspNet100RuntimePackVersion>
+      <_AspNet100TargetingPackVersion>10.0.0-preview.7.25380.108</_AspNet100TargetingPackVersion>
 
       <_NET90RuntimePackVersion>9.0.$(VersionFeature90)</_NET90RuntimePackVersion>
       <_NET90TargetingPackVersion>9.0.$(VersionFeature90)</_NET90TargetingPackVersion>
@@ -273,10 +276,6 @@
         Condition="'$(BundleRuntimePacks)' == 'true'"
         Include="$(ProductMonikerRid)" />
 
-      <ILCompilerSupportedRids
-        Condition="'$(BundleNativeAotCompiler)' == 'true'"
-        Include="$(ProductMonikerRid)" />
-
       <Net60MonoRuntimePackRids Include="
         @(Net60RuntimePackRids);
         browser-wasm;
@@ -369,6 +368,12 @@
 
       <Crossgen2SupportedRids Include="@(Net90Crossgen2SupportedRids);" />
 
+      <Crossgen2SupportedPortableRids Include="@(Crossgen2SupportedRids)" />
+
+      <Crossgen2SupportedRids
+        Condition="'$(BundleCrossgen2)' == 'true'"
+        Include="$(ProductMonikerRid)" />
+
       <Net70ILCompilerSupportedRids Include="
         linux-arm64;
         linux-musl-arm64;
@@ -395,13 +400,19 @@
         win-x86;
         " />
 
-      <!-- ILCompiler target RIDs that are officially supported, plus the architecture we are building the product for (OutputRID). See:
+      <!-- ILCompiler target RIDs that are officially supported, plus the architecture we are building the product for (TargetRid). See:
            https://github.com/dotnet/runtime/blob/main/src/installer/pkg/projects/Microsoft.DotNet.ILCompiler/ILCompilerRIDs.props -->
       <ILCompilerSupportedRids Include="
         @(Net90ILCompilerSupportedRids);
         linux-riscv64;
         linux-musl-riscv64;
         " />
+
+      <ILCompilerSupportedPortableRids Include="@(ILCompilerSupportedRids)" />
+
+      <ILCompilerSupportedRids
+        Condition="'$(BundleNativeAotCompiler)' == 'true'"
+        Include="$(ProductMonikerRid)" />
 
       <Net80NativeAOTRuntimePackRids Include="
         ios-arm64;
@@ -442,6 +453,8 @@
         @(Net90NativeAOTRuntimePackRids);
         linux-riscv64;
         linux-musl-riscv64;
+        android-arm64;
+        android-x64;
         "/>
 
       <AspNetCore31RuntimePackRids Include="@(AspNetCore30RuntimePackRids)" />
@@ -555,6 +568,121 @@ Copyright (c) .NET Foundation. All rights reserved.
     @(ImplicitPackageVariable->'<ImplicitPackageReferenceVersion Include="%(Identity)" TargetFrameworkVersion="%(TargetFrameworkVersion)" DefaultVersion="%(DefaultVersion)" LatestVersion="%(LatestVersion)" />', '
     ')
 
+    <!-- .NET 11.0 -->
+    <KnownFrameworkReference Include="Microsoft.NETCore.App"
+                              TargetFramework="net11.0"
+                              RuntimeFrameworkName="Microsoft.NETCore.App"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftNETCoreAppDefaultRuntimeFrameworkVersion)"
+                              LatestRuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                              TargetingPackName="Microsoft.NETCore.App.Ref"
+                              TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
+                              RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.**RID**"
+                              RuntimePackRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
+                              />
+
+    <KnownAppHostPack Include="Microsoft.NETCore.App"
+                      TargetFramework="net11.0"
+                      AppHostPackNamePattern="Microsoft.NETCore.App.Host.**RID**"
+                      AppHostPackVersion="$(_NETCoreAppPackageVersion)"
+                      AppHostRuntimeIdentifiers="@(NetCoreAppHostRids, '%3B')"
+                      ExcludedRuntimeIdentifiers="android"
+                      />
+
+    <KnownCrossgen2Pack Include="Microsoft.NETCore.App.Crossgen2"
+                        TargetFramework="net11.0"
+                        Crossgen2PackNamePattern="Microsoft.NETCore.App.Crossgen2.**RID**"
+                        Crossgen2PackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                        Crossgen2RuntimeIdentifiers="@(Crossgen2SupportedRids, '%3B')"
+                        />
+
+    <KnownILCompilerPack Include="Microsoft.DotNet.ILCompiler"
+                         TargetFramework="net11.0"
+                         ILCompilerPackNamePattern="runtime.**RID**.Microsoft.DotNet.ILCompiler"
+                         ILCompilerRuntimePackNamePattern="Microsoft.NETCore.App.Runtime.NativeAOT.**RID**"
+                         ILCompilerPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                         ILCompilerRuntimeIdentifiers="@(ILCompilerSupportedRids, '%3B')"
+                         />
+
+    <KnownRuntimePack Include="Microsoft.NETCore.App"
+                      TargetFramework="net11.0"
+                      RuntimeFrameworkName="Microsoft.NETCore.App"
+                      LatestRuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                      RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.NativeAOT.**RID**"
+                      RuntimePackRuntimeIdentifiers="@(NativeAOTRuntimePackRids, '%3B')"
+                      RuntimePackLabels="NativeAOT"
+                      />
+
+    <KnownILLinkPack Include="Microsoft.NET.ILLink.Tasks"
+                     TargetFramework="net11.0"
+                     ILLinkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+
+    <KnownWebAssemblySdkPack Include="Microsoft.NET.Sdk.WebAssembly.Pack"
+                             TargetFramework="net11.0"
+                             WebAssemblySdkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+
+    <KnownAspNetCorePack Include="Microsoft.AspNetCore.App.Internal.Assets"
+                             TargetFramework="net11.0"
+                             AspNetCorePackVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
+
+    <KnownRuntimePack Include="Microsoft.NETCore.App"
+                      TargetFramework="net11.0"
+                      RuntimeFrameworkName="Microsoft.NETCore.App"
+                      LatestRuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                      RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.Mono.**RID**"
+                      RuntimePackRuntimeIdentifiers="@(MonoRuntimePackRids, '%3B')"
+                      RuntimePackLabels="Mono"
+                      />
+
+    <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
+                              TargetFramework="net11.0"
+                              RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppDefaultRuntimeFrameworkVersion)"
+                              LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppRuntimePackageVersion)"
+                              TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
+                              TargetingPackVersion="$(MicrosoftWindowsDesktopAppRefPackageVersion)"
+                              RuntimePackNamePatterns="Microsoft.WindowsDesktop.App.Runtime.**RID**"
+                              RuntimePackRuntimeIdentifiers="@(WindowsDesktopRuntimePackRids, '%3B')"
+                              IsWindowsOnly="true"
+                              />
+
+    <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WPF"
+                              TargetFramework="net11.0"
+                              RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppDefaultRuntimeFrameworkVersion)"
+                              LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppRuntimePackageVersion)"
+                              TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
+                              TargetingPackVersion="$(MicrosoftWindowsDesktopAppRefPackageVersion)"
+                              RuntimePackNamePatterns="Microsoft.WindowsDesktop.App.Runtime.**RID**"
+                              RuntimePackRuntimeIdentifiers="@(WindowsDesktopRuntimePackRids, '%3B')"
+                              IsWindowsOnly="true"
+                              Profile="WPF"
+                              />
+
+    <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms"
+                              TargetFramework="net11.0"
+                              RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppDefaultRuntimeFrameworkVersion)"
+                              LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppRuntimePackageVersion)"
+                              TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
+                              TargetingPackVersion="$(MicrosoftWindowsDesktopAppRefPackageVersion)"
+                              RuntimePackNamePatterns="Microsoft.WindowsDesktop.App.Runtime.**RID**"
+                              RuntimePackRuntimeIdentifiers="@(WindowsDesktopRuntimePackRids, '%3B')"
+                              IsWindowsOnly="true"
+                              Profile="WindowsForms"
+                              />
+
+    <KnownFrameworkReference Include="Microsoft.AspNetCore.App"
+                              TargetFramework="net11.0"
+                              RuntimeFrameworkName="Microsoft.AspNetCore.App"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppDefaultRuntimeFrameworkVersion)"
+                              LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)"
+                              TargetingPackName="Microsoft.AspNetCore.App.Ref"
+                              TargetingPackVersion="$(MicrosoftAspNetCoreAppRefPackageVersion)"
+                              RuntimePackNamePatterns="Microsoft.AspNetCore.App.Runtime.**RID**"
+                              RuntimePackRuntimeIdentifiers="@(AspNetCoreRuntimePackRids, '%3B')"
+                              RuntimePackExcludedRuntimeIdentifiers="android%3Blinux-bionic"
+                              />
+
     <!-- .NET 10.0 -->
     <KnownFrameworkReference Include="Microsoft.NETCore.App"
                               TargetFramework="net10.0"
@@ -579,13 +707,16 @@ Copyright (c) .NET Foundation. All rights reserved.
                         TargetFramework="net10.0"
                         Crossgen2PackNamePattern="Microsoft.NETCore.App.Crossgen2.**RID**"
                         Crossgen2PackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                        Crossgen2PortableRuntimeIdentifiers="@(Crossgen2SupportedPortableRids, '%3B')"
                         Crossgen2RuntimeIdentifiers="@(Crossgen2SupportedRids, '%3B')"
                         />
 
     <KnownILCompilerPack Include="Microsoft.DotNet.ILCompiler"
                          TargetFramework="net10.0"
                          ILCompilerPackNamePattern="runtime.**RID**.Microsoft.DotNet.ILCompiler"
+                         ILCompilerRuntimePackNamePattern="Microsoft.NETCore.App.Runtime.NativeAOT.**RID**"
                          ILCompilerPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                         ILCompilerPortableRuntimeIdentifiers="@(ILCompilerSupportedPortableRids, '%3B')"
                          ILCompilerRuntimeIdentifiers="@(ILCompilerSupportedRids, '%3B')"
                          />
 
@@ -1315,7 +1446,20 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackVersion="$(NETStandardLibraryRefPackageVersion)"
                               />
 
-    <!-- Supported Windows versions -->
+    <!--
+      Supported Windows versions using CsWinRT 3.0 (.NET 10 is the baseline). This leverages the revision of
+      the Windows SDK version to allow multi-targeting, which is required to allow customers to gradually migrate.
+      Both CsWinRT 3.0 and 2.x will be supported for a period of time, and packages can target both of them.
+    -->
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.26100.1" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_26100PackageVersion)" MinimumNETVersion="10.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.22621.1" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_22621PackageVersion)" MinimumNETVersion="10.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.22000.1" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_22000PackageVersion)" MinimumNETVersion="10.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.20348.1" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_20348PackageVersion)" MinimumNETVersion="10.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.19041.1" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_19041PackageVersion)" MinimumNETVersion="10.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.18362.1" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_18362PackageVersion)" MinimumNETVersion="10.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.17763.1" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_17763PackageVersion)" MinimumNETVersion="10.0" />
+
+    <!-- Supported Windows versions using CsWinRT 2.x -->
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.26100.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_26100PackageVersion)" MinimumNETVersion="8.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.22621.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_22621PackageVersion)" MinimumNETVersion="8.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.22000.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_22000PackageVersion)" MinimumNETVersion="8.0" />

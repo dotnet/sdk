@@ -4,6 +4,7 @@
 #nullable disable
 
 using FluentAssertions;
+using Microsoft.Build.Framework;
 using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
@@ -13,7 +14,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         private XDocument _generatedDocument = null;
         public GivenAGenerateToolsSettingsFile()
         {
-            _generatedDocument = GenerateToolsSettingsFile.GenerateDocument("tool.dll", "mytool");
+            _generatedDocument = GenerateToolsSettingsFile.GenerateDocument("tool.dll", "mytool",
+                commandRunner: null, runtimeIdentifier: null, toolPackageId: "mytool", toolPackageVersion: "1.0.0", Array.Empty<ITaskItem>());
         }
 
         [Fact]

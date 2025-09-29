@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.Build.NoTargets">
+﻿<Project Sdk="Microsoft.Build.NoTargets">
 
   <PropertyGroup>
     <BuildSdkRpm Condition="'$(BuildSdkRpm)' == '' and '$(IsRPMBasedDistro)' == 'true'">true</BuildSdkRpm>
@@ -8,7 +8,6 @@
     <GenerateInstallers Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</GenerateInstallers>
     <BuildDebPackage Condition="'$(BuildSdkDeb)' == 'true'">true</BuildDebPackage>
     <BuildRpmPackage Condition="'$(BuildSdkRpm)' == 'true'">true</BuildRpmPackage>
-    <UseArcadeRpmTooling>true</UseArcadeRpmTooling>
     <ProductBrandPrefix>Microsoft .NET</ProductBrandPrefix>
     <LicenseFile>$(RepoRoot)LICENSE.TXT</LicenseFile>
     <InstallerName>dotnet-sdk</InstallerName>
@@ -33,7 +32,23 @@
 
   <ItemGroup>
     <ProjectReference Include="..\redist\redist.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <!-- These P2Ps ensure that package references for WiX extensions are correctly restored. The MSBuildRestoreSessionId condition makes sure that these
+       projects are only restored. They get built later when computed properties are available. These properties do not exist when projects are evaluated. -->
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT' and '$(MSBuildRestoreSessionId)' != ''">
+    <ProjectReference Include="windows\msis\placeholder\placeholder.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="windows\msis\templates\templates.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="windows\msis\toolset\toolset.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="windows\bundles\sdk\bundle.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <LinuxPackageSymlink Include="/usr/bin/dnx" LinkTarget="../share/dotnet/dnx" />
   </ItemGroup>
 
   <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
@@ -49,6 +64,7 @@
       <CLISdkFiles Include="$(RedistInstallerLayoutPath)sdk/**/*" />
       <TemplatesFiles Include="$(RedistInstallerLayoutPath)templates/**/*" />
       <ManifestFiles Include="$(RedistInstallerLayoutPath)sdk-manifests/**/*" />
+      <DnxShimSource Include="$(RedistInstallerLayoutPath)dnx*" />
     </ItemGroup>
 
     <!-- Create layout: Binaries -->
@@ -77,6 +93,9 @@
       OverwriteReadOnlyFiles="True"
       SkipUnchangedFiles="False"
       UseHardlinksIfPossible="False" />
+
+    <!-- Create layout: DNX shim -->
+    <Copy SourceFiles="@(DnxShimSource)" DestinationFolder="$(OutputPath)" />
   </Target>
 
   <Target Name="SetCustomPackagingProperties" AfterTargets="_GetInstallerProperties">
@@ -99,7 +118,7 @@
   </Target>
 
   <Target Name="AddLinuxPackageInformation"
-      BeforeTargets="GetDebInstallerJsonProperties;GetRpmInstallerJsonProperties"
+      BeforeTargets="GetAdditionalLinuxInstallerProperties"
       DependsOnTargets="CalculateLinuxNativeInstallerDependencyVersions">
 
     <PropertyGroup>
@@ -119,7 +138,6 @@
       <LinuxPackageDependency Include="dotnet-runtime-$(MicrosoftNETCoreAppMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRuntimePackageVersionWithTilde)" />
       <LinuxPackageDependency Include="dotnet-targeting-pack-$(MicrosoftNETCoreAppMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRefPackageVersionWithTilde)" />
       <LinuxPackageDependency Include="dotnet-apphost-pack-$(MicrosoftNETCoreAppMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRuntimePackageVersionWithTilde)" />
-      <LinuxPackageDependency Condition="'$(TargetArchitecture)' == 'x64'" Include="netstandard-targeting-pack-$(NetStandardTargetingPackMajorMinorVersion)" Version="$(NetStandardTargetingPackPackageVersionWithTilde)" />
       <LinuxPackageDependency Include="aspnetcore-runtime-$(AspNetCoreMajorMinorVersion)" Version="$(AspNetCoreRuntimeVersionWithTilde)" />
       <LinuxPackageDependency Include="aspnetcore-targeting-pack-$(AspNetCoreMajorMinorVersion)" Version="$(AspNetCoreRefVersionWithTilde)" />
       <LinuxPostInstallScript Include="$(DebianPostinstFile)" Condition="'$(BuildDebPackage)' == 'true'" />
@@ -149,12 +167,6 @@
 
     <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(HostFxrVersion)">
       <Output TaskParameter="MajorMinorVersion" PropertyName="HostFxrMajorMinorVersion" />
-    </GetLinuxNativeInstallerDependencyVersions>
-
-    <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(NETStandardLibraryRefPackageVersion)">
-      <Output TaskParameter="VersionWithTilde" PropertyName="NetStandardTargetingPackPackageVersionWithTilde" />
-      <Output TaskParameter="MajorMinorVersion" PropertyName="NetStandardTargetingPackMajorMinorVersion" />
-      <Output TaskParameter="MajorMinorPatchVersion" PropertyName="NetStandardTargetingPackMajorMinorPatchVersion" />
     </GetLinuxNativeInstallerDependencyVersions>
   </Target>
 

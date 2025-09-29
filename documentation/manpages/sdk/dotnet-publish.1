@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-publish" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-publish" "1" "2025-08-29" "" ".NET Documentation"
 .hy
 .SH dotnet publish
 .PP
@@ -57,7 +57,7 @@ The application\[cq]s dependencies, which are copied from the NuGet cache into t
 The \f[V]dotnet publish\f[R] command\[cq]s output is ready for deployment to a hosting system (for example, a server, PC, Mac, laptop) for execution.
 It\[cq]s the only officially supported way to prepare the application for deployment.
 Depending on the type of deployment that the project specifies, the hosting system may or may not have the .NET shared runtime installed on it.
-For more information, see Publish .NET apps with the .NET CLI.
+For more information, see .NET application publishing overview.
 .SS Implicit restore
 .PP
 You don\[cq]t have to run \f[V]dotnet restore\f[R] because it\[cq]s run implicitly by all commands that require a restore to occur, such as \f[V]dotnet new\f[R], \f[V]dotnet build\f[R], \f[V]dotnet run\f[R], \f[V]dotnet test\f[R], \f[V]dotnet publish\f[R], and \f[V]dotnet pack\f[R].
@@ -144,6 +144,7 @@ We recommend that you specify \f[V]PublishReadyToRun\f[R] in a publish profile r
 .PP
 Packages the app into a platform-specific single-file executable.
 For more information about single-file publishing, see the single-file bundler design document (https://github.com/dotnet/designs/blob/main/accepted/2020/single-file/design.md).
+When this property is set to \f[V]true\f[R], the \f[V]PublishSelfContained\f[R] property is implicitly set to \f[V]true\f[R].
 .PP
 We recommend that you specify this option in the project file rather than on the command line.
 .RE
@@ -180,7 +181,7 @@ The project or solution to publish.
 \f[V]PROJECT\f[R] is the path and filename of a C#, F#, or Visual Basic project file, or the path to a directory that contains a C#, F#, or Visual Basic project file.
 If the directory is not specified, it defaults to the current directory.
 .IP \[bu] 2
-\f[V]SOLUTION\f[R] is the path and filename of a solution file (\f[I].sln\f[R] extension), or the path to a directory that contains a solution file.
+\f[V]SOLUTION\f[R] is the path and filename of a solution file (\f[I].sln\f[R] or \f[I].slnx\f[R] extension), or the path to a directory that contains a solution file.
 If the directory is not specified, it defaults to the current directory.
 .RE
 .SH OPTIONS
@@ -345,7 +346,7 @@ Available since .NET 6.
 .PP
 Publishes the .NET runtime with your application so the runtime doesn\[cq]t need to be installed on the target machine.
 Default is \f[V]true\f[R] if a runtime identifier is specified and the project is an executable project (not a library project).
-For more information, see .NET application publishing and Publish .NET apps with the .NET CLI.
+For more information, see Self-contained deployment.
 .PP
 If this option is used without specifying \f[V]true\f[R] or \f[V]false\f[R], the default is \f[V]true\f[R].
 In that case, don\[cq]t put the solution or project argument immediately after \f[V]--self-contained\f[R], because \f[V]true\f[R] or \f[V]false\f[R] is expected in that position.
@@ -368,7 +369,7 @@ The URI of the NuGet package source to use during the restore operation.
 .PP
 Publishes the application for a given runtime.
 For a list of Runtime Identifiers (RIDs), see the RID catalog.
-For more information, see .NET application publishing and Publish .NET apps with the .NET CLI.
+For more information, see .NET application publishing overview.
 If you use this option, use \f[V]--self-contained\f[R] or \f[V]--no-self-contained\f[R] also.
 .RE
 .IP \[bu] 2
@@ -493,8 +494,6 @@ dotnet publish --no-dependencies
 .SH SEE ALSO
 .IP \[bu] 2
 \&.NET application publishing overview
-.IP \[bu] 2
-Publish .NET apps with the .NET CLI
 .IP \[bu] 2
 Target frameworks
 .IP \[bu] 2

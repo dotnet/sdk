@@ -809,7 +809,7 @@ The header is followed by the list of parameters and their errors (might be seve
     <comment>{0} is the exit code</comment>
   </data>
   <data name="TemplateCommand_DisplayConstraintResults_Error" xml:space="preserve">
-    <value>Failed to instatiate template '{0}', the following constraints are not met:</value>
+    <value>Failed to instantiate template '{0}', the following constraints are not met:</value>
     <comment>{0} - template name (user friendly)</comment>
   </data>
   <data name="TemplateCommand_DisplayConstraintResults_Hint" xml:space="preserve">

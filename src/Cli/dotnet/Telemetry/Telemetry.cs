@@ -1,8 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
+using System.Collections.Frozen;
 using System.Diagnostics;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -14,13 +13,13 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 
 public class Telemetry : ITelemetry
 {
-    internal static string CurrentSessionId = null;
+    internal static string? CurrentSessionId = null;
     internal static bool DisabledForTests = false;
     private readonly int _senderCount;
-    private TelemetryClient _client = null;
-    private Dictionary<string, string> _commonProperties = null;
-    private Dictionary<string, double> _commonMeasurements = null;
-    private Task _trackEventTask = null;
+    private TelemetryClient? _client = null;
+    private FrozenDictionary<string, string>? _commonProperties = null;
+    private FrozenDictionary<string, double>? _commonMeasurements = null;
+    private Task? _trackEventTask = null;
 
     private const string ConnectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
 
@@ -28,13 +27,13 @@ public class Telemetry : ITelemetry
 
     public Telemetry() : this(null) { }
 
-    public Telemetry(IFirstTimeUseNoticeSentinel sentinel) : this(sentinel, null) { }
+    public Telemetry(IFirstTimeUseNoticeSentinel? sentinel) : this(sentinel, null) { }
 
     public Telemetry(
-        IFirstTimeUseNoticeSentinel sentinel,
-        string sessionId,
+        IFirstTimeUseNoticeSentinel? sentinel,
+        string? sessionId,
         bool blockThreadInitialization = false,
-        IEnvironmentProvider environmentProvider = null,
+        IEnvironmentProvider? environmentProvider = null,
         int senderCount = 3)
     {
 
@@ -78,7 +77,7 @@ public class Telemetry : ITelemetry
         DisabledForTests = false;
     }
 
-    private static bool PermissionExists(IFirstTimeUseNoticeSentinel sentinel)
+    private static bool PermissionExists(IFirstTimeUseNoticeSentinel? sentinel)
     {
         if (sentinel == null)
         {
@@ -97,9 +96,17 @@ public class Telemetry : ITelemetry
         }
 
         //continue the task in different threads
-        _trackEventTask = _trackEventTask.ContinueWith(
-            x => TrackEventTask(eventName, properties, measurements)
-        );
+        if (_trackEventTask == null)
+        {
+            _trackEventTask = Task.Run(() => TrackEventTask(eventName, properties, measurements));
+            return;
+        }
+        else
+        {
+            _trackEventTask = _trackEventTask.ContinueWith(
+                x => TrackEventTask(eventName, properties, measurements)
+            );
+        }
     }
 
     public void Flush()
@@ -147,8 +154,8 @@ public class Telemetry : ITelemetry
             _client.Context.Session.Id = CurrentSessionId;
             _client.Context.Device.OperatingSystem = CLIRuntimeEnvironment.OperatingSystem;
 
-            _commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties();
-            _commonMeasurements = [];
+            _commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties(CurrentSessionId);
+            _commonMeasurements = FrozenDictionary<string, double>.Empty;
         }
         catch (Exception e)
         {
@@ -170,12 +177,14 @@ public class Telemetry : ITelemetry
 
         try
         {
-            Dictionary<string, string> eventProperties = GetEventProperties(properties);
-            Dictionary<string, double> eventMeasurements = GetEventMeasures(measurements);
+            var eventProperties = GetEventProperties(properties);
+            var eventMeasurements = GetEventMeasures(measurements);
 
+            eventProperties ??= new Dictionary<string, string>();
             eventProperties.Add("event id", Guid.NewGuid().ToString());
 
             _client.TrackEvent(PrependProducerNamespace(eventName), eventProperties, eventMeasurements);
+            Activity.Current?.AddEvent(CreateActivityEvent(eventName, eventProperties, eventMeasurements));
         }
         catch (Exception e)
         {
@@ -183,35 +192,72 @@ public class Telemetry : ITelemetry
         }
     }
 
-    private static string PrependProducerNamespace(string eventName)
+    private static ActivityEvent CreateActivityEvent(
+        string eventName,
+        IDictionary<string, string>? properties,
+        IDictionary<string, double>? measurements)
     {
-        return "dotnet/cli/" + eventName;
+        var tags = MakeTags(properties, measurements);
+        return new ActivityEvent(
+            PrependProducerNamespace(eventName),
+            tags: tags);
     }
 
-    private Dictionary<string, double> GetEventMeasures(IDictionary<string, double> measurements)
+    private static ActivityTagsCollection? MakeTags(
+        IDictionary<string, string>? properties,
+        IDictionary<string, double>? measurements)
     {
-        Dictionary<string, double> eventMeasurements = new(_commonMeasurements);
-        if (measurements != null)
+        if (properties == null && measurements == null)
         {
-            foreach (KeyValuePair<string, double> measurement in measurements)
-            {
-                eventMeasurements[measurement.Key] = measurement.Value;
-            }
+            return null;
         }
-        return eventMeasurements;
-    }
-
-    private Dictionary<string, string> GetEventProperties(IDictionary<string, string> properties)
-    {
-        var eventProperties = new Dictionary<string, string>(_commonProperties);
-        if (properties != null)
+        else if (properties != null && measurements == null)
         {
-            foreach (KeyValuePair<string, string> property in properties)
-            {
-                eventProperties[property.Key] = property.Value;
-            }
+            return [.. properties.Select(p => new KeyValuePair<string, object?>(p.Key, p.Value))];
         }
-
-        return eventProperties;
+        else if (properties == null && measurements != null)
+        {
+            return [.. measurements.Select(m => new KeyValuePair<string, object?>(m.Key, m.Value.ToString()))];
+        }
+        else return [ .. properties!.Select(p => new KeyValuePair<string, object?>(p.Key, p.Value)),
+                 .. measurements!.Select(m => new KeyValuePair<string, object?>(m.Key, m.Value.ToString())) ];
     }
+
+    private static string PrependProducerNamespace(string eventName) => $"dotnet/cli/{eventName}";
+
+    private IDictionary<string, double>? GetEventMeasures(IDictionary<string, double>? measurements)
+    {
+        return (measurements, _commonMeasurements) switch
+        {
+            (null, null) => null,
+            (null, not null) => _commonMeasurements == FrozenDictionary<string, double>.Empty ? null : new Dictionary<string, double>(_commonMeasurements),
+            (not null, null) => measurements,
+            (not null, not null) => Combine(_commonMeasurements, measurements),
+        };
+    }
+
+    private IDictionary<string, string>? GetEventProperties(IDictionary<string, string>? properties)
+    {
+        return (properties, _commonProperties) switch
+        {
+            (null, null) => null,
+            (null, not null) => _commonProperties == FrozenDictionary<string, string>.Empty ? null : new Dictionary<string, string>(_commonProperties),
+            (not null, null) => properties,
+            (not null, not null) => Combine(_commonProperties, properties),
+        };
+    }
+
+    static IDictionary<TKey, TValue> Combine<TKey, TValue>(IDictionary<TKey, TValue> common, IDictionary<TKey, TValue> specific) where TKey : notnull
+    {
+        IDictionary<TKey, TValue> eventMeasurements = new Dictionary<TKey, TValue>(capacity: common.Count + specific.Count);
+        foreach (KeyValuePair<TKey, TValue> measurement in common)
+        {
+            eventMeasurements[measurement.Key] = measurement.Value;
+        }
+        foreach (KeyValuePair<TKey, TValue> measurement in specific)
+        {
+            eventMeasurements[measurement.Key] = measurement.Value;
+        }
+            return eventMeasurements;
+        }
 }

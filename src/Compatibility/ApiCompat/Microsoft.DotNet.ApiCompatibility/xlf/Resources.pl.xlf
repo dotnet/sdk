@@ -124,7 +124,7 @@
       </trans-unit>
       <trans-unit id="CannotRemoveVirtualOrAbstractFromMember">
         <source>Cannot remove '{0}' keyword from member '{1}'.</source>
-        <target state="new">Cannot remove '{0}' keyword from member '{1}'.</target>
+        <target state="translated">Nie można usunąć słowa kluczowego „{0}” z elementu członkowskiego „{1}”.</target>
         <note />
       </trans-unit>
       <trans-unit id="ElementShouldNotBeNullAtIndex">

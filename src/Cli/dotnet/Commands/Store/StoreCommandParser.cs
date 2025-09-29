@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
@@ -20,20 +18,21 @@ internal static class StoreCommandParser
     public static readonly Option<IEnumerable<string>> ManifestOption = new ForwardedOption<IEnumerable<string>>("--manifest", "-m")
     {
         Description = CliCommandStrings.ProjectManifestDescription,
-        HelpName = CliCommandStrings.ProjectManifest
+        HelpName = CliCommandStrings.ProjectManifest,
+        Arity = ArgumentArity.OneOrMore
     }.ForwardAsMany(o =>
     {
         // the first path doesn't need to go through CommandDirectoryContext.ExpandPath
         // since it is a direct argument to MSBuild, not a property
-        var materializedString = $"{o.First()}";
+        var materializedString = $"{o!.First()}";
 
-        if (o.Count() == 1)
+        if (o!.Count() == 1)
         {
             return [materializedString];
         }
         else
         {
-            return [materializedString, $"-property:AdditionalProjects={string.Join("%3B", o.Skip(1).Select(CommandDirectoryContext.GetFullPath))}"];
+            return [materializedString, $"-property:AdditionalProjects={string.Join("%3B", o!.Skip(1).Select(CommandDirectoryContext.GetFullPath))}"];
         }
     }).AllowSingleArgPerToken();
 
@@ -86,8 +85,8 @@ internal static class StoreCommandParser
         command.Options.Add(SkipOptimizationOption);
         command.Options.Add(SkipSymbolsOption);
         command.Options.Add(CommonOptions.FrameworkOption(CliCommandStrings.StoreFrameworkOptionDescription));
-        command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, CliCommandStrings.StoreRuntimeOptionDescription));
-        command.Options.Add(CommonOptions.VerbosityOption);
+        command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.StoreRuntimeOptionDescription));
+        command.Options.Add(CommonOptions.VerbosityOption());
         command.Options.Add(CommonOptions.CurrentRuntimeOption(CliCommandStrings.CurrentRuntimeOptionDescription));
         command.Options.Add(CommonOptions.DisableBuildServersOption);
 

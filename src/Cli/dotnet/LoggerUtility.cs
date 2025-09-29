@@ -48,17 +48,34 @@ internal static class LoggerUtility
         // We need a custom logger to handle this, because the MSBuild API for evaluation and execution calls logger Initialize and Shutdown methods, so will not allow us to do this.
         if (binaryLoggers.Count > 0)
         {
-            var fakeLogger = ConfigureDispatcher(binaryLoggers);
+            var fakeLogger = CreateFacadeLogger(binaryLoggers);
 
             return fakeLogger;
         }
         return null;
     }
 
-    private static FacadeLogger ConfigureDispatcher(List<BinaryLogger> binaryLoggers)
+    public static FacadeLogger CreateFacadeLogger(List<BinaryLogger> binaryLoggers)
     {
         var dispatcher = new PersistentDispatcher(binaryLoggers);
         return new FacadeLogger(dispatcher);
+    }
+
+    internal static void SeparateBinLogArguments(IEnumerable<string>? args, out List<string> binLogArgs, out List<string> nonBinLogArgs)
+    {
+        binLogArgs = new List<string>();
+        nonBinLogArgs = new List<string>();
+        foreach (var arg in args ?? [])
+        {
+            if (IsBinLogArgument(arg))
+            {
+                binLogArgs.Add(arg);
+            }
+            else
+            {
+                nonBinLogArgs.Add(arg);
+            }
+        }
     }
 
     internal static bool IsBinLogArgument(string arg)

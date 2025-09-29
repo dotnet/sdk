@@ -18,66 +18,66 @@ public static class Program
 
     public static async Task Main(string[] args)
     {
-        RootCommand rootCommand = new("genapidiff");
+        RootCommand rootCommand = new("ApiDiff - Tool for generating a markdown diff of two different versions of the same assembly.");
 
-        Option<string> optionBeforeAssembliesFolderPath = new(name: "", aliases: ["--before", "-b"])
+        Option<string> optionBeforeAssembliesFolderPath = new("--before", "-b")
         {
             Description = "The path to the folder containing the old (before) assemblies to be included in the diff.",
             Arity = ArgumentArity.ExactlyOne,
             Required = true
         };
 
-        Option<string> optionBeforeRefAssembliesFolderPath = new(name: "", aliases: ["--refbefore", "-rb"])
+        Option<string> optionBeforeRefAssembliesFolderPath = new("--refbefore", "-rb")
         {
             Description = "The path to the folder containing the references required by old (before) assemblies, not to be included in the diff.",
             Arity = ArgumentArity.ExactlyOne,
             Required = false
         };
 
-        Option<string> optionAfterAssembliesFolderPath = new(name: "", aliases: ["--after", "-a"])
+        Option<string> optionAfterAssembliesFolderPath = new("--after", "-a")
         {
             Description = "The path to the folder containing the new (after) assemblies to be included in the diff.",
             Arity = ArgumentArity.ExactlyOne,
             Required = true
         };
 
-        Option<string> optionAfterRefAssembliesFolderPath = new(name: "", aliases: ["--refafter", "-ra"])
+        Option<string> optionAfterRefAssembliesFolderPath = new("--refafter", "-ra")
         {
             Description = "The path to the folder containing references required by the new (after) reference assemblies, not to be included in the diff.",
             Arity = ArgumentArity.ExactlyOne,
             Required = false
         };
 
-        Option<string> optionOutputFolderPath = new(name: "", aliases: ["--output", "-o"])
+        Option<string> optionOutputFolderPath = new("--output", "-o")
         {
             Description = "The path to the output folder.",
             Arity = ArgumentArity.ExactlyOne,
             Required = true
         };
 
-        Option<string> optionBeforeFriendlyName = new(name: "", aliases: ["--beforeFriendlyName", "-bfn"])
+        Option<string> optionBeforeFriendlyName = new("--beforeFriendlyName", "-bfn")
         {
             Description = "The friendly name to describe the 'before' assembly.",
             Arity = ArgumentArity.ExactlyOne,
             Required = true
         };
 
-        Option<string> optionAfterFriendlyName = new(name: "", aliases: ["--afterFriendlyName", "-afn"])
+        Option<string> optionAfterFriendlyName = new("--afterFriendlyName", "-afn")
         {
             Description = "The friendly name to describe the 'after' assembly.",
             Arity = ArgumentArity.ExactlyOne,
             Required = true
         };
 
-        Option<string> optionTableOfContentsTitle = new(name: "", aliases: ["--tableOfContentsTitle", "-tc"])
+        Option<string> optionTableOfContentsTitle = new("--tableOfContentsTitle", "-tc")
         {
             Description = $"The optional title of the markdown table of contents file that is placed in the output folder.",
-            Arity = ArgumentArity.ZeroOrMore,
+            Arity = ArgumentArity.ExactlyOne,
             Required = false,
             DefaultValueFactory = _ => "api_diff"
         };
 
-        Option<FileInfo[]?> optionFilesWithAssembliesToExclude = new(name: "", aliases: ["--assembliesToExclude", "-eas"])
+        Option<FileInfo[]?> optionFilesWithAssembliesToExclude = new("--assembliesToExclude", "-eas")
         {
             Description = "An optional array of filepaths, each containing a list of assemblies that should be excluded from the diff. Each file should contain one assembly name per line, with no extensions.",
             Arity = ArgumentArity.ZeroOrMore,
@@ -85,7 +85,7 @@ public static class Program
             DefaultValueFactory = _ => null
         };
 
-        Option<FileInfo[]?> optionFilesWithAttributesToExclude = new(name: "", aliases: ["--attributesToExclude", "-eattrs"])
+        Option<FileInfo[]?> optionFilesWithAttributesToExclude = new("--attributesToExclude", "-eattrs")
         {
             Description = $"An optional array of filepaths, each containing a list of attributes to exclude from the diff. Each file should contain one API full name per line. You can either modify the default file '{AttributesToExcludeDefaultFileName}' to add your own attributes, or include additional files using this command line option.",
             Arity = ArgumentArity.ZeroOrMore,
@@ -93,7 +93,7 @@ public static class Program
             DefaultValueFactory = _ => [new FileInfo(AttributesToExcludeDefaultFileName)]
         };
 
-        Option<FileInfo[]?> optionFilesWithApisToExclude = new(name: "", aliases: ["--apisToExclude", "-eapis"])
+        Option<FileInfo[]?> optionFilesWithApisToExclude = new("--apisToExclude", "-eapis")
         {
             Description = "An optional array of filepaths, each containing a list of APIs to exclude from the diff. Each file should contain one API full name per line.",
             Arity = ArgumentArity.ZeroOrMore,
@@ -101,13 +101,13 @@ public static class Program
             DefaultValueFactory = _ => null
         };
 
-        Option<bool> optionAddPartialModifier = new(name: "", aliases: ["--addPartialModifier", "-apm"])
+        Option<bool> optionAddPartialModifier = new("--addPartialModifier", "-apm")
         {
             Description = "Add the 'partial' modifier to types.",
             DefaultValueFactory = _ => false
         };
 
-        Option<bool> optionAttachDebugger = new(name: "", aliases: ["--attachDebugger", "-d"])
+        Option<bool> optionAttachDebugger = new("--attachDebugger", "-d")
         {
             Description = "Stops the tool at startup, prints the process ID and waits for a debugger to attach.",
             DefaultValueFactory = _ => false
@@ -128,9 +128,9 @@ public static class Program
         rootCommand.Options.Add(optionAddPartialModifier);
         rootCommand.Options.Add(optionAttachDebugger);
 
-        rootCommand.SetAction(async (ParseResult result) =>
+        rootCommand.SetAction(async (ParseResult result, CancellationToken cancellationToken) =>
         {
-            DiffConfiguration c = new(
+            DiffConfiguration diffConfig = new(
                 BeforeAssembliesFolderPath: result.GetValue(optionBeforeAssembliesFolderPath) ?? throw new NullReferenceException("Null before assemblies directory"),
                 BeforeAssemblyReferencesFolderPath: result.GetValue(optionBeforeRefAssembliesFolderPath),
                 AfterAssembliesFolderPath: result.GetValue(optionAfterAssembliesFolderPath) ?? throw new NullReferenceException("Null after assemblies directory"),
@@ -145,13 +145,15 @@ public static class Program
                 AddPartialModifier: result.GetValue(optionAddPartialModifier),
                 AttachDebugger: result.GetValue(optionAttachDebugger)
             );
-            await HandleCommandAsync(c).ConfigureAwait(false);
+            await HandleCommandAsync(diffConfig, cancellationToken).ConfigureAwait(false);
         });
         await rootCommand.Parse(args).InvokeAsync();
     }
 
-    private static Task HandleCommandAsync(DiffConfiguration diffConfig)
+    private static Task HandleCommandAsync(DiffConfiguration diffConfig, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var log = new ConsoleLog(MessageImportance.Normal);
 
         string assembliesToExclude = string.Join(", ", diffConfig.FilesWithAssembliesToExclude?.Select(a => a.FullName) ?? []);
@@ -197,7 +199,7 @@ public static class Program
                                                                    diagnosticOptions: null // TODO: If needed, add CLI option to pass specific diagnostic options
                                                                    );
 
-        return diffGenerator.RunAsync();
+        return diffGenerator.RunAsync(cancellationToken);
     }
 
     private static void WaitForDebugger()

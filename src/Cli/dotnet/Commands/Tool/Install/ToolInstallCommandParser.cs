@@ -2,17 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using Microsoft.DotNet.Cli.Extensions;
-using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
 internal static class ToolInstallCommandParser
 {
-    public static readonly Argument<PackageIdentity?> PackageIdentityArgument = CommonArguments.PackageIdentityArgument();
+    public static readonly Argument<PackageIdentityWithRange> PackageIdentityArgument = CommonArguments.RequiredPackageIdentityArgument("dotnetsay", "2.1.7");
 
     public static readonly Option<string> VersionOption = new("--version")
     {
@@ -49,7 +47,8 @@ internal static class ToolInstallCommandParser
     public static readonly Option<bool> CreateManifestIfNeededOption = new("--create-manifest-if-needed")
     {
         Description = CliCommandStrings.CreateManifestIfNeededOptionDescription,
-        Arity = ArgumentArity.Zero
+        Arity = ArgumentArity.ZeroOrOne,
+        DefaultValueFactory = _ => true,
     };
 
     public static readonly Option<bool> AllowPackageDowngradeOption = new("--allow-downgrade")
@@ -58,7 +57,7 @@ internal static class ToolInstallCommandParser
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption;
+    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal);
 
     // Don't use the common options version as we don't want this to be a forwarded option
     public static readonly Option<string> ArchitectureOption = new("--arch", "-a")
@@ -72,13 +71,13 @@ internal static class ToolInstallCommandParser
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<bool> GlobalOption = ToolAppliedOption.GlobalOption;
+    public static readonly Option<bool> GlobalOption = ToolAppliedOption.GlobalOption(CliCommandStrings.ToolInstallGlobalOptionDescription);
 
-    public static readonly Option<bool> LocalOption = ToolAppliedOption.LocalOption;
+    public static readonly Option<bool> LocalOption = ToolAppliedOption.LocalOption(CliCommandStrings.ToolInstallLocalOptionDescription);
 
-    public static readonly Option<string> ToolPathOption = ToolAppliedOption.ToolPathOption;
+    public static readonly Option<string> ToolPathOption = ToolAppliedOption.ToolPathOption(CliCommandStrings.ToolInstallToolPathOptionDescription);
 
-    public static readonly Option<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption;
+    public static readonly Option<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption(CliCommandStrings.ToolInstallManifestPathOptionDescription);
 
     private static readonly Command Command = ConstructCommand();
 
@@ -106,12 +105,12 @@ internal static class ToolInstallCommandParser
 
     public static Command AddCommandOptions(Command command)
     {
-        command.Options.Add(GlobalOption.WithHelpDescription(command, CliCommandStrings.ToolInstallGlobalOptionDescription));
-        command.Options.Add(LocalOption.WithHelpDescription(command, CliCommandStrings.ToolInstallLocalOptionDescription));
-        command.Options.Add(ToolPathOption.WithHelpDescription(command, CliCommandStrings.ToolInstallToolPathOptionDescription));
+        command.Options.Add(GlobalOption);
+        command.Options.Add(LocalOption);
+        command.Options.Add(ToolPathOption);
         command.Options.Add(VersionOption);
         command.Options.Add(ConfigOption);
-        command.Options.Add(ToolManifestOption.WithHelpDescription(command, CliCommandStrings.ToolInstallManifestPathOptionDescription));
+        command.Options.Add(ToolManifestOption);
         command.Options.Add(AddSourceOption);
         command.Options.Add(SourceOption);
         command.Options.Add(FrameworkOption);

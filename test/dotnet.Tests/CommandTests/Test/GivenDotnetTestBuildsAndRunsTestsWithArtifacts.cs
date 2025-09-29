@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -52,15 +52,15 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithCodeCoverage", Guid.NewGuid().ToString()).WithSource();
 
-            // Read MSTestVersion from Versions.props and update the .csproj file
-            // Search for Versions.props file from the current directory up to the root
-            string? versionsPropsPath = PathUtility.FindFileInParentDirectories(TestContext.Current.TestExecutionDirectory, $"eng{Path.DirectorySeparatorChar}Versions.props") ?? throw new FileNotFoundException("Versions.props file not found.");
-            string msTestVersion = testInstance.ReadMSTestVersionFromProps(versionsPropsPath);
-            testInstance.UpdateProjectFileWithMSTestVersion(Path.Combine($@"{testInstance.Path}{PathUtility.GetDirectorySeparatorChar()}TestProject", "TestProject.csproj"), msTestVersion);
+            // Read MSTestPackageVersion from Version.Details.props and update the .csproj file
+            // Search for Version.Details.props file from the current directory up to the root
+            string? versionsPropsPath = PathUtility.FindFileInParentDirectories(TestContext.Current.TestExecutionDirectory, $"eng{Path.DirectorySeparatorChar}Version.Details.props") ?? throw new FileNotFoundException("Version.Details.props file not found.");
+            string msTestVersion = testInstance.ReadMSTestPackageVersionFromProps(versionsPropsPath);
+            testInstance.UpdateProjectFileWithMSTestPackageVersion(Path.Combine($@"{testInstance.Path}{PathUtility.GetDirectorySeparatorChar()}TestProject", "TestProject.csproj"), msTestVersion);
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute("--coverage", TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute("--coverage", MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {

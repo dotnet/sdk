@@ -9,9 +9,9 @@ Usage:
 Options:
   -n, --name <name>      The name for the output being created. If no name is specified, the name of the output directory is used.
   -o, --output <output>  Location to place the generated output.
-  --dry-run              Displays a summary of what would happen if the given command line were run if it would result in a template creation.
-  --force                Forces content to be generated even if it would change existing files.
-  --no-update-check      Disables checking for the template package updates when instantiating a template.
+  --dry-run              Displays a summary of what would happen if the given command line were run if it would result in a template creation. [default: False]
+  --force                Forces content to be generated even if it would change existing files. [default: False]
+  --no-update-check      Disables checking for the template package updates when instantiating a template. [default: False]
   --project <project>    The project that should be used for context evaluation.
   --type <item>          Specifies the template type to instantiate.
 
@@ -29,3 +29,7 @@ Template options:
                                                                                                           latestMinor    Uses the highest installed minor, feature band, and patch level that matches the requested major with a minor, feature band, and patch level that is greater or equal than the specified value. If not found, fails.
                                                                                                           latestMajor    Uses the highest installed .NET SDK with a version that is greater or equal than the specified value. If not found, fail.
                                                                                                           disable        Doesn't roll forward. Exact match required.
+  --test-runner <Microsoft.Testing.Platform|VSTest>                                                     The test runner to use.
+                                                                                                        Type: choice
+                                                                                                          VSTest                      Use VSTest as test runner
+                                                                                                          Microsoft.Testing.Platform  Use Microsoft.Testing.Platform as test runner

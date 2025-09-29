@@ -1,21 +1,24 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using System.CommandLine.Completions;
+using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
-using Microsoft.DotNet.Cli.Extensions;
-using System.CommandLine.Parsing;
-using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
-internal static class PackageAddCommandParser
+public static class PackageAddCommandParser
 {
-    public static readonly Argument<PackageIdentity> CmdPackageArgument = CommonArguments.PackageIdentityArgument(true)
+    public static readonly Option<bool> PrereleaseOption = new ForwardedOption<bool>("--prerelease")
+    {
+        Description = CliStrings.CommandPrereleaseOptionDescription,
+        Arity = ArgumentArity.Zero
+    }.ForwardAs("--prerelease");
+
+    public static readonly Argument<PackageIdentityWithRange> CmdPackageArgument = CommonArguments.RequiredPackageIdentityArgument()
     .AddCompletions((context) =>
     {
         // we should take --prerelease flags into account for version completion
@@ -31,7 +34,7 @@ internal static class PackageAddCommandParser
         .AddCompletions((context) =>
         {
             // we can only do version completion if we have a package id
-            if (context.ParseResult.GetValue(CmdPackageArgument) is PackageIdentity packageId && !packageId.HasVersion)
+            if (context.ParseResult.GetValue(CmdPackageArgument) is { HasVersion: false } packageId)
             {
                 // we should take --prerelease flags into account for version completion
                 var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption);
@@ -71,12 +74,6 @@ internal static class PackageAddCommandParser
 
     public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
 
-    public static readonly Option<bool> PrereleaseOption = new ForwardedOption<bool>("--prerelease")
-    {
-        Description = CliStrings.CommandPrereleaseOptionDescription,
-        Arity = ArgumentArity.Zero
-    }.ForwardAs("--prerelease");
-
     private static readonly Command Command = ConstructCommand();
 
     public static Command GetCommand()
@@ -98,15 +95,16 @@ internal static class PackageAddCommandParser
         command.Options.Add(InteractiveOption);
         command.Options.Add(PrereleaseOption);
         command.Options.Add(PackageCommandParser.ProjectOption);
+        command.Options.Add(PackageCommandParser.FileOption);
 
-        command.SetAction((parseResult) => new PackageAddCommand(parseResult, parseResult.GetValue(PackageCommandParser.ProjectOption)).Execute());
+        command.SetAction((parseResult) => new PackageAddCommand(parseResult).Execute());
 
         return command;
     }
 
     private static void DisallowVersionIfPackageIdentityHasVersionValidator(OptionResult result)
     {
-        if (result.Parent.GetValue(CmdPackageArgument) is PackageIdentity identity && identity.HasVersion)
+        if (result.Parent?.GetValue(CmdPackageArgument).HasVersion == true)
         {
             result.AddError(CliCommandStrings.ValidationFailedDuplicateVersion);
         }

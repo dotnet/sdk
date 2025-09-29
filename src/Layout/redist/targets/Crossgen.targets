@@ -21,8 +21,7 @@
       <CreateCrossgenSymbols Condition="'$(CreateCrossgenSymbols)' == ''">true</CreateCrossgenSymbols>
       <!-- When ingesting stable pgo instrumented binaries, the shared framework will be a non-stable version,
            as will the archive file names themselves. -->
-      <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' != 'true' ">$(RedistInstallerLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>
-      <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' == 'true' ">$(RedistInstallerLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCorePlatformsPackageVersion)</SharedFrameworkNameVersionPath>
+      <SharedFrameworkNameVersionPath>$(RedistInstallerLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>
     </PropertyGroup>
 
     <!-- This PropertyGroup contains the paths to the various SDK tooling that should be
@@ -33,9 +32,11 @@
     <PropertyGroup>
       <DefaultToolTfm>net10.0</DefaultToolTfm>
 
+      <NetSdkAnalyzers>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk\analyzers\</NetSdkAnalyzers>
       <NetSdkTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk\tools\$(DefaultToolTfm)\</NetSdkTools>
       <BlazorWasmTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\$(DefaultToolTfm)\</BlazorWasmTools>
       <NuGetPackTools>$(InstallerOutputDirectory)Sdks\NuGet.Build.Tasks.Pack\CoreCLR\</NuGetPackTools>
+      <RazorSourceGenerators>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\source-generators\</RazorSourceGenerators>
       <RazorTasks>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tasks\$(DefaultToolTfm)\</RazorTasks>
       <WindowsDesktopTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\$(DefaultToolTfm)\</WindowsDesktopTools>
       <PublishTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Publish\tools\$(DefaultToolTfm)\</PublishTools>
@@ -70,9 +71,11 @@
       <RemainingFiles Remove="$(InstallerOutputDirectory)Containers\**\*" />
 
       <!-- Add back the .NET Core assemblies in the Sdks folder -->
+      <RemainingFiles Include="$(NetSdkAnalyzers)**\*" />
       <RemainingFiles Include="$(NetSdkTools)**\*" />
       <RemainingFiles Include="$(BlazorWasmTools)**\*" />
       <RemainingFiles Include="$(NuGetPackTools)**\*" />
+      <RemainingFiles Include="$(RazorSourceGenerators)**\*" />
       <RemainingFiles Include="$(RazorTasks)**\*" />
       <RemainingFiles Include="$(WindowsDesktopTools)**\*" />
       <RemainingFiles Include="$(PublishTools)**\*" />
@@ -80,6 +83,9 @@
       <RemainingFiles Include="$(ProjectSystemTools)**\*" />
       <RemainingFiles Include="$(WorkerTools)**\*" />
       <RemainingFiles Include="$(ContainerTasks)**\*" />
+
+      <!-- Don't crossgen VB since the usage doesn't justify the size cost for everyone -->
+      <RemainingFiles Remove="$(NetSdkAnalyzers)Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll" />
 
       <!-- Don't try to CrossGen .NET Framework support assemblies for .NET Standard -->
       <RemainingFiles Remove="$(InstallerOutputDirectory)Microsoft\Microsoft.NET.Build.Extensions\net*\**\*" />

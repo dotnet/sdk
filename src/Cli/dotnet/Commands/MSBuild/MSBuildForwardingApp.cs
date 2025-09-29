@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Diagnostics;
 using System.Reflection;
 using Microsoft.DotNet.Cli.Utils;
@@ -16,7 +14,7 @@ public class MSBuildForwardingApp : CommandBase
 
     private readonly MSBuildForwardingAppWithoutLogging _forwardingAppWithoutLogging;
 
-    private static IEnumerable<string> ConcatTelemetryLogger(IEnumerable<string> argsToForward)
+    private static MSBuildArgs ConcatTelemetryLogger(MSBuildArgs msbuildArgs)
     {
         if (Telemetry.Telemetry.CurrentSessionId != null)
         {
@@ -25,21 +23,30 @@ public class MSBuildForwardingApp : CommandBase
                 Type loggerType = typeof(MSBuildLogger);
                 Type forwardingLoggerType = typeof(MSBuildForwardingLogger);
 
-                return argsToForward
-                    .Concat([$"-distributedlogger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}*{forwardingLoggerType.FullName},{forwardingLoggerType.GetTypeInfo().Assembly.Location}"]);
+                msbuildArgs.OtherMSBuildArgs.Add($"-distributedlogger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}*{forwardingLoggerType.FullName},{forwardingLoggerType.GetTypeInfo().Assembly.Location}");
+                return msbuildArgs;
             }
             catch (Exception)
             {
                 // Exceptions during telemetry shouldn't cause anything else to fail
             }
         }
-        return argsToForward;
+        return msbuildArgs;
     }
 
-    public MSBuildForwardingApp(IEnumerable<string> argsToForward, string msbuildPath = null, bool includeLogo = false)
+    /// <summary>
+    /// Mostly intended for quick/one-shot usage - most 'core' SDK commands should do more hands-on parsing.
+    /// </summary>
+    public MSBuildForwardingApp(IEnumerable<string> rawMSBuildArgs, string? msbuildPath = null) : this(
+        MSBuildArgs.AnalyzeMSBuildArguments(rawMSBuildArgs.ToArray(), CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.VerbosityOption()),
+        msbuildPath)
+    {
+    }
+
+    public MSBuildForwardingApp(MSBuildArgs msBuildArgs, string? msbuildPath = null, bool includeLogo = false)
     {
         _forwardingAppWithoutLogging = new MSBuildForwardingAppWithoutLogging(
-            ConcatTelemetryLogger(argsToForward),
+            ConcatTelemetryLogger(msBuildArgs),
             msbuildPath: msbuildPath,
             includeLogo: includeLogo);
 
@@ -52,7 +59,7 @@ public class MSBuildForwardingApp : CommandBase
 
     public IEnumerable<string> MSBuildArguments { get { return _forwardingAppWithoutLogging.GetAllArguments(); } }
 
-    public void EnvironmentVariable(string name, string value)
+    public void EnvironmentVariable(string name, string? value)
     {
         _forwardingAppWithoutLogging.EnvironmentVariable(name, value);
     }

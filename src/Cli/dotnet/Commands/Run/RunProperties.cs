@@ -6,28 +6,44 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
-internal record RunProperties(string RunCommand, string? RunArguments, string? RunWorkingDirectory)
+internal sealed record RunProperties(
+    string Command,
+    string? Arguments,
+    string? WorkingDirectory,
+    string RuntimeIdentifier,
+    string DefaultAppHostRuntimeIdentifier,
+    string TargetFrameworkVersion)
 {
-    internal static RunProperties FromProjectAndApplicationArguments(ProjectInstance project, string[] applicationArgs, bool fallbackToTargetPath)
+    internal RunProperties(string command, string? arguments, string? workingDirectory)
+        : this(command, arguments, workingDirectory, string.Empty, string.Empty, string.Empty)
     {
-        string runProgram = project.GetPropertyValue("RunCommand");
-        if (fallbackToTargetPath &&
-            (string.IsNullOrEmpty(runProgram) || !File.Exists(runProgram)))
+    }
+
+    internal static RunProperties FromProject(ProjectInstance project)
+    {
+        var result = new RunProperties(
+            Command: project.GetPropertyValue("RunCommand"),
+            Arguments: project.GetPropertyValue("RunArguments"),
+            WorkingDirectory: project.GetPropertyValue("RunWorkingDirectory"),
+            RuntimeIdentifier: project.GetPropertyValue("RuntimeIdentifier"),
+            DefaultAppHostRuntimeIdentifier: project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"),
+            TargetFrameworkVersion: project.GetPropertyValue("TargetFrameworkVersion"));
+
+        if (string.IsNullOrEmpty(result.Command))
         {
-            // If we can't find the executable that runCommand is pointing to, we simply use TargetPath instead.
-            // In this case, we discard everything related to "Run" (i.e, RunWorkingDirectory and RunArguments) and use only TargetPath
-            runProgram = project.GetPropertyValue("TargetPath");
-            return new(runProgram, null, null);
+            RunCommand.ThrowUnableToRunError(project);
         }
 
-        string runArguments = project.GetPropertyValue("RunArguments");
-        string runWorkingDirectory = project.GetPropertyValue("RunWorkingDirectory");
+        return result;
+    }
 
+    internal RunProperties WithApplicationArguments(string[] applicationArgs)
+    {
         if (applicationArgs.Length != 0)
         {
-            runArguments += " " + ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(applicationArgs);
+            return this with { Arguments = Arguments + " " + ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(applicationArgs) };
         }
 
-        return new(runProgram, runArguments, runWorkingDirectory);
+        return this;
     }
 }

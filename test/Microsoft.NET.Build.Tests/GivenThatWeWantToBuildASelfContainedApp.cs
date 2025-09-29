@@ -15,7 +15,8 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        // Some netcoreapp2.0 Linux tests are no longer working on ubuntu 2404
+        [PlatformSpecificTheory(TestPlatforms.Windows | TestPlatforms.OSX)]
         [InlineData("netcoreapp1.1", false)]
         [InlineData("netcoreapp2.0", false)]
         [InlineData("netcoreapp3.0", true)]

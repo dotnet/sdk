@@ -16,9 +16,9 @@ internal static class ToolRestoreCommandParser
 
     public static readonly Option<string[]> AddSourceOption = ToolInstallCommandParser.AddSourceOption;
 
-    public static readonly Option<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption;
+    public static readonly Option<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption(CliCommandStrings.ToolRestoreManifestPathOptionDescription);
 
-    public static readonly Option<VerbosityOptions> VerbosityOption = ToolInstallCommandParser.VerbosityOption;
+    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = ToolInstallCommandParser.VerbosityOption;
 
     private static readonly Command Command = ConstructCommand();
 
@@ -33,7 +33,7 @@ internal static class ToolRestoreCommandParser
 
         command.Options.Add(ConfigOption);
         command.Options.Add(AddSourceOption);
-        command.Options.Add(ToolManifestOption.WithHelpDescription(command, CliCommandStrings.ToolRestoreManifestPathOptionDescription));
+        command.Options.Add(ToolManifestOption);
         command.Options.Add(ToolCommandRestorePassThroughOptions.DisableParallelOption);
         command.Options.Add(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
         command.Options.Add(ToolCommandRestorePassThroughOptions.NoCacheOption);
