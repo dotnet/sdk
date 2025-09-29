@@ -9,8 +9,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
     public class FakeTelemetry : ITelemetry
     {
-        public bool Enabled { get; set; }
-        
+        public bool Enabled { get; set; } = true;
+
         private readonly List<LogEntry> _logEntries = new List<LogEntry>();
 
         public void TrackEvent(string eventName, IDictionary<string, string> properties, IDictionary<string, double> measurements)
