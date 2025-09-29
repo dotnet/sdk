@@ -1164,12 +1164,12 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
       </trans-unit>
       <trans-unit id="DotnetTestCommandMTPDescription">
         <source>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</source>
-        <target state="new">.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</target>
+        <target state="translated">Microsoft.Testing.Platform용 .NET 테스트 명령입니다('global.json' 파일을 통해 옵트인). 이는 Microsoft.Testing.Platform만 지원하며 VSTest를 지원하지 않습니다. 자세한 내용은 https://aka.ms/dotnet-test를 참조하세요.</target>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestCommandVSTestDescription">
         <source>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</source>
-        <target state="new">.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</target>
+        <target state="translated">VSTest에 대한 .NET 테스트 명령입니다. Microsoft.Testing.Platform을 사용하려면 global.json을 통해 Microsoft.Testing.Platform 기반 명령을 옵트인합니다. 자세한 내용은 https://aka.ms/dotnet-test를 참조하세요.</target>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
@@ -1238,12 +1238,12 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="DurationColon">
         <source>duration:</source>
-        <target state="new">duration:</target>
+        <target state="translated">기간:</target>
         <note />
       </trans-unit>
       <trans-unit id="ErrorColon">
         <source>error:</source>
-        <target state="new">error:</target>
+        <target state="translated">오류:</target>
         <note />
       </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
@@ -1298,7 +1298,7 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="FailedColon">
         <source>failed:</source>
-        <target state="new">failed:</target>
+        <target state="translated">실패:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -2694,7 +2694,7 @@ The default is to publish a framework-dependent application.</source>
       </trans-unit>
       <trans-unit id="Retried">
         <source>retried</source>
-        <target state="new">retried</target>
+        <target state="translated">다시 시도됨</target>
         <note />
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
@@ -2978,7 +2978,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="SkippedColon">
         <source>skipped:</source>
-        <target state="new">skipped:</target>
+        <target state="translated">건너뜀:</target>
         <note />
       </trans-unit>
       <trans-unit id="SkippedLowercase">
@@ -3118,7 +3118,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="SucceededColon">
         <source>succeeded:</source>
-        <target state="new">succeeded:</target>
+        <target state="translated">성공:</target>
         <note />
       </trans-unit>
       <trans-unit id="Summary">
@@ -3584,7 +3584,7 @@ and the corresponding package Ids for installed tools using the command
       </trans-unit>
       <trans-unit id="TotalColon">
         <source>total:</source>
-        <target state="new">total:</target>
+        <target state="translated">합계:</target>
         <note />
       </trans-unit>
       <trans-unit id="Try">
