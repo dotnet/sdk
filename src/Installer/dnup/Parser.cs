@@ -7,6 +7,8 @@ using System.CommandLine;
 using System.CommandLine.Completions;
 using System.Text;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Update;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper
 {
@@ -34,6 +36,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
         private static RootCommand ConfigureCommandLine(RootCommand rootCommand)
         {
             rootCommand.Subcommands.Add(SdkCommandParser.GetCommand());
+            rootCommand.Subcommands.Add(SdkInstallCommandParser.GetRootInstallCommand());
+            rootCommand.Subcommands.Add(SdkUpdateCommandParser.GetRootUpdateCommand());
 
             return rootCommand;
         }

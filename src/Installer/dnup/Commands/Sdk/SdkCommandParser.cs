@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.Text;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Update;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk
 {
@@ -20,10 +21,9 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk
 
         private static Command ConstructCommand()
         {
-            Command command = new("sdk");
-            //command.Subcommands.Add(SdkCheckCommandParser.GetCommand());
+            Command command = new("sdk", "Manage sdk installations");
             command.Subcommands.Add(SdkInstallCommandParser.GetSdkInstallCommand());
-            //command.Subcommands.Add(SdkUpdateCommandParser.GetSdkUpdateCommand());
+            command.Subcommands.Add(SdkUpdateCommandParser.GetSdkUpdateCommand());
 
             //command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
