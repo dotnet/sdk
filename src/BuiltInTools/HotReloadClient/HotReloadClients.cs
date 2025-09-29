@@ -1,16 +1,24 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
-using Microsoft.Build.Graph;
-using Microsoft.DotNet.Watch;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, string name)> clients, BrowserRefreshServer? browserRefreshServer) : IDisposable
+internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, string name)> clients, AbstractBrowserRefreshServer? browserRefreshServer) : IDisposable
 {
-    public HotReloadClients(HotReloadClient client, BrowserRefreshServer? browserRefreshServer)
+    public HotReloadClients(HotReloadClient client, AbstractBrowserRefreshServer? browserRefreshServer)
         : this([(client, "")], browserRefreshServer)
     {
     }
@@ -23,7 +31,7 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
         }
     }
 
-    public BrowserRefreshServer? BrowserRefreshServer
+    public AbstractBrowserRefreshServer? BrowserRefreshServer
         => browserRefreshServer;
 
     /// <summary>
@@ -158,9 +166,14 @@ internal sealed class HotReloadClients(ImmutableArray<(HotReloadClient client, s
                 ImmutableArray<byte> content;
                 try
                 {
-                    content = ImmutableCollectionsMarshal.AsImmutableArray(await File.ReadAllBytesAsync(filePath, cancellationToken));
+#if NET
+                    var blob = await File.ReadAllBytesAsync(filePath, cancellationToken);
+#else
+                    var blob = File.ReadAllBytes(filePath);
+#endif
+                    content = ImmutableCollectionsMarshal.AsImmutableArray(blob);
                 }
-                catch (Exception e)
+                catch (Exception e) when (e is not OperationCanceledException)
                 {
                     ClientLogger.LogError("Failed to read file {FilePath}: {Message}", filePath, e.Message);
                     continue;

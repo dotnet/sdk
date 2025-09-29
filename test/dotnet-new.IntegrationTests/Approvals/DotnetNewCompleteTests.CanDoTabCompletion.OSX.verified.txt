@@ -34,7 +34,14 @@ webapi
 webapiaot
 webapp
 webconfig
+winforms
+winformscontrollib
+winformslib
 worker
+wpf
+wpfcustomcontrollib
+wpflib
+wpfusercontrollib
 xunit
 --diagnostics
 --dry-run

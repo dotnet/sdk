@@ -18,10 +18,12 @@ internal class TelemetryCommonProperties(
     Func<string> getDeviceId = null,
     IDockerContainerDetector dockerContainerDetector = null,
     IUserLevelCacheWriter userLevelCacheWriter = null,
-    ICIEnvironmentDetector ciEnvironmentDetector = null)
+    ICIEnvironmentDetector ciEnvironmentDetector = null,
+    ILLMEnvironmentDetector llmEnvironmentDetector = null)
 {
     private readonly IDockerContainerDetector _dockerContainerDetector = dockerContainerDetector ?? new DockerContainerDetectorForTelemetry();
     private readonly ICIEnvironmentDetector _ciEnvironmentDetector = ciEnvironmentDetector ?? new CIEnvironmentDetectorForTelemetry();
+    private readonly ILLMEnvironmentDetector _llmEnvironmentDetector = llmEnvironmentDetector ?? new LLMEnvironmentDetectorForTelemetry();
     private readonly Func<string> _getCurrentDirectory = getCurrentDirectory ?? Directory.GetCurrentDirectory;
     private readonly Func<string, string> _hasher = hasher ?? Sha256Hasher.Hash;
     private readonly Func<string> _getMACAddress = getMACAddress ?? MacAddressGetter.GetMacAddress;
@@ -47,6 +49,7 @@ internal class TelemetryCommonProperties(
     private const string SessionId = "SessionId";
 
     private const string CI = "Continuous Integration";
+    private const string LLM = "llm";
 
     private const string TelemetryProfileEnvironmentVariable = "DOTNET_CLI_TELEMETRY_PROFILE";
     private const string CannotFindMacAddress = "Unknown";
@@ -67,6 +70,7 @@ internal class TelemetryCommonProperties(
             {TelemetryProfile, Environment.GetEnvironmentVariable(TelemetryProfileEnvironmentVariable)},
             {DockerContainer, _userLevelCacheWriter.RunWithCache(IsDockerContainerCacheKey, () => _dockerContainerDetector.IsDockerContainer().ToString("G") )},
             {CI, _ciEnvironmentDetector.IsCIEnvironment().ToString() },
+            {LLM, _llmEnvironmentDetector.GetLLMEnvironment() },
             {CurrentPathHash, _hasher(_getCurrentDirectory())},
             {MachineIdOld, _userLevelCacheWriter.RunWithCache(MachineIdCacheKey, GetMachineId)},
             // we don't want to recalcuate a new id for every new SDK version. Reuse the same path across versions.

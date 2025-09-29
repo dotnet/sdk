@@ -269,7 +269,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     OperationKind.ArrayCreation,
                     OperationKind.CatchClause,
                     OperationKind.TypeOf,
-                    OperationKind.EventAssignment
+                    OperationKind.EventAssignment,
+                    OperationKind.Await
                     );
 
                 // Handle preview symbol definitions
@@ -809,7 +810,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return false;
         }
 
-        private static ISymbol? GetOperationSymbol(IOperation operation)
+        private ISymbol? GetOperationSymbol(IOperation operation)
             => operation switch
             {
                 IInvocationOperation iOperation => iOperation.TargetMethod,
@@ -824,6 +825,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 ICatchClauseOperation catchClauseOperation => catchClauseOperation.ExceptionType,
                 ITypeOfOperation typeOfOperation => typeOfOperation.TypeOperand,
                 IEventAssignmentOperation eventAssignment => GetOperationSymbol(eventAssignment.EventReference),
+                IAwaitOperation awaitOperation => SymbolFromAwaitOperation(awaitOperation),
                 _ => null,
             };
 
@@ -837,6 +839,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             return ret;
         }
+
+        protected abstract ISymbol? SymbolFromAwaitOperation(IAwaitOperation operation);
 
         private bool TypeParametersHavePreviewAttribute(ISymbol namedTypeSymbolOrMethodSymbol,
                                                         ImmutableArray<ITypeParameterSymbol> typeParameters,

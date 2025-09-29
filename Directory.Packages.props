@@ -5,10 +5,11 @@
     <NoWarn>$(NoWarn);NU1507</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Basic.CompilerLog.Util" Version="0.9.9" />
+    <PackageVersion Include="Basic.CompilerLog.Util" Version="0.9.18" />
     <PackageVersion Include="AwesomeAssertions" Version="$(AwesomeAssertionsVersion)" />
     <PackageVersion Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
     <PackageVersion Include="AwesomeAssertions.Json" Version="$(AwesomeAssertionsJsonVersion)" />
+    <PackageVersion Include="MessagePack" Version="3.1.4" />
     <PackageVersion Include="MicroBuild.Plugins.SwixBuild.Dotnet" Version="1.1.87-gba258badda" />
     <PackageVersion Include="Microsoft.ApplicationInsights" Version="$(MicrosoftApplicationInsightsPackageVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="$(MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion)" />
@@ -93,7 +94,7 @@
     <PackageVersion Include="Microsoft.WixToolset.Heat" Version="$(MicrosoftWixToolsetSdkVersion)" />
     <PackageVersion Include="Microsoft.WixToolset.Util.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" />
     <PackageVersion Include="Microsoft.WixToolset.UI.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" />
-    <PackageVersion Include="MSBuild.StructuredLogger" Version="2.2.386" />
+    <PackageVersion Include="MSBuild.StructuredLogger" Version="2.3.45" />
     <PackageVersion Include="Moq" Version="$(MoqPackageVersion)" />
     <PackageVersion Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" />
     <PackageVersion Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
@@ -101,6 +102,7 @@
     <PackageVersion Include="NuGet.Build.Tasks.Console" Version="$(NuGetBuildTasksConsolePackageVersion)" />
     <PackageVersion Include="NuGet.Build.Tasks.Pack" Version="$(NuGetConfigurationPackageVersion)" />
     <PackageVersion Include="NuGet.CommandLine.XPlat" Version="$(NuGetCommandLineXPlatPackageVersion)" />
+    <PackageVersion Include="NuGet.Commands" Version="$(NuGetCommandsPackageVersion)" />
     <PackageVersion Include="NuGet.Common" Version="$(NuGetCommonPackageVersion)" />
     <PackageVersion Include="NuGet.Configuration" Version="$(NuGetConfigurationPackageVersion)" />
     <PackageVersion Include="NuGet.Frameworks" Version="$(NuGetBuildTasksPackageVersion)" />

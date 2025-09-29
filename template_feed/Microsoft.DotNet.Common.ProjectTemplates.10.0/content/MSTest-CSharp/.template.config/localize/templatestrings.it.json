@@ -52,7 +52,7 @@
   "symbols/Fixture/choices/TestCleanup/description": "Metodo fixture TestCleanup",
   "postActions/restoreNugetPackages/description": "Ripristina i pacchetti NuGet richiesti da questo progetto.",
   "postActions/restoreNugetPackages/manualInstructions/default/text": "Esegui 'dotnet restore'",
-  "postActions/addJsonProperty/description": "Create or update 'global.json' file required by Microsoft.Testing.Platform.",
-  "postActions/addJsonProperty/manualInstructions/default/text": "Manually update or create 'global.json' file setting the test runner to Microsoft.Testing.Platform",
+  "postActions/addJsonProperty/description": "Creare o aggiornare il file 'global.json' richiesto da Microsoft.Testing.Platform.",
+  "postActions/addJsonProperty/manualInstructions/default/text": "Aggiornare o creare manualmente il file 'global.json' impostando il test runner su Microsoft.Testing.Platform",
   "postActions/openInEditor/description": "Apre Test1.cs nell'editor"
 }

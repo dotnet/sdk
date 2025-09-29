@@ -43,6 +43,10 @@ internal static class ProjectGraphUtilities
         }
         catch (Exception e) when (e is not OperationCanceledException)
         {
+            // ProejctGraph aggregates OperationCanceledException exception,
+            // throw here to propagate the cancellation.
+            cancellationToken.ThrowIfCancellationRequested();
+
             logger.LogDebug("Failed to load project graph.");
 
             if (e is AggregateException { InnerExceptions: var innerExceptions })

@@ -32,14 +32,20 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void AssertOutputContains(string message)
             => AssertEx.ContainsSubstring(message, Process.Output);
 
-        public void AssertOutputDoesNotContain(string message)
-            => Assert.DoesNotContain(Process.Output, line => line.Contains(message));
-
         public void AssertOutputContains(Regex pattern)
             => AssertEx.ContainsPattern(pattern, Process.Output);
 
         public void AssertOutputContains(MessageDescriptor descriptor, string projectDisplay = null)
             => AssertOutputContains(GetPattern(descriptor, projectDisplay));
+
+        public void AssertOutputDoesNotContain(string message)
+            => AssertEx.DoesNotContainSubstring(message, Process.Output);
+
+        public void AssertOutputDoesNotContain(Regex pattern)
+            => AssertEx.DoesNotContainPattern(pattern, Process.Output);
+
+        public void AssertOutputDoesNotContain(MessageDescriptor descriptor, string projectDisplay = null)
+            => AssertOutputDoesNotContain(GetPattern(descriptor, projectDisplay));
 
         private static Regex GetPattern(MessageDescriptor descriptor, string projectDisplay = null)
             => new Regex(Regex.Replace(Regex.Escape((projectDisplay != null ? $"[{projectDisplay}] " : "") + descriptor.Format), @"\\\{[0-9]+\}", ".*"));
@@ -202,6 +208,23 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Process.Process.StandardInput.Write(c);
             Process.Process.StandardInput.Flush();
+        }
+
+        public void UseTestBrowser()
+        {
+            var path = GetTestBrowserPath();
+            EnvironmentVariables.Add("DOTNET_WATCH_BROWSER_PATH", path);
+
+            if (!OperatingSystem.IsWindows())
+            {
+                File.SetUnixFileMode(path, UnixFileMode.UserExecute);
+            }
+        }
+
+        public static string GetTestBrowserPath()
+        {
+            var exeExtension = OperatingSystem.IsWindows() ? ".exe" : string.Empty;
+            return Path.Combine(Path.GetDirectoryName(typeof(WatchableApp).Assembly.Location!)!, "test-browser", "dotnet-watch-test-browser" + exeExtension);
         }
     }
 }

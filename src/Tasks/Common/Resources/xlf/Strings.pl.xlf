@@ -212,6 +212,11 @@
         <target state="translated">NETSDK1125: Publikowanie do pojedynczego pliku jest obsługiwane tylko w przypadku elementu docelowego netcoreapp.</target>
         <note>{StrBegins="NETSDK1125: "}</note>
       </trans-unit>
+      <trans-unit id="CantSpecifyBothProperties">
+        <source>NETSDK1230: The {0} and {1} properties cannot both be specified. Remove one or the other.</source>
+        <target state="translated">NETSDK1230: nie można jednocześnie określić właściwości {0} i {1}. Usuń jedną lub drugą.</target>
+        <note>{StrBegins="NETSDK1230: "}</note>
+      </trans-unit>
       <trans-unit id="ChoosingAssemblyVersion_Info">
         <source>Choosing '{0}' because AssemblyVersion '{1}' is greater than '{2}'.</source>
         <target state="translated">Zostanie wybrany element „{0}”, ponieważ wartość atrybutu AssemblyVersion „{1}” jest większa niż „{2}”.</target>
@@ -856,6 +861,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1103: Ustawienie RollForward jest obsługiwane tylko w programie .NET Core 3.0 lub nowszym.</target>
         <note>{StrBegins="NETSDK1103: "}</note>
       </trans-unit>
+      <trans-unit id="RuntimeGraphFileDoesNotExist">
+        <source>NETSDK1231: File '{0}' does not exist. Please ensure the runtime graph path exists.</source>
+        <target state="translated">NETSDK1231: plik „{0}” nie istnieje. Upewnij się, że ścieżka grafu środowiska uruchomieniowego istnieje.</target>
+        <note>{StrBegins="NETSDK1231: "}{Locked="{0}"}</note>
+      </trans-unit>
       <trans-unit id="RuntimeIdentifierNotRecognized">
         <source>NETSDK1083: The specified RuntimeIdentifier '{0}' is not recognized. See https://aka.ms/netsdk1083 for more information.</source>
         <target state="translated">NETSDK1083: określony element RuntimeIdentifier „{0}” nie został rozpoznany. Aby uzyskać więcej informacji, zobacz https://aka.ms/netsdk1083.</target>
@@ -953,6 +963,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1172: podana biblioteka typów "{0}" nie istnieje.</target>
         <note>{StrBegins="NETSDK1172: "}</note>
       </trans-unit>
+      <trans-unit id="UnableToFindMatchingRid">
+        <source>NETSDK1232: Unable to find a matching RID for '{0}' from among [{1}] in graph '{2}'.</source>
+        <target state="translated">NETSDK1232: Nie można odnaleźć zgodnego identyfikatora RID dla elementu „{0}” spośród [{1}] na wykresie „{2}”.</target>
+        <note>{StrBegins="NETSDK1232: "}{Locked="{0}"}{Locked="{1}"}{Locked="{2}"}</note>
+      </trans-unit>
       <trans-unit id="UnableToFindResolvedPath">
         <source>NETSDK1016: Unable to find resolved path for '{0}'.</source>
         <target state="translated">NETSDK1016: Nie można odnaleźć rozpoznanej ścieżki dla elementu „{0}”.</target>
@@ -1042,6 +1057,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1107: Microsoft.NET.Sdk.WindowsDesktop is required to build Windows desktop applications. 'UseWpf' and 'UseWindowsForms' are not supported by the current SDK.</source>
         <target state="translated">NETSDK1107: Do kompilowania aplikacji klasycznych systemu Windows konieczny jest zestaw Microsoft.NET.Sdk.WindowsDesktop. Właściwości „UseWpf” i „UseWindowsForms” nie są obsługiwane przez bieżący zestaw SDK.</target>
         <note>{StrBegins="NETSDK1107: "}</note>
+      </trans-unit>
+      <trans-unit id="UsingPreviewCsWinRT3_0Feature">
+        <source>NETSDK1229: Targeting a Windows SDK version with '1' as the revision number will reference CsWinRT 3.0, which is currently in preview. The current project is targeting the Windows SDK version '{0}'. If this is not intended, change the revision number to '0' to use CsWinRT 2.x instead.</source>
+        <target state="translated">NETSDK1229: określanie wersji zestawu Windows SDK z numerem poprawki „1” będzie odwoływać się do wersji CsWinRT 3.0, która jest obecnie dostępna w wersji zapoznawczej. Bieżący projekt jest przeznaczony dla zestawu Windows SDK w wersji „{0}”. Jeśli nie jest to zamierzone, zmień numer poprawki na „0”, aby zamiast tego użyć csWinRT 2.x.</target>
+        <note>{StrBegins="NETSDK1229: "}</note>
       </trans-unit>
       <trans-unit id="UsingPreviewSdk">
         <source>NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy</source>
