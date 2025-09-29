@@ -149,7 +149,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <TFTelemetry Include="ArtifactsPathLocationType" Value="$(_ArtifactsPathLocationType)" />
       <TFTelemetry Include="TargetPlatformIdentifier" Value="$(TargetPlatformIdentifier)" />
       <TFTelemetry Include="UseMonoRuntime" Value="$(UseMonoRuntime)" />
-      <TFTelemetry Incluse="RunAOTCompilation" Value="$(RunAOTCompilation)" />
+      <TFTelemetry Include="RunAOTCompilation" Value="$(RunAOTCompilation)" />
       <TFTelemetry Include="PublishAot" Value="$(PublishAot)" />
       <TFTelemetry Include="PublishTrimmed" Value="$(PublishTrimmed)" />
       <TFTelemetry Include="PublishSelfContained" Value="$(PublishSelfContained)" />
