@@ -3146,6 +3146,16 @@ Ele tem diversas estruturas como destino. Especifique que estrutura executar usa
         <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestCmdProjectDescription">
+        <source>Defines the path of the project file to test (folder name or full path). If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project file to test (folder name or full path). If not specified, it defaults to the current directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCmdSolutionDescription">
+        <source>Defines the path of the solution file to test (folder name or full path). If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the solution file to test (folder name or full path). If not specified, it defaults to the current directory.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TestCommandUseDirectoryWithSwitch">
         <source>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</source>
         <target state="translated">Especificar um diretório para "dotnet test" deve ser por meio de "--project" ou "--solution".</target>

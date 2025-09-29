@@ -599,6 +599,12 @@ If not specified the file will be generated inside the default 'TestResults' dir
   <data name="CmdSolutionPathName" xml:space="preserve">
     <value>SOLUTION_PATH</value>
   </data>
+  <data name="TestCmdProjectDescription" xml:space="preserve">
+    <value>Defines the path of the project file to test (folder name or full path). If not specified, it defaults to the current directory.</value>
+  </data>
+  <data name="TestCmdSolutionDescription" xml:space="preserve">
+    <value>Defines the path of the solution file to test (folder name or full path). If not specified, it defaults to the current directory.</value>
+  </data>
   <data name="CmdSourceOption" xml:space="preserve">
     <value>SOURCE</value>
   </data>

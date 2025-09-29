@@ -9,14 +9,14 @@ internal static class MicrosoftTestingPlatformOptions
 {
     public static readonly Option<string> ProjectOption = new("--project")
     {
-        Description = CliCommandStrings.CmdProjectDescription,
+        Description = CliCommandStrings.TestCmdProjectDescription,
         HelpName = CliCommandStrings.CmdProjectPathName,
         Arity = ArgumentArity.ExactlyOne
     };
 
     public static readonly Option<string> SolutionOption = new("--solution")
     {
-        Description = CliCommandStrings.CmdSolutionDescription,
+        Description = CliCommandStrings.TestCmdSolutionDescription,
         HelpName = CliCommandStrings.CmdSolutionPathName,
         Arity = ArgumentArity.ExactlyOne
     };
