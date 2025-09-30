@@ -560,7 +560,7 @@ public class RunCommand
                 loggersForBuild.Add(binaryLogger);
             }
 
-            if (!project.Build([Constants.ComputeRunArguments], loggers: loggersForBuild, remoteLoggers: null, out _))
+            if (!project.BuildWithTelemetry([Constants.ComputeRunArguments], loggersForBuild, null, out _))
             {
                 throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, Constants.ComputeRunArguments);
             }

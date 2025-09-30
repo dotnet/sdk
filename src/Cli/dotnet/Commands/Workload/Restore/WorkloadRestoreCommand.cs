@@ -60,7 +60,7 @@ internal class WorkloadRestoreCommand(
         });
 
         workloadInstaller.Shutdown();
-        
+
         return 0;
     }
 
@@ -82,7 +82,7 @@ internal class WorkloadRestoreCommand(
                 continue;
             }
 
-            bool buildResult = project.Build([GetRequiredWorkloadsTargetName],
+            bool buildResult = project.BuildWithTelemetry([GetRequiredWorkloadsTargetName],
                 loggers: [
                     new ConsoleLogger(Verbosity.ToLoggerVerbosity())
                 ],
