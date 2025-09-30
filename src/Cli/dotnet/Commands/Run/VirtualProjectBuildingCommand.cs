@@ -353,7 +353,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     Debug.Assert(buildRequest.ProjectInstance != null);
 
                     // Cache run info (to avoid re-evaluating the project instance).
-                    cache.CurrentEntry.Run = RunProperties.FromProject(buildRequest.ProjectInstance);
+                    cache.CurrentEntry.Run = RunProperties.TryFromProject(buildRequest.ProjectInstance, out var runProperties)
+                        ? runProperties
+                        : null;
 
                     TryCacheCscArguments(cache, buildResult, buildRequest.ProjectInstance);
 
@@ -897,7 +899,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     {
         if (!NeedsToBuild(out cache))
         {
-            Reporter.Verbose.WriteLine("No need to build, the output is up to date.");
+            Reporter.Verbose.WriteLine("No need to build, the output is up to date. Cache: " + ArtifactsPath);
             return BuildLevel.None;
         }
 

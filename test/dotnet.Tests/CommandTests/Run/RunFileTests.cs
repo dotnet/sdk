@@ -1484,6 +1484,34 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     [Fact]
+    public void Build_Library()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "lib.cs");
+        File.WriteAllText(programFile, """
+            #:property OutputType=Library
+            class C;
+            """);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "lib.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "lib.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErr(string.Format(CliCommandStrings.RunCommandExceptionUnableToRun,
+                Path.ChangeExtension(programFile, ".csproj"),
+                ToolsetInfo.CurrentTargetFrameworkVersion,
+                "Library"));
+    }
+
+    [Fact]
     public void Publish()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();

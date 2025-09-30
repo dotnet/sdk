@@ -19,9 +19,9 @@ internal sealed record RunProperties(
     {
     }
 
-    internal static RunProperties FromProject(ProjectInstance project)
+    internal static bool TryFromProject(ProjectInstance project, out RunProperties result)
     {
-        var result = new RunProperties(
+        result = new RunProperties(
             Command: project.GetPropertyValue("RunCommand"),
             Arguments: project.GetPropertyValue("RunArguments"),
             WorkingDirectory: project.GetPropertyValue("RunWorkingDirectory"),
@@ -29,7 +29,12 @@ internal sealed record RunProperties(
             DefaultAppHostRuntimeIdentifier: project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"),
             TargetFrameworkVersion: project.GetPropertyValue("TargetFrameworkVersion"));
 
-        if (string.IsNullOrEmpty(result.Command))
+        return !string.IsNullOrEmpty(result.Command);
+    }
+
+    internal static RunProperties FromProject(ProjectInstance project)
+    {
+        if (!TryFromProject(project, out var result))
         {
             RunCommand.ThrowUnableToRunError(project);
         }
