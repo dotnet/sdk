@@ -14,6 +14,11 @@ public class MSBuildForwardingApp : CommandBase
 
     private readonly MSBuildForwardingAppWithoutLogging _forwardingAppWithoutLogging;
 
+    /// <summary>
+    /// Adds the CLI's telemetry logger to the MSBuild arguments if telemetry is enabled.
+    /// </summary>
+    /// <param name="msbuildArgs"></param>
+    /// <returns></returns>
     private static MSBuildArgs ConcatTelemetryLogger(MSBuildArgs msbuildArgs)
     {
         if (Telemetry.Telemetry.CurrentSessionId != null)
@@ -35,6 +40,28 @@ public class MSBuildForwardingApp : CommandBase
     }
 
     /// <summary>
+    /// Adjusts MSBuild loggers to be more suitable for LLM/agentic environments, if such an environment is detected.
+    /// </summary>
+    /// <param name="msbuildArgs"></param>
+    /// <returns></returns>
+    private static MSBuildArgs AdjustLoggerForLLMs(MSBuildArgs msbuildArgs)
+    {
+        if (new Telemetry.LLMEnvironmentDetectorForTelemetry().GetLLMEnvironment() is string _)
+        {
+            try
+            {
+                // introduced in https://github.com/dotnet/msbuild/pull/12581, disables live-updating node display, which wastes tokens
+                msbuildArgs.OtherMSBuildArgs.Add("-tlp:DISABLENODEDISPLAY");
+                return msbuildArgs;
+            }
+            catch (Exception)
+            {
+            }
+        }
+        return msbuildArgs;
+    }
+
+    /// <summary>
     /// Mostly intended for quick/one-shot usage - most 'core' SDK commands should do more hands-on parsing.
     /// </summary>
     public MSBuildForwardingApp(IEnumerable<string> rawMSBuildArgs, string? msbuildPath = null) : this(
@@ -45,8 +72,9 @@ public class MSBuildForwardingApp : CommandBase
 
     public MSBuildForwardingApp(MSBuildArgs msBuildArgs, string? msbuildPath = null, bool includeLogo = false)
     {
+        var modifiedMSBuildArgs = AdjustLoggerForLLMs(ConcatTelemetryLogger(msBuildArgs));
         _forwardingAppWithoutLogging = new MSBuildForwardingAppWithoutLogging(
-            ConcatTelemetryLogger(msBuildArgs),
+            modifiedMSBuildArgs,
             msbuildPath: msbuildPath,
             includeLogo: includeLogo);
 
