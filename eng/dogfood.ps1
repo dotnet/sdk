@@ -35,7 +35,7 @@ if ($help -or (($command -ne $null) -and ($command.Contains("/help") -or $comman
 
 try {
   $toolsetBuildProj = InitializeToolset
-  . $PSScriptroot\restore-toolset.ps1
+  . $PSScriptRoot\restore-toolset.ps1
 
   $env:SDK_REPO_ROOT = $RepoRoot
 
@@ -62,7 +62,7 @@ try {
     $Host.UI.RawUI.WindowTitle = "SDK Test ($RepoRoot) ($configuration)"
     & $command[0] $command[1..($command.Length-1)]
   }
-  Set-Location $env:USERPROFILE
+  Set-Location "$PSScriptRoot\..\artifacts\tmp\Debug\testing"
 }
 catch {
   Write-Host $_
