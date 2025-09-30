@@ -85,13 +85,18 @@ public static class ProjectInstanceExtensions
         {
             try
             {
-                var forwardingLogger = new MSBuildForwardingLogger();
-                var loggerRecord = new ForwardingLoggerRecord(forwardingLogger, new Microsoft.Build.Logging.LoggerDescription(
-                    loggerClassName: typeof(MSBuildLogger).FullName!,
-                    loggerAssemblyName: typeof(MSBuildLogger).Assembly.Location,
+                // The central logger instance for the main process
+                var centralLogger = new MSBuildLogger();
+
+                // LoggerDescription describes the forwarding logger that worker nodes will create
+                var forwardingLoggerDescription = new Microsoft.Build.Logging.LoggerDescription(
+                    loggerClassName: typeof(MSBuildForwardingLogger).FullName!,
+                    loggerAssemblyName: typeof(MSBuildForwardingLogger).Assembly.Location,
                     loggerAssemblyFile: null,
                     loggerSwitchParameters: null,
-                    verbosity: LoggerVerbosity.Normal));
+                    verbosity: LoggerVerbosity.Normal);
+
+                var loggerRecord = new ForwardingLoggerRecord(centralLogger, forwardingLoggerDescription);
                 return [loggerRecord];
             }
             catch (Exception)
@@ -114,15 +119,9 @@ public static class ProjectInstanceExtensions
         var loggers = new List<ILogger>();
         var forwardingLoggers = new List<ForwardingLoggerRecord>();
 
-        // Add central telemetry logger
-        var telemetryCentralLogger = CreateTelemetryCentralLogger();
-        if (telemetryCentralLogger != null)
-        {
-            loggers.Add(telemetryCentralLogger);
-
-            // Add forwarding logger for distributed builds
-            forwardingLoggers.AddRange(CreateTelemetryForwardingLoggerRecords());
-        }
+        // Add telemetry as a distributed logger via ForwardingLoggerRecord
+        // The central logger is embedded in the ForwardingLoggerRecord
+        forwardingLoggers.AddRange(CreateTelemetryForwardingLoggerRecords());
 
         if (additionalLoggers != null)
         {
@@ -150,15 +149,9 @@ public static class ProjectInstanceExtensions
         var allLoggers = new List<ILogger>();
         var forwardingLoggers = new List<ForwardingLoggerRecord>();
 
-        // Add central telemetry logger
-        var telemetryCentralLogger = CreateTelemetryCentralLogger();
-        if (telemetryCentralLogger != null)
-        {
-            allLoggers.Add(telemetryCentralLogger);
-
-            // Add forwarding logger for distributed builds
-            forwardingLoggers.AddRange(CreateTelemetryForwardingLoggerRecords());
-        }
+        // Add telemetry as a distributed logger via ForwardingLoggerRecord
+        // The central logger is embedded in the ForwardingLoggerRecord
+        forwardingLoggers.AddRange(CreateTelemetryForwardingLoggerRecords());
 
         if (loggers != null)
         {
@@ -187,15 +180,9 @@ public static class ProjectInstanceExtensions
         var allLoggers = new List<ILogger>();
         var allForwardingLoggers = new List<ForwardingLoggerRecord>();
 
-        // Add central telemetry logger
-        var telemetryCentralLogger = CreateTelemetryCentralLogger();
-        if (telemetryCentralLogger != null)
-        {
-            allLoggers.Add(telemetryCentralLogger);
-
-            // Add forwarding logger for distributed builds
-            allForwardingLoggers.AddRange(CreateTelemetryForwardingLoggerRecords());
-        }
+        // Add telemetry as a distributed logger via ForwardingLoggerRecord
+        // The central logger is embedded in the ForwardingLoggerRecord
+        allForwardingLoggers.AddRange(CreateTelemetryForwardingLoggerRecords());
 
         if (loggers != null)
         {
