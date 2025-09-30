@@ -67,7 +67,9 @@ internal static class MSBuildUtility
 
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
 
-        using var collection = new ProjectCollection(globalProperties, loggers: logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+        // Include telemetry logger for evaluation
+        var loggers = ProjectInstanceExtensions.CreateLoggersWithTelemetry(logger is null ? null : [logger]);
+        using var collection = new ProjectCollection(globalProperties: globalProperties, loggers: loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
         ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions);
         logger?.ReallyShutdown();
@@ -89,7 +91,9 @@ internal static class MSBuildUtility
 
         var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.VerbosityOption(), CommonOptions.NoLogoOption());
 
-        using var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs), logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+        // Include telemetry logger for evaluation
+        var loggers = ProjectInstanceExtensions.CreateLoggersWithTelemetry(logger is null ? null : [logger]);
+        using var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs), loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
         IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, evaluationContext, buildOptions, configuration: null, platform: null);
         logger?.ReallyShutdown();

@@ -484,7 +484,9 @@ public class RunCommand
 
             var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
 
-            var collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+            // Include telemetry logger for evaluation
+            var loggers = ProjectInstanceExtensions.CreateLoggersWithTelemetry(binaryLogger is null ? null : [binaryLogger]);
+            var collection = new ProjectCollection(globalProperties: globalProperties, loggers: loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
 
             if (projectFilePath is not null)
             {
