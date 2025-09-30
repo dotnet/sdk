@@ -37,7 +37,9 @@ internal static class MSBuildUtility
 
         var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.VerbosityOption());
 
-        using var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs), loggers: logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+        // Include telemetry logger for evaluation
+        var loggers = ProjectInstanceExtensions.CreateLoggersWithTelemetry(logger is null ? null : [logger]);
+        using var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs), loggers: loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
         ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = GetProjectsProperties(collection, evaluationContext, solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions);
         logger?.ReallyShutdown();
@@ -59,7 +61,9 @@ internal static class MSBuildUtility
 
         var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.VerbosityOption());
 
-        using var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs), logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+        // Include telemetry logger for evaluation
+        var loggers = ProjectInstanceExtensions.CreateLoggersWithTelemetry(logger is null ? null : [logger]);
+        using var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs), loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
         IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, evaluationContext, buildOptions);
         logger?.ReallyShutdown();

@@ -12,18 +12,18 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests;
 public class GivenProjectInstanceExtensions
 {
     [Fact]
-    public void CreateTelemetryLoggers_WhenTelemetryDisabled_ReturnsNull()
+    public void CreateTelemetryCentralLogger_WhenTelemetryDisabled_ReturnsNull()
     {
         // Ensure telemetry is disabled
         Telemetry.Telemetry.CurrentSessionId = null;
 
-        var loggers = ProjectInstanceExtensions.CreateTelemetryLoggers();
+        var logger = ProjectInstanceExtensions.CreateTelemetryCentralLogger();
 
-        loggers.Should().BeNull();
+        logger.Should().BeNull();
     }
 
     [Fact]
-    public void CreateTelemetryLoggers_WhenTelemetryEnabled_ReturnsLoggers()
+    public void CreateTelemetryCentralLogger_WhenTelemetryEnabled_ReturnsLogger()
     {
         // Enable telemetry with a session ID
         var originalSessionId = Telemetry.Telemetry.CurrentSessionId;
@@ -31,11 +31,10 @@ public class GivenProjectInstanceExtensions
         {
             Telemetry.Telemetry.CurrentSessionId = Guid.NewGuid().ToString();
 
-            var loggers = ProjectInstanceExtensions.CreateTelemetryLoggers();
+            var logger = ProjectInstanceExtensions.CreateTelemetryCentralLogger();
 
-            loggers.Should().NotBeNull();
-            loggers.Should().HaveCount(1);
-            loggers[0].Should().BeOfType<Commands.MSBuild.MSBuildLogger>();
+            logger.Should().NotBeNull();
+            logger.Should().BeOfType<Commands.MSBuild.MSBuildLogger>();
         }
         finally
         {
@@ -45,21 +44,18 @@ public class GivenProjectInstanceExtensions
     }
 
     [Fact]
-    public void BuildWithTelemetry_WhenTelemetryDisabled_CallsBuildWithoutTelemetryLogger()
+    public void CreateTelemetryForwardingLoggerRecords_WhenTelemetryDisabled_ReturnsEmpty()
     {
-        // This is a basic smoke test to ensure the extension method doesn't throw
-        // We can't easily test the actual build without setting up a full project
-        
         // Ensure telemetry is disabled
         Telemetry.Telemetry.CurrentSessionId = null;
 
-        // CreateTelemetryLoggers should return null when telemetry is disabled
-        var loggers = ProjectInstanceExtensions.CreateTelemetryLoggers();
-        loggers.Should().BeNull();
+        var loggerRecords = ProjectInstanceExtensions.CreateTelemetryForwardingLoggerRecords();
+
+        loggerRecords.Should().BeEmpty();
     }
 
     [Fact]
-    public void BuildWithTelemetry_WhenTelemetryEnabled_CreatesTelemetryLogger()
+    public void CreateTelemetryForwardingLoggerRecords_WhenTelemetryEnabled_ReturnsLoggerRecords()
     {
         // Enable telemetry with a session ID
         var originalSessionId = Telemetry.Telemetry.CurrentSessionId;
@@ -67,10 +63,36 @@ public class GivenProjectInstanceExtensions
         {
             Telemetry.Telemetry.CurrentSessionId = Guid.NewGuid().ToString();
 
-            // CreateTelemetryLoggers should return logger when telemetry is enabled
-            var loggers = ProjectInstanceExtensions.CreateTelemetryLoggers();
-            loggers.Should().NotBeNull();
-            loggers.Should().HaveCount(1);
+            var loggerRecords = ProjectInstanceExtensions.CreateTelemetryForwardingLoggerRecords();
+
+            loggerRecords.Should().NotBeEmpty();
+            loggerRecords.Should().HaveCount(1);
+            // ForwardingLoggerRecord contains the ForwardingLogger and LoggerDescription
+            loggerRecords[0].Should().NotBeNull();
+        }
+        finally
+        {
+            // Restore original session ID
+            Telemetry.Telemetry.CurrentSessionId = originalSessionId;
+        }
+    }
+
+    [Fact]
+    public void BuildWithTelemetry_WhenTelemetryEnabled_CreatesDistributedLogger()
+    {
+        // Enable telemetry with a session ID
+        var originalSessionId = Telemetry.Telemetry.CurrentSessionId;
+        try
+        {
+            Telemetry.Telemetry.CurrentSessionId = Guid.NewGuid().ToString();
+
+            // CreateTelemetryCentralLogger should return logger when telemetry is enabled
+            var centralLogger = ProjectInstanceExtensions.CreateTelemetryCentralLogger();
+            centralLogger.Should().NotBeNull();
+
+            // CreateTelemetryForwardingLoggerRecords should return forwarding logger when telemetry is enabled
+            var forwardingLoggers = ProjectInstanceExtensions.CreateTelemetryForwardingLoggerRecords();
+            forwardingLoggers.Should().NotBeEmpty();
         }
         finally
         {
