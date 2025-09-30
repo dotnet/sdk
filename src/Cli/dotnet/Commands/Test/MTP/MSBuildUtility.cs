@@ -8,6 +8,7 @@ using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
 using Microsoft.Build.Execution;
+using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.CommandLine;
@@ -67,11 +68,11 @@ internal static class MSBuildUtility
 
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
 
-        // Include telemetry logger for evaluation
-        var loggers = ProjectInstanceExtensions.CreateLoggersWithTelemetry(logger is null ? null : [logger]);
+        // Include telemetry logger for evaluation and capture it for reuse in builds
+        var (loggers, telemetryCentralLogger) = ProjectInstanceExtensions.CreateLoggersWithTelemetry(logger is null ? null : [logger]);
         using var collection = new ProjectCollection(globalProperties: globalProperties, loggers: loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
-        ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions);
+        ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions, telemetryCentralLogger);
         logger?.ReallyShutdown();
         collection.UnloadAllProjects();
 
@@ -91,11 +92,11 @@ internal static class MSBuildUtility
 
         var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), CommonOptions.VerbosityOption(), CommonOptions.NoLogoOption());
 
-        // Include telemetry logger for evaluation
-        var loggers = ProjectInstanceExtensions.CreateLoggersWithTelemetry(logger is null ? null : [logger]);
+        // Include telemetry logger for evaluation and capture it for reuse in builds
+        var (loggers, telemetryCentralLogger) = ProjectInstanceExtensions.CreateLoggersWithTelemetry(logger is null ? null : [logger]);
         using var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs), loggers, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
-        IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, evaluationContext, buildOptions, configuration: null, platform: null);
+        IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, evaluationContext, buildOptions, telemetryCentralLogger, configuration: null, platform: null);
         logger?.ReallyShutdown();
         collection.UnloadAllProjects();
         return (projects, isBuiltOrRestored);
@@ -168,7 +169,8 @@ internal static class MSBuildUtility
         ProjectCollection projectCollection,
         EvaluationContext evaluationContext,
         IEnumerable<(string ProjectFilePath, string? Configuration, string? Platform)> projects,
-        BuildOptions buildOptions)
+        BuildOptions buildOptions,
+        ILogger? telemetryCentralLogger)
     {
         var allProjects = new ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules>();
 
@@ -179,7 +181,7 @@ internal static class MSBuildUtility
             new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
             (project) =>
             {
-                IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project.ProjectFilePath, projectCollection, evaluationContext, buildOptions, project.Configuration, project.Platform);
+                IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project.ProjectFilePath, projectCollection, evaluationContext, buildOptions, telemetryCentralLogger, project.Configuration, project.Platform);
                 foreach (var projectMetadata in projectsMetadata)
                 {
                     allProjects.Add(projectMetadata);

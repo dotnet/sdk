@@ -49,7 +49,8 @@ public class GivenProjectInstanceExtensions
         // Ensure telemetry is disabled
         Telemetry.Telemetry.CurrentSessionId = null;
 
-        var loggerRecords = ProjectInstanceExtensions.CreateTelemetryForwardingLoggerRecords();
+        var centralLogger = ProjectInstanceExtensions.CreateTelemetryCentralLogger();
+        var loggerRecords = ProjectInstanceExtensions.CreateTelemetryForwardingLoggerRecords(centralLogger);
 
         loggerRecords.Should().BeEmpty();
     }
@@ -63,7 +64,8 @@ public class GivenProjectInstanceExtensions
         {
             Telemetry.Telemetry.CurrentSessionId = Guid.NewGuid().ToString();
 
-            var loggerRecords = ProjectInstanceExtensions.CreateTelemetryForwardingLoggerRecords();
+            var centralLogger = ProjectInstanceExtensions.CreateTelemetryCentralLogger();
+            var loggerRecords = ProjectInstanceExtensions.CreateTelemetryForwardingLoggerRecords(centralLogger);
 
             loggerRecords.Should().NotBeEmpty();
             loggerRecords.Should().HaveCount(1);
@@ -91,7 +93,8 @@ public class GivenProjectInstanceExtensions
             centralLogger.Should().NotBeNull();
 
             // CreateTelemetryForwardingLoggerRecords should return forwarding logger when telemetry is enabled
-            var forwardingLoggers = ProjectInstanceExtensions.CreateTelemetryForwardingLoggerRecords();
+            // using the same central logger instance
+            var forwardingLoggers = ProjectInstanceExtensions.CreateTelemetryForwardingLoggerRecords(centralLogger);
             forwardingLoggers.Should().NotBeEmpty();
         }
         finally
