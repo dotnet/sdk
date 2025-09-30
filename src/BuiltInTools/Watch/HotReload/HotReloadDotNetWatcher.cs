@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
@@ -588,7 +589,7 @@ namespace Microsoft.DotNet.Watch
                 }
 
                 using var loggers = buildReporter.GetLoggers(projectPath, targetName);
-                if (!node.ProjectInstance.Build([targetName], loggers, out var targetOutputs))
+                if (!node.ProjectInstance.BuildWithTelemetry([targetName], loggers, null, out var targetOutputs))
                 {
                     _context.Logger.LogDebug("{TargetName} target failed", targetName);
                     loggers.ReportOutput();
@@ -797,7 +798,7 @@ namespace Microsoft.DotNet.Watch
             }
 
             string GetMessage(IReadOnlyList<ChangedFile> items, ChangeKind kind)
-                => items is [{Item: var item }]
+                => items is [{ Item: var item }]
                     ? GetSingularMessage(kind) + ": " + GetRelativeFilePath(item.FilePath)
                     : GetPluralMessage(kind) + ": " + string.Join(", ", items.Select(f => GetRelativeFilePath(f.Item.FilePath)));
 
