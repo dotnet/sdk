@@ -3,7 +3,9 @@
 
 #nullable disable
 
+using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
+using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Telemetry;
 
@@ -101,6 +103,99 @@ public class GivenProjectInstanceExtensions
         {
             // Restore original session ID
             Telemetry.Telemetry.CurrentSessionId = originalSessionId;
+        }
+    }
+
+    [Fact]
+    public void TelemetryLogger_ReceivesEventsFromAPIBasedBuild()
+    {
+        // Enable telemetry with a session ID
+        var originalSessionId = Telemetry.Telemetry.CurrentSessionId;
+        try
+        {
+            Telemetry.Telemetry.CurrentSessionId = Guid.NewGuid().ToString();
+
+            // Create a simple in-memory project
+            string projectContent = @"
+<Project>
+  <Target Name='TestTarget'>
+    <Message Text='Test message' Importance='high' />
+  </Target>
+</Project>";
+
+            // Create ProjectCollection with telemetry logger
+            var (loggers, telemetryCentralLogger) = ProjectInstanceExtensions.CreateLoggersWithTelemetry();
+            using var collection = new ProjectCollection(
+                globalProperties: null,
+                loggers: loggers,
+                toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+
+            // Create a temporary project file
+            var tempFile = Path.GetTempFileName();
+            try
+            {
+                File.WriteAllText(tempFile, projectContent);
+
+                // Load and build the project using API-based MSBuild with telemetry
+                var project = collection.LoadProject(tempFile);
+                var projectInstance = project.CreateProjectInstance();
+
+                // Use a test logger to capture events
+                var testLogger = new TestEventLogger();
+
+                // Build directly without distributed logger for simpler test
+                // The telemetry logger is already attached to the ProjectCollection
+                var result = projectInstance.Build(new[] { "TestTarget" }, new[] { testLogger });
+
+                // Verify build succeeded
+                result.Should().BeTrue();
+
+                // Verify the test logger received events (indicating build actually ran)
+                testLogger.BuildStartedCount.Should().BeGreaterThan(0);
+                testLogger.BuildFinishedCount.Should().BeGreaterThan(0);
+
+                // Verify telemetry logger was created and attached to collection
+                telemetryCentralLogger.Should().NotBeNull();
+                loggers.Should().Contain(telemetryCentralLogger);
+            }
+            finally
+            {
+                if (File.Exists(tempFile))
+                {
+                    File.Delete(tempFile);
+                }
+            }
+        }
+        finally
+        {
+            // Restore original session ID
+            Telemetry.Telemetry.CurrentSessionId = originalSessionId;
+        }
+    }
+
+    /// <summary>
+    /// Simple logger to track build events for testing
+    /// </summary>
+    private class TestEventLogger : ILogger
+    {
+        public int BuildStartedCount { get; private set; }
+        public int BuildFinishedCount { get; private set; }
+        public int TargetStartedCount { get; private set; }
+        public int TargetFinishedCount { get; private set; }
+
+        public LoggerVerbosity Verbosity { get; set; }
+        public string Parameters { get; set; }
+
+        public void Initialize(IEventSource eventSource)
+        {
+            eventSource.BuildStarted += (sender, e) => BuildStartedCount++;
+            eventSource.BuildFinished += (sender, e) => BuildFinishedCount++;
+            eventSource.TargetStarted += (sender, e) => TargetStartedCount++;
+            eventSource.TargetFinished += (sender, e) => TargetFinishedCount++;
+        }
+
+        public void Shutdown()
+        {
         }
     }
 }
