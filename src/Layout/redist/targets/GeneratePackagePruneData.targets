@@ -31,11 +31,10 @@
   </Target>
 
   <!-- TODO: Remove conditions from UsingTask and target when a new SDK with the CollatePackageDownload task built-in is consumed. -->
-  <UsingTask TaskName="Microsoft.NET.Build.Tasks.CollatePackageDownloads" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" Condition="'$(MaxNetVersion)' != '$(TargetingPackPruneVersion)'" />
+  <UsingTask TaskName="Microsoft.NET.Build.Tasks.CollatePackageDownloads" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <Target Name="AddTargetingPacksForPruneDataAsPackageDownloads"
           BeforeTargets="CollectPackageDownloads"
-          DependsOnTargets="GetTargetingPacksForPruneData"
-          Condition="'$(MaxNetVersion)' != '$(TargetingPackPruneVersion)'">
+          DependsOnTargets="GetTargetingPacksForPruneData">
     <CollatePackageDownloads Packages="@(TargetingPackForPruneData->Metadata('PackageName'))">
       <Output TaskParameter="PackageDownloads" ItemName="PackageDownload" />
     </CollatePackageDownloads>
