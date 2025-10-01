@@ -1738,10 +1738,18 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             return context.Diagnostics.AddError<(string, string?)?>(context.SourceFile, context.Info.Span, string.Format(CliCommandStrings.InvalidDirectiveName, directiveKind, separator));
         }
 
-        var secondPart = i < 0 ? [] : context.DirectiveText.AsSpan((i + 1)..).TrimStart();
-        if (i < 0 || secondPart.IsWhiteSpace())
+        if (i < 0)
         {
             return (firstPart.ToString(), null);
+        }
+
+        var secondPart = context.DirectiveText.AsSpan((i + 1)..).TrimStart();
+        if (secondPart.IsWhiteSpace())
+        {
+            Debug.Assert(secondPart.Length == 0,
+                "We have trimmed the second part, so if it's white space, it should be actually empty.");
+
+            return (firstPart.ToString(), string.Empty);
         }
 
         return (firstPart.ToString(), secondPart.ToString());
