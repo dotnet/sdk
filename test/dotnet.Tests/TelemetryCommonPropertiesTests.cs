@@ -228,7 +228,16 @@ namespace Microsoft.DotNet.Tests
         public static IEnumerable<object[]> LLMTelemetryTestCases => new List<object[]>{
             new object[] { new Dictionary<string, string> { { "CLAUDECODE", "1" } }, "claude" },
             new object[] { new Dictionary<string, string> { { "CURSOR_EDITOR", "1" } }, "cursor" },
+            new object[] { new Dictionary<string, string> { { "GEMINI_CLI", "true" } }, "gemini" },
+            new object[] { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "true" } }, "copilot" },
+            new object[] { new Dictionary<string, string> { { "AGENT_CLI", "true" } }, "generic_agent" },
             new object[] { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" } }, "claude, cursor" },
+            new object[] { new Dictionary<string, string> { { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" } }, "gemini, copilot" },
+            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "GEMINI_CLI", "true" }, { "AGENT_CLI", "true" } }, "claude, gemini, generic_agent" },
+            new object[] { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" }, { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" }, { "AGENT_CLI", "true" } }, "claude, cursor, gemini, copilot, generic_agent" },
+            new object[] { new Dictionary<string, string> { { "GEMINI_CLI", "false" } }, null },
+            new object[] { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "false" } }, null },
+            new object[] { new Dictionary<string, string> { { "AGENT_CLI", "false" } }, null },
             new object[] { new Dictionary<string, string>(), null },
         };
 
