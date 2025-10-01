@@ -10,8 +10,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Loader;
 using System.Threading;
+
+#if NET
+using System.Runtime.Loader;
+#endif
 
 namespace Microsoft.DotNet.HotReload;
 
@@ -34,14 +37,23 @@ internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
     private readonly string? _capabilities;
     private readonly MetadataUpdateHandlerInvoker _metadataUpdateHandlerInvoker;
 
+#if NET
     // handler to install on first managed update:
     private Func<AssemblyLoadContext, AssemblyName, Assembly?>? _assemblyResolvingHandlerToInstall;
     private Func<AssemblyLoadContext, AssemblyName, Assembly?>? _installedAssemblyResolvingHandler;
+#endif
 
-    public HotReloadAgent(Func<AssemblyLoadContext, AssemblyName, Assembly?>? assemblyResolvingHandler)
+    public HotReloadAgent(
+#if NET
+        Func<AssemblyLoadContext, AssemblyName, Assembly?>? assemblyResolvingHandler
+#endif
+    )
     {
         _metadataUpdateHandlerInvoker = new(Reporter);
+
+#if NET
         _assemblyResolvingHandlerToInstall = assemblyResolvingHandler;
+#endif
 
         GetUpdaterMethodsAndCapabilities(out _applyUpdate, out _capabilities);
 
@@ -51,7 +63,9 @@ internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
     public void Dispose()
     {
         AppDomain.CurrentDomain.AssemblyLoad -= OnAssemblyLoad;
+#if NET
         AssemblyLoadContext.Default.Resolving -= _installedAssemblyResolvingHandler;
+#endif
     }
 
     private void GetUpdaterMethodsAndCapabilities(out ApplyUpdateDelegate? applyUpdate, out string? capabilities)
@@ -117,13 +131,14 @@ internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
         Debug.Assert(Capabilities.Length > 0);
         Debug.Assert(_applyUpdate != null);
 
+#if NET
         var handler = Interlocked.Exchange(ref _assemblyResolvingHandlerToInstall, null);
         if (handler != null)
         {
             AssemblyLoadContext.Default.Resolving += handler;
             _installedAssemblyResolvingHandler = handler;
         }
-
+#endif
         foreach (var update in updates)
         {
             if (update.MetadataDelta.Length == 0)

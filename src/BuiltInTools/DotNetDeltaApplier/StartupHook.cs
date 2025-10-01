@@ -4,9 +4,12 @@
 using System.Diagnostics;
 using System.IO.Pipes;
 using System.Reflection;
-using System.Runtime.Loader;
 using Microsoft.DotNet.HotReload;
 using Microsoft.DotNet.Watch;
+
+#if NET
+using System.Runtime.Loader;
+#endif
 
 /// <summary>
 /// The runtime startup hook looks for top-level type named "StartupHook".
@@ -40,12 +43,16 @@ internal sealed class StartupHook
 
         RegisterSignalHandlers();
 
-        var agent = new HotReloadAgent(assemblyResolvingHandler: (_, args) =>
-        {
-            Log($"Resolving '{args.Name}, Version={args.Version}'");
-            var path = Path.Combine(processDir, args.Name + ".dll");
-            return File.Exists(path) ? AssemblyLoadContext.Default.LoadFromAssemblyPath(path) : null;
-        });
+        var agent = new HotReloadAgent(
+#if NET
+            assemblyResolvingHandler: (_, args) =>
+            {
+                Log($"Resolving '{args.Name}, Version={args.Version}'");
+                var path = Path.Combine(processDir, args.Name + ".dll");
+                return File.Exists(path) ? AssemblyLoadContext.Default.LoadFromAssemblyPath(path) : null;
+            }
+#endif
+        );
 
         var listener = new PipeListener(s_namedPipeName, agent, Log);
 

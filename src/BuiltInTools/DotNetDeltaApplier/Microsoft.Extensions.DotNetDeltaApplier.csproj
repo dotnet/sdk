@@ -6,12 +6,13 @@
 
   <PropertyGroup>
     <!--
-      dotnet-watch may inject this assembly to .NET 6.0+ app.
+      This assembly may be injected to .NET 3.1+ app.
+      dotnet-watch only supports .NET 6.0+ apps, other hosts might support lower versions.
 
-      When updating these also update ProjectReferences in dotnet-watch.csproj
+      When updating target frameworks also update ProjectReferences in dotnet-watch.csproj
       and HotReloadAppModel.TryGetStartupHookPath.
     -->
-    <TargetFrameworks>net6.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net10.0;netstandard2.1</TargetFrameworks>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
 
     <!-- NuGet -->

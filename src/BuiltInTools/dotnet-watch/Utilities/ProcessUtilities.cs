@@ -68,11 +68,15 @@ internal static class ProcessUtilities
 
     private static string GetLastPInvokeErrorMessage()
     {
+#if !NET
+        return "unknown error";
+#else
         var error = Marshal.GetLastPInvokeError();
 #if NET10_0_OR_GREATER
         return $"{Marshal.GetPInvokeErrorMessage(error)} (code {error})";
 #else
         return $"error code {error}";
+#endif
 #endif
     }
 }
