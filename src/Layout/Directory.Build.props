@@ -78,4 +78,10 @@
     <SdkPkgSourcesRootDirectory>$(MSBuildThisFileDirectory)pkg\</SdkPkgSourcesRootDirectory>
   </PropertyGroup>
 
+  <ItemGroup>
+    <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\csc.dll" />
+    <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\vbc.dll" />
+    <_RoslynAppHost Include="$(OutputPath)Roslyn\bincore\VBCSCompiler.dll" />
+  </ItemGroup>
+
 </Project>

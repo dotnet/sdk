@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         private readonly Func<string, string, string?> _getMsbuildRuntime;
         private readonly NETCoreSdkResolver _netCoreSdkResolver;
 
-        private const string DOTNET_HOST = nameof(DOTNET_HOST);
+        private const string DOTNET_HOST_PATH = nameof(DOTNET_HOST_PATH);
         private const string DotnetHostExperimentalKey = "DOTNET_EXPERIMENTAL_HOST_PATH";
         private const string MSBuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
         private const string SdkResolverHonoredGlobalJson = "SdkResolverHonoredGlobalJson";
@@ -245,12 +245,12 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                     // this is the future-facing implementation.
                     environmentVariablesToAdd ??= new Dictionary<string, string?>(1)
                     {
-                        [DOTNET_HOST] = fullPathToMuxer
+                        [DOTNET_HOST_PATH] = fullPathToMuxer
                     };
                 }
                 else
                 {
-                    logger?.LogMessage($"Could not set '{DOTNET_HOST}' environment variable because dotnet executable '{fullPathToMuxer}' does not exist.");
+                    logger?.LogMessage($"Could not set '{DOTNET_HOST_PATH}' environment variable because dotnet executable '{fullPathToMuxer}' does not exist.");
                 }
 
                 string? runtimeVersion = dotnetRoot != null ?
