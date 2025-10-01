@@ -795,11 +795,6 @@ Le répertoire spécifié est créé, s'il n'existe pas déjà.</target>
         <target state="translated">SETTINGS_FILE</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdSolutionDescription">
-        <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Définit le chemin d’accès du fichier solution à exécuter. Si rien n’est spécifié, la valeur par défaut est le répertoire actif.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdSolutionPathName">
         <source>SOLUTION_PATH</source>
         <target state="translated">SOLUTION_PATH</target>

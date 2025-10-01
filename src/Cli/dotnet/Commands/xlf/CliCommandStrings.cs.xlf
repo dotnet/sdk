@@ -795,11 +795,6 @@ Pokud zadaný adresář neexistuje, bude vytvořen.</target>
         <target state="translated">SETTINGS_FILE</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdSolutionDescription">
-        <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Definuje cestu k souboru řešení, který se má spustit. Pokud se nezadá, použije se výchozí nastavení aktuálního adresáře.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdSolutionPathName">
         <source>SOLUTION_PATH</source>
         <target state="translated">SOLUTION_PATH</target>

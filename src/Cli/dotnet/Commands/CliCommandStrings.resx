@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -592,9 +592,6 @@ If not specified the file will be generated inside the default 'TestResults' dir
   </data>
   <data name="CmdSettingsFile" xml:space="preserve">
     <value>SETTINGS_FILE</value>
-  </data>
-  <data name="CmdSolutionDescription" xml:space="preserve">
-    <value>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</value>
   </data>
   <data name="CmdSolutionPathName" xml:space="preserve">
     <value>SOLUTION_PATH</value>

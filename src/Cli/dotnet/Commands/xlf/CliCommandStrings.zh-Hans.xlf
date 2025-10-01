@@ -795,11 +795,6 @@ The specified directory will be created if it does not exist.</source>
         <target state="translated">SETTINGS_FILE</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdSolutionDescription">
-        <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">定义要运行的解决方案文件的路径。如果未指定，则默认为当前目录。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdSolutionPathName">
         <source>SOLUTION_PATH</source>
         <target state="translated">SOLUTION_PATH</target>

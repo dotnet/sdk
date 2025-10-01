@@ -795,11 +795,6 @@ Se non esiste, la directory specificata verrà creata.</target>
         <target state="translated">SETTINGS_FILE</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdSolutionDescription">
-        <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Definisce il percorso del file soluzione da eseguire. Se non specificato, per impostazione predefinita viene usata la directory corrente.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdSolutionPathName">
         <source>SOLUTION_PATH</source>
         <target state="translated">SOLUTION_PATH</target>

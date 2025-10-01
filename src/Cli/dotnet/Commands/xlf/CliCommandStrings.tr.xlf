@@ -795,11 +795,6 @@ Belirtilen dizin yoksa oluşturulur.</target>
         <target state="translated">SETTINGS_FILE</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdSolutionDescription">
-        <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Çalıştırılacak çözüm dosyasının yolunu belirtir. Belirtilmezse, varsayılan olarak geçerli dizine ayarlar.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdSolutionPathName">
         <source>SOLUTION_PATH</source>
         <target state="translated">SOLUTION_PATH</target>

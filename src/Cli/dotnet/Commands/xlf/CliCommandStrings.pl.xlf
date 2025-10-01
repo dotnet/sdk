@@ -795,11 +795,6 @@ Jeśli określony katalog nie istnieje, zostanie utworzony.</target>
         <target state="translated">SETTINGS_FILE</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdSolutionDescription">
-        <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Definiuje ścieżkę pliku rozwiązania do uruchomienia. Jeśli nie zostanie określony, domyślnie będzie to bieżący katalog.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdSolutionPathName">
         <source>SOLUTION_PATH</source>
         <target state="translated">SOLUTION_PATH</target>
