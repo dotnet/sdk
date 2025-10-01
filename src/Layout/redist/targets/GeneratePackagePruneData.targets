@@ -30,12 +30,12 @@
     </MSBuild>
   </Target>
 
-  <!-- TODO: Remove conditions from UsingTask and target when a new SDK with the CollatePackageDownload task built-in is consumed. -->
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.CollatePackageDownloads" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <Target Name="AddTargetingPacksForPruneDataAsPackageDownloads"
           BeforeTargets="CollectPackageDownloads"
           DependsOnTargets="GetTargetingPacksForPruneData">
-    <CollatePackageDownloads Packages="@(TargetingPackForPruneData->Metadata('PackageName'))">
+    <CollatePackageDownloads Packages="@(TargetingPackForPruneData->Metadata('PackageName'))"
+                             Condition="'@(TargetingPackForPruneData)' != ''">
       <Output TaskParameter="PackageDownloads" ItemName="PackageDownload" />
     </CollatePackageDownloads>
   </Target>
