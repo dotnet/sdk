@@ -23,6 +23,20 @@ namespace Microsoft.DotNet.NativeWrapper
             return result;
         }
 
+        public static string? GetGlobalJsonState(string globalJsonStartDirectory)
+        {
+            // We don't care about the actual SDK resolution, just the global.json information,
+            // so just pass empty string as executable directory for resolution. This means that
+            // we expect the call to fail to resolve an SDK. Set up the error writer to avoid
+            // output going to stderr. We reset it after the call.
+            var swallowErrors = new Interop.hostfxr_error_writer_fn(message => { });
+            IntPtr errorWriter = Marshal.GetFunctionPointerForDelegate(swallowErrors);
+            IntPtr previousErrorWriter = Interop.hostfxr_set_error_writer(errorWriter);
+            SdkResolutionResult result = ResolveSdk(string.Empty, globalJsonStartDirectory);
+            Interop.hostfxr_set_error_writer(previousErrorWriter);
+            return result.GlobalJsonState;
+        }
+
         private sealed class SdkList
         {
             public string[]? Entries;
