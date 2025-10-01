@@ -32,6 +32,11 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
     private readonly object _pendingUpdatesGate = new();
     private Task _pendingUpdates = Task.CompletedTask;
 
+    /// <summary>
+    /// Invoked when a rude edit is detected at runtime.
+    /// </summary>
+    public event Action<int, string>? OnRuntimeRudeEdit;
+
     // for testing
     internal Task PendingUpdates
         => _pendingUpdates;
@@ -78,6 +83,9 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
     /// Disposes the client. Can occur unexpectedly whenever the process exits.
     /// </summary>
     public abstract void Dispose();
+
+    protected void RuntimeRudeEditDetected(int errorCode, string message)
+        => OnRuntimeRudeEdit?.Invoke(errorCode, message);
 
     public static void ReportLogEntry(ILogger logger, string message, AgentMessageSeverity severity)
     {
