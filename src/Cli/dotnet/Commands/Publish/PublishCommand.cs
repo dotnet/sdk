@@ -21,7 +21,7 @@ public class PublishCommand : RestoringCommand
 
     public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
-        var parseResult = Parser.Parse(["dotnet", "publish", .. args]);
+        var parseResult = Parser.Parse(["dotnet", "publish", ..args]);
         return FromParseResult(parseResult);
     }
 

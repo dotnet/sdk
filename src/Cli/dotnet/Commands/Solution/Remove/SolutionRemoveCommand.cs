@@ -124,7 +124,7 @@ internal class SolutionRemoveCommand : CommandBase
             {
                 solution.RemoveFolder(folder);
                 // After removal, adjust index and continue to avoid skipping folders after removal
-                i--;
+                i--; 
             }
         }
 

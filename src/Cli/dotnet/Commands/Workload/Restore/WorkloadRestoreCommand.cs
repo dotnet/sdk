@@ -60,7 +60,7 @@ internal class WorkloadRestoreCommand(
         });
 
         workloadInstaller.Shutdown();
-
+        
         return 0;
     }
 

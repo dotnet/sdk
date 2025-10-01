@@ -12,7 +12,7 @@ public static class BuildCommand
 {
     public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
-        var parseResult = Parser.Parse(["dotnet", "build", .. args]);
+        var parseResult = Parser.Parse(["dotnet", "build", ..args]);
         return FromParseResult(parseResult, msbuildPath);
     }
 

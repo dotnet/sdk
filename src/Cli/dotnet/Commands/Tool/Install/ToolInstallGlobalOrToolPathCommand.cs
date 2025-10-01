@@ -5,20 +5,20 @@
 
 using System.CommandLine;
 using System.Transactions;
-using Microsoft.DotNet.Cli.Commands.Tool.Common;
-using Microsoft.DotNet.Cli.Commands.Tool.List;
-using Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
-using Microsoft.DotNet.Cli.Commands.Tool.Update;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
-using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Versioning;
+using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.ShellShim;
+using Microsoft.DotNet.Cli.Commands.Tool.Update;
+using Microsoft.DotNet.Cli.Commands.Tool.Common;
+using Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
+using Microsoft.DotNet.Cli.Commands.Tool.List;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
@@ -187,7 +187,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
             {
                 _reporter.WriteLine(string.Format(CliCommandStrings.ToolAlreadyInstalled, oldPackageNullable.Id, oldPackageNullable.Version.ToNormalizedString()).Green());
                 return 0;
-            }
+            }   
         }
 
         TransactionalAction.Run(() =>
@@ -318,7 +318,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
     {
         try
         {
-            uninstallAction();
+            uninstallAction();           
         }
         catch (Exception ex)
             when (ToolUninstallCommandLowLevelErrorConverter.ShouldConvertToUserFacingError(ex))
@@ -396,7 +396,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
             {
                 _reporter.WriteLine(
                     string.Format(
-
+                        
                         newInstalledPackage.Version.IsPrerelease ?
                         CliCommandStrings.UpdateSucceededPreVersionNoChange : CliCommandStrings.UpdateSucceededStableVersionNoChange,
                         newInstalledPackage.Id, newInstalledPackage.Version).Green());
