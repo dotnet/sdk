@@ -192,7 +192,10 @@ internal class PackageAddCommand(ParseResult parseResult) : CommandBase(parseRes
             NoCache = true,
             NoBuild = true,
         };
-        var projectCollection = new ProjectCollection();
+
+        // Include telemetry logger for project evaluation
+        var (loggersWithTelemetry, _) = ProjectInstanceExtensions.CreateLoggersWithTelemetry([]);
+        var projectCollection = new ProjectCollection(globalProperties: null, loggersWithTelemetry, ToolsetDefinitionLocations.Default);
         var projectInstance = command.CreateProjectInstance(projectCollection);
 
         // Set initial version to Directory.Packages.props and/or C# file
