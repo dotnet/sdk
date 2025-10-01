@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
-
 namespace Microsoft.DotNet.Cli.Telemetry;
 
 internal class LLMEnvironmentDetectorForTelemetry : ILLMEnvironmentDetector
@@ -21,9 +18,13 @@ internal class LLMEnvironmentDetectorForTelemetry : ILLMEnvironmentDetector
         new EnvironmentDetectionRuleWithResult<string>("generic_agent", new BooleanEnvironmentRule("AGENT_CLI")),
     ];
 
+    /// <inheritdoc/>
     public string? GetLLMEnvironment()
     {
         var results = _detectionRules.Select(r => r.GetResult()).Where(r => r != null).ToArray();
         return results.Length > 0 ? string.Join(", ", results) : null;
     }
+
+    /// <inheritdoc/>
+    public bool IsLLMEnvironment() => !string.IsNullOrEmpty(GetLLMEnvironment());
 }

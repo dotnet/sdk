@@ -27,19 +27,28 @@ internal static class CommonRunHelpers
     public static string GetFlatLaunchSettingsPath(string directoryPath, string projectNameWithoutExtension)
         => Path.Join(directoryPath, $"{projectNameWithoutExtension}.run.json");
 
+
+    /// <summary>
+    /// Applies adjustments to MSBuild arguments to better suit LLM/agentic environments, if such an environment is detected.
+    /// </summary>
+    public static MSBuildArgs AdjustMSBuildForLLMs(MSBuildArgs msbuildArgs)
+    {
+        if (new Telemetry.LLMEnvironmentDetectorForTelemetry().IsLLMEnvironment())
+        {
+            // disable the live-update display of the TerminalLogger, which wastes tokens
+            return msbuildArgs.CloneWithAdditionalArgs(Constants.TerminalLogger_DisableNodeDisplay);
+        }
+        else
+        {
+            return msbuildArgs;
+        }
+    }
+
     /// <summary>
     /// Creates a TerminalLogger or ConsoleLogger based on the provided MSBuild arguments.
     /// If the environment is detected to be an LLM environment, the logger is adjusted to
     /// better suit that environment.
     /// </summary>
-    /// <param name="msbuildArgs"></param>
-    /// <returns></returns>
-    public static Microsoft.Build.Framework.ILogger GetConsoleLogger(params ReadOnlySpan<string> msbuildArgs)
-    {
-        if (new Telemetry.LLMEnvironmentDetectorForTelemetry().GetLLMEnvironment() is string llmEnv)
-        {
-            msbuildArgs = [.. msbuildArgs, "-tlp:DISABLENODEDISPLAY"];
-        }
-        return Microsoft.Build.Logging.TerminalLogger.CreateTerminalOrConsoleLogger([.. msbuildArgs]);
-    }
+    public static Microsoft.Build.Framework.ILogger GetConsoleLogger(MSBuildArgs args) =>
+        Microsoft.Build.Logging.TerminalLogger.CreateTerminalOrConsoleLogger([.. AdjustMSBuildForLLMs(args).OtherMSBuildArgs]);
 }

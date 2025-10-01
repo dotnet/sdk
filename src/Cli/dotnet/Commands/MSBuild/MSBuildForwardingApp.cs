@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Reflection;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 
@@ -39,27 +40,6 @@ public class MSBuildForwardingApp : CommandBase
         return msbuildArgs;
     }
 
-    /// <summary>
-    /// Adjusts MSBuild loggers to be more suitable for LLM/agentic environments, if such an environment is detected.
-    /// </summary>
-    /// <param name="msbuildArgs"></param>
-    /// <returns></returns>
-    private static MSBuildArgs AdjustLoggerForLLMs(MSBuildArgs msbuildArgs)
-    {
-        if (new Telemetry.LLMEnvironmentDetectorForTelemetry().GetLLMEnvironment() is string _)
-        {
-            try
-            {
-                // introduced in https://github.com/dotnet/msbuild/pull/12581, disables live-updating node display, which wastes tokens
-                msbuildArgs.OtherMSBuildArgs.Add("-tlp:DISABLENODEDISPLAY");
-                return msbuildArgs;
-            }
-            catch (Exception)
-            {
-            }
-        }
-        return msbuildArgs;
-    }
 
     /// <summary>
     /// Mostly intended for quick/one-shot usage - most 'core' SDK commands should do more hands-on parsing.
@@ -72,7 +52,7 @@ public class MSBuildForwardingApp : CommandBase
 
     public MSBuildForwardingApp(MSBuildArgs msBuildArgs, string? msbuildPath = null, bool includeLogo = false)
     {
-        var modifiedMSBuildArgs = AdjustLoggerForLLMs(ConcatTelemetryLogger(msBuildArgs));
+        var modifiedMSBuildArgs = CommonRunHelpers.AdjustMSBuildForLLMs(ConcatTelemetryLogger(msBuildArgs));
         _forwardingAppWithoutLogging = new MSBuildForwardingAppWithoutLogging(
             modifiedMSBuildArgs,
             msbuildPath: msbuildPath,
