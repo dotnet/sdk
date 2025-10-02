@@ -766,18 +766,9 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         CancellationToken cancellationToken = CancellationToken.None;
         IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);
 
-        // When numberOfResults is 0, it means "all results", otherwise we need to handle potential duplicates 
-        // by getting more results than requested, then deduplicating and taking the requested count
-        int internalResultsCount = numberOfResults == 0 ? 0 : numberOfResults * 2; // Get double to account for potential duplicates
-
-        var allResults = await GetLatestVersionsInternalAsync(packageId.ToString(), packagesSources,
-            includePreview, cancellationToken, internalResultsCount).ConfigureAwait(false);
-
-        var uniqueVersions = allResults.Select(result => result.Item2.Identity.Version)
-            .Distinct()
-            .OrderByDescending(v => v);
-
-        return numberOfResults == 0 ? uniqueVersions : uniqueVersions.Take(numberOfResults);
+        return (await GetLatestVersionsInternalAsync(packageId.ToString(), packagesSources,
+            includePreview, cancellationToken, numberOfResults).ConfigureAwait(false)).Select(result =>
+            result.Item2.Identity.Version);
     }
 
     public async Task<IEnumerable<string>> GetPackageIdsAsync(string idStem, bool allowPrerelease, PackageSourceLocation packageSourceLocation = null, CancellationToken cancellationToken = default)
