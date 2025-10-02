@@ -1972,7 +1972,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             try
             {
                 // If the path is a directory like '../lib', transform it to a project file path like '../lib/lib.csproj'.
-                // Also normalize blackslashes to forward slashes to ensure the directive works on all platforms.
+                // Also normalize backslashes to forward slashes to ensure the directive works on all platforms.
                 var sourceDirectory = Path.GetDirectoryName(sourceFile.Path) ?? ".";
                 var resolvedProjectPath = Path.Combine(sourceDirectory, directiveText.Replace('\\', '/'));
                 if (Directory.Exists(resolvedProjectPath))
