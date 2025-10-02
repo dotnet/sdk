@@ -748,6 +748,11 @@ This is equivalent to deleting project.assets.json.</source>
         <target state="needs-review-translation">実行するプロジェクト ファイルのパス (フォルダー名または完全パス) を定義します。指定しない場合は、既定で現在のディレクトリに設定されます。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdProjectDescriptionFormat">
+        <source>Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
+        <note>{0} is the verb (e.g., "test", "run")</note>
+      </trans-unit>
       <trans-unit id="CmdProjectPathName">
         <source>PROJECT_PATH</source>
         <target state="translated">PROJECT_PATH</target>
@@ -794,6 +799,11 @@ The specified directory will be created if it does not exist.</source>
         <source>SETTINGS_FILE</source>
         <target state="translated">SETTINGS_FILE</target>
         <note />
+      </trans-unit>
+      <trans-unit id="CmdSolutionDescriptionFormat">
+        <source>Defines the path of the solution file to {0}. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the solution file to {0}. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</target>
+        <note>{0} is the verb (e.g., "test", "run")</note>
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
         <source>SOLUTION_PATH</source>
@@ -3139,16 +3149,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
       <trans-unit id="TestCmdOutputDir">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TestCmdProjectDescription">
-        <source>Defines the path of the project file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TestCmdSolutionDescription">
-        <source>Defines the path of the solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseDirectoryWithSwitch">

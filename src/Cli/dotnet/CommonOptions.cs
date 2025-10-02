@@ -7,6 +7,7 @@ using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
 using System.CommandLine.StaticCompletions;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -227,6 +228,22 @@ internal static class CommonOptions
             HelpName = CliStrings.ConfigurationArgumentName
         }.ForwardAsSingle(o => $"--property:Configuration={o}")
         .AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
+
+    public static Option<string> ProjectOption(string verb) =>
+        new("--project")
+        {
+            Description = string.Format(CliCommandStrings.CmdProjectDescriptionFormat, verb),
+            HelpName = CliCommandStrings.CmdProjectPathName,
+            Arity = ArgumentArity.ExactlyOne
+        };
+
+    public static Option<string> SolutionOption(string verb) =>
+        new("--solution")
+        {
+            Description = string.Format(CliCommandStrings.CmdSolutionDescriptionFormat, verb),
+            HelpName = CliCommandStrings.CmdSolutionPathName,
+            Arity = ArgumentArity.ExactlyOne
+        };
 
     public static Option<string> VersionSuffixOption =
         new ForwardedOption<string>("--version-suffix")
