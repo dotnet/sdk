@@ -3762,6 +3762,16 @@ and the corresponding package Ids for installed tools using the command
         <target state="translated">如果屬性 '{0}' 受到指定，則其必須為物件。</target>
         <note />
       </trans-unit>
+      <trans-unit id="VerbRun">
+        <source>run</source>
+        <target state="new">run</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbTest">
+        <source>test</source>
+        <target state="new">test</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VerbosityArgumentName">
         <source>Verbosity</source>
         <target state="translated">詳細程度</target>

@@ -3762,6 +3762,16 @@ und die zugehörigen Paket-IDs für installierte Tools über den Befehl
         <target state="translated">Die Eigenschaft "{0}" muss ein Objekt sein, sofern angegeben.</target>
         <note />
       </trans-unit>
+      <trans-unit id="VerbRun">
+        <source>run</source>
+        <target state="new">run</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbTest">
+        <source>test</source>
+        <target state="new">test</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VerbosityArgumentName">
         <source>Verbosity</source>
         <target state="translated">Ausführlichkeit</target>

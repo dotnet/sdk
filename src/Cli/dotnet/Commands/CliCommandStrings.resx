@@ -604,6 +604,12 @@ If not specified the file will be generated inside the default 'TestResults' dir
     <value>Defines the path of the solution file to {0}. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</value>
     <comment>{0} is the verb (e.g., "test", "run")</comment>
   </data>
+  <data name="VerbRun" xml:space="preserve">
+    <value>run</value>
+  </data>
+  <data name="VerbTest" xml:space="preserve">
+    <value>test</value>
+  </data>
   <data name="CmdSourceOption" xml:space="preserve">
     <value>SOURCE</value>
   </data>

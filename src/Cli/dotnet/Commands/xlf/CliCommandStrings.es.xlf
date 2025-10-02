@@ -3762,6 +3762,16 @@ y los identificadores de los paquetes correspondientes a las herramientas instal
         <target state="translated">La propiedad "{0}" debe ser un objeto si se especifica.</target>
         <note />
       </trans-unit>
+      <trans-unit id="VerbRun">
+        <source>run</source>
+        <target state="new">run</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbTest">
+        <source>test</source>
+        <target state="new">test</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VerbosityArgumentName">
         <source>Verbosity</source>
         <target state="translated">Nivel de detalle</target>

@@ -3762,6 +3762,16 @@ příkazu „dotnet tool list“.</target>
         <target state="translated">Vlastnost {0} musí být objektem, pokud je zadána.</target>
         <note />
       </trans-unit>
+      <trans-unit id="VerbRun">
+        <source>run</source>
+        <target state="new">run</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbTest">
+        <source>test</source>
+        <target state="new">test</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VerbosityArgumentName">
         <source>Verbosity</source>
         <target state="translated">Podrobnosti</target>

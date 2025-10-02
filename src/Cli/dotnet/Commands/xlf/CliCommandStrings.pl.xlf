@@ -3762,6 +3762,16 @@ i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleź�
         <target state="translated">Właściwość „{0}” musi być obiektem, jeśli jest określona.</target>
         <note />
       </trans-unit>
+      <trans-unit id="VerbRun">
+        <source>run</source>
+        <target state="new">run</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbTest">
+        <source>test</source>
+        <target state="new">test</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VerbosityArgumentName">
         <source>Verbosity</source>
         <target state="translated">Szczegółowość</target>

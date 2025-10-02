@@ -3762,6 +3762,16 @@ e gli ID pacchetto corrispondenti per gli strumenti installati usando il comando
         <target state="translated">Se è specificata, la proprietà '{0}' deve essere un oggetto.</target>
         <note />
       </trans-unit>
+      <trans-unit id="VerbRun">
+        <source>run</source>
+        <target state="new">run</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbTest">
+        <source>test</source>
+        <target state="new">test</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VerbosityArgumentName">
         <source>Verbosity</source>
         <target state="translated">Livello di dettaglio</target>

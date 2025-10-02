@@ -3762,6 +3762,16 @@ and the corresponding package Ids for installed tools using the command
         <target state="translated">プロパティ ' {0} ' は、指定されている場合はオブジェクトである必要があります。</target>
         <note />
       </trans-unit>
+      <trans-unit id="VerbRun">
+        <source>run</source>
+        <target state="new">run</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbTest">
+        <source>test</source>
+        <target state="new">test</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VerbosityArgumentName">
         <source>Verbosity</source>
         <target state="translated">詳細</target>

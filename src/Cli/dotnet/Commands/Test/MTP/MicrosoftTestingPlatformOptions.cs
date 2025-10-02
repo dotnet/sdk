@@ -7,9 +7,9 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class MicrosoftTestingPlatformOptions
 {
-    public static readonly Option<string> ProjectOption = CommonOptions.ProjectOption("test");
+    public static readonly Option<string> ProjectOption = CommonOptions.ProjectOption(CliCommandStrings.VerbTest);
 
-    public static readonly Option<string> SolutionOption = CommonOptions.SolutionOption("test");
+    public static readonly Option<string> SolutionOption = CommonOptions.SolutionOption(CliCommandStrings.VerbTest);
 
     public static readonly Option<string> TestModulesFilterOption = new("--test-modules")
     {

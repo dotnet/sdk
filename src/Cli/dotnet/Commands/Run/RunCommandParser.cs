@@ -17,7 +17,7 @@ internal static class RunCommandParser
 
     public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption(CliCommandStrings.RunRuntimeOptionDescription);
 
-    public static readonly Option<string> ProjectOption = CommonOptions.ProjectOption("run");
+    public static readonly Option<string> ProjectOption = CommonOptions.ProjectOption(CliCommandStrings.VerbRun);
 
     public static readonly Option<string> FileOption = new("--file")
     {
