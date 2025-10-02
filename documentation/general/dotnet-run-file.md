@@ -245,6 +245,12 @@ The directives are processed as follows:
   (because `ProjectReference` items don't support directory paths).
   An error is reported if zero or more than one projects are found in the directory, just like `dotnet reference add` would do.
 
+Directive values support MSBuild variables (like `$(..)`) normally as they are translated literally and left to MSBuild engine to process.
+However, in `#:project` directives, variables might not be preserved during [grow up](#grow-up),
+because there is additional processing of those directives that makes it technically challenging to preserve variables in all cases
+(project directive values need to be resolved to be relative to the target directory
+and also to point to a project file rather than a directory).
+
 Because these directives are limited by the C# language to only appear before the first "C# token" and any `#if`,
 dotnet CLI can look for them via a regex or Roslyn lexer without any knowledge of defined conditional symbols
 and can do that efficiently by stopping the search when it sees the first "C# token".

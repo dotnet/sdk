@@ -30,7 +30,8 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 
         // Find directives (this can fail, so do this before creating the target directory).
         var sourceFile = SourceFile.Load(file);
-        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !_force, DiagnosticBag.ThrowOnFirst());
+        var diagnostics = DiagnosticBag.ThrowOnFirst();
+        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !_force, diagnostics);
 
         // Create a project instance for evaluation.
         var projectCollection = new ProjectCollection();
@@ -41,6 +42,11 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
             Directives = directives,
         };
         var projectInstance = command.CreateProjectInstance(projectCollection);
+
+        // Evaluate directives.
+        directives = VirtualProjectBuildingCommand.EvaluateDirectives(projectInstance, directives, sourceFile, diagnostics);
+        command.Directives = directives;
+        projectInstance = command.CreateProjectInstance(projectCollection);
 
         // Find other items to copy over, e.g., default Content items like JSON files in Web apps.
         var includeItems = FindIncludedItems().ToList();
@@ -169,17 +175,43 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 
             foreach (var directive in directives)
             {
-                // Fixup relative project reference paths (they need to be relative to the output directory instead of the source directory).
-                if (directive is CSharpDirective.Project project &&
-                    !Path.IsPathFullyQualified(project.Name))
+                // Fixup relative project reference paths (they need to be relative to the output directory instead of the source directory,
+                // and preserve MSBuild interpolation variables like `$(..)`
+                // while also pointing to the project file rather than a directory).
+                if (directive is CSharpDirective.Project project)
                 {
-                    var modified = project.WithName(Path.GetRelativePath(relativeTo: targetDirectory, path: project.Name));
-                    result.Add(modified);
+                    // If the path is absolute and it has some `$(..)` vars in it,
+                    // turn it into a relative path (it might be in the form `$(ProjectDir)/../Lib`
+                    // and we don't want that to be turned into an absolute path in the converted project).
+                    if (Path.IsPathFullyQualified(project.Name))
+                    {
+                        // If the path is absolute and has no `$(..)` vars, just keep it.
+                        if (project.UnresolvedName == project.OriginalName)
+                        {
+                            result.Add(project);
+                            continue;
+                        }
+
+                        project = project.WithName(Path.GetRelativePath(relativeTo: targetDirectory, path: project.Name));
+                        result.Add(project);
+                        continue;
+                    }
+
+                    // If the original path is to a directory, just append the resolved file name
+                    // but preserve the variables from the original, e.g., `../$(..)/Directory/Project.csproj`.
+                    if (Directory.Exists(project.UnresolvedName))
+                    {
+                        var projectFileName = Path.GetFileName(project.Name);
+                        var slash = project.OriginalName.Where(c => c is '/' or '\\').DefaultIfEmpty(Path.DirectorySeparatorChar).First();
+                        project = project.WithName(project.OriginalName + slash + projectFileName);
+                    }
+
+                    project = project.WithName(Path.GetRelativePath(relativeTo: targetDirectory, path: project.Name));
+                    result.Add(project);
+                    continue;
                 }
-                else
-                {
-                    result.Add(directive);
-                }
+
+                result.Add(directive);
             }
 
             return result.DrainToImmutable();

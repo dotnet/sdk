@@ -6,6 +6,7 @@ using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Security;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -164,14 +165,26 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </summary>
     public bool NoWriteBuildMarkers { get; init; }
 
+    private SourceFile EntryPointSourceFile
+    {
+        get
+        {
+            if (field == default)
+            {
+                field = SourceFile.Load(EntryPointFileFullPath);
+            }
+
+            return field;
+        }
+    }
+
     public ImmutableArray<CSharpDirective> Directives
     {
         get
         {
             if (field.IsDefault)
             {
-                var sourceFile = SourceFile.Load(EntryPointFileFullPath);
-                field = FindDirectives(sourceFile, reportAllErrors: false, DiagnosticBag.ThrowOnFirst());
+                field = FindDirectives(EntryPointSourceFile, reportAllErrors: false, DiagnosticBag.ThrowOnFirst());
                 Debug.Assert(!field.IsDefault);
             }
 
@@ -1048,6 +1061,23 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         ProjectCollection projectCollection,
         Action<IDictionary<string, string>>? addGlobalProperties)
     {
+        var project = CreateProjectInstance(projectCollection, Directives, addGlobalProperties);
+
+        var directives = EvaluateDirectives(project, Directives, EntryPointSourceFile, DiagnosticBag.ThrowOnFirst());
+        if (directives != Directives)
+        {
+            Directives = directives;
+            project = CreateProjectInstance(projectCollection, directives, addGlobalProperties);
+        }
+
+        return project;
+    }
+
+    private ProjectInstance CreateProjectInstance(
+        ProjectCollection projectCollection,
+        ImmutableArray<CSharpDirective> directives,
+        Action<IDictionary<string, string>>? addGlobalProperties)
+    {
         var projectRoot = CreateProjectRootElement(projectCollection);
 
         var globalProperties = projectCollection.GlobalProperties;
@@ -1069,7 +1099,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             var projectFileWriter = new StringWriter();
             WriteProjectFile(
                 projectFileWriter,
-                Directives,
+                directives,
                 isVirtualProject: true,
                 targetFilePath: EntryPointFileFullPath,
                 artifactsPath: ArtifactsPath,
@@ -1589,6 +1619,28 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
+    /// <summary>
+    /// If there are any <c>#:project</c> <paramref name="directives"/>, expand <c>$()</c> in them and then resolve the project paths.
+    /// </summary>
+    public static ImmutableArray<CSharpDirective> EvaluateDirectives(
+        ProjectInstance? project,
+        ImmutableArray<CSharpDirective> directives,
+        SourceFile sourceFile,
+        DiagnosticBag diagnostics)
+    {
+        if (directives.OfType<CSharpDirective.Project>().Any())
+        {
+            return directives
+                .Select(d => d is CSharpDirective.Project p
+                    ? (project is null ? p : p.WithName(project.ExpandString(p.Name)))
+                        .ResolveProjectPath(sourceFile, diagnostics)
+                    : d)
+                .ToImmutableArray();
+        }
+
+        return directives;
+    }
+
     public static SourceText? RemoveDirectivesFromFile(ImmutableArray<CSharpDirective> directives, SourceText text)
     {
         if (directives.Length == 0)
@@ -1867,8 +1919,26 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     /// <summary>
     /// <c>#:project</c> directive.
     /// </summary>
-    public sealed class Project(in ParseInfo info) : Named(info)
+    public sealed class Project : Named
     {
+        [SetsRequiredMembers]
+        public Project(in ParseInfo info, string name) : base(info)
+        {
+            Name = name;
+            OriginalName = name;
+            UnresolvedName = name;
+        }
+
+        /// <summary>
+        /// Preserved across <see cref="WithName"/> calls.
+        /// </summary>
+        public required string OriginalName { get; init; }
+
+        /// <summary>
+        /// Preserved across <see cref="ResolveProjectPath"/> calls.
+        /// </summary>
+        public required string UnresolvedName { get; init; }
+
         public static new Project? Parse(in ParseContext context)
         {
             var directiveText = context.DirectiveText;
@@ -1878,11 +1948,32 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 return context.Diagnostics.AddError<Project?>(context.SourceFile, context.Info.Span, string.Format(CliCommandStrings.MissingDirectiveName, directiveKind));
             }
 
+            return new Project(context.Info, directiveText);
+        }
+
+        public Project WithName(string name, bool preserveUnresolvedName = false)
+        {
+            return name == Name
+                ? this
+                : new Project(Info, name)
+                {
+                    OriginalName = OriginalName,
+                    UnresolvedName = preserveUnresolvedName ? UnresolvedName : name,
+                };
+        }
+
+        /// <summary>
+        /// If the directive points to a directory, returns a new directive pointing to the corresponding project file.
+        /// </summary>
+        public Project ResolveProjectPath(SourceFile sourceFile, DiagnosticBag diagnostics)
+        {
+            var directiveText = Name;
+
             try
             {
                 // If the path is a directory like '../lib', transform it to a project file path like '../lib/lib.csproj'.
                 // Also normalize blackslashes to forward slashes to ensure the directive works on all platforms.
-                var sourceDirectory = Path.GetDirectoryName(context.SourceFile.Path) ?? ".";
+                var sourceDirectory = Path.GetDirectoryName(sourceFile.Path) ?? ".";
                 var resolvedProjectPath = Path.Combine(sourceDirectory, directiveText.Replace('\\', '/'));
                 if (Directory.Exists(resolvedProjectPath))
                 {
@@ -1900,18 +1991,10 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             }
             catch (GracefulException e)
             {
-                context.Diagnostics.AddError(context.SourceFile, context.Info.Span, string.Format(CliCommandStrings.InvalidProjectDirective, e.Message), e);
+                diagnostics.AddError(sourceFile, Info.Span, string.Format(CliCommandStrings.InvalidProjectDirective, e.Message), e);
             }
 
-            return new Project(context.Info)
-            {
-                Name = directiveText,
-            };
-        }
-
-        public Project WithName(string name)
-        {
-            return new Project(Info) { Name = name };
+            return WithName(directiveText, preserveUnresolvedName: true);
         }
 
         public override string ToString() => $"#:project {Name}";

@@ -77,7 +77,10 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [InlineData(".", "Lib", "./Lib", "Project", "../Lib/lib.csproj")]
     [InlineData(".", "Lib", "Lib/../Lib", "Project", "../Lib/lib.csproj")]
     [InlineData("File", "Lib", "../Lib", "File/Project", "../../Lib/lib.csproj")]
-    [InlineData("File", "Lib", "..\\Lib", "File/Project", "../../Lib/lib.csproj")]
+    [InlineData("File", "Lib", @"..\Lib", "File/Project", "../../Lib/lib.csproj")]
+    [InlineData("File", "Lib", "../$(LibProjectName)", "File/Project", "../../$(LibProjectName)/lib.csproj")]
+    [InlineData("File", "Lib", @"..\$(LibProjectName)", "File/Project", @"../../$(LibProjectName)\lib.csproj")]
+    [InlineData("File", "Lib", "$(MSBuildProjectDirectory)/../$(LibProjectName)", "File/Project", "../../Lib/lib.csproj")]
     public void ProjectReference_RelativePaths(string fileDir, string libraryDir, string reference, string outputDir, string convertedReference)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -105,6 +108,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         Directory.CreateDirectory(fileDirFullPath);
         File.WriteAllText(Path.Join(fileDirFullPath, "app.cs"), $"""
             #:project {reference}
+            #:property LibProjectName=Lib
             C.M();
             """);
 
@@ -188,6 +192,64 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         File.ReadAllText(Path.Join(outputDirFullPath, "app.csproj"))
             .Should().Contain($"""
                 <ProjectReference Include="{Path.Join(libraryDirFullPath, "lib.csproj")}" />
+                """);
+    }
+
+    [Fact]
+    public void ProjectReference_FullPath_WithVars()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var libraryDirFullPath = Path.Join(testInstance.Path, "Lib");
+        Directory.CreateDirectory(libraryDirFullPath);
+        File.WriteAllText(Path.Join(libraryDirFullPath, "lib.cs"), """
+            public static class C
+            {
+                public static void M()
+                {
+                    System.Console.WriteLine("Hello from library");
+                }
+            }
+            """);
+        File.WriteAllText(Path.Join(libraryDirFullPath, "lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var fileDirFullPath = Path.Join(testInstance.Path, "File");
+        Directory.CreateDirectory(fileDirFullPath);
+        File.WriteAllText(Path.Join(fileDirFullPath, "app.cs"), $"""
+            #:project {fileDirFullPath}/../$(LibProjectName)
+            #:property LibProjectName=Lib
+            C.M();
+            """);
+
+        var expectedOutput = "Hello from library";
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(fileDirFullPath)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        var outputDirFullPath = Path.Join(testInstance.Path, "File/Project");
+        new DotnetCommand(Log, "project", "convert", "app.cs", "-o", outputDirFullPath)
+            .WithWorkingDirectory(fileDirFullPath)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(outputDirFullPath)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        File.ReadAllText(Path.Join(outputDirFullPath, "app.csproj"))
+            .Should().Contain($"""
+                <ProjectReference Include="{"../../Lib/lib.csproj".Replace('/', Path.DirectorySeparatorChar)}" />
                 """);
     }
 
@@ -1551,7 +1613,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     private static void Convert(string inputCSharp, out string actualProject, out string? actualCSharp, bool force, string? filePath)
     {
         var sourceFile = new SourceFile(filePath ?? "/app/Program.cs", SourceText.From(inputCSharp, Encoding.UTF8));
-        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !force, DiagnosticBag.ThrowOnFirst());
+        var diagnostics = DiagnosticBag.ThrowOnFirst();
+        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !force, diagnostics);
+        directives = VirtualProjectBuildingCommand.EvaluateDirectives(project: null, directives, sourceFile, diagnostics);
         var projectWriter = new StringWriter();
         VirtualProjectBuildingCommand.WriteProjectFile(projectWriter, directives, isVirtualProject: false);
         actualProject = projectWriter.ToString();
