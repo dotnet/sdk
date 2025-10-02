@@ -5,6 +5,8 @@ Coding Style and Changes:
 - When generating code, run `dotnet format` to ensure uniform formatting.
 - Prefer using file-based namespaces for new code.
 - Do not allow unused `using` directives to be committed.
+- commit your changes, and then format them.
+- add the format commit SHA to the .git-blame-ignore-revs file so that the commit doesn't dirty git blame in the future
 
 Testing:
 - Large changes should always include test changes.
