@@ -549,9 +549,6 @@ This is equivalent to deleting project.assets.json.</value>
   <data name="CmdPrereleaseDescription" xml:space="preserve">
     <value>Consider packages with prerelease versions when searching for newer packages. Requires the '--outdated' option.</value>
   </data>
-  <data name="CmdProjectDescription" xml:space="preserve">
-    <value>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</value>
-  </data>
   <data name="CmdProjectPathName" xml:space="preserve">
     <value>PROJECT_PATH</value>
   </data>
@@ -714,9 +711,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</value>
   <data name="CommandOptionNoLaunchProfileDescription" xml:space="preserve">
     <value>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</value>
     <comment>{Locked="launchSettings.json"}{Locked=".run.json"}</comment>
-  </data>
-  <data name="CommandOptionProjectDescription" xml:space="preserve">
-    <value>The path to the project file to run (defaults to the current directory if there is only one project).</value>
   </data>
   <data name="CommandOptionProjectHelpName" xml:space="preserve">
     <value>PROJECT_PATH</value>

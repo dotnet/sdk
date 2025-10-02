@@ -743,11 +743,6 @@ This is equivalent to deleting project.assets.json.</source>
         <target state="translated">Учитывает пакеты с версиями предварительных выпусков при поиске более новых версий пакетов. Требуется указать параметр '--outdated'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdProjectDescription">
-        <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="needs-review-translation">Определяет путь к файлу проекта для выполнения (имя папки или полный путь). Если не указано, по умолчанию используется текущий каталог.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdProjectDescriptionFormat">
         <source>Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
         <target state="new">Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
@@ -990,11 +985,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <source>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</source>
         <target state="translated">Не используйте launchSettings.json или [app].run.json для настройки приложения.</target>
         <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
-      </trans-unit>
-      <trans-unit id="CommandOptionProjectDescription">
-        <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
-        <target state="translated">Путь к выполняемому файлу проекта (по умолчанию — текущий каталог, если имеется только один проект).</target>
-        <note />
       </trans-unit>
       <trans-unit id="CommandOptionProjectHelpName">
         <source>PROJECT_PATH</source>

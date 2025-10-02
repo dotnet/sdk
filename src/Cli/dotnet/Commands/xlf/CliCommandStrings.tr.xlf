@@ -743,11 +743,6 @@ project.assets.json öğesini silmeyle eşdeğerdir.</target>
         <target state="translated">Daha yeni paketleri ararken yayın öncesi sürümlere sahip olan paketleri göz önünde bulundurun. '--outdated' seçeneğini gerektirir.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdProjectDescription">
-        <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="needs-review-translation">Çalıştırılacak proje dosyasının yolunu (klasör adı veya tam yol) belirtir. Belirtilmezse, varsayılan olarak geçerli dizine ayarlar.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdProjectDescriptionFormat">
         <source>Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
         <target state="new">Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
@@ -990,11 +985,6 @@ Daha fazla bilgi için https://aka.ms/dotnet-test/mtp adresine bakın.</target>
         <source>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</source>
         <target state="translated">Uygulamayı yapılandırmak için launchSettings.json veya [app].run.json dosyalarını kullanmaya çalışmayın.</target>
         <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
-      </trans-unit>
-      <trans-unit id="CommandOptionProjectDescription">
-        <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
-        <target state="translated">Çalıştırılacak proje dosyasının yolu (yalnızca bir proje varsa, geçerli dizin varsayılan olarak kullanılır).</target>
-        <note />
       </trans-unit>
       <trans-unit id="CommandOptionProjectHelpName">
         <source>PROJECT_PATH</source>

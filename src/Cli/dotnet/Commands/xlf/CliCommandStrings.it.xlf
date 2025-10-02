@@ -743,11 +743,6 @@ Equivale a eliminare project.assets.json.</target>
         <target state="translated">Prende in considerazione i pacchetti con versioni preliminari quando si cercano i pacchetti più recenti. Richiede l'opzione '--outdated'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdProjectDescription">
-        <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="needs-review-translation">Definisce il percorso del file progetto da eseguire (nome cartella o percorso completo). Se non specificato, per impostazione predefinita viene usata la directory corrente.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdProjectDescriptionFormat">
         <source>Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
         <target state="new">Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
@@ -990,11 +985,6 @@ Per altre informazioni, vedere https://aka.ms/dotnet-test/mtp.</target>
         <source>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</source>
         <target state="translated">Evitare di usare launchSettings.json o [app].run.json per configurare l'applicazione.</target>
         <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
-      </trans-unit>
-      <trans-unit id="CommandOptionProjectDescription">
-        <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
-        <target state="translated">Percorso del file di progetto da eseguire. Se è presente un solo progetto, per impostazione predefinita viene usata la directory corrente.</target>
-        <note />
       </trans-unit>
       <trans-unit id="CommandOptionProjectHelpName">
         <source>PROJECT_PATH</source>

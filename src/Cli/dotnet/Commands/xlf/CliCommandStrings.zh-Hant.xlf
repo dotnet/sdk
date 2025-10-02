@@ -743,11 +743,6 @@ This is equivalent to deleting project.assets.json.</source>
         <target state="translated">在搜尋較新套件時，建議搜尋具有發行前版本的套件。需要使用 '--outdated' 選項。</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdProjectDescription">
-        <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="needs-review-translation">定義要執行的專案檔案路徑 (資料夾名稱或完整路徑)。如果未指定，則預設為目前目錄。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdProjectDescriptionFormat">
         <source>Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
         <target state="new">Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
@@ -990,11 +985,6 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <source>Do not attempt to use launchSettings.json or [app].run.json to configure the application.</source>
         <target state="translated">請勿嘗試使用 launchSettings.json 或 [app].run.json 設定該應用程式。</target>
         <note>{Locked="launchSettings.json"}{Locked=".run.json"}</note>
-      </trans-unit>
-      <trans-unit id="CommandOptionProjectDescription">
-        <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
-        <target state="translated">要執行之專案檔的路徑 (如果只有一個專案，預設為目前的目錄)。</target>
-        <note />
       </trans-unit>
       <trans-unit id="CommandOptionProjectHelpName">
         <source>PROJECT_PATH</source>
