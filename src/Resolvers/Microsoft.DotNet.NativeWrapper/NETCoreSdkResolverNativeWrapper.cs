@@ -32,9 +32,15 @@ namespace Microsoft.DotNet.NativeWrapper
             var swallowErrors = new Interop.hostfxr_error_writer_fn(message => { });
             IntPtr errorWriter = Marshal.GetFunctionPointerForDelegate(swallowErrors);
             IntPtr previousErrorWriter = Interop.hostfxr_set_error_writer(errorWriter);
-            SdkResolutionResult result = ResolveSdk(string.Empty, globalJsonStartDirectory);
-            Interop.hostfxr_set_error_writer(previousErrorWriter);
-            return result.GlobalJsonState;
+            try
+            {
+                SdkResolutionResult result = ResolveSdk(string.Empty, globalJsonStartDirectory);
+                return result.GlobalJsonState;
+            }
+            finally
+            {
+                Interop.hostfxr_set_error_writer(previousErrorWriter);
+            }
         }
 
         private sealed class SdkList
