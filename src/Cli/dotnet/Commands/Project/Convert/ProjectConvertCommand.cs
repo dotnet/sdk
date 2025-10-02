@@ -202,8 +202,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
                     if (Directory.Exists(project.UnresolvedName))
                     {
                         var projectFileName = Path.GetFileName(project.Name);
-                        var slash = project.OriginalName.Where(c => c is '/' or '\\').DefaultIfEmpty(Path.DirectorySeparatorChar).First();
-                        project = project.WithName(project.OriginalName + slash + projectFileName);
+                        project = project.WithName(Path.Join(project.OriginalName, projectFileName));
                     }
 
                     project = project.WithName(Path.GetRelativePath(relativeTo: targetDirectory, path: project.Name));
