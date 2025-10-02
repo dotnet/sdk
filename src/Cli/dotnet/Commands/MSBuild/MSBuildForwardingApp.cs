@@ -18,8 +18,6 @@ public class MSBuildForwardingApp : CommandBase
     /// <summary>
     /// Adds the CLI's telemetry logger to the MSBuild arguments if telemetry is enabled.
     /// </summary>
-    /// <param name="msbuildArgs"></param>
-    /// <returns></returns>
     private static MSBuildArgs ConcatTelemetryLogger(MSBuildArgs msbuildArgs)
     {
         if (Telemetry.Telemetry.CurrentSessionId != null)
@@ -39,7 +37,6 @@ public class MSBuildForwardingApp : CommandBase
         }
         return msbuildArgs;
     }
-
 
     /// <summary>
     /// Mostly intended for quick/one-shot usage - most 'core' SDK commands should do more hands-on parsing.
