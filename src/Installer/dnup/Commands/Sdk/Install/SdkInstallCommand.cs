@@ -27,16 +27,6 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
     public override int Execute()
     {
-        //bool? updateGlobalJson = null;
-
-        //var updateGlobalJsonOption = _parseResult.GetResult(SdkInstallCommandParser.UpdateGlobalJsonOption)!;
-        //if (updateGlobalJsonOption.Implicit)
-        //{
-
-        //}
-
-        //Reporter.Output.WriteLine($"Update global.json: {_updateGlobalJson}");
-
         var globalJsonInfo = _dotnetInstaller.GetGlobalJsonInfo(Environment.CurrentDirectory);
 
         string? currentInstallPath;
@@ -50,8 +40,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             installPathFromGlobalJson = globalJsonInfo.SdkPath;
 
             if (installPathFromGlobalJson != null && _installPath != null &&
-                //  TODO: Is there a better way to compare paths that takes into account whether the file system is case-sensitive?
-                !installPathFromGlobalJson.Equals(_installPath, StringComparison.OrdinalIgnoreCase))
+                !DnupUtilities.PathsEqual(installPathFromGlobalJson, _installPath))
             {
                 //  TODO: Add parameter to override error
                 Console.Error.WriteLine($"Error: The install path specified in global.json ({installPathFromGlobalJson}) does not match the install path provided ({_installPath}).");
@@ -152,8 +141,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                 }
                 else if (defaultInstallState == InstallType.User)
                 {
-                    //  Another case where we need to compare paths and the comparison may or may not need to be case-sensitive
-                    if (resolvedInstallPath.Equals(currentInstallPath, StringComparison.OrdinalIgnoreCase))
+                    if (DnupUtilities.PathsEqual(resolvedInstallPath, currentInstallPath))
                     {
                         //  No need to prompt here, the default install is already set up.
                     }
@@ -193,7 +181,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             resolvedInstallPath,
             InstallType.User,
             InstallMode.SDK,
-            DnupUtilities.GetInstallArchitecture(System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture),
+            DnupUtilities.GetInstallArchitecture(RuntimeInformation.ProcessArchitecture),
             new ManagementCadence(ManagementCadenceType.DNUP),
             new InstallRequestOptions());
 
@@ -219,7 +207,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             }
             else
             {
-                //  TODO: Add command-linen option for installing admin versions locally
+                //  TODO: Add command-line option for installing admin versions locally
             }
         }
 
