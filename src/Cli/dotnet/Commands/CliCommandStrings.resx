@@ -550,7 +550,7 @@ This is equivalent to deleting project.assets.json.</value>
     <value>Consider packages with prerelease versions when searching for newer packages. Requires the '--outdated' option.</value>
   </data>
   <data name="CmdProjectDescription" xml:space="preserve">
-    <value>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</value>
+    <value>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</value>
   </data>
   <data name="CmdProjectPathName" xml:space="preserve">
     <value>PROJECT_PATH</value>
@@ -597,10 +597,10 @@ If not specified the file will be generated inside the default 'TestResults' dir
     <value>SOLUTION_PATH</value>
   </data>
   <data name="TestCmdProjectDescription" xml:space="preserve">
-    <value>Defines the path of the project file to test (folder name or full path). If not specified, it defaults to the current directory.</value>
+    <value>Defines the path of the project file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</value>
   </data>
   <data name="TestCmdSolutionDescription" xml:space="preserve">
-    <value>Defines the path of the solution file to test (folder name or full path). If not specified, it defaults to the current directory.</value>
+    <value>Defines the path of the solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</value>
   </data>
   <data name="CmdSourceOption" xml:space="preserve">
     <value>SOURCE</value>

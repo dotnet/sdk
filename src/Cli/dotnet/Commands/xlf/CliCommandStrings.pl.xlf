@@ -744,8 +744,8 @@ Jest to równoważne usunięciu pliku project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectDescription">
-        <source>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</source>
-        <target state="translated">Definiuje ścieżkę pliku projektu do uruchomienia (nazwę folderu lub pełną ścieżkę). Jeśli nie zostanie określony, domyślnie będzie to bieżący katalog.</target>
+        <source>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="needs-review-translation">Definiuje ścieżkę pliku projektu do uruchomienia (nazwę folderu lub pełną ścieżkę). Jeśli nie zostanie określony, domyślnie będzie to bieżący katalog.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectPathName">
@@ -3142,13 +3142,13 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
         <note />
       </trans-unit>
       <trans-unit id="TestCmdProjectDescription">
-        <source>Defines the path of the project file to test (folder name or full path). If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project file to test (folder name or full path). If not specified, it defaults to the current directory.</target>
+        <source>Defines the path of the project file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCmdSolutionDescription">
-        <source>Defines the path of the solution file to test (folder name or full path). If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the solution file to test (folder name or full path). If not specified, it defaults to the current directory.</target>
+        <source>Defines the path of the solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCommandUseDirectoryWithSwitch">
