@@ -553,9 +553,9 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>6befeceeaece5c9cb9730878aeaf4667f7c29b70</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="1.9.0-preview.25501.8">
+    <Dependency Name="Microsoft.Testing.Platform" Version="2.0.0">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>a4d4392703e56994925d8fa625219b11e6cd4837</Sha>
+      <Sha>4117267edfb2f6b7dbfef8be013704a24cf9e8b7</Sha>
     </Dependency>
     <Dependency Name="MSTest" Version="3.11.0-preview.25501.8">
       <Uri>https://github.com/microsoft/testfx</Uri>
