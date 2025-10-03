@@ -278,10 +278,4 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         return Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_GLOBALJSON_SDK_CHANNEL");
     }
 
-    bool IsElevated()
-    {
-        return false;
-    }
-
-    // ...existing code...
 }

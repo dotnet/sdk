@@ -77,7 +77,7 @@ internal static class DnupUtilities
         return $"{os}-{arch}";
     }
 
-    public static string GetFileExtensionForPlatform()
+    public static string GetArchiveFileExtensionForPlatform()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {

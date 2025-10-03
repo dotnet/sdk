@@ -29,7 +29,7 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
     {
         using var releaseManifest = new ReleaseManifest();
         var archiveName = $"dotnet-{_install.Id}";
-        _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DnupUtilities.GetFileExtensionForPlatform());
+        _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DnupUtilities.GetArchiveFileExtensionForPlatform());
 
         Spectre.Console.AnsiConsole.Progress()
             .Start(ctx =>
