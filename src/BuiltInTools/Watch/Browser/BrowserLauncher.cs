@@ -108,7 +108,7 @@ internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter pro
             return false;
         }
 
-        if (!CommandLineOptions.IsCodeExecutionCommand(projectOptions.Command))
+        if (!projectOptions.IsCodeExecutionCommand)
         {
             logger.LogDebug("Command '{Command}' does not support launching browsers.", projectOptions.Command);
             return false;

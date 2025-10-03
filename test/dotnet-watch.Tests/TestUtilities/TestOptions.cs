@@ -15,7 +15,7 @@ internal static class TestOptions
     public static readonly ProjectOptions ProjectOptions = GetProjectOptions([]);
 
     public static EnvironmentOptions GetEnvironmentOptions(string workingDirectory = "", string muxerPath = "", TestAsset? asset = null)
-        => new(workingDirectory, muxerPath, TimeSpan.Zero, IsPollingEnabled: true, TestFlags: TestFlags.RunningAsTest, TestOutput: asset != null ? GetWatchTestOutputPath(asset) : "");
+        => new(workingDirectory, muxerPath, TimeSpan.Zero, IsPollingEnabled: true, TestFlags: TestFlags.RunningAsTest, TestOutput: asset != null ? asset.GetWatchTestOutputPath() : "");
 
     public static CommandLineOptions GetCommandLineOptions(string[] args)
         => CommandLineOptions.Parse(args, NullLogger.Instance, TextWriter.Null, out _) ?? throw new InvalidOperationException();
@@ -25,9 +25,4 @@ internal static class TestOptions
         var options = GetCommandLineOptions(args ?? []);
         return options.GetProjectOptions(options.ProjectPath ?? "test.csproj", workingDirectory: "");
     }
-
-    public static string GetWatchTestOutputPath(this TestAsset asset)
-        => Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot
-            ? Path.Combine(ciOutputRoot, ".hotreload", asset.Name)
-            : asset.Path + ".hotreload";
 }

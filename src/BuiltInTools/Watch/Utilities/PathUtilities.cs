@@ -8,6 +8,9 @@ internal static class PathUtilities
     public static readonly IEqualityComparer<string> OSSpecificPathComparer = Path.DirectorySeparatorChar == '\\' ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
     public static readonly StringComparison OSSpecificPathComparison = Path.DirectorySeparatorChar == '\\' ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
+    public static string ExecutableExtension
+        => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "";
+
     public static string EnsureTrailingSlash(string path)
         => (path is [.., var last] && last != Path.DirectorySeparatorChar) ? path + Path.DirectorySeparatorChar : path;
 

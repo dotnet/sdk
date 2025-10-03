@@ -5,8 +5,6 @@
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.DotNet.Cli.Commands;
-using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
@@ -31,18 +29,18 @@ namespace Microsoft.DotNet.Watch
             var projectDirectory = Path.GetDirectoryName(projectPath);
             Debug.Assert(projectDirectory != null);
 
-            var launchSettingsPath = CommonRunHelpers.GetPropertiesLaunchSettingsPath(projectDirectory, "Properties");
+            var launchSettingsPath = GetPropertiesLaunchSettingsPath(projectDirectory, "Properties");
             bool hasLaunchSettings = File.Exists(launchSettingsPath);
 
             var projectNameWithoutExtension = Path.GetFileNameWithoutExtension(projectPath);
-            var runJsonPath = CommonRunHelpers.GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
+            var runJsonPath = GetFlatLaunchSettingsPath(projectDirectory, projectNameWithoutExtension);
             bool hasRunJson = File.Exists(runJsonPath);
 
             if (hasLaunchSettings)
             {
                 if (hasRunJson)
                 {
-                    logger.LogWarning(CliCommandStrings.RunCommandWarningRunJsonNotUsed, runJsonPath, launchSettingsPath);
+                    logger.LogWarning("Warning: Settings from '{JsonPath}' are not used because '{LaunchSettingsPath}' has precedence.", runJsonPath, launchSettingsPath);
                 }
             }
             else if (hasRunJson)
@@ -97,6 +95,12 @@ namespace Microsoft.DotNet.Watch
             namedProfile.LaunchProfileName = launchProfileName;
             return namedProfile;
         }
+
+        private static string GetPropertiesLaunchSettingsPath(string directoryPath, string propertiesDirectoryName)
+            => Path.Combine(directoryPath, propertiesDirectoryName, "launchSettings.json");
+
+        private static string GetFlatLaunchSettingsPath(string directoryPath, string projectNameWithoutExtension)
+            => Path.Join(directoryPath, $"{projectNameWithoutExtension}.run.json");
 
         private static LaunchSettingsProfile? ReadDefaultLaunchProfile(LaunchSettingsJson? launchSettings, ILogger logger)
         {

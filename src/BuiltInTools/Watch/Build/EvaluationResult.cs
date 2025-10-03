@@ -48,7 +48,7 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
 
         // See https://github.com/dotnet/project-system/blob/main/docs/well-known-project-properties.md
 
-        var globalOptions = CommandLineOptions.ParseBuildProperties(buildArguments)
+        var globalOptions = BuildUtilities.ParseBuildProperties(buildArguments)
             .ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value)
             .SetItem(PropertyNames.DotNetWatchBuild, "true")
             .SetItem(PropertyNames.DesignTimeBuild, "true")
