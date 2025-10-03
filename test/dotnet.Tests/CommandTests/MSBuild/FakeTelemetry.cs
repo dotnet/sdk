@@ -10,8 +10,6 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     public class FakeTelemetry : ITelemetry
     {
         public bool Enabled { get; set; } = true;
-        
-        private readonly List<LogEntry> _logEntries = new List<LogEntry>();
 
         private readonly List<LogEntry> _logEntries = new List<LogEntry>();
 
