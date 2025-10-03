@@ -8,7 +8,6 @@ using System.CommandLine.StaticCompletions.Shells;
 using Microsoft.DotNet.Cli.Commands.BuildServer.Shutdown;
 using Microsoft.Extensions.Options;
 using Xunit;
-using Xunit.Abstractions;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace System.CommandLine.StaticCompletions.Tests;
