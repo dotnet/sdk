@@ -85,14 +85,14 @@ namespace Microsoft.DotNet.Watch
         /// <summary>
         /// Terminates the process if it hasn't terminated yet.
         /// </summary>
-        public async Task TerminateAsync()
+        public Task TerminateAsync()
         {
             if (!_isDisposed)
             {
                 processTerminationSource.Cancel();
             }
 
-            _ = await RunningProcess;
+            return RunningProcess;
         }
 
         /// <summary>
@@ -106,10 +106,10 @@ namespace Microsoft.DotNet.Watch
         /// <summary>
         /// Terminates the process in preparation for a restart.
         /// </summary>
-        public async Task TerminateForRestartAsync()
+        public Task TerminateForRestartAsync()
         {
             InitiateRestart();
-            await TerminateAsync();
+            return TerminateAsync();
         }
     }
 }

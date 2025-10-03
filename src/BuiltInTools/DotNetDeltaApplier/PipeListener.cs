@@ -18,6 +18,7 @@ internal sealed class PipeListener(string pipeName, IHotReloadAgent agent, Actio
     /// </summary>
     private readonly SemaphoreSlim _messageToClientLock = new(initialCount: 1);
 
+    // Not-null once initialized:
     private NamedPipeClientStream? _pipeClient;
 
     public Task Listen(CancellationToken cancellationToken)
@@ -58,7 +59,6 @@ internal sealed class PipeListener(string pipeName, IHotReloadAgent agent, Actio
             }
 
             _pipeClient.Dispose();
-            _pipeClient = null;
             agent.Dispose();
 
             return Task.CompletedTask;
@@ -77,7 +77,6 @@ internal sealed class PipeListener(string pipeName, IHotReloadAgent agent, Actio
             finally
             {
                 _pipeClient.Dispose();
-                _pipeClient = null;
                 agent.Dispose();
             }
         }, cancellationToken);
@@ -180,7 +179,7 @@ internal sealed class PipeListener(string pipeName, IHotReloadAgent agent, Actio
         Debug.Assert(_pipeClient != null);
         try
         {
-            _messageToClientLock.Wait(cancellationToken);
+            await _messageToClientLock.WaitAsync(cancellationToken);
             await _pipeClient.WriteAsync((byte)response.Type, cancellationToken);
             await response.WriteAsync(_pipeClient, cancellationToken);
         }
