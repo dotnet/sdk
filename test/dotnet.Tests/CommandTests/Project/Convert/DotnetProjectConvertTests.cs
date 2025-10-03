@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.Security;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.Text;
@@ -1168,10 +1169,10 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         VerifyConversionThrows(
             inputCSharp: """
-                #:property Name"=Value
+                #:property 123Name=Value
                 """,
             expectedWildcardPattern: RunFileTests.DirectiveError("/app/Program.cs", 1, CliCommandStrings.PropertyDirectiveInvalidName, """
-                The '"' character, hexadecimal value 0x22, cannot be included in a name.
+                Name cannot begin with the '1' character, hexadecimal value 0x31.
                 """));
     }
 
@@ -1221,7 +1222,13 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 </Project>
 
                 """,
-            expectedCSharp: "");
+            expectedCSharp: "",
+            expectedErrors:
+            [
+                (1, CliCommandStrings.QuoteInDirective),
+                (2, CliCommandStrings.QuoteInDirective),
+                (3, CliCommandStrings.QuoteInDirective),
+            ]);
     }
 
     [Fact]
@@ -1257,7 +1264,11 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                  #  !  /test
                   #!  /program   x   
                  # :property Name=Value
-                """);
+                """,
+            expectedErrors:
+            [
+                (3, CliCommandStrings.QuoteInDirective),
+            ]);
     }
 
     [Fact]
@@ -1548,10 +1559,15 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 """);
     }
 
-    private static void Convert(string inputCSharp, out string actualProject, out string? actualCSharp, bool force, string? filePath)
+    private const string programPath = "/app/Program.cs";
+
+    private static void Convert(string inputCSharp, out string actualProject, out string? actualCSharp, bool force, string? filePath,
+        bool collectDiagnostics, out ImmutableArray<SimpleDiagnostic>.Builder? actualDiagnostics)
     {
-        var sourceFile = new SourceFile(filePath ?? "/app/Program.cs", SourceText.From(inputCSharp, Encoding.UTF8));
-        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !force, DiagnosticBag.ThrowOnFirst());
+        var sourceFile = new SourceFile(filePath ?? programPath, SourceText.From(inputCSharp, Encoding.UTF8));
+        actualDiagnostics = null;
+        var diagnosticBag = collectDiagnostics ? DiagnosticBag.Collect(out actualDiagnostics) : DiagnosticBag.ThrowOnFirst();
+        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !force, diagnosticBag);
         var projectWriter = new StringWriter();
         VirtualProjectBuildingCommand.WriteProjectFile(projectWriter, directives, isVirtualProject: false);
         actualProject = projectWriter.ToString();
@@ -1561,25 +1577,43 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// <param name="expectedCSharp">
     /// <see langword="null"/> means the conversion should not touch the C# content.
     /// </param>
-    private static void VerifyConversion(string inputCSharp, string expectedProject, string? expectedCSharp, bool force = false, string? filePath = null)
+    private static void VerifyConversion(string inputCSharp, string expectedProject, string? expectedCSharp, bool force = false, string? filePath = null,
+        IEnumerable<(int LineNumber, string Message)>? expectedErrors = null)
     {
-        Convert(inputCSharp, out var actualProject, out var actualCSharp, force: force, filePath: filePath);
+        Convert(inputCSharp, out var actualProject, out var actualCSharp, force: force, filePath: filePath,
+            collectDiagnostics: expectedErrors != null, out var actualDiagnostics);
         actualProject.Should().Be(expectedProject);
         actualCSharp.Should().Be(expectedCSharp);
+        VerifyErrors(actualDiagnostics, expectedErrors);
     }
 
     private static void VerifyConversionThrows(string inputCSharp, string expectedWildcardPattern)
     {
-        var convert = () => Convert(inputCSharp, out _, out _, force: false, filePath: null);
+        var convert = () => Convert(inputCSharp, out _, out _, force: false, filePath: null, collectDiagnostics: false, out _);
         convert.Should().Throw<GracefulException>().WithMessage(expectedWildcardPattern);
     }
 
     private static void VerifyDirectiveConversionErrors(string inputCSharp, IEnumerable<(int LineNumber, string Message)> expectedErrors)
     {
-        var programPath = "/app/Program.cs";
         var sourceFile = new SourceFile(programPath, SourceText.From(inputCSharp, Encoding.UTF8));
         VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: true, DiagnosticBag.Collect(out var diagnostics));
-        Assert.All(diagnostics, d => { Assert.Equal(programPath, d.Location.Path); });
-        diagnostics.Select(d => (d.Location.Span.Start.Line + 1, d.Message)).Should().BeEquivalentTo(expectedErrors);
+        VerifyErrors(diagnostics, expectedErrors);
+    }
+
+    private static void VerifyErrors(ImmutableArray<SimpleDiagnostic>.Builder? actual, IEnumerable<(int LineNumber, string Message)>? expected)
+    {
+        if (actual is null)
+        {
+            Assert.Null(expected);
+        }
+        else if (expected is null)
+        {
+            Assert.Null(actual);
+        }
+        else
+        {
+            Assert.All(actual, d => { Assert.Equal(programPath, d.Location.Path); });
+            actual.Select(d => (d.Location.Span.Start.Line + 1, d.Message)).Should().BeEquivalentTo(expected);
+        }
     }
 }

@@ -1619,6 +1619,9 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <value>Duplicate directives are not supported: {0}</value>
     <comment>{0} is the directive type and name.</comment>
   </data>
+  <data name="QuoteInDirective" xml:space="preserve">
+    <value>Directives currently cannot contain quotes (").</value>
+  </data>
   <data name="InvalidOptionForStdin" xml:space="preserve">
     <value>Cannot specify option '{0}' when also using '-' to read the file from standard input.</value>
     <comment>{0} is an option name like '--no-build'.</comment>

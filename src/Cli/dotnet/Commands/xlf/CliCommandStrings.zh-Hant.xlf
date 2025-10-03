@@ -2552,6 +2552,11 @@ The default is to publish a framework-dependent application.</source>
 預設為發佈與 Framework 相依的應用程式。</target>
         <note />
       </trans-unit>
+      <trans-unit id="QuoteInDirective">
+        <source>Directives currently cannot contain quotes (").</source>
+        <target state="new">Directives currently cannot contain quotes (").</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RazorOptionDescription">
         <source>Shut down the Razor build server.</source>
         <target state="translated">關閉 Razor 組建伺服器。</target>
