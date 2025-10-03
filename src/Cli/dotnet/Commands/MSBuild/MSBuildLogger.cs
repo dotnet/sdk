@@ -22,6 +22,10 @@ public sealed class MSBuildLogger : INodeLogger
     internal const string BuildcheckRunEventName = "buildcheck/run";
     internal const string BuildcheckRuleStatsEventName = "buildcheck/rule";
 
+    // These two events are aggregated and sent at the end of the build.
+    internal const string TaskFactoryTelemetryAggregatedEventName = "build/tasks/taskfactory";
+    internal const string TasksTelemetryAggregatedEventName = "build/tasks";
+
     internal const string SdkTaskBaseCatchExceptionTelemetryEventName = "taskBaseCatchException";
     internal const string PublishPropertiesTelemetryEventName = "PublishProperties";
     internal const string WorkloadPublishPropertiesTelemetryEventName = "WorkloadPublishProperties";
@@ -48,6 +52,15 @@ public sealed class MSBuildLogger : INodeLogger
     /// </summary>
     internal const string SdkContainerPublishErrorEventName = "sdk/container/publish/error";
 
+    /// <summary>
+    /// Stores aggregated telemetry data by event name and property name.
+    /// </summary>
+    /// <remarks>
+    /// Key: event name, Value: property name to aggregated count.
+    /// Aggregation is very basic. Only integer properties are aggregated by summing values. Non-integer properties are ignored.
+    /// </remarks>
+    private Dictionary<string, Dictionary<string, int>> _aggregatedEvents = new();
+
     public MSBuildLogger()
     {
         try
@@ -73,6 +86,14 @@ public sealed class MSBuildLogger : INodeLogger
         }
     }
 
+    /// <summary>
+    /// Constructor for testing purposes.
+    /// </summary>
+    internal MSBuildLogger(ITelemetry telemetry)
+    {
+        _telemetry = telemetry;
+    }
+
     public void Initialize(IEventSource eventSource, int nodeCount)
     {
         Initialize(eventSource);
@@ -95,11 +116,77 @@ public sealed class MSBuildLogger : INodeLogger
                 {
                     eventSource2.TelemetryLogged += OnTelemetryLogged;
                 }
+
+                eventSource.BuildFinished += OnBuildFinished;
             }
         }
         catch (Exception)
         {
             // Exceptions during telemetry shouldn't cause anything else to fail
+        }
+    }
+
+    private void OnBuildFinished(object sender, BuildFinishedEventArgs e)
+    {
+        SendAggregatedEventsOnBuildFinished(_telemetry);
+    }
+
+    internal void SendAggregatedEventsOnBuildFinished(ITelemetry? telemetry)
+    {
+        if (_aggregatedEvents.TryGetValue(TaskFactoryTelemetryAggregatedEventName, out var taskFactoryData))
+        {
+            var taskFactoryProperties = ConvertToStringDictionary(taskFactoryData);
+
+            TrackEvent(telemetry, $"msbuild/{TaskFactoryTelemetryAggregatedEventName}", taskFactoryProperties, toBeHashed: [], toBeMeasured: []);
+            _aggregatedEvents.Remove(TaskFactoryTelemetryAggregatedEventName);
+        }
+
+        if (_aggregatedEvents.TryGetValue(TasksTelemetryAggregatedEventName, out var tasksData))
+        {
+            var tasksProperties = ConvertToStringDictionary(tasksData);
+
+            TrackEvent(telemetry, $"msbuild/{TasksTelemetryAggregatedEventName}", tasksProperties, toBeHashed: [], toBeMeasured: []);
+            _aggregatedEvents.Remove(TasksTelemetryAggregatedEventName);
+        }
+    }
+
+    private static Dictionary<string, string?> ConvertToStringDictionary(Dictionary<string, int> properties)
+    {
+        Dictionary<string, string?> stringProperties = new();
+        foreach (var kvp in properties)
+        {
+            stringProperties[kvp.Key] = kvp.Value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        return stringProperties;
+    }
+
+    internal void AggregateEvent(TelemetryEventArgs args)
+    {
+        if (args.EventName == null || args.Properties == null)
+        {
+            return;
+        }
+
+        if (!_aggregatedEvents.TryGetValue(args.EventName, out Dictionary<string, int>? eventData))
+        {
+            eventData = new Dictionary<string, int>();
+            _aggregatedEvents[args.EventName] = eventData;
+        }
+
+        foreach (var kvp in args.Properties)
+        {
+            if (int.TryParse(kvp.Value, CultureInfo.InvariantCulture, out int count))
+            {
+                if (!eventData.ContainsKey(kvp.Key))
+                {
+                    eventData[kvp.Key] = count;
+                }
+                else
+                {
+                    eventData[kvp.Key] += count;
+                }
+            }
         }
     }
 
@@ -198,7 +285,14 @@ public sealed class MSBuildLogger : INodeLogger
 
     private void OnTelemetryLogged(object sender, TelemetryEventArgs args)
     {
-        FormatAndSend(_telemetry, args);
+        if (args.EventName == TaskFactoryTelemetryAggregatedEventName || args.EventName == TasksTelemetryAggregatedEventName)
+        {
+            AggregateEvent(args);
+        }
+        else
+        {
+            FormatAndSend(_telemetry, args);
+        }
     }
 
     public void Shutdown()
