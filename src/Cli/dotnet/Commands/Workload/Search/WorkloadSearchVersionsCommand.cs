@@ -162,7 +162,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
         var packageId = installer.GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), featureBand);
 
         // Get more results than needed to account for potential duplicates from multiple feeds
-        int resultsToRequest = numberOfWorkloadSetsToTake == 0 ? 0 : numberOfWorkloadSetsToTake * 2;
+        int resultsToRequest = numberOfWorkloadSetsToTake * 2;
 
         var versions = packageDownloader.GetLatestPackageVersions(packageId, resultsToRequest, packageSourceLocation: null, includePreview: includePreviews)
             .GetAwaiter().GetResult()
