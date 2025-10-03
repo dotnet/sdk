@@ -13,6 +13,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         
         private readonly List<LogEntry> _logEntries = new List<LogEntry>();
 
+        private readonly List<LogEntry> _logEntries = new List<LogEntry>();
+
         public void TrackEvent(string eventName, IDictionary<string, string> properties, IDictionary<string, double> measurements)
         {
             var entry = new LogEntry { EventName = eventName, Properties = properties, Measurement = measurements };
