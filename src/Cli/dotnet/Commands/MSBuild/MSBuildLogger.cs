@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+﻿﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
@@ -13,7 +13,7 @@ public sealed class MSBuildLogger : INodeLogger
 {
     private readonly IFirstTimeUseNoticeSentinel _sentinel =
         new FirstTimeUseNoticeSentinel();
-    private readonly ITelemetry? _telemetry = null;
+    private readonly ITelemetry? _telemetry;
 
     internal const string TargetFrameworkTelemetryEventName = "targetframeworkeval";
     internal const string BuildTelemetryEventName = "build";
@@ -163,14 +163,14 @@ public sealed class MSBuildLogger : INodeLogger
 
     internal void AggregateEvent(TelemetryEventArgs args)
     {
-        if (args.EventName == null || args.Properties == null)
+        if (args.EventName is null)
         {
             return;
         }
 
-        if (!_aggregatedEvents.TryGetValue(args.EventName, out Dictionary<string, int>? eventData))
+        if (!_aggregatedEvents.TryGetValue(args.EventName, out var eventData))
         {
-            eventData = new Dictionary<string, int>();
+            eventData = [];
             _aggregatedEvents[args.EventName] = eventData;
         }
 
@@ -195,32 +195,34 @@ public sealed class MSBuildLogger : INodeLogger
         switch (args.EventName)
         {
             case TargetFrameworkTelemetryEventName:
-                TrackEvent(telemetry, $"msbuild/{TargetFrameworkTelemetryEventName}", args.Properties, [], []);
+                TrackEvent(telemetry, $"msbuild/{TargetFrameworkTelemetryEventName}", args.Properties);
                 break;
             case BuildTelemetryEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildTelemetryEventName}", args.Properties,
                     toBeHashed: ["ProjectPath", "BuildTarget"],
-                    toBeMeasured: ["BuildDurationInMilliseconds", "InnerBuildDurationInMilliseconds"]);
+                    toBeMeasured: ["BuildDurationInMilliseconds", "InnerBuildDurationInMilliseconds"]
+                );
                 break;
             case LoggingConfigurationTelemetryEventName:
                 TrackEvent(telemetry, $"msbuild/{LoggingConfigurationTelemetryEventName}", args.Properties,
-                    toBeHashed: [],
-                    toBeMeasured: ["FileLoggersCount"]);
+                    toBeMeasured: ["FileLoggersCount"]
+                );
                 break;
             case BuildcheckAcquisitionFailureEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildcheckAcquisitionFailureEventName}", args.Properties,
-                    toBeHashed: ["AssemblyName", "ExceptionType", "ExceptionMessage"],
-                    toBeMeasured: []);
+                    toBeHashed: ["AssemblyName", "ExceptionType", "ExceptionMessage"]
+                );
                 break;
             case BuildcheckRunEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildcheckRunEventName}", args.Properties,
-                    toBeHashed: [],
-                    toBeMeasured: ["TotalRuntimeInMilliseconds"]);
+                    toBeMeasured: ["TotalRuntimeInMilliseconds"]
+                );
                 break;
             case BuildcheckRuleStatsEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildcheckRuleStatsEventName}", args.Properties,
                     toBeHashed: ["RuleId", "CheckFriendlyName"],
-                    toBeMeasured: ["TotalRuntimeInMilliseconds"]);
+                    toBeMeasured: ["TotalRuntimeInMilliseconds"]
+                );
                 break;
             // Pass through events that don't need special handling
             case SdkTaskBaseCatchExceptionTelemetryEventName:
@@ -230,7 +232,7 @@ public sealed class MSBuildLogger : INodeLogger
             case SdkContainerPublishBaseImageInferenceEventName:
             case SdkContainerPublishSuccessEventName:
             case SdkContainerPublishErrorEventName:
-                TrackEvent(telemetry, args.EventName, args.Properties, [], []);
+                TrackEvent(telemetry, args.EventName, args.Properties);
                 break;
             default:
                 // Ignore unknown events
@@ -238,7 +240,7 @@ public sealed class MSBuildLogger : INodeLogger
         }
     }
 
-    private static void TrackEvent(ITelemetry? telemetry, string eventName, IDictionary<string, string?> eventProperties, string[]? toBeHashed, string[]? toBeMeasured)
+    private static void TrackEvent(ITelemetry? telemetry, string eventName, IDictionary<string, string?> eventProperties, string[]? toBeHashed = null, string[]? toBeMeasured = null)
     {
         if (telemetry == null || !telemetry.Enabled)
         {
@@ -255,7 +257,7 @@ public sealed class MSBuildLogger : INodeLogger
                 if (eventProperties.TryGetValue(propertyToBeHashed, out var value))
                 {
                     // Lets lazy allocate in case there is tons of telemetry
-                    properties ??= new Dictionary<string, string?>(eventProperties);
+                    properties ??= new(eventProperties);
                     properties[propertyToBeHashed] = Sha256Hasher.HashWithNormalizedCasing(value!);
                 }
             }
@@ -265,10 +267,10 @@ public sealed class MSBuildLogger : INodeLogger
         {
             foreach (var propertyToBeMeasured in toBeMeasured)
             {
-                if (eventProperties.TryGetValue(propertyToBeMeasured, out string? value))
+                if (eventProperties.TryGetValue(propertyToBeMeasured, out var value))
                 {
                     // Lets lazy allocate in case there is tons of telemetry
-                    properties ??= new Dictionary<string, string?>(eventProperties);
+                    properties ??= new(eventProperties);
                     properties.Remove(propertyToBeMeasured);
                     if (double.TryParse(value, CultureInfo.InvariantCulture, out double realValue))
                     {
@@ -308,5 +310,6 @@ public sealed class MSBuildLogger : INodeLogger
     }
 
     public LoggerVerbosity Verbosity { get; set; }
+
     public string? Parameters { get; set; }
 }
