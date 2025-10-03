@@ -35,6 +35,14 @@ public static class Constants
     public const string Identity = nameof(Identity);
     public const string FullPath = nameof(FullPath);
 
+    // MSBuild CLI flags
+
+    /// <summary>
+    /// Disables the live-updating node display in the terminal logger, which is useful for LLM/agentic environments.
+    /// </summary>
+    public const string TerminalLogger_DisableNodeDisplay = "-tlp:DISABLENODEDISPLAY";
+
+
     public static readonly string ProjectArgumentName = "<PROJECT>";
     public static readonly string SolutionArgumentName = "<SLN_FILE>";
     public static readonly string ToolPackageArgumentName = "<PACKAGE_ID>";

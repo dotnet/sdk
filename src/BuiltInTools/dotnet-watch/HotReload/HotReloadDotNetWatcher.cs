@@ -108,7 +108,7 @@ namespace Microsoft.DotNet.Watch
                     }
 
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, _context.Logger);
-                    compilationHandler = new CompilationHandler(_context.LoggerFactory, _context.Logger, _context.ProcessRunner);
+                    compilationHandler = new CompilationHandler(_context.Logger, _context.ProcessRunner);
                     var scopedCssFileHandler = new ScopedCssFileHandler(_context.Logger, _context.BuildLogger, projectMap, _context.BrowserRefreshServerFactory, _context.Options, _context.EnvironmentOptions);
                     var projectLauncher = new ProjectLauncher(_context, projectMap, compilationHandler, iteration);
                     evaluationResult.ItemExclusions.Report(_context.Logger);
@@ -127,6 +127,7 @@ namespace Microsoft.DotNet.Watch
                         rootProjectOptions,
                         rootProcessTerminationSource,
                         onOutput: null,
+                        onExit: null,
                         restartOperation: new RestartOperation(_ => throw new InvalidOperationException("Root project shouldn't be restarted")),
                         iterationCancellationToken);
 
@@ -138,7 +139,7 @@ namespace Microsoft.DotNet.Watch
                     }
 
                     // Cancel iteration as soon as the root process exits, so that we don't spent time loading solution, etc. when the process is already dead.
-                    rootRunningProject.ProcessExitedSource.Token.Register(() => iterationCancellationSource.Cancel());
+                    rootRunningProject.ProcessExitedCancellationToken.Register(() => iterationCancellationSource.Cancel());
 
                     if (shutdownCancellationToken.IsCancellationRequested)
                     {
@@ -146,11 +147,7 @@ namespace Microsoft.DotNet.Watch
                         return;
                     }
 
-                    try
-                    {
-                        await rootRunningProject.WaitForProcessRunningAsync(iterationCancellationToken);
-                    }
-                    catch (OperationCanceledException) when (rootRunningProject.ProcessExitedSource.Token.IsCancellationRequested)
+                    if (!await rootRunningProject.WaitForProcessRunningAsync(iterationCancellationToken))
                     {
                         // Process might have exited while we were trying to communicate with it.
                         // Cancel the iteration, but wait for a file change before starting a new one.
@@ -384,19 +381,7 @@ namespace Microsoft.DotNet.Watch
                                 projectsToRestart.Select(async runningProject =>
                                 {
                                     var newRunningProject = await runningProject.RestartOperation(shutdownCancellationToken);
-
-                                    try
-                                    {
-                                        await newRunningProject.WaitForProcessRunningAsync(shutdownCancellationToken);
-                                    }
-                                    catch (OperationCanceledException) when (!shutdownCancellationToken.IsCancellationRequested)
-                                    {
-                                        // Process might have exited while we were trying to communicate with it.
-                                    }
-                                    finally
-                                    {
-                                        runningProject.Dispose();
-                                    }
+                                    _ = await newRunningProject.WaitForProcessRunningAsync(shutdownCancellationToken);
                                 }))
                                 .WaitAsync(shutdownCancellationToken);
 
@@ -546,15 +531,13 @@ namespace Microsoft.DotNet.Watch
 
                     if (rootRunningProject != null)
                     {
-                        await rootRunningProject.TerminateAsync();
+                        await rootRunningProject.TerminateAsync(isRestarting: false);
                     }
 
                     if (runtimeProcessLauncher != null)
                     {
                         await runtimeProcessLauncher.DisposeAsync();
                     }
-
-                    rootRunningProject?.Dispose();
 
                     if (waitForFileChangeBeforeRestarting &&
                         !shutdownCancellationToken.IsCancellationRequested &&
