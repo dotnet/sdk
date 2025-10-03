@@ -41,23 +41,42 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
     /// <summary>
     /// Initiates connection with the agent in the target process.
     /// </summary>
+    /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
     public abstract void InitiateConnection(CancellationToken cancellationToken);
 
     /// <summary>
     /// Waits until the connection with the agent is established.
     /// </summary>
+    /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
     public abstract Task WaitForConnectionEstablishedAsync(CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Returns update capabilities of the target process.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
     public abstract Task<ImmutableArray<string>> GetUpdateCapabilitiesAsync(CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Applies managed code updates to the target process.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
     public abstract Task<ApplyStatus> ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Applies static asset updates to the target process.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
     public abstract Task<ApplyStatus> ApplyStaticAssetUpdatesAsync(ImmutableArray<HotReloadStaticAssetUpdate> updates, bool isProcessSuspended, CancellationToken cancellationToken);
 
     /// <summary>
     /// Notifies the agent that the initial set of updates has been applied and the user code in the process can start executing.
     /// </summary>
+    /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
     public abstract Task InitialUpdatesAppliedAsync(CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Disposes the client. Can occur unexpectedly whenever the process exits.
+    /// </summary>
     public abstract void Dispose();
 
     public static void ReportLogEntry(ILogger logger, string message, AgentMessageSeverity severity)
@@ -72,7 +91,7 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
         logger.Log(level, message);
     }
 
-    public async Task<IReadOnlyList<HotReloadManagedCodeUpdate>> FilterApplicableUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken cancellationToken)
+    protected async Task<IReadOnlyList<HotReloadManagedCodeUpdate>> FilterApplicableUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken cancellationToken)
     {
         var availableCapabilities = await GetUpdateCapabilitiesAsync(cancellationToken);
         var applicableUpdates = new List<HotReloadManagedCodeUpdate>();

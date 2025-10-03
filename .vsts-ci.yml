@@ -102,6 +102,7 @@ extends:
           oneESCompat:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
+          populateInternalRuntimeVariables: true
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           locBranch: release/10.0.1xx
           # WORKAROUND: BinSkim requires the folder exist prior to scanning.
@@ -141,6 +142,14 @@ extends:
                 _SignType: real
               dependsOn: Official_windows_x64
               downloadManifestMsiPackages: true
+            ### TestTemplatesCG ###
+            # Note: This job is only used to allow the test templates to be built locally on the agent as opposed to Helix.
+            # The tests acquire the templates' PackageReferences from NuGet, which allows them to be scanned by CG (component governance).
+            # CG is only ran internally, so this job makes sense to only run alongside of the official jobs.
+            - categoryName: TestTemplatesCG
+              testProjects: $(Build.SourcesDirectory)/test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj
+              testRunnerAdditionalArguments: -class Microsoft.DotNet.Cli.New.IntegrationTests.DotnetNewTestTemplatesTests
+              publishXunitResults: true
 
       ############### LINUX ###############
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
@@ -153,6 +162,7 @@ extends:
           oneESCompat:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
+          populateInternalRuntimeVariables: true
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
             timeoutInMinutes: 90
@@ -235,6 +245,7 @@ extends:
           oneESCompat:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
+          populateInternalRuntimeVariables: true
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
             timeoutInMinutes: 90
@@ -260,6 +271,8 @@ extends:
               vmImage: macOS-latest
               os: macOS
             helixTargetQueue: osx.13.arm64
+            populateInternalRuntimeVariables: true
+            runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
             macOSJobParameterSets:
             - categoryName: TestBuild
               targetArchitecture: arm64
@@ -270,7 +283,9 @@ extends:
         - template: /eng/dotnet-format/dotnet-format-integration.yml@self
           parameters:
             oneESCompat:
+              templateFolderName: templates-official
               publishTaskPrefix: 1ES.
+            populateInternalRuntimeVariables: true
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
 
     ############### PUBLISH STAGE ###############
