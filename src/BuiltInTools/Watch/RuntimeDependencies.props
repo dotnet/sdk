@@ -1,0 +1,33 @@
+<Project>
+  <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\BrowserRefresh\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj">
+      <OutputItemType>Content</OutputItemType>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <UndefineProperties>TargetFramework;TargetFrameworks</UndefineProperties>
+      <TargetPath>hotreload\net6.0\Microsoft.AspNetCore.Watch.BrowserRefresh.dll</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>true</Pack>
+    </ProjectReference>
+
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\DotNetDeltaApplier\Microsoft.Extensions.DotNetDeltaApplier.csproj">
+      <OutputItemType>Content</OutputItemType>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetTargetFramework>TargetFramework=net10.0</SetTargetFramework>
+      <TargetPath>hotreload\net10.0\Microsoft.Extensions.DotNetDeltaApplier.dll</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>true</Pack>
+    </ProjectReference>
+
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\DotNetDeltaApplier\Microsoft.Extensions.DotNetDeltaApplier.csproj">
+      <OutputItemType>Content</OutputItemType>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetTargetFramework>TargetFramework=net6.0</SetTargetFramework>
+      <TargetPath>hotreload\net6.0\Microsoft.Extensions.DotNetDeltaApplier.dll</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>true</Pack>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

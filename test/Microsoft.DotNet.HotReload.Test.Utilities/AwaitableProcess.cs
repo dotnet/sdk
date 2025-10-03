@@ -8,7 +8,7 @@ using System.Threading.Tasks.Dataflow;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
-    internal class AwaitableProcess(DotnetCommand spec, ITestOutputHelper logger) : IDisposable
+    internal class AwaitableProcess(ITestOutputHelper logger) : IDisposable
     {
         // cancel just before we hit timeout used on CI (XUnitWorkItemTimeout value in sdk\test\UnitTests.proj)
         private static readonly TimeSpan s_timeout = Environment.GetEnvironmentVariable("HELIX_WORK_ITEM_TIMEOUT") is { } value
@@ -16,7 +16,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         private readonly object _testOutputLock = new();
 
-        private readonly DotnetCommand _spec = spec;
         private readonly List<string> _lines = [];
         private readonly BufferBlock<string> _source = new();
         private Process _process;
@@ -26,14 +25,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public int Id => _process.Id;
         public Process Process => _process;
 
-        public void Start()
+        public void Start(ProcessStartInfo processStartInfo)
         {
             if (_process != null)
             {
                 throw new InvalidOperationException("Already started");
             }
 
-            var processStartInfo = _spec.GetProcessStartInfo();
             processStartInfo.RedirectStandardOutput = true;
             processStartInfo.RedirectStandardError = true;
             processStartInfo.RedirectStandardInput = true;

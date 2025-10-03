@@ -27,4 +27,10 @@ internal sealed record ProjectOptions
     /// Additional environment variables to set to the running process.
     /// </summary>
     public required IReadOnlyList<(string name, string value)> LaunchEnvironmentVariables { get; init; }
+
+    /// <summary>
+    /// Returns true if the command executes the code of the target project.
+    /// </summary>
+    public bool IsCodeExecutionCommand
+        => Command is "run" or "test";
 }

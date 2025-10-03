@@ -26,7 +26,7 @@
     <FrameworkReference Update="Microsoft.NETCore.App" TargetingPackVersion="6.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\dotnet-watch\Utilities\ProcessUtilities.cs" Link="ProcessUtilities.cs" />
+    <Compile Include="..\Watch\Utilities\ProcessUtilities.cs" Link="ProcessUtilities.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -41,10 +41,10 @@ namespace Microsoft.DotNet.Watch
         TestFlags TestFlags = TestFlags.None,
         string TestOutput = "")
     {
-        public static EnvironmentOptions FromEnvironment() => new
+        public static EnvironmentOptions FromEnvironment(string muxerPath) => new
         (
             WorkingDirectory: Directory.GetCurrentDirectory(),
-            MuxerPath: GetMuxerPathFromEnvironment(),
+            MuxerPath: ValidateMuxerPath(muxerPath),
             ProcessCleanupTimeout: EnvironmentVariables.ProcessCleanupTimeout,
             IsPollingEnabled: EnvironmentVariables.IsPollingEnabled,
             SuppressHandlingStaticContentFiles: EnvironmentVariables.SuppressHandlingStaticContentFiles,
@@ -69,12 +69,10 @@ namespace Microsoft.DotNet.Watch
 
         public bool RunningAsTest { get => (TestFlags & TestFlags.RunningAsTest) != TestFlags.None; }
 
-        private static string GetMuxerPathFromEnvironment()
+        private static string ValidateMuxerPath(string path)
         {
-            var muxerPath = Environment.ProcessPath;
-            Debug.Assert(muxerPath != null);
-            Debug.Assert(Path.GetFileNameWithoutExtension(muxerPath) == "dotnet", $"Invalid muxer path {muxerPath}");
-            return muxerPath;
+            Debug.Assert(Path.GetFileNameWithoutExtension(path) == "dotnet");
+            return path;
         }
 
         public string? GetBinLogPath(string projectPath, string operationName, GlobalOptions options)

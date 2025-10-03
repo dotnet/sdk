@@ -179,8 +179,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 commandSpec.WithEnvironmentVariable(env.Key, env.Value);
             }
 
-            Process = new AwaitableProcess(commandSpec, Logger);
-            Process.Start();
+            var processStartInfo = commandSpec.GetProcessStartInfo();
+            Process = new AwaitableProcess(Logger);
+            Process.Start(processStartInfo);
 
             TestFlags = testFlags;
         }

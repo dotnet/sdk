@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Runtime.Versioning;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
-using Microsoft.DotNet.Cli;
 using Microsoft.Extensions.Logging;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -83,7 +83,16 @@ internal static class ProjectGraphUtilities
         => projectNode.GetStringListPropertyValue(PropertyNames.TargetFrameworks);
 
     public static Version? GetTargetFrameworkVersion(this ProjectGraphNode projectNode)
-        => EnvironmentVariableNames.TryParseTargetFrameworkVersion(projectNode.ProjectInstance.GetPropertyValue(PropertyNames.TargetFrameworkVersion));
+    {
+        try
+        {
+            return new FrameworkName(projectNode.ProjectInstance.GetPropertyValue(PropertyNames.TargetFrameworkMoniker)).Version;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
     public static IEnumerable<string> GetWebAssemblyCapabilities(this ProjectGraphNode projectNode)
         => projectNode.GetStringListPropertyValue(PropertyNames.WebAssemblyHotReloadCapabilities);

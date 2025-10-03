@@ -16,10 +16,10 @@
     -->
     <ProjectReference Include="$(RepoRoot)\src\BuiltInTools\dotnet-watch\dotnet-watch.csproj" ExcludeAssets="Runtime" />
     <ProjectReference Include="$(RepoRoot)\src\BuiltInTools\DotNetWatchTasks\DotNetWatchTasks.csproj" ExcludeAssets="Runtime" Private="false" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.HotReload.Test.Utilities\Microsoft.DotNet.HotReload.Test.Utilities.csproj" ExcludeAssets="Runtime" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.Build.Locator" />
-    <PackageReference Include="Moq" />
-    <PackageReference Include="Xunit.Combinatorial" />
   </ItemGroup>
+
+  <Import Project="..\..\src\BuiltInTools\Watch\RuntimeDependencies.props" />
 </Project>

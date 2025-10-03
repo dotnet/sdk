@@ -16,12 +16,16 @@
       "src\\BuiltInTools\\HotReloadAgent\\Microsoft.DotNet.HotReload.Agent.shproj",
       "src\\BuiltInTools\\HotReloadClient\\Microsoft.DotNet.HotReload.Client.Package.csproj",
       "src\\BuiltInTools\\HotReloadClient\\Microsoft.DotNet.HotReload.Client.shproj",
+      "src\\BuiltInTools\\Watch.Aspire\\Microsoft.DotNet.HotReload.Watch.Aspire.csproj",
+      "src\\BuiltInTools\\Watch\\Microsoft.DotNet.HotReload.Watch.csproj",
       "src\\BuiltInTools\\dotnet-watch\\dotnet-watch.csproj",
       "test\\Microsoft.AspNetCore.Watch.BrowserRefresh.Tests\\Microsoft.AspNetCore.Watch.BrowserRefresh.Tests.csproj",
+      "test\\Microsoft.DotNet.HotReload.Client.Tests\\Microsoft.DotNet.HotReload.Client.Tests.csproj",
+      "test\\Microsoft.DotNet.HotReload.Test.Utilities\\Microsoft.DotNet.HotReload.Test.Utilities.csproj",
+      "test\\Microsoft.DotNet.HotReload.Watch.Aspire.Tests\\Microsoft.DotNet.HotReload.Watch.Aspire.Tests.csproj",
       "test\\Microsoft.Extensions.DotNetDeltaApplier.Tests\\Microsoft.Extensions.DotNetDeltaApplier.Tests.csproj",
       "test\\Microsoft.NET.TestFramework\\Microsoft.NET.TestFramework.csproj",
       "test\\Microsoft.WebTools.AspireService.Tests\\Microsoft.WebTools.AspireService.Tests.csproj",
-      "test\\Microsoft.DotNet.HotReload.Client.Tests\\Microsoft.DotNet.HotReload.Client.Tests.csproj",
       "test\\dotnet-watch.Tests\\dotnet-watch.Tests.csproj"
     ]
   }

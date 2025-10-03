@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Watch
         {
             if (!_context.EnvironmentOptions.SuppressMSBuildIncrementalism &&
                 iteration > 0 &&
-                CommandLineOptions.IsCodeExecutionCommand(_context.RootProjectOptions.Command))
+                _context.RootProjectOptions.IsCodeExecutionCommand)
             {
                 if (RequiresRevaluation)
                 {

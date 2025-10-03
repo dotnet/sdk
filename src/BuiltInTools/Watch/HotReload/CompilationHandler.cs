@@ -6,7 +6,7 @@ using System.Diagnostics;
 using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
+using Microsoft.CodeAnalysis.ExternalAccess.HotReload.Api;
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Watch
         public readonly IncrementalMSBuildWorkspace Workspace;
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
-        private readonly WatchHotReloadService _hotReloadService;
+        private readonly HotReloadService _hotReloadService;
         private readonly ProcessRunner _processRunner;
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Watch
         /// <summary>
         /// All updates that were attempted. Includes updates whose application failed.
         /// </summary>
-        private ImmutableList<WatchHotReloadService.Update> _previousUpdates = [];
+        private ImmutableList<HotReloadService.Update> _previousUpdates = [];
 
         private bool _isDisposed;
 
@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Watch
             _logger = logger;
             _processRunner = processRunner;
             Workspace = new IncrementalMSBuildWorkspace(logger);
-            _hotReloadService = new WatchHotReloadService(Workspace.CurrentSolution.Services, () => ValueTask.FromResult(GetAggregateCapabilities()));
+            _hotReloadService = new HotReloadService(Workspace.CurrentSolution.Services, () => ValueTask.FromResult(GetAggregateCapabilities()));
         }
 
         public void Dispose()
@@ -226,7 +226,7 @@ namespace Microsoft.DotNet.Watch
         }
 
         public async ValueTask<(
-                ImmutableArray<WatchHotReloadService.Update> projectUpdates,
+                ImmutableArray<HotReloadService.Update> projectUpdates,
                 ImmutableArray<string> projectsToRebuild,
                 ImmutableArray<string> projectsToRedeploy,
                 ImmutableArray<RunningProject> terminatedProjects)> HandleManagedCodeChangesAsync(
@@ -242,14 +242,14 @@ namespace Microsoft.DotNet.Watch
                 let runningProject = GetCorrespondingRunningProject(project, runningProjects)
                 where runningProject != null
                 let autoRestartProject = autoRestart || runningProject.ProjectNode.IsAutoRestartEnabled()
-                select (project.Id, info: new WatchHotReloadService.RunningProjectInfo() { RestartWhenChangesHaveNoEffect = autoRestartProject }))
+                select (project.Id, info: new HotReloadService.RunningProjectInfo() { RestartWhenChangesHaveNoEffect = autoRestartProject }))
                 .ToImmutableDictionary(e => e.Id, e => e.info);
 
             var updates = await _hotReloadService.GetUpdatesAsync(currentSolution, runningProjectInfos, cancellationToken);
 
             await DisplayResultsAsync(updates, runningProjectInfos, cancellationToken);
 
-            if (updates.Status is WatchHotReloadService.Status.NoChangesToApply or WatchHotReloadService.Status.Blocked)
+            if (updates.Status is HotReloadService.Status.NoChangesToApply or HotReloadService.Status.Blocked)
             {
                 // If Hot Reload is blocked (due to compilation error) we ignore the current
                 // changes and await the next file change.
@@ -291,7 +291,7 @@ namespace Microsoft.DotNet.Watch
             return (updates.ProjectUpdates, projectsToRebuild, projectsToRedeploy, terminatedProjects);
         }
 
-        public async ValueTask ApplyUpdatesAsync(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
+        public async ValueTask ApplyUpdatesAsync(ImmutableArray<HotReloadService.Update> updates, CancellationToken cancellationToken)
         {
             Debug.Assert(!updates.IsEmpty);
 
@@ -330,7 +330,7 @@ namespace Microsoft.DotNet.Watch
             }
 
             // msbuild workspace doesn't set TFM if the project is not multi-targeted
-            var tfm = WatchHotReloadService.GetTargetFramework(project);
+            var tfm = HotReloadService.GetTargetFramework(project);
             if (tfm == null)
             {
                 return projectsWithPath[0];
@@ -339,18 +339,18 @@ namespace Microsoft.DotNet.Watch
             return projectsWithPath.SingleOrDefault(p => string.Equals(p.ProjectNode.GetTargetFramework(), tfm, StringComparison.OrdinalIgnoreCase));
         }
 
-        private async ValueTask DisplayResultsAsync(WatchHotReloadService.Updates2 updates, ImmutableDictionary<ProjectId, WatchHotReloadService.RunningProjectInfo> runningProjectInfos, CancellationToken cancellationToken)
+        private async ValueTask DisplayResultsAsync(HotReloadService.Updates updates, ImmutableDictionary<ProjectId, HotReloadService.RunningProjectInfo> runningProjectInfos, CancellationToken cancellationToken)
         {
             switch (updates.Status)
             {
-                case WatchHotReloadService.Status.ReadyToApply:
+                case HotReloadService.Status.ReadyToApply:
                     break;
 
-                case WatchHotReloadService.Status.NoChangesToApply:
+                case HotReloadService.Status.NoChangesToApply:
                     _logger.Log(MessageDescriptor.NoCSharpChangesToApply);
                     break;
 
-                case WatchHotReloadService.Status.Blocked:
+                case HotReloadService.Status.Blocked:
                     _logger.Log(MessageDescriptor.UnableToApplyChanges);
                     break;
 
@@ -378,7 +378,7 @@ namespace Microsoft.DotNet.Watch
 
             void ReportCompilationDiagnostics(DiagnosticSeverity severity)
             {
-                foreach (var diagnostic in updates.CompilationDiagnostics)
+                foreach (var diagnostic in updates.PersistentDiagnostics)
                 {
                     if (diagnostic.Id == "CS8002")
                     {
@@ -419,7 +419,7 @@ namespace Microsoft.DotNet.Watch
                     .Where(p => !updates.ProjectsToRestart.ContainsKey(p))
                     .ToHashSet();
 
-                foreach (var (projectId, diagnostics) in updates.RudeEdits)
+                foreach (var (projectId, diagnostics) in updates.TransientDiagnostics)
                 {
                     foreach (var diagnostic in diagnostics)
                     {
@@ -629,7 +629,7 @@ namespace Microsoft.DotNet.Watch
         private static Task ForEachProjectAsync(ImmutableDictionary<string, ImmutableArray<RunningProject>> projects, Func<RunningProject, CancellationToken, Task> action, CancellationToken cancellationToken)
             => Task.WhenAll(projects.SelectMany(entry => entry.Value).Select(project => action(project, cancellationToken))).WaitAsync(cancellationToken);
 
-        private static ImmutableArray<HotReloadManagedCodeUpdate> ToManagedCodeUpdates(ImmutableArray<WatchHotReloadService.Update> updates)
+        private static ImmutableArray<HotReloadManagedCodeUpdate> ToManagedCodeUpdates(ImmutableArray<HotReloadService.Update> updates)
             => [.. updates.Select(update => new HotReloadManagedCodeUpdate(update.ModuleId, update.MetadataDelta, update.ILDelta, update.PdbDelta, update.UpdatedTypes, update.RequiredCapabilities))];
     }
 }
