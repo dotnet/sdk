@@ -555,7 +555,7 @@
     </Dependency>
     <Dependency Name="Microsoft.Testing.Platform" Version="2.0.0">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>4117267edfb2f6b7dbfef8be013704a24cf9e8b7</Sha>
+      <Sha>2bec15462381649ff4b770577e7b8b3bbba5ea12</Sha>
     </Dependency>
     <Dependency Name="MSTest" Version="3.11.0-preview.25501.8">
       <Uri>https://github.com/microsoft/testfx</Uri>
