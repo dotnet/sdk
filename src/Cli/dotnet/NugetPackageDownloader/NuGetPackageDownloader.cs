@@ -75,7 +75,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         _retryTimer = timer;
         _sourceRepositories = new();
         // If windows or env variable is set, verify signatures
-        _verifySignatures = verifySignatures && (OperatingSystem.IsWindows() ? true
+        _verifySignatures = verifySignatures && (OperatingSystem.IsWindows() ? true 
             : bool.TryParse(Environment.GetEnvironmentVariable(NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification), out var shouldVerifySignature) ? shouldVerifySignature : OperatingSystem.IsLinux());
 
         _cacheSettings = new SourceCacheContext
@@ -122,7 +122,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             throw new ArgumentException($"Package download folder must be specified either via {nameof(NuGetPackageDownloader)} constructor or via {nameof(downloadFolder)} method argument.");
         }
         var pathResolver = new VersionFolderPathResolver(resolvedDownloadFolder);
-
+        
         string nupkgPath = pathResolver.GetPackageFilePath(packageId.ToString(), resolvedPackageVersion);
         Directory.CreateDirectory(Path.GetDirectoryName(nupkgPath));
 
