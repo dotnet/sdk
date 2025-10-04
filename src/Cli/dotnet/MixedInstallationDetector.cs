@@ -25,7 +25,7 @@ internal static class MixedInstallationDetector
             // Use 32-bit registry view as specified in the spec
             try
             {
-                string arch = RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant();
+                string arch = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
                 using (var hklm = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
                 using (var key = hklm.OpenSubKey($@"SOFTWARE\dotnet\Setup\InstalledVersions\{arch}"))
                 {
@@ -49,7 +49,7 @@ internal static class MixedInstallationDetector
             // Linux/macOS: Read from /etc/dotnet/install_location or /etc/dotnet/install_location_<arch>
             try
             {
-                string arch = RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant();
+                string arch = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
                 string archSpecificPath = $"/etc/dotnet/install_location_{arch}";
                 string defaultPath = "/etc/dotnet/install_location";
 
