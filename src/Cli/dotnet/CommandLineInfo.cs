@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Utils;
 using LocalizableStrings = Microsoft.DotNet.Cli.Utils.LocalizableStrings;
@@ -33,7 +34,48 @@ public class CommandLineInfo
         Reporter.Output.WriteLine($" OS Platform: {RuntimeEnvironment.OperatingSystemPlatform}");
         Reporter.Output.WriteLine($" RID:         {GetDisplayRid(versionFile)}");
         Reporter.Output.WriteLine($" Base Path:   {AppContext.BaseDirectory}");
+        PrintMixedInstallationWarning();
         PrintWorkloadsInfo();
+    }
+
+    private static void PrintMixedInstallationWarning()
+    {
+        try
+        {
+            var muxer = new Muxer();
+            string dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+
+            if (MixedInstallationDetector.IsMixedInstallation(muxer.MuxerPath, dotnetRoot))
+            {
+                Reporter.Output.WriteLine();
+                Reporter.Output.WriteLine($"{LocalizableStrings.MixedInstallWarningTitle}");
+
+                string docUrl = MixedInstallationDetector.GetDocumentationUrl();
+                string warningMessage;
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && docUrl != null)
+                {
+                    warningMessage = string.Format(
+                        LocalizableStrings.MixedInstallWarningMessageLinux,
+                        Path.GetDirectoryName(muxer.MuxerPath),
+                        dotnetRoot,
+                        docUrl);
+                }
+                else
+                {
+                    warningMessage = string.Format(
+                        LocalizableStrings.MixedInstallWarningMessageOther,
+                        Path.GetDirectoryName(muxer.MuxerPath),
+                        dotnetRoot);
+                }
+
+                Reporter.Output.WriteLine($" {warningMessage}");
+            }
+        }
+        catch
+        {
+            // Silently ignore any errors in detection to avoid breaking dotnet --info
+        }
     }
 
     private static void PrintWorkloadsInfo()
