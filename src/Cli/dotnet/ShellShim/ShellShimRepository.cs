@@ -50,19 +50,19 @@ internal class ShellShimRepository(
                     {
                         if (TryGetPackagedShim(packagedShims, toolCommand, out FilePath? packagedShim))
                         {
-                            _fileSystem.File.Copy(packagedShim.Value.Value, GetShimPath(toolCommand).Value);
-                            _filePermissionSetter.SetUserExecutionPermission(GetShimPath(toolCommand).Value);
+                            _fileSystem.File.Copy(packagedShim.Value.Value, GetPrimaryShimPath(toolCommand).Value);
+                            _filePermissionSetter.SetUserExecutionPermission(GetPrimaryShimPath(toolCommand).Value);
                         }
                         else
                         {
                             _appHostShellShimMaker.CreateApphostShellShim(
                                 toolCommand.Executable,
-                                GetShimPath(toolCommand));
+                                GetPrimaryShimPath(toolCommand));
                         }
                     }
                     else if (toolCommand.Runner == "executable")
                     {
-                        var shimPath = GetShimPath(toolCommand).Value;
+                        var shimPath = GetPrimaryShimPath(toolCommand).Value;
                         string relativePathToExe = Path.GetRelativePath(_shimsDirectory.Value, toolCommand.Executable.Value);
 
                         if (OperatingSystem.IsWindows())
@@ -72,6 +72,10 @@ internal class ShellShimRepository(
                             // %* forwards all arguments passed to the batch file to the executable.
                             string batchContent = $"@echo off\r\n\"%~dp0{relativePathToExe}\" %*\r\n";
                             File.WriteAllText(shimPath, batchContent);
+                            
+                            string psShimPath = Path.ChangeExtension(shimPath, ".ps1");
+                            string psContent = $"& \"$PSScriptRoot\\{relativePathToExe}\" @args\r\n";
+                            File.WriteAllText(psShimPath, psContent);
                         }
                         else
                         {
@@ -172,26 +176,32 @@ internal class ShellShimRepository(
 
     private IEnumerable<FilePath> GetShimFiles(ToolCommand toolCommand)
     {
-        yield return GetShimPath(toolCommand);
+        return GetShimPath(toolCommand);
     }
 
-    private FilePath GetShimPath(ToolCommand toolCommand)
+    private IEnumerable<FilePath> GetShimPath(ToolCommand toolCommand)
     {
         if (OperatingSystem.IsWindows())
         {
             if (toolCommand.Runner == "dotnet")
             {
-                return _shimsDirectory.WithFile(toolCommand.Name.Value + ".exe");
+                yield return _shimsDirectory.WithFile(toolCommand.Name.Value + ".exe");
             }
             else
             {
-                return _shimsDirectory.WithFile(toolCommand.Name.Value + ".cmd");
+                yield return _shimsDirectory.WithFile(toolCommand.Name.Value + ".cmd");
+                yield return _shimsDirectory.WithFile(toolCommand.Name.Value + ".ps1");
             }
         }
         else
         {
-            return _shimsDirectory.WithFile(toolCommand.Name.Value);
+            yield return _shimsDirectory.WithFile(toolCommand.Name.Value);
         }
+    }
+
+    private FilePath GetPrimaryShimPath(ToolCommand toolCommand)
+    {
+        return GetShimPath(toolCommand).First();
     }
 
     private bool TryGetPackagedShim(
@@ -203,7 +213,7 @@ internal class ShellShimRepository(
 
         if (packagedShims != null && packagedShims.Count > 0)
         {
-            FilePath[] candidatepackagedShim = [.. packagedShims.Where(s => string.Equals(Path.GetFileName(s.Value), Path.GetFileName(GetShimPath(toolCommand).Value)))];
+            FilePath[] candidatepackagedShim = [.. packagedShims.Where(s => string.Equals(Path.GetFileName(s.Value), Path.GetFileName(GetPrimaryShimPath(toolCommand).Value)))];
 
             if (candidatepackagedShim.Length > 1)
             {
