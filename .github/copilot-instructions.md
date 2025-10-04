@@ -5,6 +5,7 @@ Coding Style and Changes:
 - When generating code, run `dotnet format` to ensure uniform formatting.
 - Prefer using file-based namespaces for new code.
 - Do not allow unused `using` directives to be committed.
+- Use `#if NET` blocks for .NET Core specific code, and `#if NETFRAMEWORK` for .NET Framework specific code.
 
 Testing:
 - Large changes should always include test changes.
