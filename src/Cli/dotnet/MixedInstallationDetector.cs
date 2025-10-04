@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.InteropServices;
+using Microsoft.Win32;
 
 namespace Microsoft.DotNet.Cli;
 
@@ -12,45 +13,73 @@ namespace Microsoft.DotNet.Cli;
 internal static class MixedInstallationDetector
 {
     /// <summary>
-    /// Gets the known global installation root paths for the current platform.
+    /// Gets the global installation root path for the current platform.
     /// Based on https://github.com/dotnet/designs/blob/main/accepted/2020/install-locations.md
     /// and https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md
     /// </summary>
-    private static readonly string[] GlobalInstallRoots = GetGlobalInstallRoots();
-
-    private static string[] GetGlobalInstallRoots()
+    private static string? GetGlobalInstallRoot()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            // Windows global install locations
-            return new[]
+            // Windows: Read from registry HKLM\SOFTWARE\dotnet\Setup\InstalledVersions\<arch>\InstallLocation
+            // Use 32-bit registry view as specified in the spec
+            try
             {
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet"),
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "dotnet")
-            };
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            // macOS global install locations
-            return new[]
+                string arch = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
+                using (var hklm = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+                using (var key = hklm.OpenSubKey($@"SOFTWARE\dotnet\Setup\InstalledVersions\{arch}"))
+                {
+                    if (key != null)
+                    {
+                        var installLocation = key.GetValue("InstallLocation") as string;
+                        if (!string.IsNullOrEmpty(installLocation))
+                        {
+                            return installLocation;
+                        }
+                    }
+                }
+            }
+            catch
             {
-                "/usr/local/share/dotnet"
-            };
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-        {
-            // Linux global install locations (various distros use different paths)
-            return new[]
-            {
-                "/usr/share/dotnet",
-                "/usr/lib64/dotnet",
-                "/usr/lib/dotnet"
-            };
+                // If registry reading fails, return null
+            }
         }
         else
         {
-            return Array.Empty<string>();
+            // Linux/macOS: Read from /etc/dotnet/install_location or /etc/dotnet/install_location_<arch>
+            try
+            {
+                string arch = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
+                string archSpecificPath = $"/etc/dotnet/install_location_{arch}";
+                string defaultPath = "/etc/dotnet/install_location";
+
+                // Try arch-specific location first
+                if (File.Exists(archSpecificPath))
+                {
+                    string location = File.ReadAllText(archSpecificPath).Trim();
+                    if (!string.IsNullOrEmpty(location))
+                    {
+                        return location;
+                    }
+                }
+
+                // Fall back to default location
+                if (File.Exists(defaultPath))
+                {
+                    string location = File.ReadAllText(defaultPath).Trim();
+                    if (!string.IsNullOrEmpty(location))
+                    {
+                        return location;
+                    }
+                }
+            }
+            catch
+            {
+                // If file reading fails, return null
+            }
         }
+
+        return null;
     }
 
     /// <summary>
@@ -66,32 +95,28 @@ internal static class MixedInstallationDetector
             return false;
         }
 
-        // Normalize paths for comparison
-        string normalizedMuxerPath = Path.GetFullPath(muxerPath);
-        string normalizedDotnetRoot = Path.GetFullPath(dotnetRoot);
-
-        // Check if the muxer is in a global install root
-        bool isInGlobalRoot = false;
-        string? muxerRoot = null;
-
-        foreach (var globalRoot in GlobalInstallRoots)
+        // Get the registered global install location
+        string? globalInstallRoot = GetGlobalInstallRoot();
+        if (string.IsNullOrEmpty(globalInstallRoot))
         {
-            if (normalizedMuxerPath.StartsWith(globalRoot, GetStringComparison()))
-            {
-                isInGlobalRoot = true;
-                muxerRoot = globalRoot;
-                break;
-            }
-        }
-
-        if (!isInGlobalRoot)
-        {
-            // Muxer is not in a global install root, no mixed installation
+            // No global install registered, cannot detect mixed installation
             return false;
         }
 
-        // Check if DOTNET_ROOT points to a different location than the muxer's root
-        bool isDifferentRoot = !normalizedDotnetRoot.StartsWith(muxerRoot!, GetStringComparison());
+        // Normalize paths for comparison
+        string normalizedMuxerPath = Path.GetFullPath(muxerPath);
+        string normalizedDotnetRoot = Path.GetFullPath(dotnetRoot);
+        string normalizedGlobalRoot = Path.GetFullPath(globalInstallRoot);
+
+        // Check if the muxer is in the global install root
+        if (!normalizedMuxerPath.StartsWith(normalizedGlobalRoot, GetStringComparison()))
+        {
+            // Muxer is not in the global install root, no mixed installation
+            return false;
+        }
+
+        // Check if DOTNET_ROOT points to a different location than the global install root
+        bool isDifferentRoot = !normalizedDotnetRoot.StartsWith(normalizedGlobalRoot, GetStringComparison());
 
         return isDifferentRoot;
     }

@@ -48,7 +48,7 @@ public class CommandLineInfo
             if (MixedInstallationDetector.IsMixedInstallation(muxer.MuxerPath, dotnetRoot))
             {
                 Reporter.Output.WriteLine();
-                Reporter.Output.WriteLine($"{LocalizableStrings.MixedInstallWarningTitle}");
+                Reporter.Output.WriteLine(LocalizableStrings.MixedInstallWarningTitle);
 
                 string docUrl = MixedInstallationDetector.GetDocumentationUrl();
                 string warningMessage;
