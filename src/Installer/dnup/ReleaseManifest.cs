@@ -927,7 +927,7 @@ internal class ReleaseManifest : IDisposable
     private static ReleaseFile? FindMatchingFile(ProductRelease release, DotnetInstall install)
     {
         var rid = DnupUtilities.GetRuntimeIdentifier(install.Architecture);
-        var fileExtension = DnupUtilities.GetFileExtensionForPlatform();
+        var fileExtension = DnupUtilities.GetArchiveFileExtensionForPlatform();
 
         // Determine the component type pattern to look for in file names
         string componentTypePattern;

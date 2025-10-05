@@ -18,6 +18,22 @@ internal static class DnupUtilities
         return "dotnet" + ExeSuffix;
     }
 
+    public static bool PathsEqual(string? a, string? b)
+    {
+        if (a == null && b == null)
+        {
+            return true;
+        }
+        else if (a == null || b == null)
+        {
+            return false;
+        }
+
+        return string.Equals(Path.GetFullPath(a).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+                                Path.GetFullPath(b).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+                                StringComparison.OrdinalIgnoreCase);
+    }
+
     public static InstallArchitecture GetInstallArchitecture(System.Runtime.InteropServices.Architecture architecture)
     {
         return architecture switch
@@ -61,7 +77,7 @@ internal static class DnupUtilities
         return $"{os}-{arch}";
     }
 
-    public static string GetFileExtensionForPlatform()
+    public static string GetArchiveFileExtensionForPlatform()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {

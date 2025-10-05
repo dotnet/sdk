@@ -1,6 +1,0 @@
-#!/bin/sh
-if [ $# -eq 0 ]; then
-    "$(dirname "$0")/dotnet" install
-else
-    "$(dirname "$0")/dotnet" "$@"
-fi

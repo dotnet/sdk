@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.DotNet.Tools.Bootstrapper;
 
-namespace Microsoft.DotNet.Cli.Commands.Sdk.Update;
+namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Update;
 
 internal static class SdkUpdateCommandParser
 {
@@ -21,7 +21,7 @@ internal static class SdkUpdateCommandParser
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption();
+    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
 
     private static readonly Command SdkUpdateCommand = ConstructCommand();
 
@@ -30,7 +30,7 @@ internal static class SdkUpdateCommandParser
         return SdkUpdateCommand;
     }
 
-    //  Trying to use the same command object for both "dotnet udpate" and "dotnet sdk update" causes an InvalidOperationException
+    //  Trying to use the same command object for both "dnup udpate" and "dnup sdk update" causes an InvalidOperationException
     //  So we create a separate instance for each case
     private static readonly Command RootUpdateCommand = ConstructCommand();
 

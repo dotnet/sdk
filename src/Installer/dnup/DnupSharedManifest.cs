@@ -66,7 +66,7 @@ internal class DnupSharedManifest : IDnupManifest
         }
         catch (JsonException ex)
         {
-            throw new InvalidOperationException($"The dnup manifest is corrupt or inaccessible: {ex.Message}");
+            throw new InvalidOperationException($"The dnup manifest is corrupt or inaccessible", ex);
         }
     }
 
@@ -79,10 +79,9 @@ internal class DnupSharedManifest : IDnupManifest
     public IEnumerable<DotnetInstall> GetInstalledVersions(string muxerDirectory, IInstallationValidator? validator = null)
     {
         return GetInstalledVersions(validator)
-            .Where(install => string.Equals(
+            .Where(install => DnupUtilities.PathsEqual(
                 Path.GetFullPath(install.MuxerDirectory),
-                Path.GetFullPath(muxerDirectory),
-                StringComparison.OrdinalIgnoreCase));
+                Path.GetFullPath(muxerDirectory)));
     }
 
     public void AddInstalledVersion(DotnetInstall version)

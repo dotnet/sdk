@@ -3,6 +3,7 @@
     "path": "sdk.slnx",
     "projects": [
       "src\\Installer\\dnup\\dnup.csproj",
+      "test\\dnup.Tests\\dnup.Tests.csproj",
     ]
   }
 }

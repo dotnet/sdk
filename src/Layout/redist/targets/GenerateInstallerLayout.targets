@@ -68,9 +68,7 @@
     <ItemGroup>
       <DnxShimSource Condition="$([MSBuild]::IsOSPlatform('Windows'))" Include="dnx.cmd" />
       <DnxShimSource Condition="$([MSBuild]::IsOSPlatform('Windows'))" Include="dnx.ps1" />
-      <DnxShimSource Condition="$([MSBuild]::IsOSPlatform('Windows'))" Include="dnup.cmd" />
       <DnxShimSource Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))" Include="dnx" />
-      <DnxShimSource Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))" Include="dnup" />
     </ItemGroup>
     <Copy SourceFiles="@(DnxShimSource)" DestinationFolder="$(RedistInstallerLayoutPath)" />
 

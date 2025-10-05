@@ -34,13 +34,15 @@ public class BootstrapperController : IBootstrapperController
         string? dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
         string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-        bool isAdminInstall = installDir.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase)
-            || installDir.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase);
-
+        bool isAdminInstall = installDir.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase) ||
+                              installDir.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase);
+        
         if (isAdminInstall)
         {
             // Admin install: DOTNET_ROOT should not be set, or if set, should match installDir
-            if (!string.IsNullOrEmpty(dotnetRoot) && !PathsEqual(dotnetRoot, installDir) && !dotnetRoot.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase) && !dotnetRoot.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(dotnetRoot) && !DnupUtilities.PathsEqual(dotnetRoot, installDir) &&
+                !dotnetRoot.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase) &&
+                !dotnetRoot.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase))
             {
                 return InstallType.Inconsistent;
             }
@@ -49,19 +51,12 @@ public class BootstrapperController : IBootstrapperController
         else
         {
             // User install: DOTNET_ROOT must be set and match installDir
-            if (string.IsNullOrEmpty(dotnetRoot) || !PathsEqual(dotnetRoot, installDir))
+            if (string.IsNullOrEmpty(dotnetRoot) || !DnupUtilities.PathsEqual(dotnetRoot, installDir))
             {
                 return InstallType.Inconsistent;
             }
             return InstallType.User;
         }
-    }
-
-    private static bool PathsEqual(string a, string b)
-    {
-        return string.Equals(Path.GetFullPath(a).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
-                            Path.GetFullPath(b).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
-                            StringComparison.OrdinalIgnoreCase);
     }
 
     public string GetDefaultDotnetInstallPath()
