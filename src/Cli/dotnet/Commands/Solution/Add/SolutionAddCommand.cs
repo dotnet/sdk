@@ -165,6 +165,37 @@ internal class SolutionAddCommand : CommandBase
         // Generate the solution folder path based on the project path
         SolutionFolderModel? solutionFolder = GenerateIntermediateSolutionFoldersForProjectPath(solution, solutionRelativeProjectPath);
 
+        // Check if a project with the same filename already exists in the solution folder
+        string projectFileName = Path.GetFileName(solutionRelativeProjectPath);
+        if (solutionFolder != null)
+        {
+            var rootFolder = solutionFolder;
+            while (rootFolder.Parent is SolutionFolderModel parentFolder)
+            {
+                rootFolder = parentFolder;
+            }
+
+            var existingProjectWithSameName = solution.SolutionProjects.FirstOrDefault(
+                p => IsInSameFolderHierarchy(p.Parent, rootFolder) && Path.GetFileName(p.FilePath).Equals(projectFileName, StringComparison.OrdinalIgnoreCase));
+
+            if (existingProjectWithSameName != null)
+            {
+                throw new GracefulException(CliStrings.SolutionFolderAlreadyContainsProjectWithFilename, rootFolder.Name, projectFileName);
+            }
+        }
+
+        static bool IsInSameFolderHierarchy(SolutionItemModel? projectParent, SolutionFolderModel rootFolder)
+        {
+            var current = projectParent;
+            while (current != null)
+            {
+                if (current == rootFolder)
+                    return true;
+                current = current.Parent;
+            }
+            return false;
+        }
+
         SolutionProjectModel project;
 
         try
