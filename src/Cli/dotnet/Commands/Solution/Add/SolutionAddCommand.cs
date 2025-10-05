@@ -180,7 +180,7 @@ internal class SolutionAddCommand : CommandBase
 
             if (existingProjectWithSameName != null)
             {
-                throw new GracefulException(CliStrings.SolutionFolderAlreadyContainsProjectWithFilename, rootFolder.Name, projectFileName);
+                throw new GracefulException(string.Format(CliStrings.SolutionFolderAlreadyContainsProjectWithFilename, rootFolder.Name, projectFileName));
             }
         }
 
