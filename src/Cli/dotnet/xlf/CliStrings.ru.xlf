@@ -374,7 +374,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="Error_NU1302_HttpSourceUsed">
         <source>You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="new">You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</target>
+        <target state="translated">Вы выполняете операцию "установка средства" с источником "HTTP": {0}. Для NuGet требуются источники HTTPS. Чтобы использовать источник HTTP, необходимо явно задать для параметра "allowInsecureConnections" значение true в файле NuGet.Config. Дополнительные сведения см. на странице https://aka.ms/nuget-https-everywhere.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExpectDepsJsonAt">
@@ -783,8 +783,8 @@ setx PATH "%PATH%;{0}"
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentDescription">
-        <source>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</source>
-        <target state="translated">Ссылка на пакет в виде идентификатора пакета, например "Newtonsoft.Json", или идентификатора пакета и версии, разделенных "@", например "Newtonsoft.Json@13.0.3".</target>
+        <source>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</source>
+        <target state="new">Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">

@@ -429,7 +429,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             App.AssertOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
-            App.AssertOutputContains($"⌚ [auto-restart] {programPath}(38,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
+            App.AssertOutputContains($"⌚ [auto-restart] {programPath}(39,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
             App.Process.ClearOutput();
@@ -459,7 +459,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("  ❔ Do you want to restart your app? Yes (y) / No (n) / Always (a) / Never (v)", failure: _ => false);
 
             App.AssertOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
-            App.AssertOutputContains($"❌ {programPath}(38,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
+            App.AssertOutputContains($"❌ {programPath}(39,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
             App.Process.ClearOutput();
 
             App.SendKey('a');
@@ -476,7 +476,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             App.AssertOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
-            App.AssertOutputContains($"⌚ [auto-restart] {programPath}(38,1): error ENC0033: Deleting method 'F()' requires restarting the application.");
+            App.AssertOutputContains($"⌚ [auto-restart] {programPath}(39,1): error ENC0033: Deleting method 'F()' requires restarting the application.");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
         }
@@ -514,7 +514,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             App.AssertOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
-            App.AssertOutputContains($"⌚ [auto-restart] {programPath}(16,19): warning ENC0118: Changing 'top-level code' might not have any effect until the application is restarted.");
+            App.AssertOutputContains($"⌚ [auto-restart] {programPath}(17,19): warning ENC0118: Changing 'top-level code' might not have any effect until the application is restarted.");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
             App.AssertOutputContains("<Updated>");
@@ -721,6 +721,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [PlatformSpecificFact(TestPlatforms.Windows)]
         public async Task GracefulTermination_Windows()
         {
+            var tfm = ToolsetInfo.CurrentTargetFramework;
+
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
                .WithSource();
 
@@ -739,7 +741,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
-            await App.WaitUntilOutputContains(new Regex(@"dotnet watch 🕵️ \[.*\] Windows Ctrl\+C handling enabled."));
+            await App.WaitUntilOutputContains($"dotnet watch 🕵️ [WatchHotReloadApp ({tfm})] Windows Ctrl+C handling enabled.");
 
             await App.WaitUntilOutputContains("Started");
 
@@ -749,7 +751,38 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains("exited with exit code 0.");
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/49928")] // https://github.com/dotnet/sdk/issues/49307
+        [PlatformSpecificFact(TestPlatforms.AnyUnix)]
+        public async Task GracefulTermination_Unix()
+        {
+            var tfm = ToolsetInfo.CurrentTargetFramework;
+
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+               .WithSource();
+
+            var programPath = Path.Combine(testAsset.Path, "Program.cs");
+
+            UpdateSourceFile(programPath, src => src.Replace("// <metadata update handler placeholder>", """
+                using var termSignalRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, _ =>
+                {
+                    Console.WriteLine("SIGTERM detected! Performing cleanup...");
+                });
+                """));
+
+            App.Start(testAsset, [], testFlags: TestFlags.ReadKeyFromStdin);
+
+            await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
+
+            await App.WaitUntilOutputContains($"dotnet watch 🕵️ [WatchHotReloadApp ({tfm})] Posix signal handlers registered.");
+
+            await App.WaitUntilOutputContains("Started");
+
+            App.SendControlC();
+
+            await App.WaitForOutputLineContaining("SIGTERM detected! Performing cleanup...");
+            await App.WaitUntilOutputContains("exited with exit code 0.");
+        }
+
+        [PlatformSpecificTheory(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/49928")] // https://github.com/dotnet/aspnetcore/issues/63759
         [CombinatorialData]
         public async Task BlazorWasm(bool projectSpecifiesCapabilities)
         {
@@ -777,7 +810,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
 
             // Browser is launched based on blazor-devserver output "Now listening on: ...".
-            await App.WaitUntilOutputContains($"dotnet watch ⌚ Launching browser: http://localhost:{port}");
+            await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}", ""));
 
             // Middleware should have been loaded to blazor-devserver before the browser is launched:
             App.AssertOutputContains("dbug: Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware[0]");
@@ -809,7 +842,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
         public async Task BlazorWasm_MSBuildWarning()
         {
             var testAsset = TestAssets
@@ -831,7 +864,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
         public async Task BlazorWasm_Restart()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
@@ -847,14 +880,14 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains(MessageDescriptor.PressCtrlRToRestart);
 
             // Browser is launched based on blazor-devserver output "Now listening on: ...".
-            await App.WaitUntilOutputContains($"dotnet watch ⌚ Launching browser: http://localhost:{port}");
+            await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}", ""));
 
             App.SendControlR();
 
             await App.WaitUntilOutputContains(MessageDescriptor.ReloadingBrowser);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/49928")] // "https://github.com/dotnet/sdk/issues/49307")
+        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/49928")] // https://github.com/dotnet/aspnetcore/issues/63759
         public async Task BlazorWasmHosted()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasmHosted")
@@ -878,7 +911,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Capabilities: 'Baseline AddMethodToExistingType AddStaticFieldToExistingType AddInstanceFieldToExistingType NewTypeDefinition ChangeCustomAttributes UpdateParameters GenericUpdateMethod GenericAddMethodToExistingType GenericAddFieldToExistingType AddFieldRva'");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
         public async Task Razor_Component_ScopedCssAndStaticAssets()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")
@@ -891,7 +924,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
             App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
-            App.AssertOutputContains($"dotnet watch ⌚ Launching browser: http://localhost:{port}");
+            App.AssertOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}", ""));
             App.Process.ClearOutput();
 
             var scopedCssPath = Path.Combine(testAsset.Path, "RazorClassLibrary", "Components", "Example.razor.css");
@@ -1114,7 +1147,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("> NewSubdir", failure: _ => false);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
         public async Task Aspire_BuildError_ManualRestart()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -1135,8 +1168,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // check that Aspire server output is logged via dotnet-watch reporter:
             await App.WaitUntilOutputContains("dotnet watch ⭐ Now listening on:");
 
-            // wait until after DCP session started:
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #1");
+            // wait until after all DCP sessions have started:
+            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #3");
+            App.AssertOutputContains("dotnet watch ⭐ Session started: #1");
+            App.AssertOutputContains("dotnet watch ⭐ Session started: #2");
+
+            // MigrationService terminated:
+            App.AssertOutputContains("dotnet watch ⭐ [#1] Sending 'sessionTerminated'");
 
             // working directory of the service should be it's project directory:
             await App.WaitUntilOutputContains($"ApiService working directory: '{Path.GetDirectoryName(serviceProjectPath)}'");
@@ -1176,9 +1214,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.AssertOutputContains("Application is shutting down...");
 
-            // We don't have means to gracefully terminate process on Windows, see https://github.com/dotnet/runtime/issues/109432
             App.AssertOutputContains($"[WatchAspire.ApiService ({tfm})] Exited");
-            App.AssertOutputContains(new Regex(@"dotnet watch ⌚ \[WatchAspire.ApiService \(net.*\)\] Process id [0-9]+ ran for [0-9]+ms and exited with exit code 0"));
 
             App.AssertOutputContains(MessageDescriptor.Building.GetMessage(serviceProjectPath));
             App.AssertOutputContains("error CS0246: The type or namespace name 'WeatherForecast' could not be found");
@@ -1189,11 +1225,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 serviceSourcePath,
                 serviceSource.Replace("WeatherForecast", "WeatherForecast2"));
 
-            await App.WaitForOutputLineContaining(MessageDescriptor.Capabilities, $"WatchAspire.ApiService ({tfm})");
+            await App.WaitForOutputLineContaining(MessageDescriptor.ProjectsRestarted.GetMessage(1));
 
             App.AssertOutputContains(MessageDescriptor.BuildSucceeded.GetMessage(serviceProjectPath));
             App.AssertOutputContains(MessageDescriptor.ProjectsRebuilt);
             App.AssertOutputContains($"dotnet watch ⭐ Starting project: {serviceProjectPath}");
+            App.Process.ClearOutput();
 
             App.SendControlC();
 
@@ -1201,16 +1238,17 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitUntilOutputContains($"[WatchAspire.ApiService ({tfm})] Exited");
             await App.WaitUntilOutputContains($"[WatchAspire.AppHost ({tfm})] Exited");
-            await App.WaitUntilOutputContains(new Regex(@"dotnet watch ⌚ \[WatchAspire.ApiService \(net.*\)\] Process id [0-9]+ ran for [0-9]+ms and exited with exit code 0"));
-            await App.WaitUntilOutputContains(new Regex(@"dotnet watch ⌚ \[WatchAspire.AppHost \(net.*\)\] Process id [0-9]+ ran for [0-9]+ms and exited with exit code 0"));
 
             await App.WaitUntilOutputContains("dotnet watch ⭐ Waiting for server to shutdown ...");
 
             App.AssertOutputContains("dotnet watch ⭐ Stop session #1");
-            App.AssertOutputContains("dotnet watch ⭐ [#1] Sending 'sessionTerminated'");
+            App.AssertOutputContains("dotnet watch ⭐ Stop session #2");
+            App.AssertOutputContains("dotnet watch ⭐ Stop session #3");
+            App.AssertOutputContains("dotnet watch ⭐ [#2] Sending 'sessionTerminated'");
+            App.AssertOutputContains("dotnet watch ⭐ [#3] Sending 'sessionTerminated'");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/aspnetcore/issues/63759
         public async Task Aspire_NoEffect_AutoRestart()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -1226,17 +1264,31 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 
             // wait until after DCP sessions have been started for all projects:
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #2");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #3");
+
+            // other services are waiting for completion of MigrationService:
+            App.AssertOutputContains("dotnet watch ⭐ Session started: #1");
+            App.AssertOutputContains(MessageDescriptor.Exited, $"WatchAspire.MigrationService ({tfm})");
+            App.AssertOutputContains("dotnet watch ⭐ [#1] Sending 'sessionTerminated'");
+
+            // migration service output should not be printed to dotnet-watch output, it hsould be sent via DCP as a notification:
+            App.AssertOutputContains("dotnet watch ⭐ [#1] Sending 'serviceLogs': log_message='      Migration complete', is_std_err=False");
+            App.AssertOutputDoesNotContain(new Regex("^ +Migration complete"));
+
             App.Process.ClearOutput();
 
             // no-effect edit:
             UpdateSourceFile(webSourcePath, src => src.Replace("/* top-level placeholder */", "builder.Services.AddRazorComponents();"));
 
             await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadChangeHandled);
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #2");
+            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #3");
 
             App.AssertOutputContains(MessageDescriptor.ProjectsRestarted.GetMessage(1));
             App.AssertOutputDoesNotContain("⚠");
+
+            // The process exited and should not participate in Hot Reload:
+            App.AssertOutputDoesNotContain($"[WatchAspire.MigrationService ({tfm})]");
+            App.AssertOutputDoesNotContain("dotnet watch ⭐ [#1]");
 
             App.Process.ClearOutput();
 
@@ -1245,9 +1297,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadChangeHandled);
             App.AssertOutputContains($"dotnet watch 🕵️ [WatchAspire.Web ({tfm})] Updates applied.");
-            App.AssertOutputDoesNotContain("Projects rebuilt");
-            App.AssertOutputDoesNotContain("Projects restarted");
+            App.AssertOutputDoesNotContain(MessageDescriptor.ProjectsRebuilt);
+            App.AssertOutputDoesNotContain(MessageDescriptor.ProjectsRestarted);
             App.AssertOutputDoesNotContain("⚠");
+
+            // The process exited and should not participate in Hot Reload:
+            App.AssertOutputDoesNotContain($"[WatchAspire.MigrationService ({tfm})]");
+            App.AssertOutputDoesNotContain("dotnet watch ⭐ [#1]");
         }
     }
 }

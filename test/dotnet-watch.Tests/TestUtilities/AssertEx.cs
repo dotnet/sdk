@@ -117,11 +117,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             if (expected == null)
             {
-                Fail("expected was null, but actual wasn't" + Environment.NewLine + message);
+                Fail("pattern was null, but actual wasn't" + Environment.NewLine + message);
             }
             else if (actual == null)
             {
-                Fail("actual was null, but expected wasn't" + Environment.NewLine + message);
+                Fail("actual was null, but pattern wasn't" + Environment.NewLine + message);
             }
             else if (!(comparer ?? AssertEqualityComparer<T>.Instance).Equals(expected, actual))
             {
@@ -235,14 +235,25 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         public static void ContainsSubstring(string expected, IEnumerable<string> items)
+            => AssertSubstringPresence(expected, items, expectedPresent: true);
+
+        public static void DoesNotContainSubstring(string expected, IEnumerable<string> items)
+            => AssertSubstringPresence(expected, items, expectedPresent: false);
+
+        private static void AssertSubstringPresence(string expected, IEnumerable<string> items, bool expectedPresent)
         {
-            if (items.Any(item => item.Contains(expected)))
+            if (items.Any(item => item.Contains(expected)) == expectedPresent)
             {
                 return;
             }
 
             var message = new StringBuilder();
-            message.AppendLine($"Expected output not found:");
+
+
+            message.AppendLine(expectedPresent
+                ? "Expected text found in the output:"
+                : "Text not expected to be found in the output:");
+
             message.AppendLine(expected);
             message.AppendLine();
             message.AppendLine("Actual output:");
@@ -256,15 +267,25 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         public static void ContainsPattern(Regex expected, IEnumerable<string> items)
+            => AssertPatternPresence(expected, items, expectedPresent: true);
+
+        public static void DoesNotContainPattern(Regex pattern, IEnumerable<string> items)
+            => AssertPatternPresence(pattern, items, expectedPresent: false);
+
+        private static void AssertPatternPresence(Regex pattern, IEnumerable<string> items, bool expectedPresent)
         {
-            if (items.Any(item => expected.IsMatch(item)))
+            if (items.Any(item => pattern.IsMatch(item)) == expectedPresent)
             {
                 return;
             }
 
             var message = new StringBuilder();
-            message.AppendLine($"Expected pattern not found in the output:");
-            message.AppendLine(expected.ToString());
+
+            message.AppendLine(expectedPresent
+                ? "Expected pattern found in the output:"
+                : "Pattern not expected to be found in the output:");
+
+            message.AppendLine(pattern.ToString());
             message.AppendLine();
             message.AppendLine("Actual output:");
 

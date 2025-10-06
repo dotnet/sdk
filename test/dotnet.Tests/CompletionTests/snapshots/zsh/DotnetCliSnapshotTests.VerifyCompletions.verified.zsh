@@ -669,6 +669,7 @@ _testhost() {
                                     (update)
                                         _arguments "${_arguments_options[@]}" : \
                                             '--project=[Path to a project or solution file, or a directory.]: : ' \
+                                            '--vulnerable=[Upgrade packages with known vulnerabilities.]: :((False\:"False" True\:"True" ))' \
                                             '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
                                             '--verbosity=[Set the verbosity level of the command. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]: :((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '-v=[Set the verbosity level of the command. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]: :((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
@@ -1102,7 +1103,7 @@ _testhost() {
                                             '--allow-roll-forward[Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn'\''t installed.]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            ':packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.:->dotnet_dynamic_complete' \
+                                            ':packageId -- Package reference in the form of a package identifier like '\''dotnetsay'\'' or package identifier and version separated by '\''@'\'' like '\''dotnetsay@2.1.7'\''.:->dotnet_dynamic_complete' \
                                             && ret=0
                                             case $state in
                                                 (dotnet_dynamic_complete)
@@ -1150,7 +1151,7 @@ _testhost() {
                                             '--all[Update all tools.]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            '::packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.:->dotnet_dynamic_complete' \
+                                            '::packageId -- Package reference in the form of a package identifier like '\''dotnetsay'\'' or package identifier and version separated by '\''@'\'' like '\''dotnetsay@2.1.7'\''.:->dotnet_dynamic_complete' \
                                             && ret=0
                                             case $state in
                                                 (dotnet_dynamic_complete)
@@ -1228,7 +1229,7 @@ _testhost() {
                                             '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            ':packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.:->dotnet_dynamic_complete' \
+                                            ':packageId -- Package reference in the form of a package identifier like '\''dotnetsay'\'' or package identifier and version separated by '\''@'\'' like '\''dotnetsay@2.1.7'\''.:->dotnet_dynamic_complete' \
                                             '*::commandArguments -- Arguments forwarded to the tool: ' \
                                             && ret=0
                                             case $state in
@@ -1493,7 +1494,7 @@ _testhost_commands() {
         'run:.NET Run Command' \
         'solution:.NET modify solution file command' \
         'store:Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.' \
-        'test:.NET Test Driver' \
+        'test:.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https\://aka.ms/dotnet-test.' \
         'tool:Install or work with tools that extend the .NET experience.' \
         'vstest:' \
         'help:.NET CLI help utility' \

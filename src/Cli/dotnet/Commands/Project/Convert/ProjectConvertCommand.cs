@@ -73,7 +73,8 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
             using var stream = File.Open(projectFile, FileMode.Create, FileAccess.Write);
             using var writer = new StreamWriter(stream, Encoding.UTF8);
             VirtualProjectBuildingCommand.WriteProjectFile(writer, UpdateDirectives(directives), isVirtualProject: false,
-                userSecretsId: DetermineUserSecretsId());
+                userSecretsId: DetermineUserSecretsId(),
+                excludeDefaultProperties: FindDefaultPropertiesToExclude());
         }
 
         // Copy or move over included items.
@@ -183,6 +184,18 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
             }
 
             return result.DrainToImmutable();
+        }
+
+        IEnumerable<string> FindDefaultPropertiesToExclude()
+        {
+            foreach (var (name, defaultValue) in VirtualProjectBuildingCommand.DefaultProperties)
+            {
+                string projectValue = projectInstance.GetPropertyValue(name);
+                if (!string.Equals(projectValue, defaultValue, StringComparison.OrdinalIgnoreCase))
+                {
+                    yield return name;
+                }
+            }
         }
     }
 

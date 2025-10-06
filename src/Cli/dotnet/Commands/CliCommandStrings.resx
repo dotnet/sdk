@@ -804,8 +804,9 @@ See https://aka.ms/dotnet-test/mtp for more information.</value>
   <data name="DiscoveringTestsFrom" xml:space="preserve">
     <value>Discovering tests from</value>
   </data>
-  <data name="DotnetTestCommand" xml:space="preserve">
-    <value>.NET Test Command</value>
+  <data name="DotnetTestCommandMTPDescription" xml:space="preserve">
+    <value>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</value>
+    <comment>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</comment>
   </data>
   <data name="DownloadingPackToCacheMessage" xml:space="preserve">
     <value>Downloading pack {0} version {1} to offline cache {2}...</value>
@@ -1997,8 +1998,9 @@ Your project targets multiple frameworks. Specify which framework to run using '
   <data name="TempDirOptionDescription" xml:space="preserve">
     <value>Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</value>
   </data>
-  <data name="TestAppFullName" xml:space="preserve">
-    <value>.NET Test Driver</value>
+  <data name="DotnetTestCommandVSTestDescription" xml:space="preserve">
+    <value>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</value>
+    <comment>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</comment>
   </data>
   <data name="TestCmdNoLogo" xml:space="preserve">
     <value>Run test(s), without displaying Microsoft Testplatform banner</value>
@@ -2700,5 +2702,26 @@ Proceed?</value>
   <data name="DotnetTestMismatchingExecutionId" xml:space="preserve">
     <value>Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</value>
     <comment>{Locked="ExecutionId"}</comment>
+  </data>
+  <data name="ErrorColon" xml:space="preserve">
+    <value>error:</value>
+  </data>
+  <data name="TotalColon" xml:space="preserve">
+    <value>total:</value>
+  </data>
+  <data name="Retried" xml:space="preserve">
+    <value>retried</value>
+  </data>
+  <data name="FailedColon" xml:space="preserve">
+    <value>failed:</value>
+  </data>
+  <data name="SucceededColon" xml:space="preserve">
+    <value>succeeded:</value>
+  </data>
+  <data name="SkippedColon" xml:space="preserve">
+    <value>skipped:</value>
+  </data>
+  <data name="DurationColon" xml:space="preserve">
+    <value>duration:</value>
   </data>
 </root>

@@ -374,7 +374,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="Error_NU1302_HttpSourceUsed">
         <source>You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</source>
-        <target state="new">You are running the 'tool install' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Refer to https://aka.ms/nuget-https-everywhere for more information.</target>
+        <target state="translated">您正使用 'HTTP' 來源執行 'tool install' 作業: {0}。NuGet 需要 HTTPS 來源。若要使用 HTTP 來源，您必須在 NuGet.Config 檔案中將 'allowInsecureConnections' 明確設定為 true。如需詳細資訊，請參閱 https://aka.ms/nuget-https-everywhere。</target>
         <note />
       </trans-unit>
       <trans-unit id="ExpectDepsJsonAt">
@@ -783,8 +783,8 @@ setx PATH "%PATH%;{0}"
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentDescription">
-        <source>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</source>
-        <target state="translated">套件參考的格式為套件識別碼，例如 'Newtonsoft.Json'，或是以 '@' 分隔的套件識別碼和版本，例如 'Newtonsoft.Json@13.0.3'。</target>
+        <source>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</source>
+        <target state="new">Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">
