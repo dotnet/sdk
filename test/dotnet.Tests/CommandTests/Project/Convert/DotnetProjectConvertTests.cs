@@ -1199,11 +1199,14 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         VerifyConversion(
             inputCSharp: """
                 #:property Prop=<test">
-                #:sdk <test"> @="<>test
-                #:package <test"> @="<>test
+                #:sdk <test"> @="<>te'st
+                #:package <te'st"> @="<>te'st
+                #:property Pro'p=Single'
+                #:property Prop2=\"Value\"
+                #:property Prop3='Value'
                 """,
             expectedProject: $"""
-                <Project Sdk="&lt;test&quot;&gt;/=&quot;&lt;&gt;test">
+                <Project Sdk="&lt;test&quot;&gt;/=&quot;&lt;&gt;te&apos;st">
 
                   <PropertyGroup>
                     <OutputType>Exe</OutputType>
@@ -1213,21 +1216,28 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <PublishAot>true</PublishAot>
                     <PackAsTool>true</PackAsTool>
                     <Prop>&lt;test&quot;&gt;</Prop>
+                    <Prop2>\&quot;Value\&quot;</Prop2>
+                    <Prop3>&apos;Value&apos;</Prop3>
                   </PropertyGroup>
 
                   <ItemGroup>
-                    <PackageReference Include="&lt;test&quot;&gt;" Version="=&quot;&lt;&gt;test" />
+                    <PackageReference Include="&lt;te&apos;st&quot;&gt;" Version="=&quot;&lt;&gt;te&apos;st" />
                   </ItemGroup>
 
                 </Project>
 
                 """,
-            expectedCSharp: "",
+            expectedCSharp: """
+                #:property Pro'p=Single'
+
+                """,
             expectedErrors:
             [
                 (1, CliCommandStrings.QuoteInDirective),
                 (2, CliCommandStrings.QuoteInDirective),
                 (3, CliCommandStrings.QuoteInDirective),
+                (4, string.Format(CliCommandStrings.PropertyDirectiveInvalidName, "The ''' character, hexadecimal value 0x27, cannot be included in a name.")),
+                (5, CliCommandStrings.QuoteInDirective),
             ]);
     }
 
