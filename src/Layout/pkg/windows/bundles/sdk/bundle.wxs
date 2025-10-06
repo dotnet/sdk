@@ -27,7 +27,13 @@
       <Payload Name="dotnet.ico" Compressed="yes" SourceFile="..\..\dotnet.ico" />
     </BootstrapperApplication>
 
-    <SoftwareTag Regid="microsoft.com" InstallPath="[ProgramFiles6432Folder]dotnet" />
+    <!-- Do not use ProgramFiles6432Folder. It defaults to CSIDL_PROGRAM_FILES and will write
+         the tag to Program Files when installing the x86 SDK on 64-bit OS. -->
+    <?if $(TargetArchitecture)~=x86?>
+    <SoftwareTag Regid="microsoft.com" InstallPath="[ProgramFilesFolder]dotnet" />
+    <?else?>
+    <SoftwareTag Regid="microsoft.com" InstallPath="[ProgramFiles64Folder]dotnet]" />
+    <?endif?>
 
     <!-- Search references for upgrade policy keys -->
     <util:RegistrySearchRef Id="RemovePreviousVersionRegistryKeySearch"/>
