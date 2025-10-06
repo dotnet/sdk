@@ -32,7 +32,7 @@
     <?if $(TargetArchitecture)~=x86?>
     <SoftwareTag Regid="microsoft.com" InstallPath="[ProgramFilesFolder]dotnet" />
     <?else?>
-    <SoftwareTag Regid="microsoft.com" InstallPath="[ProgramFiles64Folder]dotnet]" />
+    <SoftwareTag Regid="microsoft.com" InstallPath="[ProgramFiles64Folder]dotnet" />
     <?endif?>
 
     <!-- Search references for upgrade policy keys -->
