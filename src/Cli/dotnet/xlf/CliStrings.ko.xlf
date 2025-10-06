@@ -987,10 +987,8 @@ setx PATH "%PATH%;{0}"
         <note>{Locked="--self-contained"}{Locked="--no-self-contained"}</note>
       </trans-unit>
       <trans-unit id="SelfContainedOptionDescription">
-        <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
-The default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.</source>
-        <target state="translated">대상 컴퓨터에 런타임을 설치할 필요가 없도록 애플리케이션과 함께 .NET 런타임을 게시합니다.
-기본값은 'false'입니다. 그러나 .NET 7 이하를 대상으로 하고 런타임 식별자를 지정하는 경우 기본값은 'true'입니다.</target>
+        <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.</source>
+        <target state="translated">대상 컴퓨터에 런타임을 설치할 필요가 없도록 애플리케이션과 함께 .NET 런타임을 게시합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ShellShimConflict">
