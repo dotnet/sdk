@@ -595,7 +595,7 @@ If not specified the file will be generated inside the default 'TestResults' dir
     <value>SETTINGS_FILE</value>
   </data>
   <data name="CmdSolutionDescription" xml:space="preserve">
-    <value>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</value>
+    <value>Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</value>
   </data>
   <data name="CmdSolutionPathName" xml:space="preserve">
     <value>SOLUTION_PATH</value>
