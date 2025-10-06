@@ -795,10 +795,10 @@ The specified directory will be created if it does not exist.</source>
         <target state="translated">SETTINGS_FILE</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdSolutionDescriptionFormat">
-        <source>Defines the path of the solution file to {0}. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the solution file to {0}. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.</target>
-        <note>{0} is the verb (e.g., "test", "run")</note>
+      <trans-unit id="CmdSolutionDescription">
+        <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the solution file to run. If not specified, it defaults to the current directory.</target>
+        <note />
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
         <source>SOLUTION_PATH</source>

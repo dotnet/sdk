@@ -237,14 +237,6 @@ internal static class CommonOptions
             Arity = ArgumentArity.ExactlyOne
         };
 
-    public static Option<string> SolutionOption(string verb) =>
-        new("--solution")
-        {
-            Description = string.Format(CliCommandStrings.CmdSolutionDescriptionFormat, verb),
-            HelpName = CliCommandStrings.CmdSolutionPathName,
-            Arity = ArgumentArity.ExactlyOne
-        };
-
     public static Option<string> VersionSuffixOption =
         new ForwardedOption<string>("--version-suffix")
         {
