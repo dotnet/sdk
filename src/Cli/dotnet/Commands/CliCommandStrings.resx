@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -140,10 +140,6 @@
   </data>
   <data name="AddProjectPathArgumentDescription" xml:space="preserve">
     <value>The paths to the projects to add to the solution.</value>
-  </data>
-  <data name="CmdProjectDescriptionFormat" xml:space="preserve">
-    <value>Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</value>
-    <comment>{0} is the verb (e.g., "test", "run")</comment>
   </data>
   <data name="AddProjectPathArgumentName" xml:space="preserve">
     <value>PROJECT_PATH</value>
@@ -552,6 +548,10 @@ This is equivalent to deleting project.assets.json.</value>
   </data>
   <data name="CmdPrereleaseDescription" xml:space="preserve">
     <value>Consider packages with prerelease versions when searching for newer packages. Requires the '--outdated' option.</value>
+  </data>
+  <data name="CmdProjectDescriptionFormat" xml:space="preserve">
+    <value>Defines the path of the project file to {0}. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</value>
+    <comment>{0} is the verb (e.g., "test", "run")</comment>
   </data>
   <data name="CmdProjectPathName" xml:space="preserve">
     <value>PROJECT_PATH</value>
