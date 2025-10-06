@@ -231,8 +231,6 @@ internal class ReleasePropertyProjectLocator
                 return projectData;
             }
         }
-        ;
-
         return null;
     }
 

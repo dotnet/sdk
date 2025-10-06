@@ -33,7 +33,6 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             {
                 _packages = new List<MockFeedPackage>();
             }
-            ;
             _packages.Add(package);
         }
 
