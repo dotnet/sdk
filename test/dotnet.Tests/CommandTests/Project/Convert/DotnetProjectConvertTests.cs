@@ -1154,6 +1154,50 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             expectedWildcardPattern: RunFileTests.DirectiveError("/app/Program.cs", 1, CliCommandStrings.MissingDirectiveName, directive));
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void Directives_EmptyValue(string value)
+    {
+        VerifyConversion(
+            inputCSharp: $"""
+                #:property TargetFramework={value}
+                #:property Prop1={value}
+                #:sdk First@{value}
+                #:sdk Second@{value}
+                #:package P1@{value}
+                """,
+            expectedProject: """
+                <Project Sdk="First/">
+
+                  <Sdk Name="Second" Version="" />
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <PackAsTool>true</PackAsTool>
+                    <TargetFramework></TargetFramework>
+                    <Prop1></Prop1>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageReference Include="P1" Version="" />
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: "");
+
+        VerifyConversionThrows(
+            inputCSharp: $"""
+                #:project{value}
+                """,
+            expectedWildcardPattern: RunFileTests.DirectiveError("/app/Program.cs", 1, CliCommandStrings.MissingDirectiveName, "project"));
+    }
+
     [Fact]
     public void Directives_MissingPropertyValue()
     {
