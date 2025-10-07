@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdErr)
                 .AddScrubber(output =>
                 {
-                    output.ScrubByRegex("   Microsoft\\.DotNet\\.Common\\.ItemTemplates::[A-Za-z0-9.-]+", "   Microsoft.DotNet.Common.ItemTemplates::%VERSION%");
+                    output.ScrubByRegex("   Microsoft\\.DotNet\\.Common\\.ItemTemplates@[A-Za-z0-9.-]+", "   Microsoft.DotNet.Common.ItemTemplates@%VERSION%");
                 });
         }
 
@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdOut)
                 .AddScrubber(output =>
                 {
-                    output.ScrubByRegex("   Microsoft.DotNet.Common.ItemTemplates::[A-Za-z0-9.-]+", "   Microsoft.DotNet.Common.ItemTemplates::%VERSION%");
+                    output.ScrubByRegex("   Microsoft.DotNet.Common.ItemTemplates@[A-Za-z0-9.-]+", "   Microsoft.DotNet.Common.ItemTemplates@%VERSION%");
                 });
         }
 
@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdErr)
                 .AddScrubber(output =>
                 {
-                    output.ScrubByRegex("   Microsoft\\.DotNet\\.Common\\.ItemTemplates::[A-Za-z0-9.-]+", "   Microsoft.DotNet.Common.ItemTemplates@%VERSION%");
+                    output.ScrubByRegex("   Microsoft\\.DotNet\\.Common\\.ItemTemplates@[A-Za-z0-9.-]+", "   Microsoft.DotNet.Common.ItemTemplates@%VERSION%");
                 });
         }
 
