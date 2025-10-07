@@ -2698,4 +2698,7 @@ Proceed?</value>
     <value>Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</value>
     <comment>{Locked="ExecutionId"}</comment>
   </data>
+  <data name="SolutionFilterDoesNotSupportFolderOptions" xml:space="preserve">
+    <value>Solution filter files (.slnf) do not support the --in-root or --solution-folder options.</value>
+  </data>
 </root>

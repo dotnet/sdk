@@ -27,7 +27,7 @@ internal class SolutionRemoveCommand : CommandBase
 
     public override int Execute()
     {
-        string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
+        string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory, includeSolutionFilterFiles: true);
         if (_projects.Count == 0)
         {
             throw new GracefulException(CliStrings.SpecifyAtLeastOneProjectToRemove);
@@ -43,7 +43,15 @@ internal class SolutionRemoveCommand : CommandBase
                         ? MsbuildProject.GetProjectFileFromDirectory(p).FullName
                         : p));
 
-            RemoveProjectsAsync(solutionFileFullPath, relativeProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
+            // Check if we're working with a solution filter file
+            if (solutionFileFullPath.HasExtension(".slnf"))
+            {
+                RemoveProjectsFromSolutionFilterAsync(solutionFileFullPath, relativeProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
+            }
+            else
+            {
+                RemoveProjectsAsync(solutionFileFullPath, relativeProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
+            }
             return 0;
         }
         catch (Exception ex) when (ex is not GracefulException)
@@ -129,5 +137,37 @@ internal class SolutionRemoveCommand : CommandBase
         }
 
         await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
+    }
+
+    private static async Task RemoveProjectsFromSolutionFilterAsync(string slnfFileFullPath, IEnumerable<string> projectPaths, CancellationToken cancellationToken)
+    {
+        // Load the filtered solution to get the parent solution path and existing projects
+        SolutionModel filteredSolution = SlnFileFactory.CreateFromFilteredSolutionFile(slnfFileFullPath);
+        string parentSolutionPath = filteredSolution.Description!; // The parent solution path is stored in Description
+
+        // Get existing projects in the filter
+        var existingProjects = filteredSolution.SolutionProjects.Select(p => p.FilePath).ToHashSet();
+
+        // Remove specified projects
+        foreach (var projectPath in projectPaths)
+        {
+            // Normalize the path to be relative to parent solution
+            string normalizedPath = projectPath;
+            
+            // Try to find and remove the project
+            if (existingProjects.Remove(normalizedPath))
+            {
+                Reporter.Output.WriteLine(CliStrings.ProjectRemovedFromTheSolution, normalizedPath);
+            }
+            else
+            {
+                Reporter.Output.WriteLine(CliStrings.ProjectNotFoundInTheSolution, normalizedPath);
+            }
+        }
+
+        // Save updated filter
+        SlnfFileHelper.SaveSolutionFilter(slnfFileFullPath, parentSolutionPath, existingProjects.OrderBy(p => p));
+
+        await Task.CompletedTask;
     }
 }

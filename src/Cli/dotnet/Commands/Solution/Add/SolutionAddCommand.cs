@@ -45,7 +45,7 @@ internal class SolutionAddCommand : CommandBase
         _solutionFolderPath = parseResult.GetValue(SolutionAddCommandParser.SolutionFolderOption);
         _includeReferences = parseResult.GetValue(SolutionAddCommandParser.IncludeReferencesOption);
         SolutionArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SolutionArgumentValidator.CommandType.Add, _inRoot, _solutionFolderPath);
-        _solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
+        _solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory, includeSolutionFilterFiles: true);
     }
 
     public override int Execute()
@@ -64,8 +64,16 @@ internal class SolutionAddCommand : CommandBase
             return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName : fullPath;
         });
 
-        // Add projects to the solution
-        AddProjectsToSolutionAsync(fullProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
+        // Check if we're working with a solution filter file
+        if (_solutionFileFullPath.HasExtension(".slnf"))
+        {
+            AddProjectsToSolutionFilterAsync(fullProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
+        }
+        else
+        {
+            // Add projects to the solution
+            AddProjectsToSolutionAsync(fullProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
+        }
         return 0;
     }
 
@@ -223,5 +231,55 @@ internal class SolutionAddCommand : CommandBase
                 AddProject(solution, referencedProjectFullPath, serializer, showMessageOnDuplicate: false);
             }
         }
+    }
+
+    private async Task AddProjectsToSolutionFilterAsync(IEnumerable<string> projectPaths, CancellationToken cancellationToken)
+    {
+        // Solution filter files don't support --in-root or --solution-folder options
+        if (_inRoot || !string.IsNullOrEmpty(_solutionFolderPath))
+        {
+            throw new GracefulException(CliCommandStrings.SolutionFilterDoesNotSupportFolderOptions);
+        }
+
+        // Load the filtered solution to get the parent solution path and existing projects
+        SolutionModel filteredSolution = SlnFileFactory.CreateFromFilteredSolutionFile(_solutionFileFullPath);
+        string parentSolutionPath = filteredSolution.Description!; // The parent solution path is stored in Description
+
+        // Load the parent solution to validate projects exist in it
+        SolutionModel parentSolution = SlnFileFactory.CreateFromFileOrDirectory(parentSolutionPath);
+
+        // Get existing projects in the filter
+        var existingProjects = filteredSolution.SolutionProjects.Select(p => p.FilePath).ToHashSet();
+
+        // Get solution-relative paths for new projects
+        var newProjects = new List<string>();
+        foreach (var projectPath in projectPaths)
+        {
+            string parentSolutionRelativePath = Path.GetRelativePath(Path.GetDirectoryName(parentSolutionPath)!, projectPath);
+
+            // Check if project exists in parent solution
+            var projectInParent = parentSolution.FindProject(parentSolutionRelativePath);
+            if (projectInParent is null)
+            {
+                Reporter.Error.WriteLine(CliStrings.ProjectNotFoundInTheSolution, parentSolutionRelativePath, parentSolutionPath);
+                continue;
+            }
+
+            // Check if project is already in the filter
+            if (existingProjects.Contains(parentSolutionRelativePath))
+            {
+                Reporter.Output.WriteLine(CliStrings.SolutionAlreadyContainsProject, _solutionFileFullPath, parentSolutionRelativePath);
+                continue;
+            }
+
+            newProjects.Add(parentSolutionRelativePath);
+            Reporter.Output.WriteLine(CliStrings.ProjectAddedToTheSolution, parentSolutionRelativePath);
+        }
+
+        // Add new projects to the existing list and save
+        var allProjects = existingProjects.Concat(newProjects).OrderBy(p => p);
+        SlnfFileHelper.SaveSolutionFilter(_solutionFileFullPath, parentSolutionPath, allProjects);
+
+        await Task.CompletedTask;
     }
 }
