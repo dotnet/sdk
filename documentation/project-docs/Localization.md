@@ -7,6 +7,17 @@ The local dev build automatically generates updates to the xlf files that contai
 
 When making string changes, update the resx, build, and check in all xlf file changes. Developers should never need to update the xlf files directly and should always rely on the local build for updates to those files. This will leave the files in english initially and they will get translated eventually.
 
+#### Automated XLF Updates via GitHub Copilot
+
+If you've modified `.resx` files in a pull request and need to update the corresponding `.xlf` files but don't want to clone the branch locally, you can use the GitHub Copilot automation:
+
+**Comment `/updatexlf` on your pull request** and the Copilot agent will:
+1. Run the `msbuild /t:UpdateXlf` target (or build if needed)
+2. Collect all updated `.xlf` files
+3. Commit the changes directly to your PR branch
+
+This is particularly useful when CI is failing due to outdated XLF files.
+
 For internal folks, see https://aka.ms/allaboutloc
 
 ### Loc issues

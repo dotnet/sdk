@@ -176,6 +176,39 @@ taskkill /F /IM VSTest.Console.exe /T ||
 taskkill /F /IM msbuild.exe /T
 ```
 
+## GitHub Copilot Automation Commands
+
+The SDK repository includes GitHub Copilot agents that can automate common maintenance tasks directly from pull requests. These agents can be triggered by commenting specific commands on a PR.
+
+### `/updatexlf` - Update Translation Files
+
+When you modify `.resx` resource files, the corresponding `.xlf` translation files need to be updated. Instead of manually running the build locally, you can comment `/updatexlf` on the PR and the Copilot agent will:
+
+1. Run the `msbuild /t:UpdateXlf` target (or perform a full build if needed)
+2. Collect all updated `.xlf` files
+3. Commit the changes to the PR branch
+
+This is useful when you've changed localized strings and the CI build is failing due to outdated XLF files.
+
+**Example usage:** Comment `/updatexlf` on a PR where you've modified `CliStrings.resx` or other resource files.
+
+See also: [Localization documentation](Localization.md)
+
+### `/fixcompletions` - Update CLI Completion Snapshots
+
+The CLI includes snapshot-based tests for shell completions (bash, zsh, pwsh, etc.). When you add or modify CLI commands, these snapshots need to be updated. Comment `/fixcompletions` on the PR and the agent will:
+
+1. Build the repository
+2. Run the completion tests to generate new snapshots
+3. Compare and update the verified snapshot files
+4. Commit the changes to the PR branch
+
+This is useful when you've added new commands or options and the `VerifyCompletions` tests are failing.
+
+**Example usage:** Comment `/fixcompletions` on a PR where you've modified CLI command structure.
+
+See also: [Snapshot-based testing documentation](snapshot-based-testing.md)
+
 ## Adding a Command
 
 The dotnet CLI supports several models for adding new commands:
