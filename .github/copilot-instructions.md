@@ -7,6 +7,7 @@ Coding Style and Changes:
 - Do not allow unused `using` directives to be committed.
 - Commit your changes, and then format them.
 - Add the format commit SHA to the .git-blame-ignore-revs file so that the commit doesn't dirty git blame in the future
+- Use `#if NET` blocks for .NET Core specific code, and `#if NETFRAMEWORK` for .NET Framework specific code.
 
 Testing:
 - Large changes should always include test changes.
