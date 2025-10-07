@@ -39,7 +39,7 @@ public static class SlnfFileHelper
     /// <param name="projects">List of project paths to include (relative to the parent solution)</param>
     public static void CreateSolutionFilter(string slnfPath, string parentSolutionPath, IEnumerable<string> projects = null)
     {
-        var slnfDirectory = Path.GetDirectoryName(Path.GetFullPath(slnfPath));
+        var slnfDirectory = Path.GetDirectoryName(Path.GetFullPath(slnfPath)) ?? string.Empty;
         var parentSolutionFullPath = Path.GetFullPath(parentSolutionPath, slnfDirectory);
         var relativeSolutionPath = Path.GetRelativePath(slnfDirectory, parentSolutionFullPath);
 
@@ -73,7 +73,7 @@ public static class SlnfFileHelper
     /// <param name="projects">List of project paths (relative to the parent solution)</param>
     public static void SaveSolutionFilter(string slnfPath, string parentSolutionPath, IEnumerable<string> projects)
     {
-        var slnfDirectory = Path.GetDirectoryName(Path.GetFullPath(slnfPath));
+        var slnfDirectory = Path.GetDirectoryName(Path.GetFullPath(slnfPath)) ?? string.Empty;
 
         // Normalize the parent solution path to be relative to the slnf file
         var relativeSolutionPath = parentSolutionPath;

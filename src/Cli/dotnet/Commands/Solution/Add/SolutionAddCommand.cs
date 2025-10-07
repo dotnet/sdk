@@ -58,11 +58,11 @@ internal class SolutionAddCommand : CommandBase
         // Get project paths from the command line arguments
         PathUtility.EnsureAllPathsExist(_projects, CliStrings.CouldNotFindProjectOrDirectory, true);
 
-        IEnumerable<string> fullProjectPaths = _projects.Select(project =>
+        List<string> fullProjectPaths = _projects.Select(project =>
         {
             var fullPath = Path.GetFullPath(project);
             return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName : fullPath;
-        });
+        }).ToList();
 
         // Check if we're working with a solution filter file
         if (_solutionFileFullPath.HasExtension(".slnf"))
@@ -253,9 +253,10 @@ internal class SolutionAddCommand : CommandBase
 
         // Get solution-relative paths for new projects
         var newProjects = new List<string>();
+        string parentSolutionDirectory = Path.GetDirectoryName(parentSolutionPath) ?? string.Empty;
         foreach (var projectPath in projectPaths)
         {
-            string parentSolutionRelativePath = Path.GetRelativePath(Path.GetDirectoryName(parentSolutionPath)!, projectPath);
+            string parentSolutionRelativePath = Path.GetRelativePath(parentSolutionDirectory, projectPath);
 
             // Check if project exists in parent solution
             var projectInParent = parentSolution.FindProject(parentSolutionRelativePath);
