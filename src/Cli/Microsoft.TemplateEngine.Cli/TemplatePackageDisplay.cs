@@ -47,7 +47,7 @@ namespace Microsoft.TemplateEngine.Cli
             {
                 if (!versionCheckResult.IsLatestVersion)
                 {
-                    string displayString = $"{versionCheckResult.TemplatePackage?.Identifier}::{versionCheckResult.TemplatePackage?.Version}";         // the package::version currently installed
+                    string displayString = $"{versionCheckResult.TemplatePackage?.Identifier}@{versionCheckResult.TemplatePackage?.Version}";         // the package@version currently installed
                     _reporterOutput.WriteLine(LocalizableStrings.TemplatePackageCoordinator_Update_Info_UpdateAvailable, displayString);
 
                     _reporterOutput.WriteLine(LocalizableStrings.TemplatePackageCoordinator_Update_Info_UpdateSingleCommandHeader);
@@ -55,7 +55,7 @@ namespace Microsoft.TemplateEngine.Cli
                         Example
                             .For<NewCommand>(args.ParseResult)
                             .WithSubcommand<InstallCommand>()
-                            .WithArgument(BaseInstallCommand.NameArgument, $"{versionCheckResult.TemplatePackage?.Identifier}::{versionCheckResult.LatestVersion}"));
+                            .WithArgument(BaseInstallCommand.NameArgument, $"{versionCheckResult.TemplatePackage?.Identifier}@{versionCheckResult.LatestVersion}"));
                     _reporterOutput.WriteLine();
                 }
             }
@@ -68,7 +68,7 @@ namespace Microsoft.TemplateEngine.Cli
 
         internal void DisplayBuiltInPackagesCheckResult(string packageId, string version, string provider, ICommandArgs args)
         {
-            _reporterOutput.WriteLine(LocalizableStrings.TemplatePackageCoordinator_BuiltInCheck_Info_BuiltInPackageAvailable, $"{packageId}::{version}", provider);
+            _reporterOutput.WriteLine(LocalizableStrings.TemplatePackageCoordinator_BuiltInCheck_Info_BuiltInPackageAvailable, $"{packageId}@{version}", provider);
             _reporterOutput.WriteLine(LocalizableStrings.TemplatePackageCoordinator_BuiltInCheck_Info_UninstallPackage);
             _reporterOutput.WriteCommand(
                 Example
@@ -303,12 +303,12 @@ namespace Microsoft.TemplateEngine.Cli
                     Example
                         .For<NewCommand>(args.ParseResult)
                         .WithSubcommand<InstallCommand>()
-                        .WithArgument(BaseInstallCommand.NameArgument, $"<package>::<version>"));
+                        .WithArgument(BaseInstallCommand.NameArgument, $"<package>@<version>"));
                 Reporter.Output.WriteCommand(
                       Example
                           .For<NewCommand>(args.ParseResult)
                           .WithSubcommand<InstallCommand>()
-                          .WithArgument(BaseInstallCommand.NameArgument, $"{displayableResults.First().Identifier}::{displayableResults.First().LatestVersion}"));
+                          .WithArgument(BaseInstallCommand.NameArgument, $"{displayableResults.First().Identifier}@{displayableResults.First().LatestVersion}"));
                 Reporter.Output.WriteLine();
                 Reporter.Output.WriteLine(LocalizableStrings.TemplatePackageCoordinator_Update_Info_UpdateAllCommandHeader);
                 Reporter.Output.WriteCommand(
