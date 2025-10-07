@@ -21,7 +21,7 @@ You are an expert at managing snapshot-based tests in .NET projects. When invoke
 
 ### Step 1: Build the Repository
 
-First, ensure the repository is built with the latest changes:
+First, ensure the repository is built with the latest changes. This build will create the repo-local dotnet installation at `./.dotnet/dotnet`:
 
 ```bash
 ./build.sh
@@ -31,14 +31,13 @@ This may take 5-10 minutes. Use `async=false` with a timeout of at least 600 sec
 
 ### Step 2: Run the Completion Tests
 
-Run the specific completion snapshot tests to generate the new `.received.` files:
+Run the completion snapshot tests to generate the new `.received.` files. After the build completes, use the repo-local dotnet that was built:
 
 ```bash
-# Use the repo-local dotnet
-./.dotnet/dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "FullyQualifiedName~VerifyCompletions"
+./.dotnet/dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "Name~VerifyCompletions"
 ```
 
-This will run the `VerifyCompletions` test which generates completion snapshots for all supported shells. Allow at least 300 seconds (5 minutes) for this command.
+This will run all the `VerifyCompletions` tests which generate completion snapshots for all supported shells (bash, zsh, pwsh, fish, nushell). Allow at least 300 seconds (5 minutes) for this command.
 
 **Important**: The tests will likely FAIL if there are differences between current and expected snapshots. This is expected and correct behavior - don't be alarmed by test failures.
 
@@ -93,10 +92,12 @@ This will move/rename all `.received.*` files to `.verified.*` in the `test/dotn
 
 ### Step 6: Commit the Changes
 
-Use the `report_progress` tool to commit and push the snapshot updates:
+Use the `report_progress` tool to commit and push the snapshot updates directly to the PR branch:
 
 - Commit message: "Update CLI completions snapshots"
 - PR description: Update the checklist to show completion snapshots have been updated
+
+The `report_progress` tool will automatically stage all changes, create a commit, and push to the origin branch that this PR is based on.
 
 ### Step 7: Verify Final State
 
@@ -134,12 +135,12 @@ If no `.received.` files are generated:
 
 When a user comments `/fixcompletions`:
 
-1. Build: `./build.sh` (with 600s timeout)
-2. Test: `./.dotnet/dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "FullyQualifiedName~VerifyCompletions"`
+1. Build: `./build.sh` (with 600s timeout) - creates `./.dotnet/dotnet`
+2. Test: `./.dotnet/dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "Name~VerifyCompletions"` (with 300s timeout)
 3. Compare: `dotnet restore test/dotnet.Tests/ /t:CompareCliSnapshots`
-4. Review: `git diff test/dotnet.Tests/CompletionTests/snapshots/` - verify changes are correct
+4. Review: `git diff test/dotnet.Tests/CompletionTests/snapshots/` - check for unexpected issues
 5. Update: `dotnet restore test/dotnet.Tests/ /t:UpdateCliSnapshots`
-6. Commit: Use `report_progress` with message "Update CLI completions snapshots"
+6. Commit: Use `report_progress` with message "Update CLI completions snapshots" - this commits and pushes to the PR branch
 7. Inform: Let the user know the snapshots have been updated successfully
 
 ## References
