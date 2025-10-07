@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
@@ -497,6 +498,7 @@ public class RunCommand
         }
     }
 
+    [DoesNotReturn]
     internal static void ThrowUnableToRunError(ProjectInstance project)
     {
         string targetFrameworks = project.GetPropertyValue("TargetFrameworks");

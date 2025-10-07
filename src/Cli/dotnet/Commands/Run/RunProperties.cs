@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -19,7 +20,7 @@ internal sealed record RunProperties(
     {
     }
 
-    internal static bool TryFromProject(ProjectInstance project, out RunProperties result)
+    internal static bool TryFromProject(ProjectInstance project, [NotNullWhen(returnValue: true)] out RunProperties? result)
     {
         result = new RunProperties(
             Command: project.GetPropertyValue("RunCommand"),
@@ -29,7 +30,13 @@ internal sealed record RunProperties(
             DefaultAppHostRuntimeIdentifier: project.GetPropertyValue("DefaultAppHostRuntimeIdentifier"),
             TargetFrameworkVersion: project.GetPropertyValue("TargetFrameworkVersion"));
 
-        return !string.IsNullOrEmpty(result.Command);
+        if (string.IsNullOrEmpty(result.Command))
+        {
+            result = null;
+            return false;
+        }
+
+        return true;
     }
 
     internal static RunProperties FromProject(ProjectInstance project)
