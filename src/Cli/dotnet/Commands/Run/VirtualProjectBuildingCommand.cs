@@ -1723,8 +1723,8 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
     private static (string, string?)? ParseOptionalTwoParts(in ParseContext context, char separator)
     {
-        var i = context.DirectiveText.IndexOf(separator, StringComparison.Ordinal);
-        var firstPart = (i < 0 ? context.DirectiveText : context.DirectiveText.AsSpan(..i)).TrimEnd();
+        var separatorIndex = context.DirectiveText.IndexOf(separator, StringComparison.Ordinal);
+        var firstPart = (separatorIndex < 0 ? context.DirectiveText : context.DirectiveText.AsSpan(..separatorIndex)).TrimEnd();
 
         string directiveKind = context.DirectiveKind;
         if (firstPart.IsWhiteSpace())
@@ -1738,12 +1738,12 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             return context.Diagnostics.AddError<(string, string?)?>(context.SourceFile, context.Info.Span, string.Format(CliCommandStrings.InvalidDirectiveName, directiveKind, separator));
         }
 
-        if (i < 0)
+        if (separatorIndex < 0)
         {
             return (firstPart.ToString(), null);
         }
 
-        var secondPart = context.DirectiveText.AsSpan((i + 1)..).TrimStart();
+        var secondPart = context.DirectiveText.AsSpan((separatorIndex + 1)..).TrimStart();
         if (secondPart.IsWhiteSpace())
         {
             Debug.Assert(secondPart.Length == 0,
