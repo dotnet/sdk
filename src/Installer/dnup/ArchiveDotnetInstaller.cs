@@ -8,38 +8,39 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
 {
     private readonly DotnetInstallRequest _request;
-    private readonly DotnetInstall _install;
+    private readonly ReleaseVersion _resolvedVersion;
     private string scratchDownloadDirectory;
     private string? _archivePath;
 
-    public ArchiveDotnetInstaller(DotnetInstallRequest request, DotnetInstall version)
+    public ArchiveDotnetInstaller(DotnetInstallRequest request, ReleaseVersion resolvedVersion)
     {
         _request = request;
-        _install = version;
+        _resolvedVersion = resolvedVersion;
         scratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
     }
 
     public void Prepare()
     {
         using var releaseManifest = new ReleaseManifest();
-        var archiveName = $"dotnet-{_install.Id}";
+        var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DnupUtilities.GetArchiveFileExtensionForPlatform());
 
         Spectre.Console.AnsiConsole.Progress()
             .Start(ctx =>
             {
-                var downloadTask = ctx.AddTask($"Downloading .NET SDK {_install.FullySpecifiedVersion.Value}", autoStart: true);
-                var reporter = new SpectreDownloadProgressReporter(downloadTask, $"Downloading .NET SDK {_install.FullySpecifiedVersion.Value}");
-                var downloadSuccess = releaseManifest.DownloadArchiveWithVerification(_install, _archivePath, reporter);
+                var downloadTask = ctx.AddTask($"Downloading .NET SDK {_resolvedVersion}", autoStart: true);
+                var reporter = new SpectreDownloadProgressReporter(downloadTask, $"Downloading .NET SDK {_resolvedVersion}");
+                var downloadSuccess = releaseManifest.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
                 if (!downloadSuccess)
                 {
-                    throw new InvalidOperationException($"Failed to download .NET archive for version {_install.FullySpecifiedVersion.Value}");
+                    throw new InvalidOperationException($"Failed to download .NET archive for version {_resolvedVersion}");
                 }
 
                 downloadTask.Value = 100;
@@ -83,10 +84,10 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
 
     public void Commit()
     {
-        Commit(GetExistingSdkVersions(_request.TargetDirectory));
+        Commit(GetExistingSdkVersions(_request.InstallRoot));
     }
 
-    public void Commit(IEnumerable<DotnetVersion> existingSdkVersions)
+    public void Commit(IEnumerable<ReleaseVersion> existingSdkVersions)
     {
         if (_archivePath == null || !File.Exists(_archivePath))
         {
@@ -96,10 +97,10 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
         Spectre.Console.AnsiConsole.Progress()
             .Start(ctx =>
             {
-                var installTask = ctx.AddTask($"Installing .NET SDK {_install.FullySpecifiedVersion.Value}", autoStart: true);
+                var installTask = ctx.AddTask($"Installing .NET SDK {_resolvedVersion}", autoStart: true);
 
                 // Extract archive directly to target directory with special handling for muxer
-                var extractResult = ExtractArchiveDirectlyToTarget(_archivePath, _request.TargetDirectory, existingSdkVersions, installTask);
+                var extractResult = ExtractArchiveDirectlyToTarget(_archivePath, _request.InstallRoot.Path!, existingSdkVersions, installTask);
                 if (extractResult != null)
                 {
                     throw new InvalidOperationException($"Failed to install SDK: {extractResult}");
@@ -113,7 +114,7 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
      * Extracts the archive directly to the target directory with special handling for muxer.
      * Combines extraction and installation into a single operation.
      */
-    private string? ExtractArchiveDirectlyToTarget(string archivePath, string targetDir, IEnumerable<DotnetVersion> existingSdkVersions, Spectre.Console.ProgressTask? installTask)
+    private string? ExtractArchiveDirectlyToTarget(string archivePath, string targetDir, IEnumerable<ReleaseVersion> existingSdkVersions, Spectre.Console.ProgressTask? installTask)
     {
         try
         {
@@ -140,14 +141,14 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
     /**
      * Configure muxer handling by determining if it needs to be updated.
      */
-    private MuxerHandlingConfig ConfigureMuxerHandling(IEnumerable<DotnetVersion> existingSdkVersions)
+    private MuxerHandlingConfig ConfigureMuxerHandling(IEnumerable<ReleaseVersion> existingSdkVersions)
     {
-        DotnetVersion? existingMuxerVersion = existingSdkVersions.Any() ? existingSdkVersions.Max() : (DotnetVersion?)null;
-        DotnetVersion newRuntimeVersion = _install.FullySpecifiedVersion;
+        ReleaseVersion? existingMuxerVersion = existingSdkVersions.Any() ? existingSdkVersions.Max() : (ReleaseVersion?)null;
+        ReleaseVersion newRuntimeVersion = _resolvedVersion;
         bool shouldUpdateMuxer = existingMuxerVersion is null || newRuntimeVersion.CompareTo(existingMuxerVersion) > 0;
 
         string muxerName = DnupUtilities.GetDotnetExeName();
-        string muxerTargetPath = Path.Combine(_request.TargetDirectory, muxerName);
+        string muxerTargetPath = Path.Combine(_request.InstallRoot.Path!, muxerName);
 
         return new MuxerHandlingConfig(
             muxerName,
@@ -421,12 +422,16 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
         }
     }
 
+    //  TODO: InstallerOrchestratorSingleton also checks existing installs via the manifest.  Which should we use and where?
     // This should be cached and more sophisticated based on vscode logic in the future
-    private IEnumerable<DotnetVersion> GetExistingSdkVersions(string targetDirectory)
+    private IEnumerable<ReleaseVersion> GetExistingSdkVersions(DotnetInstallRoot installRoot)
     {
-        var dotnetExe = Path.Combine(targetDirectory, DnupUtilities.GetDotnetExeName());
+        if (installRoot.Path == null)
+            return Enumerable.Empty<ReleaseVersion>();
+
+        var dotnetExe = Path.Combine(installRoot.Path, DnupUtilities.GetDotnetExeName());
         if (!File.Exists(dotnetExe))
-            return Enumerable.Empty<DotnetVersion>();
+            return Enumerable.Empty<ReleaseVersion>();
 
         try
         {
@@ -440,14 +445,14 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
             var output = process.StandardOutput.ReadToEnd();
             process.WaitForExit();
 
-            var versions = new List<DotnetVersion>();
+            var versions = new List<ReleaseVersion>();
             foreach (var line in output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 var parts = line.Split(' ');
                 if (parts.Length > 0)
                 {
                     var versionStr = parts[0];
-                    if (DotnetVersion.TryParse(versionStr, out var version))
+                    if (ReleaseVersion.TryParse(versionStr, out var version))
                     {
                         versions.Add(version);
                     }

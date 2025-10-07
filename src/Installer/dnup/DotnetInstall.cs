@@ -2,24 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
-/// <summary>
-/// Base record for .NET installation information with common properties.
-/// </summary>
-public record DotnetInstallBase(
-    string ResolvedDirectory,
+public record DotnetInstallRoot(
+    string? Path,
     InstallType Type,
-    InstallMode Mode,
     InstallArchitecture Architecture)
 {
-    public Guid Id { get; } = Guid.NewGuid();
-}
-
-public record InstallRequestOptions()
-{
-    // Include things such as the custom feed here.
+    //  Do we need a GUID for the ID here?
 }
 
 /// <summary>
@@ -27,21 +19,20 @@ public record InstallRequestOptions()
 /// The MuxerDirectory is the directory of the corresponding .NET host that has visibility into this .NET installation.
 /// </summary>
 public record DotnetInstall(
-    DotnetVersion FullySpecifiedVersion,
-    string MuxerDirectory,
-    InstallType Type,
-    InstallMode Mode,
-    InstallArchitecture Architecture,
-    ManagementCadence Cadence) : DotnetInstallBase(MuxerDirectory, Type, Mode, Architecture);
+    DotnetInstallRoot InstallRoot,
+    ReleaseVersion Version,
+    InstallComponent Component);
 
 /// <summary>
 /// Represents a request for a .NET installation with a channel version that will get resolved into a fully specified version.
 /// </summary>
 public record DotnetInstallRequest(
-    string ChannelVersion,
-    string TargetDirectory,
-    InstallType Type,
-    InstallMode Mode,
-    InstallArchitecture Architecture,
-    ManagementCadence Cadence,
-    InstallRequestOptions Options) : DotnetInstallBase(Path.Combine(TargetDirectory, DnupUtilities.GetDotnetExeName()), Type, Mode, Architecture);
+    DotnetInstallRoot InstallRoot,
+    UpdateChannel Channel,
+    InstallComponent Component,
+    InstallRequestOptions Options);
+
+public record InstallRequestOptions()
+{
+    // Include things such as the custom feed here.
+}

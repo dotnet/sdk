@@ -45,6 +45,11 @@ internal static class DnupUtilities
         };
     }
 
+    public static InstallArchitecture GetDefaultInstallArchitecture()
+    {
+        return GetInstallArchitecture(RuntimeInformation.ProcessArchitecture);
+    }
+
     public static void ForceReplaceFile(string sourcePath, string destPath)
     {
         File.Copy(sourcePath, destPath, overwrite: true);
