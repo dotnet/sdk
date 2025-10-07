@@ -4,7 +4,6 @@
 	<PropertyGroup>
 		<TargetFramework>$(CurrentTargetFramework)</TargetFramework>
 		<GenerateTestingPlatformEntryPoint>False</GenerateTestingPlatformEntryPoint>
-		<MicrosoftTestingExtensionsCodeCoverageVersion>17.12.6</MicrosoftTestingExtensionsCodeCoverageVersion>
 		
 	</PropertyGroup>
 
