@@ -27,7 +27,7 @@ First, ensure the repository is built with the latest changes:
 ./build.sh
 ```
 
-This may take 5-10 minutes. Use a timeout of at least 600 seconds (10 minutes) for the build command.
+This may take 5-10 minutes. Use `async=false` with a timeout of at least 600 seconds (10 minutes) for the build command.
 
 ### Step 2: Run the Completion Tests
 
@@ -38,7 +38,7 @@ Run the specific completion snapshot tests to generate the new `.received.` file
 ./.dotnet/dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "FullyQualifiedName~VerifyCompletions"
 ```
 
-This will run the `VerifyCompletions` test which generates completion snapshots for all supported shells.
+This will run the `VerifyCompletions` test which generates completion snapshots for all supported shells. Allow at least 300 seconds (5 minutes) for this command.
 
 **Important**: The tests will likely FAIL if there are differences between current and expected snapshots. This is expected and correct behavior - don't be alarmed by test failures.
 

@@ -20,15 +20,19 @@ You are an expert at managing localization files in .NET projects. When invoked:
 
 1. **Check the current state**: First, identify if there are any .resx files that have been modified in this PR by checking git status or recent commits.
 
-2. **Run the UpdateXlf target**: Execute the MSBuild UpdateXlf target to update all XLF files:
+2. **Run the UpdateXlf target**: The repository is built on a Linux environment, so use the appropriate build script:
+   
+   First, try running just the UpdateXlf target (faster):
    ```bash
-   msbuild /t:UpdateXlf
+   ./build.sh /t:UpdateXlf
    ```
    
    If that doesn't work or if the target is not found, perform a full build which will also update XLF files:
    ```bash
    ./build.sh
    ```
+   
+   The build may take 5-10 minutes. Use `async=false` with a timeout of at least 600 seconds (10 minutes).
 
 3. **Verify the changes**: Check which XLF files were modified:
    ```bash
@@ -56,7 +60,7 @@ You are an expert at managing localization files in .NET projects. When invoked:
 
 When a user comments `/updatexlf`:
 
-1. Run: `msbuild /t:UpdateXlf` (or `./build.sh` if needed)
+1. Run: `./build.sh /t:UpdateXlf` (with 600s timeout) or `./build.sh` if needed
 2. Check: `git status` and `git diff` to see what changed
 3. Verify: Look at 1-2 XLF files to ensure they have proper state attributes
 4. Commit: Use `report_progress` with message "Update XLF translation files"
