@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
     [JsonSerializable(typeof(List<DotnetInstall>))]
     [JsonSerializable(typeof(DotnetVersion))]
     [JsonSerializable(typeof(DotnetVersionType))]
-    [JsonSerializable(typeof(InstallMode))]
+    [JsonSerializable(typeof(InstallComponent))]
     [JsonSerializable(typeof(InstallArchitecture))]
     [JsonSerializable(typeof(InstallType))]
     [JsonSerializable(typeof(ManagementCadence))]
