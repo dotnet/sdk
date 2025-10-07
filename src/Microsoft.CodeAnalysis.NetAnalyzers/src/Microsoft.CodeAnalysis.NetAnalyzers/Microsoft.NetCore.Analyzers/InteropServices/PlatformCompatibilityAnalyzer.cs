@@ -1908,7 +1908,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                     if (attributes.SupportedSecond == null || attributes.SupportedSecond < childAttribute.SupportedFirst)
                                     {
                                         attributes.SupportedSecond = childAttribute.SupportedFirst;
-
                                     }
                                 }
 
