@@ -229,14 +229,6 @@ internal static class CommonOptions
         }.ForwardAsSingle(o => $"--property:Configuration={o}")
         .AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
 
-    public static Option<string> ProjectOption(string verb) =>
-        new("--project")
-        {
-            Description = string.Format(CliCommandStrings.CmdProjectDescriptionFormat, verb),
-            HelpName = CliCommandStrings.CmdProjectPathName,
-            Arity = ArgumentArity.ExactlyOne
-        };
-
     public static Option<string> VersionSuffixOption =
         new ForwardedOption<string>("--version-suffix")
         {
