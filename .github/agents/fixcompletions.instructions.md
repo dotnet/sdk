@@ -72,7 +72,7 @@ Look for:
 - Changed command descriptions
 - New subcommands
 
-**Critical**: Only proceed if the changes match the expected modifications from the PR.
+If the changes are obviously incorrect or the diff shows unexpected modifications, report them to the user. Otherwise, proceed with updating the snapshots - the human reviewer of the PR will verify the changes are appropriate.
 
 ### Step 5: Update the Verified Snapshots
 
