@@ -1505,8 +1505,15 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     Diagnostics = diagnostics,
                     SourceFile = sourceFile,
                     DirectiveKind = name.ToString(),
-                    DirectiveText = value.ToString()
+                    DirectiveText = value.ToString(),
                 };
+
+                // Block quotes now so we can later support quoted values without a breaking change. https://github.com/dotnet/sdk/issues/49367
+                if (value.Contains('"'))
+                {
+                    diagnostics.AddError(sourceFile, context.Info.Span, CliCommandStrings.QuoteInDirective);
+                }
+
                 if (CSharpDirective.Parse(context) is { } directive)
                 {
                     // If the directive is already present, report an error.
