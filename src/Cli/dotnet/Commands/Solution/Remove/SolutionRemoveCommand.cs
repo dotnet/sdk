@@ -132,7 +132,7 @@ internal class SolutionRemoveCommand : CommandBase
             {
                 solution.RemoveFolder(folder);
                 // After removal, adjust index and continue to avoid skipping folders after removal
-                i--; 
+                i--;
             }
         }
 
@@ -153,7 +153,7 @@ internal class SolutionRemoveCommand : CommandBase
         {
             // Normalize the path to be relative to parent solution
             string normalizedPath = projectPath;
-            
+
             // Try to find and remove the project
             if (existingProjects.Remove(normalizedPath))
             {

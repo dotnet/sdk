@@ -74,14 +74,14 @@ public static class SlnfFileHelper
     public static void SaveSolutionFilter(string slnfPath, string parentSolutionPath, IEnumerable<string> projects)
     {
         var slnfDirectory = Path.GetDirectoryName(Path.GetFullPath(slnfPath));
-        
+
         // Normalize the parent solution path to be relative to the slnf file
         var relativeSolutionPath = parentSolutionPath;
         if (Path.IsPathRooted(parentSolutionPath))
         {
             relativeSolutionPath = Path.GetRelativePath(slnfDirectory, parentSolutionPath);
         }
-        
+
         // Normalize path separators to backslashes (as per slnf format)
         relativeSolutionPath = relativeSolutionPath.Replace(Path.DirectorySeparatorChar, '\\');
 

@@ -1,12 +1,12 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Concurrent;
-using Microsoft.TemplateEngine.Cli.Help;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
-using Microsoft.Testing.Platform.OutputDevice.Terminal;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
+using Microsoft.TemplateEngine.Cli.Help;
+using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
