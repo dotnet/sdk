@@ -3,16 +3,9 @@
 
 using System;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
-
-public record DotnetInstallRoot(
-    string? Path,
-    InstallType Type,
-    InstallArchitecture Architecture)
-{
-    //  Do we need a GUID for the ID here?
-}
 
 /// <summary>
 /// Represents a .NET installation with a fully specified version.

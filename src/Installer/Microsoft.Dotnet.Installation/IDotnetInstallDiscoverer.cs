@@ -5,12 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper
+namespace Microsoft.Dotnet.Installation;
+
+internal interface IDotnetInstallDiscoverer
 {
-    public enum InstallArchitecture
-    {
-        x86,
-        x64,
-        arm64
-    }
+    //  List installed SDKs under an install root
+
 }
