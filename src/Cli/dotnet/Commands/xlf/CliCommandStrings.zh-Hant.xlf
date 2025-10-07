@@ -1164,12 +1164,12 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
       </trans-unit>
       <trans-unit id="DotnetTestCommandMTPDescription">
         <source>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</source>
-        <target state="new">.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</target>
+        <target state="translated">.NET 測試命令，適用於 Microsoft.Testing.Platform (透過 'global.json' 檔案選擇加入)。此命令僅支援 Microsoft.Testing.Platform，不支援 VSTest。如需詳細資訊，請參閱 https://aka.ms/dotnet-test。</target>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestCommandVSTestDescription">
         <source>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</source>
-        <target state="new">.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</target>
+        <target state="translated">適用於 VSTest 的 .NET 測試命令。若要使用 Microsoft.Testing.Platform，請透過 global.json 選擇加入以 Microsoft.Testing.Platform 為基礎的命令。如需詳細資訊，請參閱 https://aka.ms/dotnet-test。</target>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
@@ -1238,12 +1238,12 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="DurationColon">
         <source>duration:</source>
-        <target state="new">duration:</target>
+        <target state="translated">期間:</target>
         <note />
       </trans-unit>
       <trans-unit id="ErrorColon">
         <source>error:</source>
-        <target state="new">error:</target>
+        <target state="translated">錯誤:</target>
         <note />
       </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
@@ -1298,7 +1298,7 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="FailedColon">
         <source>failed:</source>
-        <target state="new">failed:</target>
+        <target state="translated">失敗:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -2699,7 +2699,7 @@ The default is to publish a framework-dependent application.</source>
       </trans-unit>
       <trans-unit id="Retried">
         <source>retried</source>
-        <target state="new">retried</target>
+        <target state="translated">已重試</target>
         <note />
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
@@ -2983,7 +2983,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="SkippedColon">
         <source>skipped:</source>
-        <target state="new">skipped:</target>
+        <target state="translated">已略過:</target>
         <note />
       </trans-unit>
       <trans-unit id="SkippedLowercase">
@@ -3123,7 +3123,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="SucceededColon">
         <source>succeeded:</source>
-        <target state="new">succeeded:</target>
+        <target state="translated">已成功:</target>
         <note />
       </trans-unit>
       <trans-unit id="Summary">
@@ -3589,7 +3589,7 @@ and the corresponding package Ids for installed tools using the command
       </trans-unit>
       <trans-unit id="TotalColon">
         <source>total:</source>
-        <target state="new">total:</target>
+        <target state="translated">總計:</target>
         <note />
       </trans-unit>
       <trans-unit id="Try">
