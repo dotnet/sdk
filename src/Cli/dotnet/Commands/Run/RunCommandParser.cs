@@ -20,8 +20,7 @@ internal static class RunCommandParser
     public static readonly Option<string> ProjectOption = new("--project")
     {
         Description = string.Format(CliCommandStrings.CmdProjectDescriptionFormat, CliCommandStrings.VerbRun),
-        HelpName = CliCommandStrings.CmdProjectPathName,
-        Arity = ArgumentArity.ExactlyOne
+        HelpName = CliCommandStrings.CmdProjectPathName
     };
 
     public static readonly Option<string> FileOption = new("--file")
