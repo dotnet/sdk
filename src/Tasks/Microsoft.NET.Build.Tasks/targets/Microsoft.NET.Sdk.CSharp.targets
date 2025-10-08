@@ -44,4 +44,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <WarningsAsErrors Condition="'$(_BinaryFormatterObsoleteAsError)' == 'true'">$(WarningsAsErrors);SYSLIB0011</WarningsAsErrors>
   </PropertyGroup>
+
+  <!--
+    Suppress CS8002 (referenced assembly doesn't have a strong name) for .NET Core and .NET Standard TFMs.
+    Strong name validation is not enforced on modern .NET runtimes, so this warning is irrelevant.
+  -->
+  <PropertyGroup Condition="'$(_IsNETCoreOrNETStandard)' == 'true'">
+    <NoWarn>$(NoWarn);CS8002</NoWarn>
+  </PropertyGroup>
 </Project>
