@@ -41,11 +41,11 @@
       "modifiers": [
         {
           "condition": "(Format == \"slnx\")",
-          "exclude": [ "Solution1.sln", "Solution1.slnf" ]
+          "exclude": [ "Solution1.sln" ]
         },
         {
           "condition": "(Format == \"sln\")",
-          "exclude": [ "Solution1.slnx", "Solution1.slnf" ]
+          "exclude": [ "Solution1.slnx" ]
         }
       ]
     }
