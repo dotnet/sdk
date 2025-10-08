@@ -248,7 +248,7 @@ internal class SolutionAddCommand : CommandBase
         // Load the parent solution to validate projects exist in it
         SolutionModel parentSolution = SlnFileFactory.CreateFromFileOrDirectory(parentSolutionPath);
 
-        // Get existing projects in the filter
+        // Get existing projects in the filter (already normalized to OS separator by CreateFromFilteredSolutionFile)
         var existingProjects = filteredSolution.SolutionProjects.Select(p => p.FilePath).ToHashSet();
 
         // Get solution-relative paths for new projects
@@ -257,6 +257,9 @@ internal class SolutionAddCommand : CommandBase
         foreach (var projectPath in projectPaths)
         {
             string parentSolutionRelativePath = Path.GetRelativePath(parentSolutionDirectory, projectPath);
+
+            // Normalize to OS separator for consistent comparison
+            parentSolutionRelativePath = parentSolutionRelativePath.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
 
             // Check if project exists in parent solution
             var projectInParent = parentSolution.FindProject(parentSolutionRelativePath);
