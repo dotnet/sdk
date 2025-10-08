@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.IO.Pipes;
 using System.Reflection;
 using System.Runtime.Loader;
@@ -9,6 +10,17 @@ namespace Microsoft.DotNet.HotReload;
 
 internal sealed class PipeListener(string pipeName, IHotReloadAgent agent, Action<string> log, int connectionTimeoutMS = 5000)
 {
+    /// <summary>
+    /// Messages to the client sent after the initial <see cref="ClientInitializationResponse"/> is sent
+    /// need to be sent while holding this lock in order to synchronize
+    /// 1) responses to requests received from the client (e.g. <see cref="UpdateResponse"/>) or
+    /// 2) notifications sent to the client that may be triggered at arbitrary times (e.g. <see cref="HotReloadExceptionCreatedNotification"/>).
+    /// </summary>
+    private readonly SemaphoreSlim _messageToClientLock = new(initialCount: 1);
+
+    // Not-null once initialized:
+    private NamedPipeClientStream? _pipeClient;
+
     public Task Listen(CancellationToken cancellationToken)
     {
         // Connect to the pipe synchronously.
@@ -21,23 +33,23 @@ internal sealed class PipeListener(string pipeName, IHotReloadAgent agent, Actio
 
         log($"Connecting to hot-reload server via pipe {pipeName}");
 
-        var pipeClient = new NamedPipeClientStream(serverName: ".", pipeName, PipeDirection.InOut, PipeOptions.CurrentUserOnly | PipeOptions.Asynchronous);
+        _pipeClient = new NamedPipeClientStream(serverName: ".", pipeName, PipeDirection.InOut, PipeOptions.CurrentUserOnly | PipeOptions.Asynchronous);
         try
         {
-            pipeClient.Connect(connectionTimeoutMS);
+            _pipeClient.Connect(connectionTimeoutMS);
             log("Connected.");
         }
         catch (TimeoutException)
         {
             log($"Failed to connect in {connectionTimeoutMS}ms.");
-            pipeClient.Dispose();
+            _pipeClient.Dispose();
             return Task.CompletedTask;
         }
 
         try
         {
             // block execution of the app until initial updates are applied:
-            InitializeAsync(pipeClient, cancellationToken).GetAwaiter().GetResult();
+            InitializeAsync(cancellationToken).GetAwaiter().GetResult();
         }
         catch (Exception e)
         {
@@ -46,7 +58,7 @@ internal sealed class PipeListener(string pipeName, IHotReloadAgent agent, Actio
                 log(e.Message);
             }
 
-            pipeClient.Dispose();
+            _pipeClient.Dispose();
             agent.Dispose();
 
             return Task.CompletedTask;
@@ -56,7 +68,7 @@ internal sealed class PipeListener(string pipeName, IHotReloadAgent agent, Actio
         {
             try
             {
-                await ReceiveAndApplyUpdatesAsync(pipeClient, initialUpdates: false, cancellationToken);
+                await ReceiveAndApplyUpdatesAsync(initialUpdates: false, cancellationToken);
             }
             catch (Exception e) when (e is not OperationCanceledException)
             {
@@ -64,40 +76,44 @@ internal sealed class PipeListener(string pipeName, IHotReloadAgent agent, Actio
             }
             finally
             {
-                pipeClient.Dispose();
+                _pipeClient.Dispose();
                 agent.Dispose();
             }
         }, cancellationToken);
     }
 
-    private async Task InitializeAsync(NamedPipeClientStream pipeClient, CancellationToken cancellationToken)
+    private async Task InitializeAsync(CancellationToken cancellationToken)
     {
+        Debug.Assert(_pipeClient != null);
+
         agent.Reporter.Report("Writing capabilities: " + agent.Capabilities, AgentMessageSeverity.Verbose);
 
         var initPayload = new ClientInitializationResponse(agent.Capabilities);
-        await initPayload.WriteAsync(pipeClient, cancellationToken);
+        await initPayload.WriteAsync(_pipeClient, cancellationToken);
 
         // Apply updates made before this process was launched to avoid executing unupdated versions of the affected modules.
 
         // We should only receive ManagedCodeUpdate when when the debugger isn't attached,
         // otherwise the initialization should send InitialUpdatesCompleted immediately.
         // The debugger itself applies these updates when launching process with the debugger attached.
-        await ReceiveAndApplyUpdatesAsync(pipeClient, initialUpdates: true, cancellationToken);
+        await ReceiveAndApplyUpdatesAsync(initialUpdates: true, cancellationToken);
     }
 
-    private async Task ReceiveAndApplyUpdatesAsync(NamedPipeClientStream pipeClient, bool initialUpdates, CancellationToken cancellationToken)
+    private async Task ReceiveAndApplyUpdatesAsync(bool initialUpdates, CancellationToken cancellationToken)
     {
-        while (pipeClient.IsConnected)
+        Debug.Assert(_pipeClient != null);
+
+        while (_pipeClient.IsConnected)
         {
-            var payloadType = (RequestType)await pipeClient.ReadByteAsync(cancellationToken);
+            var payloadType = (RequestType)await _pipeClient.ReadByteAsync(cancellationToken);
             switch (payloadType)
             {
                 case RequestType.ManagedCodeUpdate:
-                    await ReadAndApplyManagedCodeUpdateAsync(pipeClient, cancellationToken);
+                    await ReadAndApplyManagedCodeUpdateAsync(cancellationToken);
                     break;
 
                 case RequestType.StaticAssetUpdate:
-                    await ReadAndApplyStaticAssetUpdateAsync(pipeClient, cancellationToken);
+                    await ReadAndApplyStaticAssetUpdateAsync(cancellationToken);
                     break;
 
                 case RequestType.InitialUpdatesCompleted when initialUpdates:
@@ -110,11 +126,11 @@ internal sealed class PipeListener(string pipeName, IHotReloadAgent agent, Actio
         }
     }
 
-    private async ValueTask ReadAndApplyManagedCodeUpdateAsync(
-        NamedPipeClientStream pipeClient,
-        CancellationToken cancellationToken)
+    private async ValueTask ReadAndApplyManagedCodeUpdateAsync(CancellationToken cancellationToken)
     {
-        var request = await ManagedCodeUpdateRequest.ReadAsync(pipeClient, cancellationToken);
+        Debug.Assert(_pipeClient != null);
+
+        var request = await ManagedCodeUpdateRequest.ReadAsync(_pipeClient, cancellationToken);
 
         bool success;
         try
@@ -131,15 +147,14 @@ internal sealed class PipeListener(string pipeName, IHotReloadAgent agent, Actio
 
         var logEntries = agent.Reporter.GetAndClearLogEntries(request.ResponseLoggingLevel);
 
-        var response = new UpdateResponse(logEntries, success);
-        await response.WriteAsync(pipeClient, cancellationToken);
+        await SendResponseAsync(new UpdateResponse(logEntries, success), cancellationToken);
     }
 
-    private async ValueTask ReadAndApplyStaticAssetUpdateAsync(
-        NamedPipeClientStream pipeClient,
-        CancellationToken cancellationToken)
+    private async ValueTask ReadAndApplyStaticAssetUpdateAsync(CancellationToken cancellationToken)
     {
-        var request = await StaticAssetUpdateRequest.ReadAsync(pipeClient, cancellationToken);
+        Debug.Assert(_pipeClient != null);
+
+        var request = await StaticAssetUpdateRequest.ReadAsync(_pipeClient, cancellationToken);
 
         try
         {
@@ -155,8 +170,22 @@ internal sealed class PipeListener(string pipeName, IHotReloadAgent agent, Actio
         // Updating static asset only invokes ContentUpdate metadata update handlers.
         // Failures of these handlers are reported to the log and ignored.
         // Therefore, this request always succeeds.
-        var response = new UpdateResponse(logEntries, success: true);
+        await SendResponseAsync(new UpdateResponse(logEntries, success: true), cancellationToken);
+    }
 
-        await response.WriteAsync(pipeClient, cancellationToken);
+    internal async ValueTask SendResponseAsync<T>(T response, CancellationToken cancellationToken)
+        where T : IResponse
+    {
+        Debug.Assert(_pipeClient != null);
+        try
+        {
+            await _messageToClientLock.WaitAsync(cancellationToken);
+            await _pipeClient.WriteAsync((byte)response.Type, cancellationToken);
+            await response.WriteAsync(_pipeClient, cancellationToken);
+        }
+        finally
+        {
+            _messageToClientLock.Release();
+        }
     }
 }
