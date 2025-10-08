@@ -1,84 +1,65 @@
 ﻿Description:
-  .NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports 
-  Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.
+  .NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.
 
 Usage:
   dotnet test [options] [platform options] [extension options]
 
 Options:
-  --project <PROJECT_PATH>                        Defines the path of the project file to test. Use path to the project 
-                                                  file, or path to the directory containing the project file. If not 
-                                                  specified, it defaults to the current directory.
-  --solution <SOLUTION_PATH>                      Defines the path of the solution file to test. Use path to the 
-                                                  solution file, or path to the directory containing the solution file. 
-                                                  If not specified, it defaults to the current directory.
+  --project <PROJECT_PATH>                        Defines the path of the project file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.
+  --solution <SOLUTION_PATH>                      Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.
   --test-modules <EXPRESSION>                     Run tests for the specified test modules.
   --root-directory <ROOT_PATH>                    The test modules have the specified root directory.
   --results-directory <RESULTS_DIR>               The directory where the test results will be placed.
                                                   The specified directory will be created if it does not exist.
   --config-file <CONFIG_FILE>                     Specifies a testconfig.json file.
   --diagnostic-output-directory <DIAGNOSTIC_DIR>  Output directory of the diagnostic logging.
-                                                  If not specified the file will be generated inside the default 
-                                                  'TestResults' directory.
+                                                  If not specified the file will be generated inside the default 'TestResults' directory.
   --max-parallel-test-modules <NUMBER>            The max number of test modules that can run in parallel.
   --minimum-expected-tests <NUMBER>               Specifies the minimum number of tests that are expected to run.
   -a, --arch <ARCH>                               The target architecture.
   -e, --environment <NAME="VALUE">                Sets the value of an environment variable. 
                                                   Creates the variable if it does not exist, overrides if it does. 
-                                                  This argument can be specified multiple times to provide multiple 
-                                                  variables.
+                                                  This argument can be specified multiple times to provide multiple variables.
   
                                                   Examples:
                                                   -e VARIABLE=abc
                                                   -e VARIABLE="value with spaces"
                                                   -e VARIABLE="value;seperated with;semicolons"
                                                   -e VAR1=abc -e VAR2=def -e VAR3=ghi
-  -c, --configuration <CONFIGURATION>             The configuration to use for running tests. The default for most 
-                                                  projects is 'Debug'.
-  -f, --framework <FRAMEWORK>                     The target framework to run tests for. The target framework must also 
-                                                  be specified in the project file.
+  -c, --configuration <CONFIGURATION>             The configuration to use for running tests. The default for most projects is 'Debug'.
+  -f, --framework <FRAMEWORK>                     The target framework to run tests for. The target framework must also be specified in the project file.
   --os <OS>                                       The target operating system.
   -r, --runtime <RUNTIME_IDENTIFIER>              The target runtime to test for.
-  -v, -verbosity <LEVEL>                          Set the MSBuild verbosity level. Allowed values are q[uiet], 
-                                                  m[inimal], n[ormal], d[etailed], and diag[nostic].
+  -v, -verbosity <LEVEL>                          Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
   --no-restore                                    Do not restore the project before building. [default: False]
-  --no-build                                      Do not build the project before testing. Implies --no-restore. 
-                                                  [default: False]
+  --no-build                                      Do not build the project before testing. Implies --no-restore. [default: False]
   --no-ansi                                       Disable ANSI output. [default: False]
   --no-progress                                   Disable progress reporting. [default: False]
   --output <Detailed|Normal>                      Verbosity of test output.
   --list-tests <list-tests>                       List the discovered tests instead of running the tests.
-  --no-launch-profile                             Do not attempt to use launchSettings.json or [app].run.json to 
-                                                  configure the application. [default: False]
-  --no-launch-profile-arguments                   Do not use arguments specified in launch profile to run the 
-                                                  application. [default: False]
+  --no-launch-profile                             Do not attempt to use launchSettings.json or [app].run.json to configure the application. [default: False]
+  --no-launch-profile-arguments                   Do not use arguments specified in launch profile to run the application. [default: False]
   -?, -h, --help                                  Show command line help.
 
 Waiting for options and extensions...
 Platform Options:
-  --debug                                   Allows to pause execution in order to attach to the process for debug 
-                                            purposes.
+  --debug                                   Allows to pause execution in order to attach to the process for debug purposes.
   --diagnostic                              Enable the diagnostic logging. The default log level is 'Trace'.
-                                            The file will be written in the output directory with the name 
-                                            log_[yyMMddHHmmssfff].diag
+                                            The file will be written in the output directory with the name log_[yyMMddHHmmssfff].diag
   --diagnostic-filelogger-synchronouswrite  Force the built-in file logger to write the log synchronously.
-                                            Useful for scenario where you don't want to lose any log (i.e. in case of 
-                                            crash).
+                                            Useful for scenario where you don't want to lose any log (i.e. in case of crash).
                                             Note that this is slowing down the test execution.
   --diagnostic-output-fileprefix            Prefix for the log file name that will replace '[log]_.'
   --diagnostic-verbosity                    Define the level of the verbosity for the --diagnostic.
-                                            The available values are 'Trace', 'Debug', 'Information', 'Warning', 
-                                            'Error', and 'Critical'.
+                                            The available values are 'Trace', 'Debug', 'Information', 'Warning', 'Error', and 'Critical'.
   --exit-on-process-exit                    Exit the test process if dependent process exits. PID must be provided.
   --filter-uid                              Provides a list of test node UIDs to filter by.
   --help                                    Show the command line help.
   --ignore-exit-code                        Do not report non successful exit value for specific exit codes
-                                            (e.g. '--ignore-exit-code 8;9' ignore exit code 8 and 9 and will return 0 
-                                            in these case)
+                                            (e.g. '--ignore-exit-code 8;9' ignore exit code 8 and 9 and will return 0 in these case)
   --info                                    Display .NET test application information.
   --timeout                                 A global test execution timeout.
-                                            Takes one argument as string in the format <value>[h|m|s] where 'value' is 
-                                            float.
+                                            Takes one argument as string in the format <value>[h|m|s] where 'value' is float.
 
 Extension Options:
   --report-trx           Enable generating TRX report
