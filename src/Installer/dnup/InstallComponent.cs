@@ -3,11 +3,12 @@
 
 namespace Microsoft.DotNet.Tools.Bootstrapper
 {
-    public enum InstallMode
+    public enum InstallComponent
     {
         SDK,
         Runtime,
         ASPNETCore,
         WindowsDesktop
     }
+
 }

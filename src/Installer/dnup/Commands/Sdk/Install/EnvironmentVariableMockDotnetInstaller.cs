@@ -27,16 +27,16 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "dotnet");
         }
 
-        public InstallType GetConfiguredInstallType(out string? currentInstallPath)
+        public DotnetInstallRoot GetConfiguredInstallType()
         {
             var testHookDefaultInstall = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_INSTALL");
-            InstallType returnValue = InstallType.None;
-            if (!Enum.TryParse<InstallType>(testHookDefaultInstall, out returnValue))
+            InstallType installtype = InstallType.None;
+            if (!Enum.TryParse<InstallType>(testHookDefaultInstall, out installtype))
             {
-                returnValue = InstallType.None;
+                installtype = InstallType.None;
             }
-            currentInstallPath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_CURRENT_INSTALL_PATH");
-            return returnValue;
+            var installPath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_CURRENT_INSTALL_PATH");
+            return new(installPath, installtype, DnupUtilities.GetDefaultInstallArchitecture());
         }
 
         public string? GetLatestInstalledAdminVersion()
@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install
             return latestAdminVersion;
         }
 
-        public void InstallSdks(string dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions)
+        public void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions)
         {
             using (var httpClient = new HttpClient())
             {

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -24,26 +25,37 @@ internal class InstallerOrchestratorSingleton
     public DotnetInstall? Install(DotnetInstallRequest installRequest)
     {
         // Map InstallRequest to DotnetInstallObject by converting channel to fully specified version
-        DotnetInstall install = new ManifestChannelVersionResolver().Resolve(installRequest);
+        ReleaseVersion? versionToInstall = new ManifestChannelVersionResolver().Resolve(installRequest);
+
+        if (versionToInstall == null)
+        {
+            Console.WriteLine($"\nCould not resolve version for channel '{installRequest.Channel.Name}'.");
+            return null;
+        }
+
+        DotnetInstall install = new(
+            installRequest.InstallRoot,
+            versionToInstall,
+            installRequest.Component);
 
         // Check if the install already exists and we don't need to do anything
         // read write mutex only for manifest?
         using (var finalizeLock = modifyInstallStateMutex())
         {
-            if (InstallAlreadyExists(installRequest.ResolvedDirectory, install))
+            if (InstallAlreadyExists(install))
             {
-                Console.WriteLine($"\n.NET SDK {install.FullySpecifiedVersion.Value} is already installed, skipping installation.");
+                Console.WriteLine($"\n.NET SDK {versionToInstall} is already installed, skipping installation.");
                 return install;
             }
         }
 
-        ArchiveDotnetInstaller installer = new(installRequest, install);
+        using ArchiveDotnetInstaller installer = new(installRequest, versionToInstall);
         installer.Prepare();
 
         // Extract and commit the install to the directory
         using (var finalizeLock = modifyInstallStateMutex())
         {
-            if (InstallAlreadyExists(installRequest.ResolvedDirectory, install))
+            if (InstallAlreadyExists(install))
             {
                 return install;
             }
@@ -68,24 +80,23 @@ internal class InstallerOrchestratorSingleton
     /// <summary>
     /// Gets the existing installs from the manifest. Must hold a mutex over the directory.
     /// </summary>
-    private IEnumerable<DotnetInstall> GetExistingInstalls(string directory)
+    private IEnumerable<DotnetInstall> GetExistingInstalls(DotnetInstallRoot installRoot)
     {
         var manifestManager = new DnupSharedManifest();
         // Use the overload that filters by muxer directory
-        return manifestManager.GetInstalledVersions(directory);
+        return manifestManager.GetInstalledVersions(installRoot);
     }
 
     /// <summary>
     /// Checks if the installation already exists. Must hold a mutex over the directory.
     /// </summary>
-    private bool InstallAlreadyExists(string directory, DotnetInstall install)
+    private bool InstallAlreadyExists(DotnetInstall install)
     {
-        var existingInstalls = GetExistingInstalls(directory);
+        var existingInstalls = GetExistingInstalls(install.InstallRoot);
 
         // Check if there's any existing installation that matches the version we're trying to install
         return existingInstalls.Any(existing =>
-            existing.FullySpecifiedVersion.Value == install.FullySpecifiedVersion.Value &&
-            existing.Type == install.Type &&
-            existing.Architecture == install.Architecture);
+            existing.Version.Equals(install.Version) &&
+            existing.Component == install.Component);
     }
 }

@@ -14,11 +14,11 @@ public interface IBootstrapperController
 
     string GetDefaultDotnetInstallPath();
 
-    InstallType GetConfiguredInstallType(out string? currentInstallPath);
+    DotnetInstallRoot GetConfiguredInstallType();
 
     string? GetLatestInstalledAdminVersion();
 
-    void InstallSdks(string dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions);
+    void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions);
 
     void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null, bool? allowPrerelease = null, string? rollForward = null);
 

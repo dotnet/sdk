@@ -24,9 +24,9 @@ internal class ReleaseManifest : IDisposable
     /// </summary>
     /// <param name="channel">Channel string to parse (e.g., "9", "9.0", "9.0.1xx", "9.0.103")</param>
     /// <returns>Tuple containing (major, minor, featureBand, isFullySpecified)</returns>
-    private (int Major, int Minor, string? FeatureBand, bool IsFullySpecified) ParseVersionChannel(string channel)
+    private (int Major, int Minor, string? FeatureBand, bool IsFullySpecified) ParseVersionChannel(UpdateChannel channel)
     {
-        var parts = channel.Split('.');
+        var parts = channel.Name.Split('.');
         int major = parts.Length > 0 && int.TryParse(parts[0], out var m) ? m : -1;
         int minor = parts.Length > 1 && int.TryParse(parts[1], out var n) ? n : -1;
 
@@ -88,7 +88,7 @@ internal class ReleaseManifest : IDisposable
     /// <param name="majorFilter">Optional major version filter</param>
     /// <param name="minorFilter">Optional minor version filter</param>
     /// <returns>Latest SDK version string, or null if none found</returns>
-    private string? GetLatestSdkVersion(IEnumerable<ProductRelease> releases, int? majorFilter = null, int? minorFilter = null)
+    private ReleaseVersion? GetLatestSdkVersion(IEnumerable<ProductRelease> releases, int? majorFilter = null, int? minorFilter = null)
     {
         var allSdks = releases
             .SelectMany(r => r.Sdks)
@@ -100,7 +100,7 @@ internal class ReleaseManifest : IDisposable
 
         if (allSdks.Any())
         {
-            return allSdks.First().Version.ToString();
+            return allSdks.First().Version;
         }
 
         return null;
@@ -114,7 +114,7 @@ internal class ReleaseManifest : IDisposable
     /// <param name="minorFilter">Optional minor version filter</param>
     /// <param name="runtimeType">Optional runtime type filter (null for any runtime)</param>
     /// <returns>Latest runtime version string, or null if none found</returns>
-    private string? GetLatestRuntimeVersion(IEnumerable<ProductRelease> releases, int? majorFilter = null, int? minorFilter = null, string? runtimeType = null)
+    private ReleaseVersion? GetLatestRuntimeVersion(IEnumerable<ProductRelease> releases, int? majorFilter = null, int? minorFilter = null, string? runtimeType = null)
     {
         var allRuntimes = releases.SelectMany(r => r.Runtimes).ToList();
 
@@ -155,7 +155,7 @@ internal class ReleaseManifest : IDisposable
 
         if (allRuntimes.Any())
         {
-            return allRuntimes.OrderByDescending(r => r.Version).First().Version.ToString();
+            return allRuntimes.OrderByDescending(r => r.Version).First().Version;
         }
 
         return null;
@@ -169,7 +169,7 @@ internal class ReleaseManifest : IDisposable
     /// <param name="minor">Minor version</param>
     /// <param name="featureBand">Feature band prefix (e.g., "1" for "1xx")</param>
     /// <returns>Latest matching version string, or fallback format if none found</returns>
-    private string? GetLatestFeatureBandVersion(IEnumerable<ProductRelease> releases, int major, int minor, string featureBand)
+    private ReleaseVersion? GetLatestFeatureBandVersion(IEnumerable<ProductRelease> releases, int major, int minor, string featureBand)
     {
         var allSdkComponents = releases.SelectMany(r => r.Sdks).ToList();
 
@@ -190,11 +190,11 @@ internal class ReleaseManifest : IDisposable
         if (featureBandSdks.Any())
         {
             // Return the exact version from the latest matching SDK
-            return featureBandSdks.First().Version.ToString();
+            return featureBandSdks.First().Version;
         }
 
         // Fallback if no actual release matches the feature band pattern
-        return $"{major}.{minor}.{featureBand}00";
+        return null;
     }
 
     /// <summary>
@@ -203,33 +203,28 @@ internal class ReleaseManifest : IDisposable
     /// <param name="channel">Channel string (e.g., "9", "9.0", "9.0.1xx", "9.0.103", "lts", "sts", "preview")</param>
     /// <param name="mode">InstallMode.SDK or InstallMode.Runtime</param>
     /// <returns>Latest fully specified version string, or null if not found</returns>
-    public string? GetLatestVersionForChannel(string channel, InstallMode mode)
+    public ReleaseVersion? GetLatestVersionForChannel(UpdateChannel channel, InstallComponent component)
     {
-        // If channel is null or empty, return null
-        if (string.IsNullOrEmpty(channel))
-        {
-            return null;
-        }
-
         // Check for special channel strings (case insensitive)
-        if (string.Equals(channel, "lts", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(channel.Name, "lts", StringComparison.OrdinalIgnoreCase))
         {
             // Handle LTS (Long-Term Support) channel
             var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
-            return GetLatestVersionBySupportStatus(productIndex, isLts: true, mode);
+            return GetLatestVersionBySupportStatus(productIndex, isLts: true, component);
         }
-        else if (string.Equals(channel, "sts", StringComparison.OrdinalIgnoreCase))
+        else if (string.Equals(channel.Name, "sts", StringComparison.OrdinalIgnoreCase))
         {
             // Handle STS (Standard-Term Support) channel
             var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
-            return GetLatestVersionBySupportStatus(productIndex, isLts: false, mode);
+            return GetLatestVersionBySupportStatus(productIndex, isLts: false, component);
         }
-        else if (string.Equals(channel, "preview", StringComparison.OrdinalIgnoreCase))
+        else if (string.Equals(channel.Name, "preview", StringComparison.OrdinalIgnoreCase))
         {
             // Handle Preview channel - get the latest preview version
             var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
-            return GetLatestPreviewVersion(productIndex, mode);
+            return GetLatestPreviewVersion(productIndex, component);
         }        // Parse the channel string into components
+
         var (major, minor, featureBand, isFullySpecified) = ParseVersionChannel(channel);
 
         // If major is invalid, return null
@@ -241,7 +236,7 @@ internal class ReleaseManifest : IDisposable
         // If the version is already fully specified, just return it as-is
         if (isFullySpecified)
         {
-            return channel;
+            return new ReleaseVersion(channel.Name);
         }
 
         // Load the index manifest
@@ -250,19 +245,19 @@ internal class ReleaseManifest : IDisposable
         // Case 1: Major only version (e.g., "9")
         if (minor < 0)
         {
-            return GetLatestVersionForMajorOnly(index, major, mode);
+            return GetLatestVersionForMajorOnly(index, major, component);
         }
 
         // Case 2: Major.Minor version (e.g., "9.0")
         if (minor >= 0 && featureBand == null)
         {
-            return GetLatestVersionForMajorMinor(index, major, minor, mode);
+            return GetLatestVersionForMajorMinor(index, major, minor, component);
         }
 
         // Case 3: Feature band version (e.g., "9.0.1xx")
         if (minor >= 0 && featureBand != null)
         {
-            return GetLatestVersionForFeatureBand(index, major, minor, featureBand, mode);
+            return GetLatestVersionForFeatureBand(index, major, minor, featureBand, component);
         }
 
         return null;
@@ -271,7 +266,7 @@ internal class ReleaseManifest : IDisposable
     /// <summary>
     /// Gets the latest version for a major-only channel (e.g., "9").
     /// </summary>
-    private string? GetLatestVersionForMajorOnly(ProductCollection index, int major, InstallMode mode)
+    private ReleaseVersion? GetLatestVersionForMajorOnly(ProductCollection index, int major, InstallComponent component)
     {
         // Get products matching the major version
         var matchingProducts = GetProductsForMajorVersion(index, major);
@@ -289,7 +284,7 @@ internal class ReleaseManifest : IDisposable
         }
 
         // Find the latest version based on mode
-        if (mode == InstallMode.SDK)
+        if (component == InstallComponent.SDK)
         {
             return GetLatestSdkVersion(allReleases, major);
         }
@@ -304,9 +299,9 @@ internal class ReleaseManifest : IDisposable
     /// </summary>
     /// <param name="index">The product collection to search</param>
     /// <param name="isLts">True for LTS (Long-Term Support), false for STS (Standard-Term Support)</param>
-    /// <param name="mode">InstallMode.SDK or InstallMode.Runtime</param>
+    /// <param name="mode">InstallComponent.SDK or InstallComponent.Runtime</param>
     /// <returns>Latest stable version string matching the support status, or null if none found</returns>
-    private string? GetLatestVersionBySupportStatus(ProductCollection index, bool isLts, InstallMode mode)
+    private ReleaseVersion? GetLatestVersionBySupportStatus(ProductCollection index, bool isLts, InstallComponent component)
     {
         // Get all products
         var allProducts = index.ToList();
@@ -342,7 +337,7 @@ internal class ReleaseManifest : IDisposable
             }
 
             // Find latest version based on mode
-            if (mode == InstallMode.SDK)
+            if (component == InstallComponent.SDK)
             {
                 var sdks = stableReleases
                     .SelectMany(r => r.Sdks)
@@ -352,7 +347,7 @@ internal class ReleaseManifest : IDisposable
 
                 if (sdks.Any())
                 {
-                    return sdks.First().Version.ToString();
+                    return sdks.First().Version;
                 }
             }
             else // Runtime mode
@@ -365,7 +360,7 @@ internal class ReleaseManifest : IDisposable
 
                 if (runtimes.Any())
                 {
-                    return runtimes.First().Version.ToString();
+                    return runtimes.First().Version;
                 }
             }
         }
@@ -377,9 +372,9 @@ internal class ReleaseManifest : IDisposable
     /// Gets the latest preview version available.
     /// </summary>
     /// <param name="index">The product collection to search</param>
-    /// <param name="mode">InstallMode.SDK or InstallMode.Runtime</param>
+    /// <param name="mode">InstallComponent.SDK or InstallComponent.Runtime</param>
     /// <returns>Latest preview version string, or null if none found</returns>
-    private string? GetLatestPreviewVersion(ProductCollection index, InstallMode mode)
+    private ReleaseVersion? GetLatestPreviewVersion(ProductCollection index, InstallComponent component)
     {
         // Get all products
         var allProducts = index.ToList();
@@ -413,7 +408,7 @@ internal class ReleaseManifest : IDisposable
             }
 
             // Find latest version based on mode
-            if (mode == InstallMode.SDK)
+            if (component == InstallComponent.SDK)
             {
                 var sdks = previewReleases
                     .SelectMany(r => r.Sdks)
@@ -423,7 +418,7 @@ internal class ReleaseManifest : IDisposable
 
                 if (sdks.Any())
                 {
-                    return sdks.First().Version.ToString();
+                    return sdks.First().Version;
                 }
             }
             else // Runtime mode
@@ -436,7 +431,7 @@ internal class ReleaseManifest : IDisposable
 
                 if (runtimes.Any())
                 {
-                    return runtimes.First().Version.ToString();
+                    return runtimes.First().Version;
                 }
             }
         }
@@ -445,7 +440,7 @@ internal class ReleaseManifest : IDisposable
     }    /// <summary>
          /// Gets the latest version for a major.minor channel (e.g., "9.0").
          /// </summary>
-    private string? GetLatestVersionForMajorMinor(ProductCollection index, int major, int minor, InstallMode mode)
+    private ReleaseVersion? GetLatestVersionForMajorMinor(ProductCollection index, int major, int minor, InstallComponent component)
     {
         // Find the product for the requested major.minor
         string channelKey = $"{major}.{minor}";
@@ -460,7 +455,7 @@ internal class ReleaseManifest : IDisposable
         var releases = product.GetReleasesAsync().GetAwaiter().GetResult();
 
         // Find the latest version based on mode
-        if (mode == InstallMode.SDK)
+        if (component == InstallComponent.SDK)
         {
             return GetLatestSdkVersion(releases, major, minor);
         }
@@ -473,7 +468,7 @@ internal class ReleaseManifest : IDisposable
     /// <summary>
     /// Gets the latest version for a feature band channel (e.g., "9.0.1xx").
     /// </summary>
-    private string? GetLatestVersionForFeatureBand(ProductCollection index, int major, int minor, string featureBand, InstallMode mode)
+    private ReleaseVersion? GetLatestVersionForFeatureBand(ProductCollection index, int major, int minor, string featureBand, InstallComponent component)
     {
         // Find the product for the requested major.minor
         string channelKey = $"{major}.{minor}";
@@ -488,7 +483,7 @@ internal class ReleaseManifest : IDisposable
         var releases = product.GetReleasesAsync().GetAwaiter().GetResult();
 
         // For SDK mode, use feature band filtering
-        if (mode == InstallMode.SDK)
+        if (component == InstallComponent.SDK)
         {
             return GetLatestFeatureBandVersion(releases, major, minor, featureBand);
         }
@@ -571,9 +566,9 @@ internal class ReleaseManifest : IDisposable
     /// </summary>
     /// <param name="install">The .NET installation details</param>
     /// <returns>The download URL for the installer/archive, or null if not found</returns>
-    public string? GetDownloadUrl(DotnetInstall install)
+    public string? GetDownloadUrl(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
     {
-        var targetFile = FindReleaseFile(install);
+        var targetFile = FindReleaseFile(installRequest, resolvedVersion);
         return targetFile?.Address.ToString();
     }
 
@@ -714,16 +709,16 @@ internal class ReleaseManifest : IDisposable
     /// <param name="destinationPath">The local path to save the downloaded file</param>
     /// <param name="progress">Optional progress reporting</param>
     /// <returns>True if download and verification were successful, false otherwise</returns>
-    public bool DownloadArchiveWithVerification(DotnetInstall install, string destinationPath, IProgress<DownloadProgress>? progress = null)
+    public bool DownloadArchiveWithVerification(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion, string destinationPath, IProgress<DownloadProgress>? progress = null)
     {
         // Get the download URL and expected hash
-        string? downloadUrl = GetDownloadUrl(install);
+        string? downloadUrl = GetDownloadUrl(installRequest, resolvedVersion);
         if (string.IsNullOrEmpty(downloadUrl))
         {
             return false;
         }
 
-        string? expectedHash = GetArchiveHash(install);
+        string? expectedHash = GetArchiveHash(installRequest, resolvedVersion);
         if (string.IsNullOrEmpty(expectedHash))
         {
             return false;
@@ -742,18 +737,18 @@ internal class ReleaseManifest : IDisposable
     /// </summary>
     /// <param name="install">The .NET installation details</param>
     /// <returns>The matching ReleaseFile, throws if none are available.</returns>
-    private ReleaseFile? FindReleaseFile(DotnetInstall install)
+    private ReleaseFile? FindReleaseFile(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
     {
         try
         {
             var productCollection = GetProductCollection();
-            var product = FindProduct(productCollection, install.FullySpecifiedVersion.Value) ?? throw new InvalidOperationException($"No product found for version {install.FullySpecifiedVersion.MajorMinor}");
-            var release = FindRelease(product, install.FullySpecifiedVersion.Value, install.Mode) ?? throw new InvalidOperationException($"No release found for version {install.FullySpecifiedVersion.Value}");
-            return FindMatchingFile(release, install);
+            var product = FindProduct(productCollection, resolvedVersion) ?? throw new InvalidOperationException($"No product found for version {resolvedVersion}");
+            var release = FindRelease(product, resolvedVersion, installRequest.Component) ?? throw new InvalidOperationException($"No release found for version {resolvedVersion}");
+            return FindMatchingFile(release, installRequest, resolvedVersion);
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Failed to find an available release for install {install} : ${ex.Message}");
+            throw new InvalidOperationException($"Failed to find an available release for install {installRequest} : ${ex.Message}", ex);
         }
     }
 
@@ -820,9 +815,8 @@ internal class ReleaseManifest : IDisposable
     /// <summary>
     /// Finds the product for the given version.
     /// </summary>
-    private static Product? FindProduct(ProductCollection productCollection, string version)
+    private static Product? FindProduct(ProductCollection productCollection, ReleaseVersion releaseVersion)
     {
-        var releaseVersion = new ReleaseVersion(version);
         var majorMinor = $"{releaseVersion.Major}.{releaseVersion.Minor}";
         return productCollection.FirstOrDefault(p => p.ProductVersion == majorMinor);
     }
@@ -830,16 +824,15 @@ internal class ReleaseManifest : IDisposable
     /// <summary>
     /// Finds the specific release for the given version.
     /// </summary>
-    private static ProductRelease? FindRelease(Product product, string version, InstallMode mode)
+    private static ProductRelease? FindRelease(Product product, ReleaseVersion resolvedVersion, InstallComponent component)
     {
         var releases = product.GetReleasesAsync().GetAwaiter().GetResult();
-        var targetReleaseVersion = new ReleaseVersion(version);
 
         // Get all releases
         var allReleases = releases.ToList();
 
         // First try to find the exact version in the original release list
-        var exactReleaseMatch = allReleases.FirstOrDefault(r => r.Version.Equals(targetReleaseVersion));
+        var exactReleaseMatch = allReleases.FirstOrDefault(r => r.Version.Equals(resolvedVersion));
         if (exactReleaseMatch != null)
         {
             return exactReleaseMatch;
@@ -851,41 +844,30 @@ internal class ReleaseManifest : IDisposable
             bool foundMatch = false;
 
             // Check the appropriate collection based on the mode
-            if (mode == InstallMode.SDK)
+            if (component == InstallComponent.SDK)
             {
                 foreach (var sdk in release.Sdks)
                 {
                     // Check for exact match
-                    if (sdk.Version.Equals(targetReleaseVersion))
+                    if (sdk.Version.Equals(resolvedVersion))
                     {
                         foundMatch = true;
                         break;
                     }
 
-                    // Check for match on major, minor, patch
-                    if (sdk.Version.Major == targetReleaseVersion.Major &&
-                        sdk.Version.Minor == targetReleaseVersion.Minor &&
-                        sdk.Version.Patch == targetReleaseVersion.Patch)
-                    {
-                        foundMatch = true;
-                        break;
-                    }
+                    //  Not sure what the point of the below logic was
+                    //// Check for match on major, minor, patch
+                    //if (sdk.Version.Major == targetReleaseVersion.Major &&
+                    //    sdk.Version.Minor == targetReleaseVersion.Minor &&
+                    //    sdk.Version.Patch == targetReleaseVersion.Patch)
+                    //{
+                    //    foundMatch = true;
+                    //    break;
+                    //}
                 }
             }
             else // Runtime mode
             {
-                // Filter by runtime type based on file names in the release
-                var runtimeTypeMatches = release.Files.Any(f =>
-                    f.Name.Contains("runtime", StringComparison.OrdinalIgnoreCase) &&
-                    !f.Name.Contains("aspnetcore", StringComparison.OrdinalIgnoreCase) &&
-                    !f.Name.Contains("windowsdesktop", StringComparison.OrdinalIgnoreCase));
-
-                var aspnetCoreMatches = release.Files.Any(f =>
-                    f.Name.Contains("aspnetcore", StringComparison.OrdinalIgnoreCase));
-
-                var windowsDesktopMatches = release.Files.Any(f =>
-                    f.Name.Contains("windowsdesktop", StringComparison.OrdinalIgnoreCase));
-
                 // Get the appropriate runtime components based on the file patterns
                 var filteredRuntimes = release.Runtimes;
 
@@ -895,20 +877,20 @@ internal class ReleaseManifest : IDisposable
                 foreach (var runtime in filteredRuntimes)
                 {
                     // Check for exact match
-                    if (runtime.Version.Equals(targetReleaseVersion))
+                    if (runtime.Version.Equals(resolvedVersion))
                     {
                         foundMatch = true;
                         break;
                     }
 
-                    // Check for match on major, minor, patch
-                    if (runtime.Version.Major == targetReleaseVersion.Major &&
-                        runtime.Version.Minor == targetReleaseVersion.Minor &&
-                        runtime.Version.Patch == targetReleaseVersion.Patch)
-                    {
-                        foundMatch = true;
-                        break;
-                    }
+                    //// Check for match on major, minor, patch
+                    //if (runtime.Version.Major == targetReleaseVersion.Major &&
+                    //    runtime.Version.Minor == targetReleaseVersion.Minor &&
+                    //    runtime.Version.Patch == targetReleaseVersion.Patch)
+                    //{
+                    //    foundMatch = true;
+                    //    break;
+                    //}
                 }
             }
 
@@ -924,14 +906,14 @@ internal class ReleaseManifest : IDisposable
     /// <summary>
     /// Finds the matching file in the release for the given installation requirements.
     /// </summary>
-    private static ReleaseFile? FindMatchingFile(ProductRelease release, DotnetInstall install)
+    private static ReleaseFile? FindMatchingFile(ProductRelease release, DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
     {
-        var rid = DnupUtilities.GetRuntimeIdentifier(install.Architecture);
+        var rid = DnupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture);
         var fileExtension = DnupUtilities.GetArchiveFileExtensionForPlatform();
 
         // Determine the component type pattern to look for in file names
         string componentTypePattern;
-        if (install.Mode == InstallMode.SDK)
+        if (installRequest.Component == InstallComponent.SDK)
         {
             componentTypePattern = "sdk";
         }
@@ -942,12 +924,12 @@ internal class ReleaseManifest : IDisposable
             componentTypePattern = "runtime";
 
             // Check if this is specifically an ASP.NET Core runtime
-            if (install.FullySpecifiedVersion.Value.Contains("aspnetcore"))
+            if (installRequest.Component == InstallComponent.ASPNETCore)
             {
                 componentTypePattern = "aspnetcore";
             }
             // Check if this is specifically a Windows Desktop runtime
-            else if (install.FullySpecifiedVersion.Value.Contains("windowsdesktop"))
+            else if (installRequest.Component == InstallComponent.WindowsDesktop)
             {
                 componentTypePattern = "windowsdesktop";
             }
@@ -966,7 +948,7 @@ internal class ReleaseManifest : IDisposable
         }
 
         // If we have multiple matching files, prefer the one with the full version in the name
-        var versionString = install.FullySpecifiedVersion.Value;
+        var versionString = resolvedVersion.ToString();
         var bestMatch = matchingFiles.FirstOrDefault(f => f.Name.Contains(versionString, StringComparison.OrdinalIgnoreCase));
 
         // If no file has the exact version string, return the first match
@@ -978,9 +960,9 @@ internal class ReleaseManifest : IDisposable
     /// </summary>
     /// <param name="install">The .NET installation details</param>
     /// <returns>The SHA512 hash string of the installer/archive, or null if not found</returns>
-    public string? GetArchiveHash(DotnetInstall install)
+    public string? GetArchiveHash(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
     {
-        var targetFile = FindReleaseFile(install);
+        var targetFile = FindReleaseFile(installRequest, resolvedVersion);
         return targetFile?.Hash;
     }
 

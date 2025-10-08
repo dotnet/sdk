@@ -19,17 +19,17 @@ public class BootstrapperController : IBootstrapperController
         _environmentProvider = environmentProvider ?? new EnvironmentProvider();
     }
 
-    public InstallType GetConfiguredInstallType(out string? currentInstallPath)
+    public DotnetInstallRoot GetConfiguredInstallType()
     {
-        currentInstallPath = null;
+
         string? foundDotnet = _environmentProvider.GetCommandPath("dotnet");
         if (string.IsNullOrEmpty(foundDotnet))
         {
-            return InstallType.None;
+            return new(null, InstallType.None, DnupUtilities.GetDefaultInstallArchitecture());
         }
 
         string installDir = Path.GetDirectoryName(foundDotnet)!;
-        currentInstallPath = installDir;
+        
 
         string? dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
         string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
@@ -44,18 +44,18 @@ public class BootstrapperController : IBootstrapperController
                 !dotnetRoot.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase) &&
                 !dotnetRoot.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase))
             {
-                return InstallType.Inconsistent;
+                return new(installDir, InstallType.Inconsistent, DnupUtilities.GetDefaultInstallArchitecture());
             }
-            return InstallType.Admin;
+            return new(installDir, InstallType.Admin, DnupUtilities.GetDefaultInstallArchitecture());
         }
         else
         {
             // User install: DOTNET_ROOT must be set and match installDir
             if (string.IsNullOrEmpty(dotnetRoot) || !DnupUtilities.PathsEqual(dotnetRoot, installDir))
             {
-                return InstallType.Inconsistent;
+                return new(installDir, InstallType.Inconsistent, DnupUtilities.GetDefaultInstallArchitecture());
             }
-            return InstallType.User;
+            return new(installDir, InstallType.User, DnupUtilities.GetDefaultInstallArchitecture());
         }
     }
 
@@ -96,35 +96,31 @@ public class BootstrapperController : IBootstrapperController
         return null;
     }
 
-    public void InstallSdks(string dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions)
+    public void InstallSdks(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, IEnumerable<string> sdkVersions)
     {
         foreach (var channelVersion in sdkVersions)
         {
-            InstallSDK(dotnetRoot, progressContext, channelVersion);
+            InstallSDK(dotnetRoot, progressContext, new UpdateChannel(channelVersion));
         }
     }
 
-    private void InstallSDK(string dotnetRoot, ProgressContext progressContext, string channelVersion)
+    private void InstallSDK(DotnetInstallRoot dotnetRoot, ProgressContext progressContext, UpdateChannel channnel)
     {
         DotnetInstallRequest request = new DotnetInstallRequest(
-            channelVersion,
             dotnetRoot,
-            InstallType.User,
-            InstallMode.SDK,
-            // Get current machine architecture and convert it to correct enum value
-            DnupUtilities.GetInstallArchitecture(RuntimeInformation.ProcessArchitecture),
-            new ManagementCadence(ManagementCadenceType.DNUP),
+            channnel,
+            InstallComponent.SDK,
             new InstallRequestOptions()
         );
 
         DotnetInstall? newInstall = InstallerOrchestratorSingleton.Instance.Install(request);
         if (newInstall == null)
         {
-            throw new Exception($"Failed to install .NET SDK {channelVersion}");
+            throw new Exception($"Failed to install .NET SDK {channnel.Name}");
         }
         else
         {
-            Spectre.Console.AnsiConsole.MarkupLine($"[green]Installed .NET SDK {newInstall.FullySpecifiedVersion}, available via {newInstall.MuxerDirectory}[/]");
+            Spectre.Console.AnsiConsole.MarkupLine($"[green]Installed .NET SDK {newInstall.Version}, available via {newInstall.InstallRoot}[/]");
         }
     }
 
