@@ -440,7 +440,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadSucceeded);
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)]
         [CombinatorialData]
         public async Task AutoRestartOnRuntimeRudeEdit(bool nonInteractive)
         {
