@@ -13,8 +13,6 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("net6.0")]
         [InlineData("net7.0")]
         [InlineData("net8.0")]
-        [InlineData("netstandard2.0")]
-        [InlineData("netstandard2.1")]
         public void CS8002_is_suppressed_for_modern_net_tfms(string targetFramework)
         {
             var testProject = new TestProject
@@ -54,7 +52,9 @@ namespace Microsoft.NET.Build.Tests
         [Theory]
         [InlineData("net472")]
         [InlineData("net48")]
-        public void CS8002_is_not_suppressed_for_net_framework_tfms(string targetFramework)
+        [InlineData("netstandard2.0")]
+        [InlineData("netstandard2.1")]
+        public void CS8002_is_not_suppressed_for_non_modern_net_tfms(string targetFramework)
         {
             var testProject = new TestProject
             {

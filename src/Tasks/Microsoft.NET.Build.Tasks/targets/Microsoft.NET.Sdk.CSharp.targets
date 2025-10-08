@@ -46,10 +46,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <!--
-    Suppress CS8002 (referenced assembly doesn't have a strong name) for .NET Core and .NET Standard TFMs.
+    Suppress CS8002 (referenced assembly doesn't have a strong name) for modern .NET (netx.y) TFMs.
     Strong name validation is not enforced on modern .NET runtimes, so this warning is irrelevant.
   -->
-  <PropertyGroup Condition="'$(_IsNETCoreOrNETStandard)' == 'true'">
+  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <NoWarn>$(NoWarn);CS8002</NoWarn>
   </PropertyGroup>
 </Project>
