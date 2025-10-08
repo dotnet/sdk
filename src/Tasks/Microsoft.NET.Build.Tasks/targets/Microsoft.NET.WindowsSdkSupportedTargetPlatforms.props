@@ -26,9 +26,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         <!-- Normalize the last part of TFM to .0 when ending with .1 as that indicates the use of the CsWinRT 3.0 verison. -->
       <_NormalizedWindowsSdkSupportedTargetPlatformVersion Include="@(WindowsSdkSupportedTargetPlatformVersion)">
         <NormalizedSupportedTargetPlatformVersion
-            Condition="$([MSBuild]::ValueOrDefault('%(Identity)', '').Split('.').Length) == 4 And
-                         $([MSBuild]::ValueOrDefault('%(Identity)', '').Split('.').GetValue(3)) == '1'"
-              >$([MSBuild]::ValueOrDefault('%(Identity)', '').Split('.').GetValue(0)).$([MSBuild]::ValueOrDefault('%(Identity)', '').Split('.').GetValue(1)).$([MSBuild]::ValueOrDefault('%(Identity)', '').Split('.').GetValue(2)).0</NormalizedSupportedTargetPlatformVersion>
+            Condition="$([System.Text.RegularExpressions.Regex]::IsMatch(%(Identity), '^((\d+\.){3})1$'))"
+              >$([System.Text.RegularExpressions.Regex]::Replace(%(Identity), '^((\d+\.){3})1$', '${1}0'))</NormalizedSupportedTargetPlatformVersion>
       </_NormalizedWindowsSdkSupportedTargetPlatformVersion>
       <SdkSupportedTargetPlatformVersion Include="@(_NormalizedWindowsSdkSupportedTargetPlatformVersion)" />
     </ItemGroup>
