@@ -14,11 +14,11 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-restore" "1" "2025-06-30" "" ".NET Documentation"
+.TH "dotnet-restore" "1" "2025-09-30" "" ".NET Documentation"
 .hy
 .SH dotnet restore
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 and later versions
 .SH NAME
 .PP
 dotnet-restore - Restores the dependencies and tools of a project.
@@ -26,7 +26,7 @@ dotnet-restore - Restores the dependencies and tools of a project.
 .IP
 .nf
 \f[C]
-dotnet restore [<ROOT>] [--configfile <FILE>] [--disable-build-servers]
+dotnet restore [<PROJECT>|<SOLUTION>|<FILE>] [--configfile <FILE>] [--disable-build-servers]
     [--disable-parallel]
     [-f|--force] [--force-evaluate] [--ignore-failed-sources]
     [--interactive] [--lock-file-path <LOCK_FILE_PATH>] [--locked-mode]
@@ -126,12 +126,20 @@ When you run this command, it initiates an asynchronous background download of a
 If the download is still running when this command finishes, the download is stopped.
 For more information, see Advertising manifests.
 .SH ARGUMENTS
-.IP \[bu] 2
-\f[B]\f[VB]ROOT\f[B]\f[R]
-.RS 2
 .PP
-Optional path to the project file to restore.
-.RE
+\f[V]PROJECT | SOLUTION | FILE\f[R]
+.PP
+The project or solution or C# (file-based app) file to operate on.
+If a file isn\[cq]t specified, MSBuild searches the current directory for a project or solution.
+.IP \[bu] 2
+\f[V]PROJECT\f[R] is the path and filename of a C#, F#, or Visual Basic project file, or the path to a directory that contains a C#, F#, or Visual Basic project file.
+.IP \[bu] 2
+\f[V]SOLUTION\f[R] is the path and filename of a solution file (\f[I].sln\f[R] or \f[I].slnx\f[R] extension), or the path to a directory that contains a solution file.
+.IP \[bu] 2
+\f[V]FILE\f[R] is an argument added in .NET 10.
+The path and filename of a file-based app.
+File-based apps are contained within a single file that is built and run without a corresponding project (\f[I].csproj\f[R]) file.
+For more information, see Build file-based C# apps.
 .SH OPTIONS
 .IP \[bu] 2
 \f[B]\f[VB]-a|--arch <ARCHITECTURE>\f[B]\f[R]
@@ -250,13 +258,13 @@ Multiple sources can be provided by specifying this option multiple times.
 \f[B]\f[VB]--tl:[auto|on|off]\f[B]\f[R]
 .RS 2
 .PP
-Specifies whether the \f[I]terminal logger\f[R] should be used for the build output.
+Specifies whether \f[I]Terminal Logger\f[R] should be used for the build output.
 The default is \f[V]auto\f[R], which first verifies the environment before enabling terminal logging.
 The environment check verifies that the terminal is capable of using modern output features and isn\[cq]t using a redirected standard output before enabling the new logger.
 \f[V]on\f[R] skips the environment check and enables terminal logging.
 \f[V]off\f[R] skips the environment check and uses the default console logger.
 .PP
-The terminal logger shows you the restore phase followed by the build phase.
+Terminal Logger shows you the restore phase followed by the build phase.
 During each phase, the currently building projects appear at the bottom of the terminal.
 Each project that\[cq]s building outputs both the MSBuild target currently being built and the amount of time spent on that target.
 You can search this information to learn more about the build.

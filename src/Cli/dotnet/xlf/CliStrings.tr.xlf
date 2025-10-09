@@ -784,7 +784,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentDescription">
         <source>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</source>
-        <target state="new">Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</target>
+        <target state="translated">'{0}' gibi bir paket tanımlayıcısı veya '{0}@{1}' gibi '@' ile ayrılmış paket tanımlayıcısı ve sürümü şeklinde paket başvurusu.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">
