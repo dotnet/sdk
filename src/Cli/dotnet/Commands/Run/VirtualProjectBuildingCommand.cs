@@ -1932,12 +1932,12 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         /// <summary>
         /// Preserved across <see cref="WithName"/> calls.
         /// </summary>
-        public required string OriginalName { get; init; }
+        public string OriginalName { get; init; }
 
         /// <summary>
         /// Preserved across <see cref="ResolveProjectPath"/> calls.
         /// </summary>
-        public required string UnresolvedName { get; init; }
+        public string UnresolvedName { get; init; }
 
         public static new Project? Parse(in ParseContext context)
         {
