@@ -1164,12 +1164,12 @@ Per altre informazioni, vedere https://aka.ms/dotnet-test/mtp.</target>
       </trans-unit>
       <trans-unit id="DotnetTestCommandMTPDescription">
         <source>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</source>
-        <target state="new">.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</target>
+        <target state="translated">Comando di test .NET per Microsoft.Testing.Platform (attivato tramite il file 'global.json'). Supporta solo Microsoft.Testing.Platform e non VSTest. Per altre informazioni, vedere https://aka.ms/dotnet-test.</target>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestCommandVSTestDescription">
         <source>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</source>
-        <target state="new">.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</target>
+        <target state="translated">Comando di test .NET per VSTest. Per usare Microsoft.Testing.Platform, attivare il comando basato su Microsoft.Testing.Platform tramite global.json. Per altre informazioni, vedere https://aka.ms/dotnet-test.</target>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
@@ -1238,12 +1238,12 @@ Rendi distinti i nomi profilo.</target>
       </trans-unit>
       <trans-unit id="DurationColon">
         <source>duration:</source>
-        <target state="new">duration:</target>
+        <target state="translated">durata:</target>
         <note />
       </trans-unit>
       <trans-unit id="ErrorColon">
         <source>error:</source>
-        <target state="new">error:</target>
+        <target state="translated">errore:</target>
         <note />
       </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
@@ -1298,7 +1298,7 @@ Rendi distinti i nomi profilo.</target>
       </trans-unit>
       <trans-unit id="FailedColon">
         <source>failed:</source>
-        <target state="new">failed:</target>
+        <target state="translated">non riuscito:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -2572,6 +2572,11 @@ The default is to publish a framework-dependent application.</source>
 Per impostazione predefinita, viene generato un pacchetto dipendente dal framework.</target>
         <note />
       </trans-unit>
+      <trans-unit id="QuoteInDirective">
+        <source>Directives currently cannot contain double quotes (").</source>
+        <target state="new">Directives currently cannot contain double quotes (").</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RazorOptionDescription">
         <source>Shut down the Razor build server.</source>
         <target state="translated">Arresta il server di compilazione di Razor.</target>
@@ -2694,7 +2699,7 @@ Per impostazione predefinita, viene generato un pacchetto dipendente dal framewo
       </trans-unit>
       <trans-unit id="Retried">
         <source>retried</source>
-        <target state="new">retried</target>
+        <target state="translated">ripetuto</target>
         <note />
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
@@ -2978,7 +2983,7 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
       </trans-unit>
       <trans-unit id="SkippedColon">
         <source>skipped:</source>
-        <target state="new">skipped:</target>
+        <target state="translated">ignorato:</target>
         <note />
       </trans-unit>
       <trans-unit id="SkippedLowercase">
@@ -3118,7 +3123,7 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
       </trans-unit>
       <trans-unit id="SucceededColon">
         <source>succeeded:</source>
-        <target state="new">succeeded:</target>
+        <target state="translated">operazione completata:</target>
         <note />
       </trans-unit>
       <trans-unit id="Summary">
@@ -3584,7 +3589,7 @@ e gli ID pacchetto corrispondenti per gli strumenti installati usando il comando
       </trans-unit>
       <trans-unit id="TotalColon">
         <source>total:</source>
-        <target state="new">total:</target>
+        <target state="translated">totale:</target>
         <note />
       </trans-unit>
       <trans-unit id="Try">

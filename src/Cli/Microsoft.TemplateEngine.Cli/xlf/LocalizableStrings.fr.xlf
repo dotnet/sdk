@@ -854,7 +854,7 @@ The header is followed by the list of parameters and their errors (might be seve
         <source>The result of parsing the following JSON was 'null':
 
 {0}</source>
-        <target state="new">The result of parsing the following JSON was 'null':
+        <target state="translated">Le résultat de l'analyse du JSON suivant était « null » :
 
 {0}</target>
         <note>{0} is the JSON that is being parsed.</note>
