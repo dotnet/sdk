@@ -249,7 +249,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         File.ReadAllText(Path.Join(outputDirFullPath, "app.csproj"))
             .Should().Contain($"""
-                <ProjectReference Include="{"../../Lib/lib.csproj".Replace('/', Path.DirectorySeparatorChar)}" />
+                <ProjectReference Include="{"../../$(LibProjectName)/lib.csproj".Replace('/', Path.DirectorySeparatorChar)}" />
                 """);
     }
 

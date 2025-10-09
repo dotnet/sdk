@@ -1937,6 +1937,11 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         /// <summary>
         /// Preserved across <see cref="ResolveProjectPath"/> calls.
         /// </summary>
+        /// <remarks>
+        /// When MSBuild <c>$(..)</c> vars are expanded via <see cref="WithName"/>,
+        /// the <see cref="UnresolvedName"/> will be expanded, but not resolved
+        /// (i.e., can be pointing to project directory or file).
+        /// </remarks>
         public string UnresolvedName { get; init; }
 
         public static new Project? Parse(in ParseContext context)

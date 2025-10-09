@@ -180,9 +180,6 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
                 // while also pointing to the project file rather than a directory).
                 if (directive is CSharpDirective.Project project)
                 {
-                    // If the path is absolute and it has some `$(..)` vars in it,
-                    // turn it into a relative path (it might be in the form `$(ProjectDir)/../Lib`
-                    // and we don't want that to be turned into an absolute path in the converted project).
                     if (Path.IsPathFullyQualified(project.Name))
                     {
                         // If the path is absolute and has no `$(..)` vars, just keep it.
@@ -192,9 +189,20 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
                             continue;
                         }
 
-                        project = project.WithName(Path.GetRelativePath(relativeTo: targetDirectory, path: project.Name));
-                        result.Add(project);
-                        continue;
+                        // If the path is absolute and it *starts* with some `$(..)` vars,
+                        // turn it into a relative path (it might be in the form `$(ProjectDir)/../Lib`
+                        // and we don't want that to be turned into an absolute path in the converted project).
+                        //
+                        // If the path is absolute but the `$(..)` vars are *inside* of it (like `C:\$(..)\Lib`),
+                        // instead of at the start, we can keep those vars, i.e., skip this `if` block.
+                        //
+                        // The `OriginalName` is absolute if there are no `$(..)` vars at the start.
+                        if (!Path.IsPathFullyQualified(project.OriginalName))
+                        {
+                            project = project.WithName(Path.GetRelativePath(relativeTo: targetDirectory, path: project.Name));
+                            result.Add(project);
+                            continue;
+                        }
                     }
 
                     // If the original path is to a directory, just append the resolved file name

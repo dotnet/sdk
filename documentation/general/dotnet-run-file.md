@@ -250,6 +250,10 @@ However, in `#:project` directives, variables might not be preserved during [gro
 because there is additional processing of those directives that makes it technically challenging to preserve variables in all cases
 (project directive values need to be resolved to be relative to the target directory
 and also to point to a project file rather than a directory).
+Note that it is not expected that variables inside the path change their meaning during the conversion,
+so for example `#:project ../$(LibName)` is translated to `<ProjectReference Include="../../$(LibName)/Lib.csproj" />` (i.e., the variable is preserved).
+However, variables at the start can change, so for example `#:project $(ProjectDir)../Lib` is translated to `<ProjectReference Include="../../Lib/Lib.csproj" />` (i.e., the variable is expanded).
+In other directives, all variables are preserved during conversion.
 
 Because these directives are limited by the C# language to only appear before the first "C# token" and any `#if`,
 dotnet CLI can look for them via a regex or Roslyn lexer without any knowledge of defined conditional symbols
