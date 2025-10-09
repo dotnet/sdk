@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation;
 
 internal interface IDotnetInstallDiscoverer
 {
-    //  List installed SDKs under an install root
-
+    IEnumerable<ReleaseVersion> ListInstalledVersions(DotnetInstallRoot dotnetRoot, InstallComponent component);
 }

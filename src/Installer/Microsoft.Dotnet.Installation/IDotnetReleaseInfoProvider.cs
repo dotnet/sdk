@@ -4,13 +4,25 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation;
 
-public class IDotnetReleaseInfoProvider
+public interface IDotnetReleaseInfoProvider
 {
-    // Get available release channels
-    // Get latest version in a channel
-    // Get all versions in a channel
-    // Get support level for a version / channel?
+    IEnumerable<string> GetAvailableChannels();
+
+    ReleaseVersion GetLatestVersion(InstallComponent component, string channel);
+
+    // Get all versions in a channel - do we have a scenario for this?
+    //IEnumerable<ReleaseVersion> GetAllVersions(InstallComponent component, string channel);
+
+    SupportType GetSupportType(InstallComponent component, ReleaseVersion version);
+}
+
+public enum SupportType
+{
+    OutOfSupport,
+    LongTermSupport,
+    StandardTermSupport
 }

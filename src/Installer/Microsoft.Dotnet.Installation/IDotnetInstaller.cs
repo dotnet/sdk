@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation;
 
 public interface IDotnetInstaller
 {
-    //  Install a version of the SDK
-    //  Uninstall a version of the SDK
+    void Install(DotnetInstallRoot dotnetRoot, InstallComponent component, ReleaseVersion version);
+    void Uninstall(DotnetInstallRoot dotnetRoot, InstallComponent component, ReleaseVersion version);
 }
