@@ -1164,12 +1164,12 @@ Daha fazla bilgi için https://aka.ms/dotnet-test/mtp adresine bakın.</target>
       </trans-unit>
       <trans-unit id="DotnetTestCommandMTPDescription">
         <source>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</source>
-        <target state="new">.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</target>
+        <target state="translated">Microsoft.Testing.Platform için .NET Test Komutu ('global.json' dosyasıyla seçildi). Bu sadece Microsoft.Testing.Platform'u destekler, VSTest'i desteklemez. Daha fazla bilgi için bkz. https://aka.ms/dotnet-test.</target>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestCommandVSTestDescription">
         <source>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</source>
-        <target state="new">.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</target>
+        <target state="translated">VSTest için .NET Test Komutu. Microsoft.Testing.Platform'u kullanmak için global.json üzerinden Microsoft.Testing.Platform tabanlı komutu seçin. Daha fazla bilgi için bkz. https://aka.ms/dotnet-test.</target>
         <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
@@ -1238,12 +1238,12 @@ Lütfen profil adlarını değiştirin.</target>
       </trans-unit>
       <trans-unit id="DurationColon">
         <source>duration:</source>
-        <target state="new">duration:</target>
+        <target state="translated">süre:</target>
         <note />
       </trans-unit>
       <trans-unit id="ErrorColon">
         <source>error:</source>
-        <target state="new">error:</target>
+        <target state="translated">hata:</target>
         <note />
       </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
@@ -1298,7 +1298,7 @@ Lütfen profil adlarını değiştirin.</target>
       </trans-unit>
       <trans-unit id="FailedColon">
         <source>failed:</source>
-        <target state="new">failed:</target>
+        <target state="translated">başarısız oldu:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -2572,6 +2572,11 @@ The default is to publish a framework-dependent application.</source>
 Varsayılan durum, çerçeveye bağımlı bir uygulama yayımlamaktır.</target>
         <note />
       </trans-unit>
+      <trans-unit id="QuoteInDirective">
+        <source>Directives currently cannot contain double quotes (").</source>
+        <target state="new">Directives currently cannot contain double quotes (").</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RazorOptionDescription">
         <source>Shut down the Razor build server.</source>
         <target state="translated">Razor derleme sunucusunu kapatır.</target>
@@ -2694,7 +2699,7 @@ Varsayılan durum, çerçeveye bağımlı bir uygulama yayımlamaktır.</target>
       </trans-unit>
       <trans-unit id="Retried">
         <source>retried</source>
-        <target state="new">retried</target>
+        <target state="translated">yeniden denendi</target>
         <note />
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
@@ -2978,7 +2983,7 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
       </trans-unit>
       <trans-unit id="SkippedColon">
         <source>skipped:</source>
-        <target state="new">skipped:</target>
+        <target state="translated">atlandı:</target>
         <note />
       </trans-unit>
       <trans-unit id="SkippedLowercase">
@@ -3118,7 +3123,7 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
       </trans-unit>
       <trans-unit id="SucceededColon">
         <source>succeeded:</source>
-        <target state="new">succeeded:</target>
+        <target state="translated">başarılı:</target>
         <note />
       </trans-unit>
       <trans-unit id="Summary">
@@ -3584,7 +3589,7 @@ karşılık gelen paket kimliklerini bulmak için
       </trans-unit>
       <trans-unit id="TotalColon">
         <source>total:</source>
-        <target state="new">total:</target>
+        <target state="translated">toplam:</target>
         <note />
       </trans-unit>
       <trans-unit id="Try">
