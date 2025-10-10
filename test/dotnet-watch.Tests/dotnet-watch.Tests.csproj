@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <RootNamespace>Microsoft.DotNet.Watcher.Tools</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\src\Tasks\Microsoft.NET.Build.Tasks.UnitTests\Mocks\MockBuildEngine.cs" Link="Utilities\MockBuildEngine.cs" />
+    <Compile Include="..\..\src\Tasks\Microsoft.NET.Build.Tasks.UnitTests\Mocks\MockTaskItem.cs" Link="Utilities\MockTaskItem.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)\src\BuiltInTools\dotnet-watch\dotnet-watch.csproj" />
+    <ProjectReference Include="$(RepoRoot)\src\BuiltInTools\DotNetWatchTasks\DotNetWatchTasks.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="Xunit.Combinatorial" />
+  </ItemGroup>
+</Project>
