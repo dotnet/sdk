@@ -119,6 +119,8 @@ public sealed class MSBuildLogger : INodeLogger
 
                 eventSource.BuildFinished += OnBuildFinished;
             }
+
+            eventSource.BuildFinished += OnBuildFinished;
         }
         catch (Exception)
         {
@@ -133,9 +135,10 @@ public sealed class MSBuildLogger : INodeLogger
 
     internal void SendAggregatedEventsOnBuildFinished(ITelemetry? telemetry)
     {
+        if (telemetry is null) return;
         if (_aggregatedEvents.TryGetValue(TaskFactoryTelemetryAggregatedEventName, out var taskFactoryData))
         {
-            var taskFactoryProperties = ConvertToStringDictionary(taskFactoryData);
+            Dictionary<string, string?> taskFactoryProperties = ConvertToStringDictionary(taskFactoryData);
 
             TrackEvent(telemetry, $"msbuild/{TaskFactoryTelemetryAggregatedEventName}", taskFactoryProperties, toBeHashed: [], toBeMeasured: []);
             _aggregatedEvents.Remove(TaskFactoryTelemetryAggregatedEventName);
@@ -143,7 +146,7 @@ public sealed class MSBuildLogger : INodeLogger
 
         if (_aggregatedEvents.TryGetValue(TasksTelemetryAggregatedEventName, out var tasksData))
         {
-            var tasksProperties = ConvertToStringDictionary(tasksData);
+            Dictionary<string, string?> tasksProperties = ConvertToStringDictionary(tasksData);
 
             TrackEvent(telemetry, $"msbuild/{TasksTelemetryAggregatedEventName}", tasksProperties, toBeHashed: [], toBeMeasured: []);
             _aggregatedEvents.Remove(TasksTelemetryAggregatedEventName);
@@ -163,14 +166,10 @@ public sealed class MSBuildLogger : INodeLogger
 
     internal void AggregateEvent(TelemetryEventArgs args)
     {
-        if (args.EventName == null || args.Properties == null)
+        if (args.EventName is null) return;
+        if (!_aggregatedEvents.TryGetValue(args.EventName, out Dictionary<string, int>? eventData) || eventData is null)
         {
-            return;
-        }
-
-        if (!_aggregatedEvents.TryGetValue(args.EventName, out var eventData))
-        {
-            eventData = [];
+            eventData = new Dictionary<string, int>();
             _aggregatedEvents[args.EventName] = eventData;
         }
 
