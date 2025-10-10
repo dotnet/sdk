@@ -98,7 +98,9 @@ namespace Microsoft.TemplateEngine.Utils
                 return Empty;
             }
 
+#pragma warning disable IDE0306 // Collection initialization can be simplified
             HashSet<T> dependantVertices = includeSeedVertices ? new HashSet<T>(vertices) : new HashSet<T>();
+#pragma warning restore IDE0306 // Collection initialization can be simplified
             Queue<T> directDependants = new(vertices);
             var dependantsMap = _dependantsMap.Value;
 
