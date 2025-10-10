@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.Versioning;
 using Basic.CompilerLog.Util;
 using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.CodeAnalysis;
@@ -11,6 +12,9 @@ namespace Microsoft.NET.Build.Tests;
 
 public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
 {
+    private const string CoreTargetFrameworkName = ".NETCoreApp";
+    private const string FxTargetFrameworkName = ".NETFramework";
+
     private static string CompilerFileNameWithoutExtension(Language language) => language switch
     {
         Language.CSharp => "csc",
@@ -27,7 +31,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
     {
         var testAsset = CreateProject(useSharedCompilation, language);
         var buildCommand = BuildAndRunUsingMSBuild(testAsset);
-        VerifyCompiler(buildCommand, CoreCompilerFileName(language), useSharedCompilation);
+        VerifyCompiler(buildCommand, CoreCompilerFileName(language), CoreTargetFrameworkName, useSharedCompilation);
     }
 
     [FullMSBuildOnlyTheory, CombinatorialData]
@@ -38,7 +42,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
             doc.Root!.Element("PropertyGroup")!.Add(new XElement("RoslynCompilerType", "Framework"));
         });
         var buildCommand = BuildAndRunUsingMSBuild(testAsset);
-        VerifyCompiler(buildCommand, FxCompilerFileName(language), useSharedCompilation);
+        VerifyCompiler(buildCommand, FxCompilerFileName(language), FxTargetFrameworkName, useSharedCompilation);
     }
 
     [FullMSBuildOnlyTheory, CombinatorialData]
@@ -50,7 +54,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
             project.TargetFrameworkVersion = "v4.7.2";
         });
         var buildCommand = BuildAndRunUsingMSBuild(testAsset);
-        VerifyCompiler(buildCommand, FxCompilerFileName(language), useSharedCompilation);
+        VerifyCompiler(buildCommand, FxCompilerFileName(language), FxTargetFrameworkName, useSharedCompilation);
     }
 
     [FullMSBuildOnlyTheory, CombinatorialData]
@@ -59,7 +63,10 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         var testAsset = CreateProject(useSharedCompilation, language, AddCompilersToolsetPackage);
         ReadOnlySpan<string> args = useFrameworkCompiler ? ["-p:RoslynCompilerType=Framework"] : [];
         var buildCommand = BuildAndRunUsingMSBuild(testAsset, args);
-        VerifyCompiler(buildCommand, useFrameworkCompiler ? FxCompilerFileName(language) : CoreCompilerFileName(language), useSharedCompilation, toolsetPackage: true);
+        VerifyCompiler(buildCommand,
+            useFrameworkCompiler ? FxCompilerFileName(language) : CoreCompilerFileName(language),
+            useFrameworkCompiler ? FxTargetFrameworkName : CoreTargetFrameworkName,
+            useSharedCompilation, toolsetPackage: true);
     }
 
     [Theory, CombinatorialData]
@@ -67,7 +74,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
     {
         var testAsset = CreateProject(useSharedCompilation, language);
         var buildCommand = BuildAndRunUsingDotNet(testAsset);
-        VerifyCompiler(buildCommand, CoreCompilerFileName(language), useSharedCompilation);
+        VerifyCompiler(buildCommand, CoreCompilerFileName(language), CoreTargetFrameworkName, useSharedCompilation);
     }
 
     //  https://github.com/dotnet/sdk/issues/49665
@@ -76,7 +83,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
     {
         var testAsset = CreateProject(useSharedCompilation, language, AddCompilersToolsetPackage);
         var buildCommand = BuildAndRunUsingDotNet(testAsset);
-        VerifyCompiler(buildCommand, CoreCompilerFileName(language), useSharedCompilation, toolsetPackage: true);
+        VerifyCompiler(buildCommand, CoreCompilerFileName(language), CoreTargetFrameworkName, useSharedCompilation, toolsetPackage: true);
     }
 
     private TestAsset CreateProject(bool useSharedCompilation, Language language, Action<TestProject>? configure = null, [CallerMemberName] string callingMethod = "")
@@ -158,7 +165,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("42");
     }
 
-    private static void VerifyCompiler(TestCommand buildCommand, string compilerFileName, bool usedCompilerServer, bool toolsetPackage = false)
+    private static void VerifyCompiler(TestCommand buildCommand, string compilerFileName, string targetFrameworkName, bool usedCompilerServer, bool toolsetPackage = false)
     {
         var binaryLogPath = Path.Join(buildCommand.WorkingDirectory, "msbuild.binlog");
         using (var reader = BinaryLogReader.Create(binaryLogPath))
@@ -175,6 +182,8 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
             {
                 call.CompilerFilePath.Should().NotContain(toolsetPackageName);
             }
+
+            GetTargetFramework(call.CompilerFilePath).Should().StartWith($"{targetFrameworkName},");
         }
 
         // Verify compiler server message.
@@ -183,6 +192,19 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         compilerServerMessages.Should().ContainSingle().Which.Text.Should().StartWith(usedCompilerServer
             ? "CompilerServer: server - server processed compilation - "
             : "CompilerServer: tool - using command line tool by design");
+    }
+
+    private static string? GetTargetFramework(string dllPath)
+    {
+        var tpa = ((string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES"))?.Split(Path.PathSeparator) ?? [];
+        var resolver = new PathAssemblyResolver([.. tpa, dllPath]);
+        using var mlc = new MetadataLoadContext(resolver);
+        var asm = mlc.LoadFromAssemblyPath(dllPath);
+        var attrFullName = typeof(TargetFrameworkAttribute).FullName;
+        return asm.GetCustomAttributesData()
+            .Where(a => a.AttributeType.FullName == attrFullName)
+            .Select(a => a.ConstructorArguments[0].Value)
+            .FirstOrDefault() as string;
     }
 
     public enum Language
