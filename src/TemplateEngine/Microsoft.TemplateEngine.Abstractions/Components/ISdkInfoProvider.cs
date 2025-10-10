@@ -17,14 +17,14 @@ namespace Microsoft.TemplateEngine.Abstractions.Components
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns>SDK version.</returns>
-        public Task<string> GetCurrentVersionAsync(CancellationToken cancellationToken);
+        Task<string> GetCurrentVersionAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// All installed SDK installations semver version strings.
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns>SDK version strings.</returns>
-        public Task<IEnumerable<string>> GetInstalledVersionsAsync(CancellationToken cancellationToken);
+        Task<IEnumerable<string>> GetInstalledVersionsAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Provides localized suggestion on action to be taken so that constraints requiring specified workloads can be met.
@@ -35,6 +35,6 @@ namespace Microsoft.TemplateEngine.Abstractions.Components
         /// <param name="supportedVersions">SDK versions required by a constraint (in an 'OR' relationship).</param>
         /// <param name="viableInstalledVersions">SDK versions installed, that can meet the constraint - instructions should be provided to switch to any of those.</param>
         /// <returns>Localized string with remedy suggestion specific to current host.</returns>
-        public string ProvideConstraintRemedySuggestion(IReadOnlyList<string> supportedVersions, IReadOnlyList<string> viableInstalledVersions);
+        string ProvideConstraintRemedySuggestion(IReadOnlyList<string> supportedVersions, IReadOnlyList<string> viableInstalledVersions);
     }
 }
