@@ -124,7 +124,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             MockOperation o = new MockOperation(
                 null,
-                (IProcessorState state, int length, ref int position, int token) =>
+                (state, length, ref position, token) =>
                 {
                     state.ConsumeWholeLine(ref length, ref position);
                     return 0;

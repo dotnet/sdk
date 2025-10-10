@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
     {
         private const string CommandName = "validate";
 
-        private readonly CliArgument<string> _templateLocationArg = new("template-location")
+        private readonly Argument<string> _templateLocationArg = new("template-location")
         {
             Description = LocalizableStrings.command_validate_help_description,
             Arity = new ArgumentArity(1, 1)

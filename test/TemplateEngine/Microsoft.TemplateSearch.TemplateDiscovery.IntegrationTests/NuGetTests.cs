@@ -6,7 +6,6 @@ using Microsoft.TemplateSearch.TemplateDiscovery.NuGet;
 using Newtonsoft.Json.Linq;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using Xunit;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
 {

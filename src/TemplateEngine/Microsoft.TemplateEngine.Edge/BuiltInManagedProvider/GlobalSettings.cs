@@ -15,7 +15,6 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
         private const int FileReadWriteRetries = 20;
         private const int MillisecondsInterval = 20;
         private static readonly TimeSpan MaxNotificationDelayOnWriterLock = TimeSpan.FromSeconds(1);
-        private readonly SettingsFilePaths _paths;
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly string _globalSettingsFile;
         private IDisposable? _watcher;
@@ -27,7 +26,6 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
         {
             _environmentSettings = environmentSettings ?? throw new ArgumentNullException(nameof(environmentSettings));
             _globalSettingsFile = globalSettingsFile ?? throw new ArgumentNullException(nameof(globalSettingsFile));
-            _paths = new SettingsFilePaths(environmentSettings);
             environmentSettings.Host.FileSystem.CreateDirectory(Path.GetDirectoryName(_globalSettingsFile));
             _watcher = CreateWatcherIfRequested();
         }
