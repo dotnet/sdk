@@ -2574,7 +2574,7 @@ La valeur par défaut est de publier une application dépendante du framework.</
       </trans-unit>
       <trans-unit id="QuoteInDirective">
         <source>Directives currently cannot contain double quotes (").</source>
-        <target state="new">Directives currently cannot contain double quotes (").</target>
+        <target state="translated">Les directives ne peuvent actuellement pas contenir de guillemets doubles (").</target>
         <note />
       </trans-unit>
       <trans-unit id="RazorOptionDescription">
