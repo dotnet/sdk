@@ -163,7 +163,7 @@ public sealed class MSBuildLogger : INodeLogger
 
     internal void AggregateEvent(TelemetryEventArgs args)
     {
-        if (args.EventName is null)
+        if (args.EventName == null || args.Properties == null)
         {
             return;
         }
