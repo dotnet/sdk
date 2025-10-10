@@ -176,36 +176,32 @@ taskkill /F /IM VSTest.Console.exe /T ||
 taskkill /F /IM msbuild.exe /T
 ```
 
-## GitHub Copilot Automation Commands
+## Automated PR Maintenance Commands
 
-The SDK repository includes GitHub Copilot agents that can automate common maintenance tasks directly from pull requests. These agents can be triggered by commenting specific commands on a PR.
+The SDK repository includes GitHub Actions workflows that automate common maintenance tasks directly from pull requests.
 
 ### `/updatexlf` - Update Translation Files
 
-When you modify `.resx` resource files, the corresponding `.xlf` translation files need to be updated. Instead of manually running the build locally, you can comment `/updatexlf` on the PR and the Copilot agent will:
+When you modify `.resx` resource files, the corresponding `.xlf` translation files need to be updated. Instead of manually running the build locally, comment `/updatexlf` on the PR and the GitHub Action will:
 
-1. Run the `msbuild /t:UpdateXlf` target (or perform a full build if needed)
-2. Collect all updated `.xlf` files
-3. Commit the changes to the PR branch
+1. Check out the PR branch
+2. Run `./build.sh /t:UpdateXlf` (or full build if needed)
+3. Commit any updated `.xlf` files directly to the PR branch
 
 This is useful when you've changed localized strings and the CI build is failing due to outdated XLF files.
-
-**Example usage:** Comment `/updatexlf` on a PR where you've modified `CliStrings.resx` or other resource files.
 
 See also: [Localization documentation](Localization.md)
 
 ### `/fixcompletions` - Update CLI Completion Snapshots
 
-The CLI includes snapshot-based tests for shell completions (bash, zsh, pwsh, etc.). When you add or modify CLI commands, these snapshots need to be updated. Comment `/fixcompletions` on the PR and the agent will:
+The CLI includes snapshot-based tests for shell completions (bash, zsh, pwsh, etc.). When you add or modify CLI commands, these snapshots need to be updated. Comment `/fixcompletions` on the PR and the GitHub Action will:
 
 1. Build the repository
-2. Run the completion tests to generate new snapshots
-3. Compare and update the verified snapshot files
-4. Commit the changes to the PR branch
+2. Run the completion tests
+3. Update the verified snapshot files
+4. Commit the changes directly to the PR branch
 
-This is useful when you've added new commands or options and the `VerifyCompletions` tests are failing.
-
-**Example usage:** Comment `/fixcompletions` on a PR where you've modified CLI command structure.
+This is useful when you've added new commands or options and the completion snapshot tests are failing.
 
 See also: [Snapshot-based testing documentation](snapshot-based-testing.md)
 

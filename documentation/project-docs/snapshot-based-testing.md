@@ -13,11 +13,11 @@ To fix these tests, you need to diff the two files and visually inspect the chan
 * [CompareCliSnapshots][compare] - this Target copies the .received. files from the artifacts directory, where they are created due to the way we run tests, to the [snapshots][snapshots] directory in the dotnet.Tests project. This makes it much easier to diff the two.
 * [UpdateCliSnapshots][update] - this Target renames the .received. files to .verified. in the local [snapshots][snapshots] directory, and so acts as a giant 'I accept these changes' button. Only use this if you've diffed the snapshots and are sure they match your expectations.
 
-### Automated Snapshot Updates via GitHub Copilot
+### Automated Snapshot Updates via GitHub Actions
 
-If you've modified CLI commands in a pull request and the completion snapshot tests are failing, but you don't want to clone the branch locally to update the snapshots, you can use the GitHub Copilot automation:
+If you've modified CLI commands in a pull request and the completion snapshot tests are failing, but you don't want to clone the branch locally to update the snapshots, you can use the automated GitHub Action:
 
-**Comment `/fixcompletions` on your pull request** and the Copilot agent will:
+**Comment `/fixcompletions` on your pull request** and the workflow will:
 1. Build the repository
 2. Run the completion tests to generate new snapshots
 3. Run the `CompareCliSnapshots` and `UpdateCliSnapshots` targets
