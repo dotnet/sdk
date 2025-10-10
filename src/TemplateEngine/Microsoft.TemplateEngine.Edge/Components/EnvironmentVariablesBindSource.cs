@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Components;
@@ -17,7 +14,7 @@ namespace Microsoft.TemplateEngine.Edge
     {
         int IPrioritizedComponent.Priority => 0;
 
-        string? IBindSymbolSource.SourcePrefix => "env";
+        string IBindSymbolSource.SourcePrefix => "env";
 
         bool IBindSymbolSource.RequiresPrefixMatch => false;
 
@@ -25,19 +22,19 @@ namespace Microsoft.TemplateEngine.Edge
 
         string IBindSymbolSource.DisplayName => LocalizableStrings.EnvironmentVariablesBindSource_Name;
 
-        Task<string?> IBindSymbolSource.GetBoundValueAsync(IEngineEnvironmentSettings settings, string bindname, CancellationToken cancellationToken)
+        Task<string?> IBindSymbolSource.GetBoundValueAsync(IEngineEnvironmentSettings settings, string bindName, CancellationToken cancellationToken)
         {
             settings.Host.Logger.LogDebug(
                 "[{0}]: Retrieving bound value for '{1}'.",
                 nameof(EnvironmentVariablesBindSource),
-                bindname);
+                bindName);
 
-            string? result = settings.Environment.GetEnvironmentVariable(bindname);
+            string? result = settings.Environment.GetEnvironmentVariable(bindName);
 
             settings.Host.Logger.LogDebug(
         "[{0}]: Retrieved bound value for '{1}': '{2}'.",
         nameof(EnvironmentVariablesBindSource),
-        bindname,
+        bindName,
         result ?? "<null>");
             return Task.FromResult(result);
         }

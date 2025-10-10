@@ -1,14 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
@@ -47,7 +41,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private static readonly string[] DefaultPlaceholderFilenames = new[] { "-.-", "_._" };
         private readonly Dictionary<Guid, string> _guidToGuidPrefixMap = new();
 
-        private readonly TemplateLocalizationInfo? _localizationInfo;
         private readonly IFile? _hostConfigFile;
 
         private IReadOnlyList<FileSourceMatchInfo>? _sources;
@@ -72,7 +65,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 try
                 {
                     LocalizationModel locModel = LocalizationModelDeserializer.Deserialize(localeConfigFile);
-                    _localizationInfo = new TemplateLocalizationInfo(ParseLocFileName(localeConfigFile) ?? CultureInfo.InvariantCulture, locModel, localeConfigFile);
+                    Localization = new TemplateLocalizationInfo(ParseLocFileName(localeConfigFile) ?? CultureInfo.InvariantCulture, locModel, localeConfigFile);
                 }
                 catch (Exception ex)
                 {
@@ -130,7 +123,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         if (customGlobModel.ConditionResult)
                         {
                             // only add the special if the condition is true
-                            OperationConfigDefault defaultParams = defaultSpecials.FirstOrDefault(x => x.Glob == customGlobModel.Glob);
+                            OperationConfigDefault? defaultParams = defaultSpecials.FirstOrDefault(x => x.Glob == customGlobModel.Glob);
 
                             defaultParams ??= OperationConfigDefault.Default;
 
@@ -168,7 +161,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// </summary>
         internal IMountPoint SourceMountPoint { get; }
 
-        internal TemplateLocalizationInfo? Localization => _localizationInfo;
+        internal TemplateLocalizationInfo? Localization { get; }
 
         internal IReadOnlyList<IReplacementTokens> SymbolFilenameReplacements
         {
@@ -180,11 +173,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         }
 
         internal override IReadOnlyDictionary<CultureInfo, TemplateLocalizationInfo> Localizations =>
-             _localizationInfo is null
+             Localization is null
                 ? new Dictionary<CultureInfo, TemplateLocalizationInfo>()
                 : new Dictionary<CultureInfo, TemplateLocalizationInfo>()
                 {
-                    { _localizationInfo.Locale, _localizationInfo }
+                    { Localization.Locale, Localization }
                 };
 
         internal override IReadOnlyDictionary<string, IFile> HostFiles =>
@@ -277,11 +270,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
                 else
                 {
-                    using (Stream excludeList = sourceFile!.Parent!.FileInfo(singleConfig)!.OpenRead())
-                    using (TextReader reader = new StreamReader(excludeList, Encoding.UTF8, true, 4096, true))
-                    {
-                        return reader.ReadToEnd().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                    }
+                    using Stream excludeList = sourceFile!.Parent!.FileInfo(singleConfig)!.OpenRead();
+                    using TextReader reader = new StreamReader(excludeList, Encoding.UTF8, true, 4096, true);
+                    return reader.ReadToEnd().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                 }
             }
             return configs;
@@ -487,12 +478,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private List<IMacroConfig> ProduceGeneratedSymbolsMacroConfig()
         {
-            var generatedSymbolsConfigs = ConfigurationModel.Symbols.OfType<IGeneratedSymbolConfig>().ToList();
             Dictionary<string, IGeneratedSymbolMacro> generatedSymbolMacros = EngineEnvironmentSettings.Components.OfType<IGeneratedSymbolMacro>()
                 .ToDictionary(m => m.Type, m => m);
 
             var generatedMacroConfigs = new List<IMacroConfig>();
-            foreach (var generatedSymbolConfig in generatedSymbolsConfigs)
+            foreach (var generatedSymbolConfig in ConfigurationModel.Symbols.OfType<IGeneratedSymbolConfig>())
             {
                 if (generatedSymbolMacros.TryGetValue(generatedSymbolConfig.Type, out var generatedSymbolMacro))
                 {
@@ -545,9 +535,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     continue;
                 }
 
-                IReadOnlyList<string> topIncludePattern = TryReadConfigFromFile(source.Include, ConfigFile, IncludePatternDefaults).ToList();
-                IReadOnlyList<string> topExcludePattern = TryReadConfigFromFile(source.Exclude, ConfigFile, ExcludePatternDefaults).ToList();
-                IReadOnlyList<string> topCopyOnlyPattern = TryReadConfigFromFile(source.CopyOnly, ConfigFile, CopyOnlyPatternDefaults).ToList();
+                IReadOnlyList<string> topIncludePattern = TryReadConfigFromFile(source.Include, ConfigFile, IncludePatternDefaults);
+                IReadOnlyList<string> topExcludePattern = TryReadConfigFromFile(source.Exclude, ConfigFile, ExcludePatternDefaults);
+                IReadOnlyList<string> topCopyOnlyPattern = TryReadConfigFromFile(source.CopyOnly, ConfigFile, CopyOnlyPatternDefaults);
                 FileSourceEvaluable topLevelPatterns = new FileSourceEvaluable(topIncludePattern, topExcludePattern, topCopyOnlyPattern);
 
                 Dictionary<string, string> fileRenamesFromSource = source.Rename.ToDictionary(x => x.Key, x => x.Value);
@@ -559,9 +549,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {
                         if (modifier.EvaluateCondition(Logger, rootVariableCollection))
                         {
-                            IReadOnlyList<string> modifierIncludes = TryReadConfigFromFile(modifier.Include, ConfigFile, Array.Empty<string>());
-                            IReadOnlyList<string> modifierExcludes = TryReadConfigFromFile(modifier.Exclude, ConfigFile, Array.Empty<string>());
-                            IReadOnlyList<string> modifierCopyOnly = TryReadConfigFromFile(modifier.CopyOnly, ConfigFile, Array.Empty<string>());
+                            IReadOnlyList<string> modifierIncludes = TryReadConfigFromFile(modifier.Include, ConfigFile, []);
+                            IReadOnlyList<string> modifierExcludes = TryReadConfigFromFile(modifier.Exclude, ConfigFile, []);
+                            IReadOnlyList<string> modifierCopyOnly = TryReadConfigFromFile(modifier.CopyOnly, ConfigFile, []);
                             FileSourceEvaluable modifierPatterns = new FileSourceEvaluable(modifierIncludes, modifierExcludes, modifierCopyOnly);
                             modifierList.Add(modifierPatterns);
 

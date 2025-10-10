@@ -3,7 +3,5 @@
 
 namespace Microsoft.TemplateEngine.Core.Contracts
 {
-    public interface IKeysChangedEventArgs
-    {
-    }
+    public interface IKeysChangedEventArgs;
 }

@@ -1,1 +1,0 @@
-The source code is moved to [dotnet/sdk](https://github.com/dotnet/sdk/tree/main/src/Cli/Microsoft.TemplateEngine.Cli).

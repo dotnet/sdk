@@ -175,7 +175,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
         /// </summary>
         private static void FromAmongCaseInsensitive(CliOption<IEnumerable<UniqueForOption>> option, string[]? allowedValues = null, string? allowedHiddenValue = null)
         {
-            allowedValues ??= Array.Empty<string>();
+            allowedValues ??= [];
             option.Validators.Add(optionResult => ValidateAllowedValues(optionResult, allowedValues, allowedHiddenValue));
             option.CompletionSources.Add(allowedValues);
         }

@@ -1,11 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Components;
@@ -152,10 +147,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             string? prefix = null;
             string binding = configuredBinding;
-            if (configuredBinding.Contains(":"))
+            if (configuredBinding.Contains(':'))
             {
-                prefix = configuredBinding.Substring(0, configuredBinding.IndexOf(":")).Trim();
-                binding = configuredBinding.Substring(configuredBinding.IndexOf(":") + 1).Trim();
+                prefix = configuredBinding.Substring(0, configuredBinding.IndexOf(':')).Trim();
+                binding = configuredBinding.Substring(configuredBinding.IndexOf(':') + 1).Trim();
             }
             if (string.IsNullOrWhiteSpace(binding))
             {
@@ -216,18 +211,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     binding,
                     string.Join(", ", successfulTasks.Select(t => $"{t.Source.DisplayName} (priority: {t.Source.Priority}): '{t.Value}'")));
                 var highestPriority = successfulTasks.Max(t => t.Source.Priority);
-                var highestPrioTasks = successfulTasks.Where(t => t.Source.Priority == highestPriority);
-                if (highestPrioTasks.Count() > 1)
+                var highestPriorityTasks = successfulTasks.Where(t => t.Source.Priority == highestPriority);
+                if (highestPriorityTasks.Count() > 1)
                 {
-                    string sourcesList = string.Join(", ", highestPrioTasks.Select(t => $"'{t.Source.DisplayName}'"));
-                    string prefixesList = string.Join(", ", highestPrioTasks.Select(t => $"'{t.Source.SourcePrefix}:'"));
+                    string sourcesList = string.Join(", ", highestPriorityTasks.Select(t => $"'{t.Source.DisplayName}'"));
+                    string prefixesList = string.Join(", ", highestPriorityTasks.Select(t => $"'{t.Source.SourcePrefix}:'"));
                     _logger.LogWarning(LocalizableStrings.BindSymbolEvaluator_Warning_ValueAvailableFromMultipleSources, configuredBinding, sourcesList, prefixesList);
                     return null;
                 }
                 else
                 {
-                    _logger.LogDebug("'{0}' was selected for '{1}' as highest priority value.", highestPrioTasks.Single().Value, binding);
-                    return highestPrioTasks.Single().Value;
+                    _logger.LogDebug("'{0}' was selected for '{1}' as highest priority value.", highestPriorityTasks.Single().Value, binding);
+                    return highestPriorityTasks.Single().Value;
                 }
             }
         }

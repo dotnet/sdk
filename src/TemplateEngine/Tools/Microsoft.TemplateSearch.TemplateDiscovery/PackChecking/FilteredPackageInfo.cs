@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 {
+    [System.Diagnostics.DebuggerDisplay("{Name}@{Version} - {Reason}")]
     internal class FilteredPackageInfo : ITemplatePackageInfo
     {
         internal FilteredPackageInfo(ITemplatePackageInfo info, string reason)
@@ -40,16 +41,16 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
         public long TotalDownloads { get; private set; }
 
         [JsonProperty]
-        public IReadOnlyList<string> Owners { get; private set; } = Array.Empty<string>();
+        public IReadOnlyList<string> Owners { get; private set; } = [];
 
         [JsonProperty]
         public bool Reserved { get; private set; }
 
         [JsonIgnore]
-        public string? Description { get; private set; }
+        public string? Description { get; }
 
         [JsonIgnore]
-        public string? IconUrl { get; private set; }
+        public string? IconUrl { get; }
     }
 }
 

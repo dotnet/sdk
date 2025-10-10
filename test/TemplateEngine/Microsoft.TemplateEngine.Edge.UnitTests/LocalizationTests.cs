@@ -24,7 +24,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData(null, "name")]
         [InlineData("de-DE", "name_de-DE:äÄßöÖüÜ")]
         [InlineData("tr-TR", "name_tr-TR:çÇğĞıIİöÖşŞüÜ")]
-        public void TestLocalizedTemplateName(string locale, string expectedName)
+        public void TestLocalizedTemplateName(string? locale, string expectedName)
         {
             _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
 
@@ -35,7 +35,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData(null, "desc")]
         [InlineData("de-DE", "desc_de-DE:äÄßöÖüÜ")]
         [InlineData("tr-TR", "desc_tr-TR:çÇğĞıIİöÖşŞüÜ")]
-        public void TestLocalizedTemplateDescription(string locale, string expectedDescription)
+        public void TestLocalizedTemplateDescription(string? locale, string expectedDescription)
         {
             _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
 
@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData(null, "someSymbol", "sym0_displayName")]
         [InlineData("de-DE", "someSymbol", "sym0_displayName_de-DE:äÄßöÖüÜ")]
         [InlineData("tr-TR", "someSymbol", "sym0_displayName_tr-TR:çÇğĞıIİöÖşŞüÜ")]
-        public void TestLocalizedSymbolDisplayName(string locale, string symbolName, string expectedDisplayName)
+        public void TestLocalizedSymbolDisplayName(string? locale, string symbolName, string expectedDisplayName)
         {
             _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
 
@@ -59,7 +59,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData(null, "someChoice", "sym1_displayName")]
         [InlineData("de-DE", "someChoice", "sym1_displayName")]
         [InlineData("tr-TR", "someChoice", "sym1_displayName_tr-TR:çÇğĞıIİöÖşŞüÜ")]
-        public void TestLocalizedSymbolChoiceDisplayName(string locale, string symbolName, string expectedDisplayName)
+        public void TestLocalizedSymbolChoiceDisplayName(string? locale, string symbolName, string expectedDisplayName)
         {
             _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
 
@@ -72,7 +72,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData(null, "sym0_desc")]
         [InlineData("de-DE", "sym0_desc_de-DE:äÄßöÖüÜ")]
         [InlineData("tr-TR", "sym0_desc_tr-TR:çÇğĞıIİöÖşŞüÜ")]
-        public void TestLocalizedSymbolDescription(string locale, string expectedDescription)
+        public void TestLocalizedSymbolDescription(string? locale, string expectedDescription)
         {
             _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
 
@@ -86,7 +86,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData("de-DE", "sym1_desc_de-DE:äÄßöÖüÜ", "sym1_choice0_de-DE:äÄßöÖüÜ", "sym1_choice1_de-DE:äÄßöÖüÜ", "sym1_choice2")]
         [InlineData("tr-TR", "sym1_desc_tr-TR:çÇğĞıIİöÖşŞüÜ", "sym1_choice0_tr-TR:çÇğĞıIİöÖşŞüÜ", "sym1_choice1", "sym1_choice2_tr-TR:çÇğĞıIİöÖşŞüÜ")]
         public void TestLocalizedSymbolChoices(
-            string locale,
+            string? locale,
             string symbolDesc,
             string choice0Desc,
             string choice1Desc,
@@ -117,7 +117,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData(1, "tr-TR", "pa1_desc_tr-TR:çÇğĞıIİöÖşŞüÜ", "pa1_manualInstructions0_tr-TR:çÇğĞıIİöÖşŞüÜ")]
         public async Task TestLocalizedPostActionFields(
             int postActionIndex,
-            string locale,
+            string? locale,
             string expectedDescription,
             string expectedManualInstructions)
         {
@@ -156,7 +156,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(expectedName, localizationTemplate.Name);
         }
 
-        private IEngineEnvironmentSettings LoadHostWithLocalizationTemplates(string locale, out TemplatePackageManager templatePackageManager, out ITemplateInfo localizationTemplate)
+        private IEngineEnvironmentSettings LoadHostWithLocalizationTemplates(string? locale, out TemplatePackageManager templatePackageManager, out ITemplateInfo localizationTemplate)
         {
             var builtins = BuiltInTemplatePackagesProviderFactory.GetComponents(GetTestTemplateLocation("TemplateWithLocalization"));
             var env = _environmentSettingsHelper.CreateEnvironment(locale: locale, additionalComponents: builtins);
