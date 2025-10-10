@@ -43,7 +43,9 @@ namespace Microsoft.TemplateEngine.Core.Operations
         private class Impl : IOperation
         {
             private readonly byte[] _replacement;
+#pragma warning disable IDE0052 // Remove unread private members
             private readonly IToken _token;
+#pragma warning restore IDE0052 // Remove unread private members
             private readonly string? _id;
 
             public Impl(IToken token, byte[] replaceWith, string? id, bool initialState)

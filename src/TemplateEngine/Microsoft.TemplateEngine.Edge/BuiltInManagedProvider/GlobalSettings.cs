@@ -20,7 +20,9 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
         private const int FileReadWriteRetries = 20;
         private const int MillisecondsInterval = 20;
         private static readonly TimeSpan MaxNotificationDelayOnWriterLock = TimeSpan.FromSeconds(1);
+#pragma warning disable IDE0052 // Remove unread private members
         private readonly SettingsFilePaths _paths;
+#pragma warning restore IDE0052 // Remove unread private members
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly string _globalSettingsFile;
         private IDisposable? _watcher;

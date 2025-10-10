@@ -237,7 +237,9 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
                     if (referencedVariablesKeys.Any())
                     {
+#pragma warning disable IDE0306 // Simplify collection initialization
                         parametersDependencies[parameter] = new HashSet<EvalData>(referencedVariablesKeys.Select(idx => variables[idx]));
+#pragma warning restore IDE0306 // Simplify collection initialization
                     }
                 }
             }
