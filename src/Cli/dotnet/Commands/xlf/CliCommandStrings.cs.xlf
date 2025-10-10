@@ -4060,8 +4060,8 @@ Pokud chcete zobrazit hodnotu, zadejte odpovídající volbu příkazového řá
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSearchCommandDescription">
-        <source>Search for available workloads.</source>
-        <target state="translated">Vyhledávejte dostupné úlohy.</target>
+        <source>Search for available workloads or workload versions.</source>
+        <target state="needs-review-translation">Vyhledávejte dostupné úlohy.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">

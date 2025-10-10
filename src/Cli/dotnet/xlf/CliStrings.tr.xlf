@@ -1033,6 +1033,11 @@ Varsayılan değer 'false.' Ancak çalışma zamanı tanımlayıcısı belirtild
         <target state="translated">Belirtilen {0} çözüm dosyası yok veya dizinde bir çözüm dosyası yok.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionFolderAlreadyContainsProjectWithFilename">
+        <source>Solution folder '{0}' already contains a project with the filename '{1}'.</source>
+        <target state="new">Solution folder '{0}' already contains a project with the filename '{1}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentDescription">
         <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
         <target state="translated">Üzerinde işlem yapılacak proje veya çözüm dosyası. Bir dosya belirtilmezse komut geçerli dizinde dosya arar.</target>

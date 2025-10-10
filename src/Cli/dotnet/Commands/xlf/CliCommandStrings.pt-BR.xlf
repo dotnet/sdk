@@ -4060,8 +4060,8 @@ Para exibir um valor, especifique a opção de linha de comando correspondente s
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSearchCommandDescription">
-        <source>Search for available workloads.</source>
-        <target state="translated">Pesquise cargas de trabalho disponíveis.</target>
+        <source>Search for available workloads or workload versions.</source>
+        <target state="needs-review-translation">Pesquise cargas de trabalho disponíveis.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">
