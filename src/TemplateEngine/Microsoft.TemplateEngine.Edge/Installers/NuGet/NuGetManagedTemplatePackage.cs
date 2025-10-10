@@ -86,7 +86,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
         public IManagedTemplatePackageProvider ManagedProvider { get; }
 
-        public string DisplayName => string.IsNullOrWhiteSpace(Version) ? Identifier : $"{Identifier}::{Version}";
+        public string DisplayName => string.IsNullOrWhiteSpace(Version) ? Identifier : $"{Identifier}@{Version}";
 
         public string Identifier => Details[PackageIdKey];
 
