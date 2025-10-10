@@ -7,6 +7,5 @@ using System.Text;
 
 namespace Microsoft.Dotnet.Installation;
 public record DotnetInstallRoot(
-    string? Path,
-    InstallType Type,
+    string Path,
     InstallArchitecture Architecture);

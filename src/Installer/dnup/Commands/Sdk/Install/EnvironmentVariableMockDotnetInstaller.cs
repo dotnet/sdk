@@ -27,16 +27,16 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "dotnet");
         }
 
-        public DotnetInstallRoot GetConfiguredInstallType()
+        public DotnetInstallRootConfiguration? GetConfiguredInstallType()
         {
             var testHookDefaultInstall = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_INSTALL");
-            InstallType installtype = InstallType.None;
+            InstallType installtype;
             if (!Enum.TryParse<InstallType>(testHookDefaultInstall, out installtype))
             {
-                installtype = InstallType.None;
+                return null;
             }
-            var installPath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_CURRENT_INSTALL_PATH");
-            return new(installPath, installtype, DnupUtilities.GetDefaultInstallArchitecture());
+            var installPath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_CURRENT_INSTALL_PATH") ?? GetDefaultDotnetInstallPath();
+            return new(new(installPath, DnupUtilities.GetDefaultInstallArchitecture()), installtype, true, true);
         }
 
         public string? GetLatestInstalledAdminVersion()

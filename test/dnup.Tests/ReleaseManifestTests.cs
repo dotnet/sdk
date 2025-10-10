@@ -1,6 +1,7 @@
 using System;
 using Xunit;
 using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.Dotnet.Installation;
 
 namespace Microsoft.DotNet.Tools.Dnup.Tests
 {
@@ -10,17 +11,17 @@ namespace Microsoft.DotNet.Tools.Dnup.Tests
         public void GetLatestVersionForChannel_MajorOnly_ReturnsLatestVersion()
         {
             var manifest = new ReleaseManifest();
-            var version = manifest.GetLatestVersionForChannel("9", InstallMode.SDK);
-            Assert.True(!string.IsNullOrEmpty(version));
+            var version = manifest.GetLatestVersionForChannel(new UpdateChannel("9"), InstallComponent.SDK);
+            Assert.NotNull(version);
         }
 
         [Fact]
         public void GetLatestVersionForChannel_MajorMinor_ReturnsLatestVersion()
         {
             var manifest = new ReleaseManifest();
-            var version = manifest.GetLatestVersionForChannel("9.0", InstallMode.SDK);
-            Assert.False(string.IsNullOrEmpty(version));
-            Assert.StartsWith("9.0.", version);
+            var version = manifest.GetLatestVersionForChannel(new UpdateChannel("9"), InstallComponent.SDK);
+            Assert.NotNull(version);
+            Assert.StartsWith("9.0.", version.ToString());
         }
 
         [Fact]
@@ -28,78 +29,70 @@ namespace Microsoft.DotNet.Tools.Dnup.Tests
         {
             var manifest = new ReleaseManifest();
 
-            var version = manifest.GetLatestVersionForChannel("9.0.1xx", InstallMode.SDK);
-            Console.WriteLine($"Version found: {version ?? "null"}");
+            var version = manifest.GetLatestVersionForChannel(new UpdateChannel("9.0.1xx"), InstallComponent.SDK);
+            Console.WriteLine($"Version found: {version}");
 
             // Feature band version should be returned in the format 9.0.100
-            Assert.True(!string.IsNullOrEmpty(version));
-            Assert.Matches(@"^9\.0\.1\d{2}$", version);
+            Assert.NotNull(version);
+            Assert.Matches(@"^9\.0\.1\d{2}$", version.ToString());
         }
 
         [Fact]
         public void GetLatestVersionForChannel_LTS_ReturnsLatestLTSVersion()
         {
             var manifest = new ReleaseManifest();
-            var version = manifest.GetLatestVersionForChannel("lts", InstallMode.SDK);
+            var version = manifest.GetLatestVersionForChannel(new UpdateChannel("lts"), InstallComponent.SDK);
 
-            Console.WriteLine($"LTS Version found: {version ?? "null"}");
+            Console.WriteLine($"LTS Version found: {version}");
 
             // Check that we got a version
-            Assert.False(string.IsNullOrEmpty(version));
+            Assert.NotNull(version);
 
-            // LTS versions should have even minor versions (e.g., 6.0, 8.0, 10.0)
-            var versionParts = version.Split('.');
-            Assert.True(versionParts.Length >= 2, "Version should have at least major.minor parts");
-
-            int minorVersion = int.Parse(versionParts[1]);
-            Assert.True(minorVersion % 2 == 0, $"LTS version {version} should have an even minor version");
+            // LTS versions should have even major versions (e.g., 6.0, 8.0, 10.0)
+            Assert.True(version.Minor % 2 == 0, $"LTS version {version} should have an even minor version");
 
             // Should not be a preview version
-            Assert.DoesNotContain("-", version);
+            Assert.Null(version.Prerelease);
         }
 
         [Fact]
         public void GetLatestVersionForChannel_STS_ReturnsLatestSTSVersion()
         {
             var manifest = new ReleaseManifest();
-            var version = manifest.GetLatestVersionForChannel("sts", InstallMode.SDK);
+            var version = manifest.GetLatestVersionForChannel(new UpdateChannel("sts"), InstallComponent.SDK);
 
-            Console.WriteLine($"STS Version found: {version ?? "null"}");
+            Console.WriteLine($"STS Version found: {version}");
 
             // Check that we got a version
-            Assert.False(string.IsNullOrEmpty(version));
+            Assert.NotNull(version);
 
-            // STS versions should have odd minor versions (e.g., 7.0, 9.0, 11.0)
-            var versionParts = version.Split('.');
-            Assert.True(versionParts.Length >= 2, "Version should have at least major.minor parts");
-
-            int minorVersion = int.Parse(versionParts[1]);
-            Assert.True(minorVersion % 2 != 0, $"STS version {version} should have an odd minor version");
+            // STS versions should have odd major versions (e.g., 7.0, 9.0, 11.0)
+            Assert.True(version.Major % 2 != 0, $"STS version {version} should have an odd minor version");
 
             // Should not be a preview version
-            Assert.DoesNotContain("-", version);
+            Assert.Null(version.Prerelease);
         }
 
         [Fact]
         public void GetLatestVersionForChannel_Preview_ReturnsLatestPreviewVersion()
         {
             var manifest = new ReleaseManifest();
-            var version = manifest.GetLatestVersionForChannel("preview", InstallMode.SDK);
+            var version = manifest.GetLatestVersionForChannel(new UpdateChannel("preview"), InstallComponent.SDK);
 
-            Console.WriteLine($"Preview Version found: {version ?? "null"}");
+            Console.WriteLine($"Preview Version found: {version}");
 
             // Check that we got a version
-            Assert.False(string.IsNullOrEmpty(version));
+            Assert.NotNull(version);
 
             // Preview versions should contain a hyphen (e.g., "11.0.0-preview.1")
-            Assert.Contains("-", version);
+            Assert.NotNull(version.Prerelease);
 
             // Should contain preview, rc, beta, or alpha
             Assert.True(
-                version.Contains("preview", StringComparison.OrdinalIgnoreCase) ||
-                version.Contains("rc", StringComparison.OrdinalIgnoreCase) ||
-                version.Contains("beta", StringComparison.OrdinalIgnoreCase) ||
-                version.Contains("alpha", StringComparison.OrdinalIgnoreCase),
+                version.Prerelease.Contains("preview", StringComparison.OrdinalIgnoreCase) ||
+                version.Prerelease.Contains("rc", StringComparison.OrdinalIgnoreCase) ||
+                version.Prerelease.Contains("beta", StringComparison.OrdinalIgnoreCase) ||
+                version.Prerelease.Contains("alpha", StringComparison.OrdinalIgnoreCase),
                 $"Version {version} should be a preview/rc/beta/alpha version"
             );
         }

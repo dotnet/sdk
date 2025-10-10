@@ -8,7 +8,9 @@ using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation;
 
-internal interface IDotnetInstallDiscoverer
+public interface IDotnetInstallDiscoverer
 {
-    IEnumerable<ReleaseVersion> ListInstalledVersions(DotnetInstallRoot dotnetRoot, InstallComponent component);
+    DotnetInstallRoot GetDotnetInstallRootFromPath();
+
+    IEnumerable<ReleaseVersion> GetInstalledVersions(DotnetInstallRoot dotnetRoot, InstallComponent component);
 }
