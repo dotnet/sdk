@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Components
         /// </summary>
         /// <param name="token"></param>
         /// <returns>Set of installed workloads.</returns>
-        public Task<IEnumerable<WorkloadInfo>> GetInstalledWorkloadsAsync(CancellationToken token);
+        Task<IEnumerable<WorkloadInfo>> GetInstalledWorkloadsAsync(CancellationToken token);
 
         /// <summary>
         /// Provides localized suggestion on action to be taken so that constraints requiring specified workloads can be met.
@@ -23,6 +23,6 @@ namespace Microsoft.TemplateEngine.Abstractions.Components
         /// </summary>
         /// <param name="supportedWorkloads">Workloads required by a constraint (in an 'OR' relationship).</param>
         /// <returns>Localized string with remedy suggestion specific to current host.</returns>
-        public string ProvideConstraintRemedySuggestion(IReadOnlyList<string> supportedWorkloads);
+        string ProvideConstraintRemedySuggestion(IReadOnlyList<string> supportedWorkloads);
     }
 }
