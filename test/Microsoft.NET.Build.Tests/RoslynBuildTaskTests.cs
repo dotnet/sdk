@@ -55,10 +55,11 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     [FullMSBuildOnlyTheory, CombinatorialData]
-    public void FullMSBuild_SdkStyle_ToolsetPackage(bool useSharedCompilation, Language language)
+    public void FullMSBuild_SdkStyle_ToolsetPackage(bool useSharedCompilation, Language language, bool useFrameworkCompiler)
     {
         var testAsset = CreateProject(useSharedCompilation, language, AddCompilersToolsetPackage);
-        var buildCommand = BuildAndRunUsingMSBuild(testAsset);
+        ReadOnlySpan<string> args = useFrameworkCompiler ? ["-p:RoslynCompilerType=Framework"] : [];
+        var buildCommand = BuildAndRunUsingMSBuild(testAsset, args);
         VerifyCompiler(buildCommand, DotNetExecCompilerFileName(language), useSharedCompilation, toolsetPackage: true);
     }
 
@@ -130,21 +131,21 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         project.PackageReferences.Add(new TestPackageReference("Microsoft.Net.Compilers.Toolset", roslynVersion));
     }
 
-    private TestCommand BuildAndRunUsingMSBuild(TestAsset testAsset)
+    private TestCommand BuildAndRunUsingMSBuild(TestAsset testAsset, params ReadOnlySpan<string> args)
     {
         var buildCommand = new MSBuildCommand(testAsset, "Build");
         buildCommand.WithWorkingDirectory(testAsset.Path)
-            .Execute("-bl").Should().Pass();
+            .Execute(["-bl", .. args]).Should().Pass();
 
         Run(buildCommand.GetOutputDirectory().File(testAsset.TestProject!.GetOutputFileName()));
 
         return buildCommand;
     }
 
-    private TestCommand BuildAndRunUsingDotNet(TestAsset testAsset)
+    private TestCommand BuildAndRunUsingDotNet(TestAsset testAsset, params ReadOnlySpan<string> args)
     {
         var buildCommand = new DotnetBuildCommand(testAsset);
-        buildCommand.Execute("-bl").Should().Pass();
+        buildCommand.Execute(["-bl", .. args]).Should().Pass();
 
         Run(buildCommand.GetOutputDirectory().File(testAsset.TestProject!.GetOutputFileName()));
 
@@ -178,9 +179,9 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         }
 
         // Verify compiler server message.
-        var compilerServerMesssages = BinaryLog.ReadBuild(binaryLogPath).FindChildrenRecursive<Message>(
+        var compilerServerMessages = BinaryLog.ReadBuild(binaryLogPath).FindChildrenRecursive<Message>(
             static message => message.Text.StartsWith("CompilerServer:", StringComparison.Ordinal));
-        compilerServerMesssages.Should().ContainSingle().Which.Text.Should().StartWith(usedCompilerServer
+        compilerServerMessages.Should().ContainSingle().Which.Text.Should().StartWith(usedCompilerServer
             ? "CompilerServer: server - server processed compilation - "
             : "CompilerServer: tool - using command line tool by design");
     }
