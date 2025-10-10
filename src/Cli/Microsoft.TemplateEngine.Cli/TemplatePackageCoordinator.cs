@@ -245,7 +245,7 @@ namespace Microsoft.TemplateEngine.Cli
             Reporter.Output.WriteLine(LocalizableStrings.TemplatePackageCoordinator_Install_Info_PackagesToBeInstalled);
             foreach (InstallRequest installRequest in installRequests)
             {
-                Reporter.Output.WriteLine(installRequest.DisplayName.Replace("::", "@").Indent());
+                Reporter.Output.WriteLine(installRequest.DisplayName.Indent());
             }
             Reporter.Output.WriteLine();
 
@@ -643,7 +643,7 @@ namespace Microsoft.TemplateEngine.Cli
                     reporter.WriteCommand(
                         Example
                             .For<InstallCommand>(args.ParseResult)
-                            .WithArgument(BaseInstallCommand.NameArgument, installRequests.Select(ir => ir.DisplayName.Replace("::", "@")).ToArray())
+                            .WithArgument(BaseInstallCommand.NameArgument, installRequests.Select(ir => ir.DisplayName).ToArray())
                             .WithOption(SharedOptions.ForceOption));
                     return false;
                 }

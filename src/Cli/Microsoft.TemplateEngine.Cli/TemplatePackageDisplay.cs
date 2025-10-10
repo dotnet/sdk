@@ -103,7 +103,7 @@ namespace Microsoft.TemplateEngine.Cli
                 IEnumerable<ITemplateInfo> templates = await templatePackageManager.GetTemplatesAsync(result.TemplatePackage, cancellationToken).ConfigureAwait(false);
                 if (templates.Any())
                 {
-                    _reporterOutput.WriteLine(LocalizableStrings.TemplatePackageCoordinator_lnstall_Info_Success, result.TemplatePackage.DisplayName.Replace("::", "@"));
+                    _reporterOutput.WriteLine(LocalizableStrings.TemplatePackageCoordinator_lnstall_Info_Success, result.TemplatePackage.DisplayName);
                     TemplateGroupDisplay.DisplayTemplateList(
                         engineEnvironmentSettings,
                         templates,
@@ -113,7 +113,7 @@ namespace Microsoft.TemplateEngine.Cli
                 }
                 else
                 {
-                    _reporterOutput.WriteLine(LocalizableStrings.TemplatePackageCoordinator_lnstall_Warning_No_Templates_In_Package, result.TemplatePackage.DisplayName.Replace("::", "@"));
+                    _reporterOutput.WriteLine(LocalizableStrings.TemplatePackageCoordinator_lnstall_Warning_No_Templates_In_Package, result.TemplatePackage.DisplayName);
                 }
 
                 if (force && result is InstallResult installResult && installResult.Vulnerabilities.Any())
