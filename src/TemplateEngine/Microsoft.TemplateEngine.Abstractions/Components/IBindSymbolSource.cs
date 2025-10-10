@@ -12,17 +12,17 @@ namespace Microsoft.TemplateEngine.Abstractions.Components
         /// <summary>
         /// The user friendly name of the component.
         /// </summary>
-        public string DisplayName { get; }
+        string DisplayName { get; }
 
         /// <summary>
         /// Prefix that is used in binding to reference the component.
         /// </summary>
-        public string? SourcePrefix { get; }
+        string? SourcePrefix { get; }
 
         /// <summary>
         /// If set to true, the component required exact prefix match to be used.
         /// </summary>
-        public bool RequiresPrefixMatch { get; }
+        bool RequiresPrefixMatch { get; }
 
         /// <summary>
         /// Gets the value corresponding to <paramref name="bindName"/>.
@@ -31,6 +31,6 @@ namespace Microsoft.TemplateEngine.Abstractions.Components
         /// <param name="bindName">the value to retrieve (without prefix).</param>
         /// <param name="cancellationToken">cancellation token.</param>
         /// <returns></returns>
-        public Task<string?> GetBoundValueAsync(IEngineEnvironmentSettings settings, string bindName, CancellationToken cancellationToken);
+        Task<string?> GetBoundValueAsync(IEngineEnvironmentSettings settings, string bindName, CancellationToken cancellationToken);
     }
 }
