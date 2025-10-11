@@ -2574,7 +2574,7 @@ Ve výchozím nastavení je publikována aplikace závislá na architektuře.</t
       </trans-unit>
       <trans-unit id="QuoteInDirective">
         <source>Directives currently cannot contain double quotes (").</source>
-        <target state="new">Directives currently cannot contain double quotes (").</target>
+        <target state="translated">Direktivy v současné době nemůžou obsahovat dvojité uvozovky (").</target>
         <note />
       </trans-unit>
       <trans-unit id="RazorOptionDescription">
