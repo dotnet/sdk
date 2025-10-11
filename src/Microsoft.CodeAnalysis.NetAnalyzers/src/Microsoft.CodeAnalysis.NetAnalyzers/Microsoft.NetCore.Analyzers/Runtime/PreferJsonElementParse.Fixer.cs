@@ -79,11 +79,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         // Create the replacement: JsonElement.Parse(...)
                         // We need to use the same arguments that were passed to JsonDocument.Parse
                         var arguments = invocation.Arguments.Select(arg => arg.Syntax).ToArray();
-                        
+
                         SyntaxNode memberAccess = generator.MemberAccessExpression(
                             generator.TypeExpressionForStaticMemberAccess(jsonElementType),
                             "Parse");
-                        
+
                         SyntaxNode replacement = generator.InvocationExpression(memberAccess, arguments);
 
                         // Replace the entire property reference (JsonDocument.Parse(...).RootElement) with JsonElement.Parse(...)

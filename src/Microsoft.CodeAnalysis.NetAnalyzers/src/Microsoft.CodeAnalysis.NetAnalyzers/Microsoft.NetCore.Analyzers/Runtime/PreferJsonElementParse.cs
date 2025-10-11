@@ -125,7 +125,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     // Now we have the pattern: JsonDocument.Parse(...).RootElement
                     // Check if the JsonDocument is disposed. We'll look for patterns where it's immediately
                     // accessed and not stored, which is the primary concern.
-                    
+
                     // If the parent operation is an assignment to a variable of type JsonElement,
                     // and the JsonDocument is never stored, this is the problematic pattern.
                     if (IsImmediateUseWithoutDisposal(propertyReference))
@@ -147,13 +147,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             // If we walk up the tree and never find the JsonDocument being stored in a variable
             // or being used in a using statement, then it's not being disposed properly.
-            
+
             // For simplicity, we'll flag any case where:
             // 1. The property reference is the direct result of JsonDocument.Parse()
             // 2. The result is not part of a using declaration/statement
-            
+
             IOperation? current = propertyReference.Parent;
-            
+
             // Walk up to find if this is within a using statement/declaration
             while (current != null)
             {
@@ -162,14 +162,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     // It's within a using statement, so it's being disposed
                     return false;
                 }
-                
+
                 // Check for using declaration
                 if (current is IUsingDeclarationOperation)
                 {
                     // It's a using declaration, so it's being disposed
                     return false;
                 }
-                
+
                 current = current.Parent;
             }
 
