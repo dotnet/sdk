@@ -2574,7 +2574,7 @@ Per impostazione predefinita, viene generato un pacchetto dipendente dal framewo
       </trans-unit>
       <trans-unit id="QuoteInDirective">
         <source>Directives currently cannot contain double quotes (").</source>
-        <target state="new">Directives currently cannot contain double quotes (").</target>
+        <target state="translated">Le direttive attualmente non possono contenere virgolette doppie (").</target>
         <note />
       </trans-unit>
       <trans-unit id="RazorOptionDescription">
