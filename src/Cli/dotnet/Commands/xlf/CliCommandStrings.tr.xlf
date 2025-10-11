@@ -1162,10 +1162,15 @@ Daha fazla bilgi için https://aka.ms/dotnet-test/mtp adresine bakın.</target>
         <target state="translated">Testler şuradan bulunuyor:</target>
         <note />
       </trans-unit>
-      <trans-unit id="DotnetTestCommand">
-        <source>.NET Test Command</source>
-        <target state="translated">.NET Test Komutu</target>
-        <note />
+      <trans-unit id="DotnetTestCommandMTPDescription">
+        <source>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="translated">Microsoft.Testing.Platform için .NET Test Komutu ('global.json' dosyasıyla seçildi). Bu sadece Microsoft.Testing.Platform'u destekler, VSTest'i desteklemez. Daha fazla bilgi için bkz. https://aka.ms/dotnet-test.</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
+      </trans-unit>
+      <trans-unit id="DotnetTestCommandVSTestDescription">
+        <source>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="translated">VSTest için .NET Test Komutu. Microsoft.Testing.Platform'u kullanmak için global.json üzerinden Microsoft.Testing.Platform tabanlı komutu seçin. Daha fazla bilgi için bkz. https://aka.ms/dotnet-test.</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
         <source>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</source>
@@ -1231,6 +1236,16 @@ Lütfen profil adlarını değiştirin.</target>
         <target state="translated">Yinelenen yönergeler desteklenmez: {0}</target>
         <note>{0} is the directive type and name.</note>
       </trans-unit>
+      <trans-unit id="DurationColon">
+        <source>duration:</source>
+        <target state="translated">süre:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ErrorColon">
+        <source>error:</source>
+        <target state="translated">hata:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
         <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
 
@@ -1279,6 +1294,11 @@ Lütfen profil adlarını değiştirin.</target>
       <trans-unit id="FailedAdManifestUpdate">
         <source>Failed to update the advertising manifest {0}: {1}.</source>
         <target state="translated">Reklam bildirimi {0} güncelleştirilemedi: {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedColon">
+        <source>failed:</source>
+        <target state="translated">başarısız oldu:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -2552,6 +2572,11 @@ The default is to publish a framework-dependent application.</source>
 Varsayılan durum, çerçeveye bağımlı bir uygulama yayımlamaktır.</target>
         <note />
       </trans-unit>
+      <trans-unit id="QuoteInDirective">
+        <source>Directives currently cannot contain double quotes (").</source>
+        <target state="new">Directives currently cannot contain double quotes (").</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RazorOptionDescription">
         <source>Shut down the Razor build server.</source>
         <target state="translated">Razor derleme sunucusunu kapatır.</target>
@@ -2670,6 +2695,11 @@ Varsayılan durum, çerçeveye bağımlı bir uygulama yayımlamaktır.</target>
       <trans-unit id="RestoreSuccessful">
         <source>Tool '{0}' (version '{1}') was restored. Available commands: {2}</source>
         <target state="translated">'{0}' aracı (sürüm '{1}') geri yüklendi. Kullanılabilen komutlar: {2}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Retried">
+        <source>retried</source>
+        <target state="translated">yeniden denendi</target>
         <note />
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
@@ -2951,6 +2981,11 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
         <target state="translated">İyileştirilen bütünleştirilmiş kodların profilini oluşturmak için kullanılabilen sembol dosyalarını oluşturma işlemini atlar.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SkippedColon">
+        <source>skipped:</source>
+        <target state="translated">atlandı:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SkippedLowercase">
         <source>skipped</source>
         <target state="translated">atlandı</target>
@@ -3086,6 +3121,11 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
         <target state="translated">Paketlerin geri yükleneceği hedef çalışma zamanı.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SucceededColon">
+        <source>succeeded:</source>
+        <target state="translated">başarılı:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Summary">
         <source>Summary</source>
         <target state="translated">Özet</target>
@@ -3099,11 +3139,6 @@ Projeniz birden fazla Framework'ü hedefliyor. '{0}' kullanarak hangi Framework'
       <trans-unit id="TempDirOptionDescription">
         <source>Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</source>
         <target state="translated">Bu komut için NuGet paketlerini indirmek ve ayıklamak üzere geçici bir dizin belirtin (güvenli olmalıdır).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TestAppFullName">
-        <source>.NET Test Driver</source>
-        <target state="translated">.NET Test Sürücüsü</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCmdNoLogo">
@@ -3550,6 +3585,11 @@ karşılık gelen paket kimliklerini bulmak için
       <trans-unit id="ToolUpdateUpdateSucceeded">
         <source>Tool '{0}' was successfully updated from version '{1}' to version '{2}'.</source>
         <target state="translated">'{0}' aracı, '{1}' sürümünden '{2}' sürümüne başarıyla güncelleştirildi.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TotalColon">
+        <source>total:</source>
+        <target state="translated">toplam:</target>
         <note />
       </trans-unit>
       <trans-unit id="Try">

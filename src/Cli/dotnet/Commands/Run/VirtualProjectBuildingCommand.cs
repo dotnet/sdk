@@ -75,7 +75,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// <remarks>
     /// Kept in sync with the default <c>dotnet new console</c> project file (enforced by <c>DotnetProjectAddTests.SameAsTemplate</c>).
     /// </remarks>
-    private static readonly FrozenDictionary<string, string> s_defaultProperties = FrozenDictionary.Create<string, string>(StringComparer.OrdinalIgnoreCase,
+    public static readonly FrozenDictionary<string, string> DefaultProperties = FrozenDictionary.Create<string, string>(StringComparer.OrdinalIgnoreCase,
     [
         new("OutputType", "Exe"),
         new("TargetFramework", $"net{TargetFrameworkVersion}"),
@@ -190,7 +190,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         var verbosity = MSBuildArgs.Verbosity ?? MSBuildForwardingAppWithoutLogging.DefaultVerbosity;
         var consoleLogger = minimizeStdOut
             ? new SimpleErrorLogger()
-            : TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]);
+            : CommonRunHelpers.GetConsoleLogger(MSBuildArgs.CloneWithExplicitArgs([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]));
         var binaryLogger = GetBinaryLogger(MSBuildArgs.OtherMSBuildArgs);
 
         CacheInfo? cache = null;
@@ -354,7 +354,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     Debug.Assert(buildRequest.ProjectInstance != null);
 
                     // Cache run info (to avoid re-evaluating the project instance).
-                    cache.CurrentEntry.Run = RunProperties.FromProject(buildRequest.ProjectInstance);
+                    cache.CurrentEntry.Run = RunProperties.TryFromProject(buildRequest.ProjectInstance, out var runProperties)
+                        ? runProperties
+                        : null;
 
                     if (!MSBuildUtilities.ConvertStringToBool(buildRequest.ProjectInstance.GetPropertyValue(FileBasedProgramCanSkipMSBuild), defaultValue: true))
                     {
@@ -899,7 +901,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     {
         if (!NeedsToBuild(out cache))
         {
-            Reporter.Verbose.WriteLine("No need to build, the output is up to date.");
+            Reporter.Verbose.WriteLine("No need to build, the output is up to date. Cache: " + ArtifactsPath);
             return BuildLevel.None;
         }
 
@@ -1141,8 +1143,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         string? targetFilePath = null,
         string? artifactsPath = null,
         bool includeRuntimeConfigInformation = true,
-        string? userSecretsId = null)
+        string? userSecretsId = null,
+        IEnumerable<string>? excludeDefaultProperties = null)
     {
+        Debug.Assert(userSecretsId == null || !isVirtualProject);
+        Debug.Assert(excludeDefaultProperties == null || !isVirtualProject);
+
         int processedDirectives = 0;
 
         var sdkDirectives = directives.OfType<CSharpDirective.Sdk>();
@@ -1181,6 +1187,20 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                     <PackageOutputPath>artifacts/$(MSBuildProjectName)</PackageOutputPath>
                     <FileBasedProgram>true</FileBasedProgram>
+                    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                    <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
+                """);
+
+            // Write default properties before importing SDKs so they can be overridden by SDKs
+            // (and implicit build files which are imported by the default .NET SDK).
+            foreach (var (name, value) in DefaultProperties)
+            {
+                writer.WriteLine($"""
+                        <{name}>{EscapeValue(value)}</{name}>
+                    """);
+            }
+
+            writer.WriteLine($"""
                   </PropertyGroup>
 
                   <ItemGroup>
@@ -1247,32 +1267,28 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 """);
 
             // First write the default properties except those specified by the user.
-            var customPropertyNames = propertyDirectives.Select(d => d.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            foreach (var (name, value) in s_defaultProperties)
+            if (!isVirtualProject)
             {
-                if (!customPropertyNames.Contains(name))
+                var customPropertyNames = propertyDirectives
+                    .Select(static d => d.Name)
+                    .Concat(excludeDefaultProperties ?? [])
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+                foreach (var (name, value) in DefaultProperties)
+                {
+                    if (!customPropertyNames.Contains(name))
+                    {
+                        writer.WriteLine($"""
+                                <{name}>{EscapeValue(value)}</{name}>
+                            """);
+                    }
+                }
+
+                if (userSecretsId != null && !customPropertyNames.Contains("UserSecretsId"))
                 {
                     writer.WriteLine($"""
-                            <{name}>{EscapeValue(value)}</{name}>
+                            <UserSecretsId>{EscapeValue(userSecretsId)}</UserSecretsId>
                         """);
                 }
-            }
-
-            if (userSecretsId != null && !customPropertyNames.Contains("UserSecretsId"))
-            {
-                writer.WriteLine($"""
-                        <UserSecretsId>{EscapeValue(userSecretsId)}</UserSecretsId>
-                    """);
-            }
-
-            // Write virtual-only properties.
-            if (isVirtualProject)
-            {
-                writer.WriteLine("""
-                        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                        <DisableDefaultItemsInProjectFolder>true</DisableDefaultItemsInProjectFolder>
-                        <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
-                    """);
             }
 
             // Write custom properties.
@@ -1289,6 +1305,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             if (isVirtualProject)
             {
                 writer.WriteLine("""
+                        <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
                         <Features>$(Features);FileBasedProgram</Features>
                     """);
             }
@@ -1490,8 +1507,15 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     Diagnostics = diagnostics,
                     SourceFile = sourceFile,
                     DirectiveKind = name.ToString(),
-                    DirectiveText = value.ToString()
+                    DirectiveText = value.ToString(),
                 };
+
+                // Block quotes now so we can later support quoted values without a breaking change. https://github.com/dotnet/sdk/issues/49367
+                if (value.Contains('"'))
+                {
+                    diagnostics.AddError(sourceFile, context.Info.Span, CliCommandStrings.QuoteInDirective);
+                }
+
                 if (CSharpDirective.Parse(context) is { } directive)
                 {
                     // If the directive is already present, report an error.
@@ -1733,8 +1757,8 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
     private static (string, string?)? ParseOptionalTwoParts(in ParseContext context, char separator)
     {
-        var i = context.DirectiveText.IndexOf(separator, StringComparison.Ordinal);
-        var firstPart = (i < 0 ? context.DirectiveText : context.DirectiveText.AsSpan(..i)).TrimEnd();
+        var separatorIndex = context.DirectiveText.IndexOf(separator, StringComparison.Ordinal);
+        var firstPart = (separatorIndex < 0 ? context.DirectiveText : context.DirectiveText.AsSpan(..separatorIndex)).TrimEnd();
 
         string directiveKind = context.DirectiveKind;
         if (firstPart.IsWhiteSpace())
@@ -1748,10 +1772,18 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             return context.Diagnostics.AddError<(string, string?)?>(context.SourceFile, context.Info.Span, string.Format(CliCommandStrings.InvalidDirectiveName, directiveKind, separator));
         }
 
-        var secondPart = i < 0 ? [] : context.DirectiveText.AsSpan((i + 1)..).TrimStart();
-        if (i < 0 || secondPart.IsWhiteSpace())
+        if (separatorIndex < 0)
         {
             return (firstPart.ToString(), null);
+        }
+
+        var secondPart = context.DirectiveText.AsSpan((separatorIndex + 1)..).TrimStart();
+        if (secondPart.IsWhiteSpace())
+        {
+            Debug.Assert(secondPart.Length == 0,
+                "We have trimmed the second part, so if it's white space, it should be actually empty.");
+
+            return (firstPart.ToString(), string.Empty);
         }
 
         return (firstPart.ToString(), secondPart.ToString());

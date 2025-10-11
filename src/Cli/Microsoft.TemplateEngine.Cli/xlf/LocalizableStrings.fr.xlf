@@ -850,6 +850,15 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">Impossible de trouver le fichier json dans la solution</target>
         <note />
       </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_NullJson">
+        <source>The result of parsing the following JSON was 'null':
+
+{0}</source>
+        <target state="translated">Le résultat de l'analyse du JSON suivant était « null » :
+
+{0}</target>
+        <note>{0} is the JSON that is being parsed.</note>
+      </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ParentPropertyPathInvalid">
         <source>Parent property path '{0}' could not be traversed.</source>
         <target state="translated">Le chemin de la propriété parente '{0}' n'a pas pu être traversé.</target>

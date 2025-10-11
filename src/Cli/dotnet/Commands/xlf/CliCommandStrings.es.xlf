@@ -1162,10 +1162,15 @@ Consulte https://aka.ms/dotnet-test/mtp para obtener más información.</target>
         <target state="translated">Detección de pruebas de</target>
         <note />
       </trans-unit>
-      <trans-unit id="DotnetTestCommand">
-        <source>.NET Test Command</source>
-        <target state="translated">Comando de prueba de .NET</target>
-        <note />
+      <trans-unit id="DotnetTestCommandMTPDescription">
+        <source>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="translated">Comando de prueba de .NET para Microsoft.Testing.Platform (activado mediante el archivo “global.json”). Solo es compatible con Microsoft.Testing.Platform y no con VSTest. Consulte https://aka.ms/dotnet-test para obtener más información.</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
+      </trans-unit>
+      <trans-unit id="DotnetTestCommandVSTestDescription">
+        <source>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="translated">Comando de prueba de .NET para VSTest. Para usar Microsoft.Testing.Platform, actívelo en el comando basado en Microsoft.Testing.Platform mediante global.json. Consulte https://aka.ms/dotnet-test para obtener más información.</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
         <source>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</source>
@@ -1231,6 +1236,16 @@ Defina nombres de perfiles distintos.</target>
         <target state="translated">No se admiten directivas duplicadas: {0}</target>
         <note>{0} is the directive type and name.</note>
       </trans-unit>
+      <trans-unit id="DurationColon">
+        <source>duration:</source>
+        <target state="translated">duración:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ErrorColon">
+        <source>error:</source>
+        <target state="translated">error:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
         <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
 
@@ -1279,6 +1294,11 @@ Defina nombres de perfiles distintos.</target>
       <trans-unit id="FailedAdManifestUpdate">
         <source>Failed to update the advertising manifest {0}: {1}.</source>
         <target state="translated">No se pudo actualizar el manifiesto publicitario {0}: {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedColon">
+        <source>failed:</source>
+        <target state="translated">error:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -2552,6 +2572,11 @@ The default is to publish a framework-dependent application.</source>
 El valor predeterminado es publicar una aplicación dependiente del marco.</target>
         <note />
       </trans-unit>
+      <trans-unit id="QuoteInDirective">
+        <source>Directives currently cannot contain double quotes (").</source>
+        <target state="new">Directives currently cannot contain double quotes (").</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RazorOptionDescription">
         <source>Shut down the Razor build server.</source>
         <target state="translated">Apaga el servidor de compilación de Razor.</target>
@@ -2670,6 +2695,11 @@ El valor predeterminado es publicar una aplicación dependiente del marco.</targ
       <trans-unit id="RestoreSuccessful">
         <source>Tool '{0}' (version '{1}') was restored. Available commands: {2}</source>
         <target state="translated">Se restauró la herramienta "{0}" (versión "{1}"). Comandos disponibles: {2}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Retried">
+        <source>retried</source>
+        <target state="translated">volver a intentarlo</target>
         <note />
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
@@ -2951,6 +2981,11 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <target state="translated">Omite la creación de archivos de símbolos que se pueden usar para generar perfiles para los ensamblados optimizados.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SkippedColon">
+        <source>skipped:</source>
+        <target state="translated">omitido:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SkippedLowercase">
         <source>skipped</source>
         <target state="translated">omitido</target>
@@ -3086,6 +3121,11 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <target state="translated">El entorno tiempo de ejecución de destino para el que se almacenan los paquetes.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SucceededColon">
+        <source>succeeded:</source>
+        <target state="translated">correcto:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Summary">
         <source>Summary</source>
         <target state="translated">Resumen</target>
@@ -3099,11 +3139,6 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
       <trans-unit id="TempDirOptionDescription">
         <source>Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</source>
         <target state="translated">Especifique un directorio temporal para que este comando descargue y extraiga paquetes NuGet (debe ser seguro).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TestAppFullName">
-        <source>.NET Test Driver</source>
-        <target state="translated">Controlador de pruebas de .NET</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCmdNoLogo">
@@ -3550,6 +3585,11 @@ y los identificadores de los paquetes correspondientes a las herramientas instal
       <trans-unit id="ToolUpdateUpdateSucceeded">
         <source>Tool '{0}' was successfully updated from version '{1}' to version '{2}'.</source>
         <target state="translated">La herramienta "{0}" se actualizó correctamente de la versión"{1}" a la versión "{2}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TotalColon">
+        <source>total:</source>
+        <target state="translated">total:</target>
         <note />
       </trans-unit>
       <trans-unit id="Try">

@@ -1162,10 +1162,15 @@ Další informace najdete na https://aka.ms/dotnet-test/mtp.</target>
         <target state="translated">Zjišťování testů z</target>
         <note />
       </trans-unit>
-      <trans-unit id="DotnetTestCommand">
-        <source>.NET Test Command</source>
-        <target state="translated">Testovací příkaz .NET</target>
-        <note />
+      <trans-unit id="DotnetTestCommandMTPDescription">
+        <source>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="translated">Testovací příkaz .NET pro Microsoft.Testing.Platform (vyjádřen výslovný souhlas prostřednictvím souboru global.json). Podporuje jenom Microsoft.Testing.Platform a nepodporuje VSTest. Další informace najdete na https://aka.ms/dotnet-test.</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
+      </trans-unit>
+      <trans-unit id="DotnetTestCommandVSTestDescription">
+        <source>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="translated">Testovací příkaz .NET pro VSTest. Pokud chcete použít Microsoft.Testing.Platform, prostřednictvím souboru global.json vyjádřete výslovný souhlas s příkazem založeným na Microsoft.Testing.Platform. Další informace najdete na https://aka.ms/dotnet-test.</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
         <source>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</source>
@@ -1231,6 +1236,16 @@ Nastavte odlišné názvy profilů.</target>
         <target state="translated">Duplicitní direktivy nejsou podporovány: {0}</target>
         <note>{0} is the directive type and name.</note>
       </trans-unit>
+      <trans-unit id="DurationColon">
+        <source>duration:</source>
+        <target state="translated">doba trvání:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ErrorColon">
+        <source>error:</source>
+        <target state="translated">chyba:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
         <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
 
@@ -1279,6 +1294,11 @@ Nastavte odlišné názvy profilů.</target>
       <trans-unit id="FailedAdManifestUpdate">
         <source>Failed to update the advertising manifest {0}: {1}.</source>
         <target state="translated">Nepovedlo se aktualizovat manifest reklamy {0}: {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedColon">
+        <source>failed:</source>
+        <target state="translated">neúspěšné:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -2552,6 +2572,11 @@ The default is to publish a framework-dependent application.</source>
 Ve výchozím nastavení je publikována aplikace závislá na architektuře.</target>
         <note />
       </trans-unit>
+      <trans-unit id="QuoteInDirective">
+        <source>Directives currently cannot contain double quotes (").</source>
+        <target state="new">Directives currently cannot contain double quotes (").</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RazorOptionDescription">
         <source>Shut down the Razor build server.</source>
         <target state="translated">Vypne buildovací server Razor.</target>
@@ -2670,6 +2695,11 @@ Ve výchozím nastavení je publikována aplikace závislá na architektuře.</t
       <trans-unit id="RestoreSuccessful">
         <source>Tool '{0}' (version '{1}') was restored. Available commands: {2}</source>
         <target state="translated">Nástroj {0} (verze {1}) se obnovil. Dostupné příkazy: {2}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Retried">
+        <source>retried</source>
+        <target state="translated">zkoušeno opakovaně</target>
         <note />
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
@@ -2951,6 +2981,11 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
         <target state="translated">Vynechá vytvoření souborů symbolů, které lze použít k profilaci optimalizovaných sestavení.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SkippedColon">
+        <source>skipped:</source>
+        <target state="translated">přeskočeno:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SkippedLowercase">
         <source>skipped</source>
         <target state="translated">vynecháno</target>
@@ -3086,6 +3121,11 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
         <target state="translated">Cílový modul runtime pro uložení balíčků</target>
         <note />
       </trans-unit>
+      <trans-unit id="SucceededColon">
+        <source>succeeded:</source>
+        <target state="translated">úspěšné:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Summary">
         <source>Summary</source>
         <target state="translated">Souhrn</target>
@@ -3099,11 +3139,6 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
       <trans-unit id="TempDirOptionDescription">
         <source>Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</source>
         <target state="translated">Zadejte dočasný adresář pro tento příkaz, který se má stáhnout a extrahujte balíčky NuGet (musí být zabezpečené).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TestAppFullName">
-        <source>.NET Test Driver</source>
-        <target state="translated">Testovací ovladač .NET</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCmdNoLogo">
@@ -3550,6 +3585,11 @@ příkazu „dotnet tool list“.</target>
       <trans-unit id="ToolUpdateUpdateSucceeded">
         <source>Tool '{0}' was successfully updated from version '{1}' to version '{2}'.</source>
         <target state="translated">Nástroj {0} byl úspěšně aktualizován z verze {1} na verzi {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TotalColon">
+        <source>total:</source>
+        <target state="translated">celkem:</target>
         <note />
       </trans-unit>
       <trans-unit id="Try">

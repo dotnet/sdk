@@ -1162,10 +1162,15 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">正在以下位置找測試</target>
         <note />
       </trans-unit>
-      <trans-unit id="DotnetTestCommand">
-        <source>.NET Test Command</source>
-        <target state="translated">.NET 測試命令</target>
-        <note />
+      <trans-unit id="DotnetTestCommandMTPDescription">
+        <source>.NET Test Command for Microsoft.Testing.Platform (opted-in via 'global.json' file). This only supports Microsoft.Testing.Platform and doesn't support VSTest. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="translated">.NET 測試命令，適用於 Microsoft.Testing.Platform (透過 'global.json' 檔案選擇加入)。此命令僅支援 Microsoft.Testing.Platform，不支援 VSTest。如需詳細資訊，請參閱 https://aka.ms/dotnet-test。</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
+      </trans-unit>
+      <trans-unit id="DotnetTestCommandVSTestDescription">
+        <source>.NET Test Command for VSTest. To use Microsoft.Testing.Platform, opt-in to the Microsoft.Testing.Platform-based command via global.json. For more information, see https://aka.ms/dotnet-test.</source>
+        <target state="translated">適用於 VSTest 的 .NET 測試命令。若要使用 Microsoft.Testing.Platform，請透過 global.json 選擇加入以 Microsoft.Testing.Platform 為基礎的命令。如需詳細資訊，請參閱 https://aka.ms/dotnet-test。</target>
+        <note>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</note>
       </trans-unit>
       <trans-unit id="DotnetTestIncompatibleHandshakeVersion">
         <source>Supported protocol versions sent by Microsoft.Testing.Platform are '{0}'. The SDK supports '{1}', which is incompatible.</source>
@@ -1231,6 +1236,16 @@ Make the profile names distinct.</source>
         <target state="translated">不支援重複的指示詞: {0}</target>
         <note>{0} is the directive type and name.</note>
       </trans-unit>
+      <trans-unit id="DurationColon">
+        <source>duration:</source>
+        <target state="translated">期間:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ErrorColon">
+        <source>error:</source>
+        <target state="translated">錯誤:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ErrorRunningTestModule">
         <source>The following exception occurred when running the test module with RunCommand '{0}' and RunArguments '{1}':
 
@@ -1279,6 +1294,11 @@ Make the profile names distinct.</source>
       <trans-unit id="FailedAdManifestUpdate">
         <source>Failed to update the advertising manifest {0}: {1}.</source>
         <target state="translated">無法更新廣告資訊清單 {0}: {1}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedColon">
+        <source>failed:</source>
+        <target state="translated">失敗:</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedLowercase">
@@ -2552,6 +2572,11 @@ The default is to publish a framework-dependent application.</source>
 預設為發佈與 Framework 相依的應用程式。</target>
         <note />
       </trans-unit>
+      <trans-unit id="QuoteInDirective">
+        <source>Directives currently cannot contain double quotes (").</source>
+        <target state="new">Directives currently cannot contain double quotes (").</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RazorOptionDescription">
         <source>Shut down the Razor build server.</source>
         <target state="translated">關閉 Razor 組建伺服器。</target>
@@ -2670,6 +2695,11 @@ The default is to publish a framework-dependent application.</source>
       <trans-unit id="RestoreSuccessful">
         <source>Tool '{0}' (version '{1}') was restored. Available commands: {2}</source>
         <target state="translated">已還原工具 '{0}' (版本 '{1}')。可用的命令: {2}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Retried">
+        <source>retried</source>
+        <target state="translated">已重試</target>
         <note />
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
@@ -2951,6 +2981,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">跳過建立符號檔，該檔案可用於分析最佳化組件。</target>
         <note />
       </trans-unit>
+      <trans-unit id="SkippedColon">
+        <source>skipped:</source>
+        <target state="translated">已略過:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SkippedLowercase">
         <source>skipped</source>
         <target state="translated">已跳過</target>
@@ -3086,6 +3121,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">要對其儲存套件的目標執行階段。</target>
         <note />
       </trans-unit>
+      <trans-unit id="SucceededColon">
+        <source>succeeded:</source>
+        <target state="translated">已成功:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Summary">
         <source>Summary</source>
         <target state="translated">摘要</target>
@@ -3099,11 +3139,6 @@ Your project targets multiple frameworks. Specify which framework to run using '
       <trans-unit id="TempDirOptionDescription">
         <source>Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</source>
         <target state="translated">指定此命令的暫存目錄，以下載並解壓縮 NuGet 套件 (必須為安全)。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TestAppFullName">
-        <source>.NET Test Driver</source>
-        <target state="translated">.NET 測試驅動程式</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCmdNoLogo">
@@ -3550,6 +3585,11 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="ToolUpdateUpdateSucceeded">
         <source>Tool '{0}' was successfully updated from version '{1}' to version '{2}'.</source>
         <target state="translated">已成功將工具 '{0}' 從 '{1}' 版更新為 '{2}' 版。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TotalColon">
+        <source>total:</source>
+        <target state="translated">總計:</target>
         <note />
       </trans-unit>
       <trans-unit id="Try">
