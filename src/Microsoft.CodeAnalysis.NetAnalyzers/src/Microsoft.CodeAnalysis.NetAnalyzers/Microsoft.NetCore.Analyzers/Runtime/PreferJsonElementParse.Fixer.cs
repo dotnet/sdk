@@ -70,7 +70,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         SyntaxGenerator generator = editor.Generator;
 
                         // Get the JsonElement type
-                        INamedTypeSymbol? jsonElementType = model.Compilation.GetOrCreateTypeByMetadataName("System.Text.Json.JsonElement");
+                        INamedTypeSymbol? jsonElementType = model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemTextJsonJsonElement);
                         if (jsonElementType == null)
                         {
                             return doc;
