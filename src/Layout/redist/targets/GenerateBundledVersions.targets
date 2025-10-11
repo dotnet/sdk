@@ -276,14 +276,6 @@
         Condition="'$(BundleRuntimePacks)' == 'true'"
         Include="$(ProductMonikerRid)" />
 
-      <ILCompilerSupportedRids
-        Condition="'$(BundleNativeAotCompiler)' == 'true'"
-        Include="$(ProductMonikerRid)" />
-
-      <Crossgen2SupportedRids
-        Condition="'$(BundleCrossgen2)' == 'true'"
-        Include="$(ProductMonikerRid)" />
-
       <Net60MonoRuntimePackRids Include="
         @(Net60RuntimePackRids);
         browser-wasm;
@@ -376,6 +368,12 @@
 
       <Crossgen2SupportedRids Include="@(Net90Crossgen2SupportedRids);" />
 
+      <Crossgen2SupportedPortableRids Include="@(Crossgen2SupportedRids)" />
+
+      <Crossgen2SupportedRids
+        Condition="'$(BundleCrossgen2)' == 'true'"
+        Include="$(ProductMonikerRid)" />
+
       <Net70ILCompilerSupportedRids Include="
         linux-arm64;
         linux-musl-arm64;
@@ -409,6 +407,12 @@
         linux-riscv64;
         linux-musl-riscv64;
         " />
+
+      <ILCompilerSupportedPortableRids Include="@(ILCompilerSupportedRids)" />
+
+      <ILCompilerSupportedRids
+        Condition="'$(BundleNativeAotCompiler)' == 'true'"
+        Include="$(ProductMonikerRid)" />
 
       <Net80NativeAOTRuntimePackRids Include="
         ios-arm64;
@@ -703,6 +707,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                         TargetFramework="net10.0"
                         Crossgen2PackNamePattern="Microsoft.NETCore.App.Crossgen2.**RID**"
                         Crossgen2PackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                        Crossgen2PortableRuntimeIdentifiers="@(Crossgen2SupportedPortableRids, '%3B')"
                         Crossgen2RuntimeIdentifiers="@(Crossgen2SupportedRids, '%3B')"
                         />
 
@@ -711,6 +716,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                          ILCompilerPackNamePattern="runtime.**RID**.Microsoft.DotNet.ILCompiler"
                          ILCompilerRuntimePackNamePattern="Microsoft.NETCore.App.Runtime.NativeAOT.**RID**"
                          ILCompilerPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                         ILCompilerPortableRuntimeIdentifiers="@(ILCompilerSupportedPortableRids, '%3B')"
                          ILCompilerRuntimeIdentifiers="@(ILCompilerSupportedRids, '%3B')"
                          />
 
@@ -1440,7 +1446,20 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackVersion="$(NETStandardLibraryRefPackageVersion)"
                               />
 
-    <!-- Supported Windows versions -->
+    <!--
+      Supported Windows versions using CsWinRT 3.0 (.NET 10 is the baseline). This leverages the revision of
+      the Windows SDK version to allow multi-targeting, which is required to allow customers to gradually migrate.
+      Both CsWinRT 3.0 and 2.x will be supported for a period of time, and packages can target both of them.
+    -->
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.26100.1" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_26100PackageVersion)" MinimumNETVersion="10.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.22621.1" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_22621PackageVersion)" MinimumNETVersion="10.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.22000.1" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_22000PackageVersion)" MinimumNETVersion="10.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.20348.1" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_20348PackageVersion)" MinimumNETVersion="10.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.19041.1" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_19041PackageVersion)" MinimumNETVersion="10.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.18362.1" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_18362PackageVersion)" MinimumNETVersion="10.0" />
+    <WindowsSdkSupportedTargetPlatformVersion Include="10.0.17763.1" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_17763PackageVersion)" MinimumNETVersion="10.0" />
+
+    <!-- Supported Windows versions using CsWinRT 2.x -->
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.26100.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_26100PackageVersion)" MinimumNETVersion="8.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.22621.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_22621PackageVersion)" MinimumNETVersion="8.0" />
     <WindowsSdkSupportedTargetPlatformVersion Include="10.0.22000.0" WindowsSdkPackageVersion="$(MicrosoftWindowsSDKNETRef10_0_22000PackageVersion)" MinimumNETVersion="8.0" />

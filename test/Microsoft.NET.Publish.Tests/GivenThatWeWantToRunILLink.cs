@@ -1662,8 +1662,14 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutContaining("error IL2075");
         }
 
+        /// <summary>
+        /// The reason we test this on net7 and below is because in net8 _IsPublishing was added which changes
+        /// the RID-defaulting behavior such that 8+ apps are not 'portable apps' when published for configurations that
+        /// require a RID (self-contained, or trimmed).
+        /// </summary>
+        /// <param name="targetFramework"></param>
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
+        [MemberData(nameof(TFMsThatDoNotInferPublishSelfContained), MemberType = typeof(PublishTestUtils))]
         public void ILLink_error_on_portable_app(string targetFramework)
         {
             var projectName = "HelloWorld";

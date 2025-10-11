@@ -37,11 +37,8 @@
           UseHardLinksIfPossible="true" />
 
     <OverrideAndCreateBundledNETCoreAppPackageVersion
-      Stage0MicrosoftNETCoreAppRefPackageVersionPath="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/Microsoft.NETCoreSdk.BundledVersions.props"
-      MicrosoftNETCoreAppRefPackageVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
-      NewSDKVersion="$(Version)"
-      TargetRid="$(TargetRid)"
-      OutputPath="$(TestHostDotNetRoot)/sdk/$(Version)/Microsoft.NETCoreSdk.BundledVersions.props"/>
+      Stage0BundledVersionsPath="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/Microsoft.NETCoreSdk.BundledVersions.props"
+      Stage2BundledVersionsPath="$(TestHostDotNetRoot)/sdk/$(Version)/Microsoft.NETCoreSdk.BundledVersions.props"/>
   </Target>
 
   <Target Name="PublishTestWorkloads"

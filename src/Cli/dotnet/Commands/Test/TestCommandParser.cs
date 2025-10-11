@@ -246,6 +246,7 @@ internal static class TestCommandParser
         command.Options.Add(MicrosoftTestingPlatformOptions.MaxParallelTestModulesOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.MinimumExpectedTestsOption);
         command.Options.Add(CommonOptions.ArchitectureOption);
+        command.Options.Add(CommonOptions.EnvOption);
         command.Options.Add(CommonOptions.PropertiesOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.ConfigurationOption);
         command.Options.Add(MicrosoftTestingPlatformOptions.FrameworkOption);
@@ -277,7 +278,7 @@ internal static class TestCommandParser
 
         command.Options.Add(SettingsOption);
         command.Options.Add(ListTestsOption);
-        command.Options.Add(CommonOptions.EnvOption);
+        command.Options.Add(CommonOptions.TestEnvOption);
         command.Options.Add(FilterOption);
         command.Options.Add(AdapterOption);
         command.Options.Add(LoggerOption);

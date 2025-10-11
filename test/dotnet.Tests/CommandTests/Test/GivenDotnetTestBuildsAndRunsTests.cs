@@ -258,7 +258,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                result.StdOut.Should().Contain(string.Format(CliCommandStrings.CmdUnsupportedVSTestTestApplicationsDescription, "AnotherTestProject.csproj"));
+                result.StdErr.Should().Contain(string.Format(CliCommandStrings.CmdUnsupportedVSTestTestApplicationsDescription, "AnotherTestProject.csproj"));
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
@@ -278,7 +278,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                result.StdOut.Should().Contain(string.Format(CliCommandStrings.CmdUnsupportedVSTestTestApplicationsDescription, "AnotherTestProject.csproj"));
+                result.StdErr.Should().Contain(string.Format(CliCommandStrings.CmdUnsupportedVSTestTestApplicationsDescription, "AnotherTestProject.csproj"));
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
@@ -298,7 +298,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                result.StdOut.Should().Contain(CliCommandStrings.CmdNoProjectOrSolutionFileErrorDescription);
+                result.StdErr.Should().Contain(CliCommandStrings.CmdNoProjectOrSolutionFileErrorDescription);
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
@@ -318,7 +318,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                result.StdOut.Should().Contain(CliCommandStrings.CmdNoProjectOrSolutionFileErrorDescription);
+                result.StdErr.Should().Contain(CliCommandStrings.CmdNoProjectOrSolutionFileErrorDescription);
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
@@ -475,6 +475,36 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
                 result.StdOut.Contains("Test run completed with non-success exit code: 1 (see: https://aka.ms/testingplatform/exitcodes)");
             }
+        }
+
+        [Theory]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        public void RunTestProjectWithEnvVariable(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectShowingEnvVariable", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(
+                                        MicrosoftTestingPlatformOptions.ConfigurationOption.Name, configuration,
+                                        CommonOptions.EnvOption.Name, "DUMMY_TEST_ENV_VAR=ENV_VAR_CMD_LINE");
+
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut
+                    .Should().Contain("Using launch settings from")
+                    .And.Contain($"Properties{Path.DirectorySeparatorChar}launchSettings.json...")
+                    .And.Contain("Test run summary: Failed!")
+                    .And.Contain("total: 1")
+                    .And.Contain("succeeded: 0")
+                    .And.Contain("failed: 1")
+                    .And.Contain("skipped: 0")
+                    .And.Contain("DUMMY_TEST_ENV_VAR is 'ENV_VAR_CMD_LINE'");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
     }
 }

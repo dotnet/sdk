@@ -9,6 +9,9 @@ namespace Microsoft.NET.Publish.Tests
     {
 #if NET10_0
 
+        /// <summary>
+        /// This list should contain the TFMs that we're interested in validating publishing support for
+        /// </summary>
         public static IEnumerable<object[]> SupportedTfms { get; } = new List<object[]>
         {
             // Some tests started failing on net3.1 so disabling since this has been out of support for a while
@@ -22,7 +25,9 @@ namespace Microsoft.NET.Publish.Tests
             // new object[] { ToolsetInfo.NextTargetFramework },
         };
 
-        // This list should contain all supported TFMs after net5.0
+        /// <summary>
+        /// This list should contain all supported TFMs after net5.0
+        /// </summary>
         public static IEnumerable<object[]> Net5Plus { get; } = new List<object[]>
         {
             new object[] { "net5.0" },
@@ -34,7 +39,9 @@ namespace Microsoft.NET.Publish.Tests
             // new object[] { ToolsetInfo.NextTargetFramework },
         };
 
-        // This list should contain all supported TFMs after net6.0
+        /// <summary>
+        /// This list should contain all supported TFMs after net6.0
+        /// </summary>
         public static IEnumerable<object[]> Net6Plus { get; } = new List<object[]>
         {
             new object[] { "net6.0" },
@@ -45,7 +52,9 @@ namespace Microsoft.NET.Publish.Tests
             // new object[] { ToolsetInfo.NextTargetFramework },
         };
 
-        // This list should contain all supported TFMs after net7.0
+        /// <summary>
+        /// This list should contain all supported TFMs after net7.0
+        /// </summary>
         public static IEnumerable<object[]> Net7Plus { get; } = new List<object[]>
         {
             new object[] { "net7.0" },
@@ -55,7 +64,9 @@ namespace Microsoft.NET.Publish.Tests
             // new object[] { ToolsetInfo.NextTargetFramework },
         };
 
-        // This list should contain all supported TFMs after net8.0
+        /// <summary>
+        /// This list should contain all supported TFMs after net8.0
+        /// </summary>
         public static IEnumerable<object[]> Net8Plus { get; } = new List<object[]>
         {
             new object[] { "net8.0" },
@@ -64,7 +75,9 @@ namespace Microsoft.NET.Publish.Tests
             // new object[] { ToolsetInfo.NextTargetFramework },
         };
 
-        // This list should contain all supported TFMs after net9.0
+        /// <summary>
+        /// This list should contain all supported TFMs after net9.0
+        /// </summary>
         public static IEnumerable<object[]> Net9Plus { get; } = new List<object[]>
         {
             new object[] { "net9.0" },
@@ -72,13 +85,30 @@ namespace Microsoft.NET.Publish.Tests
             // new object[] { ToolsetInfo.NextTargetFramework },
         };
 
-        // This list should contain all supported TFMs after net10.0
+        /// <summary>
+        /// This list should contain all supported TFMs after net10.0
+        /// </summary>
         public static IEnumerable<object[]> Net10Plus { get; } = new List<object[]>
         {
             new object[] { "net10.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
             // new object[] { ToolsetInfo.NextTargetFramework },
         };
+
+        /// <summary>
+        /// Starting in 8 we introduced made Publish* properties that imply SelfContained actually set SelfContained,
+        /// and that means RIDs are inferred when publishing these. This list should contain all TFMs that do not infer SelfContained
+        /// when PublishSelfContained or PublishSingleFile are set without an explicit SelfContained value.
+        /// </summary>
+        /// <remarks>
+        /// Tried to be fancy here and compute this by stripping the NET8Plus items from the SupportedTfms list,
+        /// but that broke test explorer integration in devkit.
+        /// </remarks>
+        public static IEnumerable<object[]> TFMsThatDoNotInferPublishSelfContained => [
+            ["net5.0"],
+            ["net6.0"],
+            ["net7.0"],
+        ];
 #else
 #error If building for a newer TFM, please update the values above to include both the old and new TFMs.
 #endif
