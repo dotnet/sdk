@@ -37,8 +37,6 @@ public class PublishCommand : RestoringCommand
         CommonOptions.ValidateSelfContainedOptions(parseResult.HasOption(PublishCommandParser.SelfContainedOption),
             parseResult.HasOption(PublishCommandParser.NoSelfContainedOption));
 
-        var forwardedOptions = parseResult.OptionValuesToBeForwarded(PublishCommandParser.GetCommand());
-
         bool noBuild = parseResult.HasOption(PublishCommandParser.NoBuildOption);
 
         bool noRestore = noBuild || parseResult.HasOption(PublishCommandParser.NoRestoreOption);
@@ -54,7 +52,16 @@ public class PublishCommand : RestoringCommand
                 NoRestore = noRestore,
                 NoCache = true,
             },
-            (msbuildArgs, msbuildPath) => {
+            (msbuildArgs, msbuildPath) => new PublishCommand(
+                msbuildArgs: msbuildArgs,
+                noRestore: noRestore,
+                msbuildPath: msbuildPath
+            ),
+            [CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, PublishCommandParser.TargetOption, PublishCommandParser.VerbosityOption],
+            parseResult,
+            msbuildPath,
+            (msbuildArgs) =>
+            {
                 var options = new ReleasePropertyProjectLocator.DependentCommandOptions(
                         nonBinLogArgs,
                         parseResult.HasOption(PublishCommandParser.ConfigurationOption) ? parseResult.GetValue(PublishCommandParser.ConfigurationOption) : null,
@@ -62,15 +69,8 @@ public class PublishCommand : RestoringCommand
                     );
                 var projectLocator = new ReleasePropertyProjectLocator(parseResult, MSBuildPropertyNames.PUBLISH_RELEASE, options);
                 var releaseModeProperties = projectLocator.GetCustomDefaultConfigurationValueIfSpecified();
-                return new PublishCommand(
-                    msbuildArgs: msbuildArgs.CloneWithAdditionalProperties(releaseModeProperties),
-                    noRestore: noRestore,
-                    msbuildPath: msbuildPath
-                );
-            },
-            [CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, PublishCommandParser.TargetOption, PublishCommandParser.VerbosityOption],
-            parseResult,
-            msbuildPath
+                return msbuildArgs.CloneWithAdditionalProperties(releaseModeProperties);
+            }
         );
     }
 

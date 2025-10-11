@@ -38,6 +38,10 @@ parameters:
   # Optional: A minimatch pattern for the asset manifests to publish to BAR
   assetManifestsPattern: '*/manifests/**/*.xml'
 
+  repositoryAlias: self
+
+  officialBuildId: ''
+
 jobs:
 - job: Asset_Registry_Publish
 
@@ -60,6 +64,11 @@ jobs:
       value: false
     # unconditional - needed for logs publishing (redactor tool version)
     - template: /eng/common/core-templates/post-build/common-variables.yml
+  - name: OfficialBuildId
+    ${{ if ne(parameters.officialBuildId, '') }}:
+      value: ${{ parameters.officialBuildId }}
+    ${{ else }}:
+      value: $(Build.BuildNumber)
 
   pool:
     # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
@@ -122,7 +131,7 @@ jobs:
           /p:ManifestsPath='$(Build.StagingDirectory)/AssetManifests'
           /p:IsAssetlessBuild=${{ parameters.isAssetlessBuild }}
           /p:MaestroApiEndpoint=https://maestro.dot.net
-          /p:OfficialBuildId=$(Build.BuildNumber)
+          /p:OfficialBuildId=$(OfficialBuildId)
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
     

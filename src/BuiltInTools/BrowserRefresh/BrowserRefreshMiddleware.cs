@@ -46,6 +46,11 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 try
                 {
                     await _next(context);
+
+                    // We complete the wrapper stream to ensure that any intermediate buffers
+                    // get fully flushed to the response stream. This is also required to
+                    // reliably determine whether script injection was performed.
+                    await responseStreamWrapper.CompleteAsync();
                 }
                 finally
                 {
@@ -164,7 +169,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             if (request.Headers.TryGetValue("Sec-Fetch-Dest", out var values) &&
                 !StringValues.IsNullOrEmpty(values) &&
-                !string.Equals(values[0], "document", StringComparison.OrdinalIgnoreCase))
+                !string.Equals(values[0], "document", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(values[0], "frame", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(values[0], "iframe", StringComparison.OrdinalIgnoreCase) &&
+                !IsProgressivelyEnhancedNavigation(context.Request))
             {
                 // See https://github.com/dotnet/aspnetcore/issues/37326.
                 // Only inject scripts that are destined for a browser page.
@@ -186,6 +194,14 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             }
 
             return false;
+        }
+
+        private static bool IsProgressivelyEnhancedNavigation(HttpRequest request)
+        {
+            // This is an exact copy from https://github.com/dotnet/aspnetcore/blob/bb2d778dc66aa998ea8e26db0e98e7e01423ff78/src/Components/Endpoints/src/Rendering/EndpointHtmlRenderer.Streaming.cs#L327-L332
+            // For enhanced nav, the Blazor JS code controls the "accept" header precisely, so we can be very specific about the format
+            var accept = request.Headers.Accept;
+            return accept.Count == 1 && string.Equals(accept[0]!, "text/html; blazor-enhanced-nav=on", StringComparison.Ordinal);
         }
 
         internal void Test_SetEnvironment(string dotnetModifiableAssemblies, string aspnetcoreBrowserTools)
@@ -210,7 +226,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 LogLevel.Warning,
                 new EventId(3, "FailedToConfiguredForRefreshes"),
                 "Unable to configure browser refresh script injection on the response. " +
-                $"Consider manually adding '{WebSocketScriptInjection.InjectedScript}' to the body of the page.");
+                $"Consider manually adding '{ScriptInjectingStream.InjectedScript}' to the body of the page.");
 
             private static readonly Action<ILogger, StringValues, Exception?> _responseCompressionDetected = LoggerMessage.Define<StringValues>(
                 LogLevel.Warning,
@@ -219,10 +235,16 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 $"This may have been caused by the response's {HeaderNames.ContentEncoding}: '{{encoding}}'. " +
                 "Consider disabling response compression.");
 
+            private static readonly Action<ILogger, int, string?, Exception?> _scriptInjectionSkipped = LoggerMessage.Define<int, string?>(
+                LogLevel.Debug,
+                new EventId(6, "ScriptInjectionSkipped"),
+                "Browser refresh script injection skipped. Status code: {StatusCode}, Content type: {ContentType}");
+
             public static void SetupResponseForBrowserRefresh(ILogger logger) => _setupResponseForBrowserRefresh(logger, null);
             public static void BrowserConfiguredForRefreshes(ILogger logger) => _browserConfiguredForRefreshes(logger, null);
             public static void FailedToConfiguredForRefreshes(ILogger logger) => _failedToConfigureForRefreshes(logger, null);
             public static void ResponseCompressionDetected(ILogger logger, StringValues encoding) => _responseCompressionDetected(logger, encoding, null);
+            public static void ScriptInjectionSkipped(ILogger logger, int statusCode, string? contentType) => _scriptInjectionSkipped(logger, statusCode, contentType, null);
         }
     }
 }

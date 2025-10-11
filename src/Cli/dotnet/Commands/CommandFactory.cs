@@ -17,19 +17,29 @@ public static class CommandFactory
         Func<MSBuildArgs, string?, CommandBase> createPhysicalCommand,
         IEnumerable<Option> optionsToUseWhenParsingMSBuildFlags,
         ParseResult parseResult,
-        string? msbuildPath = null)
+        string? msbuildPath = null,
+        Func<MSBuildArgs, MSBuildArgs>? transformer = null)
     {
         var args = parseResult.GetValue(catchAllUserInputArgument) ?? [];
         LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
         var forwardedArgs = parseResult.OptionValuesToBeForwarded(command);
         if (nonBinLogArgs is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
         {
-            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. binLogArgs,], [.. optionsToUseWhenParsingMSBuildFlags]);
+            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. binLogArgs],
+            [
+                .. optionsToUseWhenParsingMSBuildFlags,
+                CommonOptions.GetPropertyOption,
+                CommonOptions.GetItemOption,
+                CommonOptions.GetTargetResultOption,
+                CommonOptions.GetResultOutputFileOption,
+            ]);
+            msbuildArgs = transformer?.Invoke(msbuildArgs) ?? msbuildArgs;
             return configureVirtualCommand(msbuildArgs, Path.GetFullPath(arg));
         }
         else
         {
             var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. args], [.. optionsToUseWhenParsingMSBuildFlags]);
+            msbuildArgs = transformer?.Invoke(msbuildArgs) ?? msbuildArgs;
             return createPhysicalCommand(msbuildArgs, msbuildPath);
         }
     }
