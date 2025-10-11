@@ -28,7 +28,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdOut);
         }
 
-        [Fact]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/51147")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         public Task CanDisplayDetails_RemotePackage_NuGetFeedNoVersion()
         {
             var folder = CreateTemporaryFolder();

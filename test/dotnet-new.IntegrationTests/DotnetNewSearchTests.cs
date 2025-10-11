@@ -16,7 +16,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             _log = log;
         }
 
-        [Theory]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/51147")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         [InlineData("console --search")]
         [InlineData("--search console")]
         [InlineData("search console")]
@@ -57,7 +59,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdErrContaining("Search failed: template name is too short, minimum 2 characters are required.");
         }
 
-        [Theory]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/51147")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         [InlineData("--search fofofo", "'fofofo'")]
         [InlineData("search fofofo", "'fofofo'")]
         [InlineData("search fofofo --type item", "'fofofo', --type='item'")]
@@ -72,7 +76,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdErrContaining($"No templates found matching: {criteria}.");
         }
 
-        [Theory]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/51147")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         [InlineData("azure --search --columns author")]
         [InlineData("--search azure --columns author")]
         [InlineData("search azure --columns author")]
@@ -101,7 +107,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             commandResult.Should().HaveStdOutContaining(ContainsOneOfInstallationCommands, "Checks if the output contains one of the expected installation commands");
         }
 
-        [Theory]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/51147")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         [InlineData("console --search --columns-all")]
         [InlineData("--columns-all --search console")]
         [InlineData("search console --columns-all")]
@@ -128,7 +136,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [Theory]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/51147")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         [InlineData("console --search --columns tags --tag Common")]
         [InlineData("--search console --columns tags --tag Common")]
         [InlineData("search console --columns tags --tag Common")]
@@ -159,7 +169,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [Theory]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/51147")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         [InlineData("--search --columns tags --tag Common")]
         [InlineData("--columns tags --search --tag Common")]
         [InlineData("search --columns tags --tag Common")]
@@ -188,7 +200,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [Theory]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/51147")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         [InlineData("func --search --columns author --author micro")]
         [InlineData("--search func --columns author --author micro")]
         [InlineData("search func --columns author --author micro")]
@@ -220,7 +234,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [Theory]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/51147")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         [InlineData("--search --columns author --author micro")]
         [InlineData("search --columns author --author micro")]
         public void CanFilterAuthor_WithoutName(string testCase)
@@ -251,7 +267,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [Theory]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/51147")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         [InlineData("console --search --columns language --language Q#")]
         [InlineData("--search console --columns language --language Q#")]
         [InlineData("search console --columns language --language Q#")]
@@ -283,7 +301,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [Theory]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/51147")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         [InlineData("--search --columns language --language Q#", "--language")]
         [InlineData("search --columns language --language Q#", "--language")]
         [InlineData("--search --columns language -lang Q#", "-lang")]
@@ -314,7 +334,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [Theory]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/51147")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         [InlineData("console --search --columns type --type item")]
         [InlineData("--search console --columns type --type item")]
         [InlineData("search console --columns type --type item")]
@@ -346,7 +368,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [Theory]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/51147")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         [InlineData("--search --columns type --type item")]
         [InlineData("search --columns type --type item")]
         public void CanFilterType_WithoutName(string testCase)
@@ -376,7 +400,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [Theory]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/51147")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         [InlineData("console --search --package core")]
         [InlineData("--search console --package core")]
         [InlineData("search console --package core")]
@@ -408,7 +434,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [Theory]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/51147")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         [InlineData("--search --package core")]
         [InlineData("search --package core")]
         public void CanFilterPackage_WithoutName(string testCase)
@@ -757,7 +785,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             }
         }
 
-        [Fact]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/51147")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CanShowDeprecationMessage_WhenLegacyCommandIsUsed()
         {
             const string deprecationMessage =
@@ -776,7 +806,9 @@ For more information, run:
             Assert.StartsWith(deprecationMessage, commandResult.StdOut);
         }
 
-        [Fact]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/51147")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         public void DoNotShowDeprecationMessage_WhenNewCommandIsUsed()
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "search", "console")

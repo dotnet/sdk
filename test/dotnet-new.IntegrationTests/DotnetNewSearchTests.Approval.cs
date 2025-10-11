@@ -23,7 +23,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .DisableRequireUniquePrefix();
         }
 
-        [Fact]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/51147")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         public Task CanShowMessageInCaseShortNameConflict()
         {
             string customHivePath = CreateTemporaryFolder(folderName: "Home");

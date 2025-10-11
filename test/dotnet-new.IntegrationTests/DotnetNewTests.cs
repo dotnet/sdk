@@ -61,7 +61,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.NotHaveStdOut();
         }
 
-        [Theory]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/51147")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         [InlineData("-v", "m")]
         [InlineData("-v", "minimal")]
         [InlineData("--verbosity", "m")]
@@ -81,7 +83,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .DisableRequireUniquePrefix();
         }
 
-        [Theory]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/51147")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         [InlineData("-v", "n")]
         [InlineData("-v", "normal")]
         [InlineData("--verbosity", "n")]
