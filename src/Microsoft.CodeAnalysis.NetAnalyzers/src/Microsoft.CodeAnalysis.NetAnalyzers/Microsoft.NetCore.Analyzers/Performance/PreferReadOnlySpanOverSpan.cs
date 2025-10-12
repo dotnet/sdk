@@ -111,6 +111,27 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     }
                 }, OperationKind.ParameterReference);
 
+                // Check for writes through indexers or properties
+                blockStartContext.RegisterOperationAction(operationContext =>
+                {
+                    // Check if an indexer or property on the parameter is being written to
+                    IOperation? instance = null;
+                    bool isWrite = false;
+
+                    if (operationContext.Operation is IPropertyReferenceOperation propertyRef)
+                    {
+                        instance = propertyRef.Instance;
+                        isWrite = propertyRef.Parent is IAssignmentOperation assignment && assignment.Target == propertyRef;
+                    }
+
+                    if (instance is IParameterReferenceOperation paramRef &&
+                        candidateParameters.ContainsKey(paramRef.Parameter) &&
+                        isWrite)
+                    {
+                        candidateParameters.Remove(paramRef.Parameter);
+                    }
+                }, OperationKind.PropertyReference);
+
                 blockStartContext.RegisterOperationBlockEndAction(blockEndContext =>
                 {
                     // Report diagnostics for parameters that were never written to
