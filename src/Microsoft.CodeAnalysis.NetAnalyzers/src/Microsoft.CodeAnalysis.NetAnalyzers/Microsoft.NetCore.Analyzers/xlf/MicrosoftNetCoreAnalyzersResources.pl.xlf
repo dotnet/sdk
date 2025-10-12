@@ -2294,18 +2294,23 @@ Konwersje poszerzane i zdefiniowane przez użytkownika nie są obsługiwane w pr
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
-        <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</source>
-        <target state="translated">Metody StringBuilder.Append i StringBuilder.Insert zapewniają przeciążenia dla wielu typów oprócz typu System.String. Jeśli to możliwe, preferuj silnie typizowane przeciążenia zamiast używania metody ToString() i przeciążenia opartego na ciągu.</target>
+        <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload. Additionally, prefer Append(char, int) over Append(new string(char, int)).</source>
+        <target state="needs-review-translation">Metody StringBuilder.Append i StringBuilder.Insert zapewniają przeciążenia dla wielu typów oprócz typu System.String. Jeśli to możliwe, preferuj silnie typizowane przeciążenia zamiast używania metody ToString() i przeciążenia opartego na ciągu.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
-        <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload</source>
-        <target state="translated">Usuń wywołanie metody ToString, aby użyć silnie typizowanego przeciążenia elementu StringBuilder</target>
+        <source>Prefer strongly-typed StringBuilder overload</source>
+        <target state="needs-review-translation">Usuń wywołanie metody ToString, aby użyć silnie typizowanego przeciążenia elementu StringBuilder</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
         <source>Remove the ToString call</source>
         <target state="translated">Usuń wywołanie metody ToString</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsReplaceStringConstructor">
+        <source>Use StringBuilder.Append(char, int) overload</source>
+        <target state="new">Use StringBuilder.Append(char, int) overload</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">

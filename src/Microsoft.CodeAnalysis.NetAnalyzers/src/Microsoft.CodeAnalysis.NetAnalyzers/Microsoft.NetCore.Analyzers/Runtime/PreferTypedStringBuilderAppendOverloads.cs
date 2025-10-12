@@ -65,6 +65,23 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         s.Parameters[1].Type.SpecialType != SpecialType.System_Object &&
                         s.Parameters[1].Type.TypeKind != TypeKind.Array);
 
+                // Get the Append(char, int) and Insert(int, char, int) overloads for the string constructor pattern.
+                var appendCharIntMethod = stringBuilderType
+                    .GetMembers("Append")
+                    .OfType<IMethodSymbol>()
+                    .FirstOrDefault(s =>
+                        s.Parameters.Length == 2 &&
+                        s.Parameters[0].Type.SpecialType == SpecialType.System_Char &&
+                        s.Parameters[1].Type.SpecialType == SpecialType.System_Int32);
+                var insertCharIntMethod = stringBuilderType
+                    .GetMembers("Insert")
+                    .OfType<IMethodSymbol>()
+                    .FirstOrDefault(s =>
+                        s.Parameters.Length == 3 &&
+                        s.Parameters[0].Type.SpecialType == SpecialType.System_Int32 &&
+                        s.Parameters[1].Type.SpecialType == SpecialType.System_Char &&
+                        s.Parameters[2].Type.SpecialType == SpecialType.System_Int32);
+
                 // Get the StringBuilder.Append(string)/Insert(int, string) method, for comparison purposes.
                 var appendStringMethod = appendMethods.FirstOrDefault(s =>
                     s.Parameters[0].Type.SpecialType == SpecialType.System_String);
@@ -97,28 +114,47 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return;
                     }
 
-                    // We're only interested if the string argument is a "string ToString()" call.
                     if (invocation.Arguments.Length != stringParamIndex + 1 ||
-                        invocation.Arguments[stringParamIndex] is not IArgumentOperation argument ||
-                        argument.Value is not IInvocationOperation toStringInvoke ||
-                        toStringInvoke.TargetMethod.Name != "ToString" ||
-                        toStringInvoke.Type?.SpecialType != SpecialType.System_String ||
-                        !toStringInvoke.TargetMethod.Parameters.IsEmpty)
+                        invocation.Arguments[stringParamIndex] is not IArgumentOperation argument)
                     {
                         return;
                     }
 
-                    // We're only interested if the receiver type of that ToString call has a corresponding strongly-typed overload.
-                    IMethodSymbol? stronglyTypedAppend =
-                        (stringParamIndex == 0 ? appendMethods : insertMethods)
-                        .FirstOrDefault(s => s.Parameters[stringParamIndex].Type.Equals(toStringInvoke.TargetMethod.ReceiverType));
-                    if (stronglyTypedAppend is null)
+                    // Check if the string argument is a "string ToString()" call.
+                    if (argument.Value is IInvocationOperation toStringInvoke &&
+                        toStringInvoke.TargetMethod.Name == "ToString" &&
+                        toStringInvoke.Type?.SpecialType == SpecialType.System_String &&
+                        toStringInvoke.TargetMethod.Parameters.IsEmpty)
                     {
-                        return;
-                    }
+                        // We're only interested if the receiver type of that ToString call has a corresponding strongly-typed overload.
+                        IMethodSymbol? stronglyTypedAppend =
+                            (stringParamIndex == 0 ? appendMethods : insertMethods)
+                            .FirstOrDefault(s => s.Parameters[stringParamIndex].Type.Equals(toStringInvoke.TargetMethod.ReceiverType));
+                        if (stronglyTypedAppend is null)
+                        {
+                            return;
+                        }
 
-                    // Warn.
-                    operationContext.ReportDiagnostic(toStringInvoke.CreateDiagnostic(Rule));
+                        // Warn.
+                        operationContext.ReportDiagnostic(toStringInvoke.CreateDiagnostic(Rule));
+                    }
+                    // Check if the string argument is a "new string(char, int)" constructor call.
+                    else if (argument.Value is IObjectCreationOperation objectCreation &&
+                        objectCreation.Type?.SpecialType == SpecialType.System_String &&
+                        objectCreation.Arguments.Length == 2 &&
+                        objectCreation.Arguments[0].Value?.Type?.SpecialType == SpecialType.System_Char &&
+                        objectCreation.Arguments[1].Value?.Type?.SpecialType == SpecialType.System_Int32)
+                    {
+                        // StringBuilder has an Append(char, int) or Insert(int, char, int) overload that can be used instead.
+                        IMethodSymbol? charIntOverload = stringParamIndex == 0 ? appendCharIntMethod : insertCharIntMethod;
+                        if (charIntOverload is null)
+                        {
+                            return;
+                        }
+
+                        // Warn.
+                        operationContext.ReportDiagnostic(objectCreation.CreateDiagnostic(Rule));
+                    }
                 }, OperationKind.Invocation);
             });
         }
