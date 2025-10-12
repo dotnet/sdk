@@ -82,6 +82,26 @@
         <target state="translated">비용이 많이 드는 로깅을 피하세요</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchDescription">
+        <source>Using 'Regex.IsMatch' as a guard before calling 'Regex.Match' with the same arguments is redundant and doubles the work. Use a pattern match on the result of 'Regex.Match' directly instead.</source>
+        <target state="new">Using 'Regex.IsMatch' as a guard before calling 'Regex.Match' with the same arguments is redundant and doubles the work. Use a pattern match on the result of 'Regex.Match' directly instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchFix">
+        <source>Use pattern matching on 'Regex.Match' result</source>
+        <target state="new">Use pattern matching on 'Regex.Match' result</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchMessage">
+        <source>Remove redundant 'Regex.IsMatch' guard and use pattern matching on 'Regex.Match' result</source>
+        <target state="new">Remove redundant 'Regex.IsMatch' guard and use pattern matching on 'Regex.Match' result</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchTitle">
+        <source>Avoid redundant 'Regex.IsMatch' guard before 'Regex.Match'</source>
+        <target state="new">Avoid redundant 'Regex.IsMatch' guard before 'Regex.Match'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsDescription">
         <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.</source>
         <target state="translated">모든 직렬화 작업에 대해 새 'JsonSerializerOptions' 인스턴스를 만들지 마세요. 대신 인스턴스를 캐시하고 다시 사용합니다. 단일 사용 'JsonSerializerOptions' 인스턴스는 애플리케이션의 성능을 크게 저하시킬 수 있습니다.</target>

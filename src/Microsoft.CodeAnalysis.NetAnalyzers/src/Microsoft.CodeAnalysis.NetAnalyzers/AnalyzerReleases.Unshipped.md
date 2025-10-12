@@ -11,3 +11,4 @@ CA2023 | Reliability | Warning | LoggerMessageDefineAnalyzer, [Documentation](ht
 CA2024 | Reliability | Warning | DoNotUseEndOfStreamInAsyncMethods, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2024)
 CA2025 | Reliability | Disabled | DoNotPassDisposablesIntoUnawaitedTasksAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2025)
 CA2026 | Reliability | Info | PreferJsonElementParse, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2026)
+CA2027 | Reliability | Info | AvoidRedundantRegexIsMatchBeforeMatch, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2027)
