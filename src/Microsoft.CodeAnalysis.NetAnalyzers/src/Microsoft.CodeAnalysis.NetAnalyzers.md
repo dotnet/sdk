@@ -1908,6 +1908,18 @@ In many situations, logging is disabled or set to a log level that results in an
 |CodeFix|True|
 ---
 
+## [CA1876](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1876): Use 'ReadOnlySpan\<T>' or 'ReadOnlyMemory\<T>' instead of 'Span\<T>' or 'Memory\<T>'
+
+Using 'ReadOnlySpan\<T>' or 'ReadOnlyMemory\<T>' instead of 'Span\<T>' or 'Memory\<T>' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA2000](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.
