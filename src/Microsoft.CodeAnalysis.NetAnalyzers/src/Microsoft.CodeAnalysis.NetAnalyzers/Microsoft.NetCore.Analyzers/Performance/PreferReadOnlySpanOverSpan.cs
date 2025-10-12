@@ -66,8 +66,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     return;
                 }
 
-                // Skip if method is interface implementation
-                if (methodSymbol.ExplicitInterfaceImplementations.Length > 0)
+                // Skip if method is interface implementation (both explicit and implicit)
+                if (methodSymbol.IsImplementationOfAnyInterfaceMember())
                 {
                     return;
                 }
@@ -111,26 +111,35 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     }
                 }, OperationKind.ParameterReference);
 
-                // Check for writes through indexers or properties
+                // Check for writes through properties
                 blockStartContext.RegisterOperationAction(operationContext =>
                 {
-                    // Check if an indexer or property on the parameter is being written to
-                    IOperation? instance = null;
-                    bool isWrite = false;
-
-                    if (operationContext.Operation is IPropertyReferenceOperation propertyRef)
+                    var propertyRef = (IPropertyReferenceOperation)operationContext.Operation;
+                    if (propertyRef.Instance is IParameterReferenceOperation paramRef &&
+                        candidateParameters.ContainsKey(paramRef.Parameter))
                     {
-                        instance = propertyRef.Instance;
-                        isWrite = propertyRef.Parent is IAssignmentOperation assignment && assignment.Target == propertyRef;
-                    }
-
-                    if (instance is IParameterReferenceOperation paramRef &&
-                        candidateParameters.ContainsKey(paramRef.Parameter) &&
-                        isWrite)
-                    {
-                        candidateParameters.Remove(paramRef.Parameter);
+                        // Check if this property reference is on the left side of an assignment
+                        if (propertyRef.Parent is IAssignmentOperation assignment && assignment.Target == propertyRef)
+                        {
+                            candidateParameters.Remove(paramRef.Parameter);
+                        }
                     }
                 }, OperationKind.PropertyReference);
+
+                // Check for writes through indexers (e.g., span[0] = value)
+                blockStartContext.RegisterOperationAction(operationContext =>
+                {
+                    var arrayElementRef = (IArrayElementReferenceOperation)operationContext.Operation;
+                    if (arrayElementRef.ArrayReference is IParameterReferenceOperation paramRef &&
+                        candidateParameters.ContainsKey(paramRef.Parameter))
+                    {
+                        // Check if this element reference is on the left side of an assignment
+                        if (arrayElementRef.Parent is IAssignmentOperation assignment && assignment.Target == arrayElementRef)
+                        {
+                            candidateParameters.Remove(paramRef.Parameter);
+                        }
+                    }
+                }, OperationKind.ArrayElementReference);
 
                 blockStartContext.RegisterOperationBlockEndAction(blockEndContext =>
                 {
