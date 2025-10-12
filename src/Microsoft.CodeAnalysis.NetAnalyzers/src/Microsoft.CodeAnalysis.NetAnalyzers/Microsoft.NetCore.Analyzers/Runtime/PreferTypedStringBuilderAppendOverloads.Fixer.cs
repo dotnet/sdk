@@ -49,11 +49,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             equivalenceKey: title),
                         context.Diagnostics);
                 }
-                // Handle new string(char, int) case
+                // Handle new string(char, int) case (only for Append, not Insert)
                 else if (operation is IArgumentOperation argOp &&
                     argOp.Value is IObjectCreationOperation objectCreation &&
                     objectCreation.Arguments.Length == 2 &&
-                    argOp.Parent is IInvocationOperation invocationOp)
+                    argOp.Parent is IInvocationOperation invocationOp &&
+                    invocationOp.TargetMethod.Name == "Append")
                 {
                     string title = MicrosoftNetCoreAnalyzersResources.PreferTypedStringBuilderAppendOverloadsReplaceStringConstructor;
                     context.RegisterCodeFix(
@@ -61,35 +62,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             async ct =>
                             {
                                 DocumentEditor editor = await DocumentEditor.CreateAsync(doc, ct).ConfigureAwait(false);
-                                
+
                                 // Get the char and int arguments from the string constructor
                                 var charArgSyntax = objectCreation.Arguments[0].Value.Syntax;
                                 var intArgSyntax = objectCreation.Arguments[1].Value.Syntax;
 
-                                // Build new arguments list based on whether this is Append or Insert
-                                SyntaxNode newInvocation;
-                                if (invocationOp.TargetMethod.Name == "Append")
-                                {
-                                    // Append(new string(c, count)) -> Append(c, count)
-                                    newInvocation = editor.Generator.InvocationExpression(
-                                        editor.Generator.MemberAccessExpression(
-                                            invocationOp.Instance!.Syntax,
-                                            "Append"),
-                                        editor.Generator.Argument(charArgSyntax),
-                                        editor.Generator.Argument(intArgSyntax));
-                                }
-                                else
-                                {
-                                    // Insert(index, new string(c, count)) -> Insert(index, c, count)
-                                    var indexArgSyntax = invocationOp.Arguments[0].Value.Syntax;
-                                    newInvocation = editor.Generator.InvocationExpression(
-                                        editor.Generator.MemberAccessExpression(
-                                            invocationOp.Instance!.Syntax,
-                                            "Insert"),
-                                        editor.Generator.Argument(indexArgSyntax),
-                                        editor.Generator.Argument(charArgSyntax),
-                                        editor.Generator.Argument(intArgSyntax));
-                                }
+                                // Append(new string(c, count)) -> Append(c, count)
+                                SyntaxNode newInvocation = editor.Generator.InvocationExpression(
+                                    editor.Generator.MemberAccessExpression(
+                                        invocationOp.Instance!.Syntax,
+                                        "Append"),
+                                    editor.Generator.Argument(charArgSyntax),
+                                    editor.Generator.Argument(intArgSyntax));
 
                                 editor.ReplaceNode(invocationOp.Syntax, newInvocation);
                                 return editor.GetChangedDocument();

@@ -65,7 +65,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         s.Parameters[1].Type.SpecialType != SpecialType.System_Object &&
                         s.Parameters[1].Type.TypeKind != TypeKind.Array);
 
-                // Get the Append(char, int) and Insert(int, char, int) overloads for the string constructor pattern.
+                // Get the Append(char, int) overload for the string constructor pattern.
+                // Note: There is no Insert(int, char, int) overload, so we only handle Append.
                 var appendCharIntMethod = stringBuilderType
                     .GetMembers("Append")
                     .OfType<IMethodSymbol>()
@@ -73,14 +74,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         s.Parameters.Length == 2 &&
                         s.Parameters[0].Type.SpecialType == SpecialType.System_Char &&
                         s.Parameters[1].Type.SpecialType == SpecialType.System_Int32);
-                var insertCharIntMethod = stringBuilderType
-                    .GetMembers("Insert")
-                    .OfType<IMethodSymbol>()
-                    .FirstOrDefault(s =>
-                        s.Parameters.Length == 3 &&
-                        s.Parameters[0].Type.SpecialType == SpecialType.System_Int32 &&
-                        s.Parameters[1].Type.SpecialType == SpecialType.System_Char &&
-                        s.Parameters[2].Type.SpecialType == SpecialType.System_Int32);
 
                 // Get the StringBuilder.Append(string)/Insert(int, string) method, for comparison purposes.
                 var appendStringMethod = appendMethods.FirstOrDefault(s =>
@@ -139,19 +132,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         operationContext.ReportDiagnostic(toStringInvoke.CreateDiagnostic(Rule));
                     }
                     // Check if the string argument is a "new string(char, int)" constructor call.
-                    else if (argument.Value is IObjectCreationOperation objectCreation &&
+                    // Note: This optimization only applies to Append, not Insert, as there's no Insert(int, char, int) overload.
+                    else if (stringParamIndex == 0 &&
+                        argument.Value is IObjectCreationOperation objectCreation &&
                         objectCreation.Type?.SpecialType == SpecialType.System_String &&
                         objectCreation.Arguments.Length == 2 &&
                         objectCreation.Arguments[0].Value?.Type?.SpecialType == SpecialType.System_Char &&
-                        objectCreation.Arguments[1].Value?.Type?.SpecialType == SpecialType.System_Int32)
+                        objectCreation.Arguments[1].Value?.Type?.SpecialType == SpecialType.System_Int32 &&
+                        appendCharIntMethod is not null)
                     {
-                        // StringBuilder has an Append(char, int) or Insert(int, char, int) overload that can be used instead.
-                        IMethodSymbol? charIntOverload = stringParamIndex == 0 ? appendCharIntMethod : insertCharIntMethod;
-                        if (charIntOverload is null)
-                        {
-                            return;
-                        }
-
                         // Warn.
                         operationContext.ReportDiagnostic(objectCreation.CreateDiagnostic(Rule));
                     }

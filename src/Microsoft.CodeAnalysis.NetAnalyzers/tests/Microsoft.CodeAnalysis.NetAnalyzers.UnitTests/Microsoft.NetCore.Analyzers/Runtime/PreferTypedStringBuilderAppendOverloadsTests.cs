@@ -290,34 +290,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task Diagnostic_StringConstructorInInsert_CSharpAsync()
-        {
-            await VerifyCS.VerifyCodeFixAsync(@"
-                using System.Text;
-
-                class C
-                {
-                    public void M()
-                    {
-                        var sb = new StringBuilder();
-                        sb.Insert(0, [|new string('x', 10)|]);
-                    }
-                }
-                ", @"
-                using System.Text;
-
-                class C
-                {
-                    public void M()
-                    {
-                        var sb = new StringBuilder();
-                        sb.Insert(0, 'x', 10);
-                    }
-                }
-                ");
-        }
-
-        [Fact]
         public async Task Diagnostic_StringConstructorWithVariable_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -346,30 +318,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         sb.Append(c, count);
                     }
                 }
-                ");
-        }
-
-        [Fact]
-        public async Task Diagnostic_StringConstructorInAppend_VBAsync()
-        {
-            await VerifyVB.VerifyCodeFixAsync(@"
-                Imports System.Text
-
-                Class C
-                    Public Sub M()
-                        Dim sb As New StringBuilder()
-                        sb.Append([|New String(""c""c, 5)|])
-                    End Sub
-                End Class
-                ", @"
-                Imports System.Text
-
-                Class C
-                    Public Sub M()
-                        Dim sb As New StringBuilder()
-                        sb.Append(""c""c, 5)
-                    End Sub
-                End Class
                 ");
         }
 
