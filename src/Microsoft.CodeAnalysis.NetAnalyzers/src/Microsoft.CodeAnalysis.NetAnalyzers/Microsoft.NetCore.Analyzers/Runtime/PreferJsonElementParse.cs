@@ -48,8 +48,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return;
                 }
 
-                // Check if JsonElement.Parse and JsonDocument.Parse exist
-                if (!jsonElementType.GetMembers("Parse").Any(m => m is IMethodSymbol { IsStatic: true }) ||
+                // Get all JsonElement.Parse overloads for matching
+                var jsonElementParseOverloads = jsonElementType.GetMembers("Parse")
+                    .OfType<IMethodSymbol>()
+                    .Where(m => m.IsStatic)
+                    .ToImmutableArray();
+
+                // Check if JsonElement.Parse exists
+                if (jsonElementParseOverloads.IsEmpty ||
                     !jsonDocumentType.GetMembers("Parse").Any(m => m is IMethodSymbol { IsStatic: true }))
                 {
                     return;
@@ -64,12 +70,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     return;
                 }
-
-                // Get all JsonElement.Parse overloads for matching
-                var jsonElementParseOverloads = jsonElementType.GetMembers("Parse")
-                    .OfType<IMethodSymbol>()
-                    .Where(m => m.IsStatic)
-                    .ToImmutableArray();
 
                 context.RegisterOperationAction(context =>
                 {
@@ -100,14 +100,29 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     // Now we have the pattern: JsonDocument.Parse(...).RootElement
                     // Check if there's a matching JsonElement.Parse overload with the same parameter types
                     var jsonDocumentParseMethod = invocation.TargetMethod;
-                    bool hasMatchingOverload = jsonElementParseOverloads.Any(elementParse =>
-                        elementParse.Parameters.Length == jsonDocumentParseMethod.Parameters.Length &&
-                        elementParse.Parameters.Zip(jsonDocumentParseMethod.Parameters, (p1, p2) =>
-                            SymbolEqualityComparer.Default.Equals(p1.Type, p2.Type)).All(match => match));
 
-                    if (hasMatchingOverload)
+                    foreach (var elementParseOverload in jsonElementParseOverloads)
                     {
-                        context.ReportDiagnostic(propertyReference.CreateDiagnostic(Rule));
+                        if (elementParseOverload.Parameters.Length != jsonDocumentParseMethod.Parameters.Length)
+                        {
+                            continue;
+                        }
+
+                        bool parametersMatch = true;
+                        for (int i = 0; i < elementParseOverload.Parameters.Length; i++)
+                        {
+                            if (!SymbolEqualityComparer.Default.Equals(elementParseOverload.Parameters[i].Type, jsonDocumentParseMethod.Parameters[i].Type))
+                            {
+                                parametersMatch = false;
+                                break;
+                            }
+                        }
+
+                        if (parametersMatch)
+                        {
+                            context.ReportDiagnostic(propertyReference.CreateDiagnostic(Rule));
+                            break;
+                        }
                     }
                 }, OperationKind.PropertyReference);
             });
