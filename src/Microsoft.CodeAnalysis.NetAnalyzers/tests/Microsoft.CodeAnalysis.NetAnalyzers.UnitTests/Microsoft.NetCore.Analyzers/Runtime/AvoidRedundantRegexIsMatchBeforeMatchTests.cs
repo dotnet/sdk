@@ -233,5 +233,70 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 }
                 """);
         }
+
+        [Fact]
+        public async Task RedundantIsMatchGuard_InvertedWithEarlyReturn_CSharp_ReportsDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, string pattern)
+                    {
+                        if (!{|CA2027:Regex.IsMatch(input, pattern)|})
+                        {
+                            return;
+                        }
+
+                        Match m = Regex.Match(input, pattern);
+                        // use m
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task NoRedundantIsMatchGuard_VariableReassigned_CSharp_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, string pattern)
+                    {
+                        if (Regex.IsMatch(input, pattern))
+                        {
+                            pattern = "different";
+                            Match m = Regex.Match(input, pattern);
+                            // use m
+                        }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task NoRedundantIsMatchGuard_PropertyArgument_CSharp_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    string Pattern { get; set; } = "";
+
+                    void M(string input)
+                    {
+                        if (Regex.IsMatch(input, Pattern))
+                        {
+                            Match m = Regex.Match(input, Pattern);
+                            // use m - but Pattern could have changed
+                        }
+                    }
+                }
+                """);
+        }
     }
 }

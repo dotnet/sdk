@@ -2166,6 +2166,18 @@ JsonDocument implements IDisposable and needs to be properly disposed. When only
 |CodeFix|True|
 ---
 
+## [CA2027](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2027): Avoid redundant 'Regex.IsMatch' guard before 'Regex.Match'
+
+Using 'Regex.IsMatch' as a guard before calling 'Regex.Match' with the same arguments is redundant and doubles the work. Use a pattern match on the result of 'Regex.Match' directly instead.
+
+|Item|Value|
+|-|-|
+|Category|Reliability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA2100](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100): Review SQL queries for security vulnerabilities
 
 SQL queries that directly use user input can be vulnerable to SQL injection attacks. Review this SQL query for potential vulnerabilities, and consider using a parameterized SQL query.

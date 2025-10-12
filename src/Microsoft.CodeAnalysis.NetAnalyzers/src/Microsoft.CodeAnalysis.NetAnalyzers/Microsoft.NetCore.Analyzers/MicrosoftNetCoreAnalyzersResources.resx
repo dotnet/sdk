@@ -1401,16 +1401,16 @@
     <value>Use 'Regex.IsMatch'</value>
   </data>
   <data name="AvoidRedundantRegexIsMatchBeforeMatchDescription" xml:space="preserve">
-    <value>Using 'Regex.IsMatch' as a guard before calling 'Regex.Match' with the same arguments is redundant and doubles the work. Use a pattern match on the result of 'Regex.Match' directly instead.</value>
+    <value>Using 'Regex.IsMatch' as a guard before calling 'Regex.Match' with the same arguments is redundant and unnecessarily repeats the matching operation. Call 'Regex.Match' directly and check the 'Success' property instead.</value>
   </data>
   <data name="AvoidRedundantRegexIsMatchBeforeMatchMessage" xml:space="preserve">
-    <value>Remove redundant 'Regex.IsMatch' guard and use pattern matching on 'Regex.Match' result</value>
+    <value>Remove redundant 'Regex.IsMatch' guard; 'Regex.Match' contains a 'Success' property to test for matching</value>
   </data>
   <data name="AvoidRedundantRegexIsMatchBeforeMatchTitle" xml:space="preserve">
     <value>Avoid redundant 'Regex.IsMatch' guard before 'Regex.Match'</value>
   </data>
   <data name="AvoidRedundantRegexIsMatchBeforeMatchFix" xml:space="preserve">
-    <value>Use pattern matching on 'Regex.Match' result</value>
+    <value>Remove redundant 'Regex.IsMatch' guard</value>
   </data>
   <data name="ThreadStaticOnNonStaticFieldDescription" xml:space="preserve">
     <value>'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.</value>

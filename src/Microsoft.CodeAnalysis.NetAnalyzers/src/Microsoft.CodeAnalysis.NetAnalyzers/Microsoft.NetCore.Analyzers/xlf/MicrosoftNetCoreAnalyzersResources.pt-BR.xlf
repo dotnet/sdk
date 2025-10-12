@@ -83,18 +83,18 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchDescription">
-        <source>Using 'Regex.IsMatch' as a guard before calling 'Regex.Match' with the same arguments is redundant and doubles the work. Use a pattern match on the result of 'Regex.Match' directly instead.</source>
-        <target state="new">Using 'Regex.IsMatch' as a guard before calling 'Regex.Match' with the same arguments is redundant and doubles the work. Use a pattern match on the result of 'Regex.Match' directly instead.</target>
+        <source>Using 'Regex.IsMatch' as a guard before calling 'Regex.Match' with the same arguments is redundant and unnecessarily repeats the matching operation. Call 'Regex.Match' directly and check the 'Success' property instead.</source>
+        <target state="new">Using 'Regex.IsMatch' as a guard before calling 'Regex.Match' with the same arguments is redundant and unnecessarily repeats the matching operation. Call 'Regex.Match' directly and check the 'Success' property instead.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchFix">
-        <source>Use pattern matching on 'Regex.Match' result</source>
-        <target state="new">Use pattern matching on 'Regex.Match' result</target>
+        <source>Remove redundant 'Regex.IsMatch' guard</source>
+        <target state="new">Remove redundant 'Regex.IsMatch' guard</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchMessage">
-        <source>Remove redundant 'Regex.IsMatch' guard and use pattern matching on 'Regex.Match' result</source>
-        <target state="new">Remove redundant 'Regex.IsMatch' guard and use pattern matching on 'Regex.Match' result</target>
+        <source>Remove redundant 'Regex.IsMatch' guard; 'Regex.Match' contains a 'Success' property to test for matching</source>
+        <target state="new">Remove redundant 'Regex.IsMatch' guard; 'Regex.Match' contains a 'Success' property to test for matching</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidRedundantRegexIsMatchBeforeMatchTitle">
