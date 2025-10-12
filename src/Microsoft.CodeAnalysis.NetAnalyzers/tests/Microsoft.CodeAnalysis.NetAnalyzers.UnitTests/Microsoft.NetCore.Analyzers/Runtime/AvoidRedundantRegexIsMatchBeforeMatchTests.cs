@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.AvoidRedundantRegexIsMatchBeforeMatch,
-    Microsoft.NetCore.Analyzers.Runtime.AvoidRedundantRegexIsMatchBeforeMatchFixer>;
+    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpAvoidRedundantRegexIsMatchBeforeMatchFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.AvoidRedundantRegexIsMatchBeforeMatch,
-    Microsoft.NetCore.Analyzers.Runtime.AvoidRedundantRegexIsMatchBeforeMatchFixer>;
+    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicAvoidRedundantRegexIsMatchBeforeMatchFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
