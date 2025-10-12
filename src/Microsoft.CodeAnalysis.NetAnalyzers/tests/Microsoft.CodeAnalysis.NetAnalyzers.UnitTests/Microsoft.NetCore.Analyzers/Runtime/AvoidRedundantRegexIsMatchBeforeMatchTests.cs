@@ -129,5 +129,109 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 End Class
                 """);
         }
+
+        [Fact]
+        public async Task RedundantIsMatchGuard_WithOptions_CSharp_ReportsDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, string pattern)
+                    {
+                        if ({|CA2027:Regex.IsMatch(input, pattern, RegexOptions.IgnoreCase)|})
+                        {
+                            Match m = Regex.Match(input, pattern, RegexOptions.IgnoreCase);
+                            // use m
+                        }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task RedundantIsMatchGuard_NestedInBlock_CSharp_ReportsDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, string pattern)
+                    {
+                        if ({|CA2027:Regex.IsMatch(input, pattern)|})
+                        {
+                            System.Console.WriteLine("Found match");
+                            Match m = Regex.Match(input, pattern);
+                            System.Console.WriteLine(m.Value);
+                        }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task RedundantIsMatchGuard_InlineMatchUsage_CSharp_ReportsDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, string pattern)
+                    {
+                        if ({|CA2027:Regex.IsMatch(input, pattern)|})
+                        {
+                            System.Console.WriteLine(Regex.Match(input, pattern).Value);
+                        }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task NoRedundantIsMatchGuard_MatchInElseBranch_CSharp_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, string pattern)
+                    {
+                        if (Regex.IsMatch(input, pattern))
+                        {
+                            System.Console.WriteLine("Matched");
+                        }
+                        else
+                        {
+                            Match m = Regex.Match(input, pattern);
+                            // use m
+                        }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task NoRedundantIsMatchGuard_DifferentOptions_CSharp_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, string pattern)
+                    {
+                        if (Regex.IsMatch(input, pattern, RegexOptions.IgnoreCase))
+                        {
+                            Match m = Regex.Match(input, pattern, RegexOptions.Compiled);
+                            // use m
+                        }
+                    }
+                }
+                """);
+        }
     }
 }
