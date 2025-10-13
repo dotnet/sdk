@@ -1209,7 +1209,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('install', 'install', [CompletionResultType]::ParameterValue, "Install one or more workloads.")
                 [CompletionResult]::new('update', 'update', [CompletionResultType]::ParameterValue, "Update all installed workloads.")
                 [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, "List workloads available.")
-                [CompletionResult]::new('search', 'search', [CompletionResultType]::ParameterValue, "Search for available workloads.")
+                [CompletionResult]::new('search', 'search', [CompletionResultType]::ParameterValue, "Search for available workloads or workload versions.")
                 [CompletionResult]::new('uninstall', 'uninstall', [CompletionResultType]::ParameterValue, "Uninstall one or more workloads.")
                 [CompletionResult]::new('repair', 'repair', [CompletionResultType]::ParameterValue, "Repair workload installations.")
                 [CompletionResult]::new('restore', 'restore', [CompletionResultType]::ParameterValue, "Restore workloads required for a project.")

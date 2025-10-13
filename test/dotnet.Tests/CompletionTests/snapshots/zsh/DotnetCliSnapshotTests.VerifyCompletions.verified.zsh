@@ -1960,7 +1960,7 @@ _testhost__workload_commands() {
         'install:Install one or more workloads.' \
         'update:Update all installed workloads.' \
         'list:List workloads available.' \
-        'search:Search for available workloads.' \
+        'search:Search for available workloads or workload versions.' \
         'uninstall:Uninstall one or more workloads.' \
         'repair:Repair workload installations.' \
         'restore:Restore workloads required for a project.' \
