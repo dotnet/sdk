@@ -73,7 +73,7 @@ namespace Microsoft.DotNet.Watch
                     Logger.LogInformation("MSBuild output from target '{TargetName}':", TargetName);
                 }
 
-                BuildOutput.ReportBuildOutput(Logger, capturedOutput, success, projectDisplay: null);
+                BuildOutput.ReportBuildOutput(Logger, capturedOutput, success);
                 if (!success)
                 {
                     return null;

@@ -15,6 +15,7 @@ namespace Microsoft.DotNet.Watch;
 internal sealed class IncrementalMSBuildWorkspace : Workspace
 {
     private readonly ILogger _logger;
+    private int _solutionUpdateId;
 
     public IncrementalMSBuildWorkspace(ILogger logger)
         : base(MSBuildMefHostServices.DefaultServices, WorkspaceKind.MSBuild)
@@ -35,6 +36,9 @@ internal sealed class IncrementalMSBuildWorkspace : Workspace
 
     public async Task UpdateProjectConeAsync(string rootProjectPath, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Loading projects ...");
+
+        var stopwatch = Stopwatch.StartNew();
         var oldSolution = CurrentSolution;
 
         var loader = new MSBuildProjectLoader(this);
@@ -94,8 +98,10 @@ internal sealed class IncrementalMSBuildWorkspace : Workspace
                 .WithCompilationOutputInfo(newProjectInfo.CompilationOutputInfo));
         }
 
-        await ReportSolutionFilesAsync(SetCurrentSolution(newSolution), cancellationToken);
+        await UpdateSolutionAsync(newSolution, operationDisplayName: "project update", cancellationToken);
         UpdateReferencesAfterAdd();
+
+        _logger.LogInformation("Projects loaded in {Time}s.", stopwatch.Elapsed.TotalSeconds.ToString("0.0"));
 
         ProjectReference MapProjectReference(ProjectReference pr)
             // Only C# and VB projects are loaded by the MSBuildProjectLoader, so some references might be missing.
@@ -154,6 +160,8 @@ internal sealed class IncrementalMSBuildWorkspace : Workspace
 
                 var newText = await GetSourceTextAsync(changedFile.FilePath, oldText.Encoding, oldText.ChecksumAlgorithm, cancellationToken);
 
+                _logger.LogDebug("Updating document text of '{FilePath}'.", changedFile.FilePath);
+
                 updatedSolution = textDocument switch
                 {
                     Document document => document.WithText(newText).Project.Solution,
@@ -166,7 +174,7 @@ internal sealed class IncrementalMSBuildWorkspace : Workspace
 
         updatedSolution = RemoveDocuments(updatedSolution, documentsToRemove);
 
-        await ReportSolutionFilesAsync(SetCurrentSolution(updatedSolution), cancellationToken);
+        await UpdateSolutionAsync(updatedSolution, operationDisplayName: "document update", cancellationToken);
     }
 
     private static Solution RemoveDocuments(Solution solution, IEnumerable<DocumentId> ids)
@@ -217,10 +225,21 @@ internal sealed class IncrementalMSBuildWorkspace : Workspace
         return null;
     }
 
-    public async Task ReportSolutionFilesAsync(Solution solution, CancellationToken cancellationToken)
+    private Task UpdateSolutionAsync(Solution newSolution, string operationDisplayName, CancellationToken cancellationToken)
+        => ReportSolutionFilesAsync(SetCurrentSolution(newSolution), Interlocked.Increment(ref _solutionUpdateId), operationDisplayName, cancellationToken);
+
+    private async Task ReportSolutionFilesAsync(Solution solution, int updateId, string operationDisplayName, CancellationToken cancellationToken)
     {
 #if DEBUG
         _logger.LogDebug("Solution: {Path}", solution.FilePath);
+
+        if (!_logger.IsEnabled(LogLevel.Debug))
+        {
+            return;
+        }
+
+        _logger.LogDebug("Solution after {Operation}: v{Version}", operationDisplayName, updateId);
+
         foreach (var project in solution.Projects)
         {
             _logger.LogDebug("  Project: {Path}", project.FilePath);

@@ -186,7 +186,7 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor ProjectsRestarted = Create("Projects restarted ({0})", Emoji.HotReload, MessageSeverity.Verbose);
         public static readonly MessageDescriptor ProjectDependenciesDeployed = Create("Project dependencies deployed ({0})", Emoji.HotReload, MessageSeverity.Verbose);
         public static readonly MessageDescriptor FixBuildError = Create("Fix the error to continue or press Ctrl+C to exit.", Emoji.Watch, MessageSeverity.Warning);
-        public static readonly MessageDescriptor WaitingForChanges = Create("Waiting for changes", Emoji.Watch, MessageSeverity.Verbose);
+        public static readonly MessageDescriptor WaitingForChanges = Create("Waiting for changes", Emoji.Watch, MessageSeverity.Output);
         public static readonly MessageDescriptor LaunchedProcess = Create("Launched '{0}' with arguments '{1}': process id {2}", Emoji.Launch, MessageSeverity.Verbose);
         public static readonly MessageDescriptor HotReloadChangeHandled = Create("Hot reload change handled in {0}ms.", Emoji.HotReload, MessageSeverity.Verbose);
         public static readonly MessageDescriptor HotReloadSucceeded = Create(LogEvents.HotReloadSucceeded, Emoji.HotReload);

@@ -82,8 +82,7 @@ namespace Microsoft.DotNet.Watch
                 {
                     var rootProjectOptions = _context.RootProjectOptions;
 
-                    var (buildSucceeded, buildOutput, _) = await BuildProjectAsync(rootProjectOptions.ProjectPath, rootProjectOptions.BuildArguments, iterationCancellationToken);
-                    BuildOutput.ReportBuildOutput(_context.BuildLogger, buildOutput, buildSucceeded, projectDisplay: rootProjectOptions.ProjectPath);
+                    var buildSucceeded = await BuildProjectAsync(rootProjectOptions.ProjectPath, rootProjectOptions.BuildArguments, iterationCancellationToken);
                     if (!buildSucceeded)
                     {
                         continue;
@@ -189,7 +188,7 @@ namespace Microsoft.DotNet.Watch
 
                     fileChangedCallback = FileChangedCallback;
                     fileWatcher.OnFileChange += fileChangedCallback;
-                    ReportWatchingForChanges();
+                    _context.Logger.Log(MessageDescriptor.WaitingForChanges);
 
                     // Hot Reload loop - exits when the root process needs to be restarted.
                     bool extendTimeout = false;
@@ -328,15 +327,19 @@ namespace Microsoft.DotNet.Watch
                                 fileWatcher.SuppressEvents = true;
                                 try
                                 {
-                                    var buildResults = await Task.WhenAll(
-                                        projectsToRebuild.Select(projectPath => BuildProjectAsync(projectPath, rootProjectOptions.BuildArguments, iterationCancellationToken)));
-
-                                    foreach (var (success, output, projectPath) in buildResults)
+                                    // Build projects sequentially to avoid failed attempts to overwrite dependent project outputs.
+                                    // TODO: Ideally, dotnet build would be able to build multiple projects.
+                                    var success = true;
+                                    foreach (var projectPath in projectsToRebuild)
                                     {
-                                        BuildOutput.ReportBuildOutput(_context.BuildLogger, output, success, projectPath);
+                                        success = await BuildProjectAsync(projectPath, rootProjectOptions.BuildArguments, iterationCancellationToken);
+                                        if (!success)
+                                        {
+                                            break;
+                                        }
                                     }
 
-                                    if (buildResults.All(result => result.success))
+                                    if (success)
                                     {
                                         break;
                                     }
@@ -772,12 +775,6 @@ namespace Microsoft.DotNet.Watch
                 .Where(item => item != null)
                 .Select(item => item!.Value);
 
-        private void ReportWatchingForChanges()
-        {
-            _context.Logger.Log(MessageDescriptor.WaitingForChanges
-                .WithSeverityWhen(MessageSeverity.Output, _context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.ElevateWaitingForChangesMessageSeverity)));
-        }
-
         private void ReportFileChanges(IReadOnlyList<ChangedFile> changedFiles)
         {
             Report(kind: ChangeKind.Add);
@@ -823,6 +820,9 @@ namespace Microsoft.DotNet.Watch
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
+                _context.Logger.LogInformation("Evaluating projects ...");
+                var stopwatch = Stopwatch.StartNew();
+
                 var result = EvaluationResult.TryCreate(
                     _context.RootProjectOptions.ProjectPath,
                     _context.RootProjectOptions.BuildArguments,
@@ -831,6 +831,8 @@ namespace Microsoft.DotNet.Watch
                     _context.EnvironmentOptions,
                     restore,
                     cancellationToken);
+
+                _context.Logger.LogInformation("Evaluation completed in {Time}s.", stopwatch.Elapsed.TotalSeconds.ToString("0.0"));
 
                 if (result != null)
                 {
@@ -846,31 +848,43 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        private async Task<(bool success, ImmutableArray<OutputLine> output, string projectPath)> BuildProjectAsync(
-            string projectPath, IReadOnlyList<string> buildArguments, CancellationToken cancellationToken)
+        private async Task<bool> BuildProjectAsync(string projectPath, IReadOnlyList<string> buildArguments, CancellationToken cancellationToken)
         {
-            var buildOutput = new List<OutputLine>();
+            List<OutputLine>? capturedOutput = _context.EnvironmentOptions.TestFlags != TestFlags.None ? [] : null;
 
             var processSpec = new ProcessSpec
             {
                 Executable = _context.EnvironmentOptions.MuxerPath,
                 WorkingDirectory = Path.GetDirectoryName(projectPath)!,
                 IsUserApplication = false,
-                OnOutput = line =>
-                {
-                    lock (buildOutput)
+
+                // Capture output if running in a test environment.
+                // If the output is not captured dotnet build will show live build progress.
+                OnOutput = capturedOutput != null
+                    ? line =>
                     {
-                        buildOutput.Add(line);
+                        lock (capturedOutput)
+                        {
+                            capturedOutput.Add(line);
+                        }
                     }
-                },
+                    : null,
+
                 // pass user-specified build arguments last to override defaults:
                 Arguments = ["build", projectPath, "-consoleLoggerParameters:NoSummary;Verbosity=minimal", .. buildArguments]
             };
 
             _context.BuildLogger.Log(MessageDescriptor.Building, projectPath);
 
-            var exitCode = await _context.ProcessRunner.RunAsync(processSpec, _context.Logger, launchResult: null, cancellationToken);
-            return (exitCode == 0, buildOutput.ToImmutableArray(), projectPath);
+            var success = await _context.ProcessRunner.RunAsync(processSpec, _context.Logger, launchResult: null, cancellationToken) == 0;
+
+            if (capturedOutput != null)
+            {
+                _context.BuildLogger.Log(success ? MessageDescriptor.BuildSucceeded : MessageDescriptor.BuildFailed, projectPath);
+                BuildOutput.ReportBuildOutput(_context.BuildLogger, capturedOutput, success);
+            }
+
+            return success;
         }
 
         private string GetRelativeFilePath(string path)
