@@ -27,7 +27,7 @@ public class DockerRegistryManager
     private static string RegistryImageToUse => SDK_AzureContainerRegistryImage;
 
 
-    public static async Task StartAndPopulateDockerRegistry(ITestOutputHelper testOutput)
+    public static void StartAndPopulateDockerRegistry(ITestOutputHelper testOutput)
     {
         using TestLoggerFactory loggerFactory = new(testOutput);
 
