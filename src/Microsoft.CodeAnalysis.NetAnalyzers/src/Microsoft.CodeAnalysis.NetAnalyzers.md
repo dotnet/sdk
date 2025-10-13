@@ -2168,7 +2168,7 @@ JsonDocument implements IDisposable and needs to be properly disposed. When only
 
 ## [CA2027](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2027): Avoid redundant 'Regex.IsMatch' guard before 'Regex.Match'
 
-Using 'Regex.IsMatch' as a guard before calling 'Regex.Match' with the same arguments is redundant and doubles the work. Use a pattern match on the result of 'Regex.Match' directly instead.
+Using 'Regex.IsMatch' as a guard before calling 'Regex.Match' with the same arguments is redundant and unnecessarily repeats the matching operation. Call 'Regex.Match' directly and check the 'Success' property instead.
 
 |Item|Value|
 |-|-|
