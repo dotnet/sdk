@@ -26,3 +26,8 @@ Localization:
 
 Documentation:
 - Do not manually edit files under documentation/manpages/sdk as these are generated based on documentation and should not be manually modified.
+
+External Dependencies:
+- Changes that require modifications to the dotnet/templating repository (Microsoft.TemplateEngine packages) should be made directly in that repository, not worked around in this repo.
+- The dotnet/templating repository owns the TemplateEngine.Edge, TemplateEngine.Abstractions, and related packages.
+- If a change requires updates to template engine behavior or formatting (e.g., DisplayName properties), file an issue in dotnet/templating and make the changes there rather than adding workarounds in this SDK repository.
