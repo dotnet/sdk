@@ -41,6 +41,9 @@ namespace Microsoft.NET.Build.Tasks
                                       RuntimeIdentifier.EndsWith("-x86") || RuntimeIdentifier.Contains("-x86-") ? Architecture.X86 :
                                       RuntimeIdentifier.EndsWith("-arm64") || RuntimeIdentifier.Contains("-arm64-") ? Architecture.Arm64 :
                                       RuntimeIdentifier.EndsWith("-arm") || RuntimeIdentifier.Contains("-arm-") ? Architecture.Arm :
+#if !NETFRAMEWORK
+                                      RuntimeIdentifier.EndsWith("-loongarch64") || RuntimeIdentifier.Contains("-loongarch64-") ? Architecture.LoongArch64 :
+#endif
                                       throw new ArgumentException(nameof (RuntimeIdentifier));
 
             BundleOptions options = BundleOptions.None;
