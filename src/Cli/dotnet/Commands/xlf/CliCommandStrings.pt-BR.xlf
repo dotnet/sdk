@@ -2574,7 +2574,7 @@ O padrão é publicar uma aplicação dependente de framework.</target>
       </trans-unit>
       <trans-unit id="QuoteInDirective">
         <source>Directives currently cannot contain double quotes (").</source>
-        <target state="new">Directives currently cannot contain double quotes (").</target>
+        <target state="translated">No momento, as diretivas não podem conter aspas duplas (").</target>
         <note />
       </trans-unit>
       <trans-unit id="RazorOptionDescription">

@@ -2574,7 +2574,7 @@ The default is to publish a framework-dependent application.</source>
       </trans-unit>
       <trans-unit id="QuoteInDirective">
         <source>Directives currently cannot contain double quotes (").</source>
-        <target state="new">Directives currently cannot contain double quotes (").</target>
+        <target state="translated">指令目前不能包含雙引號 (")。</target>
         <note />
       </trans-unit>
       <trans-unit id="RazorOptionDescription">
