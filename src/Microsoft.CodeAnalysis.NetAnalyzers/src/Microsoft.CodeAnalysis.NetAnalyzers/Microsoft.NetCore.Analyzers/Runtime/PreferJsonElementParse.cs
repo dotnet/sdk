@@ -75,24 +75,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     var propertyReference = (IPropertyReferenceOperation)context.Operation;
 
-                    // Check if this is accessing the RootElement property
-                    if (!SymbolEqualityComparer.Default.Equals(propertyReference.Property, rootElementProperty))
-                    {
-                        return;
-                    }
-
-                    // Check if the instance is a direct call to JsonDocument.Parse
-                    if (propertyReference.Instance is not IInvocationOperation invocation)
-                    {
-                        return;
-                    }
-
-                    if (!SymbolEqualityComparer.Default.Equals(invocation.TargetMethod.ContainingType, jsonDocumentType))
-                    {
-                        return;
-                    }
-
-                    if (invocation.TargetMethod.Name != "Parse")
+                    // Check if this is accessing the RootElement property and the instance is a direct call to JsonDocument.Parse
+                    if (!SymbolEqualityComparer.Default.Equals(propertyReference.Property, rootElementProperty) ||
+                        propertyReference.Instance is not IInvocationOperation invocation ||
+                        !SymbolEqualityComparer.Default.Equals(invocation.TargetMethod.ContainingType, jsonDocumentType) ||
+                        invocation.TargetMethod.Name != "Parse")
                     {
                         return;
                     }

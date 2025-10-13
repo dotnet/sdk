@@ -31,31 +31,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             SemanticModel model = await doc.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
             SyntaxNode root = await doc.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-            SyntaxNode node = root.FindNode(context.Span, getInnermostNodeForTie: true);
-            if (node == null)
-            {
-                return;
-            }
-
-            IOperation? operation = model.GetOperation(node, context.CancellationToken);
-            if (operation is not IPropertyReferenceOperation propertyReference)
-            {
-                return;
-            }
-
-            // Verify this is the RootElement property access
-            if (propertyReference.Property.Name != "RootElement")
-            {
-                return;
-            }
-
-            // Verify the instance is an invocation to JsonDocument.Parse
-            if (propertyReference.Instance is not IInvocationOperation invocation)
-            {
-                return;
-            }
-
-            if (invocation.TargetMethod.Name != "Parse")
+            if (root.FindNode(context.Span, getInnermostNodeForTie: true) is not SyntaxNode node ||
+                model.GetOperation(node, context.CancellationToken) is not IPropertyReferenceOperation propertyReference ||
+                propertyReference.Property.Name != "RootElement" ||
+                propertyReference.Instance is not IInvocationOperation invocation ||
+                invocation.TargetMethod.Name != "Parse")
             {
                 return;
             }
