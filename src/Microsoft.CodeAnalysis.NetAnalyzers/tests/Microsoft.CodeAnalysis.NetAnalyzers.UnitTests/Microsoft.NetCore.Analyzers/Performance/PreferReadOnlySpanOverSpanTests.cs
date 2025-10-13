@@ -304,6 +304,450 @@ class C
             await VerifyCSCodeFixAsync(source, expected);
         }
 
+        [Fact]
+        public async Task SpanParameter_PassedToWritableSpanMethod_NoDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Span<byte> data)
+    {
+        Helper(data);
+    }
+
+    private void Helper(Span<byte> data)
+    {
+        data[0] = 1;
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, source);
+        }
+
+        [Fact]
+        public async Task SpanParameter_CopiedToLocal_ProducesDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Span<byte> [|data|])
+    {
+        var copy = data;
+        Console.WriteLine(copy.Length);
+    }
+}
+";
+            string expected = @"
+using System;
+
+class C
+{
+    private void M(ReadOnlySpan<byte> data)
+    {
+        var copy = data;
+        Console.WriteLine(copy.Length);
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, expected);
+        }
+
+        [Fact]
+        public async Task SpanParameter_UsedInForEachLoop_ProducesDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Span<byte> [|data|])
+    {
+        foreach (var b in data)
+        {
+            Console.WriteLine(b);
+        }
+    }
+}
+";
+            string expected = @"
+using System;
+
+class C
+{
+    private void M(ReadOnlySpan<byte> data)
+    {
+        foreach (var b in data)
+        {
+            Console.WriteLine(b);
+        }
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, expected);
+        }
+
+        [Fact]
+        public async Task SpanParameter_PassedAsOutArgument_NoDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Span<byte> data)
+    {
+        Helper(out data);
+    }
+
+    private void Helper(out Span<byte> data)
+    {
+        data = default;
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, source);
+        }
+
+        [Fact]
+        public async Task MemoryParameter_AccessSpanProperty_ProducesDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Memory<int> [|data|])
+    {
+        var s = data.Span;
+        Console.WriteLine(s[0]);
+    }
+}
+";
+            string expected = @"
+using System;
+
+class C
+{
+    private void M(ReadOnlyMemory<int> data)
+    {
+        var s = data.Span;
+        Console.WriteLine(s[0]);
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, expected);
+        }
+
+        [Fact]
+        public async Task SpanParameter_UsedInLinqQuery_ProducesDiagnostic()
+        {
+            string source = @"
+using System;
+using System.Linq;
+
+class C
+{
+    private void M(Span<int> [|data|])
+    {
+        var sum = data.ToArray().Sum();
+    }
+}
+";
+            string expected = @"
+using System;
+using System.Linq;
+
+class C
+{
+    private void M(ReadOnlySpan<int> data)
+    {
+        var sum = data.ToArray().Sum();
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, expected);
+        }
+
+        [Fact]
+        public async Task SpanParameter_ReadThroughIndexer_ProducesDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Span<byte> [|data|])
+    {
+        var first = data[0];
+        var last = data[data.Length - 1];
+    }
+}
+";
+            string expected = @"
+using System;
+
+class C
+{
+    private void M(ReadOnlySpan<byte> data)
+    {
+        var first = data[0];
+        var last = data[data.Length - 1];
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, expected);
+        }
+
+        [Fact]
+        public async Task SpanParameter_InTernaryExpression_ProducesDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Span<byte> [|data|], bool condition)
+    {
+        var length = condition ? data.Length : 0;
+    }
+}
+";
+            string expected = @"
+using System;
+
+class C
+{
+    private void M(ReadOnlySpan<byte> data, bool condition)
+    {
+        var length = condition ? data.Length : 0;
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, expected);
+        }
+
+        [Fact]
+        public async Task SpanParameter_PassedToGenericMethod_ProducesDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Span<byte> [|data|])
+    {
+        Helper<byte>(data);
+    }
+
+    private void Helper<T>(ReadOnlySpan<T> data)
+    {
+        Console.WriteLine(data.Length);
+    }
+}
+";
+            string expected = @"
+using System;
+
+class C
+{
+    private void M(ReadOnlySpan<byte> data)
+    {
+        Helper<byte>(data);
+    }
+
+    private void Helper<T>(ReadOnlySpan<T> data)
+    {
+        Console.WriteLine(data.Length);
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, expected);
+        }
+
+        [Fact]
+        public async Task SpanParameter_UsedInReturnStatement_ProducesDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private ReadOnlySpan<byte> M(Span<byte> [|data|])
+    {
+        return data;
+    }
+}
+";
+            string expected = @"
+using System;
+
+class C
+{
+    private ReadOnlySpan<byte> M(ReadOnlySpan<byte> data)
+    {
+        return data;
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, expected);
+        }
+
+        [Fact]
+        public async Task MemoryParameter_SliceAndRead_ProducesDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Memory<int> [|data|])
+    {
+        var slice = data.Slice(1, 5);
+        Console.WriteLine(slice.Length);
+    }
+}
+";
+            string expected = @"
+using System;
+
+class C
+{
+    private void M(ReadOnlyMemory<int> data)
+    {
+        var slice = data.Slice(1, 5);
+        Console.WriteLine(slice.Length);
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, expected);
+        }
+
+        [Fact]
+        public async Task SpanParameter_ConditionalAccess_ProducesDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Span<byte> [|data|])
+    {
+        var result = data.IsEmpty ? 0 : data[0];
+    }
+}
+";
+            string expected = @"
+using System;
+
+class C
+{
+    private void M(ReadOnlySpan<byte> data)
+    {
+        var result = data.IsEmpty ? 0 : data[0];
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, expected);
+        }
+
+        [Fact]
+        public async Task SpanParameter_MultipleReferences_ProducesDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Span<byte> [|data|])
+    {
+        Console.WriteLine(data.Length);
+        Console.WriteLine(data[0]);
+        var slice = data.Slice(1);
+        Console.WriteLine(slice.Length);
+    }
+}
+";
+            string expected = @"
+using System;
+
+class C
+{
+    private void M(ReadOnlySpan<byte> data)
+    {
+        Console.WriteLine(data.Length);
+        Console.WriteLine(data[0]);
+        var slice = data.Slice(1);
+        Console.WriteLine(slice.Length);
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, expected);
+        }
+
+        [Fact]
+        public async Task SpanParameter_CopyTo_ProducesDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Span<byte> [|data|])
+    {
+        Span<byte> destination = stackalloc byte[10];
+        data.CopyTo(destination);
+    }
+}
+";
+            string expected = @"
+using System;
+
+class C
+{
+    private void M(ReadOnlySpan<byte> data)
+    {
+        Span<byte> destination = stackalloc byte[10];
+        data.CopyTo(destination);
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, expected);
+        }
+
+        [Fact]
+        public async Task SpanParameter_TryCopyTo_ProducesDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Span<byte> [|data|])
+    {
+        Span<byte> destination = stackalloc byte[10];
+        data.TryCopyTo(destination);
+    }
+}
+";
+            string expected = @"
+using System;
+
+class C
+{
+    private void M(ReadOnlySpan<byte> data)
+    {
+        Span<byte> destination = stackalloc byte[10];
+        data.TryCopyTo(destination);
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, expected);
+        }
+
         private static async Task VerifyCSCodeFixAsync(string source, string fixedSource)
         {
             var test = new VerifyCS.Test

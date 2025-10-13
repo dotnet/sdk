@@ -35,17 +35,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
             var semanticModel = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
 
             var diagnostic = context.Diagnostics[0];
-            
-            // Get the parameter symbol
-            var parameterSymbol = semanticModel.GetDeclaredSymbol(node, context.CancellationToken) as IParameterSymbol;
-            if (parameterSymbol == null)
-            {
-                return;
-            }
 
-            // Determine the target type name from the diagnostic properties or compute it
-            var targetTypeName = GetReadOnlyTypeName(parameterSymbol.Type);
-            if (targetTypeName == null)
+            if (semanticModel.GetDeclaredSymbol(node, context.CancellationToken) is not IParameterSymbol parameterSymbol ||
+                GetReadOnlyTypeName(parameterSymbol.Type) is not { } targetTypeName)
             {
                 return;
             }
@@ -62,18 +54,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         private static string? GetReadOnlyTypeName(ITypeSymbol typeSymbol)
         {
-            if (typeSymbol is not INamedTypeSymbol namedType)
-            {
-                return null;
-            }
-
-            var typeName = namedType.OriginalDefinition.Name;
-            if (typeName is "Span" or "Memory")
-            {
-                return $"ReadOnly{typeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}";
-            }
-
-            return null;
+            return typeSymbol is INamedTypeSymbol namedType && namedType.OriginalDefinition.Name is "Span" or "Memory" ?
+                $"ReadOnly{typeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}" :
+                null;
         }
 
         private static async Task<Document> ChangeParameterTypeAsync(

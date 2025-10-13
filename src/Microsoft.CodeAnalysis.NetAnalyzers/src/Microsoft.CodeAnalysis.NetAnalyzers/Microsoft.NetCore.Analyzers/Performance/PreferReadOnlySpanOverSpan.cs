@@ -151,6 +151,31 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     }
                 }, OperationKind.Argument);
 
+                // Check for invocations where the parameter is used as an extension method receiver
+                // and the method doesn't exist on the readonly version
+                blockStartContext.RegisterOperationAction(operationContext =>
+                {
+                    var invocation = (IInvocationOperation)operationContext.Operation;
+                    if (invocation.TargetMethod.IsExtensionMethod &&
+                        invocation.Arguments.Length > 0 &&
+                        invocation.Arguments[0].Value is IParameterReferenceOperation paramRef &&
+                        candidateParameters.ContainsKey(paramRef.Parameter))
+                    {
+                        // Check if this extension method's first parameter (the 'this' parameter) is a Span/Memory
+                        var firstParamType = invocation.TargetMethod.Parameters[0].Type;
+                        if (firstParamType is INamedTypeSymbol firstParamNamedType)
+                        {
+                            // If the extension method takes Span<T> or Memory<T> (not readonly versions),
+                            // then the parameter must remain writable
+                            if (SymbolEqualityComparer.Default.Equals(firstParamNamedType.OriginalDefinition, span) ||
+                                SymbolEqualityComparer.Default.Equals(firstParamNamedType.OriginalDefinition, memory))
+                            {
+                                candidateParameters.TryRemove(paramRef.Parameter, out _);
+                            }
+                        }
+                    }
+                }, OperationKind.Invocation);
+
                 blockStartContext.RegisterOperationBlockEndAction(blockEndContext =>
                 {
                     // Report diagnostics for parameters that were never written to
