@@ -2574,7 +2574,7 @@ Varsayılan durum, çerçeveye bağımlı bir uygulama yayımlamaktır.</target>
       </trans-unit>
       <trans-unit id="QuoteInDirective">
         <source>Directives currently cannot contain double quotes (").</source>
-        <target state="new">Directives currently cannot contain double quotes (").</target>
+        <target state="translated">Yönergeler şu anda çift tırnak (") içeremez.</target>
         <note />
       </trans-unit>
       <trans-unit id="RazorOptionDescription">
