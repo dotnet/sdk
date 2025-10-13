@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
@@ -55,42 +56,29 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
             context.RegisterOperationBlockStartAction(blockStartContext =>
             {
-                if (blockStartContext.OwningSymbol is not IMethodSymbol methodSymbol)
-                {
-                    return;
-                }
-
-                // Skip if method is override (don't analyze overridden members)
-                if (methodSymbol.IsOverride)
-                {
-                    return;
-                }
-
-                // Skip if method is interface implementation (both explicit and implicit)
-                if (methodSymbol.IsImplementationOfAnyInterfaceMember())
-                {
-                    return;
-                }
-
-                // Check visibility
-                if (!blockStartContext.Options.MatchesConfiguredVisibility(Rule, methodSymbol, compilation,
-                    defaultRequiredVisibility: SymbolVisibilityGroup.Internal | SymbolVisibilityGroup.Private))
+                // Skip if not a method, is override, is interface implementation, or doesn't match visibility
+                if (blockStartContext.OwningSymbol is not IMethodSymbol methodSymbol ||
+                    methodSymbol.IsOverride ||
+                    methodSymbol.IsImplementationOfAnyInterfaceMember() ||
+                    !blockStartContext.Options.MatchesConfiguredVisibility(Rule, methodSymbol, compilation,
+                        defaultRequiredVisibility: SymbolVisibilityGroup.Internal | SymbolVisibilityGroup.Private))
                 {
                     return;
                 }
 
                 // Track which parameters are writable Span/Memory types and whether they're written to
-                var candidateParameters = ImmutableDictionary.CreateBuilder<IParameterSymbol, INamedTypeSymbol>();
+                ConcurrentDictionary<IParameterSymbol, INamedTypeSymbol>? candidateParameters = null;
                 
                 foreach (var parameter in methodSymbol.Parameters)
                 {
-                    if (IsConvertibleSpanOrMemoryParameter(parameter, span, memory, out var readOnlyType) && readOnlyType != null)
+                    if (IsConvertibleSpanOrMemoryParameter(parameter, span, memory, readOnlySpan, readOnlyMemory, out var readOnlyType) && readOnlyType != null)
                     {
-                        candidateParameters.Add(parameter, readOnlyType);
+                        candidateParameters ??= new ConcurrentDictionary<IParameterSymbol, INamedTypeSymbol>(SymbolEqualityComparer.Default);
+                        candidateParameters.TryAdd(parameter, readOnlyType);
                     }
                 }
 
-                if (candidateParameters.Count == 0)
+                if (candidateParameters == null)
                 {
                     return;
                 }
@@ -106,7 +94,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         // If the parameter is written to or has a writable reference, remove it from candidates
                         if ((valueUsage & (ValueUsageInfo.Write | ValueUsageInfo.WritableReference)) != 0)
                         {
-                            candidateParameters.Remove(parameterReference.Parameter);
+                            candidateParameters.TryRemove(parameterReference.Parameter, out _);
                         }
                     }
                 }, OperationKind.ParameterReference);
@@ -121,7 +109,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         // Check if this property reference is on the left side of an assignment
                         if (propertyRef.Parent is IAssignmentOperation assignment && assignment.Target == propertyRef)
                         {
-                            candidateParameters.Remove(paramRef.Parameter);
+                            candidateParameters.TryRemove(paramRef.Parameter, out _);
                         }
                     }
                 }, OperationKind.PropertyReference);
@@ -136,10 +124,32 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         // Check if this element reference is on the left side of an assignment
                         if (arrayElementRef.Parent is IAssignmentOperation assignment && assignment.Target == arrayElementRef)
                         {
-                            candidateParameters.Remove(paramRef.Parameter);
+                            candidateParameters.TryRemove(paramRef.Parameter, out _);
                         }
                     }
                 }, OperationKind.ArrayElementReference);
+
+                // Check for parameters passed to methods that might write to them
+                blockStartContext.RegisterOperationAction(operationContext =>
+                {
+                    var argument = (IArgumentOperation)operationContext.Operation;
+                    if (argument.Value is IParameterReferenceOperation paramRef &&
+                        candidateParameters.ContainsKey(paramRef.Parameter))
+                    {
+                        // If parameter is passed to a method that expects a non-readonly type, remove it
+                        if (argument.Parameter?.Type is INamedTypeSymbol argType)
+                        {
+                            var paramType = paramRef.Parameter.Type as INamedTypeSymbol;
+                            if (paramType != null && 
+                                !SymbolEqualityComparer.Default.Equals(argType.OriginalDefinition, readOnlySpan) &&
+                                !SymbolEqualityComparer.Default.Equals(argType.OriginalDefinition, readOnlyMemory))
+                            {
+                                // Target expects writable Span/Memory, so this parameter must remain writable
+                                candidateParameters.TryRemove(paramRef.Parameter, out _);
+                            }
+                        }
+                    }
+                }, OperationKind.Argument);
 
                 blockStartContext.RegisterOperationBlockEndAction(blockEndContext =>
                 {
@@ -164,6 +174,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
             IParameterSymbol parameter,
             INamedTypeSymbol span,
             INamedTypeSymbol memory,
+            INamedTypeSymbol readOnlySpan,
+            INamedTypeSymbol readOnlyMemory,
             out INamedTypeSymbol? readOnlyType)
         {
             readOnlyType = null;
@@ -178,8 +190,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             if (SymbolEqualityComparer.Default.Equals(originalDefinition, span))
             {
                 // Span<T> -> ReadOnlySpan<T>
-                var readOnlySpan = span.ContainingNamespace.GetTypeMembers("ReadOnlySpan").FirstOrDefault();
-                if (readOnlySpan != null && namedType.TypeArguments.Length == 1)
+                if (namedType.TypeArguments.Length == 1)
                 {
                     readOnlyType = readOnlySpan.Construct(namedType.TypeArguments[0]);
                     return true;
@@ -188,8 +199,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             else if (SymbolEqualityComparer.Default.Equals(originalDefinition, memory))
             {
                 // Memory<T> -> ReadOnlyMemory<T>
-                var readOnlyMemory = memory.ContainingNamespace.GetTypeMembers("ReadOnlyMemory").FirstOrDefault();
-                if (readOnlyMemory != null && namedType.TypeArguments.Length == 1)
+                if (namedType.TypeArguments.Length == 1)
                 {
                     readOnlyType = readOnlyMemory.Construct(namedType.TypeArguments[0]);
                     return true;

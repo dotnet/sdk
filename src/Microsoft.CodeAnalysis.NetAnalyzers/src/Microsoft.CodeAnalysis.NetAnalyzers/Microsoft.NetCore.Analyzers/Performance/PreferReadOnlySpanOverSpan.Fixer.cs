@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
     /// <summary>
     /// CA1876: Use ReadOnlySpan&lt;T&gt; or ReadOnlyMemory&lt;T&gt; instead of Span&lt;T&gt; or Memory&lt;T&gt;
     /// </summary>
-    [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic, Name = nameof(PreferReadOnlySpanOverSpanFixer))]
+    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(PreferReadOnlySpanOverSpanFixer))]
     [Shared]
     public sealed class PreferReadOnlySpanOverSpanFixer : CodeFixProvider
     {
@@ -55,7 +55,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             context.RegisterCodeFix(
                 CodeAction.Create(
                     title: title,
-                    createChangedDocument: c => ChangeParameterTypeAsync(context.Document, node, targetTypeName, c),
+                    createChangedDocument: c => ChangeParameterTypeAsync(context.Document, node, c),
                     equivalenceKey: title),
                 diagnostic);
         }
@@ -68,13 +68,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
 
             var typeName = namedType.OriginalDefinition.Name;
-            if (typeName == "Span" && namedType.TypeArguments.Length == 1)
+            if (typeName is "Span" or "Memory")
             {
-                return $"ReadOnlySpan<{namedType.TypeArguments[0].ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}>";
-            }
-            else if (typeName == "Memory" && namedType.TypeArguments.Length == 1)
-            {
-                return $"ReadOnlyMemory<{namedType.TypeArguments[0].ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}>";
+                return $"ReadOnly{typeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}";
             }
 
             return null;
@@ -83,7 +79,6 @@ namespace Microsoft.NetCore.Analyzers.Performance
         private static async Task<Document> ChangeParameterTypeAsync(
             Document document,
             SyntaxNode node,
-            string newTypeName,
             CancellationToken cancellationToken)
         {
             var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
