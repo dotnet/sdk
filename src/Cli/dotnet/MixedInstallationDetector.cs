@@ -83,6 +83,46 @@ internal static class MixedInstallationDetector
     }
 
     /// <summary>
+    /// Resolves a path to its full path and follows symlinks to the target.
+    /// </summary>
+    private static string ResolvePathAndLinks(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return path;
+        }
+
+        // First expand to full path
+        string fullPath = Path.GetFullPath(path);
+
+        try
+        {
+            // Try to resolve symlinks
+            var fileInfo = new FileInfo(fullPath);
+            if (fileInfo.Exists && fileInfo.LinkTarget != null)
+            {
+                // Follow the symlink
+                fullPath = Path.GetFullPath(fileInfo.LinkTarget, Path.GetDirectoryName(fullPath) ?? string.Empty);
+            }
+            else
+            {
+                var dirInfo = new DirectoryInfo(fullPath);
+                if (dirInfo.Exists && dirInfo.LinkTarget != null)
+                {
+                    // Follow the symlink
+                    fullPath = Path.GetFullPath(dirInfo.LinkTarget, Path.GetDirectoryName(fullPath) ?? string.Empty);
+                }
+            }
+        }
+        catch
+        {
+            // If we can't resolve links, just use the full path
+        }
+
+        return fullPath;
+    }
+
+    /// <summary>
     /// Detects if the current installation is a mixed installation scenario.
     /// </summary>
     /// <param name="muxerPath">The path to the current dotnet muxer executable</param>
@@ -103,10 +143,10 @@ internal static class MixedInstallationDetector
             return false;
         }
 
-        // Normalize paths for comparison
-        string normalizedMuxerPath = Path.GetFullPath(muxerPath);
-        string normalizedDotnetRoot = Path.GetFullPath(dotnetRoot);
-        string normalizedGlobalRoot = Path.GetFullPath(globalInstallRoot);
+        // Normalize paths and resolve symlinks for comparison
+        string normalizedMuxerPath = ResolvePathAndLinks(muxerPath);
+        string normalizedDotnetRoot = ResolvePathAndLinks(dotnetRoot);
+        string normalizedGlobalRoot = ResolvePathAndLinks(globalInstallRoot);
 
         // Check if the muxer is in the global install root
         if (!normalizedMuxerPath.StartsWith(normalizedGlobalRoot, GetStringComparison()))
@@ -139,7 +179,7 @@ internal static class MixedInstallationDetector
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
-            return "https://learn.microsoft.com/en-us/dotnet/core/install/linux-package-mixup";
+            return "https://learn.microsoft.com/dotnet/core/install/linux-package-mixup";
         }
 
         return null;
