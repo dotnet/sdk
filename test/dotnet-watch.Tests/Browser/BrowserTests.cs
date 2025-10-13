@@ -65,7 +65,7 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         await App.WaitForOutputLineContaining("Do you want to restart your app?");
 
         await App.WaitUntilOutputContains($$"""
-            🧪 Received: {"type":"HotReloadDiagnosticsv1","diagnostics":[{{jsonErrorMessage}}]}
+            🧪 Received: {"type":"ReportDiagnostics","diagnostics":[{{jsonErrorMessage}}]}
             """);
 
         // auto restart next time:
@@ -93,7 +93,7 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         await App.WaitForOutputLineContaining("[auto-restart] " + errorMessage);
 
         await App.WaitUntilOutputContains($$"""
-            🧪 Received: {"type":"HotReloadDiagnosticsv1","diagnostics":["Restarting application to apply changes ..."]}
+            🧪 Received: {"type":"ReportDiagnostics","diagnostics":["Restarting application to apply changes ..."]}
             """);
 
         await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
@@ -114,11 +114,11 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadSucceeded);
 
         await App.WaitUntilOutputContains($$"""
-            🧪 Received: {"type":"HotReloadDiagnosticsv1","diagnostics":[]}
+            🧪 Received: {"type":"ReportDiagnostics","diagnostics":[]}
             """);
 
         await App.WaitUntilOutputContains($$"""
-            🧪 Received: {"type":"AspNetCoreHotReloadApplied"}
+            🧪 Received: {"type":"RefreshBrowser"}
             """);
 
         // no other browser message sent:
