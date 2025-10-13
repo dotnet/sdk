@@ -11,8 +11,8 @@ using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis
 {
     using GlobalFlowStateDictionaryAnalysisData = DictionaryAnalysisData<AnalysisEntity, GlobalFlowStateDictionaryAnalysisValue>;
-    using GlobalFlowStateDictionaryAnalysisDomain = MapAbstractDomain<AnalysisEntity, GlobalFlowStateDictionaryAnalysisValue>;
     using GlobalFlowStateDictionaryAnalysisResult = DataFlowAnalysisResult<GlobalFlowStateDictionaryBlockAnalysisResult, GlobalFlowStateDictionaryAnalysisValue>;
+    using GlobalFlowStateDictionaryAnalysisDomain = MapAbstractDomain<AnalysisEntity, GlobalFlowStateDictionaryAnalysisValue>;
 
     /// <summary>
     /// An analysis that tracks the state of a set of <see cref="AnalysisEntity"/>. The state is shared among the block.

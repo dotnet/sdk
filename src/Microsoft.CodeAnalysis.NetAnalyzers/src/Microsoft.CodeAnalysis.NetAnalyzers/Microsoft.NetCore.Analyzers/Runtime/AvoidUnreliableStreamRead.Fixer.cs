@@ -94,9 +94,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         methodExpression,
                         isAsyncInvocation && arguments.Length == 4
                             // Stream.ReadExactlyAsync(buffer, ct)
-                            ? [arguments[0].Syntax, arguments[3].Syntax]
+                            ?[arguments[0].Syntax, arguments[3].Syntax]
                             // Stream.ReadExactly(buffer) and Stream.ReadExactlyAsync(buffer)
-                            : [arguments[0].Syntax])
+                            :[arguments[0].Syntax])
                     : generator.InvocationExpression(
                         methodExpression,
                         invocation.Arguments.Where(a => !a.IsImplicit).Select(a => a.Syntax));
