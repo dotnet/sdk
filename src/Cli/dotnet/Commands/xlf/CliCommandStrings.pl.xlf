@@ -2574,7 +2574,7 @@ Domyślnie publikowana jest aplikacja zależna od struktury.</target>
       </trans-unit>
       <trans-unit id="QuoteInDirective">
         <source>Directives currently cannot contain double quotes (").</source>
-        <target state="new">Directives currently cannot contain double quotes (").</target>
+        <target state="translated">Dyrektywy nie mogą obecnie zawierać podwójnych cudzysłowów (").</target>
         <note />
       </trans-unit>
       <trans-unit id="RazorOptionDescription">
