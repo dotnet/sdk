@@ -7,7 +7,7 @@ using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpAvoidRedundantRegexIsMatchBeforeMatchFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.AvoidRedundantRegexIsMatchBeforeMatch,
-    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicAvoidRedundantRegexIsMatchBeforeMatchFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
@@ -294,6 +294,352 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                             Match m = Regex.Match(input, Pattern);
                             // use m - but Pattern could have changed
                         }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task RedundantIsMatchGuard_ConstantPattern_CSharp_ReportsDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        if ({|CA2027:Regex.IsMatch(input, "\\d+")|})
+                        {
+                            Match m = Regex.Match(input, "\\d+");
+                            // use m
+                        }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task NoRedundantIsMatchGuard_DifferentInput_CSharp_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input1, string input2, string pattern)
+                    {
+                        if (Regex.IsMatch(input1, pattern))
+                        {
+                            Match m = Regex.Match(input2, pattern);
+                            // use m - different input
+                        }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task NoRedundantIsMatchGuard_DifferentPattern_CSharp_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, string pattern1, string pattern2)
+                    {
+                        if (Regex.IsMatch(input, pattern1))
+                        {
+                            Match m = Regex.Match(input, pattern2);
+                            // use m - different pattern
+                        }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task NoRedundantIsMatchGuard_InputReassignedInBlock_CSharp_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, string pattern)
+                    {
+                        if (Regex.IsMatch(input, pattern))
+                        {
+                            input = "changed";
+                            Match m = Regex.Match(input, pattern);
+                            // use m
+                        }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task NoRedundantIsMatchGuard_FieldInstance_CSharp_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    Regex _regex = new Regex("\\d+");
+
+                    void M(string input)
+                    {
+                        if (_regex.IsMatch(input))
+                        {
+                            Match m = _regex.Match(input);
+                            // use m - field could be reassigned
+                        }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task RedundantIsMatchGuard_ReadOnlyFieldInstance_CSharp_ReportsDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    readonly Regex _regex = new Regex("\\d+");
+
+                    void M(string input)
+                    {
+                        if ({|CA2027:_regex.IsMatch(input)|})
+                        {
+                            Match m = _regex.Match(input);
+                            // use m
+                        }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task NoRedundantIsMatchGuard_InstanceReassignedInBlock_CSharp_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(Regex regex, string input)
+                    {
+                        if (regex.IsMatch(input))
+                        {
+                            regex = new Regex("different");
+                            Match m = regex.Match(input);
+                            // use m
+                        }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task RedundantIsMatchGuard_ConditionalEarlyExit_CSharp_ReportsDiagnostic()
+        {
+            // Note: This is a conservative false positive - the Match may not always be reached
+            // but the analyzer reports it anyway to keep the logic simple
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, string pattern, bool condition)
+                    {
+                        if ({|CA2027:Regex.IsMatch(input, pattern)|})
+                        {
+                            if (condition)
+                                return;
+                            Match m = Regex.Match(input, pattern);
+                            // use m
+                        }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task RedundantIsMatchGuard_MultipleStatementsInBlock_CSharp_ReportsDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, string pattern)
+                    {
+                        if ({|CA2027:Regex.IsMatch(input, pattern)|})
+                        {
+                            System.Console.WriteLine("Found");
+                            Match m = Regex.Match(input, pattern);
+                            System.Console.WriteLine(m.Value);
+                        }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task RedundantIsMatchGuard_WithRegexOptionsVariable_CSharp_ReportsDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, string pattern, RegexOptions options)
+                    {
+                        if ({|CA2027:Regex.IsMatch(input, pattern, options)|})
+                        {
+                            Match m = Regex.Match(input, pattern, options);
+                            // use m
+                        }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task NoRedundantIsMatchGuard_DifferentRegexOptions_CSharp_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, string pattern)
+                    {
+                        if (Regex.IsMatch(input, pattern, RegexOptions.IgnoreCase))
+                        {
+                            Match m = Regex.Match(input, pattern, RegexOptions.Compiled);
+                            // use m - different options
+                        }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task RedundantIsMatchGuard_InvertedWithMultipleStatements_CSharp_ReportsDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, string pattern)
+                    {
+                        if (!{|CA2027:Regex.IsMatch(input, pattern)|})
+                        {
+                            System.Console.WriteLine("No match");
+                            return;
+                        }
+
+                        Match m = Regex.Match(input, pattern);
+                        System.Console.WriteLine(m.Value);
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task NoRedundantIsMatchGuard_InvertedWithContinue_CSharp_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string[] inputs, string pattern)
+                    {
+                        foreach (var input in inputs)
+                        {
+                            if (!Regex.IsMatch(input, pattern))
+                            {
+                                continue;
+                            }
+
+                            Match m = Regex.Match(input, pattern);
+                            System.Console.WriteLine(m.Value);
+                        }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task RedundantIsMatchGuard_LocalRegexVariable_CSharp_ReportsDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input)
+                    {
+                        Regex regex = new Regex("\\d+");
+                        if ({|CA2027:regex.IsMatch(input)|})
+                        {
+                            Match m = regex.Match(input);
+                            // use m
+                        }
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task NoRedundantIsMatchGuard_MatchInDifferentScope_CSharp_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, string pattern)
+                    {
+                        if (Regex.IsMatch(input, pattern))
+                        {
+                            System.Console.WriteLine("Match found");
+                        }
+
+                        // Match call outside the if block
+                        Match m = Regex.Match(input, pattern);
+                        System.Console.WriteLine(m.Value);
+                    }
+                }
+                """);
+        }
+
+        [Fact]
+        public async Task RedundantIsMatchGuard_WithThrow_CSharp_ReportsDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Text.RegularExpressions;
+
+                class C
+                {
+                    void M(string input, string pattern)
+                    {
+                        if (!{|CA2027:Regex.IsMatch(input, pattern)|})
+                        {
+                            throw new ArgumentException("No match");
+                        }
+
+                        Match m = Regex.Match(input, pattern);
+                        System.Console.WriteLine(m.Value);
                     }
                 }
                 """);

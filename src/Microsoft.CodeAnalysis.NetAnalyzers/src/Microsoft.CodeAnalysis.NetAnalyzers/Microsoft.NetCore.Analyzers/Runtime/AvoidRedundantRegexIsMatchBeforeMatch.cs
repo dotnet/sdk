@@ -61,34 +61,23 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return;
                     }
 
-                    // Look for Regex.Match calls in the appropriate branch
-                    // For normal IsMatch, look in when-true; for negated (!IsMatch), look after the conditional
-                    IOperation branchToSearch = isNegated ? conditional.WhenTrue : conditional.WhenTrue;
-                    var matchCalls = GetRegexMatchCalls(branchToSearch, regexMatchSymbols);
-
-                    // Check if any Match call has the same arguments as the IsMatch call
-                    foreach (var matchCall in matchCalls)
+                    // For normal IsMatch, look in when-true branch for corresponding Match call
+                    if (!isNegated)
                     {
-                        if (AreInvocationArgumentsEqual(isMatchCall, matchCall, context.Operation) &&
-                            AreInvocationsOnSameInstance(isMatchCall, matchCall))
+                        if (FindMatchCallInBranch(conditional.WhenTrue, regexMatchSymbols, isMatchCall, context.Operation, out var matchCall))
                         {
                             context.ReportDiagnostic(isMatchCall.CreateDiagnostic(Rule));
                             return;
                         }
                     }
-
                     // For negated IsMatch with early return pattern, check subsequent operations
-                    if (isNegated && IsEarlyReturnPattern(conditional))
+                    else if (IsEarlyReturnPattern(conditional))
                     {
                         // Look for Match calls after the conditional in the parent block
-                        if (FindMatchCallAfterConditional(conditional, regexMatchSymbols, out var subsequentMatchCall))
+                        if (FindMatchCallAfterConditional(conditional, regexMatchSymbols, isMatchCall, context.Operation, out var subsequentMatchCall))
                         {
-                            if (AreInvocationArgumentsEqual(isMatchCall, subsequentMatchCall, context.Operation) &&
-                                AreInvocationsOnSameInstance(isMatchCall, subsequentMatchCall))
-                            {
-                                context.ReportDiagnostic(isMatchCall.CreateDiagnostic(Rule));
-                                return;
-                            }
+                            context.ReportDiagnostic(isMatchCall.CreateDiagnostic(Rule));
+                            return;
                         }
                     }
                 }, OperationKind.Conditional);
@@ -119,20 +108,51 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return false;
         }
 
+        private static bool FindMatchCallInBranch(IOperation branch, ImmutableArray<IMethodSymbol> regexMatchSymbols, IInvocationOperation isMatchCall, IOperation conditionalOperation, out IInvocationOperation matchCall)
+        {
+            // Search for the first Match call that matches criteria
+            return FindMatchCallRecursive(branch, regexMatchSymbols, isMatchCall, conditionalOperation, out matchCall);
+        }
+
+        private static bool FindMatchCallRecursive(IOperation operation, ImmutableArray<IMethodSymbol> regexMatchSymbols, IInvocationOperation isMatchCall, IOperation conditionalOperation, out IInvocationOperation matchCall)
+        {
+            if (operation is IInvocationOperation invocation &&
+                regexMatchSymbols.Contains(invocation.TargetMethod, SymbolEqualityComparer.Default))
+            {
+                if (AreInvocationArgumentsEqual(isMatchCall, invocation, conditionalOperation) &&
+                    AreInvocationsOnSameInstance(isMatchCall, invocation, conditionalOperation))
+                {
+                    matchCall = invocation;
+                    return true;
+                }
+            }
+
+            foreach (var child in operation.Children)
+            {
+                if (FindMatchCallRecursive(child, regexMatchSymbols, isMatchCall, conditionalOperation, out matchCall))
+                {
+                    return true;
+                }
+            }
+
+            matchCall = null!;
+            return false;
+        }
+
         private static bool IsEarlyReturnPattern(IConditionalOperation conditional)
         {
-            // Check if the when-true branch is an early return/throw/continue/break
+            // Check if the when-true branch is an early return or throw (not break/continue/goto)
             if (conditional.WhenTrue is IBlockOperation block)
             {
                 foreach (var statement in block.Operations)
                 {
-                    if (statement is IReturnOperation or IThrowOperation or IBranchOperation)
+                    if (statement is IReturnOperation or IThrowOperation)
                     {
                         return true;
                     }
                 }
             }
-            else if (conditional.WhenTrue is IReturnOperation or IThrowOperation or IBranchOperation)
+            else if (conditional.WhenTrue is IReturnOperation or IThrowOperation)
             {
                 return true;
             }
@@ -140,7 +160,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return false;
         }
 
-        private static bool FindMatchCallAfterConditional(IConditionalOperation conditional, ImmutableArray<IMethodSymbol> regexMatchSymbols, out IInvocationOperation matchCall)
+        private static bool FindMatchCallAfterConditional(IConditionalOperation conditional, ImmutableArray<IMethodSymbol> regexMatchSymbols, IInvocationOperation isMatchCall, IOperation conditionalOperation, out IInvocationOperation matchCall)
         {
             // Navigate to the parent block to find subsequent operations
             var parent = conditional.Parent;
@@ -162,11 +182,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     if (foundConditional)
                     {
-                        // Look for Match calls in subsequent operations
-                        var matchCalls = GetRegexMatchCalls(operation, regexMatchSymbols);
-                        if (matchCalls.Length > 0)
+                        // Look for the first Match call that matches criteria
+                        if (FindMatchCallRecursive(operation, regexMatchSymbols, isMatchCall, conditionalOperation, out matchCall))
                         {
-                            matchCall = matchCalls[0];
                             return true;
                         }
                     }
@@ -177,28 +195,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return false;
         }
 
-        private static ImmutableArray<IInvocationOperation> GetRegexMatchCalls(IOperation operation, ImmutableArray<IMethodSymbol> regexMatchSymbols)
-        {
-            var builder = ImmutableArray.CreateBuilder<IInvocationOperation>();
-            GetRegexMatchCallsRecursive(operation, regexMatchSymbols, builder);
-            return builder.ToImmutable();
-        }
-
-        private static void GetRegexMatchCallsRecursive(IOperation operation, ImmutableArray<IMethodSymbol> regexMatchSymbols, ImmutableArray<IInvocationOperation>.Builder builder)
-        {
-            if (operation is IInvocationOperation invocation &&
-                regexMatchSymbols.Contains(invocation.TargetMethod, SymbolEqualityComparer.Default))
-            {
-                builder.Add(invocation);
-            }
-
-            foreach (var child in operation.Children)
-            {
-                GetRegexMatchCallsRecursive(child, regexMatchSymbols, builder);
-            }
-        }
-
-        private static bool AreInvocationsOnSameInstance(IInvocationOperation invocation1, IInvocationOperation invocation2)
+        private static bool AreInvocationsOnSameInstance(IInvocationOperation invocation1, IInvocationOperation invocation2, IOperation conditionalOperation)
         {
             var instance1 = invocation1.Instance?.WalkDownConversion();
             var instance2 = invocation2.Instance?.WalkDownConversion();
@@ -215,14 +212,39 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return false;
             }
 
-            return (instance1, instance2) switch
+            // Check if instances are the same
+            bool sameInstance = (instance1, instance2) switch
             {
-                (IFieldReferenceOperation fieldRef1, IFieldReferenceOperation fieldRef2) => SymbolEqualityComparer.Default.Equals(fieldRef1.Member, fieldRef2.Member),
-                (IPropertyReferenceOperation propRef1, IPropertyReferenceOperation propRef2) => SymbolEqualityComparer.Default.Equals(propRef1.Member, propRef2.Member),
-                (IParameterReferenceOperation paramRef1, IParameterReferenceOperation paramRef2) => SymbolEqualityComparer.Default.Equals(paramRef1.Parameter, paramRef2.Parameter),
                 (ILocalReferenceOperation localRef1, ILocalReferenceOperation localRef2) => SymbolEqualityComparer.Default.Equals(localRef1.Local, localRef2.Local),
+                (IParameterReferenceOperation paramRef1, IParameterReferenceOperation paramRef2) => SymbolEqualityComparer.Default.Equals(paramRef1.Parameter, paramRef2.Parameter),
+                (IFieldReferenceOperation fieldRef1, IFieldReferenceOperation fieldRef2) when 
+                    fieldRef1.Member is IFieldSymbol field1 && fieldRef2.Member is IFieldSymbol field2 && field1.IsReadOnly && field2.IsReadOnly => 
+                    SymbolEqualityComparer.Default.Equals(fieldRef1.Member, fieldRef2.Member),
                 _ => false,
             };
+
+            if (!sameInstance)
+            {
+                return false;
+            }
+
+            // For locals and parameters, check if they're modified between calls
+            if (instance1 is ILocalReferenceOperation localRef)
+            {
+                if (conditionalOperation is IConditionalOperation conditional)
+                {
+                    return !HasAssignmentToSymbol(localRef.Local, conditional.WhenTrue);
+                }
+            }
+            else if (instance1 is IParameterReferenceOperation paramRef)
+            {
+                if (conditionalOperation is IConditionalOperation conditional)
+                {
+                    return !HasAssignmentToSymbol(paramRef.Parameter, conditional.WhenTrue);
+                }
+            }
+
+            return true;
         }
 
         private static bool AreInvocationArgumentsEqual(IInvocationOperation invocation1, IInvocationOperation invocation2, IOperation conditionalOperation)
