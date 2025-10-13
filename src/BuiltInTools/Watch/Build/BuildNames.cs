@@ -7,6 +7,7 @@ internal static class PropertyNames
 {
     public const string TargetFramework = nameof(TargetFramework);
     public const string TargetFrameworkIdentifier = nameof(TargetFrameworkIdentifier);
+    public const string TargetFrameworkMoniker = nameof(TargetFrameworkMoniker);
     public const string TargetPath = nameof(TargetPath);
     public const string EnableDefaultItems = nameof(EnableDefaultItems);
     public const string TargetFrameworks = nameof(TargetFrameworks);

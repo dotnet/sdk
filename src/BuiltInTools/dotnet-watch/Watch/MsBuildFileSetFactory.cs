@@ -124,7 +124,7 @@ namespace Microsoft.DotNet.Watch
                 ProjectGraph? projectGraph = null;
                 if (requireProjectGraph != null)
                 {
-                    var globalOptions = CommandLineOptions.ParseBuildProperties(buildArguments)
+                    var globalOptions = BuildUtilities.ParseBuildProperties(buildArguments)
                         .ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value);
 
                     projectGraph = ProjectGraphUtilities.TryLoadProjectGraph(rootProjectFile, globalOptions, Logger, requireProjectGraph.Value, cancellationToken);

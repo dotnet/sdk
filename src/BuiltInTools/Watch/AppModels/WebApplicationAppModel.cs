@@ -40,7 +40,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
     protected WebAssemblyHotReloadClient CreateWebAssemblyClient(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer browserRefreshServer, ProjectGraphNode clientProject)
     {
         var capabilities = clientProject.GetWebAssemblyCapabilities().ToImmutableArray();
-        var targetFramework = clientProject.GetTargetFrameworkVersion() ?? throw new InvalidOperationException("Project doesn't define TargetFrameworkVersion");
+        var targetFramework = clientProject.GetTargetFrameworkVersion() ?? throw new InvalidOperationException($"Project doesn't define {PropertyNames.TargetFrameworkMoniker}");
 
         return new WebAssemblyHotReloadClient(clientLogger, agentLogger, browserRefreshServer, capabilities, targetFramework, context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.MockBrowser));
     }
