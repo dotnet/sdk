@@ -13,12 +13,12 @@
 
   <Target Name="GenerateRpmsInner"
           DependsOnTargets="TestFPMTool;BuildRpms"
-          Condition=" '$(IsRPMBasedDistro)' == 'True' "
+          Condition=" '$(BuildSdkRpm)' == 'True' "
           Outputs="@(GeneratedInstallers)" />
 
   <Target Name="BuildRpms"
           DependsOnTargets="GenerateSdkRpm"
-          Condition=" '$(IsRPMBasedDistro)' == 'True' and '$(FPMPresent)' == 'True' " />
+          Condition=" '$(BuildSdkRpm)' == 'True' and '$(FPMPresent)' == 'True' " />
 
   <Target Name="GenerateSdkRpm"
           DependsOnTargets="SetupRpmProps">
