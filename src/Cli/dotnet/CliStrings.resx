@@ -252,6 +252,9 @@
   <data name="SolutionAlreadyContainsProject" xml:space="preserve">
     <value>Solution {0} already contains project {1}.</value>
   </data>
+  <data name="SolutionFolderAlreadyContainsProjectWithFilename" xml:space="preserve">
+    <value>Solution folder '{0}' already contains a project with the filename '{1}'.</value>
+  </data>
   <data name="SpecifyAtLeastOneReferenceToRemove" xml:space="preserve">
     <value>You must specify at least one reference to remove.</value>
   </data>
