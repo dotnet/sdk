@@ -170,6 +170,8 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             if (request.Headers.TryGetValue("Sec-Fetch-Dest", out var values) &&
                 !StringValues.IsNullOrEmpty(values) &&
                 !string.Equals(values[0], "document", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(values[0], "frame", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(values[0], "iframe", StringComparison.OrdinalIgnoreCase) &&
                 !IsProgressivelyEnhancedNavigation(context.Request))
             {
                 // See https://github.com/dotnet/aspnetcore/issues/37326.
@@ -233,10 +235,16 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 $"This may have been caused by the response's {HeaderNames.ContentEncoding}: '{{encoding}}'. " +
                 "Consider disabling response compression.");
 
+            private static readonly Action<ILogger, int, string?, Exception?> _scriptInjectionSkipped = LoggerMessage.Define<int, string?>(
+                LogLevel.Debug,
+                new EventId(6, "ScriptInjectionSkipped"),
+                "Browser refresh script injection skipped. Status code: {StatusCode}, Content type: {ContentType}");
+
             public static void SetupResponseForBrowserRefresh(ILogger logger) => _setupResponseForBrowserRefresh(logger, null);
             public static void BrowserConfiguredForRefreshes(ILogger logger) => _browserConfiguredForRefreshes(logger, null);
             public static void FailedToConfiguredForRefreshes(ILogger logger) => _failedToConfigureForRefreshes(logger, null);
             public static void ResponseCompressionDetected(ILogger logger, StringValues encoding) => _responseCompressionDetected(logger, encoding, null);
+            public static void ScriptInjectionSkipped(ILogger logger, int statusCode, string? contentType) => _scriptInjectionSkipped(logger, statusCode, contentType, null);
         }
     }
 }

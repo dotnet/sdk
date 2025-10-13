@@ -204,8 +204,8 @@ public sealed class MSBuildLogger : INodeLogger
                 break;
             case LoggingConfigurationTelemetryEventName:
                 TrackEvent(telemetry, $"msbuild/{LoggingConfigurationTelemetryEventName}", args.Properties,
-                    toBeMeasured: ["FileLoggersCount"]
-                );
+                    toBeHashed: [],
+                    toBeMeasured: []);
                 break;
             case BuildcheckAcquisitionFailureEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildcheckAcquisitionFailureEventName}", args.Properties,

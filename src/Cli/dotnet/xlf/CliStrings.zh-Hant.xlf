@@ -100,7 +100,7 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">設定環境變數的值。
+        <target state="needs-review-translation">設定環境變數的值。
 若變數不存在，則加以建立; 若有，則予以覆寫。
 此引數可多次指定，以提供多項變數。
 
@@ -129,12 +129,12 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">設定環境變數的值。
-若變數不存在，則加以建立; 若有，則予以覆寫。
-這會強制在隔離流程中執行測試。
-此引數可多次指定，以提供多項變數。
+        <target state="new">Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
 
-範例:
+Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
 -e VARIABLE="value;seperated with;semicolons"
@@ -784,7 +784,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentDescription">
         <source>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</source>
-        <target state="translated">套件參考的格式為套件識別碼，例如 '{0}'，或是以 '@' 分隔的套件識別碼和版本，例如 '{0}@{1}'。</target>
+        <target state="new">Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">
@@ -1031,6 +1031,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
       <trans-unit id="SolutionDoesNotExist">
         <source>Specified solution file {0} does not exist, or there is no solution file in the directory.</source>
         <target state="translated">指定的方案檔 {0} 不存在，或目錄中沒有方案檔。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionFolderAlreadyContainsProjectWithFilename">
+        <source>Solution folder '{0}' already contains a project with the filename '{1}'.</source>
+        <target state="new">Solution folder '{0}' already contains a project with the filename '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentDescription">

@@ -100,15 +100,16 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">Nastavuje hodnotu proměnné prostředí. 
-Pokud proměnná neexistuje, vytvoří ji, a pokud existuje, přepíše ji. 
+        <target state="needs-review-translation">Nastaví hodnotu proměnné prostředí.
+Pokud proměnná neexistuje, vytvoří ji, a pokud existuje, přepíše ji.
+Tímto se vynutí spuštění testů v izolovaném procesu.
 Tento argument je možné zadat vícekrát a určit tak více proměnných.
 
-Examples:
--e VARIABLE=abc
--e VARIABLE="hodnota s mezerami"
--e VARIABLE="hodnota;oddělená;pomocí;středníků"
--e VAR1=abc -e VAR2=def -e VAR3=ghi
+Příklady:
+-e PROMĚNNÁ=abc
+-e PROMĚNNÁ="hodnota s mezerami"
+-e PROMĚNNÁ="hodnota;oddělená;pomocí;středníků"
+-e PROM1=abc -e PROM2=def -e PROM3=ghi
 </target>
         <note />
       </trans-unit>
@@ -129,16 +130,16 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">Nastaví hodnotu proměnné prostředí.
-Pokud proměnná neexistuje, vytvoří ji, a pokud existuje, přepíše ji.
-Tímto se vynutí spuštění testů v izolovaném procesu.
-Tento argument je možné zadat vícekrát a určit tak více proměnných.
+        <target state="new">Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
 
-Příklady:
--e PROMĚNNÁ=abc
--e PROMĚNNÁ="hodnota s mezerami"
--e PROMĚNNÁ="hodnota;oddělená;pomocí;středníků"
--e PROM1=abc -e PROM2=def -e PROM3=ghi
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
       </trans-unit>
@@ -784,7 +785,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentDescription">
         <source>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</source>
-        <target state="translated">Odkaz na balíček ve formě identifikátoru balíčku, jako je „{0}“, nebo identifikátor balíčku a verze oddělené znakem @, například „{0}@{1}“.</target>
+        <target state="new">Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">
@@ -1031,6 +1032,11 @@ Výchozí hodnota je false. Pokud však cílíte na .NET 7 nebo nižší a je za
       <trans-unit id="SolutionDoesNotExist">
         <source>Specified solution file {0} does not exist, or there is no solution file in the directory.</source>
         <target state="translated">Zadaný soubor řešení {0} neexistuje nebo v adresáři není soubor řešení.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionFolderAlreadyContainsProjectWithFilename">
+        <source>Solution folder '{0}' already contains a project with the filename '{1}'.</source>
+        <target state="new">Solution folder '{0}' already contains a project with the filename '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentDescription">

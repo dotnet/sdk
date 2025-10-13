@@ -100,7 +100,7 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">Imposta il valore di una variabile di ambiente. 
+        <target state="needs-review-translation">Imposta il valore di una variabile di ambiente. 
 Crea la variabile se non esiste e la sostituisce se esiste. 
 È possibile specificare più volte l'argomento per fornire più variabili.
 
@@ -129,15 +129,15 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="translated">Imposta il valore di una variabile di ambiente. 
-Crea la variabile se non esiste e la sostituisce se esiste. 
-In questo modo forza l'esecuzione dei test in un processo isolato. 
-È possibile specificare più volte questo argomento per fornire più variabili.
+        <target state="new">Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
 
-Esempi:
+Examples:
 -e VARIABLE=abc
--e VARIABLE="valore con spazi"
--e VARIABLE="valore;delimitato da;punti e virgola"
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
@@ -784,7 +784,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentDescription">
         <source>Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</source>
-        <target state="translated">Riferimento al pacchetto sotto forma di identificatore di pacchetto, ad esempio '{0}', oppure identificatore e versione di pacchetto separati da '@', ad esempio '{0}@{1}'.</target>
+        <target state="new">Package reference in the form of a package identifier like '{0}' or package identifier and version separated by '@' like '{0}@{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">
@@ -1031,6 +1031,11 @@ Il valore predefinito è 'false'. Tuttavia, quando la destinazione è .NET 7 o u
       <trans-unit id="SolutionDoesNotExist">
         <source>Specified solution file {0} does not exist, or there is no solution file in the directory.</source>
         <target state="translated">Il file di soluzione specificato {0} non esiste oppure nella directory non è presente alcun file di soluzione.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionFolderAlreadyContainsProjectWithFilename">
+        <source>Solution folder '{0}' already contains a project with the filename '{1}'.</source>
+        <target state="new">Solution folder '{0}' already contains a project with the filename '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentDescription">
