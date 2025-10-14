@@ -630,10 +630,13 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishCommand = new PublishCommand(testAsset);
             var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true");
-            if (shouldFail) {
+            if (shouldFail)
+            {
                 result.Should().Fail()
                     .And.HaveStdOutContaining(Strings.AotUnsupportedTargetFramework);
-            } else {
+            }
+            else
+            {
                 result.Should().Pass()
                     .And.NotHaveStdOutContaining("warning");
             }
@@ -669,13 +672,16 @@ namespace Microsoft.NET.Publish.Tests
             var buildCommand = new BuildCommand(testAsset);
             var resultAssertion = buildCommand.Execute("/p:CheckEolTargetFramework=false")
                 .Should().Pass();
-            if (shouldWarn) {
+            if (shouldWarn)
+            {
                 resultAssertion
                     // Note: can't check for Strings.IsAotCompatibleUnsupported because each line of
                     // the message gets prefixed with a file path by MSBuild.
                     .And.HaveStdOutContaining($"warning NETSDK1210")
                     .And.HaveStdOutContaining($"<IsAotCompatible Condition=\"$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))\">true</IsAotCompatible>");
-            } else {
+            }
+            else
+            {
                 resultAssertion.And.NotHaveStdOutContaining($"warning");
             }
         }

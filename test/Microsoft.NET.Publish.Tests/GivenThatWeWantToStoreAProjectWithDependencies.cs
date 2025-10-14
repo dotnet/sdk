@@ -51,7 +51,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Fact(Skip="https://github.com/dotnet/sdk/issues/49900")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/49900")]
         public void compose_dependencies()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager
@@ -81,7 +81,7 @@ namespace Microsoft.NET.Publish.Tests
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
 
-        [Fact(Skip="https://github.com/dotnet/sdk/issues/49900")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/49900")]
         public void compose_dependencies_noopt()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager
@@ -124,7 +124,7 @@ namespace Microsoft.NET.Publish.Tests
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
 
-        [Fact(Skip="https://github.com/dotnet/sdk/issues/49900")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/49900")]
         public void compose_multifile()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager

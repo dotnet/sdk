@@ -12,8 +12,8 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.NET.Build.Tasks;
 using Newtonsoft.Json.Linq;
-using static Microsoft.NET.Publish.Tests.PublishTestUtils;
 using static Microsoft.NET.Publish.Tests.ILLinkTestUtils;
+using static Microsoft.NET.Publish.Tests.PublishTestUtils;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -182,10 +182,13 @@ namespace Microsoft.NET.Publish.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
             var publishCommand = new PublishCommand(testAsset);
             var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}");
-            if (shouldFail) {
+            if (shouldFail)
+            {
                 result.Should().Fail()
                     .And.HaveStdOutContaining($"error {Strings.PublishTrimmedRequiresVersion30}");
-            } else {
+            }
+            else
+            {
                 result.Should().Pass()
                     .And.NotHaveStdOutContaining("warning");
             }
@@ -220,13 +223,16 @@ namespace Microsoft.NET.Publish.Tests
             var buildCommand = new BuildCommand(testAsset);
             var resultAssertion = buildCommand.Execute("/p:CheckEolTargetFramework=false")
                 .Should().Pass();
-            if (shouldWarn) {
+            if (shouldWarn)
+            {
                 resultAssertion
                     // Note: can't check for Strings.IsTrimmableUnsupported because each line of
                     // the message gets prefixed with a file path by MSBuild.
                     .And.HaveStdOutContaining($"warning NETSDK1212")
                     .And.HaveStdOutContaining($"<IsTrimmable Condition=\"$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))\">true</IsTrimmable>");
-            } else {
+            }
+            else
+            {
                 resultAssertion.And.NotHaveStdOutContaining($"warning");
             }
         }
