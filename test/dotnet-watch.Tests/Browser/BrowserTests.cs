@@ -76,7 +76,7 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
 
         // browser page was reloaded after the app restarted:
         await App.WaitUntilOutputContains("""
-            🧪 Received: Reload
+            🧪 Received: {"type":"Reload"}
             """);
 
         // no other browser message sent:
@@ -100,7 +100,7 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
 
         // browser page was reloaded after the app restarted:
         await App.WaitUntilOutputContains("""
-            🧪 Received: Reload
+            🧪 Received: {"type":"Reload"}
             """);
 
         // no other browser message sent:
