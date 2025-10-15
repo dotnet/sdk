@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.MSBuild;
@@ -61,6 +62,22 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         RegistryMode sourceRegistryMode = BaseRegistry.Equals(OutputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
         Registry? sourceRegistry = IsLocalPull ? null : new Registry(BaseRegistry, logger, sourceRegistryMode);
         SourceImageReference sourceImageReference = new(sourceRegistry, BaseImageName, BaseImageTag, BaseImageDigest);
+
+        // easy debugging to see if host object is present in a .NET Task-host-using world.
+        Debugger.Launch();
+
+        if (HostObject is System.Collections.Generic.IEnumerable<ITaskItem> items)
+        {
+            Log.LogMessage(MessageImportance.Low, "HostObject is present");
+            foreach (var item in items)
+            {
+                Log.LogMessage(MessageImportance.Low, $"HostObject item: {item.ItemSpec} with metadata:");
+                foreach (string name in item.MetadataNames)
+                {
+                    Log.LogMessage(MessageImportance.Low, $"  {name} = {item.GetMetadata(name)}");
+                }
+            }
+        }
 
         DestinationImageReference destinationImageReference = DestinationImageReference.CreateFromSettings(
             Repository,
