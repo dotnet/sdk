@@ -91,6 +91,12 @@
     <UsingBlazorAOTWorkloadManifest>true</UsingBlazorAOTWorkloadManifest>
   </PropertyGroup>
 
+  <ItemGroup>
+    <KnownWebAssemblySdkPack Update="@(KnownWebAssemblySdkPack)">
+      <WebAssemblySdkPackVersion>$(_RuntimePackInWorkloadVersionCurrent)</WebAssemblySdkPackVersion>
+    </KnownWebAssemblySdkPack>
+  </ItemGroup>
+
   <!-- Support for "browser" target platform identifier -->
   <PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'browser' and $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0'))">
     <TargetPlatformSupported>true</TargetPlatformSupported>
@@ -220,7 +226,6 @@
 
   <PropertyGroup Condition="'$(TargetsCurrent)' == 'true' and '$(_MonoWorkloadTargetsMobile)' == 'true'">
     <_MonoWorkloadRuntimePackPackageVersion>$(_RuntimePackInWorkloadVersionCurrent)</_MonoWorkloadRuntimePackPackageVersion>
-    <_KnownWebAssemblySdkPackVersion>$(_RuntimePackInWorkloadVersionCurrent)</_KnownWebAssemblySdkPackVersion>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetsCurrent)' == 'true' and '$(_MonoWorkloadTargetsMobile)' == 'true'">
@@ -235,11 +240,6 @@
     <KnownFrameworkReference Update="Microsoft.NETCore.App">
       <TargetingPackVersion Condition="'%(KnownFrameworkReference.TargetFramework)' == '${NetVersion}.0'">$(_MonoWorkloadRuntimePackPackageVersion)</TargetingPackVersion>
     </KnownFrameworkReference>
-  </ItemGroup>
-  <ItemGroup>
-    <KnownWebAssemblySdkPack Update="@(KnownWebAssemblySdkPack)">
-      <WebAssemblySdkPackVersion>$(_RuntimePackInWorkloadVersionCurrent)</WebAssemblySdkPackVersion>
-    </KnownWebAssemblySdkPack>
   </ItemGroup>
 
 </Project>
