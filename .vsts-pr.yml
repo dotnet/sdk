@@ -171,7 +171,6 @@ stages:
         publishAssetsImmediately: true
         dependsOn:
           - Windows_NT
-          - Source_Build_Managed
         pool:
           name: $(DncEngInternalBuildPool)
           demands: ImageOverride -equals windows.vs2019.amd64
