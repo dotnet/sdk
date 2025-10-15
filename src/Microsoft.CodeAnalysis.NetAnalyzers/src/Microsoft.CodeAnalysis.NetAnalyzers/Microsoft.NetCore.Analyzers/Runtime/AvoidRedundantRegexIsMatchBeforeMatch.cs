@@ -55,47 +55,25 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     var conditional = (IConditionalOperation)context.Operation;
 
-                    // Check if condition is Regex.IsMatch call (direct or negated)
-                    if (!IsRegexIsMatchCall(conditional.Condition, regexIsMatchSymbols, out var isMatchCall, out bool isNegated))
+                    // Check if condition is Regex.IsMatch call (not negated)
+                    if (!IsRegexIsMatchCall(conditional.Condition, regexIsMatchSymbols, out var isMatchCall))
                     {
                         return;
                     }
 
-                    // For normal IsMatch, look in when-true branch for corresponding Match call
-                    if (!isNegated)
+                    // Look in when-true branch for corresponding Match call
+                    if (FindMatchCallInBranch(conditional.WhenTrue, regexMatchSymbols, isMatchCall, context.Operation, out var matchCall))
                     {
-                        if (FindMatchCallInBranch(conditional.WhenTrue, regexMatchSymbols, isMatchCall, context.Operation, out var matchCall))
-                        {
-                            context.ReportDiagnostic(isMatchCall.CreateDiagnostic(Rule));
-                            return;
-                        }
-                    }
-                    // For negated IsMatch with early return pattern, check subsequent operations
-                    else if (IsEarlyReturnPattern(conditional))
-                    {
-                        // Look for Match calls after the conditional in the parent block
-                        if (FindMatchCallAfterConditional(conditional, regexMatchSymbols, isMatchCall, context.Operation, out var subsequentMatchCall))
-                        {
-                            context.ReportDiagnostic(isMatchCall.CreateDiagnostic(Rule));
-                            return;
-                        }
+                        context.ReportDiagnostic(isMatchCall.CreateDiagnostic(Rule));
                     }
                 }, OperationKind.Conditional);
             });
         }
 
-        private static bool IsRegexIsMatchCall(IOperation condition, ImmutableArray<IMethodSymbol> regexIsMatchSymbols, out IInvocationOperation isMatchCall, out bool isNegated)
+        private static bool IsRegexIsMatchCall(IOperation condition, ImmutableArray<IMethodSymbol> regexIsMatchSymbols, out IInvocationOperation isMatchCall)
         {
             // Handle unwrapping of conversions and parenthesized expressions
             var unwrapped = condition.WalkDownConversion();
-
-            // Check for negation
-            isNegated = false;
-            if (unwrapped is IUnaryOperation { OperatorKind: UnaryOperatorKind.Not } unaryOp)
-            {
-                isNegated = true;
-                unwrapped = unaryOp.Operand.WalkDownConversion();
-            }
 
             if (unwrapped is IInvocationOperation invocation &&
                 regexIsMatchSymbols.Contains(invocation.TargetMethod, SymbolEqualityComparer.Default))
@@ -132,62 +110,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 if (FindMatchCallRecursive(child, regexMatchSymbols, isMatchCall, conditionalOperation, out matchCall))
                 {
                     return true;
-                }
-            }
-
-            matchCall = null!;
-            return false;
-        }
-
-        private static bool IsEarlyReturnPattern(IConditionalOperation conditional)
-        {
-            // Check if the when-true branch is an early return or throw (not break/continue/goto)
-            if (conditional.WhenTrue is IBlockOperation block)
-            {
-                foreach (var statement in block.Operations)
-                {
-                    if (statement is IReturnOperation or IThrowOperation)
-                    {
-                        return true;
-                    }
-                }
-            }
-            else if (conditional.WhenTrue is IReturnOperation or IThrowOperation)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        private static bool FindMatchCallAfterConditional(IConditionalOperation conditional, ImmutableArray<IMethodSymbol> regexMatchSymbols, IInvocationOperation isMatchCall, IOperation conditionalOperation, out IInvocationOperation matchCall)
-        {
-            // Navigate to the parent block to find subsequent operations
-            var parent = conditional.Parent;
-            while (parent is not null && parent is not IBlockOperation)
-            {
-                parent = parent.Parent;
-            }
-
-            if (parent is IBlockOperation parentBlock)
-            {
-                bool foundConditional = false;
-                foreach (var operation in parentBlock.Operations)
-                {
-                    if (operation == conditional)
-                    {
-                        foundConditional = true;
-                        continue;
-                    }
-
-                    if (foundConditional)
-                    {
-                        // Look for the first Match call that matches criteria
-                        if (FindMatchCallRecursive(operation, regexMatchSymbols, isMatchCall, conditionalOperation, out matchCall))
-                        {
-                            return true;
-                        }
-                    }
                 }
             }
 

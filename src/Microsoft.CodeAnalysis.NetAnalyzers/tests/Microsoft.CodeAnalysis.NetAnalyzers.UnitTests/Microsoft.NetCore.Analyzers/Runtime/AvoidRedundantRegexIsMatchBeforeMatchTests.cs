@@ -235,28 +235,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task RedundantIsMatchGuard_InvertedWithEarlyReturn_CSharp_ReportsDiagnostic()
-        {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System.Text.RegularExpressions;
-
-                class C
-                {
-                    void M(string input, string pattern)
-                    {
-                        if (!{|CA2027:Regex.IsMatch(input, pattern)|})
-                        {
-                            return;
-                        }
-
-                        Match m = Regex.Match(input, pattern);
-                        // use m
-                    }
-                }
-                """);
-        }
-
-        [Fact]
         public async Task NoRedundantIsMatchGuard_VariableReassigned_CSharp_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync("""
@@ -531,54 +509,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task RedundantIsMatchGuard_InvertedWithMultipleStatements_CSharp_ReportsDiagnostic()
-        {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System.Text.RegularExpressions;
-
-                class C
-                {
-                    void M(string input, string pattern)
-                    {
-                        if (!{|CA2027:Regex.IsMatch(input, pattern)|})
-                        {
-                            System.Console.WriteLine("No match");
-                            return;
-                        }
-
-                        Match m = Regex.Match(input, pattern);
-                        System.Console.WriteLine(m.Value);
-                    }
-                }
-                """);
-        }
-
-        [Fact]
-        public async Task NoRedundantIsMatchGuard_InvertedWithContinue_CSharp_NoDiagnostic()
-        {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System.Text.RegularExpressions;
-
-                class C
-                {
-                    void M(string[] inputs, string pattern)
-                    {
-                        foreach (var input in inputs)
-                        {
-                            if (!Regex.IsMatch(input, pattern))
-                            {
-                                continue;
-                            }
-
-                            Match m = Regex.Match(input, pattern);
-                            System.Console.WriteLine(m.Value);
-                        }
-                    }
-                }
-                """);
-        }
-
-        [Fact]
         public async Task RedundantIsMatchGuard_LocalRegexVariable_CSharp_ReportsDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync("""
@@ -622,27 +552,5 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 """);
         }
 
-        [Fact]
-        public async Task RedundantIsMatchGuard_WithThrow_CSharp_ReportsDiagnostic()
-        {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
-                using System.Text.RegularExpressions;
-
-                class C
-                {
-                    void M(string input, string pattern)
-                    {
-                        if (!{|CA2027:Regex.IsMatch(input, pattern)|})
-                        {
-                            throw new ArgumentException("No match");
-                        }
-
-                        Match m = Regex.Match(input, pattern);
-                        System.Console.WriteLine(m.Value);
-                    }
-                }
-                """);
-        }
     }
 }

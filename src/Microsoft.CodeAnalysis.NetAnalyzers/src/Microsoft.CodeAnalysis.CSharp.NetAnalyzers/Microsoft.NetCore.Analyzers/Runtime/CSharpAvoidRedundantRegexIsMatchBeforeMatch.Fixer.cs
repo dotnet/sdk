@@ -29,19 +29,12 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-            if (root is null)
+            if (await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false) is not { } root ||
+                await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false) is not { } semanticModel)
             {
                 return;
             }
 
-            var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-            if (semanticModel is null)
-            {
-                return;
-            }
-
-            var diagnostic = context.Diagnostics[0];
             var node = root.FindNode(context.Span, getInnermostNodeForTie: true);
 
             if (node is not InvocationExpressionSyntax isMatchInvocation)
@@ -61,7 +54,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                     NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources.AvoidRedundantRegexIsMatchBeforeMatchFix,
                     ct => RemoveRedundantIsMatchAsync(context.Document, root, ifStatement, isMatchInvocation, semanticModel, ct),
                     equivalenceKey: NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources.AvoidRedundantRegexIsMatchBeforeMatchFix),
-                diagnostic);
+                context.Diagnostics[0]);
         }
 
         private static async Task<Document> RemoveRedundantIsMatchAsync(
@@ -74,75 +67,53 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         {
             var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
 
-            // Determine if this is a negated pattern (if (!IsMatch) { return; })
-            bool isNegated = ifStatement.Condition is PrefixUnaryExpressionSyntax { RawKind: (int)SyntaxKind.LogicalNotExpression };
-
-            if (isNegated && IsEarlyReturnPattern(ifStatement))
+            // Find the Match call in the body and use it to replace the condition
+            var matchCall = FindMatchCallInBlock(ifStatement.Statement, isMatchInvocation, semanticModel);
+            
+            if (matchCall is not null)
             {
-                // For inverted early return pattern: remove the entire if statement
-                editor.RemoveNode(ifStatement);
-            }
-            else
-            {
-                // For normal pattern: transform the if statement
-                // Find the Match call in the body and use it to replace the condition
-                var matchCall = FindMatchCallInBlock(ifStatement.Statement, isMatchInvocation, semanticModel);
+                // Create the new condition: Regex.Match(...) is { Success: true } variableName
+                var matchDeclaration = matchCall.Parent?.Parent as LocalDeclarationStatementSyntax;
                 
-                if (matchCall is not null)
+                if (matchDeclaration is not null)
                 {
-                    // Create the new condition: Regex.Match(...) is { Success: true } variableName
-                    var matchDeclaration = matchCall.Parent?.Parent as LocalDeclarationStatementSyntax;
-                    
-                    if (matchDeclaration is not null)
+                    var variableDeclarator = matchDeclaration.Declaration.Variables.First();
+                    var variableName = variableDeclarator.Identifier.Text;
+
+                    // Create pattern: is { Success: true }
+                    var successPattern = SyntaxFactory.RecursivePattern()
+                        .WithPropertyPatternClause(
+                            SyntaxFactory.PropertyPatternClause(
+                                SyntaxFactory.SingletonSeparatedList<SubpatternSyntax>(
+                                    SyntaxFactory.Subpattern(
+                                        SyntaxFactory.NameColon("Success"),
+                                        SyntaxFactory.ConstantPattern(
+                                            SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression))))))
+                        .WithDesignation(SyntaxFactory.SingleVariableDesignation(SyntaxFactory.Identifier(variableName)));
+
+                    var newCondition = SyntaxFactory.IsPatternExpression(
+                        matchCall,
+                        successPattern);
+
+                    // Remove the Match declaration from the body
+                    var newBody = ifStatement.Statement;
+                    if (ifStatement.Statement is BlockSyntax block)
                     {
-                        var variableDeclarator = matchDeclaration.Declaration.Variables.First();
-                        var variableName = variableDeclarator.Identifier.Text;
-
-                        // Create pattern: is { Success: true }
-                        var successPattern = SyntaxFactory.RecursivePattern()
-                            .WithPropertyPatternClause(
-                                SyntaxFactory.PropertyPatternClause(
-                                    SyntaxFactory.SingletonSeparatedList<SubpatternSyntax>(
-                                        SyntaxFactory.Subpattern(
-                                            SyntaxFactory.NameColon("Success"),
-                                            SyntaxFactory.ConstantPattern(
-                                                SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression))))))
-                            .WithDesignation(SyntaxFactory.SingleVariableDesignation(SyntaxFactory.Identifier(variableName)));
-
-                        var newCondition = SyntaxFactory.IsPatternExpression(
-                            matchCall,
-                            successPattern);
-
-                        // Remove the Match declaration from the body
-                        var newBody = ifStatement.Statement;
-                        if (ifStatement.Statement is BlockSyntax block)
-                        {
-                            var statements = block.Statements.Where(s => s != matchDeclaration);
-                            newBody = block.WithStatements(SyntaxFactory.List(statements));
-                        }
-
-                        // Create new if statement
-                        var newIfStatement = ifStatement
-                            .WithCondition(newCondition.WithTriviaFrom(ifStatement.Condition))
-                            .WithStatement(newBody)
-                            .WithAdditionalAnnotations(Formatter.Annotation);
-
-                        editor.ReplaceNode(ifStatement, newIfStatement);
+                        var statements = block.Statements.Where(s => s != matchDeclaration);
+                        newBody = block.WithStatements(SyntaxFactory.List(statements));
                     }
+
+                    // Create new if statement
+                    var newIfStatement = ifStatement
+                        .WithCondition(newCondition.WithTriviaFrom(ifStatement.Condition))
+                        .WithStatement(newBody)
+                        .WithAdditionalAnnotations(Formatter.Annotation);
+
+                    editor.ReplaceNode(ifStatement, newIfStatement);
                 }
             }
 
             return editor.GetChangedDocument();
-        }
-
-        private static bool IsEarlyReturnPattern(IfStatementSyntax ifStatement)
-        {
-            if (ifStatement.Statement is BlockSyntax block)
-            {
-                return block.Statements.Any(s => s is ReturnStatementSyntax or ThrowStatementSyntax or BreakStatementSyntax or ContinueStatementSyntax);
-            }
-
-            return ifStatement.Statement is ReturnStatementSyntax or ThrowStatementSyntax or BreakStatementSyntax or ContinueStatementSyntax;
         }
 
         private static InvocationExpressionSyntax? FindMatchCallInBlock(StatementSyntax statement, InvocationExpressionSyntax isMatchInvocation, SemanticModel semanticModel)
