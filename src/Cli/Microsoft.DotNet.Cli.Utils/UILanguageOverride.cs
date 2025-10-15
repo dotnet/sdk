@@ -25,19 +25,22 @@ internal static class UILanguageOverride
             FlowOverrideToChildProcesses(language);
         }
 
-        if (
-            !CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("en", StringComparison.InvariantCultureIgnoreCase) &&
-#if NET
-            OperatingSystemSupportsUtf8()
-#else
-            CurrentPlatformIsWindowsAndOfficiallySupportsUTF8Encoding()
-#endif
-            )
+        if (Environment.GetEnvironmentVariable("CONSOLE_USE_DEFAULT_ENCODING") != "1")
         {
-            // Setting both encodings causes a change in the CHCP, making it so we don't need to P-Invoke ourselves.
-            Console.OutputEncoding = s_defaultMultilingualEncoding;
-            Console.InputEncoding = s_defaultMultilingualEncoding;
-            // If the InputEncoding is not set, the encoding will work in CMD but not in Powershell, as the raw CHCP page won't be changed.
+            if (
+                !CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("en", StringComparison.InvariantCultureIgnoreCase) &&
+#if NET
+                OperatingSystemSupportsUtf8()
+#else
+                CurrentPlatformIsWindowsAndOfficiallySupportsUTF8Encoding()
+#endif
+                )
+            {
+                // Setting both encodings causes a change in the CHCP, making it so we don't need to P-Invoke ourselves.
+                Console.OutputEncoding = s_defaultMultilingualEncoding;
+                Console.InputEncoding = s_defaultMultilingualEncoding;
+                // If the InputEncoding is not set, the encoding will work in CMD but not in Powershell, as the raw CHCP page won't be changed.
+            }
         }
     }
 

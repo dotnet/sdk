@@ -31,10 +31,13 @@ public class Program
     {
         using AutomaticEncodingRestorer _ = new();
 
-        // Setting output encoding is not available on those platforms
-        if (UILanguageOverride.OperatingSystemSupportsUtf8())
+        if (Environment.GetEnvironmentVariable("CONSOLE_USE_DEFAULT_ENCODING") != "1")
         {
-            Console.OutputEncoding = Encoding.UTF8;
+            // Setting output encoding is not available on those platforms
+            if (UILanguageOverride.OperatingSystemSupportsUtf8())
+            {
+                Console.OutputEncoding = Encoding.UTF8;
+            }
         }
 
         DebugHelper.HandleDebugSwitch(ref args);
