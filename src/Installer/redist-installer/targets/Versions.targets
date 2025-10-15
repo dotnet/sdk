@@ -1,0 +1,11 @@
+<Project>
+
+  <Target Name="GenerateFullNuGetVersion">
+    <PropertyGroup>
+      <FullNugetVersion>$(VersionPrefix)-$(PreReleaseVersionLabel)</FullNugetVersion>
+      <FullNugetVersion Condition="'$(PreReleaseVersionIteration)' != ''">$(FullNugetVersion).$(PreReleaseVersionIteration)</FullNugetVersion>
+      <FullNugetVersion Condition=" '$(VersionSuffixDateStamp)' != '' And '$(VersionSuffixBuildOfTheDay)' != '' ">$(FullNugetVersion).$(VersionSuffixDateStamp).$(VersionSuffixBuildOfTheDay)</FullNugetVersion>
+    </PropertyGroup>
+  </Target>
+
+</Project>
