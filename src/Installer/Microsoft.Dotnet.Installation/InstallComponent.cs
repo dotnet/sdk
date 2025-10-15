@@ -3,8 +3,10 @@
 
 namespace Microsoft.Dotnet.Installation;
 
-public enum InstallType
+public enum InstallComponent
 {
-    User,
-    Admin,
+    SDK,
+    Runtime,
+    ASPNETCore,
+    WindowsDesktop
 }

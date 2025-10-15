@@ -19,13 +19,13 @@ public class BootstrapperController : IBootstrapperController
         _environmentProvider = environmentProvider ?? new EnvironmentProvider();
     }
 
-    public DotnetInstallRoot GetConfiguredInstallType()
+    public DotnetInstallRootConfiguration? GetConfiguredInstallType()
     {
 
         string? foundDotnet = _environmentProvider.GetCommandPath("dotnet");
         if (string.IsNullOrEmpty(foundDotnet))
         {
-            return new(null, InstallType.None, DnupUtilities.GetDefaultInstallArchitecture());
+            return null;
         }
 
         string installDir = Path.GetDirectoryName(foundDotnet)!;
@@ -36,27 +36,12 @@ public class BootstrapperController : IBootstrapperController
         string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
         bool isAdminInstall = installDir.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase) ||
                               installDir.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase);
-        
-        if (isAdminInstall)
-        {
-            // Admin install: DOTNET_ROOT should not be set, or if set, should match installDir
-            if (!string.IsNullOrEmpty(dotnetRoot) && !DnupUtilities.PathsEqual(dotnetRoot, installDir) &&
-                !dotnetRoot.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase) &&
-                !dotnetRoot.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase))
-            {
-                return new(installDir, InstallType.Inconsistent, DnupUtilities.GetDefaultInstallArchitecture());
-            }
-            return new(installDir, InstallType.Admin, DnupUtilities.GetDefaultInstallArchitecture());
-        }
-        else
-        {
-            // User install: DOTNET_ROOT must be set and match installDir
-            if (string.IsNullOrEmpty(dotnetRoot) || !DnupUtilities.PathsEqual(dotnetRoot, installDir))
-            {
-                return new(installDir, InstallType.Inconsistent, DnupUtilities.GetDefaultInstallArchitecture());
-            }
-            return new(installDir, InstallType.User, DnupUtilities.GetDefaultInstallArchitecture());
-        }
+
+        var installRoot = new DotnetInstallRoot(installDir, DnupUtilities.GetDefaultInstallArchitecture());
+
+        bool isSetAsDotnetRoot = DnupUtilities.PathsEqual(dotnetRoot, installDir);
+
+        return new(installRoot, isAdminInstall ? InstallType.Admin : InstallType.User, IsOnPath: true, isSetAsDotnetRoot);
     }
 
     public string GetDefaultDotnetInstallPath()
@@ -150,10 +135,6 @@ public class BootstrapperController : IBootstrapperController
                     throw new ArgumentNullException(nameof(dotnetRoot));
                 // Add dotnetRoot to PATH
                 pathEntries.Insert(0, dotnetRoot);
-                // Unset DOTNET_ROOT
-                Environment.SetEnvironmentVariable("DOTNET_ROOT", null, EnvironmentVariableTarget.User);
-                break;
-            case InstallType.None:
                 // Unset DOTNET_ROOT
                 Environment.SetEnvironmentVariable("DOTNET_ROOT", null, EnvironmentVariableTarget.User);
                 break;

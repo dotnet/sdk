@@ -22,7 +22,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
     private readonly bool _interactive = result.GetValue(SdkInstallCommandParser.InteractiveOption);
 
     private readonly IBootstrapperController _dotnetInstaller = new BootstrapperController();
-    private readonly IReleaseInfoProvider _releaseInfoProvider = new EnvironmentVariableMockReleaseInfoProvider();
+    private readonly IDotnetReleaseInfoProvider _releaseInfoProvider = new EnvironmentVariableMockReleaseInfoProvider();
     private readonly ManifestChannelVersionResolver _channelVersionResolver = new ManifestChannelVersionResolver();
 
     public override int Execute()
@@ -54,7 +54,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             resolvedInstallPath = _installPath;
         }
 
-        if (resolvedInstallPath == null && currentDotnetInstallRoot.Type == InstallType.User)
+        if (resolvedInstallPath == null && currentDotnetInstallRoot != null && currentDotnetInstallRoot.InstallType == InstallType.User)
         {
             //  If a user installation is already set up, we don't need to prompt for the install path
             resolvedInstallPath = currentDotnetInstallRoot.Path;
@@ -132,13 +132,13 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             //  If global.json specified an install path, we don't prompt for setting the default install path (since you probably don't want to do that for a repo-local path)
             if (_interactive && installPathFromGlobalJson == null)
             {
-                if (currentDotnetInstallRoot.Type == InstallType.None)
+                if (currentDotnetInstallRoot == null)
                 {
                     resolvedSetDefaultInstall = SpectreAnsiConsole.Confirm(
                         $"Do you want to set the install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
                         defaultValue: true);
                 }
-                else if (currentDotnetInstallRoot.Type == InstallType.User)
+                else if (currentDotnetInstallRoot.InstallType == InstallType.User)
                 {
                     if (DnupUtilities.PathsEqual(resolvedInstallPath, currentDotnetInstallRoot.Path))
                     {
@@ -151,7 +151,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                             defaultValue: false);
                     }
                 }
-                else if (currentDotnetInstallRoot.Type == InstallType.Admin)
+                else if (currentDotnetInstallRoot.InstallType == InstallType.Admin)
                 {
                     SpectreAnsiConsole.WriteLine($"You have an existing admin install of .NET in {currentDotnetInstallRoot.Path}. We can configure your system to use the new install of .NET " +
                         $"in {resolvedInstallPath} instead. This would mean that the admin install of .NET would no longer be accessible from the PATH or from Visual Studio.");
@@ -160,11 +160,8 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                         $"Do you want to set the user install path ({resolvedInstallPath}) as the default dotnet install? This will update the PATH and DOTNET_ROOT environment variables.",
                         defaultValue: true);
                 }
-                else if (currentDotnetInstallRoot.Type == InstallType.Inconsistent)
-                {
-                    //  TODO: Figure out what to do here
-                    resolvedSetDefaultInstall = false;
-                }
+
+                //  TODO: Add checks for whether PATH and DOTNET_ROOT need to be updated, or if the install is in an inconsistent state
             }
             else
             {
@@ -176,14 +173,14 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         // Create a request and resolve it using the channel version resolver
         var installRequest = new DotnetInstallRequest(
-            new DotnetInstallRoot(resolvedInstallPath, InstallType.User, DnupUtilities.GetInstallArchitecture(RuntimeInformation.ProcessArchitecture)),
+            new DotnetInstallRoot(resolvedInstallPath, DnupUtilities.GetInstallArchitecture(RuntimeInformation.ProcessArchitecture)),
             new UpdateChannel(resolvedChannel),
             InstallComponent.SDK,
             new InstallRequestOptions());
 
         var resolvedVersion = _channelVersionResolver.Resolve(installRequest);
 
-        if (resolvedSetDefaultInstall == true && currentDotnetInstallRoot.Type == InstallType.Admin)
+        if (resolvedSetDefaultInstall == true && currentDotnetInstallRoot?.InstallType == InstallType.Admin)
         {
             if (_interactive)
             {
@@ -227,7 +224,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         {
             // Create the request for the additional version
             var additionalRequest = new DotnetInstallRequest(
-                new DotnetInstallRoot(resolvedInstallPath, InstallType.User, DnupUtilities.GetInstallArchitecture(RuntimeInformation.ProcessArchitecture)),
+                new DotnetInstallRoot(resolvedInstallPath, DnupUtilities.GetInstallArchitecture(RuntimeInformation.ProcessArchitecture)),
                 new UpdateChannel(additionalVersion),
                 InstallComponent.SDK,
                 new InstallRequestOptions());

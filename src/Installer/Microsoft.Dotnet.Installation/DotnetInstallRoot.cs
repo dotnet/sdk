@@ -5,12 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper
-{
-    public enum InstallArchitecture
-    {
-        x86,
-        x64,
-        arm64
-    }
-}
+namespace Microsoft.Dotnet.Installation;
+public record DotnetInstallRoot(
+    string Path,
+    InstallArchitecture Architecture);

@@ -14,7 +14,7 @@ public interface IBootstrapperController
 
     string GetDefaultDotnetInstallPath();
 
-    DotnetInstallRoot GetConfiguredInstallType();
+    DotnetInstallRootConfiguration? GetConfiguredInstallType();
 
     string? GetLatestInstalledAdminVersion();
 
@@ -39,8 +39,12 @@ public class GlobalJsonInfo
     public string? SdkPath => (GlobalJsonContents?.Sdk?.Paths != null && GlobalJsonContents.Sdk.Paths.Length > 0) ? GlobalJsonContents.Sdk.Paths[0] : null;
 }
 
-public interface IReleaseInfoProvider
+public record DotnetInstallRootConfiguration(
+    DotnetInstallRoot InstallRoot,
+    InstallType InstallType,
+    bool IsOnPath,
+    //  We may also need additional information to handle the case of whether DOTNET_ROOT is not set or whether it's set to a different path
+    bool IsSetAsDotnetRoot)
 {
-    List<string> GetAvailableChannels();
-    string GetLatestVersion(string channel);
+    public string Path => InstallRoot.Path;
 }
