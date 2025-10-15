@@ -217,7 +217,7 @@ extends:
               # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties) /p:IsRPMBasedDistro=true
+              osProperties: $(linuxOsPortableProperties) /p:BuildSdkRpm=true
               runTests: false
             - categoryName: Portable
               container: azureLinux30fpm
@@ -226,7 +226,7 @@ extends:
               # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false /p:CLIBUILD_SKIP_TESTS=true
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties) /p:IsRPMBasedDistro=true
+              osProperties: $(linuxOsPortableProperties) /p:BuildSdkRpm=true
               runTests: false
             ### MUSL ###
             - categoryName: Musl
