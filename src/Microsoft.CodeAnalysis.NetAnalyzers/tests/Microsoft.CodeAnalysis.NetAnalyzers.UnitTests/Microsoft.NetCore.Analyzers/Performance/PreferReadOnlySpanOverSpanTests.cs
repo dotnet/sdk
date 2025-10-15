@@ -748,6 +748,139 @@ class C
             await VerifyCSCodeFixAsync(source, expected);
         }
 
+        [Fact]
+        public async Task SpanParameter_IndexOperator_NoDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Span<byte> data)
+    {
+        data[^1] = 5; // Write using Index operator
+    }
+}
+";
+            var test = new VerifyCS.Test
+            {
+                TestCode = source,
+                FixedCode = source,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+                LanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp9
+            };
+            await test.RunAsync();
+        }
+
+        [Fact]
+        public async Task SpanParameter_IndexOperatorRead_ProducesDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Span<byte> [|data|])
+    {
+        var last = data[^1]; // Read using Index operator
+    }
+}
+";
+            string expected = @"
+using System;
+
+class C
+{
+    private void M(ReadOnlySpan<byte> data)
+    {
+        var last = data[^1]; // Read using Index operator
+    }
+}
+";
+            var test = new VerifyCS.Test
+            {
+                TestCode = source,
+                FixedCode = expected,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+                LanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp9
+            };
+            await test.RunAsync();
+        }
+
+        [Fact]
+        public async Task SpanParameter_RangeOperator_ProducesDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Span<byte> [|data|])
+    {
+        var slice = data[1..5]; // Read using Range operator
+        Console.WriteLine(slice.Length);
+    }
+}
+";
+            string expected = @"
+using System;
+
+class C
+{
+    private void M(ReadOnlySpan<byte> data)
+    {
+        var slice = data[1..5]; // Read using Range operator
+        Console.WriteLine(slice.Length);
+    }
+}
+";
+            var test = new VerifyCS.Test
+            {
+                TestCode = source,
+                FixedCode = expected,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+                LanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp9
+            };
+            await test.RunAsync();
+        }
+
+        [Fact]
+        public async Task SpanParameter_RangeFromEndOperator_ProducesDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Span<byte> [|data|])
+    {
+        var slice = data[^3..^1]; // Read using Range with Index
+        Console.WriteLine(slice.Length);
+    }
+}
+";
+            string expected = @"
+using System;
+
+class C
+{
+    private void M(ReadOnlySpan<byte> data)
+    {
+        var slice = data[^3..^1]; // Read using Range with Index
+        Console.WriteLine(slice.Length);
+    }
+}
+";
+            var test = new VerifyCS.Test
+            {
+                TestCode = source,
+                FixedCode = expected,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+                LanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp9
+            };
+            await test.RunAsync();
+        }
+
         private static async Task VerifyCSCodeFixAsync(string source, string fixedSource)
         {
             var test = new VerifyCS.Test

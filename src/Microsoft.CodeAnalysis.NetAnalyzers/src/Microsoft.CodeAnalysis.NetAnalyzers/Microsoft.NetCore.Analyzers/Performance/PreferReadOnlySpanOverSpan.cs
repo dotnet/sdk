@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -99,7 +100,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     }
                 }, OperationKind.ParameterReference);
 
-                // Check for writes through properties
+                // Check for writes through property-based indexers (Span<T> uses property indexers)
                 blockStartContext.RegisterOperationAction(operationContext =>
                 {
                     var propertyRef = (IPropertyReferenceOperation)operationContext.Operation;
@@ -107,6 +108,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         candidateParameters.ContainsKey(paramRef.Parameter))
                     {
                         // Check if this property reference is on the left side of an assignment
+                        // This handles Span<T> indexer writes like: span[0] = value
                         if (propertyRef.Parent is IAssignmentOperation assignment && assignment.Target == propertyRef)
                         {
                             candidateParameters.TryRemove(paramRef.Parameter, out _);
@@ -117,17 +119,29 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 // Check for writes through indexers (e.g., span[0] = value)
                 blockStartContext.RegisterOperationAction(operationContext =>
                 {
-                    var arrayElementRef = (IArrayElementReferenceOperation)operationContext.Operation;
-                    if (arrayElementRef.ArrayReference is IParameterReferenceOperation paramRef &&
+                    IOperation? instance = null;
+                    
+                    if (operationContext.Operation is IArrayElementReferenceOperation arrayElementRef)
+                    {
+                        instance = arrayElementRef.ArrayReference;
+                    }
+                    else if (operationContext.Operation.Kind == OperationKindEx.ImplicitIndexerReference)
+                    {
+                        // For implicit indexer references (Index/Range), get the instance from children
+                        instance = operationContext.Operation.Children.FirstOrDefault();
+                    }
+
+                    if (instance is IParameterReferenceOperation paramRef &&
                         candidateParameters.ContainsKey(paramRef.Parameter))
                     {
                         // Check if this element reference is on the left side of an assignment
-                        if (arrayElementRef.Parent is IAssignmentOperation assignment && assignment.Target == arrayElementRef)
+                        if (operationContext.Operation.Parent is IAssignmentOperation assignment && 
+                            assignment.Target == operationContext.Operation)
                         {
                             candidateParameters.TryRemove(paramRef.Parameter, out _);
                         }
                     }
-                }, OperationKind.ArrayElementReference);
+                }, OperationKind.ArrayElementReference, OperationKindEx.ImplicitIndexerReference);
 
                 // Check for parameters passed to methods that might write to them
                 blockStartContext.RegisterOperationAction(operationContext =>
