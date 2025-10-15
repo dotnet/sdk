@@ -116,20 +116,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     }
                 }, OperationKind.PropertyReference);
 
-                // Check for writes through indexers (e.g., span[0] = value)
+                // Check for writes through implicit indexers (Index/Range operators like span[^1] or span[1..5])
                 blockStartContext.RegisterOperationAction(operationContext =>
                 {
-                    IOperation? instance = null;
-                    
-                    if (operationContext.Operation is IArrayElementReferenceOperation arrayElementRef)
-                    {
-                        instance = arrayElementRef.ArrayReference;
-                    }
-                    else if (operationContext.Operation.Kind == OperationKindEx.ImplicitIndexerReference)
-                    {
-                        // For implicit indexer references (Index/Range), get the instance from children
-                        instance = operationContext.Operation.Children.FirstOrDefault();
-                    }
+                    // Get the instance from the first child of the implicit indexer reference
+                    var instance = operationContext.Operation.Children.FirstOrDefault();
 
                     if (instance is IParameterReferenceOperation paramRef &&
                         candidateParameters.ContainsKey(paramRef.Parameter))
@@ -141,7 +132,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             candidateParameters.TryRemove(paramRef.Parameter, out _);
                         }
                     }
-                }, OperationKind.ArrayElementReference, OperationKindEx.ImplicitIndexerReference);
+                }, OperationKindEx.ImplicitIndexerReference);
 
                 // Check for parameters passed to methods that might write to them
                 blockStartContext.RegisterOperationAction(operationContext =>
