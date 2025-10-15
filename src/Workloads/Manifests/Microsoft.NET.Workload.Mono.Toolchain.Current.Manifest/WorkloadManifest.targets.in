@@ -235,10 +235,11 @@
     <KnownFrameworkReference Update="Microsoft.NETCore.App">
       <TargetingPackVersion Condition="'%(KnownFrameworkReference.TargetFramework)' == '${NetVersion}.0'">$(_MonoWorkloadRuntimePackPackageVersion)</TargetingPackVersion>
     </KnownFrameworkReference>
+  </ItemGroup>
+  <ItemGroup>
     <KnownWebAssemblySdkPack Update="@(KnownWebAssemblySdkPack)">
-      <WebAssemblySdkPackVersion Condition="'%(KnownWebAssemblySdkPack.TargetFramework)' == '${NetVersion}.0'">$(_KnownWebAssemblySdkPackVersion)</WebAssemblySdkPackVersion>
+      <WebAssemblySdkPackVersion>$(_RuntimePackInWorkloadVersionCurrent)</WebAssemblySdkPackVersion>
     </KnownWebAssemblySdkPack>
   </ItemGroup>
-
 
 </Project>

@@ -87,9 +87,6 @@
     <KnownFrameworkReference Update="Microsoft.NETCore.App">
       <TargetingPackVersion Condition="'%(KnownFrameworkReference.TargetFramework)' == 'net9.0'">$(_MonoWorkloadRuntimePackPackageVersion)</TargetingPackVersion>
     </KnownFrameworkReference>
-    <KnownWebAssemblySdkPack Update="@(KnownWebAssemblySdkPack)">
-      <WebAssemblySdkPackVersion Condition="'%(KnownWebAssemblySdkPack.TargetFramework)' == 'net9.0'">$(_KnownWebAssemblySdkPackVersion)</WebAssemblySdkPackVersion>
-    </KnownWebAssemblySdkPack>
   </ItemGroup>
 
 
