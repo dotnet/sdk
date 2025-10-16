@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet" "1" "2025-06-13" "" ".NET Documentation"
+.TH "dotnet" "1" "2025-10-15" "" ".NET Documentation"
 .hy
 .SH dotnet command
 .PP
@@ -289,11 +289,6 @@ T}@T{
 Shows more detailed documentation online for the command.
 T}
 T{
-dotnet migrate
-T}@T{
-Migrates a valid Preview 2 project to a .NET Core SDK 1.0 project.
-T}
-T{
 dotnet msbuild
 T}@T{
 Provides access to the MSBuild command line.
@@ -472,6 +467,21 @@ Function
 T}
 _
 T{
+dotnet workload clean
+T}@T{
+Removes workload components.
+T}
+T{
+dotnet workload config
+T}@T{
+Enables or disables workload-set update mode.
+T}
+T{
+dotnet workload history
+T}@T{
+Shows all workload installation actions.
+T}
+T{
 dotnet workload install
 T}@T{
 Installs an optional workload.
@@ -485,6 +495,11 @@ T{
 dotnet workload repair
 T}@T{
 Repairs all installed workloads.
+T}
+T{
+dotnet workload restore
+T}@T{
+Restore workloads required for a project.
 T}
 T{
 dotnet workload search

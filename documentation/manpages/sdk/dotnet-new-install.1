@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-new-install" "1" "2025-06-13" "" ".NET Documentation"
+.TH "dotnet-new-install" "1" "2025-10-15" "" ".NET Documentation"
 .hy
 .SH dotnet new install
 .PP
@@ -69,6 +69,10 @@ Additionally, tab completion is now available for \f[V]dotnet new\f[R].
 It supports completion for installed template names and for the options a selected template provides.
 To activate tab completion for the .NET SDK, see Enable tab completion.
 > > Examples of old syntax: > > - Install the latest version of Azure web jobs project template package: > > \f[V]dotnetcli >   dotnet new --install Microsoft.Azure.WebJobs.ProjectTemplates >\f[R]
+.RS
+.PP
+[!WARNING] Templates can run MSBuild code when triggered, don\[cq]t install or run untrusted .NET templates.
+.RE
 .SH ARGUMENTS
 .IP \[bu] 2
 \f[B]\f[VB]<PATH|NUGET_ID>\f[B]\f[R]

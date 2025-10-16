@@ -15,30 +15,38 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-test" "1" "2025-09-15" "" ".NET Documentation"
+.TH "dotnet-test" "1" "2025-10-15" "" ".NET Documentation"
 .hy
 .SH dotnet test
+.PP
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 SDK and later versions
 .SH NAME
 .PP
 dotnet-test - .NET test driver used to execute unit tests.
 .SH DESCRIPTION
 .PP
 The \f[V]dotnet test\f[R] command builds the solution and runs the tests with either VSTest or Microsoft Testing Platform (MTP).
-To enable MTP, you need to add a config file named \f[V]dotnet.config\f[R] with an INI-like format located at the root of the solution or repository.
+To enable MTP, you need to specify the test runner in the \f[V]global.json\f[R] file.
 .PP
-Some examples of the \f[V]dotnet.config\f[R] file:
+Some examples of how to specify the test runner in the \f[V]global.json\f[R] file:
 .IP
 .nf
 \f[C]
-[dotnet.test.runner]
-name = \[dq]Microsoft.Testing.Platform\[dq]
+{
+    \[dq]test\[dq]: {
+        \[dq]runner\[dq]: \[dq]Microsoft.Testing.Platform\[dq]
+    }
+}
 \f[R]
 .fi
 .IP
 .nf
 \f[C]
-[dotnet.test.runner]
-name = \[dq]VSTest\[dq]
+{
+    \[dq]test\[dq]: {
+        \[dq]runner\[dq]: \[dq]VSTest\[dq]
+    }
+}
 \f[R]
 .fi
 .RS
@@ -51,8 +59,6 @@ The \f[V]dotnet test\f[R] experience for MTP is only supported in \f[V]Microsoft
 .RE
 .SS VSTest and Microsoft.Testing.Platform (MTP)
 .SS dotnet test with VSTest
-.PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
 .SH SYNOPSIS
 .IP
 .nf
@@ -71,6 +77,7 @@ dotnet test [<PROJECT> | <SOLUTION> | <DIRECTORY> | <DLL> | <EXE>]
     [-c|--configuration <CONFIGURATION>]
     [--collect <DATA_COLLECTOR_NAME>]
     [-d|--diag <LOG_FILE>]
+    [--disable-build-servers]
     [-f|--framework <FRAMEWORK>]
     [-e|--environment <NAME=\[dq]VALUE\[dq]>]
     [--filter <EXPRESSION>]
@@ -85,6 +92,7 @@ dotnet test [<PROJECT> | <SOLUTION> | <DIRECTORY> | <DLL> | <EXE>]
     [-r|--runtime <RUNTIME_IDENTIFIER>]
     [-s|--settings <SETTINGS_FILE>]
     [-t|--list-tests]
+    [--tl:[auto|on|off]]
     [-v|--verbosity <LEVEL>]
     [<args>...]
     [[--] <RunSettings arguments>]
@@ -298,6 +306,15 @@ Enables diagnostic mode for the test platform and writes diagnostic messages to 
 The process that is logging the messages determines which files are created, such as \f[V]*.host_<date>.txt\f[R] for test host log, and \f[V]*.datacollector_<date>.txt\f[R] for data collector log.
 .RE
 .IP \[bu] 2
+\f[B]\f[VB]--disable-build-servers\f[B]\f[R]
+.RS 2
+.PP
+Forces the command to ignore any persistent build servers.
+This option provides a consistent way to disable all use of build caching, which forces a build from scratch.
+A build that doesn\[cq]t rely on caches is useful when the caches might be corrupted or incorrect for some reason.
+Available since .NET 7 SDK.
+.RE
+.IP \[bu] 2
 \f[B]\f[VB]-e|--environment <NAME=\[dq]VALUE\[dq]>\f[B]\f[R]
 .RS 2
 .PP
@@ -441,6 +458,34 @@ Configure a test run (https://github.com/microsoft/vstest/blob/main/docs/configu
 .RS 2
 .PP
 List the discovered tests instead of running the tests.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--tl:[auto|on|off]\f[B]\f[R]
+.RS 2
+.PP
+Specifies whether \f[I]Terminal Logger\f[R] should be used for the build output.
+The default is \f[V]auto\f[R], which first verifies the environment before enabling terminal logging.
+The environment check verifies that the terminal is capable of using modern output features and isn\[cq]t using a redirected standard output before enabling the new logger.
+\f[V]on\f[R] skips the environment check and enables terminal logging.
+\f[V]off\f[R] skips the environment check and uses the default console logger.
+.PP
+Terminal Logger shows you the restore phase followed by the build phase.
+During each phase, the currently building projects appear at the bottom of the terminal.
+Each project that\[cq]s building outputs both the MSBuild target currently being built and the amount of time spent on that target.
+You can search this information to learn more about the build.
+When a project is finished building, a single \[lq]build completed\[rq] section is written that captures:
+.IP \[bu] 2
+The name of the built project.
+.IP \[bu] 2
+The target framework (if multi-targeted).
+.IP \[bu] 2
+The status of that build.
+.IP \[bu] 2
+The primary output of that build (which is hyperlinked).
+.IP \[bu] 2
+Any diagnostics generated for that project.
+.PP
+This option is available starting in .NET 8.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
@@ -765,7 +810,7 @@ Moreover, MTP supports a globbing filter when running tests.
 For more information, see Microsoft.Testing.Platform.
 .RS
 .PP
-[!WARNING] When Microsoft.Testing.Platform is opted in via \f[V]dotnet.config\f[R], \f[V]dotnet test\f[R] expects all test projects to use Microsoft.Testing.Platform.
+[!WARNING] When Microsoft.Testing.Platform is opted in via \f[V]global.json\f[R], \f[V]dotnet test\f[R] expects all test projects to use Microsoft.Testing.Platform.
 It is an error if any of the test projects use VSTest.
 .RE
 .SS Implicit restore

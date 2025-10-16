@@ -14,11 +14,11 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-watch" "1" "2025-09-30" "" ".NET Documentation"
+.TH "dotnet-watch" "1" "2025-10-15" "" ".NET Documentation"
 .hy
 .SH dotnet watch
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 SDK and later versions
 .SH NAME
 .PP
 dotnet-watch - Restarts or hot reloads the specified application, or runs a specified dotnet command, when changes in source code are detected.
@@ -27,11 +27,10 @@ dotnet-watch - Restarts or hot reloads the specified application, or runs a spec
 .nf
 \f[C]
 dotnet watch [<command>]
-  [--list]
-  [--no-hot-reload] [--non-interactive]
-  [--project <PROJECT>]
-  [-q|--quiet] [-v|--verbose]
-  [--version]
+  [--artifacts-path <ARTIFACTS_DIR>] [--disable-build-servers]
+  [--list] [--no-hot-reload] [--no-self-contained]
+  [--non-interactive] [--project <PROJECT>] [--sc|--self-contained]
+  [-q|--quiet] [-v|--verbose] [--version]
   [--] <forwarded arguments> 
 
 dotnet watch -?|-h|--help
@@ -95,10 +94,33 @@ If you\[cq]re running \f[V]dotnet watch test\f[R], these arguments are options f
 .RE
 .SH OPTIONS
 .IP \[bu] 2
+\f[B]\f[VB]--artifacts-path <ARTIFACTS_DIR>\f[B]\f[R]
+.RS 2
+.PP
+All build output files from the executed command will go in subfolders under the specified path, separated by project.
+For more information see Artifacts Output Layout.
+Available since .NET 8 SDK.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--disable-build-servers\f[B]\f[R]
+.RS 2
+.PP
+Forces the command to ignore any persistent build servers.
+This option provides a consistent way to disable all use of build caching, which forces a build from scratch.
+A build that doesn\[cq]t rely on caches is useful when the caches might be corrupted or incorrect for some reason.
+Available since .NET 7 SDK.
+.RE
+.IP \[bu] 2
 \f[B]\f[VB]--list\f[B]\f[R]
 .RS 2
 .PP
 Lists all discovered files without starting the watcher.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--no-self-contained\f[B]\f[R]
+.RS 2
+.PP
+Equivalent to \f[V]--self-contained false\f[R].
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--no-hot-reload\f[B]\f[R]
@@ -121,6 +143,13 @@ Available since .NET 7 SDK.
 .PP
 Specifies the path of the project file to run (folder only or including the project file name).
 If not specified, it defaults to the current directory.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--sc|--self-contained\f[B]\f[R]
+.RS 2
+.PP
+Publish the .NET runtime with your application so the runtime doesn\[cq]t need to be installed on the target machine.
+The default is \f[V]true\f[R].
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-q|--quiet\f[B]\f[R]
@@ -149,6 +178,12 @@ Shows the version of \f[V]dotnet watch\f[R].
 The double-dash option (`\[en]') can be used to delimit \f[V]dotnet watch\f[R] options from arguments that will be passed to the child process.
 Its use is optional.
 When the double-dash option isn\[cq]t used, \f[V]dotnet watch\f[R] considers the first unrecognized argument to be the beginning of arguments that it should pass into the child \f[V]dotnet\f[R] process.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]-?|-h|--help\f[B]\f[R]
+.RS 2
+.PP
+Prints out a description of how to use the command.
 .RE
 .SH ENVIRONMENT VARIABLES
 .PP
@@ -307,7 +342,7 @@ This property can be used as shown in the following example:
 .fi
 .SS Hot Reload
 .PP
-Starting in .NET 6, \f[V]dotnet watch\f[R] includes support for \f[I]hot reload\f[R].
+Starting in .NET 6 SDK, \f[V]dotnet watch\f[R] includes support for \f[I]hot reload\f[R].
 Hot reload is a feature that lets you apply changes to a running app without having to rebuild and restart it.
 The changes may be to code files or static assets, such as stylesheet files and JavaScript files.
 This feature streamlines the local development experience, as it gives immediate feedback when you modify your app.

@@ -14,14 +14,14 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-package-remove" "1" "2025-06-13" "" ".NET Documentation"
+.TH "dotnet-package-remove" "1" "2025-10-15" "" ".NET Documentation"
 .hy
 .SH dotnet package remove
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 SDK and later versions
 .SH NAME
 .PP
-dotnet-package-remove - Removes package reference from a project file.
+dotnet-package-remove - Removes a package reference from a project file.
 .RS
 .PP
 If you\[cq]re using .NET 9 SDK or earlier, use the \[lq]verb first\[rq] form (dotnet-remove-package) instead.
@@ -32,7 +32,8 @@ For more information, see More consistent command order.
 .IP
 .nf
 \f[C]
-dotnet package remove <PACKAGE_NAME> [--project <PROJECT>]
+dotnet package remove <PACKAGE_NAME>  
+  [--file <FILE>] [--interactive] [--project <PROJECT>]
 
 dotnet package remove -h|--help
 \f[R]
@@ -42,15 +43,31 @@ dotnet package remove -h|--help
 The \f[V]dotnet package remove\f[R] command provides a convenient option to remove a NuGet package reference from a project.
 .SH ARGUMENTS
 .PP
-\f[V]PROJECT\f[R]
-.PP
-Specifies the project file.
-If not specified, the command searches the current directory for one.
-.PP
 \f[V]PACKAGE_NAME\f[R]
 .PP
 The package reference to remove.
 .SH OPTIONS
+.IP \[bu] 2
+\f[B]\f[VB]--file <FILE>\f[B]\f[R]
+.RS 2
+.PP
+The file-based app to operate on.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--interactive\f[B]\f[R]
+.RS 2
+.PP
+Allows the command to stop and wait for user input or action.
+For example, to complete authentication.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]-p|--project <PROJECT>\f[B]\f[R]
+.RS 2
+.PP
+The project file to operate on.
+If a solution file is specified, the command will update the package in all projects in the solution that reference it.
+If not specified, the command will search the current directory for a project file.
+.RE
 .IP \[bu] 2
 \f[B]\f[VB]-?|-h|--help\f[B]\f[R]
 .RS 2
@@ -65,6 +82,16 @@ Remove \f[V]Newtonsoft.Json\f[R] NuGet package from a project in the current dir
 .nf
 \f[C]
 dotnet package remove Newtonsoft.Json
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Remove \f[V]Newtonsoft.Json\f[R] NuGet package from a specific project file:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet package remove Newtonsoft.Json --file MyApp.cs
 \f[R]
 .fi
 .RE

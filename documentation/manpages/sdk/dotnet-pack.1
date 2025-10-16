@@ -15,11 +15,11 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-pack" "1" "2025-09-30" "" ".NET Documentation"
+.TH "dotnet-pack" "1" "2025-10-15" "" ".NET Documentation"
 .hy
 .SH dotnet pack
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 SDK and later versions
 .SH NAME
 .PP
 dotnet-pack - Packs the code into a NuGet package.
@@ -27,13 +27,13 @@ dotnet-pack - Packs the code into a NuGet package.
 .IP
 .nf
 \f[C]
-dotnet pack [<PROJECT>|<SOLUTION>] [--artifacts-path <ARTIFACTS_DIR>]
-    [-c|--configuration <CONFIGURATION>] [--force]
-    [--include-source] [--include-symbols] [--interactive]
-    [--no-build] [--no-dependencies] [--no-restore] [--nologo]
-    [-o|--output <OUTPUT_DIRECTORY>] [--runtime <RUNTIME_IDENTIFIER>]
-    [-s|--serviceable] [--tl:[auto|on|off]] [-v|--verbosity <LEVEL>]
-    [--version-suffix <VERSION_SUFFIX>]
+dotnet pack [<PROJECT>|<SOLUTION>]
+  [--artifacts-path <ARTIFACTS_DIR>] [-c|--configuration <CONFIGURATION>]
+  [--disable-build-servers] [--force] [--include-source] [--include-symbols]
+  [--interactive] [--no-build] [--no-dependencies] [--no-restore] [--nologo]
+  [-o|--output <OUTPUT_DIRECTORY>] [--runtime <RUNTIME_IDENTIFIER>]
+  [-s|--serviceable] [--tl:[auto|on|off]] [-v|--verbosity <LEVEL>]
+  [--version-suffix <VERSION_SUFFIX>]
 
 dotnet pack -h|--help
 \f[R]
@@ -113,17 +113,20 @@ You can override the default in project settings or by using this option.
 For more information, see `dotnet publish' uses Release configuration and `dotnet pack' uses Release configuration.
 .RE
 .IP \[bu] 2
+\f[B]\f[VB]--disable-build-servers\f[B]\f[R]
+.RS 2
+.PP
+Forces the command to ignore any persistent build servers.
+This option provides a consistent way to disable all use of build caching, which forces a build from scratch.
+A build that doesn\[cq]t rely on caches is useful when the caches might be corrupted or incorrect for some reason.
+Available since .NET 7 SDK.
+.RE
+.IP \[bu] 2
 \f[B]\f[VB]--force\f[B]\f[R]
 .RS 2
 .PP
 Forces all dependencies to be resolved even if the last restore was successful.
 Specifying this flag is the same as deleting the \f[I]project.assets.json\f[R] file.
-.RE
-.IP \[bu] 2
-\f[B]\f[VB]-?|-h|--help\f[B]\f[R]
-.RS 2
-.PP
-Prints out a description of how to use the command.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--include-source\f[B]\f[R]
@@ -144,7 +147,6 @@ Includes the debug symbols NuGet packages in addition to the regular NuGet packa
 .PP
 Allows the command to stop and wait for user input or action.
 For example, to complete authentication.
-Available since .NET Core 3.0 SDK.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--no-build\f[B]\f[R]
@@ -281,6 +283,12 @@ If you want to use \f[V]--version-suffix\f[R], specify \f[V]VersionPrefix\f[R] a
 For example, if \f[V]VersionPrefix\f[R] is \f[V]0.1.2\f[R] and you pass \f[V]--version-suffix rc.1\f[R] to \f[V]dotnet pack\f[R], the package version will be \f[V]0.1.2-rc.1\f[R].
 .PP
 If \f[V]Version\f[R] has a value and you pass \f[V]--version-suffix\f[R] to \f[V]dotnet pack\f[R], the value specified for \f[V]--version-suffix\f[R] is ignored.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]-?|-h|--help\f[B]\f[R]
+.RS 2
+.PP
+Prints out a description of how to use the command.
 .RE
 .SH EXAMPLES
 .IP \[bu] 2

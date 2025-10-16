@@ -15,11 +15,11 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-dev-certs" "1" "2025-06-13" "" ".NET Documentation"
+.TH "dotnet-dev-certs" "1" "2025-10-15" "" ".NET Documentation"
 .hy
 .SH dotnet dev-certs
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 SDK and later versions
 .SH NAME
 .PP
 dotnet-dev-certs - Generates a self-signed certificate to enable HTTPS use in development.
@@ -28,7 +28,8 @@ dotnet-dev-certs - Generates a self-signed certificate to enable HTTPS use in de
 .nf
 \f[C]
 dotnet dev-certs https 
-  [-c|--check] [--clean] [-ep|--export-path <PATH>]
+  [-c|--check] [--check-trust-machine-readable] 
+  [--clean] [-ep|--export-path <PATH>]
   [--format] [-i|--import] [-np|--no-password]
   [-p|--password] [-q|--quiet] [-t|--trust]
   [-v|--verbose] [--version]
@@ -89,6 +90,12 @@ To create a file that you can use with other tools, use the \f[V]--export-path\f
 .PP
 Checks for the existence of the development certificate but doesn\[cq]t perform any action.
 Use this option with the \f[V]--trust\f[R] option to check if the certificate is not only valid but also trusted.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--check-trust-machine-readable\f[B]\f[R]
+.RS 2
+.PP
+Same as running \f[V]--check --trust\f[R], but outputs the results in JSON.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--clean\f[B]\f[R]

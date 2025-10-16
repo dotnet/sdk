@@ -14,11 +14,11 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-publish" "1" "2025-09-30" "" ".NET Documentation"
+.TH "dotnet-publish" "1" "2025-10-15" "" ".NET Documentation"
 .hy
 .SH dotnet publish
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 SDK and later versions
 .SH NAME
 .PP
 dotnet-publish - Publishes the application and its dependencies to a folder for deployment to a hosting system.
@@ -33,9 +33,9 @@ dotnet publish [<PROJECT>|<SOLUTION>|<FILE>] [-a|--arch <ARCHITECTURE>]
     [--manifest <PATH_TO_MANIFEST_FILE>] [--no-build] [--no-dependencies]
     [--no-restore] [--nologo] [-o|--output <OUTPUT_DIRECTORY>]
     [--os <OS>] [-r|--runtime <RUNTIME_IDENTIFIER>]
-    [--sc|--self-contained [true|false]] [--no-self-contained]
+    [--sc|--self-contained] [--no-self-contained]
     [-s|--source <SOURCE>] [--tl:[auto|on|off]]
-    [--use-current-runtime, --ucr [true|false]]
+    [--ucr|--use-current-runtime]
     [-v|--verbosity <LEVEL>] [--version-suffix <VERSION_SUFFIX>]
 
 dotnet publish -h|--help
@@ -239,18 +239,11 @@ Forces all dependencies to be resolved even if the last restore was successful.
 Specifying this flag is the same as deleting the \f[I]project.assets.json\f[R] file.
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]-?|-h|--help\f[B]\f[R]
-.RS 2
-.PP
-Prints out a description of how to use the command.
-.RE
-.IP \[bu] 2
 \f[B]\f[VB]--interactive\f[B]\f[R]
 .RS 2
 .PP
 Allows the command to stop and wait for user input or action.
 For example, to complete authentication.
-Available since .NET Core 3.0 SDK.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--manifest <PATH_TO_MANIFEST_FILE>\f[B]\f[R]
@@ -334,15 +327,11 @@ If you use this option, don\[cq]t use the \f[V]-r|--runtime\f[R] option.
 Available since .NET 6.
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]--sc|--self-contained [true|false]\f[B]\f[R]
+\f[B]\f[VB]--sc|--self-contained\f[B]\f[R]
 .RS 2
 .PP
-Publishes the .NET runtime with your application so the runtime doesn\[cq]t need to be installed on the target machine.
-Default is \f[V]true\f[R] if a runtime identifier is specified and the project is an executable project (not a library project).
-For more information, see Self-contained deployment.
-.PP
-If this option is used without specifying \f[V]true\f[R] or \f[V]false\f[R], the default is \f[V]true\f[R].
-In that case, don\[cq]t put the solution or project argument immediately after \f[V]--self-contained\f[R], because \f[V]true\f[R] or \f[V]false\f[R] is expected in that position.
+Publish the .NET runtime with your application so the runtime doesn\[cq]t need to be installed on the target machine.
+The default is \f[V]true\f[R].
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--no-self-contained\f[B]\f[R]
@@ -394,12 +383,10 @@ Any diagnostics generated for that project.
 This option is available starting in .NET 8.
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]--use-current-runtime, --ucr [true|false]\f[B]\f[R]
+\f[B]\f[VB]--ucr|--use-current-runtime\f[B]\f[R]
 .RS 2
 .PP
-Sets the \f[V]RuntimeIdentifier\f[R] to a platform portable \f[V]RuntimeIdentifier\f[R] based on the one of your machine.
-This happens implicitly with properties that require a \f[V]RuntimeIdentifier\f[R], such as \f[V]SelfContained\f[R], \f[V]PublishAot\f[R], \f[V]PublishSelfContained\f[R], \f[V]PublishSingleFile\f[R], and \f[V]PublishReadyToRun\f[R].
-If the property is set to false, that implicit resolution will no longer occur.
+Use the current runtime as the target runtime.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
@@ -415,6 +402,12 @@ For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
 .RS 2
 .PP
 Defines the version suffix to replace the asterisk (\f[V]*\f[R]) in the version field of the project file.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]-?|-h|--help\f[B]\f[R]
+.RS 2
+.PP
+Prints out a description of how to use the command.
 .RE
 .SH EXAMPLES
 .IP \[bu] 2

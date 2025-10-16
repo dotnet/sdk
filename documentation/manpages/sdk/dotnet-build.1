@@ -14,11 +14,11 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-build" "1" "2025-09-30" "" ".NET Documentation"
+.TH "dotnet-build" "1" "2025-10-15" "" ".NET Documentation"
 .hy
 .SH dotnet build
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 SDK and later versions
 .SH NAME
 .PP
 dotnet-build - Builds a project, solution, or file-based app and all of its dependencies.
@@ -28,15 +28,13 @@ dotnet-build - Builds a project, solution, or file-based app and all of its depe
 \f[C]
 dotnet build [<PROJECT>|<SOLUTION>|<FILE>] [-a|--arch <ARCHITECTURE>]
     [--artifacts-path <ARTIFACTS_DIR>]
-    [-c|--configuration <CONFIGURATION>] [-f|--framework <FRAMEWORK>]
-    [--disable-build-servers]
-    [--force] [--interactive] [--no-dependencies] [--no-incremental]
-    [--no-restore] [--nologo] [--no-self-contained] [--os <OS>]
-    [-o|--output <OUTPUT_DIRECTORY>]
-    [-p|--property:<PROPERTYNAME>=<VALUE>]
-    [-r|--runtime <RUNTIME_IDENTIFIER>]
-    [-sc|--self-contained [true|false]] [--source <SOURCE>]
-    [--tl:[auto|on|off]] [--use-current-runtime, --ucr [true|false]]
+    [-c|--configuration <CONFIGURATION>] [--disable-build-servers]
+    [-f|--framework <FRAMEWORK>] [--force] [--interactive]
+    [--no-dependencies] [--no-incremental] [--no-restore] [--nologo]
+    [--no-self-contained] [-o|--output <OUTPUT_DIRECTORY>] [--os <OS>]
+    [-p|--property:<PROPERTYNAME>=<VALUE>] [-r|--runtime <RUNTIME_IDENTIFIER>]
+    [--sc|--self-contained] [--source <SOURCE>]
+    [--tl:[auto|on|off]] [ --ucr|--use-current-runtime]
     [-v|--verbosity <LEVEL>] [--version-suffix <VERSION_SUFFIX>]
 
 dotnet build -h|--help
@@ -176,12 +174,6 @@ Forces all dependencies to be resolved even if the last restore was successful.
 Specifying this flag is the same as deleting the \f[I]project.assets.json\f[R] file.
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]-?|-h|--help\f[B]\f[R]
-.RS 2
-.PP
-Prints out a description of how to use the command.
-.RE
-.IP \[bu] 2
 \f[B]\f[VB]--interactive\f[B]\f[R]
 .RS 2
 .PP
@@ -218,9 +210,7 @@ Doesn\[cq]t display the startup banner or the copyright message.
 \f[B]\f[VB]--no-self-contained\f[B]\f[R]
 .RS 2
 .PP
-Publishes the application as a framework dependent application.
-A compatible .NET runtime must be installed on the target machine to run the application.
-Available since .NET 6 SDK.
+Equivalent to \f[V]--self-contained false\f[R].
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-o|--output <OUTPUT_DIRECTORY>\f[B]\f[R]
@@ -272,12 +262,11 @@ If you use this option with .NET 6 SDK, use \f[V]--self-contained\f[R] or \f[V]-
 If not specified, the default is to build for the current OS and architecture.
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]--self-contained [true|false]\f[B]\f[R]
+\f[B]\f[VB]--sc|--self-contained\f[B]\f[R]
 .RS 2
 .PP
-Publishes the .NET runtime with the application so the runtime doesn\[cq]t need to be installed on the target machine.
-The default is \f[V]true\f[R] if a runtime identifier is specified.
-Available since .NET 6.
+Publish the .NET runtime with your application so the runtime doesn\[cq]t need to be installed on the target machine.
+The default is \f[V]true\f[R].
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--source <SOURCE>\f[B]\f[R]
@@ -314,23 +303,18 @@ Any diagnostics generated for that project.
 This option is available starting in .NET 8.
 .RE
 .IP \[bu] 2
+\f[B]\f[VB]--ucr|--use-current-runtime\f[B]\f[R]
+.RS 2
+.PP
+Use the current runtime as the target runtime.
+.RE
+.IP \[bu] 2
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
 .RS 2
 .PP
 Sets the verbosity level of the command.
 Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \f[V]d[etailed]\f[R], and \f[V]diag[nostic]\f[R].
-The default is \f[V]minimal\f[R].
-By default, MSBuild displays warnings and errors at all verbosity levels.
-To exclude warnings, use \f[V]/property:WarningLevel=0\f[R].
-For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity> and WarningLevel.
-.RE
-.IP \[bu] 2
-\f[B]\f[VB]--use-current-runtime, --ucr [true|false]\f[B]\f[R]
-.RS 2
-.PP
-Sets the \f[V]RuntimeIdentifier\f[R] to a platform portable \f[V]RuntimeIdentifier\f[R] based on the one of your machine.
-This happens implicitly with properties that require a \f[V]RuntimeIdentifier\f[R], such as \f[V]SelfContained\f[R], \f[V]PublishAot\f[R], \f[V]PublishSelfContained\f[R], \f[V]PublishSingleFile\f[R], and \f[V]PublishReadyToRun\f[R].
-If the property is set to false, that implicit resolution will no longer occur.
+For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--version-suffix <VERSION_SUFFIX>\f[B]\f[R]
@@ -339,6 +323,12 @@ If the property is set to false, that implicit resolution will no longer occur.
 Sets the value of the \f[V]$(VersionSuffix)\f[R] property to use when building the project.
 This only works if the \f[V]$(Version)\f[R] property isn\[cq]t set.
 Then, \f[V]$(Version)\f[R] is set to the \f[V]$(VersionPrefix)\f[R] combined with the \f[V]$(VersionSuffix)\f[R], separated by a dash.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]-?|-h|--help\f[B]\f[R]
+.RS 2
+.PP
+Prints out a description of how to use the command.
 .RE
 .SH EXAMPLES
 .IP \[bu] 2

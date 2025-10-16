@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-nuget-why" "1" "2025-07-30" "" ".NET Documentation"
+.TH "dotnet-nuget-why" "1" "2025-10-15" "" ".NET Documentation"
 .hy
 .SH dotnet nuget why
 .PP
@@ -26,7 +26,7 @@ dotnet-nuget-why - Shows the dependency graph for a particular package.
 .IP
 .nf
 \f[C]
-dotnet nuget why <PROJECT|SOLUTION> <PACKAGE> [-f|--framework <FRAMEWORK>]
+dotnet nuget why [<PROJECT|SOLUTION>] <PACKAGE> [-f|--framework <FRAMEWORK>]
 
 dotnet nuget why -h|--help
 \f[R]
@@ -53,6 +53,7 @@ Run \f[V]dotnet nuget why path\[rs]to\[rs]project.assets.json SomePackage\f[R].
 The project or solution file to operate on.
 If a directory is specified, the command searches the directory for a project or solution file.
 If more than one project or solution is found, an error is thrown.
+If no value is provided, the current working directory is used by default.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]PACKAGE\f[B]\f[R]
@@ -76,24 +77,24 @@ Prints out a description of how to use the command.
 .RE
 .SH EXAMPLES
 .IP \[bu] 2
-Show the dependency graph for the package \[lq]System.Text.Json\[rq] for a given solution:
+Show the dependency graph for the package \[lq]System.Text.Json\[rq]:
 .RS 2
 .IP
 .nf
 \f[C]
-dotnet nuget why .\[rs]DotnetNuGetWhyPackage.sln System.Text.Json
+dotnet nuget why System.Text.Json
 \f[R]
 .fi
 .PP
 [IMAGE: Example: Solution with multiple projects]
 .RE
 .IP \[bu] 2
-Show the dependency graph for the package \[lq]System.Text.Json\[rq] for a single project:
+Show the dependency graph for the package \[lq]System.Text.Json\[rq] for a specific project:
 .RS 2
 .IP
 .nf
 \f[C]
-dotnet nuget why .\[rs]DotnetNuGetWhyPackage.csproj System.Text.Json
+dotnet nuget why path/to/DotnetNuGetWhyPackage.csproj System.Text.Json
 \f[R]
 .fi
 .RE
@@ -103,7 +104,7 @@ Show the dependency graph for a specific target framework:
 .IP
 .nf
 \f[C]
-dotnet nuget why .\[rs]DotnetNuGetWhyPackage.csproj System.Text.Json --framework net6.0
+dotnet nuget why System.Text.Json --framework net6.0
 \f[R]
 .fi
 .RE

@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-new-sdk-templates" "7" "2025-09-15" "" ".NET Documentation"
+.TH "dotnet-new-sdk-templates" "7" "2025-10-15" "" ".NET Documentation"
 .hy
 .SH NAME
 .PP
@@ -1575,6 +1575,13 @@ Specifies the version of the .NET SDK to use in the \f[I]global.json\f[R] file.
 .PP
 The roll-forward policy to use when selecting an SDK version, either as a fallback when a specific SDK version is missing or as a directive to use a later version.
 For more information, see global-json.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--test-runner <TEST_RUNNER>\f[B]\f[R]
+.RS 2
+.PP
+This option was introduced in .NET 10 SDK and specifies the test runner to use, either VSTest or Microsoft.Testing.Platform.
+The default is VSTest.
 .RE
 .SS \f[V]sln\f[R]
 .PP
