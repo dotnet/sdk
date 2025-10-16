@@ -3,6 +3,8 @@
 
 #nullable disable
 
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class ProgramTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
@@ -15,7 +17,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var console = new TestConsole(Logger);
             var reporter = new TestReporter(Logger);
-            var loggerFactory = new LoggerFactory(reporter);
+            var loggerFactory = new LoggerFactory(reporter, LogLevel.Debug);
 
             var watching = reporter.RegisterSemaphore(MessageDescriptor.WatchingWithHotReload);
             var shutdownRequested = reporter.RegisterSemaphore(MessageDescriptor.ShutdownRequested);

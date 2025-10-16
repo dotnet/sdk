@@ -171,15 +171,20 @@ internal sealed class CommandLineOptions
 
         var targetFrameworkOption = (Option<string>?)buildOptions.SingleOrDefault(option => option.Name == "--framework");
 
+        var logLevel = parseResult.GetValue(verboseOption)
+            ? LogLevel.Debug
+            : parseResult.GetValue(quietOption)
+            ? LogLevel.Warning
+            : LogLevel.Information;
+
         return new()
         {
             List = parseResult.GetValue(listOption),
             GlobalOptions = new()
             {
-                Quiet = parseResult.GetValue(quietOption),
+                LogLevel = logLevel,
                 NoHotReload = parseResult.GetValue(noHotReloadOption),
                 NonInteractive = parseResult.GetValue(NonInteractiveOption),
-                Verbose = parseResult.GetValue(verboseOption),
                 BinaryLogPath = ParseBinaryLogFilePath(binLogPath),
             },
 
