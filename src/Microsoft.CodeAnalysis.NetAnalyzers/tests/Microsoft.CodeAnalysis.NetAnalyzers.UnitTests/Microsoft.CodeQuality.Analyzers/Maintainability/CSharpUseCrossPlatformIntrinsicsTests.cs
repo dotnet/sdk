@@ -16,7 +16,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
         [Fact]
         public void DiagnosticDescriptors_HaveCorrectTitleAndDescription()
         {
-            // Verify that all diagnostic descriptors have the expected title and description
             foreach (var rule in Rules)
             {
                 Assert.Equal(RuleId, rule.Id);
