@@ -12,72 +12,72 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
     {
         private const string CommandName = "verify";
 
-        private readonly CliArgument<string> _templateNameArgument = new("template-short-name")
+        private readonly Argument<string> _templateNameArgument = new("template-short-name")
         {
             Description = LocalizableStrings.command_verify_help_templateName_description,
             // 0 for case where only path is specified
             Arity = new ArgumentArity(1, 1)
         };
 
-        private readonly CliOption<string> _remainingArguments = new("--template-args")
+        private readonly Option<string> _remainingArguments = new("--template-args")
         {
             Description = "Template specific arguments - all joined into single enquoted string. Any needed quotations of actual arguments has to be escaped.",
             Arity = new ArgumentArity(0, 1)
         };
 
-        private readonly CliOption<string> _templatePathOption = new("--template-path", "-p")
+        private readonly Option<string> _templatePathOption = new("--template-path", "-p")
         {
             Description = LocalizableStrings.command_verify_help_templatePath_description,
         };
 
-        private readonly CliOption<string> _templateOutputPathOption = new("--output", "-o")
+        private readonly Option<string> _templateOutputPathOption = new("--output", "-o")
         {
             Description = LocalizableStrings.command_verify_help_outputPath_description,
         };
 
-        private readonly CliOption<string> _snapshotsDirectoryOption = new("--snapshots-directory", "-d")
+        private readonly Option<string> _snapshotsDirectoryOption = new("--snapshots-directory", "-d")
         {
             Description = LocalizableStrings.command_verify_help_snapshotsDirPath_description,
         };
 
-        private readonly CliOption<string> _scenarioNameOption = new("--scenario-name")
+        private readonly Option<string> _scenarioNameOption = new("--scenario-name")
         {
             Description = LocalizableStrings.command_verify_help_scenarioName_description,
         };
 
-        private readonly CliOption<bool> _disableDiffToolOption = new("--disable-diff-tool")
+        private readonly Option<bool> _disableDiffToolOption = new("--disable-diff-tool")
         {
             Description = LocalizableStrings.command_verify_help_disableDiffTool_description,
         };
 
-        private readonly CliOption<bool> _disableDefaultExcludePatternsOption = new("--disable-default-exclude-patterns")
+        private readonly Option<bool> _disableDefaultExcludePatternsOption = new("--disable-default-exclude-patterns")
         {
             Description = LocalizableStrings.command_verify_help_disableDefaultExcludes_description,
         };
 
-        private readonly CliOption<IEnumerable<string>> _excludePatternOption = new("--exclude-pattern")
+        private readonly Option<IEnumerable<string>> _excludePatternOption = new("--exclude-pattern")
         {
             Description = LocalizableStrings.command_verify_help_customExcludes_description,
             Arity = new ArgumentArity(0, 999)
         };
 
-        private readonly CliOption<IEnumerable<string>> _includePatternOption = new("--include-pattern")
+        private readonly Option<IEnumerable<string>> _includePatternOption = new("--include-pattern")
         {
             Description = LocalizableStrings.command_verify_help_customIncludes_description,
             Arity = new ArgumentArity(0, 999)
         };
 
-        private readonly CliOption<bool> _verifyCommandOutputOption = new("--verify-std")
+        private readonly Option<bool> _verifyCommandOutputOption = new("--verify-std")
         {
             Description = LocalizableStrings.command_verify_help_verifyOutputs_description,
         };
 
-        private readonly CliOption<bool> _isCommandExpectedToFailOption = new("--fail-expected")
+        private readonly Option<bool> _isCommandExpectedToFailOption = new("--fail-expected")
         {
             Description = LocalizableStrings.command_verify_help_expectFailure_description,
         };
 
-        private readonly CliOption<IEnumerable<UniqueForOption>> _uniqueForOption = new("--unique-for")
+        private readonly Option<IEnumerable<UniqueForOption>> _uniqueForOption = new("--unique-for")
         {
             Description = LocalizableStrings.command_verify_help_uniqueFor_description,
             Arity = new ArgumentArity(0, 999),
@@ -171,9 +171,9 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify
         }
 
         /// <summary>
-        /// Case insensitive version for <see cref="CliOption{T}.AcceptOnlyFromAmong(string[])"/>.
+        /// Case insensitive version for <see cref="Option{T}.AcceptOnlyFromAmong(string[])"/>.
         /// </summary>
-        private static void FromAmongCaseInsensitive(CliOption<IEnumerable<UniqueForOption>> option, string[]? allowedValues = null, string? allowedHiddenValue = null)
+        private static void FromAmongCaseInsensitive(Option<IEnumerable<UniqueForOption>> option, string[]? allowedValues = null, string? allowedHiddenValue = null)
         {
             allowedValues ??= [];
             option.Validators.Add(optionResult => ValidateAllowedValues(optionResult, allowedValues, allowedHiddenValue));

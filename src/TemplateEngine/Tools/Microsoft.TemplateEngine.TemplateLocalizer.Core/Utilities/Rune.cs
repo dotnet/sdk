@@ -455,7 +455,6 @@ namespace System.Text
             {
                 if (IsBmp)
                 {
-                    destination[0] = (char)_value;
                     charsWritten = 1;
                     return true;
                 }
@@ -489,7 +488,6 @@ namespace System.Text
             {
                 if (IsAscii)
                 {
-                    destination[0] = (byte)_value;
                     bytesWritten = 1;
                     return true;
                 }
@@ -499,8 +497,6 @@ namespace System.Text
                     if (_value <= 0x7FFu)
                     {
                         // Scalar 00000yyy yyxxxxxx -> bytes [ 110yyyyy 10xxxxxx ]
-                        destination[0] = (byte)((_value + (0b110u << 11)) >> 6);
-                        destination[1] = (byte)((_value & 0x3Fu) + 0x80u);
                         bytesWritten = 2;
                         return true;
                     }
@@ -510,9 +506,6 @@ namespace System.Text
                         if (_value <= 0xFFFFu)
                         {
                             // Scalar zzzzyyyy yyxxxxxx -> bytes [ 1110zzzz 10yyyyyy 10xxxxxx ]
-                            destination[0] = (byte)((_value + (0b1110 << 16)) >> 12);
-                            destination[1] = (byte)(((_value & (0x3Fu << 6)) >> 6) + 0x80u);
-                            destination[2] = (byte)((_value & 0x3Fu) + 0x80u);
                             bytesWritten = 3;
                             return true;
                         }
@@ -520,10 +513,6 @@ namespace System.Text
                         if (destination.Length >= 4)
                         {
                             // Scalar 000uuuuu zzzzyyyy yyxxxxxx -> bytes [ 11110uuu 10uuzzzz 10yyyyyy 10xxxxxx ]
-                            destination[0] = (byte)((_value + (0b11110 << 21)) >> 18);
-                            destination[1] = (byte)(((_value & (0x3Fu << 12)) >> 12) + 0x80u);
-                            destination[2] = (byte)(((_value & (0x3Fu << 6)) >> 6) + 0x80u);
-                            destination[3] = (byte)((_value & 0x3Fu) + 0x80u);
                             bytesWritten = 4;
                             return true;
                         }

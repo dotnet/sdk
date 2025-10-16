@@ -9,7 +9,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
     {
         private static async Task<int> Main(string[] args)
         {
-            CliCommand rootCommand = new TemplateDiscoveryCommand();
+            Command rootCommand = new TemplateDiscoveryCommand();
             return await rootCommand.Parse(args).InvokeAsync().ConfigureAwait(false);
         }
     }
