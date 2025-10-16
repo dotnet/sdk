@@ -2220,7 +2220,7 @@ Widening and user defined conversions are not supported with generic types.</val
     <value>Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</value>
   </data>
   <data name="PreferReadOnlySpanOverSpanMessage" xml:space="preserve">
-    <value>Parameter '{0}' can be declared as '{1}' instead of '{2}'</value>
+    <value>Parameter '{0}' can be declared as '{1}' instead of as '{2}'</value>
   </data>
   <data name="PreferReadOnlySpanOverSpanDescription" xml:space="preserve">
     <value>Using 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;' for parameters that are not written to can prevent errors, convey intent more clearly, and may improve performance.</value>
