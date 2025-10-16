@@ -52,8 +52,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return;
             }
 
-            // Get all AsParallel methods
-            var asParallelMethods = ImmutableHashSet.CreateRange(
+            // Get all AsParallel methods - use SymbolEqualityComparer for proper comparison
+            var asParallelMethods = ImmutableHashSet.CreateRange<IMethodSymbol>(
+                SymbolEqualityComparer.Default,
                 parallelEnumerableType.GetMembers("AsParallel").OfType<IMethodSymbol>());
 
             if (asParallelMethods.IsEmpty)
