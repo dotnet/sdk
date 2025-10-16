@@ -328,7 +328,7 @@ namespace Microsoft.DotNet.Watch
                                 try
                                 {
                                     // Build projects sequentially to avoid failed attempts to overwrite dependent project outputs.
-                                    // TODO: Ideally, dotnet build would be able to build multiple projects.
+                                    // TODO: Ideally, dotnet build would be able to build multiple projects. https://github.com/dotnet/sdk/issues/51311
                                     var success = true;
                                     foreach (var projectPath in projectsToRebuild)
                                     {
