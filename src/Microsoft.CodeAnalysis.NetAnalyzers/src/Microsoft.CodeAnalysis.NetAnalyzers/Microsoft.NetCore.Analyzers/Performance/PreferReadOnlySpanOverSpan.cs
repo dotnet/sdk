@@ -84,9 +84,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     return;
                 }
 
+                // Check parameter references for writes
                 blockStartContext.RegisterOperationAction(operationContext =>
                 {
-                    // Check parameter references for writes
                     if (operationContext.Operation is IParameterReferenceOperation parameterReference &&
                         candidateParameters.ContainsKey(parameterReference.Parameter))
                     {
@@ -104,15 +104,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 blockStartContext.RegisterOperationAction(operationContext =>
                 {
                     var propertyRef = (IPropertyReferenceOperation)operationContext.Operation;
+                    // Check if this property reference is on the left side of an assignment
+                    // This handles Span<T> indexer writes like: span[0] = value
                     if (propertyRef.Instance is IParameterReferenceOperation paramRef &&
-                        candidateParameters.ContainsKey(paramRef.Parameter))
+                        candidateParameters.ContainsKey(paramRef.Parameter) &&
+                        propertyRef.Parent is IAssignmentOperation assignment && 
+                        assignment.Target == propertyRef)
                     {
-                        // Check if this property reference is on the left side of an assignment
-                        // This handles Span<T> indexer writes like: span[0] = value
-                        if (propertyRef.Parent is IAssignmentOperation assignment && assignment.Target == propertyRef)
-                        {
-                            candidateParameters.TryRemove(paramRef.Parameter, out _);
-                        }
+                        candidateParameters.TryRemove(paramRef.Parameter, out _);
                     }
                 }, OperationKind.PropertyReference);
 
@@ -122,15 +121,13 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     // Get the instance from the first child of the implicit indexer reference
                     var instance = operationContext.Operation.Children.FirstOrDefault();
 
+                    // Check if this element reference is on the left side of an assignment
                     if (instance is IParameterReferenceOperation paramRef &&
-                        candidateParameters.ContainsKey(paramRef.Parameter))
+                        candidateParameters.ContainsKey(paramRef.Parameter) &&
+                        operationContext.Operation.Parent is IAssignmentOperation assignment && 
+                        assignment.Target == operationContext.Operation)
                     {
-                        // Check if this element reference is on the left side of an assignment
-                        if (operationContext.Operation.Parent is IAssignmentOperation assignment && 
-                            assignment.Target == operationContext.Operation)
-                        {
-                            candidateParameters.TryRemove(paramRef.Parameter, out _);
-                        }
+                        candidateParameters.TryRemove(paramRef.Parameter, out _);
                     }
                 }, OperationKindEx.ImplicitIndexerReference);
 
@@ -138,21 +135,16 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 blockStartContext.RegisterOperationAction(operationContext =>
                 {
                     var argument = (IArgumentOperation)operationContext.Operation;
+                    // If parameter is passed to a method that expects a non-readonly type, remove it
                     if (argument.Value is IParameterReferenceOperation paramRef &&
-                        candidateParameters.ContainsKey(paramRef.Parameter))
+                        candidateParameters.ContainsKey(paramRef.Parameter) &&
+                        argument.Parameter?.Type is INamedTypeSymbol argType &&
+                        paramRef.Parameter.Type is INamedTypeSymbol &&
+                        !SymbolEqualityComparer.Default.Equals(argType.OriginalDefinition, readOnlySpan) &&
+                        !SymbolEqualityComparer.Default.Equals(argType.OriginalDefinition, readOnlyMemory))
                     {
-                        // If parameter is passed to a method that expects a non-readonly type, remove it
-                        if (argument.Parameter?.Type is INamedTypeSymbol argType)
-                        {
-                            var paramType = paramRef.Parameter.Type as INamedTypeSymbol;
-                            if (paramType != null && 
-                                !SymbolEqualityComparer.Default.Equals(argType.OriginalDefinition, readOnlySpan) &&
-                                !SymbolEqualityComparer.Default.Equals(argType.OriginalDefinition, readOnlyMemory))
-                            {
-                                // Target expects writable Span/Memory, so this parameter must remain writable
-                                candidateParameters.TryRemove(paramRef.Parameter, out _);
-                            }
-                        }
+                        // Target expects writable Span/Memory, so this parameter must remain writable
+                        candidateParameters.TryRemove(paramRef.Parameter, out _);
                     }
                 }, OperationKind.Argument);
 
@@ -161,23 +153,18 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 blockStartContext.RegisterOperationAction(operationContext =>
                 {
                     var invocation = (IInvocationOperation)operationContext.Operation;
+                    // Check if this extension method's first parameter (the 'this' parameter) is a Span/Memory
+                    // If the extension method takes Span<T> or Memory<T> (not readonly versions),
+                    // then the parameter must remain writable
                     if (invocation.TargetMethod.IsExtensionMethod &&
                         invocation.Arguments.Length > 0 &&
                         invocation.Arguments[0].Value is IParameterReferenceOperation paramRef &&
-                        candidateParameters.ContainsKey(paramRef.Parameter))
+                        candidateParameters.ContainsKey(paramRef.Parameter) &&
+                        invocation.TargetMethod.Parameters[0].Type is INamedTypeSymbol firstParamNamedType &&
+                        (SymbolEqualityComparer.Default.Equals(firstParamNamedType.OriginalDefinition, span) ||
+                         SymbolEqualityComparer.Default.Equals(firstParamNamedType.OriginalDefinition, memory)))
                     {
-                        // Check if this extension method's first parameter (the 'this' parameter) is a Span/Memory
-                        var firstParamType = invocation.TargetMethod.Parameters[0].Type;
-                        if (firstParamType is INamedTypeSymbol firstParamNamedType)
-                        {
-                            // If the extension method takes Span<T> or Memory<T> (not readonly versions),
-                            // then the parameter must remain writable
-                            if (SymbolEqualityComparer.Default.Equals(firstParamNamedType.OriginalDefinition, span) ||
-                                SymbolEqualityComparer.Default.Equals(firstParamNamedType.OriginalDefinition, memory))
-                            {
-                                candidateParameters.TryRemove(paramRef.Parameter, out _);
-                            }
-                        }
+                        candidateParameters.TryRemove(paramRef.Parameter, out _);
                     }
                 }, OperationKind.Invocation);
 
@@ -189,8 +176,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         candidateParameters.ContainsKey(paramRef.Parameter))
                     {
                         // Returning the parameter means it escapes, so we need to check if return type is compatible
-                        var returnType = methodSymbol.ReturnType;
-                        if (returnType is INamedTypeSymbol returnNamedType &&
+                        if (methodSymbol.ReturnType is INamedTypeSymbol returnNamedType &&
                             !SymbolEqualityComparer.Default.Equals(returnNamedType.OriginalDefinition, readOnlySpan) &&
                             !SymbolEqualityComparer.Default.Equals(returnNamedType.OriginalDefinition, readOnlyMemory))
                         {
@@ -210,8 +196,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         candidateParameters.ContainsKey(paramRef.Parameter))
                     {
                         // Parameter is being stored to a field - must remain writable if field type is not readonly
-                        var fieldType = fieldRef.Field.Type;
-                        if (fieldType is INamedTypeSymbol fieldNamedType &&
+                        if (fieldRef.Field.Type is INamedTypeSymbol fieldNamedType &&
                             !SymbolEqualityComparer.Default.Equals(fieldNamedType.OriginalDefinition, readOnlySpan) &&
                             !SymbolEqualityComparer.Default.Equals(fieldNamedType.OriginalDefinition, readOnlyMemory))
                         {
@@ -224,18 +209,15 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 blockStartContext.RegisterOperationAction(operationContext =>
                 {
                     var assignment = (IAssignmentOperation)operationContext.Operation;
+                    // Check if the target type is compatible with readonly version
                     if (assignment.Value is IParameterReferenceOperation paramRef &&
-                        candidateParameters.ContainsKey(paramRef.Parameter))
+                        candidateParameters.ContainsKey(paramRef.Parameter) &&
+                        assignment.Target.Type is INamedTypeSymbol targetNamedType &&
+                        !SymbolEqualityComparer.Default.Equals(targetNamedType.OriginalDefinition, readOnlySpan) &&
+                        !SymbolEqualityComparer.Default.Equals(targetNamedType.OriginalDefinition, readOnlyMemory))
                     {
-                        // Check if the target type is compatible with readonly version
-                        var targetType = assignment.Target.Type;
-                        if (targetType is INamedTypeSymbol targetNamedType &&
-                            !SymbolEqualityComparer.Default.Equals(targetNamedType.OriginalDefinition, readOnlySpan) &&
-                            !SymbolEqualityComparer.Default.Equals(targetNamedType.OriginalDefinition, readOnlyMemory))
-                        {
-                            // Target expects writable Span/Memory
-                            candidateParameters.TryRemove(paramRef.Parameter, out _);
-                        }
+                        // Target expects writable Span/Memory
+                        candidateParameters.TryRemove(paramRef.Parameter, out _);
                     }
                 }, OperationKind.SimpleAssignment);
 
@@ -247,18 +229,15 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     {
                         foreach (var element in arrayCreation.Initializer.ElementValues)
                         {
+                            // Check if array element type is compatible with readonly version
                             if (element is IParameterReferenceOperation paramRef &&
-                                candidateParameters.ContainsKey(paramRef.Parameter))
+                                candidateParameters.ContainsKey(paramRef.Parameter) &&
+                                arrayType.ElementType is INamedTypeSymbol elementNamedType &&
+                                !SymbolEqualityComparer.Default.Equals(elementNamedType.OriginalDefinition, readOnlySpan) &&
+                                !SymbolEqualityComparer.Default.Equals(elementNamedType.OriginalDefinition, readOnlyMemory))
                             {
-                                // Check if array element type is compatible with readonly version
-                                var elementType = arrayType.ElementType;
-                                if (elementType is INamedTypeSymbol elementNamedType &&
-                                    !SymbolEqualityComparer.Default.Equals(elementNamedType.OriginalDefinition, readOnlySpan) &&
-                                    !SymbolEqualityComparer.Default.Equals(elementNamedType.OriginalDefinition, readOnlyMemory))
-                                {
-                                    // Array expects writable Span/Memory elements
-                                    candidateParameters.TryRemove(paramRef.Parameter, out _);
-                                }
+                                // Array expects writable Span/Memory elements
+                                candidateParameters.TryRemove(paramRef.Parameter, out _);
                             }
                         }
                     }
