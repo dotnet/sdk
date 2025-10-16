@@ -14,75 +14,75 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [Fact]
         public async Task SpanParameter_NotWritten_ProducesDiagnostic()
         {
-            string source = @"
-using System;
+            string source = """
+                using System;
 
-class C
-{
-    private void M(Span<byte> [|data|])
-    {
-        var length = data.Length;
-    }
-}
-";
-            string expected = @"
-using System;
+                class C
+                {
+                    private void M(Span<byte> [|data|])
+                    {
+                        var length = data.Length;
+                    }
+                }
+                """;
+            string expected = """
+                using System;
 
-class C
-{
-    private void M(ReadOnlySpan<byte> data)
-    {
-        var length = data.Length;
-    }
-}
-";
+                class C
+                {
+                    private void M(ReadOnlySpan<byte> data)
+                    {
+                        var length = data.Length;
+                    }
+                }
+                """;
             await VerifyCSCodeFixAsync(source, expected);
         }
 
         [Fact]
         public async Task MemoryParameter_NotWritten_ProducesDiagnostic()
         {
-            string source = @"
-using System;
+            string source = """
+                using System;
 
-class C
-{
-    private void M(Memory<int> [|data|])
-    {
-        var span = data.Span;
-        var length = span.Length;
-    }
-}
-";
-            string expected = @"
-using System;
+                class C
+                {
+                    private void M(Memory<int> [|data|])
+                    {
+                        var span = data.Span;
+                        var length = span.Length;
+                    }
+                }
+                """;
+            string expected = """
+                using System;
 
-class C
-{
-    private void M(ReadOnlyMemory<int> data)
-    {
-        var span = data.Span;
-        var length = span.Length;
-    }
-}
-";
+                class C
+                {
+                    private void M(ReadOnlyMemory<int> data)
+                    {
+                        var span = data.Span;
+                        var length = span.Length;
+                    }
+                }
+                """;
             await VerifyCSCodeFixAsync(source, expected);
         }
 
         [Fact]
         public async Task SpanParameter_Written_NoDiagnostic()
         {
-            string source = @"
-using System;
+            string source = """
+                using System;
 
-class C
-{
-    private void M(Span<byte> data)
-    {
-        data[0] = 1;
-    }
-}
-";
+                class C
+                {
+                    private void M(Span<byte> data)
+                    {
+                        data[0] = 1;
+                    }
+                }
+                """;
             await VerifyCSCodeFixAsync(source, source);
         }
 
