@@ -12,6 +12,7 @@
     "settings": {
         "dotnet.defaultSolution": "dnup/dnup.csproj",
         "csharp.debug.console": "integratedTerminal",
+        "debug.terminal.clearBeforeReusing": true,
         "editor.formatOnSave": true,
         "omnisharp.useModernNet": true
     },
@@ -82,7 +83,8 @@
                 "presentation": {
                     "reveal": "always",
                     "panel": "shared",
-                    "showReuseMessage": true
+                    "showReuseMessage": false,
+                    "clear": true
                 },
                 "problemMatcher": "$msCompile",
                 "group": {
@@ -111,7 +113,8 @@
                 "presentation": {
                     "reveal": "always",
                     "panel": "shared",
-                    "showReuseMessage": true
+                    "showReuseMessage": false,
+                    "clear": true
                 },
                 "problemMatcher": "$msCompile",
                 "group": {
@@ -119,33 +122,6 @@
                     "isDefault": true
                 }
             },
-            {
-                "label": "test-watch",
-                "type": "process",
-                "command": "dotnet",
-                "args": [
-                    "watch",
-                    "test",
-                    "${workspaceFolder:dnup.Tests}/dnup.Tests.csproj",
-                    "/property:GenerateFullPaths=true",
-                    "/consoleloggerparameters:NoSummary",
-                    "/p:ContinuousIntegrationBuild=false",
-                    "/p:UseSharedCompilation=true",
-                    "/p:Deterministic=false",
-                    "/p:RunAnalyzers=false",
-                    "/p:NoRestore=true"
-                ],
-                "options": {
-                    "cwd": "${workspaceFolder:installer}"
-                },
-                "presentation": {
-                    "reveal": "always",
-                    "panel": "new",
-                    "showReuseMessage": true
-                },
-                "isBackground": true,
-                "problemMatcher": "$msCompile"
-            }
         ]
     }
 }
