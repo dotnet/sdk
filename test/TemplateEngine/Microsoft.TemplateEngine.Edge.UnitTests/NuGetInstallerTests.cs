@@ -156,7 +156,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             source.Owners.Should().BeNull();
             source.Reserved.Should().Be("False");
             source.Version.Should().NotBeNullOrEmpty();
-            source.DisplayName.Should().StartWith("Microsoft.TemplateEngine.TestTemplates::");
+            source.DisplayName.Should().StartWith("Microsoft.TemplateEngine.TestTemplates@");
             source.Identifier.Should().Be("Microsoft.TemplateEngine.TestTemplates");
             source.Installer.Should().Be(installer);
             source.IsLocalPackage.Should().Be(true);
@@ -239,7 +239,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             source.Owners.Should().Be("Microsoft");
             source.Reserved.Should().Be("True");
             source.Version.Should().Be("1.0.0");
-            source.DisplayName.Should().Be("Microsoft.TemplateEngine.TestTemplates::1.0.0");
+            source.DisplayName.Should().Be("Microsoft.TemplateEngine.TestTemplates@1.0.0");
             source.Identifier.Should().Be("Microsoft.TemplateEngine.TestTemplates");
             source.Installer.Should().Be(installer);
             source.IsLocalPackage.Should().Be(false);
@@ -447,7 +447,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             updatedSource!.MountPointUri.Should().ContainAll(new[] { installPath, "Microsoft.TemplateEngine.TestTemplates" });
             updatedSource.Author.Should().Be("Microsoft");
             updatedSource.Version.Should().Be("1.0.1");
-            updatedSource.DisplayName.Should().Be("Microsoft.TemplateEngine.TestTemplates::1.0.1");
+            updatedSource.DisplayName.Should().Be("Microsoft.TemplateEngine.TestTemplates@1.0.1");
             updatedSource.Identifier.Should().Be("Microsoft.TemplateEngine.TestTemplates");
             updatedSource.Installer.Should().Be(installer);
             updatedSource.IsLocalPackage.Should().Be(false);
@@ -514,7 +514,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             source.Reserved.Should().Be(reserved);
             source.Owners.Should().Be(owners);
             source.Version.Should().Be(version);
-            source.DisplayName.Should().Be($"{identifier}::{version}");
+            source.DisplayName.Should().Be($"{identifier}@{version}");
             source.Identifier.Should().Be(identifier);
             source.Installer.Should().Be(installer);
             source.IsLocalPackage.Should().Be(local);

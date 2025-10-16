@@ -185,7 +185,7 @@ namespace Microsoft.TemplateEngine.TestHelper
                 }
                 else
                 {
-                    _nugetLogger.LogDebug($"[NuGet Package Manager] Getting package metadata {identifier}::{version}.");
+                    _nugetLogger.LogDebug($"[NuGet Package Manager] Getting package metadata {identifier}@{version}.");
                     packageVersion = new NuGetVersion(version!);
                     (source, packageMetadata) = await GetPackageMetadataAsync(identifier, packageVersion, packagesSources, cancellationToken);
                 }
@@ -284,7 +284,7 @@ namespace Microsoft.TemplateEngine.TestHelper
 
                         return current.package.Identity.Version > max.package.Identity.Version ? current : max;
                     });
-                _nugetLogger.LogDebug($"[NuGet Package Manager] Latest version is {latestVersion.Item2.Identity.Id}::{latestVersion.Item2.Identity.Version}, source: {latestVersion.Item1.Source}.");
+                _nugetLogger.LogDebug($"[NuGet Package Manager] Latest version is {latestVersion.Item2.Identity.Id}@{latestVersion.Item2.Identity.Version}, source: {latestVersion.Item1.Source}.");
                 return latestVersion;
             }
 
@@ -321,7 +321,7 @@ namespace Microsoft.TemplateEngine.TestHelper
                     IPackageSearchMetadata? matchedVersion = foundPackages!.FirstOrDefault(package => package.Identity.Version == packageVersion);
                     if (matchedVersion != null)
                     {
-                        _nugetLogger.LogDebug($"[NuGet Package Manager] Processed source {foundSource.Source}, found {matchedVersion.Identity.Id}:: {matchedVersion.Identity.Version} package, cancelling other tasks.");
+                        _nugetLogger.LogDebug($"[NuGet Package Manager] Processed source {foundSource.Source}, found {matchedVersion.Identity.Id}@{matchedVersion.Identity.Version} package, cancelling other tasks.");
                         linkedCts.Cancel();
                         return (foundSource, matchedVersion);
                     }
