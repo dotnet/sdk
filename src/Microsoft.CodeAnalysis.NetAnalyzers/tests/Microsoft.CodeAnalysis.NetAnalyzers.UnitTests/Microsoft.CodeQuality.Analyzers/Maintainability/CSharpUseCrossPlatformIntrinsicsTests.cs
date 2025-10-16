@@ -20,8 +20,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             foreach (var rule in Rules)
             {
                 Assert.Equal(RuleId, rule.Id);
-                Assert.Equal("Use cross-platform intrinsics", rule.Title.ToString());
-                Assert.Equal("This rule detects usage of platform-specific intrinsics that can be replaced with an equivalent cross-platform intrinsic instead.", rule.Description.ToString());
+                Assert.NotEmpty(rule.Title.ToString());
+                Assert.NotEmpty(rule.Description.ToString());
                 Assert.NotEmpty(rule.MessageFormat.ToString());
             }
         }

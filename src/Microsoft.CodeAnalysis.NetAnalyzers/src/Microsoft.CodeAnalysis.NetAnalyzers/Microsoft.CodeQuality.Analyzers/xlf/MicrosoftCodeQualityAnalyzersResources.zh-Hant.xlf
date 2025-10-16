@@ -449,62 +449,62 @@
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_Addition">
         <source>The addition operator should be preferred</source>
-        <target state="new">The addition operator should be preferred</target>
+        <target state="translated">應優先使用加法運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_BitwiseAnd">
         <source>The bitwise-and operator should be preferred</source>
-        <target state="new">The bitwise-and operator should be preferred</target>
+        <target state="translated">應優先使用位元 AND 運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_BitwiseOr">
         <source>The bitwise-or operator should be preferred</source>
-        <target state="new">The bitwise-or operator should be preferred</target>
+        <target state="translated">應優先使用位元 OR 運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_Division">
         <source>The division operator should be preferred</source>
-        <target state="new">The division operator should be preferred</target>
+        <target state="translated">應優先使用除法運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_ExclusiveOr">
         <source>The exclusive-or operator should be preferred</source>
-        <target state="new">The exclusive-or operator should be preferred</target>
+        <target state="translated">應優先使用排除 OR 運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_LeftShift">
         <source>The left-shift operator should be preferred</source>
-        <target state="new">The left-shift operator should be preferred</target>
+        <target state="translated">應優先使用左移運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_Multiply">
         <source>The multiply operator should be preferred</source>
-        <target state="new">The multiply operator should be preferred</target>
+        <target state="translated">應優先使用乘法運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_OnesComplement">
         <source>The ones-complement operator should be preferred</source>
-        <target state="new">The ones-complement operator should be preferred</target>
+        <target state="translated">應優先使用一補位運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_RightShift">
         <source>The right-shift operator should be preferred</source>
-        <target state="new">The right-shift operator should be preferred</target>
+        <target state="translated">應優先使用右移運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_Subtraction">
         <source>The subtraction operator should be preferred</source>
-        <target state="new">The subtraction operator should be preferred</target>
+        <target state="translated">應優先使用減法運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_UnaryNegation">
         <source>The unary-negation operator should be preferred</source>
-        <target state="new">The unary-negation operator should be preferred</target>
+        <target state="translated">應優先使用一元否定運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_UnsignedRightShift">
         <source>The unsigned right-shift operator should be preferred</source>
-        <target state="new">The unsigned right-shift operator should be preferred</target>
+        <target state="translated">應優先使用未簽署右移運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsTitle">
