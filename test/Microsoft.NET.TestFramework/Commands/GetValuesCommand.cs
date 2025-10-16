@@ -67,7 +67,7 @@ namespace Microsoft.NET.TestFramework.Commands
 
             var project = XDocument.Load(ProjectFile);
 
-            if(project.Root is null)
+            if (project.Root is null)
             {
                 throw new InvalidOperationException($"The project file '{ProjectFile}' does not have a root element.");
             }
@@ -95,7 +95,7 @@ namespace Microsoft.NET.TestFramework.Commands
                 propertyGroup = new XElement(ns + "PropertyGroup");
                 project.Root.AddAfterSelf(propertyGroup);
             }
-            
+
             propertyGroup.Add(new XElement(ns + "CustomAfterDirectoryBuildTargets", $"$(CustomAfterDirectoryBuildTargets);{customAfterDirectoryBuildTargetsPath}"));
             propertyGroup.Add(new XElement(ns + "CustomAfterMicrosoftCommonCrossTargetingTargets", $"$(CustomAfterMicrosoftCommonCrossTargetingTargets);{customAfterDirectoryBuildTargetsPath}"));
 

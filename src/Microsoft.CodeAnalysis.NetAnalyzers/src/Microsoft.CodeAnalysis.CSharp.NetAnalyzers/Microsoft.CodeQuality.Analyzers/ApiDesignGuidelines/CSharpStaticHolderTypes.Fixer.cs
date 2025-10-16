@@ -5,15 +5,15 @@ using System.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeQuality.Analyzers;
-using Microsoft.CodeAnalysis.CodeActions;
-using Analyzer.Utilities;
+using Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines;
 
 namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
 {

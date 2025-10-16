@@ -420,7 +420,7 @@ namespace Microsoft.NET.TestFramework
         private static readonly Lazy<string> s_systemDataSqlClientPackageVersion = new(() => GetPackageVersion("System.Data.SqlClient"));
 
         public static string GetNewtonsoftJsonPackageVersion()
-            =>s_newtonsoftJsonPackageVersion.Value;
+            => s_newtonsoftJsonPackageVersion.Value;
 
         public static string GetSystemDataSqlClientPackageVersion()
             => s_systemDataSqlClientPackageVersion.Value;

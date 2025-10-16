@@ -1,10 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
-using FluentAssertions.Primitives;
-using DiffPlex.Renderer;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using DiffPlex.Renderer;
+using FluentAssertions.Primitives;
 
 namespace Microsoft.NET.TestFramework.Assertions
 {

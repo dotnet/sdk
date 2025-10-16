@@ -9,7 +9,7 @@ namespace Microsoft.NET.TestFramework
         /// Gets or sets the reason for potentially skipping the test if conditions are not met.
         /// </summary>
         public string? Reason { get; set; }
-        
+
         public WindowsOnlyRequiresMSBuildVersionFactAttribute(string version)
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

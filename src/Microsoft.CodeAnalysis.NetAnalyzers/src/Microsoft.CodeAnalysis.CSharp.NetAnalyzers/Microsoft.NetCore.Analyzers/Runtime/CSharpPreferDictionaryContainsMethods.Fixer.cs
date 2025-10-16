@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using Microsoft.NetCore.Analyzers.Runtime;
+using System.Threading;
+using System.Threading.Tasks;
+using Analyzer.Utilities;
+using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Threading.Tasks;
-using System.Threading;
 using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.NetCore.Analyzers;
-using Analyzer.Utilities.Extensions;
-using Analyzer.Utilities;
+using Microsoft.NetCore.Analyzers.Runtime;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 {

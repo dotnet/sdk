@@ -12,8 +12,8 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Operations;
-using Resx = Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 using RequiredSymbols = Microsoft.NetCore.Analyzers.Runtime.UseSpanBasedStringConcat.RequiredSymbols;
+using Resx = Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {

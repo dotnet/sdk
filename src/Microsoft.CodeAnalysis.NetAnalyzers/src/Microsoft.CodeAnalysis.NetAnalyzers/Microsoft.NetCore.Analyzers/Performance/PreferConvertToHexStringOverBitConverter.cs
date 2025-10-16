@@ -84,7 +84,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     Rule,
                     additionalLocations: additionalLocationsBuilder.ToImmutable(),
                     properties: ImmutableDictionary<string, string?>.Empty.Add(ReplacementPropertiesKey, convertToHexStringReplacementMethod.Name),
-                    args:[convertToHexStringReplacementMethod.ToDisplayString(), bitConverterInvocation.TargetMethod.ToDisplayString()]));
+                    args: [convertToHexStringReplacementMethod.ToDisplayString(), bitConverterInvocation.TargetMethod.ToDisplayString()]));
             }
         }
 

@@ -2,8 +2,8 @@
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.Documentation
 {

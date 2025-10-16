@@ -115,7 +115,7 @@ namespace Microsoft.NET.TestFramework
             environment["DOTNET_MULTILEVEL_LOOKUP"] = "0";
 
             //  Set NUGET_PACKAGES environment variable to match value from build.ps1
-            if(NuGetCachePath is not null)
+            if (NuGetCachePath is not null)
             {
                 environment["NUGET_PACKAGES"] = NuGetCachePath;
             }
