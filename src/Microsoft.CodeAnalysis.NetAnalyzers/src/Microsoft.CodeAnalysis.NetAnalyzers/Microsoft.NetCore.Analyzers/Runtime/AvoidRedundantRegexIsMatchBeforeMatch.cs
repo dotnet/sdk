@@ -86,13 +86,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return false;
         }
 
-        private static bool FindMatchCallInBranch(IOperation branch, ImmutableArray<IMethodSymbol> regexMatchSymbols, IInvocationOperation isMatchCall, IOperation conditionalOperation, out IInvocationOperation matchCall)
-        {
-            // Search for the first Match call that matches criteria
-            return FindMatchCallRecursive(branch, regexMatchSymbols, isMatchCall, conditionalOperation, out matchCall);
-        }
-
-        private static bool FindMatchCallRecursive(IOperation operation, ImmutableArray<IMethodSymbol> regexMatchSymbols, IInvocationOperation isMatchCall, IOperation conditionalOperation, out IInvocationOperation matchCall)
+        private static bool FindMatchCallInBranch(IOperation operation, ImmutableArray<IMethodSymbol> regexMatchSymbols, IInvocationOperation isMatchCall, IOperation conditionalOperation, out IInvocationOperation matchCall)
         {
             if (operation is IInvocationOperation invocation &&
                 regexMatchSymbols.Contains(invocation.TargetMethod, SymbolEqualityComparer.Default))
@@ -107,7 +101,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             foreach (var child in operation.Children)
             {
-                if (FindMatchCallRecursive(child, regexMatchSymbols, isMatchCall, conditionalOperation, out matchCall))
+                if (FindMatchCallInBranch(child, regexMatchSymbols, isMatchCall, conditionalOperation, out matchCall))
                 {
                     return true;
                 }
@@ -261,7 +255,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
             }
 
-            // Check for compound assignments
+            // Check for compound assignments (e.g., +=, -=, etc.)
             if (operation is ICompoundAssignmentOperation compoundAssignment)
             {
                 if (compoundAssignment.Target is ILocalReferenceOperation compoundTargetLocal &&
@@ -271,21 +265,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
                 if (compoundAssignment.Target is IParameterReferenceOperation compoundTargetParam &&
                     SymbolEqualityComparer.Default.Equals(compoundTargetParam.Parameter, symbol))
-                {
-                    return true;
-                }
-            }
-
-            // Check for increments/decrements
-            if (operation is IIncrementOrDecrementOperation increment)
-            {
-                if (increment.Target is ILocalReferenceOperation incrementTargetLocal &&
-                    SymbolEqualityComparer.Default.Equals(incrementTargetLocal.Local, symbol))
-                {
-                    return true;
-                }
-                if (increment.Target is IParameterReferenceOperation incrementTargetParam &&
-                    SymbolEqualityComparer.Default.Equals(incrementTargetParam.Parameter, symbol))
                 {
                     return true;
                 }
