@@ -2269,8 +2269,8 @@ Widening and user defined conversions are not supported with generic types.</sou
         <note />
       </trans-unit>
       <trans-unit id="PreferReadOnlySpanOverSpanMessage">
-        <source>Parameter '{0}' can be declared as '{1}' instead of '{2}'</source>
-        <target state="new">Parameter '{0}' can be declared as '{1}' instead of '{2}'</target>
+        <source>Parameter '{0}' can be declared as '{1}' instead of as '{2}'</source>
+        <target state="new">Parameter '{0}' can be declared as '{1}' instead of as '{2}'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferReadOnlySpanOverSpanTitle">
