@@ -102,8 +102,14 @@ Copyright (c) .NET Foundation. All rights reserved.
           AfterTargets="ComputeFilesToPublish"
           Condition="'$(ErrorOnDuplicatePublishOutputFiles)' != 'false'">
 
+    <!-- Only check for duplicates among files that will actually be copied to the publish directory -->
+    <ItemGroup>
+      <_ResolvedFileToPublishForDuplicateCheck Include="@(ResolvedFileToPublish->Distinct())"
+                                                Condition="'%(ResolvedFileToPublish.CopyToPublishDirectory)' == 'PreserveNewest' or '%(ResolvedFileToPublish.CopyToPublishDirectory)' == 'Always'" />
+    </ItemGroup>
+
     <CheckForDuplicateItemMetadata
-      Items="@(ResolvedFileToPublish->Distinct())"
+      Items="@(_ResolvedFileToPublishForDuplicateCheck)"
       MetadataName="RelativePath">
       <Output TaskParameter="DuplicatesExist" PropertyName="_ResolvedFileToPublishContainsDuplicates" />
       <Output TaskParameter="DuplicateItems" ItemName="_ResolvedFileToPublishDuplicatedItems" />
