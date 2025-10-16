@@ -23,8 +23,16 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
     [Required]
     public string ManifestPath { get; set; }
 
+    public string CacheFilePath { get; set; }
+
     public override bool Execute()
     {
+        if (!string.IsNullOrEmpty(CacheFilePath) && File.Exists(ManifestPath) && File.GetLastWriteTimeUtc(ManifestPath) > File.GetLastWriteTimeUtc(CacheFilePath))
+        {
+            Log.LogMessage(MessageImportance.Low, "Skipping manifest generation because manifest file '{0}' is up to date.", ManifestPath);
+            return true;
+        }
+
         try
         {
             // Get the list of the asset that need to be part of the manifest (this is similar to GenerateStaticWebAssetsDevelopmentManifest)
@@ -60,7 +68,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
                 Endpoints = [.. filteredEndpoints]
             };
 
-            this.PersistFileIfChanged(manifest, ManifestPath);
+            this.PersistFileIfChanged(manifest, ManifestPath, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetEndpointsManifest);
         }
         catch (Exception ex)
         {
