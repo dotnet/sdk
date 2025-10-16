@@ -11,15 +11,8 @@ internal class GlobalPrefixRemover : CSharpSyntaxRewriter
 {
     public static readonly GlobalPrefixRemover Singleton = new();
 
-    private const string GlobalPrefix = "global";
-
-    public override SyntaxNode? VisitQualifiedName(QualifiedNameSyntax node)
-    {
-        if (node.Left is AliasQualifiedNameSyntax alias &&
-            alias.Alias.Identifier.Text == GlobalPrefix)
-        {
-            node = SyntaxFactory.QualifiedName(alias.Name, node.Right).WithTriviaFrom(node);
-        }
-        return base.VisitQualifiedName(node);
-    }
+    public override SyntaxNode? VisitAliasQualifiedName(AliasQualifiedNameSyntax node)
+        => node.Alias.Identifier.IsKind(SyntaxKind.GlobalKeyword)
+            ? node.Name.WithTriviaFrom(node)
+            : base.VisitAliasQualifiedName(node);
 }
