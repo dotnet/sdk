@@ -176,8 +176,8 @@ Details: {1}</source>
         <note>erty name.</note>
       </trans-unit>
       <trans-unit id="MacroProcessing_Warning_DependencyErrors">
-        <source>'{0}' was not processed due to the next issues in dependencises: '{1}'.</source>
-        <target state="translated">因為相依性中的下一個問題，所以未處理 '{0}': '{1}'。</target>
+        <source>'{0}' was not processed due to the next issues in dependencies: '{1}'.</source>
+        <target state="translated">因為相依性中的下一個問題: '{1}'，所以未處理 '{0}'。</target>
         <note>{0} - macro name, {1} - dependent macros errors</note>
       </trans-unit>
       <trans-unit id="RunnableProjectConfig_OperationSetup_UnknownForm">

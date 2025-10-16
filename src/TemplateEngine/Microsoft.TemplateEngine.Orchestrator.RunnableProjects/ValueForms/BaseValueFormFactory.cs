@@ -1,30 +1,26 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
     /// <summary>
     /// Base implementation of <see cref="IValueFormFactory"/>.
-    /// When implementing a value form inherit from <see cref="ActionableValueFormFactory"/> or <see cref="ConfigurableValueFormFactory{T}"/> or <see cref="DependantValueFormFactory{T}"/> instead.
+    /// When implementing a value form inherit from <see cref="ActionableValueFormFactory"/> or <see cref="ConfigurableValueFormFactory{T}"/> or <see cref="DependentValueFormFactory{T}"/> instead.
     /// </summary>
     internal abstract class BaseValueFormFactory : IValueFormFactory
     {
-        private readonly string _identifier;
-
         protected BaseValueFormFactory(string identifier)
         {
             if (string.IsNullOrWhiteSpace(identifier))
             {
                 throw new ArgumentException($"'{nameof(identifier)}' cannot be null or whitespace.", nameof(identifier));
             }
-            _identifier = identifier;
+            Identifier = identifier;
         }
 
-        public string Identifier => _identifier;
+        public string Identifier { get; }
 
         public abstract IValueForm Create(string? name = null);
 

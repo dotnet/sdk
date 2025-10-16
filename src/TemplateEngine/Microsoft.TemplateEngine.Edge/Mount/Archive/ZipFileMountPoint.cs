@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.IO.Compression;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
@@ -89,7 +87,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
 
         internal Guid MountPointFactoryId => ZipFileMountPointFactory.FactoryId;
 
-        public IFile? FileInfo(string path)
+        public IFile FileInfo(string path)
         {
             return new ZipFileFile(this, path, path.Substring(path.LastIndexOf('/') + 1), null);
         }

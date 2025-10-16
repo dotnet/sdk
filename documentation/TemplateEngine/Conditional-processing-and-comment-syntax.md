@@ -41,7 +41,7 @@
 
 ## Introduction
 
-To add conditional, or dynamic, content you can add Template Engine expressions in your source files. The conditional expression let you to include or exclude part of the file according to a specified condition, and to do this you can use the familiar conditional expressions like **#if**, **#else**, **#elseif**, **#endif**.
+To add conditional, or dynamic, content you can add Template Engine expressions in your source files. The conditional expression lets you include or exclude part of the file according to a specified condition, and to do this you can use the familiar conditional expressions like **#if**, **#else**, **#elseif**, **#endif**.
 
 To learn more about conditional expressions evaluation go to [Conditions](Conditions.md) description.
 
@@ -310,7 +310,7 @@ The first expression is not emitted because it is processed, and the condition e
 ## JSON Files
 
 For .json files, the comment block starts with `//` or `////` to the end of the line. After this marker you can add the conditional expressions.
-The choice between `//` or `////` is very important because let you choose between different actions to be executed when the condition is met: in the first case the content in the expression is simply rendered into the output files as is, while in the second a different action can be excuted, by default uncommenting removing an eventual leading `//`.
+The choice between `//` or `////` is very important because it lets you choose between different actions to be executed when the condition is met: in the first case the content in the expression is simply rendered into the output files as is, while in the second a different action can be executed, by default uncommenting removing an eventual leading `//`.
 
 #### File Extensions
 
@@ -399,7 +399,7 @@ MSBuild files, in addition to the `#if`, `#else`, `#elseif`, `#endif` inside an 
   
 ### Samples
 
-In this sample, one **<TargetFramework>** element will be added according to the value of the **TargetFrameworkOverride** symbol. This syntax is more clear and let you to use a single conditional expression to rule the inclusion of a whole block of content inside the template
+In this sample, one **<TargetFramework>** element will be added according to the value of the **TargetFrameworkOverride** symbol. This syntax is more clear and lets you use a single conditional expression to rule the inclusion of a whole block of content inside the template
 
 ```xml
 <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">netcoreapp2.0</TargetFramework>
@@ -416,7 +416,7 @@ In this sample, we can see that if the **TargetFrameworkOverride** symbol is def
 </ItemGroup>
 ```
 
-In this snippet of MSBuild file, we see usage of conditional expression embeded inside a xml comment.
+In this snippet of MSBuild file, we see usage of conditional expression embedded inside a xml comment.
 
 ```xml
 <!--#if (IndividualLocalAuth && UseLocalDB) -->

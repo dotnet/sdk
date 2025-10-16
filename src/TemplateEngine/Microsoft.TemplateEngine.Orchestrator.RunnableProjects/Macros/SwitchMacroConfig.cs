@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
@@ -35,12 +34,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
             foreach (JToken entry in jArray)
             {
-                if (entry is not JObject jobj)
+                if (entry is not JObject jObj)
                 {
                     throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_ArrayShouldContainObjects, generatedSymbolConfig.VariableName, CasesPropertyName), generatedSymbolConfig.VariableName);
                 }
-                string? condition = jobj.ToString(CasesConditionPropertyName);
-                string? value = jobj.ToString(CasesValuePropertyName)
+                string? condition = jObj.ToString(CasesConditionPropertyName);
+                string? value = jObj.ToString(CasesValuePropertyName)
                     ?? throw new TemplateAuthoringException(
                         string.Format(
                             LocalizableStrings.MacroConfig_Exception_MissingValueProperty,
@@ -55,7 +54,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         internal ConditionStringEvaluator Evaluator { get; private set; } = EvaluatorSelector.SelectStringEvaluator(DefaultEvaluator);
 
-        internal IReadOnlyList<(string? Condition, string Value)> Cases { get; private set; }
+        internal IReadOnlyList<(string? Condition, string Value)> Cases { get; }
 
         public void ResolveSymbolDependencies(IReadOnlyList<string> symbols)
         {

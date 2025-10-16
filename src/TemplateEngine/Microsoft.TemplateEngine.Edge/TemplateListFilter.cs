@@ -1,13 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-
-#if NETFULL
-using System.Linq;
-#endif
-
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Edge.Template;
@@ -57,10 +50,10 @@ namespace Microsoft.TemplateEngine.Edge
                 }
             }
 
-#if !NETFULL
-            return matchingTemplates;
-#else
+#if NETFRAMEWORK
             return matchingTemplates.ToList();
+#else
+            return matchingTemplates;
 #endif
         }
 
@@ -101,10 +94,10 @@ namespace Microsoft.TemplateEngine.Edge
                 }
             }
 
-#if !NETFULL
-            return matchingTemplates;
-#else
+#if NETFRAMEWORK
             return matchingTemplates.ToList();
+#else
+            return matchingTemplates;
 #endif
         }
 
@@ -134,10 +127,10 @@ namespace Microsoft.TemplateEngine.Edge
                 }
             }
 
-#if !NETFULL
-            return matchingTemplates;
-#else
+#if NETFRAMEWORK
             return matchingTemplates.ToList();
+#else
+            return matchingTemplates;
 #endif
         }
 

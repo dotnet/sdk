@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
 
@@ -11,7 +10,6 @@ namespace Microsoft.TemplateEngine.Core.Operations
     {
         public static readonly string OperationName = "flags";
 
-        private readonly string? _id;
         private readonly bool _initialState;
 
         public SetFlag(string? name, ITokenConfig on, ITokenConfig off, ITokenConfig onNoEmit, ITokenConfig offNoEmit, string? id, bool initialState, bool? @default = null)
@@ -22,11 +20,11 @@ namespace Microsoft.TemplateEngine.Core.Operations
             OnNoEmit = onNoEmit;
             OffNoEmit = offNoEmit;
             Default = @default;
-            _id = id;
+            Id = id;
             _initialState = initialState;
         }
 
-        public string? Id => _id;
+        public string? Id { get; }
 
         public string? Name { get; }
 
@@ -55,25 +53,24 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 processorState.Config.Flags[Name!] = Default.Value;
             }
 
-            return new Impl(this, tokens, _id, _initialState);
+            return new Implementation(this, tokens, Id, _initialState);
         }
 
-        private class Impl : IOperation
+        private class Implementation : IOperation
         {
             private readonly SetFlag _owner;
-            private readonly string? _id;
 
-            public Impl(SetFlag owner, IReadOnlyList<IToken> tokens, string? id, bool initialState)
+            public Implementation(SetFlag owner, IReadOnlyList<IToken> tokens, string? id, bool initialState)
             {
                 _owner = owner;
                 Tokens = tokens;
-                _id = id;
+                Id = id;
                 IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }
 
             public IReadOnlyList<IToken> Tokens { get; }
 
-            public string? Id => _id;
+            public string? Id { get; }
 
             public bool IsInitialStateOn { get; }
 
@@ -95,7 +92,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 }
                 else
                 {
-                    // consume the entire line when not emitting. Otherwise the newlines on the falg tokens get emitted
+                    // consume the entire line when not emitting. Otherwise the newlines on the flag tokens get emitted
                     processor.SeekSourceForwardUntil(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition, consumeToken: true);
                 }
 

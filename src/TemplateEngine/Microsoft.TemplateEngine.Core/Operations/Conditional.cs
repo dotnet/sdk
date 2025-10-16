@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -31,35 +29,30 @@ namespace Microsoft.TemplateEngine.Core.Operations
         // must be > the highest token type index
         private const int TokenTypeModulus = 10;
 
-        private readonly ConditionEvaluator _evaluator;
-        private readonly bool _wholeLine;
-        private readonly bool _trimWhitespace;
-        private readonly ConditionalTokens _tokens;
-        private readonly string? _id;
         private readonly bool _initialState;
 
         public Conditional(ConditionalTokens tokenVariants, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator, string? id, bool initialState)
         {
-            _trimWhitespace = trimWhitespace;
-            _wholeLine = wholeLine;
-            _evaluator = evaluator;
-            _tokens = tokenVariants;
-            _id = id;
+            TrimWhitespace = trimWhitespace;
+            WholeLine = wholeLine;
+            Evaluator = evaluator;
+            Tokens = tokenVariants;
+            Id = id;
             _initialState = initialState;
         }
 
-        public string? Id => _id;
+        public string? Id { get; }
 
-        public bool WholeLine => _wholeLine;
+        public bool WholeLine { get; }
 
-        public bool TrimWhitespace => _trimWhitespace;
+        public bool TrimWhitespace { get; }
 
-        public ConditionEvaluator Evaluator => _evaluator;
+        public ConditionEvaluator Evaluator { get; }
 
-        public ConditionalTokens Tokens => _tokens;
+        public ConditionalTokens Tokens { get; }
 
         /// <summary>
-        /// Returns the numner of elements in the longest of the token variant lists.
+        /// Returns the number of elements in the longest of the token variant lists.
         /// </summary>
         private int LongestTokenVariantListSize
         {
@@ -94,7 +87,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             AddTokensOfTypeToTokenListAndTrie(trie, tokens, Tokens.ActionableElseTokens, ElseTokenActionableBaseIndex, encoding);
             AddTokensOfTypeToTokenListAndTrie(trie, tokens, Tokens.ActionableElseIfTokens, ElseIfTokenActionableBaseIndex, encoding);
 
-            return new Impl(this, tokens, trie, _id, _initialState);
+            return new Implementation(this, tokens, trie, Id, _initialState);
         }
 
         /// <summary>
@@ -130,24 +123,23 @@ namespace Microsoft.TemplateEngine.Core.Operations
             }
         }
 
-        private class Impl : IOperation
+        private class Implementation : IOperation
         {
             private readonly Conditional _definition;
             private readonly Stack<EvaluationState> _pendingCompletion = new Stack<EvaluationState>();
             private readonly ITokenTrie _trie;
-            private readonly string? _id;
             private EvaluationState? _current;
 
-            public Impl(Conditional definition, IReadOnlyList<IToken> tokens, ITokenTrie trie, string? id, bool initialState)
+            public Implementation(Conditional definition, IReadOnlyList<IToken> tokens, ITokenTrie trie, string? id, bool initialState)
             {
                 _trie = trie;
                 _definition = definition;
                 Tokens = tokens;
-                _id = id;
+                Id = id;
                 IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }
 
-            public string? Id => _id;
+            public string? Id { get; }
 
             public IReadOnlyList<IToken> Tokens { get; }
 
@@ -164,11 +156,11 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 // conditional has not started, or this is the "if"
                 if (_current != null || IsTokenIndexOfType(token, IfTokenBaseIndex) || IsTokenIndexOfType(token, IfTokenActionableBaseIndex))
                 {
-                    if (_definition._wholeLine)
+                    if (_definition.WholeLine)
                     {
                         processor.SeekTargetBackUntil(processor.EncodingConfig.LineEndings);
                     }
-                    else if (_definition._trimWhitespace)
+                    else if (_definition.TrimWhitespace)
                     {
                         processor.TrimWhitespace(false, true, ref bufferLength, ref currentBufferPosition);
                     }
@@ -237,11 +229,11 @@ namespace Microsoft.TemplateEngine.Core.Operations
                         _current = null;
                     }
 
-                    if (_definition._wholeLine)
+                    if (_definition.WholeLine)
                     {
                         processor.SeekSourceForwardUntil(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition, consumeToken: true);
                     }
-                    else if (_definition._trimWhitespace)
+                    else if (_definition.TrimWhitespace)
                     {
                         processor.TrimWhitespace(true, false, ref bufferLength, ref currentBufferPosition);
                     }
@@ -268,11 +260,11 @@ namespace Microsoft.TemplateEngine.Core.Operations
                         _current = null;
                     }
 
-                    if (_definition._wholeLine)
+                    if (_definition.WholeLine)
                     {
                         processor.SeekSourceForwardUntil(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition, consumeToken: false);
                     }
-                    else if (_definition._trimWhitespace)
+                    else if (_definition.TrimWhitespace)
                     {
                         processor.TrimWhitespace(true, false, ref bufferLength, ref currentBufferPosition);
                     }
@@ -320,7 +312,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                     }
 
                     _current.BranchTaken = true;
-                    processor.WhitespaceHandler(ref bufferLength, ref currentBufferPosition, wholeLine: _definition._wholeLine, trim: _definition._trimWhitespace);
+                    processor.WhitespaceHandler(ref bufferLength, ref currentBufferPosition, wholeLine: _definition.WholeLine, trim: _definition.TrimWhitespace);
                     return 0;
                 }
                 else
@@ -430,12 +422,12 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             private class EvaluationState
             {
-                private readonly Impl _impl;
+                private readonly Implementation _implementation;
                 private bool _branchTaken;
 
-                public EvaluationState(Impl impl)
+                public EvaluationState(Implementation implementation)
                 {
-                    _impl = impl;
+                    _implementation = implementation;
                     ActionableOperationsEnabled = false;
                 }
 
@@ -451,7 +443,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 {
                     ActionableOperationsEnabled = enabled;
 
-                    foreach (string otherOptionDisableFlag in _impl._definition.Tokens.ActionableOperations)
+                    foreach (string otherOptionDisableFlag in _implementation._definition.Tokens.ActionableOperations)
                     {
                         processor.Config.Flags[otherOptionDisableFlag] = enabled;
                     }
@@ -459,7 +451,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
                 internal bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition)
                 {
-                    BranchTaken = _impl._definition._evaluator(processor, ref bufferLength, ref currentBufferPosition, out bool faulted);
+                    BranchTaken = _implementation._definition.Evaluator(processor, ref bufferLength, ref currentBufferPosition, out bool faulted);
                     return BranchTaken;
                 }
             }
