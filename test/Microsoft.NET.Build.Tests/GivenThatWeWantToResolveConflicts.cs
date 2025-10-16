@@ -329,8 +329,8 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("netstandard1.1", false)]
         [InlineData("netstandard1.0", false)]
         [InlineData("net451", false)]
-        [InlineData("net462")]
-        [InlineData("net481")]
+        [InlineData("net462", false)]
+        [InlineData("net481", false)]
         //  These target frameworks shouldn't prune packages unless explicitly enabled
         [InlineData("net9.0", false, "")]
         [InlineData("netstandard2.1", false, "")]
