@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
+using Windows.Win32.Security.Cryptography;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -230,15 +231,12 @@ internal sealed class IncrementalMSBuildWorkspace : Workspace
 
     private async Task ReportSolutionFilesAsync(Solution solution, int updateId, string operationDisplayName, CancellationToken cancellationToken)
     {
-#if DEBUG
-        _logger.LogDebug("Solution: {Path}", solution.FilePath);
+        _logger.LogDebug("Solution after {Operation}: v{Version}", operationDisplayName, updateId);
 
-        if (!_logger.IsEnabled(LogLevel.Debug))
+        if (!_logger.IsEnabled(LogLevel.Trace))
         {
             return;
         }
-
-        _logger.LogDebug("Solution after {Operation}: v{Version}", operationDisplayName, updateId);
 
         foreach (var project in solution.Projects)
         {
@@ -265,8 +263,5 @@ internal sealed class IncrementalMSBuildWorkspace : Workspace
             var text = await document.GetTextAsync(cancellationToken);
             _logger.LogDebug("    {Kind}: {FilePath} [{Checksum}]", kind, document.FilePath, Convert.ToBase64String(text.GetChecksum().ToArray()));
         }
-#else
-        await Task.CompletedTask;
-#endif
     }
 }

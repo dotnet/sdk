@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
     {
         private readonly Dictionary<EventId, Action> _actions = [];
         public readonly List<string> ProcessOutput = [];
-        public readonly List<(MessageSeverity severity, string text)> Messages = [];
+        public readonly List<(LogLevel level, string text)> Messages = [];
 
         public bool IsVerbose
             => true;
@@ -51,12 +51,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
             _actions[eventId] = existing;
         }
 
-        public void Report(EventId id, Emoji emoji, MessageSeverity severity, string message)
+        public void Report(EventId id, Emoji emoji, LogLevel level, string message)
         {
-            if (severity != MessageSeverity.None)
+            if (level != LogLevel.None)
             {
-                Messages.Add((severity, message));
-                WriteTestOutput($"{ToString(severity)} {emoji.ToDisplay()} {message}");
+                Messages.Add((level, message));
+                WriteTestOutput($"{ToString(level)} {emoji.ToDisplay()} {message}");
             }
 
             if (_actions.TryGetValue(id, out var action))
@@ -77,13 +77,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        private static string ToString(MessageSeverity severity)
-            => severity switch
+        private static string ToString(LogLevel level)
+            => level switch
             {
-                MessageSeverity.Verbose => "verbose",
-                MessageSeverity.Output => "output",
-                MessageSeverity.Warning => "warning",
-                MessageSeverity.Error => "error",
+                LogLevel.Trace or LogLevel.Debug => "verbose",
+                LogLevel.Information => "output",
+                LogLevel.Warning => "warning",
+                LogLevel.Critical or LogLevel.Error => "error",
                 _ => throw new InvalidOperationException()
             };
     }
