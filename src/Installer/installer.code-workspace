@@ -7,6 +7,9 @@
         {
             "path": "../../test/dnup.Tests",
             "name": "dnup.Tests"
+        },
+        {
+            "path": "../.."
         }
     ],
     "settings": {
