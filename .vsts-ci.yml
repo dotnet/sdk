@@ -5,7 +5,7 @@ trigger:
   branches:
     include:
     - main
-    - release/10.0.1*
+    - release/10.0.2*
     - internal/release/*
     - exp/*
 
