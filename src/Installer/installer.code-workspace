@@ -1,8 +1,151 @@
 {
-  "folders": [
-    {
-      "path": "dnup"
+    "folders": [
+        {
+            "path": ".",
+            "name": "installer"
+        },
+        {
+            "path": "../../test/dnup.Tests",
+            "name": "dnup.Tests"
+        }
+    ],
+    "settings": {
+        "dotnet.defaultSolution": "dnup/dnup.csproj",
+        "csharp.debug.console": "integratedTerminal",
+        "editor.formatOnSave": true,
+        "omnisharp.useModernNet": true
+    },
+    "launch": {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "Launch dnup (Default)",
+                "type": "coreclr",
+                "request": "launch",
+                "preLaunchTask": "build",
+                "program": "${workspaceFolder:installer}/../../artifacts/bin/dnup/Debug/net10.0/dnup.dll",
+                "args": [
+                    "sdk",
+                    "install"
+                ],
+                "cwd": "${workspaceFolder:installer}/dnup",
+                "console": "integratedTerminal",
+                "stopAtEntry": false,
+                "logging": {
+                    "moduleLoad": false
+                }
+            },
+            {
+                "name": "Run dnup tests (launch)",
+                "type": "coreclr",
+                "request": "launch",
+                "preLaunchTask": "build",
+                "program": "dotnet",
+                "args": [
+                    "test",
+                    "${workspaceFolder:dnup.Tests}/dnup.Tests.csproj",
+                    "--no-build",
+                    "/p:ContinuousIntegrationBuild=false",
+                    "/p:UseSharedCompilation=true",
+                    "/p:Deterministic=false",
+                    "/p:RunAnalyzers=false",
+                    "/p:NoRestore=true"
+                ],
+                "cwd": "${workspaceFolder:dnup.Tests}",
+                "console": "integratedTerminal",
+                "stopAtEntry": false
+            }
+        ],
+        "compounds": []
+    },
+    "tasks": {
+        "version": "2.0.0",
+        "tasks": [
+            {
+                "label": "build",
+                "type": "process",
+                "command": "dotnet",
+                "args": [
+                    "build",
+                    "dnup/dnup.csproj",
+                    "/property:GenerateFullPaths=true",
+                    "/consoleloggerparameters:NoSummary",
+                    "/p:ContinuousIntegrationBuild=false",
+                    "/p:UseSharedCompilation=true",
+                    "/p:Deterministic=false",
+                    "/p:RunAnalyzers=false",
+                    "/p:NoRestore=true"
+                ],
+                "options": {
+                    "cwd": "${workspaceFolder:installer}"
+                },
+                "presentation": {
+                    "reveal": "always",
+                    "panel": "shared",
+                    "showReuseMessage": true
+                },
+                "problemMatcher": "$msCompile",
+                "group": {
+                    "kind": "build",
+                    "isDefault": true
+                }
+            },
+            {
+                "label": "test",
+                "type": "process",
+                "command": "dotnet",
+                "args": [
+                    "test",
+                    "${workspaceFolder:dnup.Tests}/dnup.Tests.csproj",
+                    "/property:GenerateFullPaths=true",
+                    "/consoleloggerparameters:NoSummary",
+                    "/p:ContinuousIntegrationBuild=false",
+                    "/p:UseSharedCompilation=true",
+                    "/p:Deterministic=false",
+                    "/p:RunAnalyzers=false",
+                    "/p:NoRestore=true"
+                ],
+                "options": {
+                    "cwd": "${workspaceFolder:installer}"
+                },
+                "presentation": {
+                    "reveal": "always",
+                    "panel": "shared",
+                    "showReuseMessage": true
+                },
+                "problemMatcher": "$msCompile",
+                "group": {
+                    "kind": "test",
+                    "isDefault": true
+                }
+            },
+            {
+                "label": "test-watch",
+                "type": "process",
+                "command": "dotnet",
+                "args": [
+                    "watch",
+                    "test",
+                    "${workspaceFolder:dnup.Tests}/dnup.Tests.csproj",
+                    "/property:GenerateFullPaths=true",
+                    "/consoleloggerparameters:NoSummary",
+                    "/p:ContinuousIntegrationBuild=false",
+                    "/p:UseSharedCompilation=true",
+                    "/p:Deterministic=false",
+                    "/p:RunAnalyzers=false",
+                    "/p:NoRestore=true"
+                ],
+                "options": {
+                    "cwd": "${workspaceFolder:installer}"
+                },
+                "presentation": {
+                    "reveal": "always",
+                    "panel": "new",
+                    "showReuseMessage": true
+                },
+                "isBackground": true,
+                "problemMatcher": "$msCompile"
+            }
+        ]
     }
-  ],
-  "settings": {}
 }
