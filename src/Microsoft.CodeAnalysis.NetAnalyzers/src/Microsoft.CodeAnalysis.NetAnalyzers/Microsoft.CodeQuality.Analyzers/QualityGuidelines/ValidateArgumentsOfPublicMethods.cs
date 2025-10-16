@@ -6,8 +6,8 @@ using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.ParameterValidationAnalysis;
 using Microsoft.CodeAnalysis.Operations;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.ParameterValidationAnalysis;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {

@@ -2,9 +2,9 @@
 
 using System.Collections.Immutable;
 using System.Composition;
+using Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines;
 
 namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
 {

@@ -3,13 +3,13 @@
 using System.Collections.Generic;
 using System.Composition;
 using System.Linq;
+using Microsoft.NetCore.Analyzers.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.NetCore.Analyzers.InteropServices;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
 {

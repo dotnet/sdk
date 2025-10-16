@@ -4,12 +4,12 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Analyzer.Utilities;
-using Analyzer.Utilities.Extensions;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
+using Analyzer.Utilities;
+using Microsoft.CodeAnalysis;
+using Analyzer.Utilities.Extensions;
+using Microsoft.CodeAnalysis.CodeActions;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {

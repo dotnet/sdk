@@ -332,7 +332,7 @@ namespace Analyzer.Utilities
             value = default!;
             return false;
 
-        hasBucket:
+            hasBucket:
             if (CompareKeys(b.Key, key))
             {
                 value = b.Value;

@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Collections.Immutable;
-using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.NetCore.Analyzers.Runtime;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Operations;
-using Microsoft.NetCore.Analyzers.Runtime;
+using System.Linq;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 {

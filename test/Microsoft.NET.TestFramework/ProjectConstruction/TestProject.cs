@@ -249,13 +249,13 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                     //  To construct an accurate PCL project file, we must modify the import of the CSharp targets;
                     //    building/testing the SDK requires a VSDev command prompt which sets 'VSINSTALLDIR'
                     var importGroup = projectXml.Root?.Elements(ns + "Import").Last();
-                    if (importGroup?.Attribute("Project") is not null)
+                    if(importGroup?.Attribute("Project") is not null)
                     {
                         importGroup.Attribute("Project")!.Value = "$(VSINSTALLDIR)\\MSBuild\\Microsoft\\Portable\\$(TargetFrameworkVersion)\\Microsoft.Portable.CSharp.targets";
-                    }
+                    }  
                 }
 
-                if (TargetFrameworkVersion is not null)
+                if(TargetFrameworkVersion is not null)
                 {
                     propertyGroup?.Element(ns + "TargetFrameworkVersion")?.SetValue(TargetFrameworkVersion);
                 }
@@ -375,7 +375,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 
                 propertyGroup?.Add(new XElement(ns + "CustomAfterDirectoryBuildTargets", $"$(CustomAfterDirectoryBuildTargets);{customAfterDirectoryBuildTargetsPath.FullName}"));
                 propertyGroup?.Add(new XElement(ns + "CustomAfterMicrosoftCommonCrossTargetingTargets", $"$(CustomAfterMicrosoftCommonCrossTargetingTargets);{customAfterDirectoryBuildTargetsPath.FullName}"));
-
+                
                 var customAfterDirectoryBuildTargets = new XDocument(new XElement(ns + "Project"));
 
                 var target = new XElement(ns + "Target",

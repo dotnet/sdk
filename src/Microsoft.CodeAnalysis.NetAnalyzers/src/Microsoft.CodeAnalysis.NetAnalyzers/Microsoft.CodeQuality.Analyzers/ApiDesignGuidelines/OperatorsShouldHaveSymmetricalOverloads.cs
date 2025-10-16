@@ -2,9 +2,9 @@
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
-using Analyzer.Utilities.Extensions;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis;
+using Analyzer.Utilities.Extensions;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
