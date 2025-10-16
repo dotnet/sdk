@@ -447,64 +447,64 @@
         <target state="translated">Esta regla detecta el uso de intrínsecos específicos de la plataforma que se pueden reemplazar por un intrínseco multiplataforma equivalente en su lugar.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opAddition">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_Addition">
         <source>The addition operator should be preferred</source>
-        <target state="translated">Se debe preferir el operador de suma</target>
+        <target state="new">The addition operator should be preferred</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opBitwiseAnd">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_BitwiseAnd">
         <source>The bitwise-and operator should be preferred</source>
-        <target state="translated">Se debe preferir el operador y bit a bit</target>
+        <target state="new">The bitwise-and operator should be preferred</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opBitwiseOr">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_BitwiseOr">
         <source>The bitwise-or operator should be preferred</source>
-        <target state="translated">Se debe preferir el operador bit a bit OR.</target>
+        <target state="new">The bitwise-or operator should be preferred</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opDivison">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_Division">
         <source>The division operator should be preferred</source>
-        <target state="translated">Se debe preferir el operador de división</target>
+        <target state="new">The division operator should be preferred</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opExclusiveOr">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_ExclusiveOr">
         <source>The exclusive-or operator should be preferred</source>
-        <target state="translated">Se debe preferir el operador exclusivo o</target>
+        <target state="new">The exclusive-or operator should be preferred</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opLeftShift">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_LeftShift">
         <source>The left-shift operator should be preferred</source>
-        <target state="translated">Se debe preferir el operador de desplazamiento a la izquierda</target>
+        <target state="new">The left-shift operator should be preferred</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opMultiply">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_Multiply">
         <source>The multiply operator should be preferred</source>
-        <target state="translated">Se debe preferir el operador de multiplicación</target>
+        <target state="new">The multiply operator should be preferred</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opOnesComplement">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_OnesComplement">
         <source>The ones-complement operator should be preferred</source>
-        <target state="translated">Se debe preferir el operador de complemento a uno</target>
+        <target state="new">The ones-complement operator should be preferred</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opRightShift">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_RightShift">
         <source>The right-shift operator should be preferred</source>
-        <target state="translated">Se debe preferir el operador de desplazamiento a la derecha</target>
+        <target state="new">The right-shift operator should be preferred</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opSubtraction">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_Subtraction">
         <source>The subtraction operator should be preferred</source>
-        <target state="translated">Se debe preferir el operador de resta</target>
+        <target state="new">The subtraction operator should be preferred</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opUnaryNegation">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_UnaryNegation">
         <source>The unary-negation operator should be preferred</source>
-        <target state="translated">Se debe preferir el operador unario-negación</target>
+        <target state="new">The unary-negation operator should be preferred</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseCrossPlatformIntrinsicsMessage_opUnsignedRightShift">
+      <trans-unit id="UseCrossPlatformIntrinsicsMessage_op_UnsignedRightShift">
         <source>The unsigned right-shift operator should be preferred</source>
-        <target state="translated">Se debe preferir el operador de desplazamiento a la derecha sin signo</target>
+        <target state="new">The unsigned right-shift operator should be preferred</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCrossPlatformIntrinsicsTitle">

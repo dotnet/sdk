@@ -14,6 +14,19 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
     public partial class CSharpUseCrossPlatformIntrinsicsTests
     {
         [Fact]
+        public void DiagnosticDescriptors_HaveCorrectTitleAndDescription()
+        {
+            // Verify that all diagnostic descriptors have the expected title and description
+            foreach (var rule in Rules)
+            {
+                Assert.Equal(RuleId, rule.Id);
+                Assert.Equal("Use cross-platform intrinsics", rule.Title.ToString());
+                Assert.Equal("This rule detects usage of platform-specific intrinsics that can be replaced with an equivalent cross-platform intrinsic instead.", rule.Description.ToString());
+                Assert.NotEmpty(rule.MessageFormat.ToString());
+            }
+        }
+
+        [Fact]
         public async Task Fixer_InnerNodeReplacedAsync()
         {
             // lang=C#-test
