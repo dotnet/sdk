@@ -181,6 +181,89 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     }
                 }, OperationKind.Invocation);
 
+                // Check for parameters returned from the method
+                blockStartContext.RegisterOperationAction(operationContext =>
+                {
+                    var returnOp = (IReturnOperation)operationContext.Operation;
+                    if (returnOp.ReturnedValue is IParameterReferenceOperation paramRef &&
+                        candidateParameters.ContainsKey(paramRef.Parameter))
+                    {
+                        // Returning the parameter means it escapes, so we need to check if return type is compatible
+                        var returnType = methodSymbol.ReturnType;
+                        if (returnType is INamedTypeSymbol returnNamedType &&
+                            !SymbolEqualityComparer.Default.Equals(returnNamedType.OriginalDefinition, readOnlySpan) &&
+                            !SymbolEqualityComparer.Default.Equals(returnNamedType.OriginalDefinition, readOnlyMemory))
+                        {
+                            // Return type requires writable Span/Memory
+                            candidateParameters.TryRemove(paramRef.Parameter, out _);
+                        }
+                    }
+                }, OperationKind.Return);
+
+                // Check for parameters stored in fields or properties
+                blockStartContext.RegisterOperationAction(operationContext =>
+                {
+                    var fieldRef = (IFieldReferenceOperation)operationContext.Operation;
+                    if (fieldRef.Parent is IAssignmentOperation assignment && 
+                        assignment.Target == fieldRef &&
+                        assignment.Value is IParameterReferenceOperation paramRef &&
+                        candidateParameters.ContainsKey(paramRef.Parameter))
+                    {
+                        // Parameter is being stored to a field - must remain writable if field type is not readonly
+                        var fieldType = fieldRef.Field.Type;
+                        if (fieldType is INamedTypeSymbol fieldNamedType &&
+                            !SymbolEqualityComparer.Default.Equals(fieldNamedType.OriginalDefinition, readOnlySpan) &&
+                            !SymbolEqualityComparer.Default.Equals(fieldNamedType.OriginalDefinition, readOnlyMemory))
+                        {
+                            candidateParameters.TryRemove(paramRef.Parameter, out _);
+                        }
+                    }
+                }, OperationKind.FieldReference);
+
+                // Check for assignments where parameter is the value being assigned
+                blockStartContext.RegisterOperationAction(operationContext =>
+                {
+                    var assignment = (IAssignmentOperation)operationContext.Operation;
+                    if (assignment.Value is IParameterReferenceOperation paramRef &&
+                        candidateParameters.ContainsKey(paramRef.Parameter))
+                    {
+                        // Check if the target type is compatible with readonly version
+                        var targetType = assignment.Target.Type;
+                        if (targetType is INamedTypeSymbol targetNamedType &&
+                            !SymbolEqualityComparer.Default.Equals(targetNamedType.OriginalDefinition, readOnlySpan) &&
+                            !SymbolEqualityComparer.Default.Equals(targetNamedType.OriginalDefinition, readOnlyMemory))
+                        {
+                            // Target expects writable Span/Memory
+                            candidateParameters.TryRemove(paramRef.Parameter, out _);
+                        }
+                    }
+                }, OperationKind.SimpleAssignment);
+
+                // Check for array creation where parameter is an element
+                blockStartContext.RegisterOperationAction(operationContext =>
+                {
+                    var arrayCreation = (IArrayCreationOperation)operationContext.Operation;
+                    if (arrayCreation.Initializer != null && arrayCreation.Type is IArrayTypeSymbol arrayType)
+                    {
+                        foreach (var element in arrayCreation.Initializer.ElementValues)
+                        {
+                            if (element is IParameterReferenceOperation paramRef &&
+                                candidateParameters.ContainsKey(paramRef.Parameter))
+                            {
+                                // Check if array element type is compatible with readonly version
+                                var elementType = arrayType.ElementType;
+                                if (elementType is INamedTypeSymbol elementNamedType &&
+                                    !SymbolEqualityComparer.Default.Equals(elementNamedType.OriginalDefinition, readOnlySpan) &&
+                                    !SymbolEqualityComparer.Default.Equals(elementNamedType.OriginalDefinition, readOnlyMemory))
+                                {
+                                    // Array expects writable Span/Memory elements
+                                    candidateParameters.TryRemove(paramRef.Parameter, out _);
+                                }
+                            }
+                        }
+                    }
+                }, OperationKind.ArrayCreation);
+
                 blockStartContext.RegisterOperationBlockEndAction(blockEndContext =>
                 {
                     // Report diagnostics for parameters that were never written to

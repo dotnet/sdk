@@ -881,6 +881,299 @@ class C
             await test.RunAsync();
         }
 
+        [Fact]
+        public async Task SpanParameter_ReturnedFromMethod_NoDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private Span<byte> M(Span<byte> data)
+    {
+        return data; // Returning non-readonly type
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, source);
+        }
+
+        [Fact]
+        public async Task SpanParameter_ReturnedAsReadOnlySpan_ProducesDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private ReadOnlySpan<byte> M(Span<byte> [|data|])
+    {
+        return data; // Returning as readonly
+    }
+}
+";
+            string expected = @"
+using System;
+
+class C
+{
+    private ReadOnlySpan<byte> M(ReadOnlySpan<byte> data)
+    {
+        return data; // Returning as readonly
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, expected);
+        }
+
+        [Fact]
+        public async Task SpanParameter_StoredInRefParameter_NoDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Span<byte> data, ref Span<byte> output)
+    {
+        output = data;
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, source);
+        }
+
+        [Fact]
+        public async Task SpanParameter_StoredInOutParameter_NoDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Span<byte> data, out Span<byte> output)
+    {
+        output = data;
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, source);
+        }
+
+        [Fact]
+        public async Task MemoryParameter_StoredInField_NoDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private Memory<byte> _field;
+
+    private void M(Memory<byte> data)
+    {
+        _field = data;
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, source);
+        }
+
+        [Fact]
+        public async Task MemoryParameter_StoredInReadOnlyMemoryField_ProducesDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private ReadOnlyMemory<byte> _field;
+
+    private void M(Memory<byte> [|data|])
+    {
+        _field = data;
+    }
+}
+";
+            string expected = @"
+using System;
+
+class C
+{
+    private ReadOnlyMemory<byte> _field;
+
+    private void M(ReadOnlyMemory<byte> data)
+    {
+        _field = data;
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, expected);
+        }
+
+        [Fact]
+        public async Task MemoryParameter_StoredInArray_NoDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Memory<int> data)
+    {
+        var array = new Memory<int>[] { data };
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, source);
+        }
+
+        [Fact]
+        public async Task MemoryParameter_StoredInReadOnlyMemoryArray_ProducesDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Memory<int> [|data|])
+    {
+        var array = new ReadOnlyMemory<int>[] { data };
+    }
+}
+";
+            string expected = @"
+using System;
+
+class C
+{
+    private void M(ReadOnlyMemory<int> data)
+    {
+        var array = new ReadOnlyMemory<int>[] { data };
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, expected);
+        }
+
+        [Fact]
+        public async Task SpanParameter_StoredInProperty_NoDiagnostic()
+        {
+            string source = @"
+using System;
+
+ref struct Container
+{
+    public Span<byte> Data { get; set; }
+}
+
+class C
+{
+    private void M(Span<byte> data)
+    {
+        var container = new Container { Data = data };
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, source);
+        }
+
+        [Fact]
+        public async Task SpanParameter_StoredInReadOnlySpanProperty_ProducesDiagnostic()
+        {
+            string source = @"
+using System;
+
+ref struct Container
+{
+    public ReadOnlySpan<byte> Data { get; set; }
+}
+
+class C
+{
+    private void M(Span<byte> [|data|])
+    {
+        var container = new Container { Data = data };
+    }
+}
+";
+            string expected = @"
+using System;
+
+ref struct Container
+{
+    public ReadOnlySpan<byte> Data { get; set; }
+}
+
+class C
+{
+    private void M(ReadOnlySpan<byte> data)
+    {
+        var container = new Container { Data = data };
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, expected);
+        }
+
+        [Fact]
+        public async Task SpanParameter_MultipleReferencesOneWrite_NoDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Span<byte> data)
+    {
+        Console.WriteLine(data.Length);
+        Console.WriteLine(data[0]);
+        data[1] = 5; // Write
+        Console.WriteLine(data[2]);
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, source);
+        }
+
+        [Fact]
+        public async Task MemoryParameter_PassedToMethodExpectingReadOnly_ProducesDiagnostic()
+        {
+            string source = @"
+using System;
+
+class C
+{
+    private void M(Memory<int> [|data|])
+    {
+        Helper(data);
+    }
+
+    private void Helper(ReadOnlyMemory<int> data)
+    {
+        Console.WriteLine(data.Length);
+    }
+}
+";
+            string expected = @"
+using System;
+
+class C
+{
+    private void M(ReadOnlyMemory<int> data)
+    {
+        Helper(data);
+    }
+
+    private void Helper(ReadOnlyMemory<int> data)
+    {
+        Console.WriteLine(data.Length);
+    }
+}
+";
+            await VerifyCSCodeFixAsync(source, expected);
+        }
+
         private static async Task VerifyCSCodeFixAsync(string source, string fixedSource)
         {
             var test = new VerifyCS.Test
