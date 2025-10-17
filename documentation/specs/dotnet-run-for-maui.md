@@ -35,7 +35,8 @@ to make extensible for .NET MAUI (and future) scenarios.
 * "Pre-run evaluation"
 
   * If the project is multi-targeted, containing the
-    `$(TargetFrameworks)` property _and_ that property has more than one item in it, and `-f` was not supplied...
+    `$(TargetFrameworks)` property _and_ that property has more than
+    one item in it, and `-f` was not supplied...
 
     * Prompt the user to select from a list of the
       `$(TargetFrameworks)`
@@ -109,12 +110,13 @@ Android, iOS, etc. will prompt for device selection.
 `dotnet run --list-targets` will:
 
 * Prompt for `$(TargetFramework)` for multi-targeted projects just
-  like when `--list` is omitted.
+  like when `--list-targets` is omitted.
 
   * If there is a single `$(TargetFramework)`, it can just print a
     friendly message and exit.
 
-* Call `ComputeAvailableTargets` just like when `--list` is omitted.
+* Call `ComputeAvailableTargets` just like when `--list-targets` is
+  omitted.
 
   * List the available targets by name, a unique identifier, and an
     optional status of the device.
@@ -125,8 +127,8 @@ Android, iOS, etc. will prompt for device selection.
   * If `ComputeAvailableTargets` does not exist in the project
     (workload), it can print a friendly message and exit.
 
-* `dotnet run --list` will then basically exit early, never running
-  any build, deploy, `ComputeRunArguments`, or run steps.
+* `dotnet run --list-targets` will then basically exit early, never
+  running any build, deploy, `ComputeRunArguments`, or run steps.
 
 A new `--target|-t` switch will:
 
