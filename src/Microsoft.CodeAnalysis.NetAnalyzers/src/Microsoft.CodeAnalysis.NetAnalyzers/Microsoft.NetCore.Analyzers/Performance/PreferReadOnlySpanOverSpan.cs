@@ -178,18 +178,16 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     var argument = (IArgumentOperation)operationContext.Operation;
                     
-                    // Find the parameter reference, which might be nested in method calls like buffer.Slice(n)
-                    var paramRef = FindParameterReference(argument.Value, span, memory, readOnlySpan, readOnlyMemory);
-                    if (paramRef != null &&
-                        candidateParameters.ContainsKey(paramRef.Parameter) &&
-                        argument.Parameter?.Type is INamedTypeSymbol argType)
+                    // Check if any of our candidate parameters are used in this argument
+                    foreach (var kvp in candidateParameters)
                     {
-                        // If the target parameter is a writable Span<T> or Memory<T>, 
-                        // then the source parameter must remain writable too
-                        if (SymbolEqualityComparer.Default.Equals(argType.OriginalDefinition, span) ||
-                            SymbolEqualityComparer.Default.Equals(argType.OriginalDefinition, memory))
+                        if (ContainsParameterReference(argument.Value, kvp.Key) &&
+                            argument.Parameter?.Type is INamedTypeSymbol argType &&
+                            (SymbolEqualityComparer.Default.Equals(argType.OriginalDefinition, span) ||
+                             SymbolEqualityComparer.Default.Equals(argType.OriginalDefinition, memory)))
                         {
-                            candidateParameters.TryRemove(paramRef.Parameter, out _);
+                            // Target expects writable Span/Memory, so this parameter must remain writable
+                            candidateParameters.TryRemove(kvp.Key, out _);
                         }
                     }
                 }, OperationKind.Argument);
@@ -205,14 +203,15 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     if (invocation.TargetMethod.IsExtensionMethod &&
                         invocation.Arguments.Length > 0)
                     {
-                        var paramRef = FindParameterReference(invocation.Arguments[0].Value, span, memory, readOnlySpan, readOnlyMemory);
-                        if (paramRef != null &&
-                            candidateParameters.ContainsKey(paramRef.Parameter) &&
-                            invocation.TargetMethod.Parameters[0].Type is INamedTypeSymbol firstParamNamedType &&
-                            (SymbolEqualityComparer.Default.Equals(firstParamNamedType.OriginalDefinition, span) ||
-                             SymbolEqualityComparer.Default.Equals(firstParamNamedType.OriginalDefinition, memory)))
+                        foreach (var kvp in candidateParameters)
                         {
-                            candidateParameters.TryRemove(paramRef.Parameter, out _);
+                            if (ContainsParameterReference(invocation.Arguments[0].Value, kvp.Key) &&
+                                invocation.TargetMethod.Parameters[0].Type is INamedTypeSymbol firstParamNamedType &&
+                                (SymbolEqualityComparer.Default.Equals(firstParamNamedType.OriginalDefinition, span) ||
+                                 SymbolEqualityComparer.Default.Equals(firstParamNamedType.OriginalDefinition, memory)))
+                            {
+                                candidateParameters.TryRemove(kvp.Key, out _);
+                            }
                         }
                     }
                 }, OperationKind.Invocation);
@@ -221,23 +220,25 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 blockStartContext.RegisterOperationAction(operationContext =>
                 {
                     var returnOp = (IReturnOperation)operationContext.Operation;
-                    var paramRef = FindParameterReference(returnOp.ReturnedValue, span, memory, readOnlySpan, readOnlyMemory);
-                    if (paramRef != null && candidateParameters.ContainsKey(paramRef.Parameter))
+                    foreach (var kvp in candidateParameters)
                     {
-                        // If method returns by ref, the parameter must remain writable
-                        if (methodSymbol.ReturnsByRef)
+                        if (ContainsParameterReference(returnOp.ReturnedValue, kvp.Key))
                         {
-                            candidateParameters.TryRemove(paramRef.Parameter, out _);
-                            return;
-                        }
+                            // If method returns by ref, the parameter must remain writable
+                            if (methodSymbol.ReturnsByRef)
+                            {
+                                candidateParameters.TryRemove(kvp.Key, out _);
+                                continue;
+                            }
 
-                        // Returning the parameter means it escapes, so we need to check if return type is compatible
-                        if (methodSymbol.ReturnType is INamedTypeSymbol returnNamedType &&
-                            !SymbolEqualityComparer.Default.Equals(returnNamedType.OriginalDefinition, readOnlySpan) &&
-                            !SymbolEqualityComparer.Default.Equals(returnNamedType.OriginalDefinition, readOnlyMemory))
-                        {
-                            // Return type requires writable Span/Memory
-                            candidateParameters.TryRemove(paramRef.Parameter, out _);
+                            // Returning the parameter means it escapes, so we need to check if return type is compatible
+                            if (methodSymbol.ReturnType is INamedTypeSymbol returnNamedType &&
+                                !SymbolEqualityComparer.Default.Equals(returnNamedType.OriginalDefinition, readOnlySpan) &&
+                                !SymbolEqualityComparer.Default.Equals(returnNamedType.OriginalDefinition, readOnlyMemory))
+                            {
+                                // Return type requires writable Span/Memory
+                                candidateParameters.TryRemove(kvp.Key, out _);
+                            }
                         }
                     }
                 }, OperationKind.Return);
@@ -318,57 +319,28 @@ namespace Microsoft.NetCore.Analyzers.Performance
             });
         }
 
-        private static IParameterReferenceOperation? FindParameterReference(
-            IOperation? operation,
-            INamedTypeSymbol? span,
-            INamedTypeSymbol? memory,
-            INamedTypeSymbol? readOnlySpan,
-            INamedTypeSymbol? readOnlyMemory)
+        private static bool ContainsParameterReference(IOperation? operation, IParameterSymbol parameter)
         {
             if (operation == null)
             {
-                return null;
+                return false;
             }
 
-            // Direct parameter reference
-            if (operation is IParameterReferenceOperation paramRef)
+            if (operation is IParameterReferenceOperation paramRef &&
+                SymbolEqualityComparer.Default.Equals(paramRef.Parameter, parameter))
             {
-                return paramRef;
+                return true;
             }
 
-            // Method invocations on the parameter (like buffer.Slice(n))
-            // We only care about methods that return the same or compatible type (Span/Memory)
-            if (operation is IInvocationOperation invocation &&
-                invocation.Instance != null &&
-                invocation.Type is INamedTypeSymbol invokedType &&
-                (SymbolEqualityComparer.Default.Equals(invokedType.OriginalDefinition, span) ||
-                 SymbolEqualityComparer.Default.Equals(invokedType.OriginalDefinition, memory) ||
-                 SymbolEqualityComparer.Default.Equals(invokedType.OriginalDefinition, readOnlySpan) ||
-                 SymbolEqualityComparer.Default.Equals(invokedType.OriginalDefinition, readOnlyMemory)))
+            foreach (var child in operation.Children)
             {
-                return FindParameterReference(invocation.Instance, span, memory, readOnlySpan, readOnlyMemory);
+                if (ContainsParameterReference(child, parameter))
+                {
+                    return true;
+                }
             }
 
-            // Property references (like buffer.Span for Memory<T>)
-            // We only care about properties that return Span/Memory types
-            if (operation is IPropertyReferenceOperation propRef &&
-                propRef.Instance != null &&
-                propRef.Type is INamedTypeSymbol propType &&
-                (SymbolEqualityComparer.Default.Equals(propType.OriginalDefinition, span) ||
-                 SymbolEqualityComparer.Default.Equals(propType.OriginalDefinition, memory) ||
-                 SymbolEqualityComparer.Default.Equals(propType.OriginalDefinition, readOnlySpan) ||
-                 SymbolEqualityComparer.Default.Equals(propType.OriginalDefinition, readOnlyMemory)))
-            {
-                return FindParameterReference(propRef.Instance, span, memory, readOnlySpan, readOnlyMemory);
-            }
-
-            // Conversion operations
-            if (operation is IConversionOperation conversion)
-            {
-                return FindParameterReference(conversion.Operand, span, memory, readOnlySpan, readOnlyMemory);
-            }
-
-            return null;
+            return false;
         }
 
         private static bool IsConvertibleSpanOrMemoryParameter(
