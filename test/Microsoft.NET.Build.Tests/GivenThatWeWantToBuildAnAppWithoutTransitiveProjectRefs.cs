@@ -29,17 +29,13 @@ namespace Microsoft.NET.Build.Tests
         public void It_cleans_the_project_successfully_with_static_graph_and_isolation()
         {
             var (testAsset, outputDirectories) = BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new[] { "/graph", "/bl:build-{}.binlog" });
-            var binlogDestPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot && Environment.GetEnvironmentVariable("HELIX_WORKITEM_ID") is { } helixGuid ?
-                Path.Combine(ciOutputRoot, "binlog", helixGuid, $"{nameof(It_cleans_the_project_successfully_with_static_graph_and_isolation)}.binlog") :
-                "./msbuild.binlog";
 
             var cleanCommand = new DotnetCommand(
                 Log,
                 "msbuild",
                 Path.Combine(testAsset.TestRoot, "1", "1.csproj"),
                 "/t:clean",
-                "/graph",
-                $"/bl:{binlogDestPath}");
+                "/graph");
 
             cleanCommand
                 .Execute()
@@ -185,13 +181,8 @@ namespace Microsoft.NET.Build.Tests
         {
             var buildCommand = new BuildCommand(testAsset, "1");
             buildCommand.WithWorkingDirectory(testAsset.TestRoot);
-            var binlogDestPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot && Environment.GetEnvironmentVariable("HELIX_WORKITEM_ID") is { } helixGuid ?
-                Path.Combine(ciOutputRoot, "binlog", helixGuid, $"{callingMethod}.binlog") :
-                "./msbuild.binlog";
-            var buildResult = buildCommand.ExecuteWithoutRestore([..msbuildArguments, $"/bl:{binlogDestPath}"]);
-
+            var buildResult = buildCommand.ExecuteWithoutRestore(msbuildArguments);
             var outputDirectories = targetFrameworks.ToImmutableDictionary(tf => tf, tf => buildCommand.GetOutputDirectory(tf));
-
             return (buildResult, outputDirectories);
         }
 
