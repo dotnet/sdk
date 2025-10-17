@@ -92,6 +92,16 @@ namespace Microsoft.NET.Build.Tasks
                     {
                         profiles.Add("Xaml");
                     }
+
+                    if (FrameworkReferences?.Any(fxReference => fxReference.ItemSpec == "Microsoft.Windows.SDK.NET.Ref.CsWinRT3.Windows") == true)
+                    {
+                        profiles.Add("CsWinRT3.Windows");
+                    }
+                    
+                    if (FrameworkReferences?.Any(fxReference => fxReference.ItemSpec == "Microsoft.Windows.SDK.NET.Ref.CsWinRT3.Xaml") == true)
+                    {
+                        profiles.Add("CsWinRT3.Xaml");
+                    }
                 }
 
                 //  If we have a runtime framework with an empty profile, it means that we should use all of the contents of the runtime pack,

@@ -237,8 +237,8 @@ internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
         Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetStartupHooks,
             RemoveCurrentAssembly(startupHookType, Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetStartupHooks)!));
 
-        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName, "");
-        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.HotReloadDeltaClientLogMessages, "");
+        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName, null);
+        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.HotReloadDeltaClientLogMessages, null);
     }
 
     // internal for testing

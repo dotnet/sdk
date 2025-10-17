@@ -3,4 +3,4 @@
 
 namespace Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 
-internal sealed record HandshakeMessage(Dictionary<byte, string>? Properties) : IRequest, IResponse;
+internal sealed record HandshakeMessage(Dictionary<byte, string> Properties) : IRequest, IResponse;

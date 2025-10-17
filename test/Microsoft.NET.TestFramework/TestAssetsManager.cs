@@ -27,6 +27,10 @@ namespace Microsoft.NET.TestFramework
             TestAssetsRoot = testAssetsDirectory;
         }
 
+        /// <summary>
+        /// Creates a new 'bubble' for the given test asset project in a subdirectory
+        /// of the current test execution context, scoped by the calling method and optional unique identifier.
+        /// </summary>
         public TestAsset CopyTestAsset(
             string testProjectName,
             [CallerMemberName] string callingMethod = "",

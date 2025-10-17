@@ -1497,9 +1497,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     <TargetPlatformDisplayName>$([Microsoft.Build.Utilities.ToolLocationHelper]::GetPlatformSDKDisplayName($(TargetPlatformIdentifier), $(TargetPlatformVersion)))</TargetPlatformDisplayName>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- If the Windows targets wasn't called to default it, then just default it to the TargetPlatformVersion. -->
+    <EffectiveTargetPlatformVersion Condition="'$(EffectiveTargetPlatformVersion)' == ''">$(TargetPlatformVersion)</EffectiveTargetPlatformVersion>
+  </PropertyGroup>
+
   <!-- Default SupportedOSPlatformVersion to TargetPlatformVersion -->
   <PropertyGroup Condition="'$(SupportedOSPlatformVersion)' == ''">
-    <SupportedOSPlatformVersion>$(TargetPlatformVersion)</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion>$(EffectiveTargetPlatformVersion)</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <Import Project="$(AfterMicrosoftNETSdkTargets)" Condition="'$(AfterMicrosoftNETSdkTargets)' != ''"/>

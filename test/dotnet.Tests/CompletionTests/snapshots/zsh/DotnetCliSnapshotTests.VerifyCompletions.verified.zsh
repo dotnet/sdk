@@ -897,8 +897,8 @@ _testhost() {
                         '--os=[The target operating system.]:OS: ' \
                         '--disable-build-servers[Force the command to ignore any persistent build servers.]' \
                         '--artifacts-path=[The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.]:ARTIFACTS_DIR: ' \
-                        '*--environment=[Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This will force the tests to be run in an isolated process.  This argument can be specified multiple times to provide multiple variables.  Examples\: -e VARIABLE=abc -e VARIABLE=\"value with spaces\" -e VARIABLE=\"value;seperated with;semicolons\" -e VAR1=abc -e VAR2=def -e VAR3=ghi ]:NAME="VALUE": ' \
-                        '*-e=[Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This will force the tests to be run in an isolated process.  This argument can be specified multiple times to provide multiple variables.  Examples\: -e VARIABLE=abc -e VARIABLE=\"value with spaces\" -e VARIABLE=\"value;seperated with;semicolons\" -e VAR1=abc -e VAR2=def -e VAR3=ghi ]:NAME="VALUE": ' \
+                        '*--environment=[Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This argument can be specified multiple times to provide multiple variables.  Examples\: -e VARIABLE=abc -e VARIABLE=\"value with spaces\" -e VARIABLE=\"value;seperated with;semicolons\" -e VAR1=abc -e VAR2=def -e VAR3=ghi ]:NAME="VALUE": ' \
+                        '*-e=[Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This argument can be specified multiple times to provide multiple variables.  Examples\: -e VARIABLE=abc -e VARIABLE=\"value with spaces\" -e VARIABLE=\"value;seperated with;semicolons\" -e VAR1=abc -e VAR2=def -e VAR3=ghi ]:NAME="VALUE": ' \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
                         '*::applicationArguments -- Arguments passed to the application that is being run.: ' \
@@ -1102,7 +1102,7 @@ _testhost() {
                                             '--allow-roll-forward[Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn'\''t installed.]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            ':packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.:->dotnet_dynamic_complete' \
+                                            ':packageId -- Package reference in the form of a package identifier like '\''dotnetsay'\'' or package identifier and version separated by '\''@'\'' like '\''dotnetsay@2.1.7'\''.:->dotnet_dynamic_complete' \
                                             && ret=0
                                             case $state in
                                                 (dotnet_dynamic_complete)
@@ -1150,7 +1150,7 @@ _testhost() {
                                             '--all[Update all tools.]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            '::packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.:->dotnet_dynamic_complete' \
+                                            '::packageId -- Package reference in the form of a package identifier like '\''dotnetsay'\'' or package identifier and version separated by '\''@'\'' like '\''dotnetsay@2.1.7'\''.:->dotnet_dynamic_complete' \
                                             && ret=0
                                             case $state in
                                                 (dotnet_dynamic_complete)
@@ -1228,7 +1228,7 @@ _testhost() {
                                             '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            ':packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.:->dotnet_dynamic_complete' \
+                                            ':packageId -- Package reference in the form of a package identifier like '\''dotnetsay'\'' or package identifier and version separated by '\''@'\'' like '\''dotnetsay@2.1.7'\''.:->dotnet_dynamic_complete' \
                                             '*::commandArguments -- Arguments forwarded to the tool: ' \
                                             && ret=0
                                             case $state in
@@ -1960,7 +1960,7 @@ _testhost__workload_commands() {
         'install:Install one or more workloads.' \
         'update:Update all installed workloads.' \
         'list:List workloads available.' \
-        'search:Search for available workloads.' \
+        'search:Search for available workloads or workload versions.' \
         'uninstall:Uninstall one or more workloads.' \
         'repair:Repair workload installations.' \
         'restore:Restore workloads required for a project.' \

@@ -60,6 +60,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
                 middlewareAssemblyPath: GetMiddlewareAssemblyPath(),
                 dotnetPath: context.EnvironmentOptions.MuxerPath,
                 autoReloadWebSocketHostName: context.EnvironmentOptions.AutoReloadWebSocketHostName,
+                autoReloadWebSocketPort: context.EnvironmentOptions.AutoReloadWebSocketPort,
                 suppressTimeouts: context.EnvironmentOptions.TestFlags != TestFlags.None);
         }
 

@@ -49,19 +49,10 @@ public class PackCommand(
                 NoRestore = noRestore,
                 NoCache = true,
             },
-            (msbuildArgs, msbuildPath) =>
-            {
-                ReleasePropertyProjectLocator projectLocator = new(parseResult, MSBuildPropertyNames.PACK_RELEASE,
-                    new ReleasePropertyProjectLocator.DependentCommandOptions(
-                            nonBinLogArgs,
-                            parseResult.HasOption(PackCommandParser.ConfigurationOption) ? parseResult.GetValue(PackCommandParser.ConfigurationOption) : null
-                        )
-                );
-                return new PackCommand(
-                    msbuildArgs.CloneWithAdditionalProperties(projectLocator.GetCustomDefaultConfigurationValueIfSpecified()),
-                    noRestore,
-                    msbuildPath);
-            },
+            (msbuildArgs, msbuildPath) => new PackCommand(
+                msbuildArgs,
+                noRestore,
+                msbuildPath),
             optionsToUseWhenParsingMSBuildFlags:
             [
                 CommonOptions.PropertiesOption,
@@ -70,7 +61,17 @@ public class PackCommand(
                 PackCommandParser.VerbosityOption,
             ],
             parseResult,
-            msbuildPath);
+            msbuildPath,
+            (msbuildArgs) =>
+            {
+                ReleasePropertyProjectLocator projectLocator = new(parseResult, MSBuildPropertyNames.PACK_RELEASE,
+                    new ReleasePropertyProjectLocator.DependentCommandOptions(
+                            nonBinLogArgs,
+                            parseResult.HasOption(PackCommandParser.ConfigurationOption) ? parseResult.GetValue(PackCommandParser.ConfigurationOption) : null
+                        )
+                );
+                return msbuildArgs.CloneWithAdditionalProperties(projectLocator.GetCustomDefaultConfigurationValueIfSpecified());
+            });
     }
 
     private static LogLevel MappingVerbosityToNugetLogLevel(VerbosityOptions? verbosity)

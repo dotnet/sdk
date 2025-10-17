@@ -2054,6 +2054,18 @@ Widening and user defined conversions are not supported with generic types.</val
   <data name="UseThrowHelperFix" xml:space="preserve">
     <value>Use '{0}.{1}'</value>
   </data>
+  <data name="PreferJsonElementParseTitle" xml:space="preserve">
+    <value>Prefer JsonElement.Parse over JsonDocument.Parse().RootElement</value>
+  </data>
+  <data name="PreferJsonElementParseMessage" xml:space="preserve">
+    <value>Use 'JsonElement.Parse' instead of 'JsonDocument.Parse(...).RootElement' to avoid resource leaks</value>
+  </data>
+  <data name="PreferJsonElementParseDescription" xml:space="preserve">
+    <value>JsonDocument implements IDisposable and needs to be properly disposed. When only the RootElement is needed, prefer JsonElement.Parse which doesn't require disposal.</value>
+  </data>
+  <data name="PreferJsonElementParseFix" xml:space="preserve">
+    <value>Use 'JsonElement.Parse'</value>
+  </data>
   <data name="UseConcreteTypeDescription" xml:space="preserve">
     <value>Using concrete types avoids virtual or interface call overhead and enables inlining.</value>
   </data>

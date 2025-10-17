@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-test" "1" "2025-08-29" "" ".NET Documentation"
+.TH "dotnet-test" "1" "2025-09-15" "" ".NET Documentation"
 .hy
 .SH dotnet test
 .SH NAME
@@ -860,6 +860,11 @@ Available since .NET 6.
 The target runtime to test for.
 .PP
 Short form \f[V]-r\f[R] available starting in .NET SDK 7.
+.RS
+.PP
+Running tests for a solution with a global \f[V]RuntimeIdentifier\f[R] property (explicitly or via \f[V]--arch\f[R], \f[V]--runtime\f[R], or \f[V]--os\f[R]) is not supported.
+Set \f[V]RuntimeIdentifier\f[R] on an individual project level instead.
+.RE
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]

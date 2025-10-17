@@ -1575,10 +1575,19 @@ namespace Microsoft.NET.Build.Tasks
                     bool ForCurrentTargetFramework(string targetFramework)
                     {
                         var parts = targetFramework.Split(LockFile.DirectorySeparatorChar);
-                        var parsedTargetGraph = NuGetFramework.Parse(parts[0]);
-                        var alias = _lockFile.PackageSpec.TargetFrameworks
-                            .FirstOrDefault(tf => tf.FrameworkName == parsedTargetGraph)
-                            ?.TargetAlias ?? targetFramework;
+                        string alias = parts[0];
+                        if (alias == _task.TargetFramework)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            var parsedTargetGraph = NuGetFramework.Parse(alias);
+                            alias = _lockFile.PackageSpec.TargetFrameworks
+                                .FirstOrDefault(tf => tf.FrameworkName == parsedTargetGraph)
+                                ?.TargetAlias ?? targetFramework;
+                        }
+
                         return alias == _task.TargetFramework;
                     }
 

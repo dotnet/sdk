@@ -8,7 +8,6 @@
     <GenerateInstallers Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</GenerateInstallers>
     <BuildDebPackage Condition="'$(BuildSdkDeb)' == 'true'">true</BuildDebPackage>
     <BuildRpmPackage Condition="'$(BuildSdkRpm)' == 'true'">true</BuildRpmPackage>
-    <UseArcadeRpmTooling>true</UseArcadeRpmTooling>
     <ProductBrandPrefix>Microsoft .NET</ProductBrandPrefix>
     <LicenseFile>$(RepoRoot)LICENSE.TXT</LicenseFile>
     <InstallerName>dotnet-sdk</InstallerName>
@@ -48,6 +47,10 @@
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" />
   </ItemGroup>
 
+  <ItemGroup>
+    <LinuxPackageSymlink Include="/usr/bin/dnx" LinkTarget="../share/dotnet/dnx" />
+  </ItemGroup>
+
   <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
 
   <PropertyGroup>
@@ -61,6 +64,7 @@
       <CLISdkFiles Include="$(RedistInstallerLayoutPath)sdk/**/*" />
       <TemplatesFiles Include="$(RedistInstallerLayoutPath)templates/**/*" />
       <ManifestFiles Include="$(RedistInstallerLayoutPath)sdk-manifests/**/*" />
+      <DnxShimSource Include="$(RedistInstallerLayoutPath)dnx*" />
     </ItemGroup>
 
     <!-- Create layout: Binaries -->
@@ -89,6 +93,9 @@
       OverwriteReadOnlyFiles="True"
       SkipUnchangedFiles="False"
       UseHardlinksIfPossible="False" />
+
+    <!-- Create layout: DNX shim -->
+    <Copy SourceFiles="@(DnxShimSource)" DestinationFolder="$(OutputPath)" />
   </Target>
 
   <Target Name="SetCustomPackagingProperties" AfterTargets="_GetInstallerProperties">
@@ -111,7 +118,7 @@
   </Target>
 
   <Target Name="AddLinuxPackageInformation"
-      BeforeTargets="GetDebInstallerJsonProperties;GetRpmInstallerJsonProperties"
+      BeforeTargets="GetAdditionalLinuxInstallerProperties"
       DependsOnTargets="CalculateLinuxNativeInstallerDependencyVersions">
 
     <PropertyGroup>

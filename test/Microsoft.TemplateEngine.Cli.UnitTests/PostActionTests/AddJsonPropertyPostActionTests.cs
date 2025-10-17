@@ -345,6 +345,88 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
             Assert.Equal("{}", _engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath));
         }
 
+        [Fact]
+        public void RepoRootDetectionShouldPreferGlobalJson_NoSlnInvolved()
+        {
+            var physicalFileSystem = _engineEnvironmentSettings.Host.FileSystem;
+            var tempPath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            var dirWithGlobalJson = Path.Combine(tempPath, nameof(RepoRootDetectionShouldPreferGlobalJson_NoSlnInvolved));
+            physicalFileSystem.CreateDirectory(dirWithGlobalJson);
+            physicalFileSystem.WriteAllText(Path.Combine(dirWithGlobalJson, "global.json"), "{}");
+            var subDir = Path.Combine(dirWithGlobalJson, "subdir");
+            physicalFileSystem.CreateDirectory(subDir);
+            AddJsonPropertyPostActionProcessor.GetRootDirectory(physicalFileSystem, subDir).Should().Be(dirWithGlobalJson);
+        }
+
+        [Fact]
+        public void RepoRootDetectionShouldPreferGlobalJson_SlnInSubDirectory()
+        {
+            var physicalFileSystem = _engineEnvironmentSettings.Host.FileSystem;
+            var tempPath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            var dirWithGlobalJson = Path.Combine(tempPath, nameof(RepoRootDetectionShouldPreferGlobalJson_SlnInSubDirectory));
+            physicalFileSystem.CreateDirectory(dirWithGlobalJson);
+            physicalFileSystem.WriteAllText(Path.Combine(dirWithGlobalJson, "global.json"), "{}");
+            var subDir = Path.Combine(dirWithGlobalJson, "subdir");
+            physicalFileSystem.CreateDirectory(subDir);
+            physicalFileSystem.WriteAllText(Path.Combine(subDir, "MySolution.sln"), "{}");
+            AddJsonPropertyPostActionProcessor.GetRootDirectory(physicalFileSystem, subDir).Should().Be(dirWithGlobalJson);
+        }
+
+        [Fact]
+        public void RepoRootDetectionShouldPreferGlobalJson_SlnInParent()
+        {
+            var physicalFileSystem = _engineEnvironmentSettings.Host.FileSystem;
+            var tempPath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            var dirWithGlobalJson = Path.Combine(tempPath, nameof(RepoRootDetectionShouldPreferGlobalJson_SlnInParent));
+            physicalFileSystem.CreateDirectory(dirWithGlobalJson);
+            physicalFileSystem.WriteAllText(Path.Combine(dirWithGlobalJson, "global.json"), "{}");
+            var subDir = Path.Combine(dirWithGlobalJson, "subdir");
+            physicalFileSystem.CreateDirectory(subDir);
+            physicalFileSystem.WriteAllText(Path.Combine(tempPath, "MySolution.sln"), "{}");
+            AddJsonPropertyPostActionProcessor.GetRootDirectory(physicalFileSystem, subDir).Should().Be(dirWithGlobalJson);
+        }
+
+        [Fact]
+        public void RepoRootDetectionShouldPreferGitDirectory_NoSlnInvolved()
+        {
+            var physicalFileSystem = _engineEnvironmentSettings.Host.FileSystem;
+            var tempPath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            var dirWithGitDirectory = Path.Combine(tempPath, nameof(RepoRootDetectionShouldPreferGitDirectory_NoSlnInvolved));
+            physicalFileSystem.CreateDirectory(dirWithGitDirectory);
+            physicalFileSystem.CreateDirectory(Path.Combine(dirWithGitDirectory, ".git"));
+            var subDir = Path.Combine(dirWithGitDirectory, "subdir");
+            physicalFileSystem.CreateDirectory(subDir);
+            AddJsonPropertyPostActionProcessor.GetRootDirectory(physicalFileSystem, subDir).Should().Be(dirWithGitDirectory);
+        }
+
+        [Fact]
+        public void RepoRootDetectionShouldPreferGitDirectory_SlnInSubDirectory()
+        {
+            var physicalFileSystem = _engineEnvironmentSettings.Host.FileSystem;
+            var tempPath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            var dirWithGitDirectory = Path.Combine(tempPath, nameof(RepoRootDetectionShouldPreferGitDirectory_SlnInSubDirectory));
+            physicalFileSystem.CreateDirectory(dirWithGitDirectory);
+            physicalFileSystem.CreateDirectory(Path.Combine(dirWithGitDirectory, ".git"));
+            var subDir = Path.Combine(dirWithGitDirectory, "subdir");
+            physicalFileSystem.CreateDirectory(subDir);
+            physicalFileSystem.WriteAllText(Path.Combine(subDir, "MySolution.sln"), "");
+            AddJsonPropertyPostActionProcessor.GetRootDirectory(physicalFileSystem, subDir).Should().Be(dirWithGitDirectory);
+        }
+
+        [Fact]
+        public void RepoRootDetectionShouldPreferGitDirectory_SlnInParent()
+        {
+            var physicalFileSystem = _engineEnvironmentSettings.Host.FileSystem;
+            var tempPath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            var dirWithGitDirectory = Path.Combine(tempPath, nameof(RepoRootDetectionShouldPreferGitDirectory_SlnInParent));
+            physicalFileSystem.CreateDirectory(dirWithGitDirectory);
+            physicalFileSystem.CreateDirectory(Path.Combine(dirWithGitDirectory, ".git"));
+            var subDir = Path.Combine(dirWithGitDirectory, "subdir");
+            physicalFileSystem.CreateDirectory(subDir);
+            physicalFileSystem.WriteAllText(Path.Combine(tempPath, "MySolution.sln"), "");
+            AddJsonPropertyPostActionProcessor.GetRootDirectory(physicalFileSystem, subDir).Should().Be(dirWithGitDirectory);
+        }
+
         private string CreateJsonFile(string targetBasePath, string fileName, string jsonContent)
         {
             string jsonFileFullPath = Path.Combine(targetBasePath, fileName);

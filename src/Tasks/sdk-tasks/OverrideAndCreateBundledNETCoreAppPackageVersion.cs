@@ -3,202 +3,126 @@
 
 #nullable disable
 
-using System;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
+using NuGet.Frameworks;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Build.Tasks
 {
     /// <summary>
-    /// Use the runtime in dotnet/sdk instead of in the stage 0 to avoid circular dependency.
-    /// If there is a change depended on the latest runtime. Without override the runtime version in BundledNETCoreAppPackageVersion
-    /// we would need to somehow get this change in without the test, and then insertion dotnet/installer
-    /// and then update the stage 0 back.
+    /// For stage 2, we want use the version numbers from stage 0 for the downlevel .NET versions.  This is because
+    /// the latest patches of different major versions are built entirely separately, and we want to have tests
+    /// on downlevel versions but we can't depend on the latest patches being available in test environments.
     ///
-    /// Override NETCoreSdkVersion to stage 0 sdk version like 6.0.100-dev
-    /// Override NETCoreSdkRuntimeIdentifier and NETCoreSdkPortableRuntimeIdentifier to match the target RID
+    /// So we copy the version numbers from stage 0 for those downlevel versions.
     ///
-    /// Use a task to override since it was generated as a string literal replace anyway.
-    /// And using C# can have better error when anything goes wrong.
+    /// However, if the stage 2 version is a preview version, we don't overwrite it.  This is because in this case
+    /// the version of .NET hasn't been released yet, so we want to use the later preview version.  The preview
+    /// versions should all be on the same NuGet feeds anyway.
     /// </summary>
     public sealed class OverrideAndCreateBundledNETCoreAppPackageVersion : Task
     {
-        private static string _messageWhenMismatch =
-            "{0} version {1} does not match BundledNETCoreAppPackageVersion {2}. " +
-            "The schema of https://github.com/dotnet/installer/blob/main/src/redist/targets/GenerateBundledVersions.targets might change. " +
-            "We need to ensure we can swap the runtime version from what's in stage0 to what dotnet/sdk used successfully";
-
-        [Required] public string Stage0MicrosoftNETCoreAppRefPackageVersionPath { get; set; }
-
-        [Required] public string MicrosoftNETCoreAppRefPackageVersion { get; set; }
-
-        [Required] public string NewSDKVersion { get; set; }
-
-        [Required] public string TargetRid { get; set; }
-
-        [Required] public string OutputPath { get; set; }
+        [Required] public string Stage0BundledVersionsPath { get; set; }
+        [Required] public string Stage2BundledVersionsPath { get; set; }
 
         public override bool Execute()
         {
-            File.WriteAllText(OutputPath,
-                ExecuteInternal(
-                    File.ReadAllText(Stage0MicrosoftNETCoreAppRefPackageVersionPath),
-                    MicrosoftNETCoreAppRefPackageVersion,
-                    NewSDKVersion,
-                    TargetRid,
-                    Log));
-            return true;
-        }
-
-        public static string ExecuteInternal(
-            string stage0MicrosoftNETCoreAppRefPackageVersionContent,
-            string microsoftNETCoreAppRefPackageVersion,
-            string newSDKVersion,
-            string targetRid,
-            TaskLoggingHelper log)
-        {
-            var projectXml = XDocument.Parse(stage0MicrosoftNETCoreAppRefPackageVersionContent);
-
-            var ns = projectXml.Root.Name.Namespace;
-
-            var propertyGroup = projectXml.Root.Elements(ns + "PropertyGroup").First();            
-
-            propertyGroup.Element(ns + "NETCoreSdkVersion").Value = newSDKVersion;
-            propertyGroup.Element(ns + "NETCoreSdkRuntimeIdentifier").Value = targetRid;
-            propertyGroup.Element(ns + "NETCoreSdkPortableRuntimeIdentifier").Value = targetRid;
-
-
-            var originalBundledNETCoreAppPackageVersion = propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value;
-            var parsedOriginalBundledPackageVersion = SemanticVersion.Parse(originalBundledNETCoreAppPackageVersion);
-            var parsedMicrosoftNETCoreAppRefPackageVersion =
-                SemanticVersion.Parse(microsoftNETCoreAppRefPackageVersion);
-
-            // In the case where we have a new major version, it'll come in first through the dotnet/runtime flow of the
-            // SDK's own package references. The Stage0 SDK's bundled version props file will still be on the older major version
-            // (and the older TFM that goes along with that). If we just replaced the bundled version with the new major version,
-            // apps that target the 'older' TFM would fail to build. So we need to keep the bundled version from the existing
-            // bundledversions.props in this one specific case.
-
-            var newBundledPackageVersion =
-                parsedOriginalBundledPackageVersion.Major == parsedMicrosoftNETCoreAppRefPackageVersion.Major
-                ? microsoftNETCoreAppRefPackageVersion
-                : originalBundledNETCoreAppPackageVersion;
-
-            propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value = newBundledPackageVersion;
-
-            var isNETServicing = IsNETServicing(originalBundledNETCoreAppPackageVersion);
-            var currentTargetFramework = $"net{parsedMicrosoftNETCoreAppRefPackageVersion.Major}.0";
-
-            void CheckAndReplaceElement(XElement element)
+            try
             {
-                if (element.Value != originalBundledNETCoreAppPackageVersion)
+                var stage0Doc = XDocument.Load(Stage0BundledVersionsPath);
+                var stage2Doc = XDocument.Load(Stage2BundledVersionsPath);
+                var ns = stage2Doc.Root.Name.Namespace;
+
+                // Load all items from all ItemGroups
+                var items2 = stage2Doc.Root.Elements(ns + "ItemGroup").SelectMany(ig => ig.Elements()).ToList();
+                var items0 = stage0Doc.Root.Elements(ns + "ItemGroup").SelectMany(ig => ig.Elements()).ToList();
+
+                // Find latest TargetFramework using NuGetFramework
+                var allTargetFrameworks = items2
+                    .Select(e => e.Attribute("TargetFramework")?.Value)
+                    .Where(v => !string.IsNullOrEmpty(v))
+                    .Distinct()
+                    .Select(tf => new { Raw = tf, Parsed = NuGetFramework.Parse(tf) })
+                    .ToList();
+                var latest = allTargetFrameworks
+                    .OrderByDescending(tf => tf.Parsed.Version)
+                    .FirstOrDefault();
+                var latestTargetFramework = latest?.Raw;
+
+                // Helper for matching and updating
+                void UpdateItems(string elementName, string[] matchAttrs, string[] updateAttrs)
                 {
-                    throw new InvalidOperationException(string.Format(
-                        _messageWhenMismatch,
-                        element.ToString(), element.Value, originalBundledNETCoreAppPackageVersion));
+                    var items2Filtered = items2
+                        .Where(e => e.Name.LocalName == elementName && e.Attribute("TargetFramework")?.Value != latestTargetFramework)
+                        .ToList();
+                    foreach (var item2 in items2Filtered)
+                    {
+                        var matches0 = items0
+                            .Where(e => e.Name.LocalName == elementName && matchAttrs.All(attr => (e.Attribute(attr)?.Value ?? "") == (item2.Attribute(attr)?.Value ?? "")))
+                            .ToList();
+                        if (matches0.Count == 0)
+                        {
+                            Log.LogError($"No matching {elementName} in stage 0 for: {string.Join(", ", matchAttrs.Select(a => $"{a}={item2.Attribute(a)?.Value}"))}");
+                            continue;
+                        }
+                        if (matches0.Count > 1)
+                        {
+                            Log.LogError($"Multiple matches for {elementName} in stage 0 for: {string.Join(", ", matchAttrs.Select(a => $"{a}={item2.Attribute(a)?.Value}"))}");
+                            continue;
+                        }
+                        var item0 = matches0[0];
+                        foreach (var updateAttr in updateAttrs)
+                        {
+                            var v0 = item0.Attribute(updateAttr)?.Value;
+                            var v2 = item2.Attribute(updateAttr)?.Value;
+                            if (v0 != null && v2 != v0)
+                            {
+                                bool isPreview = false;
+                                if (!string.IsNullOrEmpty(v2))
+                                {
+                                    try
+                                    {
+                                        var nugetVersion = NuGetVersion.Parse(v2);
+                                        isPreview = nugetVersion.IsPrerelease;
+                                    }
+                                    catch
+                                    {
+                                        // If parsing fails, treat as non-preview
+                                        isPreview = false;
+                                    }
+                                }
+                                if (!isPreview)
+                                {
+                                    item2.SetAttributeValue(updateAttr, v0);
+                                }
+                            }
+                        }
+                        // Log if other metadata differs
+                        foreach (var attr in item2.Attributes())
+                        {
+                            if (matchAttrs.Contains(attr.Name.LocalName) || updateAttrs.Contains(attr.Name.LocalName))
+                                continue;
+                            var v0 = item0.Attribute(attr.Name)?.Value;
+                            if (v0 != null && v0 != attr.Value)
+                                Log.LogMessage(MessageImportance.Low, $"{elementName} {string.Join(", ", matchAttrs.Select(a => $"{a}={item2.Attribute(a)?.Value}"))}: Metadata '{attr.Name}' differs: stage0='{v0}', stage2='{attr.Value}'");
+                        }
+                    }
                 }
 
-                log.LogMessage(MessageImportance.High,
-                    $"Replacing element {element.Name} value '{element.Value}' with '{newBundledPackageVersion}'");
-                element.Value = newBundledPackageVersion;
-            }
+                UpdateItems("KnownFrameworkReference", new[] { "Include", "TargetFramework" }, new[] { "LatestRuntimeFrameworkVersion", "TargetingPackVersion" });
+                UpdateItems("KnownAppHostPack", new[] { "Include", "TargetFramework" }, new[] { "AppHostPackVersion" });
+                UpdateItems("KnownCrossgen2Pack", new[] { "Include", "TargetFramework" }, new[] { "Crossgen2PackVersion" });
+                UpdateItems("KnownILCompilerPack", new[] { "Include", "TargetFramework" }, new[] { "ILCompilerPackVersion" });
+                UpdateItems("KnownRuntimePack", new[] { "Include", "TargetFramework", "RuntimePackLabels" }, new[] { "LatestRuntimeFrameworkVersion" });
+                UpdateItems("KnownILLinkPack", new[] { "Include", "TargetFramework" }, new[] { "ILLinkPackVersion" });
 
-            void CheckAndReplaceAttribute(XAttribute attribute)
-            {
-                if (attribute.Value != originalBundledNETCoreAppPackageVersion)
-                {
-                    throw new InvalidOperationException(string.Format(
-                        _messageWhenMismatch,
-                        attribute.Parent.ToString() + " --- " + attribute.ToString(), attribute.Value,
-                        originalBundledNETCoreAppPackageVersion));
-                }
-
-                log.LogMessage(MessageImportance.High,
-                    $"Replacing attribute {attribute.Name} value '{attribute.Value}' with '{newBundledPackageVersion}' in element {attribute.Parent.Name}");
-                attribute.Value = newBundledPackageVersion;
+                stage2Doc.Save(Stage2BundledVersionsPath);
+                return !Log.HasLoggedErrors;
             }
-
-            if (!isNETServicing)
+            catch (Exception ex)
             {
-                CheckAndReplaceElement(propertyGroup.Element(ns + "BundledNETCorePlatformsPackageVersion"));
+                Log.LogErrorFromException(ex, true);
+                return false;
             }
-
-            var itemGroup = projectXml.Root.Elements(ns + "ItemGroup").First();
-
-            if (!isNETServicing)
-            {
-                foreach (var element in itemGroup.Elements(ns + "KnownFrameworkReference")
-                    .Where(e => e.Attribute("TargetFramework")?.Value == currentTargetFramework))
-                {
-                    CheckAndReplaceAttribute(element.Attribute("DefaultRuntimeFrameworkVersion"));
-                    CheckAndReplaceAttribute(element.Attribute("TargetingPackVersion"));
-                }
-            }
-
-            foreach (var element in itemGroup.Elements(ns + "KnownFrameworkReference")
-                .Where(e => e.Attribute("TargetFramework")?.Value == currentTargetFramework))
-            {
-                CheckAndReplaceAttribute(element.Attribute("LatestRuntimeFrameworkVersion"));
-            }
-            foreach (var element in itemGroup.Elements(ns + "KnownAppHostPack")
-                .Where(e => e.Attribute("TargetFramework")?.Value == currentTargetFramework))
-            {
-                CheckAndReplaceAttribute(element.Attribute("AppHostPackVersion"));
-            }
-            
-            foreach (var element in itemGroup.Elements(ns + "KnownCrossgen2Pack")
-                .Where(e => e.Attribute("TargetFramework")?.Value == currentTargetFramework))
-            {
-                CheckAndReplaceAttribute(element.Attribute("Crossgen2PackVersion"));
-            }
-            
-            foreach (var element in itemGroup.Elements(ns + "KnownILCompilerPack")
-                .Where(e => e.Attribute("TargetFramework")?.Value == currentTargetFramework))
-            {
-                CheckAndReplaceAttribute(element.Attribute("ILCompilerPackVersion"));
-            }
-            
-            foreach (var element in itemGroup.Elements(ns + "KnownILLinkPack")
-                .Where(e => e.Attribute("TargetFramework")?.Value == currentTargetFramework))
-            {
-                CheckAndReplaceAttribute(element.Attribute("ILLinkPackVersion"));
-            }
-            
-            // web assembly packs always use the latest regardless of the TFM
-            foreach (var element in itemGroup.Elements(ns + "KnownWebAssemblySdkPack"))
-            {
-                CheckAndReplaceAttribute(element.Attribute("WebAssemblySdkPackVersion"));
-            }
-            
-            foreach (var element in itemGroup.Elements(ns + "KnownAspNetCorePack")
-                .Where(e => e.Attribute("TargetFramework")?.Value == currentTargetFramework))
-            {
-                CheckAndReplaceAttribute(element.Attribute("AspNetCorePackVersion"));
-            }
-
-            foreach (var element in itemGroup.Elements(ns + "KnownRuntimePack")
-                .Where(e => e.Attribute("TargetFramework")?.Value == currentTargetFramework))
-            {
-                CheckAndReplaceAttribute(element.Attribute("LatestRuntimeFrameworkVersion"));
-            }
-
-            return projectXml.ToString();
-        }
-
-        /// <summary>
-        /// For SDK servicing, few Attributes like "DefaultRuntimeFrameworkVersion" does not use the latest flowed version
-        /// so there is no need to replace them.
-        /// </summary>
-        /// <returns></returns>
-        private static bool IsNETServicing(string netVersion)
-        {
-            var parsedSdkVersion = NuGet.Versioning.NuGetVersion.Parse(netVersion);
-
-            return !parsedSdkVersion.IsPrerelease;
         }
     }
 }

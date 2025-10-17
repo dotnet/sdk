@@ -2154,6 +2154,18 @@ Unawaited tasks that use 'IDisposable' instances may use those instances long af
 |CodeFix|False|
 ---
 
+## [CA2026](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2026): Prefer JsonElement.Parse over JsonDocument.Parse().RootElement
+
+JsonDocument implements IDisposable and needs to be properly disposed. When only the RootElement is needed, prefer JsonElement.Parse which doesn't require disposal.
+
+|Item|Value|
+|-|-|
+|Category|Reliability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA2100](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100): Review SQL queries for security vulnerabilities
 
 SQL queries that directly use user input can be vulnerable to SQL injection attacks. Review this SQL query for potential vulnerabilities, and consider using a parameterized SQL query.
