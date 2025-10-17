@@ -1274,5 +1274,45 @@ class C
 
             await test.RunAsync();
         }
+
+        [Fact]
+        public async Task MemoryParameter_PassedToMethodViaSlice_NoDiagnostic()
+        {
+            var source = """
+                using System;
+                using System.Threading;
+                using System.Threading.Tasks;
+
+                class Test
+                {
+                    // buffer is passed via Slice to a method that expects writable Memory<char>
+                    internal async ValueTask<int> ReadBlockAsyncInternal(Memory<char> buffer, CancellationToken cancellationToken)
+                    {
+                        int n = 0, i;
+                        do
+                        {
+                            i = await ReadAsyncInternal(buffer.Slice(n), cancellationToken).ConfigureAwait(false);
+                            n += i;
+                        } while (i > 0 && n < buffer.Length);
+
+                        return n;
+                    }
+
+                    private ValueTask<int> ReadAsyncInternal(Memory<char> buffer, CancellationToken cancellationToken)
+                    {
+                        // Implementation that writes to buffer
+                        return ValueTask.FromResult(buffer.Length);
+                    }
+                }
+                """;
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = source,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80
+            };
+
+            await test.RunAsync();
+        }
     }
 }
