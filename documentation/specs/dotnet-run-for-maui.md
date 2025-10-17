@@ -35,7 +35,7 @@ to make extensible for .NET MAUI (and future) scenarios.
 * "Pre-run evaluation"
 
   * If the project is multi-targeted, containing the
-    `$(TargetFrameworks)` property, and `-f` was not supplied...
+    `$(TargetFrameworks)` property _and_ that property has more than one item in it, and `-f` was not supplied...
 
     * Prompt the user to select from a list of the
       `$(TargetFrameworks)`
