@@ -16,9 +16,16 @@ internal sealed class IncrementalMSBuildWorkspace : Workspace
 {
     private readonly ILogger _logger;
 
-    public IncrementalMSBuildWorkspace(ILogger logger)
+    public IncrementalMSBuildWorkspace(ILogger logger, EnvironmentOptions environmentOptions)
         : base(MSBuildMefHostServices.DefaultServices, WorkspaceKind.MSBuild)
     {
+        // Allows us to run tests in SDK repo during transition from version N to version N+1.
+        // During this time the version of the runtime may still be N while version of the SDK is on N+1.
+        if (environmentOptions.TestFlags.HasFlag(TestFlags.RunningAsTest))
+        {
+            Environment.SetEnvironmentVariable("Microsoft_CodeAnalysis_BuildHost_SkipRuntimeVersionCheck", "1");
+        }
+
 #pragma warning disable CS0618 // https://github.com/dotnet/sdk/issues/49725
         WorkspaceFailed += (_sender, diag) =>
         {
