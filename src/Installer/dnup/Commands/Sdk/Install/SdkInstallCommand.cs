@@ -210,20 +210,9 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         DotnetInstall? mainInstall;
 
-        // In no-progress mode, install directly without using a progress display
-        if (_noProgress)
-        {
-            // Install without progress display
-            mainInstall = InstallerOrchestratorSingleton.Instance.Install(installRequest);
-        }
-        else
-        {
-            // Create and use a progress context
-            var progressContext = SpectreAnsiConsole.Progress().Start(ctx => ctx);
-            
-            // Install the main SDK using the InstallerOrchestratorSingleton directly
-            mainInstall = InstallerOrchestratorSingleton.Instance.Install(installRequest);
-        }
+        // Pass the _noProgress flag to the InstallerOrchestratorSingleton
+        // The orchestrator will handle installation with or without progress based on the flag
+        mainInstall = InstallerOrchestratorSingleton.Instance.Install(installRequest, _noProgress);
         if (mainInstall == null)
         {
             SpectreAnsiConsole.MarkupLine($"[red]Failed to install .NET SDK {resolvedVersion}[/]");

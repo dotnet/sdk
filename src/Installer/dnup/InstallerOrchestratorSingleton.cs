@@ -22,7 +22,7 @@ internal class InstallerOrchestratorSingleton
     private ScopedMutex modifyInstallStateMutex() => new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
     // Returns null on failure, DotnetInstall on success
-    public DotnetInstall? Install(DotnetInstallRequest installRequest)
+    public DotnetInstall? Install(DotnetInstallRequest installRequest, bool noProgress = false)
     {
         // Map InstallRequest to DotnetInstallObject by converting channel to fully specified version
         ReleaseVersion? versionToInstall = new ManifestChannelVersionResolver().Resolve(installRequest);
@@ -49,7 +49,7 @@ internal class InstallerOrchestratorSingleton
             }
         }
 
-        using ArchiveDotnetInstaller installer = new(installRequest, versionToInstall);
+        using ArchiveDotnetInstaller installer = new(installRequest, versionToInstall, noProgress);
         installer.Prepare();
 
         // Extract and commit the install to the directory

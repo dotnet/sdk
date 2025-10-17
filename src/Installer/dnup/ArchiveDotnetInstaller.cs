@@ -16,13 +16,15 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
 {
     private readonly DotnetInstallRequest _request;
     private readonly ReleaseVersion _resolvedVersion;
+    private readonly bool _noProgress;
     private string scratchDownloadDirectory;
     private string? _archivePath;
 
-    public ArchiveDotnetInstaller(DotnetInstallRequest request, ReleaseVersion resolvedVersion)
+    public ArchiveDotnetInstaller(DotnetInstallRequest request, ReleaseVersion resolvedVersion, bool noProgress = false)
     {
         _request = request;
         _resolvedVersion = resolvedVersion;
+        _noProgress = noProgress;
         scratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
     }
 
@@ -32,19 +34,34 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
         var archiveName = $"dotnet-{Guid.NewGuid()}";
         _archivePath = Path.Combine(scratchDownloadDirectory, archiveName + DnupUtilities.GetArchiveFileExtensionForPlatform());
 
-        Spectre.Console.AnsiConsole.Progress()
-            .Start(ctx =>
+        if (_noProgress)
+        {
+            // When no-progress is enabled, download without progress display
+            Console.WriteLine($"Downloading .NET SDK {_resolvedVersion}...");
+            var downloadSuccess = releaseManifest.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, null);
+            if (!downloadSuccess)
             {
-                var downloadTask = ctx.AddTask($"Downloading .NET SDK {_resolvedVersion}", autoStart: true);
-                var reporter = new SpectreDownloadProgressReporter(downloadTask, $"Downloading .NET SDK {_resolvedVersion}");
-                var downloadSuccess = releaseManifest.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
-                if (!downloadSuccess)
+                throw new InvalidOperationException($"Failed to download .NET archive for version {_resolvedVersion}");
+            }
+            Console.WriteLine($"Download of .NET SDK {_resolvedVersion} complete.");
+        }
+        else
+        {
+            // Use progress display for normal operation
+            Spectre.Console.AnsiConsole.Progress()
+                .Start(ctx =>
                 {
-                    throw new InvalidOperationException($"Failed to download .NET archive for version {_resolvedVersion}");
-                }
+                    var downloadTask = ctx.AddTask($"Downloading .NET SDK {_resolvedVersion}", autoStart: true);
+                    var reporter = new SpectreDownloadProgressReporter(downloadTask, $"Downloading .NET SDK {_resolvedVersion}");
+                    var downloadSuccess = releaseManifest.DownloadArchiveWithVerification(_request, _resolvedVersion, _archivePath, reporter);
+                    if (!downloadSuccess)
+                    {
+                        throw new InvalidOperationException($"Failed to download .NET archive for version {_resolvedVersion}");
+                    }
 
-                downloadTask.Value = 100;
-            });
+                    downloadTask.Value = 100;
+                });
+        }
     }
 
     /**
@@ -94,20 +111,38 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
             throw new InvalidOperationException("Archive not found. Make sure Prepare() was called successfully.");
         }
 
-        Spectre.Console.AnsiConsole.Progress()
-            .Start(ctx =>
+        if (_noProgress)
+        {
+            // When no-progress is enabled, install without progress display
+            Console.WriteLine($"Installing .NET SDK {_resolvedVersion}...");
+            
+            // Extract archive directly to target directory with special handling for muxer
+            var extractResult = ExtractArchiveDirectlyToTarget(_archivePath, _request.InstallRoot.Path!, existingSdkVersions, null);
+            if (extractResult != null)
             {
-                var installTask = ctx.AddTask($"Installing .NET SDK {_resolvedVersion}", autoStart: true);
-
-                // Extract archive directly to target directory with special handling for muxer
-                var extractResult = ExtractArchiveDirectlyToTarget(_archivePath, _request.InstallRoot.Path!, existingSdkVersions, installTask);
-                if (extractResult != null)
+                throw new InvalidOperationException($"Failed to install SDK: {extractResult}");
+            }
+            
+            Console.WriteLine($"Installation of .NET SDK {_resolvedVersion} complete.");
+        }
+        else
+        {
+            // Use progress display for normal operation
+            Spectre.Console.AnsiConsole.Progress()
+                .Start(ctx =>
                 {
-                    throw new InvalidOperationException($"Failed to install SDK: {extractResult}");
-                }
+                    var installTask = ctx.AddTask($"Installing .NET SDK {_resolvedVersion}", autoStart: true);
 
-                installTask.Value = installTask.MaxValue;
-            });
+                    // Extract archive directly to target directory with special handling for muxer
+                    var extractResult = ExtractArchiveDirectlyToTarget(_archivePath, _request.InstallRoot.Path!, existingSdkVersions, installTask);
+                    if (extractResult != null)
+                    {
+                        throw new InvalidOperationException($"Failed to install SDK: {extractResult}");
+                    }
+
+                    installTask.Value = installTask.MaxValue;
+                });
+        }
     }
 
     /**
