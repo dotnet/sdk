@@ -130,6 +130,8 @@ Android, iOS, etc. will prompt for device selection.
 
 A new `--target|-t` switch will:
 
+* bypass the target-selection portion of the `run` workflow described above
+
 * Pass in the `-p:RunTarget` global MSBuild property to all build,
   deploy, `ComputeRunArguments`, or run steps.
 
