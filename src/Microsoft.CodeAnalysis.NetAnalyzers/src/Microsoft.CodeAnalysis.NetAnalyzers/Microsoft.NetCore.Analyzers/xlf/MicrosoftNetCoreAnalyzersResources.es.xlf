@@ -2238,6 +2238,26 @@ La ampliación y las conversiones definidas por el usuario no se admiten con tip
         <target state="translated">Elegir IsEmpty en vez de Count</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferJsonElementParseDescription">
+        <source>JsonDocument implements IDisposable and needs to be properly disposed. When only the RootElement is needed, prefer JsonElement.Parse which doesn't require disposal.</source>
+        <target state="new">JsonDocument implements IDisposable and needs to be properly disposed. When only the RootElement is needed, prefer JsonElement.Parse which doesn't require disposal.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferJsonElementParseFix">
+        <source>Use 'JsonElement.Parse'</source>
+        <target state="new">Use 'JsonElement.Parse'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferJsonElementParseMessage">
+        <source>Use 'JsonElement.Parse' instead of 'JsonDocument.Parse(...).RootElement' to avoid resource leaks</source>
+        <target state="new">Use 'JsonElement.Parse' instead of 'JsonDocument.Parse(...).RootElement' to avoid resource leaks</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferJsonElementParseTitle">
+        <source>Prefer JsonElement.Parse over JsonDocument.Parse().RootElement</source>
+        <target state="new">Prefer JsonElement.Parse over JsonDocument.Parse().RootElement</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferLengthCountIsEmptyOverAnyDescription">
         <source>Prefer using 'IsEmpty', 'Count' or 'Length' properties whichever available, rather than calling 'Enumerable.Any()'. The intent is clearer and it is more performant than using 'Enumerable.Any()' extension method.</source>
         <target state="translated">Es preferible usar las propiedades "IsEmpty", "Count" o "Length", si hay alguna disponible, en lugar de llamar a "Enumerable.Any()". La intención es más clara y tiene un mejor rendimiento que usar el método de extensión "Enumerable.Any()".</target>
