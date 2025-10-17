@@ -29,6 +29,9 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
 {
     public const string ServerLogComponentName = "BrowserRefreshServer";
 
+    private static readonly ReadOnlyMemory<byte> s_reloadMessage = Encoding.UTF8.GetBytes("Reload");
+    private static readonly ReadOnlyMemory<byte> s_waitMessage = Encoding.UTF8.GetBytes("Wait");
+    private static readonly ReadOnlyMemory<byte> s_pingMessage = Encoding.UTF8.GetBytes("""{ "type" : "Ping" }""");
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
     private readonly List<BrowserConnection> _activeConnections = [];
@@ -230,14 +233,18 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
     public ValueTask SendReloadMessageAsync(CancellationToken cancellationToken)
     {
         logger.Log(LogEvents.ReloadingBrowser);
-        return SendAsync(JsonReloadRequest.Message, cancellationToken);
+        return SendAsync(s_reloadMessage, cancellationToken);
     }
 
     public ValueTask SendWaitMessageAsync(CancellationToken cancellationToken)
     {
         logger.Log(LogEvents.SendingWaitMessage);
-        return SendAsync(JsonWaitRequest.Message, cancellationToken);
+        return SendAsync(s_waitMessage, cancellationToken);
     }
+
+    // obsolete: to be removed
+    public ValueTask SendPingMessageAsync(CancellationToken cancellationToken)
+        => SendAsync(s_pingMessage, cancellationToken);
 
     private ValueTask SendAsync(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
         => SendAndReceiveAsync(request: _ => messageBytes, response: null, cancellationToken);
@@ -286,13 +293,13 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
     public ValueTask RefreshBrowserAsync(CancellationToken cancellationToken)
     {
         logger.Log(LogEvents.RefreshingBrowser);
-        return SendAsync(JsonRefreshBrowserRequest.Message, cancellationToken);
+        return SendJsonMessageAsync(new AspNetCoreHotReloadApplied(), cancellationToken);
     }
 
     public ValueTask ReportCompilationErrorsInBrowserAsync(ImmutableArray<string> compilationErrors, CancellationToken cancellationToken)
     {
         logger.Log(LogEvents.UpdatingDiagnostics);
-        return SendJsonMessageAsync(new JsonReportDiagnosticsRequest { Diagnostics = compilationErrors }, cancellationToken);
+        return SendJsonMessageAsync(new HotReloadDiagnostics { Diagnostics = compilationErrors }, cancellationToken);
     }
 
     public async ValueTask UpdateStaticAssetsAsync(IEnumerable<string> relativeUrls, CancellationToken cancellationToken)
@@ -301,37 +308,24 @@ internal abstract class AbstractBrowserRefreshServer(string middlewareAssemblyPa
         foreach (var relativeUrl in relativeUrls)
         {
             logger.Log(LogEvents.SendingStaticAssetUpdateRequest, relativeUrl);
-            var message = JsonSerializer.SerializeToUtf8Bytes(new JasonUpdateStaticFileRequest { Path = relativeUrl }, s_jsonSerializerOptions);
+            var message = JsonSerializer.SerializeToUtf8Bytes(new UpdateStaticFileMessage { Path = relativeUrl }, s_jsonSerializerOptions);
             await SendAsync(message, cancellationToken);
         }
     }
 
-    private readonly struct JsonWaitRequest
+    private readonly struct AspNetCoreHotReloadApplied
     {
-        public string Type => "Wait";
-        public static readonly ReadOnlyMemory<byte> Message = JsonSerializer.SerializeToUtf8Bytes(new JsonWaitRequest(), s_jsonSerializerOptions);
+        public string Type => "AspNetCoreHotReloadApplied";
     }
 
-    private readonly struct JsonReloadRequest
+    private readonly struct HotReloadDiagnostics
     {
-        public string Type => "Reload";
-        public static readonly ReadOnlyMemory<byte> Message = JsonSerializer.SerializeToUtf8Bytes(new JsonReloadRequest(), s_jsonSerializerOptions);
-    }
-
-    private readonly struct JsonRefreshBrowserRequest
-    {
-        public string Type => "RefreshBrowser";
-        public static readonly ReadOnlyMemory<byte> Message = JsonSerializer.SerializeToUtf8Bytes(new JsonRefreshBrowserRequest(), s_jsonSerializerOptions);
-    }
-
-    private readonly struct JsonReportDiagnosticsRequest
-    {
-        public string Type => "ReportDiagnostics";
+        public string Type => "HotReloadDiagnosticsv1";
 
         public IEnumerable<string> Diagnostics { get; init; }
     }
 
-    private readonly struct JasonUpdateStaticFileRequest
+    private readonly struct UpdateStaticFileMessage
     {
         public string Type => "UpdateStaticFile";
         public string Path { get; init; }
