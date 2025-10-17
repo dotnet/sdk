@@ -106,7 +106,7 @@ mode, `dotnet run` will now prompt to select a `$(TargetFramework)`
 for all multi-targeted projects. Platform-specific projects like
 Android, iOS, etc. will prompt for device selection.
 
-`dotnet run --list` will:
+`dotnet run --list-targets` will:
 
 * Prompt for `$(TargetFramework)` for multi-targeted projects just
   like when `--list` is omitted.
