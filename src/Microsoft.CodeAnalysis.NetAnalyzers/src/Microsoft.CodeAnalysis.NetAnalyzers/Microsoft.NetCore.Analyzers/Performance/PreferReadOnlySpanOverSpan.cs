@@ -124,6 +124,36 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         argument.Parameter?.RefKind is RefKind.Ref or RefKind.Out)
                     {
                         candidateParameters.TryRemove(paramRef.Parameter, out _);
+                        return;
+                    }
+
+                    // Check if this property reference is used in a ref variable declaration
+                    // This handles cases like: ref int i = ref span[0];
+                    // Walk up the parent chain to find a VariableDeclaratorOperation with RefKind
+                    var parent = propertyRef.Parent;
+                    while (parent != null)
+                    {
+                        if (parent is IVariableDeclaratorOperation variableDeclarator &&
+                            variableDeclarator.Symbol.RefKind != RefKind.None)
+                        {
+                            candidateParameters.TryRemove(paramRef.Parameter, out _);
+                            return;
+                        }
+                        if (parent is IBlockOperation or IMethodBodyOperation)
+                        {
+                            // Stop at block/method boundaries
+                            break;
+                        }
+                        parent = parent.Parent;
+                    }
+
+                    // Check if this property reference is being returned by ref
+                    // This handles cases where span[0] is being returned by ref
+                    var containingMethod = operationContext.ContainingSymbol as IMethodSymbol;
+                    if (containingMethod?.ReturnsByRef == true &&
+                        propertyRef.Parent is IReturnOperation)
+                    {
+                        candidateParameters.TryRemove(paramRef.Parameter, out _);
                     }
                 }, OperationKind.PropertyReference);
 
@@ -187,6 +217,13 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     if (returnOp.ReturnedValue is IParameterReferenceOperation paramRef &&
                         candidateParameters.ContainsKey(paramRef.Parameter))
                     {
+                        // If method returns by ref, the parameter must remain writable
+                        if (methodSymbol.ReturnsByRef)
+                        {
+                            candidateParameters.TryRemove(paramRef.Parameter, out _);
+                            return;
+                        }
+
                         // Returning the parameter means it escapes, so we need to check if return type is compatible
                         if (methodSymbol.ReturnType is INamedTypeSymbol returnNamedType &&
                             !SymbolEqualityComparer.Default.Equals(returnNamedType.OriginalDefinition, readOnlySpan) &&

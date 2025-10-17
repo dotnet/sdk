@@ -1223,5 +1223,56 @@ class C
 
             await test.RunAsync();
         }
+
+        [Fact]
+        public async Task SpanParameter_RefVariableDeclaration_NoDiagnostic()
+        {
+            var source = """
+                using System;
+
+                class Test
+                {
+                    private void Method(Span<int> data)
+                    {
+                        // Taking a ref to an indexed element requires writability
+                        ref int firstElement = ref data[0];
+                        firstElement = 42;
+                    }
+                }
+                """;
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = source,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80
+            };
+
+            await test.RunAsync();
+        }
+
+        [Fact]
+        public async Task SpanParameter_RefReturn_NoDiagnostic()
+        {
+            var source = """
+                using System;
+
+                class Test
+                {
+                    // Method returns ref, so parameter must be writable
+                    private ref int GetFirst(Span<int> data)
+                    {
+                        return ref data[0];
+                    }
+                }
+                """;
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = source,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80
+            };
+
+            await test.RunAsync();
+        }
     }
 }
