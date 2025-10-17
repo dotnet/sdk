@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             Directory.SetCurrentDirectory(newWorkingDir);
             var projectPath = Path.Combine(newWorkingDir, "HelloWorld.csproj");
-                
+
             var runCommand = RunCommand.FromArgs(new[] { "--project", projectPath, "--", "foo" });
             runCommand.ApplicationArgs.Single().Should().Be("foo");
         }
