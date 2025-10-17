@@ -831,7 +831,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--framework', '-f', [CompletionResultType]::ParameterName, "The target framework to run for. The target framework must also be specified in the project file.")
                 [CompletionResult]::new('--runtime', '--runtime', [CompletionResultType]::ParameterName, "The target runtime to run for.")
                 [CompletionResult]::new('--runtime', '-r', [CompletionResultType]::ParameterName, "The target runtime to run for.")
-                [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "The path to the project file to run (defaults to the current directory if there is only one project).")
+                [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.")
                 [CompletionResult]::new('--file', '--file', [CompletionResultType]::ParameterName, "The path to the file-based app to run (can be also passed as the first argument if there is no project in the current directory).")
                 [CompletionResult]::new('--launch-profile', '--launch-profile', [CompletionResultType]::ParameterName, "The name of the launch profile (if any) to use when launching the application.")
                 [CompletionResult]::new('--launch-profile', '-lp', [CompletionResultType]::ParameterName, "The name of the launch profile (if any) to use when launching the application.")
