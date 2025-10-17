@@ -17,6 +17,11 @@ internal class CommonOptions
         DefaultValueFactory = _ => !IsCIEnvironmentOrRedirected()
     };
 
+    public static Option<bool> NoProgressOption = new("--no-progress")
+    {
+        Description = "Disables progress display for operations",
+        Arity = ArgumentArity.ZeroOrOne
+    };
 
     private static bool IsCIEnvironmentOrRedirected() =>
         new Cli.Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected;

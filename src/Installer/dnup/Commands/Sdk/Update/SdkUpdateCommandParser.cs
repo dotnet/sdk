@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Update;
 
 internal static class SdkUpdateCommandParser
 {
-    
+
     public static readonly Option<bool> UpdateAllOption = new("--all")
     {
         Description = "Update all installed SDKs",
@@ -22,6 +22,7 @@ internal static class SdkUpdateCommandParser
     };
 
     public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
+    public static readonly Option<bool> NoProgressOption = CommonOptions.NoProgressOption;
 
     private static readonly Command SdkUpdateCommand = ConstructCommand();
 
@@ -47,6 +48,7 @@ internal static class SdkUpdateCommandParser
         command.Options.Add(UpdateGlobalJsonOption);
 
         command.Options.Add(InteractiveOption);
+        command.Options.Add(NoProgressOption);
 
         command.SetAction(parseResult => 0);
 
