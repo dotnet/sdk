@@ -89,9 +89,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             Assert.Equal("--", settings[0]);
             Assert.Equal(settings.Length, settingsCount + 1);
-            for (int i = 0; i < settingsCount; i++)
+            for (int i = 1; i <= settingsCount; i++)
             {
-                Assert.Equal(settings[i + 1], parseResult.UnmatchedTokens[i]);
+                Assert.Equal(settings[^i], parseResult.UnmatchedTokens[^i]);
             }
 
             TestCommand.ContainsBuiltTestSources(parseResult, settingsCount).Should().Be(false);
@@ -112,9 +112,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             Assert.Equal("--", settings[0]);
             Assert.Equal(settings.Length, settingsCount + 1);
-            for (int i = 0; i < settingsCount; i++)
+            for (int i = 1; i <= settingsCount; i++)
             {
-                Assert.Equal(settings[i + 1], parseResult.UnmatchedTokens[i]);
+                Assert.Equal(settings[^i], parseResult.UnmatchedTokens[^i]);
             }
 
             TestCommand.ContainsBuiltTestSources(parseResult, settingsCount).Should().Be(true);
