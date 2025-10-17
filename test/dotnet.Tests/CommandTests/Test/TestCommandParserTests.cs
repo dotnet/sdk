@@ -83,9 +83,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             (args, string[] settings) = TestCommand.SeparateSettingsFromArgs(args);
             int settingsCount = TestCommand.GetSettingsCount(settings);
             settingsCount.Should().Be(4);
+
+            // Our unmatched tokens for this test case are only the settings (after the `--`).
+            Assert.Equal(settingsCount, parseResult.UnmatchedTokens.Count);
+
             Assert.Equal("--", settings[0]);
             Assert.Equal(settings.Length, settingsCount + 1);
-            Assert.Equal(settingsCount, parseResult.UnmatchedTokens.Count);
             for (int i = 0; i < settingsCount; i++)
             {
                 Assert.Equal(settings[i + 1], parseResult.UnmatchedTokens[i]);
@@ -103,9 +106,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             (args, string[] settings) = TestCommand.SeparateSettingsFromArgs(args);
             int settingsCount = TestCommand.GetSettingsCount(settings);
             settingsCount.Should().Be(1);
+
+            // Our unmatched tokens here are all the settings, plus the abd.dll before the `--`.
+            Assert.Equal(settingsCount + 1, parseResult.UnmatchedTokens.Count);
+
             Assert.Equal("--", settings[0]);
             Assert.Equal(settings.Length, settingsCount + 1);
-            Assert.Equal(settingsCount, parseResult.UnmatchedTokens.Count);
             for (int i = 0; i < settingsCount; i++)
             {
                 Assert.Equal(settings[i + 1], parseResult.UnmatchedTokens[i]);
