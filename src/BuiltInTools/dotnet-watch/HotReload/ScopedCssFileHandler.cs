@@ -3,6 +3,7 @@
 
 
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
@@ -61,7 +62,7 @@ namespace Microsoft.DotNet.Watch
                 using var loggers = buildReporter.GetLoggers(projectNode.ProjectInstance.FullPath, BuildTargetName);
 
                 // Deep copy so that we don't pollute the project graph:
-                if (!projectNode.ProjectInstance.DeepCopy().Build(BuildTargetName, loggers))
+                if (!projectNode.ProjectInstance.DeepCopy().BuildWithTelemetry([BuildTargetName], loggers))
                 {
                     loggers.ReportOutput();
                     return null;
