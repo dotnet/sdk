@@ -81,10 +81,14 @@ jobs:
   - template: /eng/common/templates/steps/enable-internal-sources.yml
   - script: .\restore.cmd ${{ parameters.runtimeSourceProperties }}
     displayName: 🟣 Restore dependencies
+    env:
+      DOTNET_CLI_USE_MSBUILD_SERVER: 1
   - script: |
       .\artifacts\sdk-build-env.bat
         dotnet run --project .\src\BuiltInTools\dotnet-format\dotnet-format.csproj -c Release  -- @eng\dotnet-format\validate.rsp
     displayName: 🟣 Run dotnet-format
+    env:
+      DOTNET_CLI_USE_MSBUILD_SERVER: 1
   - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishBuildArtifacts@1
     displayName: 🟣 Publish Logs
     inputs:
@@ -110,9 +114,15 @@ jobs:
     - template: /eng/common/templates/steps/enable-internal-sources.yml
     - script: eng\dotnet-format\integration-test.cmd -repo '${{ testArgs._repo }}' -branchName '${{ testArgs._branchName }}' -sha '${{ testArgs._sha }}' -targetSolution '${{ testArgs._targetSolution }}' -useParentSdk ${{ testArgs._useParentSdk }} -testPath '$(Agent.TempDirectory)\temp' -stage 'prepare' -runtimeSourceProperties '${{ parameters.runtimeSourceProperties }}'
       displayName: 🟣 Prepare ${{ testArgs._repoName }} for formatting
+      env:
+        DOTNET_CLI_USE_MSBUILD_SERVER: 1
 
     - script: eng\dotnet-format\integration-test.cmd -repo '${{ testArgs._repo }}' -branchName '${{ testArgs._branchName }}' -sha '${{ testArgs._sha }}' -targetSolution '${{ testArgs._targetSolution }}' -useParentSdk ${{ testArgs._useParentSdk }} -testPath '$(Agent.TempDirectory)\temp' -stage 'format-workspace'
       displayName: 🟣 Run dotnet-format on ${{ testArgs._repoName }} ${{ testArgs._targetSolution }}
+      env:
+        DOTNET_CLI_USE_MSBUILD_SERVER: 1
 
     - script: eng\dotnet-format\integration-test.cmd -repo '${{ testArgs._repo }}' -branchName '${{ testArgs._branchName }}' -sha '${{ testArgs._sha }}' -targetSolution '${{ testArgs._targetSolution }}' -useParentSdk ${{ testArgs._useParentSdk }} -testPath '$(Agent.TempDirectory)\temp' -stage 'format-folder'
       displayName: 🟣 Run dotnet-format on ${{ testArgs._repoName }} repo folder
+      env:
+        DOTNET_CLI_USE_MSBUILD_SERVER: 1
