@@ -987,10 +987,8 @@ setx PATH "%PATH%;{0}"
         <note>{Locked="--self-contained"}{Locked="--no-self-contained"}</note>
       </trans-unit>
       <trans-unit id="SelfContainedOptionDescription">
-        <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
-The default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.</source>
-        <target state="translated">將 .NET 執行階段隨著您的應用程式發佈，以便您不需在目標電腦上安裝執行階段。
-預設值為 'false'。不過，當目標為 .NET 7 或更低版本時，如有指定執行階段識別碼，則預設值為 'true'。</target>
+        <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.</source>
+        <target state="translated">將 .NET 執行階段隨著您的應用程式發佈，以便您不需在目標電腦上安裝執行階段。</target>
         <note />
       </trans-unit>
       <trans-unit id="ShellShimConflict">
