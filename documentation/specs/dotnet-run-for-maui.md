@@ -48,7 +48,7 @@ to make extensible for .NET MAUI (and future) scenarios.
   * Once a `$(TargetFramework)` is selected, either from previous
     steps or `-f`...
 
-    * If a `ComputeAvailableTargets` target is available, provided by
+    * If a `ComputeAvailableRunTargets` target is available, provided by
       the iOS or Android workload, etc. ...
 
     * Call the target, which returns a list of `@(RunTargets)` items...
@@ -79,7 +79,7 @@ devices`, or `xcrun devicectl list devices`._
 
   * Non-interactive mode will error, suggesting to supply the
     `--target|-t` switch. Listing the options returned by the
-    `ComputeAvailableTargets` MSBuild target.
+    `ComputeAvailableRunTargets` MSBuild target.
 
 * `build`: unchanged, but is passed `-p:RunTarget`.
 
@@ -115,7 +115,7 @@ Android, iOS, etc. will prompt for device selection.
   * If there is a single `$(TargetFramework)`, it can just print a
     friendly message and exit.
 
-* Call `ComputeAvailableTargets` just like when `--list-targets` is
+* Call `ComputeAvailableRunTargets` just like when `--list-targets` is
   omitted.
 
   * List the available targets by name, a unique identifier, and an
@@ -124,7 +124,7 @@ Android, iOS, etc. will prompt for device selection.
   * Print a friendly message that says how to run `dotnet run` with
     the new `--target|-t` switch.
 
-  * If `ComputeAvailableTargets` does not exist in the project
+  * If `ComputeAvailableRunTargets` does not exist in the project
     (workload), it can print a friendly message and exit.
 
 * `dotnet run --list-targets` will then basically exit early, never
