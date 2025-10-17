@@ -211,3 +211,11 @@ To improve the behavior for "packaged" / MSIX, we could:
 
 In the future, we can either add this logic into the .NET MAUI
 workload or WindowsAppSDK itself.
+
+## Other frameworks: Avalonia, Uno, MonoGame, etc.
+
+When these frameworks run on iOS or Android, they are basically using
+the `ios` and `android` workloads *without* .NET MAUI. Any iOS or
+Android-specific behavior would apply to these project types in the
+same way a `dotnet new android` or `dotnet new ios` project template
+would.
