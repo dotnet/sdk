@@ -15,7 +15,7 @@ The pain points being:
 * Each platform has different behavior, regards to displaying console
   output, etc.
 
-* Using a MSIX with WindowsAppSDK doesn't support `dotnet run` at all,
+* Using an MSIX with WindowsAppSDK doesn't support `dotnet run` at all,
   relying completely on IDEs like Visual Studio.
 
 * `dotnet run` does not have a concept of a "deploy" step.
