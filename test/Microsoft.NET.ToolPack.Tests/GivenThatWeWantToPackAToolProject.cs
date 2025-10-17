@@ -323,5 +323,42 @@ namespace Microsoft.NET.ToolPack.Tests
             result.Should().Fail().And.HaveStdOutContaining("NETSDK1146");
 
         }
+
+        [Fact]
+        public void It_packs_with_RuntimeIdentifier()
+        {
+            var testProject = new TestProject("ToolWithRuntimeIdentifier")
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+                RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid()
+            };
+            testProject.AdditionalProperties["PackAsTool"] = "true";
+            testProject.AdditionalProperties["ImplicitUsings"] = "enable";
+            testProject.AdditionalProperties["CreateRidSpecificToolPackages"] = "false";
+            testProject.AdditionalProperties["UseAppHost"] = "false";
+
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var packCommand = new PackCommand(testAsset);
+
+            packCommand.Execute().Should().Pass();
+
+            packCommand.GetPackageDirectory().Should().HaveFile($"{testProject.Name}.1.0.0.nupkg");
+            packCommand.GetPackageDirectory().Should().NotHaveFile($"{testProject.Name}.{testProject.RuntimeIdentifier}.1.0.0.nupkg");
+
+            var nupkgPath = packCommand.GetNuGetPackage();
+
+            using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+            {
+                var toolSettingsItem = nupkgReader.GetToolItems().SelectMany(g => g.Items).SingleOrDefault(i => i.Equals($"tools/{testProject.TargetFrameworks}/{testProject.RuntimeIdentifier}/DotnetToolSettings.xml"));
+                toolSettingsItem.Should().NotBeNull();
+
+                var toolSettingsXml = XDocument.Load(nupkgReader.GetStream(toolSettingsItem));
+                toolSettingsXml.Root.Attribute("Version").Value.Should().Be("1");
+            }
+
+        }
     }
 }
