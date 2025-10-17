@@ -137,7 +137,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                     _nugetLogger.LogWarning(
                         string.Format(
                             LocalizableStrings.NuGetApiPackageManager_Warning_FailedToDownload,
-                            $"{packageMetadata.Identity.Id}::{packageMetadata.Identity.Version}",
+                            $"{packageMetadata.Identity.Id}@{packageMetadata.Identity.Version}",
                             source.Source));
                     try
                     {
@@ -159,7 +159,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 _nugetLogger.LogWarning(
                     string.Format(
                         LocalizableStrings.NuGetApiPackageManager_Warning_FailedToDownload,
-                        $"{packageMetadata.Identity.Id}::{packageMetadata.Identity.Version}",
+                        $"{packageMetadata.Identity.Id}@{packageMetadata.Identity.Version}",
                         source.Source));
                 _nugetLogger.LogDebug($"Details: {e}.");
                 try
@@ -335,13 +335,13 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 NugetPackageMetadata? matchedVersion = foundPackages.FirstOrDefault(package => package.Identity.Version == packageVersion);
                 if (matchedVersion != null)
                 {
-                    _nugetLogger.LogDebug($"{packageIdentifier}::{packageVersion} was found in {foundSource.Source}.");
+                    _nugetLogger.LogDebug($"{packageIdentifier}@{packageVersion} was found in {foundSource.Source}.");
                     linkedCts.Cancel();
                     return (foundSource, matchedVersion);
                 }
                 else
                 {
-                    _nugetLogger.LogDebug($"{packageIdentifier}::{packageVersion} is not found in NuGet feed {foundSource.Source}.");
+                    _nugetLogger.LogDebug($"{packageIdentifier}@{packageVersion} is not found in NuGet feed {foundSource.Source}.");
                 }
             }
             if (!atLeastOneSourceValid)
@@ -351,7 +351,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             _nugetLogger.LogWarning(
                 string.Format(
                     LocalizableStrings.NuGetApiPackageManager_Warning_PackageNotFound,
-                    $"{packageIdentifier}::{packageVersion}",
+                    $"{packageIdentifier}@{packageVersion}",
                     string.Join(", ", sources.Select(source => source.Source))));
             throw new PackageNotFoundException(packageIdentifier, packageVersion, sources.Select(source => source.Source));
         }
