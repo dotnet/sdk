@@ -82,6 +82,7 @@ namespace Microsoft.NET.Build.Tests
                 "1.exe",
                 "1.pdb",
                 "1.exe.config",
+                "System.Diagnostics.DiagnosticSource.dll",
             };
 
             foreach (var targetFramework in targetFrameworks)
