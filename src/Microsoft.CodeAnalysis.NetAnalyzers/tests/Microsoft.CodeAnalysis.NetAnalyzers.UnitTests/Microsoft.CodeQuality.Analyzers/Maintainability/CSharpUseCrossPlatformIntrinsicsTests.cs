@@ -14,6 +14,18 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
     public partial class CSharpUseCrossPlatformIntrinsicsTests
     {
         [Fact]
+        public void DiagnosticDescriptors_HaveCorrectTitleAndDescription()
+        {
+            foreach (var rule in Rules)
+            {
+                Assert.Equal(RuleId, rule.Id);
+                Assert.NotEmpty(rule.Title.ToString());
+                Assert.NotEmpty(rule.Description.ToString());
+                Assert.NotEmpty(rule.MessageFormat.ToString());
+            }
+        }
+
+        [Fact]
         public async Task Fixer_InnerNodeReplacedAsync()
         {
             // lang=C#-test
