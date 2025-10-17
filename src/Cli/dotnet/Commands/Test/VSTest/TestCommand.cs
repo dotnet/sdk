@@ -46,7 +46,7 @@ public class TestCommand(
 
         // Fix for https://github.com/Microsoft/vstest/issues/1453
         // Run dll/exe directly using the VSTestForwardingApp
-        if (ContainsBuiltTestSources(args))
+        if (ContainsBuiltTestSources(parseResult))
         {
             return ForwardToVSTestConsole(parseResult, args, settings, testSessionCorrelationId);
         }
@@ -295,18 +295,14 @@ public class TestCommand(
         }
     }
 
-    private static bool ContainsBuiltTestSources(string[] args)
+    private static bool ContainsBuiltTestSources(ParseResult parseResult)
     {
-        for (int i = 0; i < args.Length; i++)
+        for (int i = 0; i < parseResult.UnmatchedTokens.Count; i++)
         {
-            string arg = args[i];
-            if (arg.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || arg.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+            string arg = parseResult.UnmatchedTokens[i];
+            if (!arg.StartsWith("-") &&
+                (arg.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || arg.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)))
             {
-                var previousArg = i > 0 ? args[i - 1] : null;
-                if (previousArg != null &&  CommonOptions.PropertiesOption.Aliases.Contains(previousArg))
-                {
-                    return false;
-                }
                 return true;
             }
         }
