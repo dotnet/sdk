@@ -223,7 +223,14 @@ internal class ReleaseManifest : IDisposable
             // Handle Preview channel - get the latest preview version
             var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
             return GetLatestPreviewVersion(productIndex, component);
-        }        // Parse the channel string into components
+        }
+        else if (string.Equals(channel.Name, "latest", StringComparison.OrdinalIgnoreCase))
+        {
+            var productIndex = ProductCollection.GetAsync().GetAwaiter().GetResult();
+            return GetLatestStableVersion(productIndex, component);
+        }
+
+        // Parse the channel string into components
 
         var (major, minor, featureBand, isFullySpecified) = ParseVersionChannel(channel);
 
@@ -437,9 +444,72 @@ internal class ReleaseManifest : IDisposable
         }
 
         return null; // No preview versions found
-    }    /// <summary>
-         /// Gets the latest version for a major.minor channel (e.g., "9.0").
-         /// </summary>
+    }
+
+    /// <summary>
+    /// Gets the latest stable version across all available products.
+    /// </summary>
+    private ReleaseVersion? GetLatestStableVersion(ProductCollection index, InstallComponent component)
+    {
+        var sortedProducts = index
+            .OrderByDescending(p =>
+            {
+                var productParts = p.ProductVersion.Split('.');
+                if (productParts.Length > 0 && int.TryParse(productParts[0], out var major))
+                {
+                    var minor = productParts.Length > 1 && int.TryParse(productParts[1], out var minorVersion)
+                        ? minorVersion
+                        : 0;
+                    return major * 100 + minor;
+                }
+                return 0;
+            })
+            .ToList();
+
+        foreach (var product in sortedProducts)
+        {
+            var releases = product.GetReleasesAsync().GetAwaiter().GetResult();
+            var stableReleases = releases.Where(r => !r.IsPreview).ToList();
+
+            if (!stableReleases.Any())
+            {
+                continue;
+            }
+
+            if (component == InstallComponent.SDK)
+            {
+                var sdks = stableReleases
+                    .SelectMany(r => r.Sdks)
+                    .Where(sdk => !sdk.Version.ToString().Contains("-"))
+                    .OrderByDescending(sdk => sdk.Version)
+                    .ToList();
+
+                if (sdks.Any())
+                {
+                    return sdks.First().Version;
+                }
+            }
+            else
+            {
+                var runtimes = stableReleases
+                    .SelectMany(r => r.Runtimes)
+                    .Where(runtime => !runtime.Version.ToString().Contains("-"))
+                    .OrderByDescending(runtime => runtime.Version)
+                    .ToList();
+
+                if (runtimes.Any())
+                {
+                    return runtimes.First().Version;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Gets the latest version for a major.minor channel (e.g., "9.0").
+    /// </summary>
     private ReleaseVersion? GetLatestVersionForMajorMinor(ProductCollection index, int major, int minor, InstallComponent component)
     {
         // Find the product for the requested major.minor

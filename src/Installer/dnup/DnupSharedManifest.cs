@@ -12,9 +12,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 internal class DnupSharedManifest : IDnupManifest
 {
-    private static readonly string ManifestPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-        "dnup", "dnup_manifest.json");
+    private static string ManifestPath => GetManifestPath();
 
     public DnupSharedManifest()
     {
@@ -28,6 +26,20 @@ internal class DnupSharedManifest : IDnupManifest
             Directory.CreateDirectory(Path.GetDirectoryName(ManifestPath)!);
             File.WriteAllText(ManifestPath, JsonSerializer.Serialize(new List<DotnetInstall>(), DnupManifestJsonContext.Default.ListDotnetInstall));
         }
+    }
+
+    private static string GetManifestPath()
+    {
+        var overridePath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_MANIFEST_PATH");
+        if (!string.IsNullOrEmpty(overridePath))
+        {
+            return overridePath;
+        }
+
+        return Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            "dnup",
+            "dnup_manifest.json");
     }
 
     private void AssertHasFinalizationMutex()
