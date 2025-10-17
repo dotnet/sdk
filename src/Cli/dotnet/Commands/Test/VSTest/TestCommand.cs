@@ -46,7 +46,10 @@ public class TestCommand(
 
         // Fix for https://github.com/Microsoft/vstest/issues/1453
         // Run dll/exe directly using the VSTestForwardingApp
-        if (ContainsBuiltTestSources(parseResult))
+        // Note: ContainsBuiltTestSources need to know how many settings are there, to skip those from unmatched tokens
+        // When we don't have settings, we pass 0.
+        // When we have settings, we want to exclude the '--' as it doesn't end up in unmatched tokens, so we pass settings.Length - 1
+        if (ContainsBuiltTestSources(parseResult, settings.Length == 0 ? 0 : settings.Length - 1))
         {
             return ForwardToVSTestConsole(parseResult, args, settings, testSessionCorrelationId);
         }
@@ -295,9 +298,9 @@ public class TestCommand(
         }
     }
 
-    private static bool ContainsBuiltTestSources(ParseResult parseResult)
+    private static bool ContainsBuiltTestSources(ParseResult parseResult, int settingsLength)
     {
-        for (int i = 0; i < parseResult.UnmatchedTokens.Count; i++)
+        for (int i = 0; i < parseResult.UnmatchedTokens.Count - settingsLength; i++)
         {
             string arg = parseResult.UnmatchedTokens[i];
             if (!arg.StartsWith("-") &&
