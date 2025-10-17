@@ -3,10 +3,13 @@
 
 #nullable enable
 
+using System;
 using System.Diagnostics;
 using System.IO.Pipes;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.HotReload;
 

@@ -10,6 +10,5 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)**\*.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet-watch\Utilities\ProcessUtilities.cs" Link="ProcessUtilities.cs" />
   </ItemGroup>
 </Project>
