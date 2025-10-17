@@ -836,6 +836,28 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(1);
         }
 
+        [Fact]
+        public void DistributedLoggerEndingWithDotDllShouldBePassedToMSBuild()
+        {
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([]);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
+                                        .WithWorkingDirectory(testProjectDirectory)
+                                        .Execute(ConsoleLoggerOutputNormal.Concat(["-dl:my.dll"]));
+
+            if (!TestContext.IsLocalized())
+            {
+                // This ensures that this was passed to MSBuild and not vstest.console.
+                result.StdOut.Should().Contain("error MSB1021: Cannot create an instance of the logger my.dll.");
+            }
+            else
+            {
+                result.StdOut.Should().Contain("MSB1021");
+            }
+
+            result.ExitCode.Should().Be(1);
+        }
+
         private string CopyAndRestoreVSTestDotNetCoreTestApp(object[] parameters, [CallerMemberName] string callingMethod = "")
         {
             // Copy VSTestCore project in output directory of project dotnet-vstest.Tests
