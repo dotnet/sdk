@@ -38,5 +38,4 @@
   <ItemGroup>
     <Compile Include="..\dotnet-watch\Utilities\ProcessUtilities.cs" />
   </ItemGroup>
-
 </Project>
