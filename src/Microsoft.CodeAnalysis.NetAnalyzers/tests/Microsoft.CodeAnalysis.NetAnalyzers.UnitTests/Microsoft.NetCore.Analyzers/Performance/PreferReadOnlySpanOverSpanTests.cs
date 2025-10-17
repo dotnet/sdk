@@ -1185,5 +1185,43 @@ class C
 
             await test.RunAsync();
         }
+
+        [Fact]
+        public async Task SpanParameter_PassedAsRefArgument_NoDiagnostic()
+        {
+            var source = """
+                using System;
+
+                class Test
+                {
+                    private static void IntroSort(Span<int> keys, int depthLimit)
+                    {
+                        if (keys.Length == 2)
+                        {
+                            SwapIfGreater(ref keys[0], ref keys[1]);
+                            return;
+                        }
+                    }
+
+                    private static void SwapIfGreater(ref int a, ref int b)
+                    {
+                        if (a > b)
+                        {
+                            int temp = a;
+                            a = b;
+                            b = temp;
+                        }
+                    }
+                }
+                """;
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = source,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80
+            };
+
+            await test.RunAsync();
+        }
     }
 }

@@ -104,12 +104,24 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 blockStartContext.RegisterOperationAction(operationContext =>
                 {
                     var propertyRef = (IPropertyReferenceOperation)operationContext.Operation;
+                    if (propertyRef.Instance is not IParameterReferenceOperation paramRef ||
+                        !candidateParameters.ContainsKey(paramRef.Parameter))
+                    {
+                        return;
+                    }
+
                     // Check if this property reference is on the left side of an assignment
                     // This handles Span<T> indexer writes like: span[0] = value
-                    if (propertyRef.Instance is IParameterReferenceOperation paramRef &&
-                        candidateParameters.ContainsKey(paramRef.Parameter) &&
-                        propertyRef.Parent is IAssignmentOperation assignment && 
-                        assignment.Target == propertyRef)
+                    if (propertyRef.Parent is IAssignmentOperation assignment && assignment.Target == propertyRef)
+                    {
+                        candidateParameters.TryRemove(paramRef.Parameter, out _);
+                        return;
+                    }
+
+                    // Check if this property reference is being passed as ref/out argument
+                    // This handles cases like: SwapIfGreater(ref span[0], ref span[1])
+                    if (propertyRef.Parent is IArgumentOperation argument && 
+                        argument.Parameter?.RefKind is RefKind.Ref or RefKind.Out)
                     {
                         candidateParameters.TryRemove(paramRef.Parameter, out _);
                     }
