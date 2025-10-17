@@ -20,6 +20,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
     private readonly bool? _setDefaultInstall = result.GetValue(SdkInstallCommandParser.SetDefaultInstallOption);
     private readonly bool? _updateGlobalJson = result.GetValue(SdkInstallCommandParser.UpdateGlobalJsonOption);
     private readonly bool _interactive = result.GetValue(SdkInstallCommandParser.InteractiveOption);
+    private readonly bool _noProgress = result.GetValue(SdkInstallCommandParser.NoProgressOption);
 
     private readonly IBootstrapperController _dotnetInstaller = new BootstrapperController();
     private readonly IDotnetReleaseInfoProvider _releaseInfoProvider = new EnvironmentVariableMockReleaseInfoProvider();
@@ -207,11 +208,11 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         SpectreAnsiConsole.MarkupInterpolated($"Installing .NET SDK [blue]{resolvedVersion}[/] to [blue]{resolvedInstallPath}[/]...");
 
-        // Create and use a progress context
-        var progressContext = SpectreAnsiConsole.Progress().Start(ctx => ctx);
+        DotnetInstall? mainInstall;
 
-        // Install the main SDK using the InstallerOrchestratorSingleton directly
-        DotnetInstall? mainInstall = InstallerOrchestratorSingleton.Instance.Install(installRequest);
+        // Pass the _noProgress flag to the InstallerOrchestratorSingleton
+        // The orchestrator will handle installation with or without progress based on the flag
+        mainInstall = InstallerOrchestratorSingleton.Instance.Install(installRequest, _noProgress);
         if (mainInstall == null)
         {
             SpectreAnsiConsole.MarkupLine($"[red]Failed to install .NET SDK {resolvedVersion}[/]");
@@ -229,7 +230,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                 InstallComponent.SDK,
                 new InstallRequestOptions());
 
-            // Install the additional version directly using InstallerOrchestratorSingleton
+            // Install the additional version with the same progress settings as the main installation
             DotnetInstall? additionalInstall = InstallerOrchestratorSingleton.Instance.Install(additionalRequest);
             if (additionalInstall == null)
             {

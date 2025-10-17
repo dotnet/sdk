@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
 internal static class SdkInstallCommandParser
 {
-    
+
 
     public static readonly Argument<string?> ChannelArgument = new("channel")
     {
@@ -37,6 +37,7 @@ internal static class SdkInstallCommandParser
     };
 
     public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
+    public static readonly Option<bool> NoProgressOption = CommonOptions.NoProgressOption;
 
     private static readonly Command SdkInstallCommand = ConstructCommand();
 
@@ -66,6 +67,7 @@ internal static class SdkInstallCommandParser
         command.Options.Add(UpdateGlobalJsonOption);
 
         command.Options.Add(InteractiveOption);
+        command.Options.Add(NoProgressOption);
 
         command.SetAction(parseResult => new SdkInstallCommand(parseResult).Execute());
 
