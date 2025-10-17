@@ -8,9 +8,7 @@ namespace Microsoft.NET.Build.Containers;
 /// </summary>
 internal readonly struct MultiArchImage
 {
-    internal required string ImageIndex { get; init; }
-
-    internal required string ImageIndexMediaType { get; init; }
+    internal required IMultiImageManifest ImageIndex { get; init; }
 
     internal BuiltImage[]? Images { get; init; }
 }
