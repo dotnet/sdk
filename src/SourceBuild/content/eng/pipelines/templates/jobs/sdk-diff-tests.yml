@@ -20,7 +20,7 @@ jobs:
   timeoutInMinutes: 150
   pool:
     name: NetCore1ESPool-Svc-Internal
-    demands: ImageOverride -equals 1es-ubuntu-2004
+    demands: ImageOverride -equals 1es-ubuntu-2204
   variables:
   - template: ../variables/pipelines.yml
   steps:
