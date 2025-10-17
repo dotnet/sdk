@@ -23,7 +23,7 @@ The pain points being:
 This has become more relevant in the AI era, as someone is going to
 expect AIs in "agent mode" to build and run their app. If the
 command-line options are difficult, AIs will fail just as badly as
-humans are today.
+humans do today.
 
 ## The `dotnet run` Pipeline
 
