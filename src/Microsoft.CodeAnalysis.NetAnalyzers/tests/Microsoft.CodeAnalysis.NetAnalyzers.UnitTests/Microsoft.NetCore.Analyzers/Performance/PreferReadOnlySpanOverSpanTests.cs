@@ -1406,3 +1406,19 @@ class C
         }
     }
 }
+
+        [Fact]
+        public async Task SpanParameter_ChainedSliceWithIncrementOperator_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+
+                class Test
+                {
+                    private void Method(Span<int> span)
+                    {
+                        span.Slice(1, 4).Slice(1, 2)[0]++;
+                    }
+                }
+                """);
+        }
