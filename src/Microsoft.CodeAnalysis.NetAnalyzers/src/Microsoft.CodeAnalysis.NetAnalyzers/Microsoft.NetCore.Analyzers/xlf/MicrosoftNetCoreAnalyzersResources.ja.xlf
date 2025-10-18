@@ -1008,6 +1008,21 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
         <target state="translated">詳細に設定されたアクセス制御とコンテナーレベルのアクセス ポリシーには、アカウント SAS の代わりにサービス SAS を使用してください</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseAsParallelInForEachLoopDescription">
+        <source>Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.</source>
+        <target state="new">Using 'AsParallel()' directly in a 'foreach' loop has no effect. The 'foreach' statement iterates serially through the collection regardless. To parallelize LINQ operations, call 'AsParallel()' earlier in the query chain before other LINQ operators. To parallelize the loop itself, use 'Parallel.ForEach' instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseAsParallelInForEachLoopMessage">
+        <source>Using 'AsParallel()' directly in a 'foreach' loop has no effect and the loop is not parallelized</source>
+        <target state="new">Using 'AsParallel()' directly in a 'foreach' loop has no effect and the loop is not parallelized</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseAsParallelInForEachLoopTitle">
+        <source>Do not use 'AsParallel' in 'foreach'</source>
+        <target state="new">Do not use 'AsParallel' in 'foreach'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseBrokenCryptographicAlgorithms">
         <source>Do Not Use Broken Cryptographic Algorithms</source>
         <target state="translated">破られた暗号アルゴリズムを使用しない</target>
