@@ -110,9 +110,16 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         return;
                     }
 
-                    // Check if this property reference is on the left side of an assignment
-                    // This handles Span<T> indexer writes like: span[0] = value
+                    // Check if this property reference is on the left side of an assignment (including compound assignments)
+                    // This handles: span[0] = value, span[0]++, span[0]--, span[0] += value, etc.
                     if (propertyRef.Parent is IAssignmentOperation assignment && assignment.Target == propertyRef)
+                    {
+                        candidateParameters.TryRemove(paramRef.Parameter, out _);
+                        return;
+                    }
+
+                    // Check for compound assignments like span[0]++, span[0]--
+                    if (propertyRef.Parent is IIncrementOrDecrementOperation)
                     {
                         candidateParameters.TryRemove(paramRef.Parameter, out _);
                         return;
@@ -192,11 +199,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     }
                 }, OperationKind.Argument);
 
-                // Check for invocations where the parameter is used as an extension method receiver
-                // and the method doesn't exist on the readonly version
+                // Check for invocations where the parameter is used
                 blockStartContext.RegisterOperationAction(operationContext =>
                 {
                     var invocation = (IInvocationOperation)operationContext.Operation;
+                    
                     // Check if this extension method's first parameter (the 'this' parameter) is a Span/Memory
                     // If the extension method takes Span<T> or Memory<T> (not readonly versions),
                     // then the parameter must remain writable
@@ -211,6 +218,37 @@ namespace Microsoft.NetCore.Analyzers.Performance
                                  SymbolEqualityComparer.Default.Equals(firstParamNamedType.OriginalDefinition, memory)))
                             {
                                 candidateParameters.TryRemove(kvp.Key, out _);
+                            }
+                        }
+                    }
+
+                    // Check if method returns non-readonly Span/Memory and that result is used incompatibly
+                    // E.g., Slice() returns Span<T>, and that Span<T> is assigned to a local that's written to
+                    if (invocation.TargetMethod.ReturnType is INamedTypeSymbol returnType &&
+                        (SymbolEqualityComparer.Default.Equals(returnType.OriginalDefinition, span) ||
+                         SymbolEqualityComparer.Default.Equals(returnType.OriginalDefinition, memory)))
+                    {
+                        // If a method returns non-readonly Span/Memory, check how it's used
+                        // If assigned to a variable, that variable may be written to
+                        foreach (var kvp in candidateParameters)
+                        {
+                            if (ContainsParameterReference(invocation, kvp.Key))
+                            {
+                                // The invocation result returns a non-readonly type
+                                // Check if it's being assigned to a local variable
+                                if (invocation.Parent is ISimpleAssignmentOperation assignment &&
+                                    assignment.Target is ILocalReferenceOperation)
+                                {
+                                    // Conservatively assume local may be written to
+                                    candidateParameters.TryRemove(kvp.Key, out _);
+                                }
+                                // Check if it's being used in a ternary that assigns to a local
+                                else if (invocation.Parent is IConditionalOperation conditional &&
+                                    conditional.Parent is ISimpleAssignmentOperation conditionalAssignment &&
+                                    conditionalAssignment.Target is ILocalReferenceOperation)
+                                {
+                                    candidateParameters.TryRemove(kvp.Key, out _);
+                                }
                             }
                         }
                     }
@@ -299,6 +337,21 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         }
                     }
                 }, OperationKind.ArrayCreation);
+
+                // Check for fixed statements - parameters used in fixed should not be flagged
+                blockStartContext.RegisterOperationAction(operationContext =>
+                {
+                    var fixedStatement = (IFixedOperation)operationContext.Operation;
+                    // Check if any of our candidate parameters are used in this fixed statement
+                    foreach (var kvp in candidateParameters)
+                    {
+                        if (ContainsParameterReference(fixedStatement, kvp.Key))
+                        {
+                            // Parameter is used in a fixed statement, must remain writable
+                            candidateParameters.TryRemove(kvp.Key, out _);
+                        }
+                    }
+                }, OperationKind.Fixed);
 
                 blockStartContext.RegisterOperationBlockEndAction(blockEndContext =>
                 {

@@ -1314,5 +1314,95 @@ class C
 
             await test.RunAsync();
         }
+
+        [Fact]
+        public async Task SpanParameter_UsedInFixed_NoDiagnostic()
+        {
+            var source = """
+                using System;
+
+                class Test
+                {
+                    private unsafe void ProcessData(Span<byte> data)
+                    {
+                        fixed (byte* ptr = data)
+                        {
+                            // Use pointer
+                            *ptr = 42;
+                        }
+                    }
+                }
+                """;
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = source,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+                TestState = { AllowUnsafeBlocks = true }
+            };
+
+            await test.RunAsync();
+        }
+
+        [Fact]
+        public async Task SpanParameter_IndexerWithDecrementOperator_NoDiagnostic()
+        {
+            var source = """
+                using System;
+
+                class Test
+                {
+                    private void DecrementLast(Span<int> buffer)
+                    {
+                        int length = buffer.Length;
+                        buffer[length - 1]--;
+                    }
+                }
+                """;
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = source,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80
+            };
+
+            await test.RunAsync();
+        }
+
+        [Fact]
+        public async Task SpanParameter_SliceAssignedToLocalAndWritten_NoDiagnostic()
+        {
+            var source = """
+                using System;
+
+                class Test
+                {
+                    internal static ReadOnlySpan<IntPtr> CopyRuntimeTypeHandles(int[] inHandles, Span<IntPtr> stackScratch)
+                    {
+                        if (inHandles == null || inHandles.Length == 0)
+                        {
+                            return default;
+                        }
+
+                        Span<IntPtr> outHandles = inHandles.Length <= stackScratch.Length ?
+                            stackScratch.Slice(0, inHandles.Length) :
+                            new IntPtr[inHandles.Length];
+                        for (int i = 0; i < inHandles.Length; i++)
+                        {
+                            outHandles[i] = (IntPtr)inHandles[i];
+                        }
+                        return outHandles;
+                    }
+                }
+                """;
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = source,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80
+            };
+
+            await test.RunAsync();
+        }
     }
 }
