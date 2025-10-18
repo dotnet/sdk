@@ -6,7 +6,7 @@ using TestNodeInfoEntry = (int Passed, int Skipped, int Failed, int LastAttemptN
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
-internal sealed class TestProgressState(long id, string assembly, string? targetFramework, string? architecture, IStopwatch stopwatch)
+internal sealed class TestProgressState(long id, string assembly, string? targetFramework, string? architecture, IStopwatch stopwatch, bool isDiscovery)
 {
     private readonly Dictionary<string, TestNodeInfoEntry> _testUidToResults = new();
 
@@ -24,13 +24,15 @@ internal sealed class TestProgressState(long id, string assembly, string? target
 
     public IStopwatch Stopwatch { get; } = stopwatch;
 
+    public int DiscoveredTests { get; private set; }
+
     public int FailedTests { get; private set; }
 
     public int PassedTests { get; private set; }
 
     public int SkippedTests { get; private set; }
 
-    public int TotalTests => PassedTests + SkippedTests + FailedTests;
+    public int TotalTests => IsDiscovery ? DiscoveredTests : PassedTests + SkippedTests + FailedTests;
 
     public int RetriedFailedTests { get; private set; }
 
@@ -42,9 +44,11 @@ internal sealed class TestProgressState(long id, string assembly, string? target
 
     public long Version { get; internal set; }
 
-    public List<(string? DisplayName, string? UID)> DiscoveredTests { get; internal set; } = [];
+    public List<(string? DisplayName, string? UID)> DiscoveredTestNames { get; internal set; } = [];
 
     public bool Success { get; internal set; }
+
+    public bool IsDiscovery = isDiscovery;
 
     public int TryCount { get; private set; }
 
@@ -122,8 +126,8 @@ internal sealed class TestProgressState(long id, string assembly, string? target
 
     public void DiscoverTest(string? displayName, string? uid)
     {
-        PassedTests++;
-        DiscoveredTests.Add(new(displayName, uid));
+        DiscoveredTests++;
+        DiscoveredTestNames.Add(new(displayName, uid));
     }
 
     internal void NotifyHandshake(string instanceId)

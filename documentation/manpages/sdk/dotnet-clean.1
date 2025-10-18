@@ -14,11 +14,11 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-clean" "1" "2025-06-13" "" ".NET Documentation"
+.TH "dotnet-clean" "1" "2025-09-30" "" ".NET Documentation"
 .hy
 .SH dotnet clean
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 and later versions
 .SH NAME
 .PP
 dotnet-clean - Cleans the output of a project.
@@ -26,7 +26,7 @@ dotnet-clean - Cleans the output of a project.
 .IP
 .nf
 \f[C]
-dotnet clean [<PROJECT>|<SOLUTION>] [--artifacts-path <ARTIFACTS_DIR>]
+dotnet clean [<PROJECT>|<SOLUTION>|<FILE>] [--artifacts-path <ARTIFACTS_DIR>]
     [-c|--configuration <CONFIGURATION>]
     [-f|--framework <FRAMEWORK>] [--interactive]
     [--nologo] [-o|--output <OUTPUT_DIRECTORY>]
@@ -44,10 +44,19 @@ Only the outputs created during the build are cleaned.
 Both intermediate (\f[I]obj\f[R]) and final output (\f[I]bin\f[R]) folders are cleaned.
 .SH ARGUMENTS
 .PP
-\f[V]PROJECT | SOLUTION\f[R]
+\f[V]PROJECT | SOLUTION | FILE\f[R]
 .PP
-The MSBuild project or solution to clean.
-If a project or solution file is not specified, MSBuild searches the current working directory for a file that has a file extension that ends in \f[I]proj\f[R] or \f[I]sln\f[R], and uses that file.
+The project or solution or C# (file-based app) file to operate on.
+If a file isn\[cq]t specified, MSBuild searches the current directory for a project or solution.
+.IP \[bu] 2
+\f[V]PROJECT\f[R] is the path and filename of a C#, F#, or Visual Basic project file, or the path to a directory that contains a C#, F#, or Visual Basic project file.
+.IP \[bu] 2
+\f[V]SOLUTION\f[R] is the path and filename of a solution file (\f[I].sln\f[R] or \f[I].slnx\f[R] extension), or the path to a directory that contains a solution file.
+.IP \[bu] 2
+\f[V]FILE\f[R] is an argument added in .NET 10.
+The path and filename of a file-based app.
+File-based apps are contained within a single file that is built and run without a corresponding project (\f[I].csproj\f[R]) file.
+For more information, see Build file-based C# apps.
 .SH OPTIONS
 .IP \[bu] 2
 \f[B]\f[VB]--artifacts-path <ARTIFACTS_DIR>\f[B]\f[R]
@@ -119,13 +128,13 @@ This is used when a self-contained deployment was created.
 \f[B]\f[VB]--tl:[auto|on|off]\f[B]\f[R]
 .RS 2
 .PP
-Specifies whether the \f[I]terminal logger\f[R] should be used for the build output.
+Specifies whether \f[I]Terminal Logger\f[R] should be used for the build output.
 The default is \f[V]auto\f[R], which first verifies the environment before enabling terminal logging.
 The environment check verifies that the terminal is capable of using modern output features and isn\[cq]t using a redirected standard output before enabling the new logger.
 \f[V]on\f[R] skips the environment check and enables terminal logging.
 \f[V]off\f[R] skips the environment check and uses the default console logger.
 .PP
-The terminal logger shows you the restore phase followed by the build phase.
+Terminal Logger shows you the restore phase followed by the build phase.
 During each phase, the currently building projects appear at the bottom of the terminal.
 Each project that\[cq]s building outputs both the MSBuild target currently being built and the amount of time spent on that target.
 You can search this information to learn more about the build.
@@ -162,6 +171,18 @@ Clean a default build of the project:
 dotnet clean
 \f[R]
 .fi
+.RE
+.IP \[bu] 2
+Clean a file-based program:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet clean Program.cs.
+\f[R]
+.fi
+.PP
+File-based app support was added in .NET SDK 10.0.100.
 .RE
 .IP \[bu] 2
 Clean a project built using the Release configuration:
