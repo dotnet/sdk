@@ -338,20 +338,22 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     }
                 }, OperationKind.ArrayCreation);
 
-                // Check for fixed statements - parameters used in fixed should not be flagged
+                // Check for AddressOf operations (used in fixed statements) - parameters used should not be flagged
                 blockStartContext.RegisterOperationAction(operationContext =>
                 {
-                    var fixedStatement = (IFixedOperation)operationContext.Operation;
-                    // Check if any of our candidate parameters are used in this fixed statement
-                    foreach (var kvp in candidateParameters)
+                    if (operationContext.Operation is IAddressOfOperation addressOf)
                     {
-                        if (ContainsParameterReference(fixedStatement, kvp.Key))
+                        // Check if any of our candidate parameters are used in this address-of operation
+                        foreach (var kvp in candidateParameters)
                         {
-                            // Parameter is used in a fixed statement, must remain writable
-                            candidateParameters.TryRemove(kvp.Key, out _);
+                            if (ContainsParameterReference(addressOf, kvp.Key))
+                            {
+                                // Parameter address is taken, must remain writable
+                                candidateParameters.TryRemove(kvp.Key, out _);
+                            }
                         }
                     }
-                }, OperationKind.Fixed);
+                }, OperationKind.AddressOf);
 
                 blockStartContext.RegisterOperationBlockEndAction(blockEndContext =>
                 {
