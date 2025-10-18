@@ -142,13 +142,13 @@
     <BenchmarkDotNetPackageVersion>0.14.0</BenchmarkDotNetPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Workload manifest package versions">
-    <MauiFeatureBand>10.0.100-preview.6</MauiFeatureBand>
-    <MauiWorkloadManifestVersion>10.0.0-preview.6.25359.8</MauiWorkloadManifestVersion>
-    <XamarinAndroidWorkloadManifestVersion>36.0.0-preview.6.169</XamarinAndroidWorkloadManifestVersion>
-    <XamarinIOSWorkloadManifestVersion>18.5.10415-net10-p6</XamarinIOSWorkloadManifestVersion>
-    <XamarinMacCatalystWorkloadManifestVersion>18.5.10415-net10-p6</XamarinMacCatalystWorkloadManifestVersion>
-    <XamarinMacOSWorkloadManifestVersion>15.5.10415-net10-p6</XamarinMacOSWorkloadManifestVersion>
-    <XamarinTvOSWorkloadManifestVersion>18.5.10415-net10-p6</XamarinTvOSWorkloadManifestVersion>
+    <MauiFeatureBand>10.0.100-rc.2</MauiFeatureBand>
+    <MauiWorkloadManifestVersion>10.0.0-rc.2.25504.7</MauiWorkloadManifestVersion>
+    <XamarinAndroidWorkloadManifestVersion>36.0.0-rc.2.332</XamarinAndroidWorkloadManifestVersion>
+    <XamarinIOSWorkloadManifestVersion>26.0.10970-net10-rc.2</XamarinIOSWorkloadManifestVersion>
+    <XamarinMacCatalystWorkloadManifestVersion>26.0.10970-net10-rc.2</XamarinMacCatalystWorkloadManifestVersion>
+    <XamarinMacOSWorkloadManifestVersion>26.0.10970-net10-rc.2</XamarinMacOSWorkloadManifestVersion>
+    <XamarinTvOSWorkloadManifestVersion>26.0.10970-net10-rc.2</XamarinTvOSWorkloadManifestVersion>
   </PropertyGroup>
   <PropertyGroup Label="Pinned dependency">
     <!-- This package is not being produced outside of the 2.0 branch of corefx and should not change. -->
