@@ -2789,7 +2789,7 @@
         "CA1830": {
           "id": "CA1830",
           "shortDescription": "Prefer strongly-typed Append and Insert method overloads on StringBuilder",
-          "fullDescription": "StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.",
+          "fullDescription": "StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload. Additionally, prefer Append(char, int) over Append(new string(char, int)).",
           "defaultLevel": "note",
           "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1830",
           "properties": {

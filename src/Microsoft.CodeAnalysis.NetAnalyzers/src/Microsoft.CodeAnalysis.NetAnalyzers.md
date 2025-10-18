@@ -1358,7 +1358,7 @@ Enumerable.Count() potentially enumerates the sequence while a Length/Count prop
 
 ## [CA1830](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1830): Prefer strongly-typed Append and Insert method overloads on StringBuilder
 
-StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.
+StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload. Additionally, prefer Append(char, int) over Append(new string(char, int)).
 
 |Item|Value|
 |-|-|
