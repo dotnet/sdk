@@ -172,6 +172,7 @@ internal partial class FrameworkPackages
             { "System.Configuration.ConfigurationManager", "7.0.0" },
             { "System.Diagnostics.EventLog", "7.0.0" },
             { "System.Diagnostics.PerformanceCounter", "7.0.0" },
+            { "System.DirectoryServices", "7.0.0" },
             { "System.Drawing.Common", "7.0.0" },
             { "System.IO.Packaging", "7.0.0" },
             { "System.Resources.Extensions", "7.0.0" },

@@ -180,7 +180,7 @@ internal partial class FrameworkPackages
             { "System.Configuration.ConfigurationManager", "4.7.0" },
             { "System.Diagnostics.EventLog", "4.7.0" },
             { "System.Diagnostics.PerformanceCounter", "4.7.0" },
-            { "System.DirectoryServices", "8.0.0" },
+            { "System.DirectoryServices", "4.7.0" },
             { "System.IO.Packaging", "4.7.0" },
             { "System.Resources.Extensions", "4.7.0" },
             { "System.Security.Cryptography.Pkcs", "4.7.0" },
