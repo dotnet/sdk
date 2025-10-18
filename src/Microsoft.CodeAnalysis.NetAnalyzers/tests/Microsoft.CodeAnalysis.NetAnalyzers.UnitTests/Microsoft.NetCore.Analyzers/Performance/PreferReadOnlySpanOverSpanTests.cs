@@ -1404,8 +1404,6 @@ class C
 
             await test.RunAsync();
         }
-    }
-}
 
         [Fact]
         public async Task SpanParameter_ChainedSliceWithIncrementOperator_NoDiagnostic()
@@ -1422,3 +1420,5 @@ class C
                 }
                 """);
         }
+    }
+}
