@@ -188,6 +188,7 @@ internal partial class FrameworkPackages
             { "System.Configuration.ConfigurationManager", "5.0.0" },
             { "System.Diagnostics.EventLog", "5.0.0" },
             { "System.Diagnostics.PerformanceCounter", "5.0.0" },
+            { "System.DirectoryServices", "5.0.0" },
             { "System.Drawing.Common", "5.0.0" },
             { "System.Formats.Asn1", "5.0.0" },
             { "System.IO.FileSystem.AccessControl", "5.0.0" },
