@@ -1338,7 +1338,11 @@ class C
             {
                 TestCode = source,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
-                TestState = { AllowUnsafeBlocks = true }
+                SolutionTransforms =
+                {
+                    (solution, projectId) => solution.WithProjectCompilationOptions(projectId,
+                        ((CSharpCompilationOptions)solution.GetProject(projectId)!.CompilationOptions!).WithAllowUnsafe(true))
+                }
             };
 
             await test.RunAsync();
