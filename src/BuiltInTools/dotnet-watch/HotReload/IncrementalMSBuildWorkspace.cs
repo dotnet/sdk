@@ -9,7 +9,6 @@ using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
-using Windows.Win32.Security.Cryptography;
 
 namespace Microsoft.DotNet.Watch;
 
