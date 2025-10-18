@@ -16,7 +16,6 @@ internal partial class FrameworkPackages
             { "System.Buffers", "4.6.1" },
             { "System.Collections.Concurrent", "4.3.0" },
             { "System.ComponentModel", "4.3.0" },
-            { "System.ComponentModel.Composition", "4.5.0" },
             { "System.ComponentModel.EventBasedAsync", "4.3.0" },
             { "System.Diagnostics.Contracts", "4.3.0" },
             { "System.Dynamic.Runtime", "4.3.0" },
