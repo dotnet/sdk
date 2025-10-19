@@ -970,10 +970,6 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1222: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</value>
     <comment>{StrBegins="NETSDK1222: "}</comment>
   </data>
-  <data name="Net9NotCompatibleWithDev1711" xml:space="preserve">
-    <value>NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</value>
-    <comment>{StrBegins="NETSDK1223: "}</comment>
-  </data>
   <data name="AspNetCorePackUnsupportedTargetFramework" xml:space="preserve">
     <value>NETSDK1224: ASP.NET Core framework assets are not supported for the target framework.</value>
     <comment>{StrBegins="NETSDK1224: "}</comment>

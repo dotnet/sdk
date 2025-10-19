@@ -666,11 +666,6 @@ The following are names of parameters or literal values and should not be transl
         <target state="new">NETSDK1233: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported.</target>
         <note>{StrBegins="NETSDK1233: "}</note>
       </trans-unit>
-      <trans-unit id="Net9NotCompatibleWithDev1711">
-        <source>NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</source>
-        <target state="translated">NETSDK1223: platforma docelowa .NET 9.0 lub nowsza w programie Visual Studio 2022 17.11 nie jest obsługiwana.</target>
-        <note>{StrBegins="NETSDK1223: "}</note>
-      </trans-unit>
       <trans-unit id="NoAppHostAvailable">
         <source>NETSDK1084: There is no application host available for the specified RuntimeIdentifier '{0}'.</source>
         <target state="translated">NETSDK1084: Brak dostępnej aplikacji hosta dla określonego elementu RuntimeIdentifier „{0}”.</target>
