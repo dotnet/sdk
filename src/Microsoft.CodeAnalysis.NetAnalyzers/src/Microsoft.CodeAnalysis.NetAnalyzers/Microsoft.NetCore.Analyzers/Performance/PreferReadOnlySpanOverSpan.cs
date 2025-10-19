@@ -104,8 +104,20 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 blockStartContext.RegisterOperationAction(operationContext =>
                 {
                     var propertyRef = (IPropertyReferenceOperation)operationContext.Operation;
-                    if (propertyRef.Instance is not IParameterReferenceOperation paramRef ||
-                        !candidateParameters.ContainsKey(paramRef.Parameter))
+                    
+                    // Find which candidate parameter (if any) is used in this property reference instance
+                    // This handles both direct references (span[0]) and chained calls (span.Slice()[0])
+                    IParameterSymbol? affectedParameter = null;
+                    foreach (var kvp in candidateParameters)
+                    {
+                        if (ContainsParameterReference(propertyRef.Instance, kvp.Key))
+                        {
+                            affectedParameter = kvp.Key;
+                            break;
+                        }
+                    }
+
+                    if (affectedParameter == null)
                     {
                         return;
                     }
@@ -114,14 +126,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     // This handles: span[0] = value, span[0]++, span[0]--, span[0] += value, etc.
                     if (propertyRef.Parent is IAssignmentOperation assignment && assignment.Target == propertyRef)
                     {
-                        candidateParameters.TryRemove(paramRef.Parameter, out _);
+                        candidateParameters.TryRemove(affectedParameter, out _);
                         return;
                     }
 
                     // Check for compound assignments like span[0]++, span[0]--
                     if (propertyRef.Parent is IIncrementOrDecrementOperation)
                     {
-                        candidateParameters.TryRemove(paramRef.Parameter, out _);
+                        candidateParameters.TryRemove(affectedParameter, out _);
                         return;
                     }
 
@@ -130,7 +142,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     if (propertyRef.Parent is IArgumentOperation argument && 
                         argument.Parameter?.RefKind is RefKind.Ref or RefKind.Out)
                     {
-                        candidateParameters.TryRemove(paramRef.Parameter, out _);
+                        candidateParameters.TryRemove(affectedParameter, out _);
                         return;
                     }
 
@@ -143,7 +155,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         if (parent is IVariableDeclaratorOperation variableDeclarator &&
                             variableDeclarator.Symbol.RefKind != RefKind.None)
                         {
-                            candidateParameters.TryRemove(paramRef.Parameter, out _);
+                            candidateParameters.TryRemove(affectedParameter, out _);
                             return;
                         }
                         if (parent is IBlockOperation or IMethodBodyOperation)
@@ -160,7 +172,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     if (containingMethod?.ReturnsByRef == true &&
                         propertyRef.Parent is IReturnOperation)
                     {
-                        candidateParameters.TryRemove(paramRef.Parameter, out _);
+                        candidateParameters.TryRemove(affectedParameter, out _);
                     }
                 }, OperationKind.PropertyReference);
 
