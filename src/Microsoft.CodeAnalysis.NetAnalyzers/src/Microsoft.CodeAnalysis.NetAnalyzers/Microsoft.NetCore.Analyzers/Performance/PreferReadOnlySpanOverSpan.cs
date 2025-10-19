@@ -255,20 +255,27 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         {
                             if (ContainsParameterReference(invocation, kvp.Key))
                             {
-                                // The invocation result returns a non-readonly type
-                                // Check if it's being assigned to a local variable
-                                if (invocation.Parent is ISimpleAssignmentOperation assignment &&
-                                    assignment.Target is ILocalReferenceOperation)
+                                // Walk up the parent chain to find if this is eventually assigned to a local
+                                IOperation? current = invocation;
+                                while (current != null)
                                 {
-                                    // Conservatively assume local may be written to
-                                    candidateParameters.TryRemove(kvp.Key, out _);
-                                }
-                                // Check if it's being used in a ternary that assigns to a local
-                                else if (invocation.Parent is IConditionalOperation conditional &&
-                                    conditional.Parent is ISimpleAssignmentOperation conditionalAssignment &&
-                                    conditionalAssignment.Target is ILocalReferenceOperation)
-                                {
-                                    candidateParameters.TryRemove(kvp.Key, out _);
+                                    if (current.Parent is ISimpleAssignmentOperation assignment &&
+                                        assignment.Target is ILocalReferenceOperation)
+                                    {
+                                        // Conservatively assume local may be written to
+                                        candidateParameters.TryRemove(kvp.Key, out _);
+                                        break;
+                                    }
+                                    
+                                    // Move up to parent, but stop at certain boundaries
+                                    if (current.Parent is IBlockOperation ||
+                                        current.Parent is IMethodBodyOperation ||
+                                        current.Parent == null)
+                                    {
+                                        break;
+                                    }
+                                    
+                                    current = current.Parent;
                                 }
                             }
                         }
