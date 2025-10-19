@@ -3,6 +3,8 @@
 
 #nullable disable
 
+using System.Xml.Linq;
+
 namespace Microsoft.NET.Publish.Tests
 {
     public class GivenThatWeWantToPublishWithoutConflicts : SdkTest
@@ -92,6 +94,77 @@ namespace Microsoft.NET.Publish.Tests
                 // We should choose the file from microsoft.netcore.app.runtime package over the Microsoft.TestPlatform.CLI package version
                 files.FirstOrDefault().Contains("microsoft.netcore.app.runtime").Should().BeTrue();
             }
+        }
+
+        [Fact]
+        public void It_does_not_error_on_duplicate_files_with_CopyToOutputDirectory_Never()
+        {
+            // Test case for https://github.com/dotnet/sdk/issues/XXXXX
+            // Files with CopyToOutputDirectory="Never" should not trigger NETSDK1152 error
+            // when both a parent project and a child project have the same file
+
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
+
+            // Create a library project with a None item that has CopyToOutputDirectory="Never"
+            var libraryProject = new TestProject()
+            {
+                Name = "LibraryWithNoneCopyNever",
+                TargetFrameworks = targetFramework,
+                IsSdkProject = true,
+            };
+            libraryProject.SourceFiles.Add(".filenesting.json", "{}");
+            libraryProject.SourceFiles.Add("Class1.cs", "namespace LibraryWithNoneCopyNever { public class Class1 {} }");
+            libraryProject.AdditionalProperties.Add("EnableDefaultItems", "false");
+            libraryProject.AdditionalProperties.Add("EnableDefaultCompileItems", "false");
+
+            // Create an app project that references the library and also has the same file
+            var appProject = new TestProject()
+            {
+                Name = "AppWithNoneCopyNever",
+                TargetFrameworks = targetFramework,
+                IsSdkProject = true,
+                IsExe = true
+            };
+            appProject.SourceFiles.Add("Program.cs", "System.Console.WriteLine(\"Hello World\");");
+            appProject.SourceFiles.Add(".filenesting.json", "{}");
+            appProject.ReferencedProjects.Add(libraryProject);
+            appProject.AdditionalProperties.Add("EnableDefaultItems", "false");
+            appProject.AdditionalProperties.Add("EnableDefaultCompileItems", "false");
+
+            var testAsset = _testAssetsManager.CreateTestProject(appProject);
+
+            // Add the None items with CopyToOutputDirectory="Never" to both projects
+            var libProjectFile = Path.Combine(testAsset.TestRoot, libraryProject.Name, $"{libraryProject.Name}.csproj");
+            var libProjectXml = XDocument.Load(libProjectFile);
+            var libItemGroup = new XElement("ItemGroup",
+                new XElement("None",
+                    new XAttribute("Include", ".filenesting.json"),
+                    new XElement("CopyToOutputDirectory", "Never")),
+                new XElement("Compile",
+                    new XAttribute("Include", "**\\*.cs")));
+            libProjectXml.Root.Add(libItemGroup);
+            libProjectXml.Save(libProjectFile);
+
+            var appProjectFile = Path.Combine(testAsset.TestRoot, appProject.Name, $"{appProject.Name}.csproj");
+            var appProjectXml = XDocument.Load(appProjectFile);
+            var appItemGroup = new XElement("ItemGroup",
+                new XElement("None",
+                    new XAttribute("Include", ".filenesting.json"),
+                    new XElement("CopyToOutputDirectory", "Never")),
+                new XElement("Compile",
+                    new XAttribute("Include", "**\\*.cs")));
+            appProjectXml.Root.Add(appItemGroup);
+            appProjectXml.Save(appProjectFile);
+
+            // Publishing should succeed without NETSDK1152 error
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand.Execute()
+                .Should()
+                .Pass();
+
+            // Verify that .filenesting.json is not in the publish output
+            var publishDir = publishCommand.GetOutputDirectory(targetFramework).FullName;
+            File.Exists(Path.Combine(publishDir, ".filenesting.json")).Should().BeFalse();
         }
     }
 }
