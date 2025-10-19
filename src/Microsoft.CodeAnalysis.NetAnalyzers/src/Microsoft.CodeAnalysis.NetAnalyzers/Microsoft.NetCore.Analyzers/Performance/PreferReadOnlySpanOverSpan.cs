@@ -100,6 +100,22 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     }
                 }, OperationKind.ParameterReference);
 
+                // Check for increment/decrement operations that may modify indexer values
+                // This handles: span[0]++, span.Slice()[0]--, etc.
+                blockStartContext.RegisterOperationAction(operationContext =>
+                {
+                    var incDecOp = (IIncrementOrDecrementOperation)operationContext.Operation;
+                    // Check if any candidate parameter is used in the target
+                    foreach (var kvp in candidateParameters)
+                    {
+                        if (ContainsParameterReference(incDecOp.Target, kvp.Key))
+                        {
+                            candidateParameters.TryRemove(kvp.Key, out _);
+                            break;
+                        }
+                    }
+                }, OperationKind.Increment, OperationKind.Decrement);
+
                 // Check for writes through property-based indexers (Span<T> uses property indexers)
                 blockStartContext.RegisterOperationAction(operationContext =>
                 {
@@ -122,16 +138,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         return;
                     }
 
-                    // Check if this property reference is on the left side of an assignment (including compound assignments)
-                    // This handles: span[0] = value, span[0]++, span[0]--, span[0] += value, etc.
+                    // Check if this property reference is on the left side of an assignment
+                    // This handles: span[0] = value, span[0] += value, etc.
                     if (propertyRef.Parent is IAssignmentOperation assignment && assignment.Target == propertyRef)
-                    {
-                        candidateParameters.TryRemove(affectedParameter, out _);
-                        return;
-                    }
-
-                    // Check for compound assignments like span[0]++, span[0]--
-                    if (propertyRef.Parent is IIncrementOrDecrementOperation)
                     {
                         candidateParameters.TryRemove(affectedParameter, out _);
                         return;
@@ -317,14 +326,18 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     var assignment = (IAssignmentOperation)operationContext.Operation;
                     // Check if the target type is compatible with readonly version
-                    if (assignment.Value is IParameterReferenceOperation paramRef &&
-                        candidateParameters.ContainsKey(paramRef.Parameter) &&
-                        assignment.Target.Type is INamedTypeSymbol targetNamedType &&
+                    if (assignment.Target.Type is INamedTypeSymbol targetNamedType &&
                         !SymbolEqualityComparer.Default.Equals(targetNamedType.OriginalDefinition, readOnlySpan) &&
                         !SymbolEqualityComparer.Default.Equals(targetNamedType.OriginalDefinition, readOnlyMemory))
                     {
-                        // Target expects writable Span/Memory
-                        candidateParameters.TryRemove(paramRef.Parameter, out _);
+                        // Target expects writable Span/Memory - check if any parameter is used in the value
+                        foreach (var kvp in candidateParameters)
+                        {
+                            if (ContainsParameterReference(assignment.Value, kvp.Key))
+                            {
+                                candidateParameters.TryRemove(kvp.Key, out _);
+                            }
+                        }
                     }
                 }, OperationKind.SimpleAssignment);
 
