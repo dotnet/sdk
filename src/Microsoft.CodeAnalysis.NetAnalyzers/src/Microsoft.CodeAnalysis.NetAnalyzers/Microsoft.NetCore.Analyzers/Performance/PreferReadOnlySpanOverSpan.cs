@@ -259,12 +259,19 @@ namespace Microsoft.NetCore.Analyzers.Performance
                                 IOperation? current = invocation;
                                 while (current != null)
                                 {
-                                    if (current.Parent is ISimpleAssignmentOperation assignment &&
-                                        assignment.Target is ILocalReferenceOperation)
+                                    // Check if parent is an assignment to a local variable
+                                    if (current.Parent is ISimpleAssignmentOperation assignment)
                                     {
-                                        // Conservatively assume local may be written to
-                                        candidateParameters.TryRemove(kvp.Key, out _);
-                                        break;
+                                        // Check if assigned to a local Span/Memory variable
+                                        if (assignment.Target is ILocalReferenceOperation localRef &&
+                                            localRef.Local.Type is INamedTypeSymbol localType &&
+                                            (SymbolEqualityComparer.Default.Equals(localType.OriginalDefinition, span) ||
+                                             SymbolEqualityComparer.Default.Equals(localType.OriginalDefinition, memory)))
+                                        {
+                                            // Conservatively assume local may be written to
+                                            candidateParameters.TryRemove(kvp.Key, out _);
+                                            break;
+                                        }
                                     }
                                     
                                     // Move up to parent, but stop at certain boundaries
