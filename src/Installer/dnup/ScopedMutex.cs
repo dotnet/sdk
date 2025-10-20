@@ -23,7 +23,7 @@ public class ScopedMutex : IDisposable
             }
 
             _mutex = new Mutex(false, mutexName);
-            _hasHandle = _mutex.WaitOne(TimeSpan.FromSeconds(10), false);
+            _hasHandle = _mutex.WaitOne(TimeSpan.FromSeconds(120), false);
         }
         catch (Exception ex)
         {
