@@ -11,8 +11,6 @@ namespace Microsoft.DotNet.Tools.Dnup.Tests.Utilities;
 /// </summary>
 internal class TestEnvironment : IDisposable
 {
-    private readonly string? _originalManifestPath;
-    private readonly string? _originalDefaultInstallPath;
     private readonly string _originalCurrentDirectory;
 
     public string TempRoot { get; }
@@ -24,10 +22,6 @@ internal class TestEnvironment : IDisposable
         TempRoot = tempRoot;
         InstallPath = installPath;
         ManifestPath = manifestPath;
-
-        // Store original environment values to restore later
-        _originalManifestPath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_MANIFEST_PATH");
-        _originalDefaultInstallPath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_INSTALL_PATH");
 
         try
         {
@@ -41,8 +35,8 @@ internal class TestEnvironment : IDisposable
             Console.WriteLine($"Warning: Could not get current directory: {ex.Message}. Using temp directory as fallback.");
         }
 
-        // Set test environment variables
-        Environment.SetEnvironmentVariable("DOTNET_TESTHOOK_MANIFEST_PATH", manifestPath);
+        // Set default install path as environment variable
+        // This is required for cases where the install path is needed but not explicitly provided
         Environment.SetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_INSTALL_PATH", installPath);
 
         // Change current directory to the temp directory to avoid global.json in repository root
@@ -61,8 +55,8 @@ internal class TestEnvironment : IDisposable
             Console.WriteLine($"Warning: Could not restore current directory: {ex.Message}");
         }
 
-        Environment.SetEnvironmentVariable("DOTNET_TESTHOOK_MANIFEST_PATH", _originalManifestPath);
-        Environment.SetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_INSTALL_PATH", _originalDefaultInstallPath);
+        // Clear the environment variable we set
+        Environment.SetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_INSTALL_PATH", null);
 
         // Clean up
         if (Directory.Exists(TempRoot))

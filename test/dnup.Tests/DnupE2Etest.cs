@@ -66,11 +66,11 @@ public class InstallEndToEndTests
         Directory.Exists(Path.GetDirectoryName(testEnv.ManifestPath)).Should().BeTrue();
 
         // Verify the installation was properly recorded in the manifest
-        var installs = [];
+        List<DotnetInstall> installs = new();
         using (var finalizeLock = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
             var manifest = new DnupSharedManifest();
-            installs = manifest.GetInstalledVersions();
+            installs = manifest.GetInstalledVersions().ToList();
         }
 
         installs.Should().NotBeEmpty();
@@ -122,12 +122,12 @@ public class ReuseEndToEndTests
         int exitCode = Parser.Parse(args).Invoke();
         exitCode.Should().Be(0);
 
-        var firstDnupInstalls = [];
+        List<DotnetInstall> firstDnupInstalls = new();
         // Verify the installation was successful
         using (var finalizeLock = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
             var manifest = new DnupSharedManifest();
-            firstDnupInstalls = manifest.GetInstalledVersions();
+            firstDnupInstalls = manifest.GetInstalledVersions().ToList();
         }
 
         firstDnupInstalls.Where(i => DnupUtilities.PathsEqual(i.InstallRoot.Path, testEnv.InstallPath)).Should().ContainSingle();
@@ -150,7 +150,7 @@ public class ReuseEndToEndTests
         output.Should().NotContain("Downloading .NET SDK",
             "dnup should not attempt to download the SDK again");
 
-        var matchingInstalls = [];
+        List<DotnetInstall> matchingInstalls = new();
         // Verify the installation record in the manifest hasn't changed
         using (var finalizeLock = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
