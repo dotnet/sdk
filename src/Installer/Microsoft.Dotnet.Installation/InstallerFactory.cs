@@ -14,4 +14,9 @@ public static class InstallerFactory
     {
         return new DotnetInstaller();
     }
+
+    public static IDotnetReleaseInfoProvider CreateReleaseInfoProvider()
+    {
+        return new DotnetReleaseInfoProvider();
+    }
 }

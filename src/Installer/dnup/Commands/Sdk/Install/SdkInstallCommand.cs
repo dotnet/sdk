@@ -175,7 +175,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
 
         // Create a request and resolve it using the channel version resolver
         var installRequest = new DotnetInstallRequest(
-            new DotnetInstallRoot(resolvedInstallPath, DnupUtilities.GetInstallArchitecture(RuntimeInformation.ProcessArchitecture)),
+            new DotnetInstallRoot(resolvedInstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
             new UpdateChannel(resolvedChannel),
             InstallComponent.SDK,
             new InstallRequestOptions());
@@ -226,7 +226,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
         {
             // Create the request for the additional version
             var additionalRequest = new DotnetInstallRequest(
-                new DotnetInstallRoot(resolvedInstallPath, DnupUtilities.GetInstallArchitecture(RuntimeInformation.ProcessArchitecture)),
+                new DotnetInstallRoot(resolvedInstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
                 new UpdateChannel(additionalVersion),
                 InstallComponent.SDK,
                 new InstallRequestOptions());

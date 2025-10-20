@@ -4,7 +4,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Microsoft.DotNet.Tools.Bootstrapper</RootNamespace>
     <IsUnitTestProject>true</IsUnitTestProject>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
   </PropertyGroup>

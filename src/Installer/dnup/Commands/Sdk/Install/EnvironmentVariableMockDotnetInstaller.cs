@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install
                 return null;
             }
             var installPath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_CURRENT_INSTALL_PATH") ?? GetDefaultDotnetInstallPath();
-            return new(new(installPath, DnupUtilities.GetDefaultInstallArchitecture()), installtype, true, true);
+            return new(new(installPath, InstallerUtilities.GetDefaultInstallArchitecture()), installtype, true, true);
         }
 
         public string? GetLatestInstalledAdminVersion()

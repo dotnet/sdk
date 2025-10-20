@@ -34,22 +34,6 @@ internal static class DnupUtilities
                                 StringComparison.OrdinalIgnoreCase);
     }
 
-    public static InstallArchitecture GetInstallArchitecture(System.Runtime.InteropServices.Architecture architecture)
-    {
-        return architecture switch
-        {
-            System.Runtime.InteropServices.Architecture.X86 => InstallArchitecture.x86,
-            System.Runtime.InteropServices.Architecture.X64 => InstallArchitecture.x64,
-            System.Runtime.InteropServices.Architecture.Arm64 => InstallArchitecture.arm64,
-            _ => throw new NotSupportedException($"Architecture {architecture} is not supported.")
-        };
-    }
-
-    public static InstallArchitecture GetDefaultInstallArchitecture()
-    {
-        return GetInstallArchitecture(RuntimeInformation.ProcessArchitecture);
-    }
-
     public static void ForceReplaceFile(string sourcePath, string destPath)
     {
         File.Copy(sourcePath, destPath, overwrite: true);

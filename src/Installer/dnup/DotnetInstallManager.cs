@@ -38,7 +38,7 @@ public class DotnetInstallManager : IDotnetInstallManager
         bool isAdminInstall = installDir.StartsWith(Path.Combine(programFiles, "dotnet"), StringComparison.OrdinalIgnoreCase) ||
                               installDir.StartsWith(Path.Combine(programFilesX86, "dotnet"), StringComparison.OrdinalIgnoreCase);
 
-        var installRoot = new DotnetInstallRoot(installDir, DnupUtilities.GetDefaultInstallArchitecture());
+        var installRoot = new DotnetInstallRoot(installDir, InstallerUtilities.GetDefaultInstallArchitecture());
 
         bool isSetAsDotnetRoot = DnupUtilities.PathsEqual(dotnetRoot, installDir);
 
