@@ -7,10 +7,8 @@ using System.Collections.Generic;
 namespace Microsoft.DotNet.Tools.Bootstrapper
 {
     [JsonSourceGenerationOptions(WriteIndented = false, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
-        Converters = new[] { typeof(DotnetVersionJsonConverter), typeof(ReleaseVersionJsonConverter) })]
+        Converters = new[] { typeof(ReleaseVersionJsonConverter) })]
     [JsonSerializable(typeof(List<DotnetInstall>))]
-    [JsonSerializable(typeof(DotnetVersion))]
-    [JsonSerializable(typeof(DotnetVersionType))]
     [JsonSerializable(typeof(InstallComponent))]
     [JsonSerializable(typeof(InstallArchitecture))]
     [JsonSerializable(typeof(InstallType))]
