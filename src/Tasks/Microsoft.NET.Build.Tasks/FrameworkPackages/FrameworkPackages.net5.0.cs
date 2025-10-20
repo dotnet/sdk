@@ -168,7 +168,6 @@ internal partial class FrameworkPackages
             { "System.IO.Pipelines", "5.0.0" },
             { "System.Security.AccessControl", "5.0.0" },
             { "System.Security.Cryptography.Cng", "5.0.0" },
-            { "System.Security.Cryptography.Pkcs", "5.0.0" },
             { "System.Security.Cryptography.Xml", "5.0.0" },
             { "System.Security.Permissions", "5.0.0" },
             { "System.Security.Principal.Windows", "5.0.0" },

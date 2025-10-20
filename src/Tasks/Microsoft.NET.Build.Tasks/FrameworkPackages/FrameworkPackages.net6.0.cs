@@ -157,7 +157,6 @@ internal partial class FrameworkPackages
             { "Microsoft.Net.Http.Headers", "6.0.0" },
             { "System.Diagnostics.EventLog", "6.0.0" },
             { "System.IO.Pipelines", "6.0.0" },
-            { "System.Security.Cryptography.Pkcs", "6.0.0" },
             { "System.Security.Cryptography.Xml", "6.0.0" },
             // removed packages
             { "Microsoft.Win32.Registry", null },

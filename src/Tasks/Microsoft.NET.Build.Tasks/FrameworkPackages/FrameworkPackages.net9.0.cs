@@ -177,7 +177,6 @@ internal partial class FrameworkPackages
             { "Microsoft.JSInterop", "9.0.0" },
             { "Microsoft.Net.Http.Headers", "9.0.0" },
             { "System.Diagnostics.EventLog", "9.0.0" },
-            { "System.Security.Cryptography.Pkcs", "9.0.1" },
             { "System.Security.Cryptography.Xml", "9.0.0" },
             { "System.Threading.RateLimiting", "9.0.0" },
             // removed packages
