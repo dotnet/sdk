@@ -11,7 +11,7 @@ using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install
 {
-    internal class EnvironmentVariableMockDotnetInstaller : IBootstrapperController
+    internal class EnvironmentVariableMockDotnetInstaller : IDotnetInstallManager
     {
         public GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory)
         {

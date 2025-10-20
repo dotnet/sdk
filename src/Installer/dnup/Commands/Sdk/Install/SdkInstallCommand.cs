@@ -22,7 +22,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
     private readonly bool _interactive = result.GetValue(SdkInstallCommandParser.InteractiveOption);
     private readonly bool _noProgress = result.GetValue(SdkInstallCommandParser.NoProgressOption);
 
-    private readonly IBootstrapperController _dotnetInstaller = new BootstrapperController();
+    private readonly IDotnetInstallManager _dotnetInstaller = new DotnetInstallManager();
     private readonly IDotnetReleaseInfoProvider _releaseInfoProvider = new EnvironmentVariableMockReleaseInfoProvider();
     private readonly ManifestChannelVersionResolver _channelVersionResolver = new ManifestChannelVersionResolver();
 
