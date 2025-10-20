@@ -12,7 +12,7 @@ using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
-internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
+internal class ArchiveDotnetInstaller : IDisposable
 {
     private readonly DotnetInstallRequest _request;
     private readonly ReleaseVersion _resolvedVersion;
