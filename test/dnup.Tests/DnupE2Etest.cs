@@ -58,9 +58,9 @@ public class InstallEndToEndTests
         Console.WriteLine($"Channel '{channel}' resolved to version: {expectedVersion}");
 
         // Execute the command with explicit manifest path as a separate process
-        var args = DnupTestUtilities.BuildArguments(channel, testEnv.InstallPath, testEnv.ManifestPath);
-        (int exitCode, _) = DnupTestUtilities.RunDnupProcess(args);
-        exitCode.Should().Be(0);
+    var args = DnupTestUtilities.BuildArguments(channel, testEnv.InstallPath, testEnv.ManifestPath);
+    (int exitCode, string output) = DnupTestUtilities.RunDnupProcess(args, captureOutput: true);
+    exitCode.Should().Be(0, $"dnup exited with code {exitCode}. Output:\n{output}");
 
         Directory.Exists(testEnv.InstallPath).Should().BeTrue();
         Directory.Exists(Path.GetDirectoryName(testEnv.ManifestPath)).Should().BeTrue();
@@ -69,7 +69,6 @@ public class InstallEndToEndTests
         List<DotnetInstall> installs = new();
         using (var finalizeLock = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
-            var manifest = new DnupSharedManifest();
             var manifest = new DnupSharedManifest(testEnv.ManifestPath);
             installs = manifest.GetInstalledVersions().ToList();
         }
@@ -120,14 +119,13 @@ public class ReuseEndToEndTests
 
         // Execute dnup to install the SDK the first time with explicit manifest path as a separate process
         Console.WriteLine($"First installation of {channel}");
-        (int exitCode, _) = DnupTestUtilities.RunDnupProcess(args);
-        exitCode.Should().Be(0);
+    (int exitCode, string firstInstallOutput) = DnupTestUtilities.RunDnupProcess(args, captureOutput: true);
+    exitCode.Should().Be(0, $"First installation failed with exit code {exitCode}. Output:\n{firstInstallOutput}");
 
         List<DotnetInstall> firstDnupInstalls = new();
         // Verify the installation was successful
         using (var finalizeLock = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
-            var manifest = new DnupSharedManifest();
             var manifest = new DnupSharedManifest(testEnv.ManifestPath);
             firstDnupInstalls = manifest.GetInstalledVersions().ToList();
         }
@@ -136,8 +134,8 @@ public class ReuseEndToEndTests
 
         // Now install the same SDK again and capture the console output
         Console.WriteLine($"Installing .NET SDK {channel} again (should be skipped)");
-        (exitCode, string output) = DnupTestUtilities.RunDnupProcess(args, captureOutput: true);
-        exitCode.Should().Be(0);
+    (exitCode, string output) = DnupTestUtilities.RunDnupProcess(args, captureOutput: true);
+    exitCode.Should().Be(0, $"Second installation failed with exit code {exitCode}. Output:\n{output}");
 
         // Verify the output contains a message indicating the SDK is already installed
         output.Should().Contain("is already installed, skipping installation",
@@ -151,7 +149,7 @@ public class ReuseEndToEndTests
         // Verify the installation record in the manifest hasn't changed
         using (var finalizeLock = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
-            var manifest = new DnupSharedManifest();
+            var manifest = new DnupSharedManifest(testEnv.ManifestPath);
             var installs = manifest.GetInstalledVersions();
             matchingInstalls = installs.Where(i => DnupUtilities.PathsEqual(i.InstallRoot.Path, testEnv.InstallPath)).ToList();
         }

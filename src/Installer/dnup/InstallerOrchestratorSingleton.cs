@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Microsoft.Deployment.DotNet.Releases;
 
@@ -67,7 +66,7 @@ internal class InstallerOrchestratorSingleton
             ArchiveInstallationValidator validator = new();
             if (validator.Validate(install))
             {
-                DnupSharedManifest manifestManager = new(installRequest.Options.ManifestPath);
+                DnupSharedManifest manifestManager = new(customManifestPath);
                 manifestManager.AddInstalledVersion(install);
             }
             else

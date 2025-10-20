@@ -3,9 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Dotnet.Installation;
+using Microsoft.DotNet.Tools.Bootstrapper;
 
 namespace Microsoft.DotNet.Tools.Dnup.Tests.Utilities;
 
@@ -72,11 +75,11 @@ internal static class DnupTestUtilities
     /// <returns>A tuple with exit code and captured output (if requested)</returns>
     public static (int exitCode, string output) RunDnupProcess(string[] args, bool captureOutput = false)
     {
+        string repoRoot = GetRepositoryRoot();
         string dnupPath = Path.Combine(
-            AppContext.BaseDirectory, // Test assembly directory
-            "..", "..", "..", "..", "..", // Navigate up to artifacts directory
+            repoRoot,
             "artifacts", "bin", "dnup", "Debug", "net10.0", "dnup.dll");
-        
+
         // Ensure path is normalized and exists
         dnupPath = Path.GetFullPath(dnupPath);
         if (!File.Exists(dnupPath))
@@ -84,8 +87,9 @@ internal static class DnupTestUtilities
             throw new FileNotFoundException($"dnup executable not found at: {dnupPath}");
         }
 
-        using var process = new Process();
-        process.StartInfo.FileName = "dotnet";
+    using var process = new Process();
+    string repoDotnet = Path.Combine(repoRoot, ".dotnet", DnupUtilities.GetDotnetExeName());
+    process.StartInfo.FileName = File.Exists(repoDotnet) ? repoDotnet : DnupUtilities.GetDotnetExeName();
         process.StartInfo.Arguments = $"\"{dnupPath}\" {string.Join(" ", args.Select(a => $"\"{a}\""))}";
         process.StartInfo.UseShellExecute = false;
         process.StartInfo.CreateNoWindow = true;
@@ -95,14 +99,14 @@ internal static class DnupTestUtilities
         StringBuilder outputBuilder = new();
         if (captureOutput)
         {
-            process.OutputDataReceived += (sender, e) => 
+            process.OutputDataReceived += (sender, e) =>
             {
                 if (e.Data != null)
                 {
                     outputBuilder.AppendLine(e.Data);
                 }
             };
-            process.ErrorDataReceived += (sender, e) => 
+            process.ErrorDataReceived += (sender, e) =>
             {
                 if (e.Data != null)
                 {
@@ -121,6 +125,22 @@ internal static class DnupTestUtilities
 
         process.WaitForExit();
         return (process.ExitCode, outputBuilder.ToString());
+    }
+
+    private static string GetRepositoryRoot()
+    {
+        var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (currentDirectory != null)
+        {
+            if (File.Exists(Path.Combine(currentDirectory.FullName, "sdk.slnx")))
+            {
+                return currentDirectory.FullName;
+            }
+
+            currentDirectory = currentDirectory.Parent;
+        }
+
+        throw new InvalidOperationException($"Unable to locate repository root from base directory '{AppContext.BaseDirectory}'.");
     }
 
     /// <summary>
