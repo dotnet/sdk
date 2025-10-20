@@ -1,25 +1,38 @@
 parameters:
-  # Basic parameters mirroring style of other job templates
-  pool: {}
-  categoryName: dnupTests
+  pool: ''
   dependsOn: ''
-  variables: {}
+  categoryName: dnupTests
+  variables: []
   oneESCompat:
     templateFolderName: templates
-    publishTaskPrefix: ''
-  timeoutInMinutes: 60
-  os: windows
+  ### ARCADE ###
+  preSteps: []
 
 jobs:
-- job: ${{ parameters.categoryName }}_${{ parameters.os }}
-  displayName: 'dnup tests: ${{ parameters.os }}'
-  timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
-  pool: ${{ parameters.pool }}
-  dependsOn: ${{ parameters.dependsOn }}
-  variables:
-  - ${{ insert }}: ${{ parameters.variables }}
+- template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
+ parameters:
+    displayName: 'dnup tests: ${{ parameters.pool.os }}'
+    pool: ${{ parameters.pool }}
+    container: ${{ parameters.container }}
+    strategy: ${{ parameters.strategy }}
+    helixRepo: dotnet/sdk
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+    enableMicrobuild: true
+    enablePublishBuildAssets: true
+    enableTelemetry: true
+    enablePublishUsingPipelines: true
+    enableSbom: ${{ parameters.enableSbom }}
+    variables:
+    - ${{ insert }}: ${{ parameters.variables }}
+    dependsOn: ${{ parameters.dependsOn }}
+    preSteps: ${{ parameters.preSteps }}
+    templateContext:
+      sdl:
+        binskim:
+          analyzeTargetGlob: +:f|eng\**\*.props;+:f|artifacts\bin\**\*.dll;+:f|artifacts\bin\**\*.exe;-:f|artifacts\bin\**\msdia140.dll;-:f|artifacts\bin\**\pgort140.dll;-:f|artifacts\bin\*Tests\**;-:f|**\Microsoft.NET.Runtime.Emscripten**\tools\**;-:f|**\CodeCoverage\**;-:f|artifacts\bin\**\capstone.dll;
+
   steps:
-  - ${{ if eq(parameters.os, 'windows') }}:
+  - ${{ if eq(parameters.pool.os, 'windows') }}:
     - powershell: |
         Write-Host "Restoring dnup tests"
         dotnet restore test/dnup.Tests/dnup.Tests.csproj
@@ -30,7 +43,7 @@ jobs:
     - powershell: |
         dotnet test test/dnup.Tests/dnup.Tests.csproj -c Release --no-build --logger "trx;LogFileName=dnup-tests.trx" --results-directory $(Build.SourcesDirectory)/artifacts/dnupTestResults
       displayName: Test
-  - ${{ if ne(parameters.os, 'windows') }}:
+  - ${{ if ne(parameters.pool.os, 'windows') }}:
     - script: |
         echo "Restoring dnup tests"
         dotnet restore test/dnup.Tests/dnup.Tests.csproj
@@ -48,11 +61,11 @@ jobs:
       testResultsFormat: VSTest
       testResultsFiles: '**/dnup-tests.trx'
       searchFolder: $(Build.SourcesDirectory)/artifacts/dnupTestResults
-      testRunTitle: 'dnup ${{ parameters.os }}'
+      testRunTitle: 'dnup ${{ parameters.pool.os }}'
   - task: PublishBuildArtifacts@1
     displayName: Publish dnup test artifacts
     condition: always()
     inputs:
       PathtoPublish: $(Build.SourcesDirectory)/artifacts/dnupTestResults
-      ArtifactName: dnupTestResults_${{ parameters.os }}
+      ArtifactName: dnupTestResults_${{ parameters.pool.os }}
       publishLocation: Container
