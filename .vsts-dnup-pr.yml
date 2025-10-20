@@ -26,7 +26,7 @@ variables:
 
 stages:
 - stage: dnup
-  displayName: 🔎 dnup tests
+  displayName: 🏰 dnup tests
   jobs:
   ############### WINDOWS ###############
   - template: /eng/pipelines/templates/jobs/dnup-tests.yml@self
