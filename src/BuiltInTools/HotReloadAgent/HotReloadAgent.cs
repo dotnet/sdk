@@ -10,13 +10,15 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Loader;
+using System.Threading;
 
 namespace Microsoft.DotNet.HotReload;
 
 #if NET
 [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Hot reload is only expected to work when trimming is disabled.")]
 #endif
-internal sealed class HotReloadAgent : IDisposable
+internal sealed class HotReloadAgent : IDisposable, IHotReloadAgent
 {
     private const string MetadataUpdaterTypeName = "System.Reflection.Metadata.MetadataUpdater";
     private const string ApplyUpdateMethodName = "ApplyUpdate";
@@ -26,15 +28,20 @@ internal sealed class HotReloadAgent : IDisposable
 
     public AgentReporter Reporter { get; } = new();
 
-    private readonly ConcurrentDictionary<Guid, List<UpdateDelta>> _deltas = new();
+    private readonly ConcurrentDictionary<Guid, List<RuntimeManagedCodeUpdate>> _moduleUpdates = new();
     private readonly ConcurrentDictionary<Assembly, Assembly> _appliedAssemblies = new();
     private readonly ApplyUpdateDelegate? _applyUpdate;
     private readonly string? _capabilities;
     private readonly MetadataUpdateHandlerInvoker _metadataUpdateHandlerInvoker;
 
-    public HotReloadAgent()
+    // handler to install on first managed update:
+    private Func<AssemblyLoadContext, AssemblyName, Assembly?>? _assemblyResolvingHandlerToInstall;
+    private Func<AssemblyLoadContext, AssemblyName, Assembly?>? _installedAssemblyResolvingHandler;
+
+    public HotReloadAgent(Func<AssemblyLoadContext, AssemblyName, Assembly?>? assemblyResolvingHandler)
     {
         _metadataUpdateHandlerInvoker = new(Reporter);
+        _assemblyResolvingHandlerToInstall = assemblyResolvingHandler;
 
         GetUpdaterMethodsAndCapabilities(out _applyUpdate, out _capabilities);
 
@@ -44,6 +51,7 @@ internal sealed class HotReloadAgent : IDisposable
     public void Dispose()
     {
         AppDomain.CurrentDomain.AssemblyLoad -= OnAssemblyLoad;
+        AssemblyLoadContext.Default.Resolving -= _installedAssemblyResolvingHandler;
     }
 
     private void GetUpdaterMethodsAndCapabilities(out ApplyUpdateDelegate? applyUpdate, out string? capabilities)
@@ -97,56 +105,67 @@ internal sealed class HotReloadAgent : IDisposable
             return;
         }
 
-        if (_deltas.TryGetValue(moduleId.Value, out var updateDeltas) && _appliedAssemblies.TryAdd(loadedAssembly, loadedAssembly))
+        if (_moduleUpdates.TryGetValue(moduleId.Value, out var moduleUpdate) && _appliedAssemblies.TryAdd(loadedAssembly, loadedAssembly))
         {
             // A delta for this specific Module exists and we haven't called ApplyUpdate on this instance of Assembly as yet.
-            ApplyDeltas(loadedAssembly, updateDeltas);
+            ApplyDeltas(loadedAssembly, moduleUpdate);
         }
     }
 
-    public IReadOnlyCollection<(string message, AgentMessageSeverity severity)> GetAndClearLogEntries(ResponseLoggingLevel loggingLevel)
-        => Reporter.GetAndClearLogEntries(loggingLevel);
-
-    public void ApplyDeltas(IEnumerable<UpdateDelta> deltas)
+    public void ApplyManagedCodeUpdates(IEnumerable<RuntimeManagedCodeUpdate> updates)
     {
         Debug.Assert(Capabilities.Length > 0);
         Debug.Assert(_applyUpdate != null);
 
-        foreach (var delta in deltas)
+        var handler = Interlocked.Exchange(ref _assemblyResolvingHandlerToInstall, null);
+        if (handler != null)
         {
-            Reporter.Report($"Applying delta to module {delta.ModuleId}.", AgentMessageSeverity.Verbose);
+            AssemblyLoadContext.Default.Resolving += handler;
+            _installedAssemblyResolvingHandler = handler;
+        }
+
+        foreach (var update in updates)
+        {
+            if (update.MetadataDelta.Length == 0)
+            {
+                // When the debugger is attached the delta is empty.
+                // The client only calls to trigger metadata update handlers.
+                continue;
+            }
+
+            Reporter.Report($"Applying updates to module {update.ModuleId}.", AgentMessageSeverity.Verbose);
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                if (TryGetModuleId(assembly) is Guid moduleId && moduleId == delta.ModuleId)
+                if (TryGetModuleId(assembly) is Guid moduleId && moduleId == update.ModuleId)
                 {
-                    _applyUpdate(assembly, delta.MetadataDelta, delta.ILDelta, delta.PdbDelta);
+                    _applyUpdate(assembly, update.MetadataDelta, update.ILDelta, update.PdbDelta);
                 }
             }
 
             // Additionally stash the deltas away so it may be applied to assemblies loaded later.
-            var cachedDeltas = _deltas.GetOrAdd(delta.ModuleId, static _ => new());
-            cachedDeltas.Add(delta);
+            var cachedModuleUpdates = _moduleUpdates.GetOrAdd(update.ModuleId, static _ => []);
+            cachedModuleUpdates.Add(update);
         }
 
-        _metadataUpdateHandlerInvoker.MetadataUpdated(GetMetadataUpdateTypes(deltas));
+        _metadataUpdateHandlerInvoker.MetadataUpdated(GetMetadataUpdateTypes(updates));
 
-        Reporter.Report("Deltas applied.", AgentMessageSeverity.Verbose);
+        Reporter.Report("Updates applied.", AgentMessageSeverity.Verbose);
     }
 
-    private Type[] GetMetadataUpdateTypes(IEnumerable<UpdateDelta> deltas)
+    private Type[] GetMetadataUpdateTypes(IEnumerable<RuntimeManagedCodeUpdate> updates)
     {
         List<Type>? types = null;
 
-        foreach (var delta in deltas)
+        foreach (var update in updates)
         {
-            var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => TryGetModuleId(assembly) is Guid moduleId && moduleId == delta.ModuleId);
+            var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => TryGetModuleId(assembly) is Guid moduleId && moduleId == update.ModuleId);
             if (assembly is null)
             {
                 continue;
             }
 
-            foreach (var updatedType in delta.UpdatedTypes)
+            foreach (var updatedType in update.UpdatedTypes)
             {
                 // Must be a TypeDef.
                 Debug.Assert(updatedType >> 24 == 0x02);
@@ -155,7 +174,7 @@ internal sealed class HotReloadAgent : IDisposable
                 try
                 {
                     var type = assembly.ManifestModule.ResolveType(updatedType);
-                    types ??= new();
+                    types ??= [];
                     types.Add(type);
                 }
                 catch (Exception e)
@@ -168,18 +187,18 @@ internal sealed class HotReloadAgent : IDisposable
         return types?.ToArray() ?? Type.EmptyTypes;
     }
 
-    private void ApplyDeltas(Assembly assembly, IReadOnlyList<UpdateDelta> deltas)
+    private void ApplyDeltas(Assembly assembly, IReadOnlyList<RuntimeManagedCodeUpdate> updates)
     {
         Debug.Assert(_applyUpdate != null);
 
         try
         {
-            foreach (var item in deltas)
+            foreach (var update in updates)
             {
-                _applyUpdate(assembly, item.MetadataDelta, item.ILDelta, item.PdbDelta);
+                _applyUpdate(assembly, update.MetadataDelta, update.ILDelta, update.PdbDelta);
             }
 
-            Reporter.Report("Deltas applied.", AgentMessageSeverity.Verbose);
+            Reporter.Report("Updates applied.", AgentMessageSeverity.Verbose);
         }
         catch (Exception ex)
         {
@@ -204,7 +223,7 @@ internal sealed class HotReloadAgent : IDisposable
     /// <summary>
     /// Applies the content update.
     /// </summary>
-    public void ApplyStaticAssetUpdate(StaticAssetUpdate update)
+    public void ApplyStaticAssetUpdate(RuntimeStaticAssetUpdate update)
     {
         _metadataUpdateHandlerInvoker.ContentUpdated(update);
     }
@@ -218,8 +237,8 @@ internal sealed class HotReloadAgent : IDisposable
         Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetStartupHooks,
             RemoveCurrentAssembly(startupHookType, Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetStartupHooks)!));
 
-        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName, "");
-        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.HotReloadDeltaClientLogMessages, "");
+        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName, null);
+        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.HotReloadDeltaClientLogMessages, null);
     }
 
     // internal for testing

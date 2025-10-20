@@ -105,24 +105,6 @@ namespace Microsoft.NET.Build.Tests
             return itemValues;
         }
 
-        private string GetPropertyValue(string propertyName, string projectFolder, string targetFramework)
-        {
-            var getValuesCommand = new GetValuesCommand(Log, projectFolder,
-                targetFramework, propertyName, GetValuesCommand.ValueType.Property)
-            {
-                Configuration = "Debug"
-            };
-
-            getValuesCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var values = getValuesCommand.GetValues();
-            values.Count.Should().Be(1);
-            return values[0];
-        }
-
         private TestAsset CreateDocumentationFileLibraryAsset(bool? generateDocumentationFile, string documentationFile, string language, [CallerMemberName] string callingMethod = "")
         {
             string genDocFileIdentifier = generateDocumentationFile == null ? "null" : generateDocumentationFile.Value.ToString();
@@ -321,8 +303,10 @@ namespace Microsoft.NET.Build.Tests
 
         [Theory]
         [InlineData(".NETStandard,Version=v2.0", new[] { "NETSTANDARD", "NETSTANDARD2_0", "NETSTANDARD1_0_OR_GREATER", "NETSTANDARD1_1_OR_GREATER", "NETSTANDARD1_2_OR_GREATER", "NETSTANDARD1_3_OR_GREATER", "NETSTANDARD1_4_OR_GREATER", "NETSTANDARD1_5_OR_GREATER", "NETSTANDARD1_6_OR_GREATER", "NETSTANDARD2_0_OR_GREATER" })]
+        [InlineData(".NETStandard,Version=v2.0", new[] { "NETSTANDARD", "NETSTANDARD2_0", "NETSTANDARD1_0_OR_GREATER", "NETSTANDARD1_1_OR_GREATER", "NETSTANDARD1_2_OR_GREATER", "NETSTANDARD1_3_OR_GREATER", "NETSTANDARD1_4_OR_GREATER", "NETSTANDARD1_5_OR_GREATER", "NETSTANDARD1_6_OR_GREATER", "NETSTANDARD2_0_OR_GREATER" }, true)]
         [InlineData("netstandard2.0", new[] { "NETSTANDARD", "NETSTANDARD2_0", "NETSTANDARD1_0_OR_GREATER", "NETSTANDARD1_1_OR_GREATER", "NETSTANDARD1_2_OR_GREATER", "NETSTANDARD1_3_OR_GREATER", "NETSTANDARD1_4_OR_GREATER", "NETSTANDARD1_5_OR_GREATER", "NETSTANDARD1_6_OR_GREATER", "NETSTANDARD2_0_OR_GREATER" })]
         [InlineData("net45", new[] { "NETFRAMEWORK", "NET45", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER" })]
+        [InlineData("net45", new[] { "NETFRAMEWORK", "NET45", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER" }, true)]
         [InlineData("net461", new[] { "NETFRAMEWORK", "NET461", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER",
             "NET451_OR_GREATER", "NET452_OR_GREATER", "NET46_OR_GREATER", "NET461_OR_GREATER" })]
         [InlineData("net48", new[] { "NETFRAMEWORK", "NET48", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER",
@@ -334,11 +318,13 @@ namespace Microsoft.NET.Build.Tests
             "NETCOREAPP2_1_OR_GREATER", "NETCOREAPP2_2_OR_GREATER", "NETCOREAPP3_0_OR_GREATER" })]
         [InlineData("net5.0", new[] { "NETCOREAPP", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER", "NETCOREAPP2_1_OR_GREATER",
             "NETCOREAPP2_2_OR_GREATER", "NETCOREAPP3_0_OR_GREATER", "NETCOREAPP3_1_OR_GREATER", "NET", "NET5_0", "NET5_0_OR_GREATER" })]
+        [InlineData("net5.0", new[] { "NETCOREAPP", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER", "NETCOREAPP2_1_OR_GREATER",
+            "NETCOREAPP2_2_OR_GREATER", "NETCOREAPP3_0_OR_GREATER", "NETCOREAPP3_1_OR_GREATER", "NET", "NET5_0", "NET5_0_OR_GREATER" }, true)]
         [InlineData(".NETPortable,Version=v4.5,Profile=Profile78", new string[] { })]
         [InlineData(".NETFramework,Version=v4.0,Profile=Client", new string[] { "NETFRAMEWORK", "NET40", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER" })]
         [InlineData("Xamarin.iOS,Version=v1.0", new string[] { "XAMARINIOS", "XAMARINIOS1_0" })]
         [InlineData("UnknownFramework,Version=v3.14", new string[] { "UNKNOWNFRAMEWORK", "UNKNOWNFRAMEWORK3_14" })]
-        public void It_implicitly_defines_compilation_constants_for_the_target_framework(string targetFramework, string[] expectedDefines)
+        public void It_implicitly_defines_compilation_constants_for_the_target_framework(string targetFramework, string[] expectedDefines, bool addDefineFromCli = false)
         {
             var testAsset = _testAssetsManager
                 .CopyTestAsset("AppWithLibrary", "ImplicitFrameworkConstants", targetFramework, identifier: expectedDefines.GetHashCode().ToString())
@@ -385,13 +371,14 @@ namespace Microsoft.NET.Build.Tests
             };
 
             getValuesCommand
-                .Execute()
+                .Execute(addDefineFromCli ? ["/p:DefineConstants=HELLOWORLD"] : [])
                 .Should()
                 .Pass();
 
             var definedConstants = getValuesCommand.GetValues();
+            var expectedConstants = expectedDefines.Concat(addDefineFromCli ? ["HELLOWORLD"] : ["DEBUG", "TRACE"]);
 
-            definedConstants.Should().BeEquivalentTo(new[] { "DEBUG", "TRACE" }.Concat(expectedDefines).ToArray());
+            definedConstants.Should().BeEquivalentTo(expectedConstants.ToArray());
         }
 
         [Theory]
@@ -686,7 +673,7 @@ class Program
                 new DotnetNewCommand(Log)
                     .WithVirtualHive()
                     .WithWorkingDirectory(testAsset.TestRoot)
-                    .Execute("sln")
+                    .Execute("sln", "--format", "sln")
                     .Should()
                     .Pass();
 
@@ -1063,124 +1050,25 @@ namespace ProjectNameWithSpaces
                 .Should()
                 .Pass();
 
-            GetPropertyValue("RootNamespace", projectFolder, testProject.TargetFrameworks).Should().Be("Project_Name_With_Spaces");
-        }
-
-        [Theory]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("netcoreapp5.0")]
-        public void It_makes_RootNamespace_safe_when_project_name_has_dashes(string targetFramework)
-        {
-            var testProject = new TestProject()
+            string GetPropertyValue(string propertyName)
             {
-                Name = "my-project-with-dashes",
-                TargetFrameworks = targetFramework,
-            };
+                var getValuesCommand = new GetValuesCommand(Log, projectFolder,
+                    testProject.TargetFrameworks, propertyName, GetValuesCommand.ValueType.Property)
+                {
+                    Configuration = "Debug"
+                };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+                getValuesCommand
+                    .Execute()
+                    .Should()
+                    .Pass();
 
-            // Overwrite the default file. CreateTestProject uses the defined project name for the namespace.
-            // We need a buildable project to extract the property to verify it
-            // since this issue only surfaces in VS when adding a new class through an item template.
-            File.WriteAllText(Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.cs"), @"
-using System;
-using System.Collections.Generic;
+                var values = getValuesCommand.GetValues();
+                values.Count.Should().Be(1);
+                return values[0];
+            }
 
-namespace MyProjectWithDashes
-{
-    public class MyProjectWithDashesClass
-    {
-        public static string Name { get { return ""my-project-with-dashes""; } }
-        public static List<string> List { get { return null; } }
-    }
-}");
-            string projectFolder = Path.Combine(testAsset.Path, testProject.Name);
-
-            var buildCommand = new BuildCommand(testAsset, $"{testProject.Name}");
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            GetPropertyValue("RootNamespace", projectFolder, testProject.TargetFrameworks).Should().Be("my_project_with_dashes");
-        }
-
-        [Theory]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("netcoreapp5.0")]
-        public void It_makes_RootNamespace_safe_when_project_name_starts_with_digit(string targetFramework)
-        {
-            var testProject = new TestProject()
-            {
-                Name = "13monkeys",
-                TargetFrameworks = targetFramework,
-            };
-
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
-
-            // Overwrite the default file. CreateTestProject uses the defined project name for the namespace.
-            // We need a buildable project to extract the property to verify it
-            // since this issue only surfaces in VS when adding a new class through an item template.
-            File.WriteAllText(Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.cs"), @"
-using System;
-using System.Collections.Generic;
-
-namespace _13monkeys
-{
-    public class _13monkeysClass
-    {
-        public static string Name { get { return ""13monkeys""; } }
-        public static List<string> List { get { return null; } }
-    }
-}");
-            string projectFolder = Path.Combine(testAsset.Path, testProject.Name);
-
-            var buildCommand = new BuildCommand(testAsset, $"{testProject.Name}");
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            GetPropertyValue("RootNamespace", projectFolder, testProject.TargetFrameworks).Should().Be("_13monkeys");
-        }
-
-        [Theory]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("netcoreapp5.0")]
-        public void It_makes_RootNamespace_safe_when_project_name_has_dashes_and_starts_with_digit(string targetFramework)
-        {
-            var testProject = new TestProject()
-            {
-                Name = "13-monkeys-project",
-                TargetFrameworks = targetFramework,
-            };
-
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
-
-            // Overwrite the default file. CreateTestProject uses the defined project name for the namespace.
-            // We need a buildable project to extract the property to verify it
-            // since this issue only surfaces in VS when adding a new class through an item template.
-            File.WriteAllText(Path.Combine(testAsset.Path, testProject.Name, $"{testProject.Name}.cs"), @"
-using System;
-using System.Collections.Generic;
-
-namespace _13_monkeys_project
-{
-    public class _13_monkeys_projectClass
-    {
-        public static string Name { get { return ""13-monkeys-project""; } }
-        public static List<string> List { get { return null; } }
-    }
-}");
-            string projectFolder = Path.Combine(testAsset.Path, testProject.Name);
-
-            var buildCommand = new BuildCommand(testAsset, $"{testProject.Name}");
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            GetPropertyValue("RootNamespace", projectFolder, testProject.TargetFrameworks).Should().Be("_13_monkeys_project");
+            GetPropertyValue("RootNamespace").Should().Be("Project_Name_With_Spaces");
         }
 
         [WindowsOnlyFact(Skip = "We need new SDK packages with different assembly versions to build this (.38 and .39 have the same assembly version)")]

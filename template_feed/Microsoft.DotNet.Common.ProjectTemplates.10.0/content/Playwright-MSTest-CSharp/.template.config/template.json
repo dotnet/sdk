@@ -248,6 +248,23 @@
       "continueOnError": true
     },
     {
+      "condition": "(TestRunner == \"Microsoft.Testing.Platform\")",
+      "description": "Create or update 'global.json' file required by Microsoft.Testing.Platform.",
+      "manualInstructions": [{ "text": "Manually update or create 'global.json' file setting the test runner to Microsoft.Testing.Platform" }],
+      "actionId": "695A3659-EB40-4FF5-A6A6-C9C4E629FCB0",
+      "id": "addJsonProperty",
+      "args": {
+        "allowFileCreation": true,
+        "allowPathCreation": true,
+        "jsonFileName": "global.json",
+        "parentPropertyPath": "test",
+        "newJsonPropertyName": "runner",
+        "newJsonPropertyValue": "Microsoft.Testing.Platform",
+        "detectRepositoryRootForFileCreation": true
+      },
+      "continueOnError": true
+    },
+    {
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "description": "Opens Test1.cs in the editor",
       "manualInstructions": [],

@@ -90,6 +90,10 @@ internal static class PublishCommandParser
         command.Options.Add(CommonOptions.OperatingSystemOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(TargetOption);
+        command.Options.Add(CommonOptions.GetPropertyOption);
+        command.Options.Add(CommonOptions.GetItemOption);
+        command.Options.Add(CommonOptions.GetTargetResultOption);
+        command.Options.Add(CommonOptions.GetResultOutputFileOption);
 
         command.SetAction(PublishCommand.Run);
 

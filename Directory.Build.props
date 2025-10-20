@@ -1,4 +1,3 @@
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <!-- Platform needs to be set with TreatAsLocalProperty since it is a global property and cannot be overridden otherwise. -->
 <Project TreatAsLocalProperty="Platform">
 
@@ -38,6 +37,7 @@
     <PackageProjectUrl>https://github.com/dotnet/sdk</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <LangVersion>Preview</LangVersion>
+    <LangVersion Condition="'$(Language)' == 'VB'">16</LangVersion>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <DebugSymbols>true</DebugSymbols>
     <!-- Default to all packages generating a corresponding symbol package -->
@@ -48,7 +48,8 @@
     <NetCurrent>net10.0</NetCurrent>
     <NetToolMinimum Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetCurrent)</NetToolMinimum>
     <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
-    <VisualStudioServiceTargetFramework>net8.0</VisualStudioServiceTargetFramework>
+    <VisualStudioServiceTargetFramework>net9.0</VisualStudioServiceTargetFramework>
+    <VisualStudioTargetFramework>net472</VisualStudioTargetFramework>
 
     <!-- We used to have scenarios where the MSBuild host (VSMac) had an older .NET, but don't any more. -->
     <ResolverTargetFramework>$(SdkTargetFramework)</ResolverTargetFramework>
@@ -63,9 +64,9 @@
     <UseSharedCompilation Condition="'$(DotNetBuildSourceOnly)' == 'true'">false</UseSharedCompilation>
     <DisableImplicitPackageTargetFallback>true</DisableImplicitPackageTargetFallback>
 
-    <DefineConstants Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(DefineConstants);CI_BUILD</DefineConstants>
-    <DefineConstants Condition="'$(OfficialBuilder)' == 'Microsoft'">$(DefineConstants);MICROSOFT_ENABLE_TELEMETRY</DefineConstants>
-    <DefineConstants Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefineConstants);DOT_NET_BUILD_FROM_SOURCE</DefineConstants>
+    <DefineConstants Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(DefineConstants),CI_BUILD</DefineConstants>
+    <DefineConstants Condition="'$(OfficialBuilder)' == 'Microsoft'">$(DefineConstants),MICROSOFT_ENABLE_TELEMETRY</DefineConstants>
+    <DefineConstants Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefineConstants),DOT_NET_BUILD_FROM_SOURCE</DefineConstants>
 
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
@@ -107,6 +108,9 @@
 
     <HostFxrVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</HostFxrVersion>
     <SharedHostVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedHostVersion>
+
+    <MicrosoftCodeAnalysisVersionForNetAnalyzers Condition="'$(DotNetBuildSourceOnly)' != 'true'">3.11.0</MicrosoftCodeAnalysisVersionForNetAnalyzers>
+    <MicrosoftCodeAnalysisVersionForNetAnalyzers Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(MicrosoftCodeAnalysisVersion)</MicrosoftCodeAnalysisVersionForNetAnalyzers>
   </PropertyGroup>
 
   <Import Project="build/GenerateResxSource.targets" />

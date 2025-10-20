@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.HotReload;
 #endif
 internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
 {
-    internal delegate void ContentUpdateAction(StaticAssetUpdate update);
+    internal delegate void ContentUpdateAction(RuntimeStaticAssetUpdate update);
     internal delegate void MetadataUpdateAction(Type[]? updatedTypes);
 
     internal readonly struct UpdateHandler<TAction>(TAction action, MethodInfo method)
@@ -54,7 +54,7 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
             }
         }
 
-        public void UpdateContent(AgentReporter reporter, StaticAssetUpdate update)
+        public void UpdateContent(AgentReporter reporter, RuntimeStaticAssetUpdate update)
         {
             foreach (var handler in updateContentHandlers)
             {
@@ -129,7 +129,7 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
     /// <summary>
     /// Invokes all registered content update handlers.
     /// </summary>
-    internal void ContentUpdated(StaticAssetUpdate update)
+    internal void ContentUpdated(RuntimeStaticAssetUpdate update)
     {
         try
         {

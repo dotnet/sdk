@@ -3,6 +3,7 @@
   <Import Project="..\AspireService\Microsoft.WebTools.AspireService.projitems" Label="Shared" />
   <Import Project="..\HotReloadAgent.PipeRpc\Microsoft.DotNet.HotReload.Agent.PipeRpc.projitems" Label="Shared" />
   <Import Project="..\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.projitems" Label="Shared" />
+  <Import Project="..\HotReloadClient\Microsoft.DotNet.HotReload.Client.projitems" Label="Shared" />
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
@@ -49,8 +50,25 @@
 
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)\src\Cli\dotnet\dotnet.csproj" />
-    <ProjectReference Include="..\BrowserRefresh\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework;TargetFrameworks" OutputItemType="Content" TargetPath="middleware\Microsoft.AspNetCore.Watch.BrowserRefresh.dll" CopyToOutputDirectory="PreserveNewest" />
-    <ProjectReference Include="..\DotNetWatchTasks\DotNetWatchTasks.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework;TargetFrameworks" OutputItemType="Content" CopyToOutputDirectory="PreserveNewest" />
+
+    <ProjectReference Include="..\DotNetWatchTasks\DotNetWatchTasks.csproj">
+      <PrivateAssets>all</PrivateAssets>
+      <OutputItemType>Content</OutputItemType>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <UndefineProperties>TargetFramework;TargetFrameworks</UndefineProperties>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </ProjectReference>
+
+    <ProjectReference Include="..\BrowserRefresh\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj">
+      <PrivateAssets>all</PrivateAssets>
+      <OutputItemType>Content</OutputItemType>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <UndefineProperties>TargetFramework;TargetFrameworks</UndefineProperties>
+      <TargetPath>hotreload\net6.0\Microsoft.AspNetCore.Watch.BrowserRefresh.dll</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </ProjectReference>
 
     <ProjectReference Include="..\DotNetDeltaApplier\Microsoft.Extensions.DotNetDeltaApplier.csproj">
       <PrivateAssets>all</PrivateAssets>
@@ -95,9 +113,7 @@
                                         $([MSBuild]::ValueOrDefault('%(FullPath)', '').Contains('BuildHost'))" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(_DotnetWatchInputFile)"
-          DestinationFiles="@(_DotnetWatchInputFile->'$(TestHostDotNetRoot)sdk\$(Version)\DotnetTools\dotnet-watch\$(Version)\tools\$(SdkTargetFramework)\any\%(RecursiveDir)%(Filename)%(Extension)')"
-          SkipUnchangedFiles="true">
+    <Copy SourceFiles="@(_DotnetWatchInputFile)" DestinationFiles="@(_DotnetWatchInputFile->'$(TestHostDotNetRoot)sdk\$(Version)\DotnetTools\dotnet-watch\$(Version)\tools\$(SdkTargetFramework)\any\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true">
       <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
     </Copy>
   </Target>

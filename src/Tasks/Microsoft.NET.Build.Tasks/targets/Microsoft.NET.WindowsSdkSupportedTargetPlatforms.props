@@ -22,7 +22,12 @@ Copyright (c) .NET Foundation. All rights reserved.
         <WindowsSdkSupportedTargetPlatformVersion Include="7.0" />
     </ItemGroup>
 
-    <ItemGroup>
-        <SdkSupportedTargetPlatformVersion Condition="'$(TargetPlatformIdentifier)' == 'Windows'" Include="@(WindowsSdkSupportedTargetPlatformVersion)" />
+    <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'Windows'">
+        <!-- Normalize the last part of TFM to .0 when ending with .1 as that indicates the use of the CsWinRT 3.0 verison. -->
+        <_NormalizedWindowsSdkSupportedTargetPlatformVersion Include="@(WindowsSdkSupportedTargetPlatformVersion)">
+            <NormalizedSupportedTargetPlatformVersion 
+                Condition="$([System.Version]::Parse('%(Identity)').Revision) == 1">$([System.Version]::Parse('%(Identity)').Major).$([System.Version]::Parse('%(Identity)').Minor).$([System.Version]::Parse('%(Identity)').Build).0</NormalizedSupportedTargetPlatformVersion>
+        </_NormalizedWindowsSdkSupportedTargetPlatformVersion>
+        <SdkSupportedTargetPlatformVersion Include="@(_NormalizedWindowsSdkSupportedTargetPlatformVersion)" />
     </ItemGroup>
 </Project>

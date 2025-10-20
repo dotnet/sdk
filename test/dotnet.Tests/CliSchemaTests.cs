@@ -113,6 +113,62 @@ public class CliSchemaTests : SdkTest
       "required": false,
       "recursive": false
     },
+    "--getItem": {
+      "hidden": true,
+      "aliases": [
+        "-getItem",
+        "/getItem"
+      ],
+      "valueType": "System.String[]",
+      "hasDefaultValue": false,
+      "arity": {
+        "minimum": 1
+      },
+      "required": false,
+      "recursive": false
+    },
+    "--getProperty": {
+      "hidden": true,
+      "aliases": [
+        "-getProperty",
+        "/getProperty"
+      ],
+      "valueType": "System.String[]",
+      "hasDefaultValue": false,
+      "arity": {
+        "minimum": 1
+      },
+      "required": false,
+      "recursive": false
+    },
+    "--getResultOutputFile": {
+      "hidden": true,
+      "aliases": [
+        "-getResultOutputFile",
+        "/getResultOutputFile"
+      ],
+      "valueType": "System.String[]",
+      "hasDefaultValue": false,
+      "arity": {
+        "minimum": 1
+      },
+      "required": false,
+      "recursive": false
+    },
+    "--getTargetResult": {
+      "hidden": true,
+      "aliases": [
+        "-getTargetResult",
+        "/getTargetResult"
+      ],
+      "valueType": "System.String[]",
+      "hasDefaultValue": false,
+      "arity": {
+        "minimum": 1
+      },
+      "required": false,
+      "recursive": false
+    },
     "--interactive": {
       "description": "Allows the command to stop and wait for user input or action (for example to complete authentication).",
       "hidden": false,
@@ -770,6 +826,62 @@ public class CliSchemaTests : SdkTest
       "arity": {
         "minimum": 1,
         "maximum": 1
+      },
+      "required": false,
+      "recursive": false
+    },
+    "--getItem": {
+      "hidden": true,
+      "aliases": [
+        "-getItem",
+        "/getItem"
+      ],
+      "valueType": "System.String[]",
+      "hasDefaultValue": false,
+      "arity": {
+        "minimum": 1
+      },
+      "required": false,
+      "recursive": false
+    },
+    "--getProperty": {
+      "hidden": true,
+      "aliases": [
+        "-getProperty",
+        "/getProperty"
+      ],
+      "valueType": "System.String[]",
+      "hasDefaultValue": false,
+      "arity": {
+        "minimum": 1
+      },
+      "required": false,
+      "recursive": false
+    },
+    "--getResultOutputFile": {
+      "hidden": true,
+      "aliases": [
+        "-getResultOutputFile",
+        "/getResultOutputFile"
+      ],
+      "valueType": "System.String[]",
+      "hasDefaultValue": false,
+      "arity": {
+        "minimum": 1
+      },
+      "required": false,
+      "recursive": false
+    },
+    "--getTargetResult": {
+      "hidden": true,
+      "aliases": [
+        "-getTargetResult",
+        "/getTargetResult"
+      ],
+      "valueType": "System.String[]",
+      "hasDefaultValue": false,
+      "arity": {
+        "minimum": 1
       },
       "required": false,
       "recursive": false
