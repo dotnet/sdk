@@ -66,15 +66,16 @@ public class InstallEndToEndTests
         Directory.Exists(Path.GetDirectoryName(testEnv.ManifestPath)).Should().BeTrue();
 
         // Verify the installation was properly recorded in the manifest
-        using var finalizeLock = new Microsoft.DotNet.Tools.Bootstrapper.ScopedMutex(Microsoft.DotNet.Tools.Bootstrapper.Constants.MutexNames.ModifyInstallationStates);
-        finalizeLock.HasHandle.Should().BeTrue();
-
-        var manifest = new Microsoft.DotNet.Tools.Bootstrapper.DnupSharedManifest();
-        var installs = manifest.GetInstalledVersions();
+        var installs = [];
+        using (var finalizeLock = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DnupSharedManifest();
+            installs = manifest.GetInstalledVersions();
+        }
 
         installs.Should().NotBeEmpty();
 
-        var matchingInstalls = installs.Where(i => PathUtilities.PathsEqual(i.InstallRoot.Path, testEnv.InstallPath)).ToList();
+        var matchingInstalls = installs.Where(i => DnupUtilities.PathsEqual(i.InstallRoot.Path, testEnv.InstallPath)).ToList();
         matchingInstalls.Should().ContainSingle();
 
         var install = matchingInstalls[0];
@@ -121,13 +122,15 @@ public class ReuseEndToEndTests
         int exitCode = Parser.Parse(args).Invoke();
         exitCode.Should().Be(0);
 
+        var firstDnupInstalls = [];
         // Verify the installation was successful
         using (var finalizeLock = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
             var manifest = new DnupSharedManifest();
-            var installs = manifest.GetInstalledVersions();
-            installs.Where(i => PathUtilities.PathsEqual(i.InstallRoot.Path, testEnv.InstallPath)).Should().ContainSingle();
+            firstDnupInstalls = manifest.GetInstalledVersions();
         }
+
+        firstDnupInstalls.Where(i => DnupUtilities.PathsEqual(i.InstallRoot.Path, testEnv.InstallPath)).Should().ContainSingle();
 
         // Now install the same SDK again and capture the console output
         using var consoleOutput = new ConsoleOutputCapture();
@@ -147,18 +150,18 @@ public class ReuseEndToEndTests
         output.Should().NotContain("Downloading .NET SDK",
             "dnup should not attempt to download the SDK again");
 
+        var matchingInstalls = [];
         // Verify the installation record in the manifest hasn't changed
         using (var finalizeLock = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
             var manifest = new DnupSharedManifest();
             var installs = manifest.GetInstalledVersions();
-            var matchingInstalls = installs.Where(i => PathUtilities.PathsEqual(i.InstallRoot.Path, testEnv.InstallPath)).ToList();
-
-            // Should still only have one installation
-            matchingInstalls.Should().ContainSingle();
-
-            // And it should be for the specified version
-            matchingInstalls[0].Version.ToString().Should().Be(channel);
+            matchingInstalls = installs.Where(i => DnupUtilities.PathsEqual(i.InstallRoot.Path, testEnv.InstallPath)).ToList();
         }
+
+        // Should still only have one installation
+        matchingInstalls.Should().ContainSingle();
+        // And it should be for the specified version
+        matchingInstalls[0].Version.ToString().Should().Be(channel);
     }
 }

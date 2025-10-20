@@ -21,11 +21,10 @@ internal static class DnupTestUtilities
     {
         string tempRoot = Path.Combine(Path.GetTempPath(), "dnup-e2e", Guid.NewGuid().ToString("N"));
         string installPath = Path.Combine(tempRoot, "dotnet-root");
-        string manifestPath = Path.Combine(tempRoot, "manifest", "dnup_manifest.json");
+        string manifestPath = Path.Combine(tempRoot, "dnup_manifest.json");
 
         // Create necessary directories
         Directory.CreateDirectory(tempRoot);
-        Directory.CreateDirectory(Path.GetDirectoryName(manifestPath)!);
         Directory.CreateDirectory(installPath);
 
         return new TestEnvironment(tempRoot, installPath, manifestPath);
@@ -54,17 +53,12 @@ internal static class DnupTestUtilities
             args.Add("--no-progress");
         }
 
-        return args.ToArray();
+        return [.. args];
     }
 
     /// <summary>
     /// Maps System.Runtime.InteropServices.Architecture to Microsoft.Dotnet.Installation.InstallArchitecture
     /// </summary>
-    public static InstallArchitecture MapArchitecture(Architecture architecture) => architecture switch
-    {
-        Architecture.X86 => InstallArchitecture.x86,
-        Architecture.X64 => InstallArchitecture.x64,
-        Architecture.Arm64 => InstallArchitecture.arm64,
-        _ => throw new NotSupportedException($"Architecture {architecture} is not supported."),
-    };
+    public static InstallArchitecture MapArchitecture(Architecture architecture) =>
+        Microsoft.DotNet.Tools.Bootstrapper.DnupUtilities.GetInstallArchitecture(architecture);
 }
