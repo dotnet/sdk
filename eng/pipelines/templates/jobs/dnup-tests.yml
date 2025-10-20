@@ -18,7 +18,7 @@ parameters:
 jobs:
 - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
   parameters:
-    displayName: 'dnup tests: ${{ parameters.pool.os }} ({{ parameters.helixTargetQueue }})'
+    displayName: 'dnup tests: ${{ parameters.pool.os }} (${{ parameters.helixTargetQueue }})'
     pool: ${{ parameters.pool }}
     container: ${{ parameters.container }}
     strategy: ${{ parameters.strategy }}
