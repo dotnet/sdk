@@ -42,7 +42,7 @@ jobs:
     - ${{ if eq(parameters.pool.os, 'windows') }}:
       - powershell: |
           & .\restore.cmd
-        displayName: ♻️ Bootstrap toolset (Windows)
+        displayName: 🍱 Bootstrap toolset (Windows)
       - powershell: |
           & .\.dotnet\dotnet restore test\dnup.Tests\dnup.Tests.csproj
         displayName: ♻️ Restore dnup tests (Windows)
@@ -56,7 +56,7 @@ jobs:
       - script: |
           set -e
           ./restore.sh
-        displayName: ♻️ Bootstrap toolset (Unix)
+        displayName: 🍱 Bootstrap toolset (Unix)
       - script: |
           set -e
           ./.dotnet/dotnet restore test/dnup.Tests/dnup.Tests.csproj
