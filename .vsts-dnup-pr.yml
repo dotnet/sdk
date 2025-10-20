@@ -57,12 +57,12 @@ stages:
 
   ### ARM64 ###
   - ${{ if eq(parameters.enableArm64Job, true) }}:
-  - template: /eng/pipelines/templates/jobs/dnup-tests.yml@self
-    parameters:
-      pool:
-        name: Azure Pipelines
-        vmImage: macOS-latest
-        os: macOS
-      helixTargetQueue: osx.13.arm64.open
+    - template: /eng/pipelines/templates/jobs/dnup-tests.yml@self
+      parameters:
+        pool:
+          name: Azure Pipelines
+          vmImage: macOS-latest
+          os: macOS
+        helixTargetQueue: osx.13.arm64.open
 
 
