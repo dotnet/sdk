@@ -20,7 +20,7 @@ public sealed class FileBasedSdkResolver : SdkResolver
     {
         // Check if the SDK name looks like a file path
         string sdkName = sdkReference.Name;
-        
+
         if (string.IsNullOrEmpty(sdkName))
         {
             return null;
@@ -71,8 +71,8 @@ public sealed class FileBasedSdkResolver : SdkResolver
 
         if (!File.Exists(propsFile) && !File.Exists(targetsFile))
         {
-            return factory.IndicateFailure(new[] { 
-                $"SDK directory '{sdkDirectory}' does not contain Sdk.props or Sdk.targets files." 
+            return factory.IndicateFailure(new[] {
+                $"SDK directory '{sdkDirectory}' does not contain Sdk.props or Sdk.targets files."
             });
         }
 
@@ -86,8 +86,8 @@ public sealed class FileBasedSdkResolver : SdkResolver
     private static bool IsLikelyFilePath(string sdkName)
     {
         // Check if it contains path separators or starts with relative path indicators
-        return sdkName.Contains('/') || 
-               sdkName.Contains('\\') || 
+        return sdkName.Contains('/') ||
+               sdkName.Contains('\\') ||
                sdkName.StartsWith(".") ||
                sdkName.StartsWith("~") ||
                (sdkName.Length > 1 && sdkName[1] == ':'); // Windows absolute path like C:
@@ -104,7 +104,7 @@ public sealed class FileBasedSdkResolver : SdkResolver
         {
             return Path.GetDirectoryName(context.ProjectFilePath);
         }
-        
+
         // Fallback to current directory
         return Environment.CurrentDirectory;
     }
