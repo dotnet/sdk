@@ -57,8 +57,8 @@ public class InstallEndToEndTests
 
         Console.WriteLine($"Channel '{channel}' resolved to version: {expectedVersion}");
 
-        // Execute the command
-        var args = DnupTestUtilities.BuildArguments(channel, testEnv.InstallPath);
+        // Execute the command with explicit manifest path
+        var args = DnupTestUtilities.BuildArguments(channel, testEnv.InstallPath, testEnv.ManifestPath);
         int exitCode = Parser.Parse(args).Invoke();
         exitCode.Should().Be(0);
 
@@ -115,9 +115,9 @@ public class ReuseEndToEndTests
         const string channel = "9.0.103";
 
         using var testEnv = DnupTestUtilities.CreateTestEnvironment();
-        var args = DnupTestUtilities.BuildArguments(channel, testEnv.InstallPath);
+        var args = DnupTestUtilities.BuildArguments(channel, testEnv.InstallPath, testEnv.ManifestPath);
 
-        // Execute dnup to install the SDK the first time
+        // Execute dnup to install the SDK the first time with explicit manifest path
         Console.WriteLine($"First installation of {channel}");
         int exitCode = Parser.Parse(args).Invoke();
         exitCode.Should().Be(0);

@@ -36,6 +36,12 @@ internal static class SdkInstallCommandParser
         DefaultValueFactory = r => null
     };
 
+    public static readonly Option<string> ManifestPathOption = new("--manifest-path")
+    {
+        HelpName = "MANIFEST_PATH",
+        Description = "Custom path to the manifest file for tracking .NET SDK installations",
+    };
+
     public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
     public static readonly Option<bool> NoProgressOption = CommonOptions.NoProgressOption;
 
@@ -65,6 +71,7 @@ internal static class SdkInstallCommandParser
         command.Options.Add(InstallPathOption);
         command.Options.Add(SetDefaultInstallOption);
         command.Options.Add(UpdateGlobalJsonOption);
+        command.Options.Add(ManifestPathOption);
 
         command.Options.Add(InteractiveOption);
         command.Options.Add(NoProgressOption);

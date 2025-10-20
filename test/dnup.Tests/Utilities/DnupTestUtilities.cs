@@ -26,6 +26,7 @@ internal static class DnupTestUtilities
         // Create necessary directories
         Directory.CreateDirectory(tempRoot);
         Directory.CreateDirectory(installPath);
+        Directory.CreateDirectory(Path.GetDirectoryName(manifestPath)!);
 
         return new TestEnvironment(tempRoot, installPath, manifestPath);
     }
@@ -33,7 +34,7 @@ internal static class DnupTestUtilities
     /// <summary>
     /// Builds command line arguments for dnup
     /// </summary>
-    public static string[] BuildArguments(string channel, string installPath, bool disableProgress = true)
+    public static string[] BuildArguments(string channel, string installPath, string? manifestPath = null, bool disableProgress = true)
     {
         var args = new List<string>
         {
@@ -46,6 +47,13 @@ internal static class DnupTestUtilities
         args.Add(installPath);
         args.Add("--interactive");
         args.Add("false");
+
+        // Add manifest path option if specified for test isolation
+        if (!string.IsNullOrEmpty(manifestPath))
+        {
+            args.Add("--manifest-path");
+            args.Add(manifestPath);
+        }
 
         // Add no-progress option when running tests in parallel to avoid Spectre.Console exclusivity issues
         if (disableProgress)

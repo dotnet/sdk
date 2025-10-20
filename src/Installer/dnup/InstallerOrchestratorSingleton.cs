@@ -38,11 +38,13 @@ internal class InstallerOrchestratorSingleton
             versionToInstall,
             installRequest.Component);
 
+        string? customManifestPath = installRequest.Options.ManifestPath;
+
         // Check if the install already exists and we don't need to do anything
         // read write mutex only for manifest?
         using (var finalizeLock = modifyInstallStateMutex())
         {
-            if (InstallAlreadyExists(install))
+            if (InstallAlreadyExists(install, customManifestPath))
             {
                 Console.WriteLine($"\n.NET SDK {versionToInstall} is already installed, skipping installation.");
                 return install;
@@ -65,7 +67,7 @@ internal class InstallerOrchestratorSingleton
             ArchiveInstallationValidator validator = new();
             if (validator.Validate(install))
             {
-                DnupSharedManifest manifestManager = new();
+                DnupSharedManifest manifestManager = new(installRequest.Options.ManifestPath);
                 manifestManager.AddInstalledVersion(install);
             }
             else
@@ -80,9 +82,9 @@ internal class InstallerOrchestratorSingleton
     /// <summary>
     /// Gets the existing installs from the manifest. Must hold a mutex over the directory.
     /// </summary>
-    private IEnumerable<DotnetInstall> GetExistingInstalls(DotnetInstallRoot installRoot)
+    private IEnumerable<DotnetInstall> GetExistingInstalls(DotnetInstallRoot installRoot, string? customManifestPath = null)
     {
-        var manifestManager = new DnupSharedManifest();
+        var manifestManager = new DnupSharedManifest(customManifestPath);
         // Use the overload that filters by muxer directory
         return manifestManager.GetInstalledVersions(installRoot);
     }
@@ -90,9 +92,9 @@ internal class InstallerOrchestratorSingleton
     /// <summary>
     /// Checks if the installation already exists. Must hold a mutex over the directory.
     /// </summary>
-    private bool InstallAlreadyExists(DotnetInstall install)
+    private bool InstallAlreadyExists(DotnetInstall install, string? customManifestPath = null)
     {
-        var existingInstalls = GetExistingInstalls(install.InstallRoot);
+        var existingInstalls = GetExistingInstalls(install.InstallRoot, customManifestPath);
 
         // Check if there's any existing installation that matches the version we're trying to install
         return existingInstalls.Any(existing =>
