@@ -112,11 +112,10 @@ Android, iOS, etc. will prompt for device selection.
 * Prompt for `$(TargetFramework)` for multi-targeted projects just
   like when `--list-devices` is omitted.
 
-  * If there is a single `$(TargetFramework)`, it can just print a
-    friendly message and exit.
+  * If there is a single `$(TargetFramework)`, skip to the next step.
 
-* Call `ComputeAvailableDevices` just like when `--list-devices` is
-  omitted.
+* Call `ComputeAvailableDevices` if the MSBuild target exists, just
+  like when `--list-devices` is omitted.
 
   * List the available targets by name, a unique identifier, and an
     optional status of the device.
