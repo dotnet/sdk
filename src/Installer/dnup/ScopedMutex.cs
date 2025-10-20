@@ -28,7 +28,7 @@ public class ScopedMutex : IDisposable
         catch (Exception ex)
         {
             Console.WriteLine($"Warning: Could not create or acquire mutex '{name}': {ex.Message}");
-            throw ex;
+            throw;
         }
     }
 
