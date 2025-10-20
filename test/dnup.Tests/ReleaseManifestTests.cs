@@ -2,6 +2,7 @@ using System;
 using Xunit;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.Dotnet.Installation;
+using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Dnup.Tests
 {

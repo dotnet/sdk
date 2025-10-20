@@ -11,6 +11,7 @@ using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Dnup.Tests.Utilities;
 using Microsoft.Dotnet.Installation;
 using Xunit;
+using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Dnup.Tests;
 
@@ -66,7 +67,7 @@ public class InstallEndToEndTests
         Directory.Exists(Path.GetDirectoryName(testEnv.ManifestPath)).Should().BeTrue();
 
         // Verify the installation was properly recorded in the manifest
-        using var finalizeLock = new Microsoft.DotNet.Tools.Bootstrapper.ScopedMutex(Microsoft.DotNet.Tools.Bootstrapper.Constants.MutexNames.ModifyInstallationStates);
+        using var finalizeLock = new ScopedMutex(Microsoft.DotNet.Tools.Bootstrapper.Constants.MutexNames.ModifyInstallationStates);
         finalizeLock.HasHandle.Should().BeTrue();
 
         var manifest = new Microsoft.DotNet.Tools.Bootstrapper.DnupSharedManifest();
