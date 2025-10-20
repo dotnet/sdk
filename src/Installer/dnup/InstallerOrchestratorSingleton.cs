@@ -57,7 +57,7 @@ internal class InstallerOrchestratorSingleton
         // Extract and commit the install to the directory
         using (var finalizeLock = modifyInstallStateMutex())
         {
-            if (InstallAlreadyExists(install))
+            if (InstallAlreadyExists(install, customManifestPath))
             {
                 return install;
             }
