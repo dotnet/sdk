@@ -1,7 +1,7 @@
 using System;
 using Spectre.Console;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper
+namespace Microsoft.Dotnet.Installation.Internal
 {
     public class SpectreDownloadProgressReporter : IProgress<DownloadProgress>
     {

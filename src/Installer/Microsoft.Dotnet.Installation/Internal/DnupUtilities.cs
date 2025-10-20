@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper;
+namespace Microsoft.Dotnet.Installation.Internal;
 
 internal static class DnupUtilities
 {

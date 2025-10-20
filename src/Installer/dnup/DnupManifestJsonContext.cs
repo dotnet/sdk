@@ -3,6 +3,7 @@
 
 using System.Text.Json.Serialization;
 using System.Collections.Generic;
+using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper
 {
@@ -13,5 +14,5 @@ namespace Microsoft.DotNet.Tools.Bootstrapper
     [JsonSerializable(typeof(InstallArchitecture))]
     [JsonSerializable(typeof(InstallType))]
     [JsonSerializable(typeof(ManagementCadence))]
-    public partial class DnupManifestJsonContext : JsonSerializerContext { }
+    internal partial class DnupManifestJsonContext : JsonSerializerContext { }
 }

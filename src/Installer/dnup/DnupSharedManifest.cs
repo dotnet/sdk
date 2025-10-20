@@ -7,6 +7,7 @@ using System.Linq;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
+using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 

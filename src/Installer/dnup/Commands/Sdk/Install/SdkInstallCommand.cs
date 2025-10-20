@@ -10,6 +10,7 @@ using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using System.Runtime.InteropServices;
+using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 

@@ -10,7 +10,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Deployment.DotNet.Releases;
 
-namespace Microsoft.DotNet.Tools.Bootstrapper;
+namespace Microsoft.Dotnet.Installation.Internal;
 
 internal class ArchiveDotnetInstaller : IDisposable
 {
