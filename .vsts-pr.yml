@@ -8,7 +8,6 @@ pr:
     - main
     - release/*
     - internal/release/*
-    - dnup
   paths:
     exclude:
     - documentation/*
@@ -25,9 +24,6 @@ variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
 # Variables used: DncEngPublicBuildPool
 - template: /eng/common/templates/variables/pool-providers.yml
-# Variable to determine if PR changes are limited to dnup paths
-- name: isDnupOnlyChanges
-  value: $[in(variables['Build.Reason'], 'PullRequest', 'Manual')]
 
 resources:
   containers:
@@ -35,88 +31,49 @@ resources:
     image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-build-amd64
 
 stages:
-############### FILTER CHANGES STAGE ###############
-- stage: filter_changes
-  displayName: Filter PR Changes
+############### BUILD STAGE ###############
+- stage: build
+  displayName: Build
   jobs:
-  - template: /eng/pipelines/templates/jobs/filter-dnup-changes.yml
+  ############### WINDOWS ###############
+  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
         demands: ImageOverride -equals windows.vs2022.amd64.open
-
-############### BUILD STAGE ###############
-- stage: build
-  displayName: Build
-  dependsOn: filter_changes
-  variables:
-    isDnupOnlyChanges: $[ stageDependencies.filter_changes.FilterDnupChanges.outputs['SetDnupFlag.isDnupOnlyChanges'] ]
-  jobs:
-  # If changes are dnup-only, run only dnup tests
-  - ${{ if eq(variables['isDnupOnlyChanges'], 'true') }}:
-    ############### DNUP TESTS ONLY ###############
-    - template: /eng/pipelines/templates/jobs/dnup-tests.yml
-      parameters:
-        pool:
-          name: $(DncEngPublicBuildPool)
-          demands: ImageOverride -equals windows.vs2022.amd64.open
         os: windows
+      helixTargetQueue: windows.amd64.vs2022.pre.open
 
-    - template: /eng/pipelines/templates/jobs/dnup-tests.yml
-      parameters:
-        pool:
-          name: $(DncEngPublicBuildPool)
-          demands: ImageOverride -equals build.ubuntu.2204.amd64.open
+  ############### LINUX ###############
+  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
+    parameters:
+      pool:
+        name: $(DncEngPublicBuildPool)
+        demands: ImageOverride -equals build.ubuntu.2204.amd64.open
         os: linux
+      helixTargetQueue: ubuntu.2204.amd64.open
 
-    - template: /eng/pipelines/templates/jobs/dnup-tests.yml
-      parameters:
-        pool:
-          name: Azure Pipelines
-          vmImage: macOS-latest
+  ############### MACOS ###############
+  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
+    parameters:
+      pool:
+        name: Azure Pipelines
+        vmImage: macOS-latest
         os: macOS
-
-  # Otherwise run the full SDK matrix
-  - ${{ if ne(variables['isDnupOnlyChanges'], 'true') }}:
-    ############### WINDOWS ###############
-    - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
-      parameters:
-        pool:
-          name: $(DncEngPublicBuildPool)
-          demands: ImageOverride -equals windows.vs2022.amd64.open
-          os: windows
-        helixTargetQueue: windows.amd64.vs2022.pre.open
-
-    ############### LINUX ###############
-    - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
-      parameters:
-        pool:
-          name: $(DncEngPublicBuildPool)
-          demands: ImageOverride -equals build.ubuntu.2204.amd64.open
-          os: linux
-        helixTargetQueue: ubuntu.2204.amd64.open
-
-    ############### MACOS ###############
+      helixTargetQueue: osx.15.amd64.open
+  ### ARM64 ###
+  - ${{ if eq(parameters.enableArm64Job, true) }}:
     - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
       parameters:
         pool:
           name: Azure Pipelines
           vmImage: macOS-latest
           os: macOS
-        helixTargetQueue: osx.15.amd64.open
-    ### ARM64 ###
-    - ${{ if eq(parameters.enableArm64Job, true) }}:
-      - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
-        parameters:
-          pool:
-            name: Azure Pipelines
-            vmImage: macOS-latest
-            os: macOS
-          helixTargetQueue: osx.13.arm64.open
-          macOSJobParameterSets:
-          - categoryName: TestBuild
-            targetArchitecture: arm64
-            runtimeIdentifier: osx-arm64
+        helixTargetQueue: osx.13.arm64.open
+        macOSJobParameterSets:
+        - categoryName: TestBuild
+          targetArchitecture: arm64
+          runtimeIdentifier: osx-arm64
 
   ############### DOTNET-FORMAT ###############
   - template: /eng/dotnet-format/dotnet-format-integration.yml
