@@ -78,7 +78,7 @@ devices`, or `xcrun devicectl list devices`._
     or simulators.
 
   * Non-interactive mode will error, suggesting to supply the
-    `--device|-d` switch. Listing the options returned by the
+    `--device` switch. Listing the options returned by the
     `ComputeAvailableDevices` MSBuild target.
 
 * `build`: unchanged, but is passed `-p:Device`.
@@ -122,7 +122,7 @@ Android, iOS, etc. will prompt for device selection.
     optional status of the device.
 
   * Print a friendly message that says how to run `dotnet run` with
-    the new `--device|-d` switch.
+    the new `--device` switch.
 
   * If `ComputeAvailableDevices` does not exist in the project
     (workload), it can print a friendly message and exit.
@@ -130,7 +130,7 @@ Android, iOS, etc. will prompt for device selection.
 * `dotnet run --list-devices` will then basically exit early, never
   running any build, deploy, `ComputeRunArguments`, or run steps.
 
-A new `--device|-d` switch will:
+A new `--device` switch will:
 
 * bypass the target-selection portion of the `run` workflow described above
 
