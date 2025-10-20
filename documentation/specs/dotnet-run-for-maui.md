@@ -48,22 +48,22 @@ to make extensible for .NET MAUI (and future) scenarios.
   * Once a `$(TargetFramework)` is selected, either from previous
     steps or `-f`...
 
-    * If a `ComputeAvailableRunTargets` target is available, provided by
+    * If a `ComputeAvailableDevices` target is available, provided by
       the iOS or Android workload, etc. ...
 
-    * Call the target, which returns a list of `@(RunTargets)` items...
+    * Call the target, which returns a list of `@(Devices)` items...
 
 ```xml
 <ItemGroup>
   <!-- Android examples -->
-  <RunTargets Include="emulator-5554"  Description="Pixel 7 - API 35" Type="Emulator" Status="Offline" />
-  <RunTargets Include="emulator-5555"  Description="Pixel 7 - API 36" Type="Emulator" Status="Online" />
-  <RunTargets Include="0A041FDD400327" Description="Pixel 7 Pro"      Type="Device"   Status="Online" />
+  <Devices Include="emulator-5554"  Description="Pixel 7 - API 35" Type="Emulator" Status="Offline" />
+  <Devices Include="emulator-5555"  Description="Pixel 7 - API 36" Type="Emulator" Status="Online" />
+  <Devices Include="0A041FDD400327" Description="Pixel 7 Pro"      Type="Device"   Status="Online" />
   <!-- iOS examples -->
-  <RunTargets Include="94E71AE5-8040-4DB2-8A9C-6CD24EF4E7DE" Description="iPhone 11 - iOS 18.6" Type="Simulator" Status="Shutdown" />
-  <RunTargets Include="FBF5DCE8-EE2B-4215-8118-3A2190DE1AD7" Description="iPhone 14 - iOS 26.0" Type="Simulator" Status="Booted" />
-  <RunTargets Include="23261B78-1E31-469C-A46E-1776D386EFD8" Description="My iPhone 13"         Type="Device"    Status="Unavailable" />
-  <RunTargets Include="AF40CC64-2CDB-5F16-9651-86BCDF380881" Description="My iPhone 15"         Type="Device"    Status="Paired" />
+  <Devices Include="94E71AE5-8040-4DB2-8A9C-6CD24EF4E7DE" Description="iPhone 11 - iOS 18.6" Type="Simulator" Status="Shutdown" />
+  <Devices Include="FBF5DCE8-EE2B-4215-8118-3A2190DE1AD7" Description="iPhone 14 - iOS 26.0" Type="Simulator" Status="Booted" />
+  <Devices Include="23261B78-1E31-469C-A46E-1776D386EFD8" Description="My iPhone 13"         Type="Device"    Status="Unavailable" />
+  <Devices Include="AF40CC64-2CDB-5F16-9651-86BCDF380881" Description="My iPhone 15"         Type="Device"    Status="Paired" />
 </ItemGroup>
 ```
 
@@ -78,27 +78,27 @@ devices`, or `xcrun devicectl list devices`._
     or simulators.
 
   * Non-interactive mode will error, suggesting to supply the
-    `--target|-t` switch. Listing the options returned by the
-    `ComputeAvailableRunTargets` MSBuild target.
+    `--device|-d` switch. Listing the options returned by the
+    `ComputeAvailableDevices` MSBuild target.
 
-* `build`: unchanged, but is passed `-p:RunTarget`.
+* `build`: unchanged, but is passed `-p:Device`.
 
 * `deploy`
 
-  * If a `DeployToRunTarget` MSBuild target is available, provided by the
+  * If a `DeployToDevice` MSBuild target is available, provided by the
     iOS or Android workload, etc.
 
   * Call the target, passing in the identifier for the selected
-    `-p:RunTarget` global MSBuild property.
+    `-p:Device` global MSBuild property.
 
   * This step needs to run, even with `--no-build`, as you may have
     selected a different device.
 
-* `ComputeRunArguments`: unchanged, but is passed `-p:RunTarget`.
+* `ComputeRunArguments`: unchanged, but is passed `-p:Device`.
 
 * `run`: unchanged. `ComputeRunArguments` should have set a valid
   `$(RunCommand)` and `$(RunArguments)` using the value supplied by
-  `-p:RunTarget`.
+  `-p:Device`.
 
 ## New `dotnet run` Command-line Switches
 
@@ -107,37 +107,37 @@ mode, `dotnet run` will now prompt to select a `$(TargetFramework)`
 for all multi-targeted projects. Platform-specific projects like
 Android, iOS, etc. will prompt for device selection.
 
-`dotnet run --list-targets` will:
+`dotnet run --list-devices` will:
 
 * Prompt for `$(TargetFramework)` for multi-targeted projects just
-  like when `--list-targets` is omitted.
+  like when `--list-devices` is omitted.
 
   * If there is a single `$(TargetFramework)`, it can just print a
     friendly message and exit.
 
-* Call `ComputeAvailableRunTargets` just like when `--list-targets` is
+* Call `ComputeAvailableDevices` just like when `--list-devices` is
   omitted.
 
   * List the available targets by name, a unique identifier, and an
     optional status of the device.
 
   * Print a friendly message that says how to run `dotnet run` with
-    the new `--target|-t` switch.
+    the new `--device|-d` switch.
 
-  * If `ComputeAvailableRunTargets` does not exist in the project
+  * If `ComputeAvailableDevices` does not exist in the project
     (workload), it can print a friendly message and exit.
 
-* `dotnet run --list-targets` will then basically exit early, never
+* `dotnet run --list-devices` will then basically exit early, never
   running any build, deploy, `ComputeRunArguments`, or run steps.
 
-A new `--target|-t` switch will:
+A new `--device|-d` switch will:
 
 * bypass the target-selection portion of the `run` workflow described above
 
-* Pass in the `-p:RunTarget` global MSBuild property to all build,
+* Pass in the `-p:Device` global MSBuild property to all build,
   deploy, `ComputeRunArguments`, or run steps.
 
-* The iOS and Android workloads will know how to interpret `$(RunTarget)`
+* The iOS and Android workloads will know how to interpret `$(Device)`
   to select an appropriate device, emulator, or simulator.
 
 ## What about Launch Profiles?
@@ -205,7 +205,9 @@ Using launch settings from D:\src\hellomaui\Properties\launchSettings.json...
 
 To improve the behavior for "packaged" / MSIX, we could:
 
-* Implement the `DeployToRunTarget` MSBuild target.
+* Implement the `DeployToDevice` MSBuild target.
+
+* `ComputeAvailableDevices` is not needed.
 
 * Implement the `ComputeRunArguments` MSBuild target.
 
@@ -215,7 +217,7 @@ workload or WindowsAppSDK itself.
 ## Other frameworks: Avalonia, Uno, MonoGame, etc.
 
 When these frameworks run on iOS or Android, they are basically using
-the `ios` and `android` workloads *without* .NET MAUI. Any iOS or
+the `ios` and `android` workloads _without_ .NET MAUI. Any iOS or
 Android-specific behavior would apply to these project types in the
 same way a `dotnet new android` or `dotnet new ios` project template
 would.
