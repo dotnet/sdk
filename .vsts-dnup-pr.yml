@@ -35,6 +35,7 @@ stages:
         name: $(DncEngPublicBuildPool)
         demands: ImageOverride -equals windows.vs2022.amd64.open
         os: windows
+        emoji: 🪟
       helixTargetQueue: windows.amd64.vs2022.pre.open
 
   ############### LINUX ###############
@@ -44,6 +45,7 @@ stages:
         name: $(DncEngPublicBuildPool)
         demands: ImageOverride -equals build.ubuntu.2204.amd64.open
         os: linux
+        emoji: 🐧
       helixTargetQueue: ubuntu.2204.amd64.open
 
   ############### MACOS ###############
@@ -53,6 +55,7 @@ stages:
         name: Azure Pipelines
         vmImage: macOS-latest
         os: macOS
+        emoji: 🍎
       helixTargetQueue: osx.15.amd64.open
 
   ### ARM64 ###
@@ -63,6 +66,7 @@ stages:
           name: Azure Pipelines
           vmImage: macOS-latest
           os: macOS
+          emoji: 💪
         helixTargetQueue: osx.13.arm64.open
 
 
