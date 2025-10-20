@@ -51,28 +51,38 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     <_UserSpecifiedToolPackageRids Condition="'$(_UserSpecifiedToolPackageRids)' == ''">$(RuntimeIdentifiers)</_UserSpecifiedToolPackageRids>
     <_HasRIDSpecificTools Condition=" '$(_UserSpecifiedToolPackageRids)' != '' ">true</_HasRIDSpecificTools>
     <_HasRIDSpecificTools Condition="'$(_HasRIDSpecificTools)' == ''">false</_HasRIDSpecificTools>
+
+    <!-- NOTE: this line is load-bearing. This impacts Restore behaviors significantly, so we can't prevent the import of these targets _in general_. -->
     <RuntimeIdentifiers Condition="'$(PackAsToolShimRuntimeIdentifiers)' != ''">$(_UserSpecifiedToolPackageRids);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
 
     <_IsRidSpecific>false</_IsRidSpecific>
     <_IsRidSpecific Condition="'$(RuntimeIdentifier)' != '' and '$(RuntimeIdentifier)' != 'any'">true</_IsRidSpecific>
-
-    <!-- Not determine information about this specific build of a single (or more!) tool packages -->
-    <!-- the publish* properties _can_ be set, but only for the 'inner' RID-specific builds. We need to make sure that for the outer, agnostic build they are unset  -->
-    <!-- RID information is also stripped during Restore, so we need to make sure user
-         decisions are preserved when Restoring, so that publishing-related packages are implicitly included.  -->
-    <PublishSelfContained Condition="!$(_IsRidSpecific) and '$(MSBuildIsRestoring)' != 'true'">false</PublishSelfContained>
-    <!-- Have to set SelfContained similarly because PackTool targets are imported _after_ RuntimeIdentifierInference targets, where the Publish* properties are
-         forwarded to the 'base' properties. -->
-    <SelfContained Condition="!$(_IsRidSpecific) and '$(MSBuildIsRestoring)' != 'true'">false</SelfContained>
-    <PublishTrimmed Condition="!$(_IsRidSpecific) and '$(MSBuildIsRestoring)' != 'true'">false</PublishTrimmed>
-    <PublishReadyToRun Condition="!$(_IsRidSpecific) and '$(MSBuildIsRestoring)' != 'true'">false</PublishReadyToRun>
-    <PublishSingleFile Condition="!$(_IsRidSpecific) and '$(MSBuildIsRestoring)' != 'true'">false</PublishSingleFile>
-
     <!-- We need to know if the inner builds are _intended_ to be AOT even if we then explicitly disable AOT for the outer builds.
-         Knowing this lets us correctly decide to create the RID-specific inner tools or not when packaging the outer tool. -->
+      Knowing this lets us correctly decide to create the RID-specific inner tools or not when packaging the outer tool. -->
     <_InnerToolsPublishAot>false</_InnerToolsPublishAot>
     <_InnerToolsPublishAot Condition="$(_HasRIDSpecificTools) and '$(PublishAot)' == 'true'">true</_InnerToolsPublishAot>
-    <PublishAot Condition="!$(_IsRidSpecific) and '$(MSBuildIsRestoring)' != 'true'">false</PublishAot>
+
+    <!-- determining if it's safe to change publish-related properties for this evaluation. We can only override default publishing
+         behavior if
+           a) we're not restoring (since these flags contain information that influences the assets Restore acquires), and
+           b) we are actually packing
+         otherwise, we risk altering something that changes downstream behavior for 'normal' publish operations.
+    -->
+    <_IsImplicitRestore>false</_IsImplicitRestore>
+    <_IsImplicitRestore Condition="'$(MSBuildIsRestoring)' == 'true'">true</_IsImplicitRestore>
+    <_IsPacking Condition="'$(_IsPacking)' == ''">false</_IsPacking>
+
+    <!-- Now we can set load-bearing properties for the package, but only if the previously-computed conditions hold.
+         We must set these to different values for the 'outer' agnostic package, as well as any RID-agnostic child packages,
+         so that the Publish of those kinds of packages isn't implicitly coerced to be platform-specific in any way.
+         We _do_ have to set both SelfContained and PublishSelfContained here because the logic that applies PublishSelfContained to
+         SelfContained has already run. -->
+    <PublishSelfContained Condition="!$(_IsRidSpecific) and !$(_IsImplicitRestore) and $(_IsPacking)">false</PublishSelfContained>
+    <SelfContained Condition="!$(_IsRidSpecific) and !$(_IsImplicitRestore) and $(_IsPacking)">false</SelfContained>
+    <PublishTrimmed Condition="!$(_IsRidSpecific) and !$(_IsImplicitRestore) and $(_IsPacking)">false</PublishTrimmed>
+    <PublishReadyToRun Condition="!$(_IsRidSpecific) and !$(_IsImplicitRestore) and $(_IsPacking)">false</PublishReadyToRun>
+    <PublishSingleFile Condition="!$(_IsRidSpecific) and !$(_IsImplicitRestore) and $(_IsPacking)">false</PublishSingleFile>
+    <PublishAot Condition="!$(_IsRidSpecific) and !$(_IsImplicitRestore) and $(_IsPacking)">false</PublishAot>
 
     <!-- Tool implementation files are not included in the primary package when the tool has RID-specific packages.  So only pack the tool implementation
        (and only depend on publish) if there are no RID-specific packages, or if the RuntimeIdentifier is set. -->
@@ -82,11 +92,13 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     <_ToolPackageShouldIncludeImplementation Condition="'$(_ToolPackageShouldIncludeImplementation)' == ''">false</_ToolPackageShouldIncludeImplementation>
 
     <!-- inner builds and non-RID-specific outer builds need publish content-->
-    <_PackToolPublishDependency Condition=" '$(_ToolPackageShouldIncludeImplementation)' != '' and '$(GeneratePackageOnBuild)' != 'true' and $(IsPublishable) == 'true' ">Publish</_PackToolPublishDependency>
+    <_PackToolPublishDependency Condition=" $(_ToolPackageShouldIncludeImplementation) and '$(GeneratePackageOnBuild)' != 'true' and $(IsPublishable) == 'true' ">Publish</_PackToolPublishDependency>
     <!-- BUT builds that GeneratePackageOnBuild can't directly rely on Publish since Publish would trigger Build, causing an infinite loop. -->
     <!-- To get around this, we try a bit of a workaround: since we can't set NoBuild=true and call Publish that way, we instead trigger all of the
          dependencies of the no-build Publish Target, _PublishNoBuildAlternative -->
-    <_PackToolPublishDependency Condition=" '$(_ToolPackageShouldIncludeImplementation)' != '' and '$(GeneratePackageOnBuild)' == 'true' and $(IsPublishable) == 'true' ">$(_PublishNoBuildAlternativeDependsOn)</_PackToolPublishDependency>
+    <_PackToolPublishDependency Condition=" $(_ToolPackageShouldIncludeImplementation) and '$(GeneratePackageOnBuild)' == 'true' and $(IsPublishable) == 'true' ">$(_PublishNoBuildAlternativeDependsOn)</_PackToolPublishDependency>
+    <!-- No implementation required? Then don't call either target. -->
+    <_PackToolPublishDependency Condition="!$(_ToolPackageShouldIncludeImplementation)"></_PackToolPublishDependency>
 
     <!-- GenerateNuspec is called in two places: crossTargeting NuGet targets, and single-targeting NuGet targets.
          Tools need to ensure that

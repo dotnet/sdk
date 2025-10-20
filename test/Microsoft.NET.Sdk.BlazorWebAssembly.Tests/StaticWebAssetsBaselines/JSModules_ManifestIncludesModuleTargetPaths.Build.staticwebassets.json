@@ -10221,10 +10221,6 @@
       ],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -10239,10 +10235,6 @@
         {
           "Name": "Content-Type",
           "Value": "text/javascript"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
         },
         {
           "Name": "ETag",
@@ -10265,6 +10257,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         },
         {
           "Name": "script-type",
@@ -10345,10 +10341,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -10361,6 +10353,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -18231,10 +18227,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -18247,6 +18239,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -18323,10 +18319,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -18339,6 +18331,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -18415,10 +18411,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -18431,6 +18423,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -18507,10 +18503,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -18523,6 +18515,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -18599,10 +18595,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -18615,6 +18607,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -18691,10 +18687,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -18707,6 +18699,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -18783,10 +18779,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -18799,6 +18791,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -18875,10 +18871,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -18891,6 +18883,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -18967,10 +18963,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -18983,6 +18975,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -19059,10 +19055,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -19075,6 +19067,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -19151,10 +19147,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -19167,6 +19159,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -19243,10 +19239,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -19259,6 +19251,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -19335,10 +19331,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -19351,6 +19343,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -19427,10 +19423,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -19443,6 +19435,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -19519,10 +19515,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -19535,6 +19527,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -19611,10 +19607,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -19627,6 +19619,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -19703,10 +19699,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -19719,6 +19711,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -19795,10 +19791,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -19811,6 +19803,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -19887,10 +19883,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -19903,6 +19895,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -19979,10 +19975,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -19995,6 +19987,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -20071,10 +20067,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -20087,6 +20079,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -20163,10 +20159,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -20179,6 +20171,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -20255,10 +20251,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -20271,6 +20263,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -20347,10 +20343,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -20363,6 +20355,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -20439,10 +20435,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -20455,6 +20447,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -20531,10 +20527,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -20547,6 +20539,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -20623,10 +20619,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -20639,6 +20631,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -20715,10 +20711,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -20731,6 +20723,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -20807,10 +20803,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -20823,6 +20815,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -20899,10 +20895,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -20915,6 +20907,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -20991,10 +20987,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -21007,6 +20999,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -21083,10 +21079,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -21099,6 +21091,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -21175,10 +21171,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -21191,6 +21183,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -21267,10 +21263,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -21283,6 +21275,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -21359,10 +21355,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -21375,6 +21367,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -21451,10 +21447,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -21467,6 +21459,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -21543,10 +21539,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -21559,6 +21551,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -21635,10 +21631,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -21651,6 +21643,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -21727,10 +21723,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -21743,6 +21735,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -21819,10 +21815,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -21835,6 +21827,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -21911,10 +21907,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -21927,6 +21919,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -22003,10 +21999,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -22019,6 +22011,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -22095,10 +22091,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -22111,6 +22103,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -22187,10 +22183,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -22203,6 +22195,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -22279,10 +22275,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -22295,6 +22287,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -22371,10 +22367,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -22387,6 +22379,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -22463,10 +22459,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -22479,6 +22471,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -22555,10 +22551,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -22571,6 +22563,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -22647,10 +22643,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -22663,6 +22655,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -22739,10 +22735,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -22755,6 +22747,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -22831,10 +22827,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -22847,6 +22839,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -22923,10 +22919,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -22939,6 +22931,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -23015,10 +23011,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -23031,6 +23023,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -23107,10 +23103,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -23123,6 +23115,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -23199,10 +23195,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -23215,6 +23207,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -23291,10 +23287,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -23307,6 +23299,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -23383,10 +23379,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -23399,6 +23391,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -23475,10 +23471,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -23491,6 +23483,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -23567,10 +23563,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -23583,6 +23575,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -23659,10 +23655,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -23675,6 +23667,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -23751,10 +23747,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -23767,6 +23759,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -23843,10 +23839,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -23859,6 +23851,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -23935,10 +23931,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -23951,6 +23943,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -24027,10 +24023,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -24043,6 +24035,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -24119,10 +24115,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -24135,6 +24127,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -24211,10 +24207,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -24227,6 +24219,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -24303,10 +24299,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -24319,6 +24311,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -24395,10 +24391,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -24411,6 +24403,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -24487,10 +24483,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -24503,6 +24495,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -24579,10 +24575,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -24595,6 +24587,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -24671,10 +24667,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -24687,6 +24679,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -24763,10 +24759,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -24779,6 +24771,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -24855,10 +24851,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -24871,6 +24863,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -24947,10 +24943,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -24963,6 +24955,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -25039,10 +25035,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -25055,6 +25047,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -25131,10 +25127,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -25147,6 +25139,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -25223,10 +25219,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -25239,6 +25231,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -25315,10 +25311,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -25331,6 +25323,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -25407,10 +25403,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -25423,6 +25415,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -25499,10 +25495,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -25515,6 +25507,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -25591,10 +25587,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -25607,6 +25599,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -25683,10 +25679,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -25699,6 +25691,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -25775,10 +25771,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -25791,6 +25783,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -25867,10 +25863,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -25883,6 +25875,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -25959,10 +25955,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -25975,6 +25967,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -26051,10 +26047,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -26067,6 +26059,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -26143,10 +26139,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -26159,6 +26151,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -26235,10 +26231,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -26251,6 +26243,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -26327,10 +26323,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -26343,6 +26335,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -26419,10 +26415,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -26435,6 +26427,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -26511,10 +26507,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -26527,6 +26519,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -26603,10 +26599,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -26619,6 +26611,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -26695,10 +26691,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -26711,6 +26703,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -26787,10 +26783,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -26803,6 +26795,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -26879,10 +26875,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -26895,6 +26887,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -26971,10 +26967,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -26987,6 +26979,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -27063,10 +27059,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -27079,6 +27071,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -27155,10 +27151,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -27171,6 +27163,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -27247,10 +27243,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -27263,6 +27255,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -27339,10 +27335,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -27355,6 +27347,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -27431,10 +27427,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -27447,6 +27439,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -27523,10 +27519,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -27539,6 +27531,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -27615,10 +27611,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -27631,6 +27623,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -27707,10 +27703,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -27723,6 +27715,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -27799,10 +27795,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -27815,6 +27807,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -27891,10 +27887,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -27907,6 +27899,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -27983,10 +27979,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -27999,6 +27991,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -28075,10 +28071,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -28091,6 +28083,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -28167,10 +28163,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -28183,6 +28175,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -28259,10 +28255,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -28275,6 +28267,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -28351,10 +28347,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -28367,6 +28359,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -28443,10 +28439,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -28459,6 +28451,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -28535,10 +28531,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -28551,6 +28543,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -28627,10 +28623,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -28643,6 +28635,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -28719,10 +28715,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -28735,6 +28727,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -28811,10 +28807,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -28827,6 +28819,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -28903,10 +28899,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -28919,6 +28911,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -28995,10 +28991,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -29011,6 +29003,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -29087,10 +29083,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -29103,6 +29095,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -29179,10 +29175,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -29195,6 +29187,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -29271,10 +29267,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -29287,6 +29279,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -29363,10 +29359,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -29379,6 +29371,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -29455,10 +29451,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -29471,6 +29463,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -29547,10 +29543,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -29563,6 +29555,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -29639,10 +29635,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -29655,6 +29647,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -29731,10 +29727,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -29747,6 +29739,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -29823,10 +29819,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -29839,6 +29831,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -29915,10 +29911,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -29931,6 +29923,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -30007,10 +30003,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -30023,6 +30015,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -30099,10 +30095,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -30115,6 +30107,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -30191,10 +30187,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -30207,6 +30199,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -30283,10 +30279,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -30299,6 +30291,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -30375,10 +30371,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -30391,6 +30383,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -30467,10 +30463,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -30483,6 +30475,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -30559,10 +30555,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -30575,6 +30567,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -30651,10 +30647,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -30667,6 +30659,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -30743,10 +30739,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -30759,6 +30751,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -30835,10 +30831,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -30851,6 +30843,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -30927,10 +30923,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -30943,6 +30935,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -31019,10 +31015,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -31035,6 +31027,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -31111,10 +31107,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -31127,6 +31119,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -31203,10 +31199,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -31219,6 +31211,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -31295,10 +31291,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -31311,6 +31303,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -31387,10 +31383,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -31403,6 +31395,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -31479,10 +31475,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -31495,6 +31487,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -31571,10 +31567,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -31587,6 +31579,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -31663,10 +31659,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -31679,6 +31671,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -31755,10 +31751,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -31771,6 +31763,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -31847,10 +31843,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -31863,6 +31855,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -31939,10 +31935,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -31955,6 +31947,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -32031,10 +32027,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -32047,6 +32039,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -32123,10 +32119,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -32139,6 +32131,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -32215,10 +32211,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -32231,6 +32223,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -32307,10 +32303,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -32323,6 +32315,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -32399,10 +32395,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -32415,6 +32407,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -32491,10 +32487,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -32507,6 +32499,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -32583,10 +32579,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -32599,6 +32591,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -32675,10 +32671,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -32691,6 +32683,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -32767,10 +32763,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -32783,6 +32775,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -32859,10 +32855,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -32875,6 +32867,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -32951,10 +32947,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -32967,6 +32959,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -33043,10 +33039,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -33059,6 +33051,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -33135,10 +33131,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -33151,6 +33143,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -33227,10 +33223,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -33243,6 +33235,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -33319,10 +33315,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -33335,6 +33327,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -33411,10 +33407,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -33427,6 +33419,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -33503,10 +33499,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -33519,6 +33511,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -33595,10 +33591,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -33611,6 +33603,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -33687,10 +33683,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -33703,6 +33695,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -33779,10 +33775,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -33795,6 +33787,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -33871,10 +33867,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -33887,6 +33879,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -33963,10 +33959,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -33979,6 +33971,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -34055,10 +34051,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -34071,6 +34063,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -34147,10 +34143,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -34163,6 +34155,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -34239,10 +34235,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -34255,6 +34247,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -34331,10 +34327,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -34347,6 +34339,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -34423,10 +34419,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -34439,6 +34431,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -34515,10 +34511,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -34531,6 +34523,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -34607,10 +34603,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -34623,6 +34615,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -34699,10 +34695,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -34715,6 +34707,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -34791,10 +34787,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -34807,6 +34799,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -34883,10 +34879,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -34899,6 +34891,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -34975,10 +34971,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -34991,6 +34983,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -35067,10 +35063,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -35083,6 +35075,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -35159,10 +35155,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -35175,6 +35167,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -35251,10 +35247,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -35267,6 +35259,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -35343,10 +35339,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -35359,6 +35351,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -35435,10 +35431,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -35451,6 +35443,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -35527,10 +35523,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -35543,6 +35535,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -35619,10 +35615,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -35635,6 +35627,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -35711,10 +35707,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -35727,6 +35719,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -35803,10 +35799,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -35819,6 +35811,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -35895,10 +35891,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -35911,6 +35903,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -35987,10 +35983,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -36003,6 +35995,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -36079,10 +36075,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -36095,6 +36087,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -36171,10 +36167,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -36187,6 +36179,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -36263,10 +36259,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -36279,6 +36271,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -36355,10 +36351,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -36371,6 +36363,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -36447,10 +36443,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -36463,6 +36455,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -36539,10 +36535,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -36579,6 +36571,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -36655,10 +36651,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -36671,6 +36663,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -36747,10 +36743,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -36763,6 +36755,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -36839,10 +36835,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -36855,6 +36847,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -36931,10 +36927,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -36947,6 +36939,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -37023,10 +37019,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -37039,6 +37031,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -37115,10 +37111,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -37131,6 +37123,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -37207,10 +37203,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -37223,6 +37215,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -37299,10 +37295,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -37315,6 +37307,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -37391,10 +37387,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -37407,6 +37399,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -37483,10 +37479,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -37499,6 +37491,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -37575,10 +37571,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -37595,6 +37587,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         },
         {
           "Name": "script-type",
@@ -37675,10 +37671,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -37691,6 +37683,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -37767,10 +37763,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -37783,6 +37775,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -37859,10 +37855,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -37875,6 +37867,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -37951,10 +37947,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -37967,6 +37959,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -38273,10 +38269,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -38293,6 +38285,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         },
         {
           "Name": "script-type",
@@ -38373,10 +38369,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -38389,6 +38381,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -38465,10 +38461,6 @@
           "Value": "__etag__"
         },
         {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
         },
@@ -38481,6 +38473,10 @@
         {
           "Name": "integrity",
           "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
         }
       ]
     },
@@ -38609,10 +38605,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "no-cache"
         },
@@ -38658,10 +38650,6 @@
       "Selectors": [],
       "ResponseHeaders": [
         {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
           "Name": "Cache-Control",
           "Value": "max-age=31536000, immutable"
         },
@@ -38680,6 +38668,10 @@
         {
           "Name": "Last-Modified",
           "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
         }
       ],
       "EndpointProperties": [

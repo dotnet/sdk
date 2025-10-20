@@ -13,7 +13,6 @@
   <UsingTask TaskName="AddMetadataIsPE" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="CalculateTemplateVersions" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="ChangeEntryPointLibraryName" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
-  <UsingTask TaskName="CollatePackageDownloads" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="Crossgen" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="ExtractArchiveToDirectory" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="GenerateDefaultRuntimeFrameworkVersion" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />

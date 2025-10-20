@@ -174,10 +174,7 @@ internal static class WorkloadCommandParser
 
     private class ShowWorkloadsInfoAction : SynchronousCommandLineAction
     {
-        public ShowWorkloadsInfoAction()
-        {
-            Terminating = true;
-        }
+        public override bool Terminating => true;
 
         public override int Invoke(ParseResult parseResult)
         {
@@ -189,10 +186,7 @@ internal static class WorkloadCommandParser
 
     private class ShowWorkloadsVersionOption : SynchronousCommandLineAction
     {
-        public ShowWorkloadsVersionOption()
-        {
-            Terminating = true;
-        }
+        public override bool Terminating => true;
 
         public override int Invoke(ParseResult parseResult)
         {

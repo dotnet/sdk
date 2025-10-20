@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Build.Graph;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -17,20 +18,19 @@ namespace Microsoft.DotNet.Watch
 
             if (context.EnvironmentOptions.SuppressMSBuildIncrementalism)
             {
-                context.Reporter.Verbose("MSBuild incremental optimizations suppressed.");
+                context.Logger.LogDebug("MSBuild incremental optimizations suppressed.");
             }
 
-            var environmentBuilder = EnvironmentVariablesBuilder.FromCurrentEnvironment();
+            var environmentBuilder = new Dictionary<string, string>();
 
             ChangedFile? changedFile = null;
             var buildEvaluator = new BuildEvaluator(context);
-            await using var browserConnector = new BrowserConnector(context);
 
             for (var iteration = 0;;iteration++)
             {
                 if (await buildEvaluator.EvaluateAsync(changedFile, shutdownCancellationToken) is not { } evaluationResult)
                 {
-                    context.Reporter.Error("Failed to find a list of files to watch");
+                    context.Logger.LogError("Failed to find a list of files to watch");
                     return;
                 }
 
@@ -39,12 +39,12 @@ namespace Microsoft.DotNet.Watch
                 if (evaluationResult.ProjectGraph != null)
                 {
                     projectRootNode = evaluationResult.ProjectGraph.GraphRoots.Single();
-                    var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, context.Reporter);
-                    staticFileHandler = new StaticFileHandler(context.Reporter, projectMap, browserConnector);
+                    var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, context.Logger);
+                    staticFileHandler = new StaticFileHandler(context.Logger, projectMap, context.BrowserRefreshServerFactory);
                 }
                 else
                 {
-                    context.Reporter.Verbose("Unable to determine if this project is a webapp.");
+                    context.Logger.LogDebug("Unable to determine if this project is a webapp.");
                     projectRootNode = null;
                     staticFileHandler = null;
                 }
@@ -62,11 +62,21 @@ namespace Microsoft.DotNet.Watch
                     }
                 };
 
-                var browserRefreshServer = (projectRootNode != null)
-                    ? await browserConnector.GetOrCreateBrowserRefreshServerAsync(projectRootNode, processSpec, environmentBuilder, context.RootProjectOptions, new DefaultAppModel(projectRootNode), shutdownCancellationToken)
+                var browserRefreshServer = projectRootNode != null && HotReloadAppModel.InferFromProject(context, projectRootNode) is WebApplicationAppModel webAppModel
+                    ? await context.BrowserRefreshServerFactory.GetOrCreateBrowserRefreshServerAsync(projectRootNode, webAppModel, shutdownCancellationToken)
                     : null;
 
-                environmentBuilder.SetProcessEnvironmentVariables(processSpec);
+                browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder, enableHotReload: false);
+
+                foreach (var (name, value) in environmentBuilder)
+                {
+                    processSpec.EnvironmentVariables.Add(name, value);
+                }
+
+                if (projectRootNode != null)
+                {
+                    context.BrowserLauncher.InstallBrowserLaunchTrigger(processSpec, projectRootNode, context.RootProjectOptions, browserRefreshServer, shutdownCancellationToken);
+                }
 
                 // Reset for next run
                 buildEvaluator.RequiresRevaluation = false;
@@ -78,14 +88,16 @@ namespace Microsoft.DotNet.Watch
 
                 using var currentRunCancellationSource = new CancellationTokenSource();
                 using var combinedCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, currentRunCancellationSource.Token);
-                using var fileSetWatcher = new FileWatcher(context.Reporter, context.EnvironmentOptions);
+                using var fileSetWatcher = new FileWatcher(context.Logger, context.EnvironmentOptions);
 
                 fileSetWatcher.WatchContainingDirectories(evaluationResult.Files.Keys, includeSubdirectories: true);
 
-                var processTask = context.ProcessRunner.RunAsync(processSpec, context.Reporter, launchResult: null, combinedCancellationSource.Token);
+                var processTask = context.ProcessRunner.RunAsync(processSpec, context.Logger, launchResult: null, combinedCancellationSource.Token);
 
                 Task<ChangedFile?> fileSetTask;
                 Task finishedTask;
+
+                context.Logger.Log(MessageDescriptor.WaitingForChanges);
 
                 while (true)
                 {
@@ -123,7 +135,7 @@ namespace Microsoft.DotNet.Watch
                     // Now wait for a file to change before restarting process
                     changedFile = await fileSetWatcher.WaitForFileChangeAsync(
                         evaluationResult.Files,
-                        startedWatching: () => context.Reporter.Report(MessageDescriptor.WaitingForFileChangeBeforeRestarting),
+                        startedWatching: () => context.Logger.Log(MessageDescriptor.WaitingForFileChangeBeforeRestarting),
                         shutdownCancellationToken);
                 }
                 else
@@ -131,7 +143,7 @@ namespace Microsoft.DotNet.Watch
                     Debug.Assert(finishedTask == fileSetTask);
                     changedFile = fileSetTask.Result;
                     Debug.Assert(changedFile != null, "ChangedFile should only be null when cancelled");
-                    context.Reporter.Output($"File changed: {changedFile.Value.Item.FilePath}");
+                    context.Logger.LogInformation("File changed: {Path}", changedFile.Value.Item.FilePath);
                 }
             }
         }

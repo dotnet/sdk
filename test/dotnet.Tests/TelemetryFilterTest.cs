@@ -51,6 +51,20 @@ namespace Microsoft.DotNet.Tests
         }
 
         [Fact]
+        public void TopLevelCommandNameShouldBeSentToTelemetryWithGlobalJsonState()
+        {
+            string globalJsonState = "invalid_data";
+            var parseResult = Parser.Parse(["build"]);
+            TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, new Dictionary<string, double>(), globalJsonState));
+            _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "toplevelparser/command" &&
+                  e.Properties.ContainsKey("verb") &&
+                  e.Properties["verb"] == Sha256Hasher.Hash("BUILD") &&
+                  e.Measurement == null &&
+                  e.Properties.ContainsKey("globalJson") &&
+                  e.Properties["globalJson"] == Sha256Hasher.HashWithNormalizedCasing(globalJsonState));
+        }
+
+        [Fact]
         public void TopLevelCommandNameShouldBeSentToTelemetryWithZeroPerformanceData()
         {
             var parseResult = Parser.Parse(["build"]);

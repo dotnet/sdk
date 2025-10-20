@@ -225,11 +225,6 @@ public class ApplyCompressionNegotiationTest
             },
             new ()
             {
-                Name = "ETag",
-                Value = "W/\u0022original\u0022"
-            },
-            new ()
-            {
                 Name = "Last-Modified",
                 Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
             },
@@ -293,11 +288,6 @@ public class ApplyCompressionNegotiationTest
                 {
                     Name = "ETag",
                     Value = "\u0022compressed-gzip\u0022"
-                },
-                new ()
-                {
-                    Name = "ETag",
-                    Value = "W/\u0022original\u0022"
                 },
                 new ()
                 {
@@ -536,11 +526,6 @@ public class ApplyCompressionNegotiationTest
                 },
                 new ()
                 {
-                    Name = "ETag",
-                    Value = "W/\u0022original\u0022"
-                },
-                new ()
-                {
                     Name = "Last-Modified",
                     Value = now.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)
                 },
@@ -594,11 +579,6 @@ public class ApplyCompressionNegotiationTest
                 {
                     Name = "ETag",
                     Value = "\u0022compressed-gzip\u0022"
-                },
-                new ()
-                {
-                    Name = "ETag",
-                    Value = "W/\u0022original\u0022"
                 },
                 new ()
                 {
@@ -1513,5 +1493,207 @@ public class ApplyCompressionNegotiationTest
             EndpointProperties = properties ?? [],
             Selectors = responseSelector ?? []
         }.ToTaskItem();
+    }
+
+    [Fact]
+    public void AppliesContentNegotiationRules_AttachesWeakETagAsResponseHeader()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var task = new ApplyCompressionNegotiation
+        {
+            BuildEngine = buildEngine.Object,
+            AttachWeakETagToCompressedAssets = "ResponseHeader",
+            CandidateAssets =
+            [
+                CreateCandidate(
+                    Path.Combine("wwwroot", "candidate.js"),
+                    "MyPackage",
+                    "Discovered",
+                    "candidate.js",
+                    "All",
+                    "All",
+                    "original-fingerprint",
+                    "original",
+                    fileLength: 20
+                ),
+                CreateCandidate(
+                    Path.Combine("compressed", "candidate.js.gz"),
+                    "MyPackage",
+                    "Discovered",
+                    "candidate.js",
+                    "All",
+                    "All",
+                    "compressed-fingerprint",
+                    "compressed",
+                    Path.Combine("wwwroot", "candidate.js"),
+                    "Content-Encoding",
+                    "gzip",
+                    9
+                )
+            ],
+            CandidateEndpoints =
+            [
+                CreateCandidateEndpoint(
+                    "candidate.js",
+                    Path.Combine("wwwroot", "candidate.js"),
+                    CreateHeaders("text/javascript", [("Content-Length", "20"), ("ETag", "\"original-etag\"")])),
+
+                CreateCandidateEndpoint(
+                    "candidate.js.gz",
+                    Path.Combine("compressed", "candidate.js.gz"),
+                    CreateHeaders("text/javascript", [("Content-Length", "9"), ("ETag", "\"compressed-etag\"")]))
+            ],
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().Be(true);
+        var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.UpdatedEndpoints);
+
+        // The compressed endpoint for the original route should have the weak ETag from the original
+        var compressedEndpoint = endpoints.FirstOrDefault(e => e.Route == "candidate.js" && e.AssetFile.Contains("candidate.js.gz"));
+        compressedEndpoint.Should().NotBeNull();
+        compressedEndpoint.ResponseHeaders.Should().Contain(h => h.Name == "ETag" && h.Value == "W/\"original-etag\"");
+    }
+
+    [Fact]
+    public void AppliesContentNegotiationRules_AttachesWeakETagAsEndpointProperty()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var task = new ApplyCompressionNegotiation
+        {
+            BuildEngine = buildEngine.Object,
+            AttachWeakETagToCompressedAssets = "EndpointProperty",
+            CandidateAssets =
+            [
+                CreateCandidate(
+                    Path.Combine("wwwroot", "candidate.js"),
+                    "MyPackage",
+                    "Discovered",
+                    "candidate.js",
+                    "All",
+                    "All",
+                    "original-fingerprint",
+                    "original",
+                    fileLength: 20
+                ),
+                CreateCandidate(
+                    Path.Combine("compressed", "candidate.js.gz"),
+                    "MyPackage",
+                    "Discovered",
+                    "candidate.js",
+                    "All",
+                    "All",
+                    "compressed-fingerprint",
+                    "compressed",
+                    Path.Combine("wwwroot", "candidate.js"),
+                    "Content-Encoding",
+                    "gzip",
+                    9
+                )
+            ],
+            CandidateEndpoints =
+            [
+                CreateCandidateEndpoint(
+                    "candidate.js",
+                    Path.Combine("wwwroot", "candidate.js"),
+                    CreateHeaders("text/javascript", [("Content-Length", "20"), ("ETag", "\"original-etag\"")])),
+
+                CreateCandidateEndpoint(
+                    "candidate.js.gz",
+                    Path.Combine("compressed", "candidate.js.gz"),
+                    CreateHeaders("text/javascript", [("Content-Length", "9"), ("ETag", "\"compressed-etag\"")]))
+            ],
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().Be(true);
+        var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.UpdatedEndpoints);
+
+        // The compressed endpoint for the original route should have the original-resource property
+        var compressedEndpoint = endpoints.FirstOrDefault(e => e.Route == "candidate.js" && e.AssetFile.Contains("candidate.js.gz"));
+        compressedEndpoint.Should().NotBeNull();
+        compressedEndpoint.EndpointProperties.Should().Contain(p => p.Name == "original-resource" && p.Value == "\"original-etag\"");
+    }
+
+    [Fact]
+    public void AppliesContentNegotiationRules_DoesNotAttachETagWhenModeIsEmpty()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var task = new ApplyCompressionNegotiation
+        {
+            BuildEngine = buildEngine.Object,
+            AttachWeakETagToCompressedAssets = "", // Empty string should not attach ETag
+            CandidateAssets =
+            [
+                CreateCandidate(
+                    Path.Combine("wwwroot", "candidate.js"),
+                    "MyPackage",
+                    "Discovered",
+                    "candidate.js",
+                    "All",
+                    "All",
+                    "original-fingerprint",
+                    "original",
+                    fileLength: 20
+                ),
+                CreateCandidate(
+                    Path.Combine("compressed", "candidate.js.gz"),
+                    "MyPackage",
+                    "Discovered",
+                    "candidate.js",
+                    "All",
+                    "All",
+                    "compressed-fingerprint",
+                    "compressed",
+                    Path.Combine("wwwroot", "candidate.js"),
+                    "Content-Encoding",
+                    "gzip",
+                    9
+                )
+            ],
+            CandidateEndpoints =
+            [
+                CreateCandidateEndpoint(
+                    "candidate.js",
+                    Path.Combine("wwwroot", "candidate.js"),
+                    CreateHeaders("text/javascript", [("Content-Length", "20"), ("ETag", "\"original-etag\"")])),
+
+                CreateCandidateEndpoint(
+                    "candidate.js.gz",
+                    Path.Combine("compressed", "candidate.js.gz"),
+                    CreateHeaders("text/javascript", [("Content-Length", "9"), ("ETag", "\"compressed-etag\"")]))
+            ],
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().Be(true);
+        var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.UpdatedEndpoints);
+
+        // The compressed endpoint for the original route should not have weak ETag or original-resource property
+        var compressedEndpoint = endpoints.FirstOrDefault(e => e.Route == "candidate.js" && e.AssetFile.Contains("candidate.js.gz"));
+        compressedEndpoint.Should().NotBeNull();
+        compressedEndpoint.ResponseHeaders.Should().NotContain(h => h.Name == "ETag" && h.Value.StartsWith("W/"));
+        compressedEndpoint.EndpointProperties.Should().NotContain(p => p.Name == "original-resource");
     }
 }

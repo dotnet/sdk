@@ -2,28 +2,28 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
 internal static partial class BuildOutput
 {
-    private const string BuildEmoji = "🔨";
     private static readonly Regex s_buildDiagnosticRegex = GetBuildDiagnosticRegex();
 
     [GeneratedRegex(@"[^:]+: (error|warning) [A-Za-z]+[0-9]+: .+")]
     private static partial Regex GetBuildDiagnosticRegex();
 
-    public static void ReportBuildOutput(IReporter reporter, IEnumerable<OutputLine> buildOutput, bool success, string? projectDisplay)
+    public static void ReportBuildOutput(ILogger logger, IEnumerable<OutputLine> buildOutput, bool success, string? projectDisplay)
     {
         if (projectDisplay != null)
         {
             if (success)
             {
-                reporter.Output($"Build succeeded: {projectDisplay}", BuildEmoji);
+                logger.Log(MessageDescriptor.BuildSucceeded, projectDisplay);
             }
             else
             {
-                reporter.Output($"Build failed: {projectDisplay}", BuildEmoji);
+                logger.Log(MessageDescriptor.BuildFailed, projectDisplay);
             }
         }
 
@@ -31,26 +31,26 @@ internal static partial class BuildOutput
         {
             if (isError)
             {
-                reporter.Error(line);
+                logger.LogError(line);
             }
             else if (s_buildDiagnosticRegex.Match(line) is { Success: true } match)
             {
                 if (match.Groups[1].Value == "error")
                 {
-                    reporter.Error(line);
+                    logger.LogError(line);
                 }
                 else
                 {
-                    reporter.Warn(line);
+                    logger.LogWarning(line);
                 }
             }
             else if (success)
             {
-                reporter.Verbose(line, BuildEmoji);
+                logger.LogDebug(line);
             }
             else
             {
-                reporter.Output(line, BuildEmoji);
+                logger.LogInformation(line);
             }
         }
     }

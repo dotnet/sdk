@@ -3,6 +3,7 @@
 
 
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -39,7 +40,7 @@ namespace Microsoft.DotNet.Watch
                 _context.RootProjectOptions.ProjectPath,
                 _context.RootProjectOptions.BuildArguments,
                 _context.ProcessRunner,
-                new BuildReporter(_context.Reporter, _context.Options, _context.EnvironmentOptions));
+                new BuildReporter(_context.BuildLogger, _context.Options, _context.EnvironmentOptions));
 
         public IReadOnlyList<string> GetProcessArguments(int iteration)
         {
@@ -49,11 +50,11 @@ namespace Microsoft.DotNet.Watch
             {
                 if (RequiresRevaluation)
                 {
-                    _context.Reporter.Verbose("Cannot use --no-restore since msbuild project files have changed.");
+                    _context.Logger.LogDebug("Cannot use --no-restore since msbuild project files have changed.");
                 }
                 else
                 {
-                    _context.Reporter.Verbose("Modifying command to use --no-restore");
+                    _context.Logger.LogDebug("Modifying command to use --no-restore");
                     return [_context.RootProjectOptions.Command, "--no-restore", .. _context.RootProjectOptions.CommandArguments];
                 }
             }
@@ -76,7 +77,7 @@ namespace Microsoft.DotNet.Watch
 
             if (RequiresRevaluation)
             {
-                _context.Reporter.Verbose("Evaluating dotnet-watch file set.");
+                _context.Logger.LogDebug("Evaluating dotnet-watch file set.");
 
                 var result = await CreateEvaluationResult(cancellationToken);
                 _msbuildFileTimestamps = GetMSBuildFileTimeStamps(result);
@@ -101,9 +102,9 @@ namespace Microsoft.DotNet.Watch
 
                 await FileWatcher.WaitForFileChangeAsync(
                     _fileSetFactory.RootProjectFile,
-                    _context.Reporter,
+                    _context.Logger,
                     _context.EnvironmentOptions,
-                    startedWatching: () => _context.Reporter.Report(MessageDescriptor.FixBuildError),
+                    startedWatching: () => _context.Logger.Log(MessageDescriptor.FixBuildError),
                     cancellationToken);
             }
         }
@@ -127,7 +128,7 @@ namespace Microsoft.DotNet.Watch
             {
                 if (GetLastWriteTimeUtcSafely(file) != lastWriteTimeUtc)
                 {
-                    _context.Reporter.Verbose($"Re-evaluation needed due to changes in {file}.");
+                    _context.Logger.LogDebug("Re-evaluation needed due to changes in '{Path}'.", file);
 
                     return true;
                 }

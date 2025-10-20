@@ -3,7 +3,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
-    <RootNamespace>Microsoft.DotNet.Watcher.Tools</RootNamespace>
+    <RootNamespace>Microsoft.DotNet.Watch.UnitTests</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\src\Tasks\Microsoft.NET.Build.Tasks.UnitTests\Mocks\MockBuildEngine.cs" Link="TestUtilities\MockBuildEngine.cs" />
@@ -15,7 +15,7 @@
       See TestUtilities/ModuleInitializer.cs.
     -->
     <ProjectReference Include="$(RepoRoot)\src\BuiltInTools\dotnet-watch\dotnet-watch.csproj" ExcludeAssets="Runtime" />
-    <ProjectReference Include="$(RepoRoot)\src\BuiltInTools\DotNetWatchTasks\DotNetWatchTasks.csproj" ExcludeAssets="Runtime" Private="false"/>
+    <ProjectReference Include="$(RepoRoot)\src\BuiltInTools\DotNetWatchTasks\DotNetWatchTasks.csproj" ExcludeAssets="Runtime" Private="false" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.Build.Locator" />

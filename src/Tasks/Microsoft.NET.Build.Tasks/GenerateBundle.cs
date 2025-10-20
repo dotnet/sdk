@@ -1,19 +1,25 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using Microsoft.Build.Framework;
 using Microsoft.NET.HostModel.Bundle;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class GenerateBundle : TaskBase
+    public class GenerateBundle : TaskBase, ICancelableTask
     {
+        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private readonly Random _jitter =
+#if NET
+            Random.Shared;
+#else
+            new Random();
+#endif
+
         [Required]
-        public ITaskItem[] FilesToBundle { get; set; }
+        public ITaskItem[] FilesToBundle { get; set; } = null!;
         [Required]
-        public string AppHostName { get; set; }
+        public string AppHostName { get; set; } = null!;
         [Required]
         public bool IncludeSymbols { get; set; }
         [Required]
@@ -21,11 +27,11 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public bool IncludeAllContent { get; set; }
         [Required]
-        public string TargetFrameworkVersion { get; set; }
+        public string TargetFrameworkVersion { get; set; } = null!;
         [Required]
-        public string RuntimeIdentifier { get; set; }
+        public string RuntimeIdentifier { get; set; } = null!;
         [Required]
-        public string OutputDir { get; set; }
+        public string OutputDir { get; set; } = null!;
         [Required]
         public bool ShowDiagnosticOutput { get; set; }
         [Required]
@@ -33,9 +39,18 @@ namespace Microsoft.NET.Build.Tasks
         public bool EnableMacOsCodeSign { get; set; } = true;
 
         [Output]
-        public ITaskItem[] ExcludedFiles { get; set; }
+        public ITaskItem[] ExcludedFiles { get; set; } = null!;
+
+        public int? RetryCount { get; set; } = 3;
+
+        public void Cancel() => _cancellationTokenSource.Cancel();
 
         protected override void ExecuteCore()
+        {
+            ExecuteWithRetry().GetAwaiter().GetResult();
+        }
+
+        private async Task ExecuteWithRetry()
         {
             OSPlatform targetOS = RuntimeIdentifier.StartsWith("win") ? OSPlatform.Windows :
                                   RuntimeIdentifier.StartsWith("osx") ? OSPlatform.OSX :
@@ -78,7 +93,9 @@ namespace Microsoft.NET.Build.Tasks
                                           bundleRelativePath: item.GetMetadata(MetadataKeys.RelativePath)));
             }
 
-            bundler.GenerateBundle(fileSpec);
+            // GenerateBundle has been throwing IOException intermittently in CI runs when accessing the singlefilehost binary specifically.
+            // We hope that it's a Defender issue and that a quick retry will paper over the intermittent delay.
+            await DoWithRetry(() => bundler.GenerateBundle(fileSpec));
 
             // Certain files are excluded from the bundle, based on BundleOptions.
             // For example:
@@ -86,7 +103,30 @@ namespace Microsoft.NET.Build.Tasks
             //    hostfxr and hostpolicy are excluded until singlefilehost is available.
             // Return the set of excluded files in ExcludedFiles, so that they can be placed in the publish directory.
 
-            ExcludedFiles = FilesToBundle.Zip(fileSpec, (item, spec) => (spec.Excluded) ? item : null).Where(x => x != null).ToArray();
+            ExcludedFiles = FilesToBundle.Zip(fileSpec, (item, spec) => (spec.Excluded) ? item : null).Where(x => x != null).ToArray()!;
+        }
+
+        public async Task DoWithRetry(Action action)
+        {
+            bool triedOnce = false;
+            while (RetryCount > 0 || !triedOnce)
+            {
+                if (_cancellationTokenSource.IsCancellationRequested)
+                {
+                    break;
+                }
+                try
+                {
+                    action();
+                    break;
+                }
+                catch (IOException) when (RetryCount > 0)
+                {
+                    Log.LogMessage(MessageImportance.High, $"Unable to access file during bundling. Retrying {RetryCount} more times...");
+                    RetryCount--;
+                    await Task.Delay(_jitter.Next(10, 50));
+                }
+            }
         }
     }
 }
