@@ -65,6 +65,65 @@ internal static class DnupTestUtilities
     }
 
     /// <summary>
+    /// Runs the dnup executable as a separate process
+    /// </summary>
+    /// <param name="args">Command line arguments for dnup</param>
+    /// <param name="captureOutput">Whether to capture and return the output</param>
+    /// <returns>A tuple with exit code and captured output (if requested)</returns>
+    public static (int exitCode, string output) RunDnupProcess(string[] args, bool captureOutput = false)
+    {
+        string dnupPath = Path.Combine(
+            AppContext.BaseDirectory, // Test assembly directory
+            "..", "..", "..", "..", "..", // Navigate up to artifacts directory
+            "artifacts", "bin", "dnup", "Debug", "net10.0", "dnup.dll");
+        
+        // Ensure path is normalized and exists
+        dnupPath = Path.GetFullPath(dnupPath);
+        if (!File.Exists(dnupPath))
+        {
+            throw new FileNotFoundException($"dnup executable not found at: {dnupPath}");
+        }
+
+        using var process = new Process();
+        process.StartInfo.FileName = "dotnet";
+        process.StartInfo.Arguments = $"\"{dnupPath}\" {string.Join(" ", args.Select(a => $"\"{a}\""))}";
+        process.StartInfo.UseShellExecute = false;
+        process.StartInfo.CreateNoWindow = true;
+        process.StartInfo.RedirectStandardOutput = captureOutput;
+        process.StartInfo.RedirectStandardError = captureOutput;
+
+        StringBuilder outputBuilder = new();
+        if (captureOutput)
+        {
+            process.OutputDataReceived += (sender, e) => 
+            {
+                if (e.Data != null)
+                {
+                    outputBuilder.AppendLine(e.Data);
+                }
+            };
+            process.ErrorDataReceived += (sender, e) => 
+            {
+                if (e.Data != null)
+                {
+                    outputBuilder.AppendLine(e.Data);
+                }
+            };
+        }
+
+        process.Start();
+
+        if (captureOutput)
+        {
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+        }
+
+        process.WaitForExit();
+        return (process.ExitCode, outputBuilder.ToString());
+    }
+
+    /// <summary>
     /// Maps System.Runtime.InteropServices.Architecture to Microsoft.Dotnet.Installation.InstallArchitecture
     /// </summary>
     public static InstallArchitecture MapArchitecture(Architecture architecture) =>

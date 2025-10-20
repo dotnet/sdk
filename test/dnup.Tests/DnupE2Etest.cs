@@ -57,9 +57,9 @@ public class InstallEndToEndTests
 
         Console.WriteLine($"Channel '{channel}' resolved to version: {expectedVersion}");
 
-        // Execute the command with explicit manifest path
+        // Execute the command with explicit manifest path as a separate process
         var args = DnupTestUtilities.BuildArguments(channel, testEnv.InstallPath, testEnv.ManifestPath);
-        int exitCode = Parser.Parse(args).Invoke();
+        (int exitCode, _) = DnupTestUtilities.RunDnupProcess(args);
         exitCode.Should().Be(0);
 
         Directory.Exists(testEnv.InstallPath).Should().BeTrue();
@@ -70,6 +70,7 @@ public class InstallEndToEndTests
         using (var finalizeLock = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
             var manifest = new DnupSharedManifest();
+            var manifest = new DnupSharedManifest(testEnv.ManifestPath);
             installs = manifest.GetInstalledVersions().ToList();
         }
 
@@ -117,9 +118,9 @@ public class ReuseEndToEndTests
         using var testEnv = DnupTestUtilities.CreateTestEnvironment();
         var args = DnupTestUtilities.BuildArguments(channel, testEnv.InstallPath, testEnv.ManifestPath);
 
-        // Execute dnup to install the SDK the first time with explicit manifest path
+        // Execute dnup to install the SDK the first time with explicit manifest path as a separate process
         Console.WriteLine($"First installation of {channel}");
-        int exitCode = Parser.Parse(args).Invoke();
+        (int exitCode, _) = DnupTestUtilities.RunDnupProcess(args);
         exitCode.Should().Be(0);
 
         List<DotnetInstall> firstDnupInstalls = new();
@@ -127,6 +128,7 @@ public class ReuseEndToEndTests
         using (var finalizeLock = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
             var manifest = new DnupSharedManifest();
+            var manifest = new DnupSharedManifest(testEnv.ManifestPath);
             firstDnupInstalls = manifest.GetInstalledVersions().ToList();
         }
 
@@ -136,11 +138,8 @@ public class ReuseEndToEndTests
         using var consoleOutput = new ConsoleOutputCapture();
 
         Console.WriteLine($"Installing .NET SDK {channel} again (should be skipped)");
-        exitCode = Parser.Parse(args).Invoke();
+        (exitCode, string output) = DnupTestUtilities.RunDnupProcess(args, captureOutput: true);
         exitCode.Should().Be(0);
-
-        // Get the captured output
-        string output = consoleOutput.GetOutput();
 
         // Verify the output contains a message indicating the SDK is already installed
         output.Should().Contain("is already installed, skipping installation",
