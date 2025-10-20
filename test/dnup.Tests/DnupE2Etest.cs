@@ -135,8 +135,6 @@ public class ReuseEndToEndTests
         firstDnupInstalls.Where(i => DnupUtilities.PathsEqual(i.InstallRoot.Path, testEnv.InstallPath)).Should().ContainSingle();
 
         // Now install the same SDK again and capture the console output
-        using var consoleOutput = new ConsoleOutputCapture();
-
         Console.WriteLine($"Installing .NET SDK {channel} again (should be skipped)");
         (exitCode, string output) = DnupTestUtilities.RunDnupProcess(args, captureOutput: true);
         exitCode.Should().Be(0);
