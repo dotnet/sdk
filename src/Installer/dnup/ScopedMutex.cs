@@ -13,8 +13,23 @@ public class ScopedMutex : IDisposable
 
     public ScopedMutex(string name)
     {
-        _mutex = new Mutex(false, name);
-        _hasHandle = _mutex.WaitOne(TimeSpan.FromSeconds(10), false);
+        try
+        {
+            // On Linux and Mac, "Global\" prefix doesn't work - strip it if present
+            string mutexName = name;
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT && mutexName.StartsWith("Global\\"))
+            {
+                mutexName = mutexName.Substring(7);
+            }
+
+            _mutex = new Mutex(false, mutexName);
+            _hasHandle = _mutex.WaitOne(TimeSpan.FromSeconds(10), false);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Warning: Could not create or acquire mutex '{name}': {ex.Message}");
+            throw ex;
+        }
     }
 
     public bool HasHandle => _hasHandle;

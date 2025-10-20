@@ -28,7 +28,18 @@ internal class TestEnvironment : IDisposable
         // Store original environment values to restore later
         _originalManifestPath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_MANIFEST_PATH");
         _originalDefaultInstallPath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_INSTALL_PATH");
-        _originalCurrentDirectory = Environment.CurrentDirectory;
+
+        try
+        {
+            _originalCurrentDirectory = Environment.CurrentDirectory;
+        }
+        catch (Exception ex)
+        {
+            // If we can't get the current directory (which can happen in CI),
+            // use the temp directory as a fallback
+            _originalCurrentDirectory = tempRoot;
+            Console.WriteLine($"Warning: Could not get current directory: {ex.Message}. Using temp directory as fallback.");
+        }
 
         // Set test environment variables
         Environment.SetEnvironmentVariable("DOTNET_TESTHOOK_MANIFEST_PATH", manifestPath);
@@ -40,8 +51,16 @@ internal class TestEnvironment : IDisposable
 
     public void Dispose()
     {
-        // Restore original environment
-        Environment.CurrentDirectory = _originalCurrentDirectory;
+        try
+        {
+            // Restore original environment
+            Environment.CurrentDirectory = _originalCurrentDirectory;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Warning: Could not restore current directory: {ex.Message}");
+        }
+
         Environment.SetEnvironmentVariable("DOTNET_TESTHOOK_MANIFEST_PATH", _originalManifestPath);
         Environment.SetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_INSTALL_PATH", _originalDefaultInstallPath);
 
