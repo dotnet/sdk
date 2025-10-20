@@ -25,7 +25,7 @@ public class ScopedMutex : IDisposable
             }
 
             _mutex = new Mutex(false, mutexName);
-            _hasHandle = _mutex.WaitOne(TimeSpan.FromSeconds(120), false);
+            _hasHandle = _mutex.WaitOne(TimeSpan.FromSeconds(300), false);
             if (_hasHandle)
             {
                 _holdCount.Value = _holdCount.Value + 1;
