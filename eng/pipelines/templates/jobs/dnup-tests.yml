@@ -1,12 +1,18 @@
 parameters:
-  pool: ''
+  ### GENERAL ###
+  variables: {}
   dependsOn: ''
-  categoryName: dnupTests
-  variables: []
   oneESCompat:
     templateFolderName: templates
-  ### ARCADE ###
-  preSteps: []
+    publishTaskPrefix: ''
+  container: ''
+  helixTargetContainer: ''
+  categoryName: dnup
+  runTests: true
+  publishRetryConfig: false
+  publishXunitResults: false
+  enableSbom: true
+  timeoutInMinutes: 150
 
 jobs:
 - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
