@@ -195,7 +195,7 @@ public class TestProgressStateTests
         state.ReportFailedTest("failed-test", "run1");
         state.ReportPassingTest("passed-test", "run1");
         state.ReportSkippedTest("skipped-test", "run1");
-        
+
         state.RetriedFailedTests.Should().Be(0);
         state.FailedTests.Should().Be(1);
         state.PassedTests.Should().Be(1);

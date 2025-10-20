@@ -23,7 +23,7 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
-    public class ToolInstallGlobalOrToolPathCommandTests: SdkTest
+    public class ToolInstallGlobalOrToolPathCommandTests : SdkTest
     {
         private readonly PackageId _packageId;
         private readonly IFileSystem _fileSystem;
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private const string ToolCommandName = "SimulatorCommand";
         private readonly string UnlistedPackageId = "elemental.sysinfotool";
 
-        public ToolInstallGlobalOrToolPathCommandTests(ITestOutputHelper log): base(log)
+        public ToolInstallGlobalOrToolPathCommandTests(ITestOutputHelper log) : base(log)
         {
             _packageId = new PackageId(PackageId);
             _reporter = new BufferedReporter();

@@ -3,12 +3,12 @@
 
 #nullable disable
 
+using System.Threading.Tasks;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
-using Microsoft.DotNet.Cli.Commands;
-using System.Threading.Tasks;
+using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 
 namespace Microsoft.DotNet.Cli.Sln.Add.Tests
 {
@@ -841,11 +841,11 @@ Options:
                 .CopyTestAsset("TestAppWithSlnAndDefaultProjectType", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
-            
+
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(solutionDirectory)
                 .Execute(solutionCommand, $"App{solutionExtension}", "add", "Unknown.unknownproj");
-            
+
             cmd.Should().Pass();
             cmd.StdErr.Should().BeEmpty();
         }

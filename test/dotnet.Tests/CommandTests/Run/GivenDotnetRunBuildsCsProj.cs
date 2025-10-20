@@ -1018,13 +1018,13 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             {
                 // After the fix, we should get a clear error message about the file not existing
                 var stderr = result.StdErr;
-                
+
                 // Should provide a clear error message about the project file not existing
-                var hasExpectedErrorMessage = stderr.Contains("does not exist") || 
-                                              stderr.Contains("not found") || 
-                                              stderr.Contains("cannot find") || 
+                var hasExpectedErrorMessage = stderr.Contains("does not exist") ||
+                                              stderr.Contains("not found") ||
+                                              stderr.Contains("cannot find") ||
                                               stderr.Contains("could not find");
-                                              
+
                 hasExpectedErrorMessage.Should().BeTrue($"Expected error message to clearly indicate file doesn't exist, but got: {stderr}");
             }
         }

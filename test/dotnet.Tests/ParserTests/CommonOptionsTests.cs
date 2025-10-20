@@ -32,7 +32,7 @@ public class CommonOptionsTests
         var result = command.Parse(["-e", "A=1", "-e", "a=2"]);
 
         var expected = new Dictionary<string, string>();
-        
+
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             expected.Add("A", "2");

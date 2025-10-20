@@ -5,20 +5,20 @@
 
 using System.CommandLine;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using ManifestReaderTests;
+using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Workload;
+using Microsoft.DotNet.Cli.Commands.Workload.Config;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.Commands.Workload.Update;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
-using Microsoft.NET.Sdk.WorkloadManifestReader;
-using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
-using System.Text.Json;
 using Microsoft.DotNet.Cli.Workload.Search.Tests;
+using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Versioning;
-using Microsoft.DotNet.Cli.Commands.Workload;
-using Microsoft.DotNet.Cli.Commands.Workload.Install;
-using Microsoft.DotNet.Cli.Commands.Workload.Config;
-using Microsoft.DotNet.Cli.Commands.Workload.Update;
-using Microsoft.DotNet.Cli.Commands;
+using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 
 namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 {
