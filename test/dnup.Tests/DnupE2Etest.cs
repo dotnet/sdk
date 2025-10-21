@@ -59,7 +59,7 @@ public class InstallEndToEndTests
 
         // Execute the command with explicit manifest path as a separate process
     var args = DnupTestUtilities.BuildArguments(channel, testEnv.InstallPath, testEnv.ManifestPath);
-    (int exitCode, string output) = DnupTestUtilities.RunDnupProcess(args, captureOutput: true);
+    (int exitCode, string output) = DnupTestUtilities.RunDnupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
     exitCode.Should().Be(0, $"dnup exited with code {exitCode}. Output:\n{output}");
 
         Directory.Exists(testEnv.InstallPath).Should().BeTrue();
@@ -119,7 +119,7 @@ public class ReuseEndToEndTests
 
         // Execute dnup to install the SDK the first time with explicit manifest path as a separate process
         Console.WriteLine($"First installation of {channel}");
-    (int exitCode, string firstInstallOutput) = DnupTestUtilities.RunDnupProcess(args, captureOutput: true);
+    (int exitCode, string firstInstallOutput) = DnupTestUtilities.RunDnupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
     exitCode.Should().Be(0, $"First installation failed with exit code {exitCode}. Output:\n{firstInstallOutput}");
 
         List<DotnetInstall> firstDnupInstalls = new();
@@ -134,7 +134,7 @@ public class ReuseEndToEndTests
 
         // Now install the same SDK again and capture the console output
         Console.WriteLine($"Installing .NET SDK {channel} again (should be skipped)");
-    (exitCode, string output) = DnupTestUtilities.RunDnupProcess(args, captureOutput: true);
+    (exitCode, string output) = DnupTestUtilities.RunDnupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
     exitCode.Should().Be(0, $"Second installation failed with exit code {exitCode}. Output:\n{output}");
 
         // Verify the output contains a message indicating the SDK is already installed
