@@ -3,13 +3,11 @@
 
 using System.CommandLine;
 using System.Net.Http;
-using Microsoft.Deployment.DotNet.Releases;
-using Spectre.Console;
-
-
-using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using System.Runtime.InteropServices;
+using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
+using Spectre.Console;
+using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 

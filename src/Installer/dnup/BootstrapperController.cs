@@ -29,7 +29,7 @@ public class BootstrapperController : IBootstrapperController
         }
 
         string installDir = Path.GetDirectoryName(foundDotnet)!;
-        
+
 
         string? dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
         string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
