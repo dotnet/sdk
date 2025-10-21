@@ -40,7 +40,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj" />
-    <ProjectReference Include="..\..\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" />
   </ItemGroup>
 
   <ItemGroup>

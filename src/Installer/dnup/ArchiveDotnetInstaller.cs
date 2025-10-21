@@ -115,14 +115,14 @@ internal class ArchiveDotnetInstaller : IDotnetInstaller, IDisposable
         {
             // When no-progress is enabled, install without progress display
             Console.WriteLine($"Installing .NET SDK {_resolvedVersion}...");
-
+            
             // Extract archive directly to target directory with special handling for muxer
             var extractResult = ExtractArchiveDirectlyToTarget(_archivePath, _request.InstallRoot.Path!, existingSdkVersions, null);
             if (extractResult != null)
             {
                 throw new InvalidOperationException($"Failed to install SDK: {extractResult}");
             }
-
+            
             Console.WriteLine($"Installation of .NET SDK {_resolvedVersion} complete.");
         }
         else

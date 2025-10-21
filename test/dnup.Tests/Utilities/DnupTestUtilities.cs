@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Dotnet.Installation;
@@ -136,12 +135,6 @@ internal static class DnupTestUtilities
         throw new InvalidOperationException($"Unable to locate repository root from base directory '{AppContext.BaseDirectory}'.");
     }
 
-    public static bool ValidateInstall(DotnetInstall install)
-    {
-        var validator = new ArchiveInstallationValidator();
-        return validator.Validate(install);
-    }
-
     private static string LocateDnupAssembly(string repoRoot)
     {
         string artifactsRoot = Path.Combine(repoRoot, "artifacts", "bin", "dnup");
@@ -154,16 +147,12 @@ internal static class DnupTestUtilities
         string? tfm = testAssemblyDirectory.Name;
         string? configuration = testAssemblyDirectory.Parent?.Name;
 
-        if (!string.IsNullOrEmpty(tfm))
+        if (!string.IsNullOrEmpty(configuration) && !string.IsNullOrEmpty(tfm))
         {
-            IEnumerable<string> configurationCandidates = BuildConfigurationCandidates(configuration);
-            foreach (string candidateConfig in configurationCandidates)
+            string candidate = Path.Combine(artifactsRoot, configuration, tfm, "dnup.dll");
+            if (File.Exists(candidate))
             {
-                string candidate = Path.Combine(artifactsRoot, candidateConfig, tfm, "dnup.dll");
-                if (File.Exists(candidate))
-                {
-                    return candidate;
-                }
+                return candidate;
             }
         }
 
@@ -177,20 +166,6 @@ internal static class DnupTestUtilities
         }
 
         throw new FileNotFoundException($"dnup executable not found under {artifactsRoot}. Ensure the dnup project is built before running tests.");
-    }
-
-    private static IEnumerable<string> BuildConfigurationCandidates(string? configuration)
-    {
-        var candidates = new List<string>();
-        if (!string.IsNullOrEmpty(configuration))
-        {
-            candidates.Add(configuration);
-        }
-
-        candidates.Add("Debug");
-        candidates.Add("Release");
-
-        return candidates.Distinct(StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>
