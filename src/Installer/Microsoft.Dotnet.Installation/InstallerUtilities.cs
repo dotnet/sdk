@@ -3,13 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Microsoft.Dotnet.Installation;
 
 public static class InstallerUtilities
 {
-    static InstallArchitecture GetInstallArchitecture(System.Runtime.InteropServices.Architecture architecture)
+    public static InstallArchitecture GetInstallArchitecture(System.Runtime.InteropServices.Architecture architecture)
     {
         return architecture switch
         {
