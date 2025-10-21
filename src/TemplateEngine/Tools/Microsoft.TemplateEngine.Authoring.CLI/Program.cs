@@ -11,20 +11,12 @@ namespace Microsoft.TemplateEngine.Authoring.CLI
     {
         internal static Task<int> Main(string[] args)
         {
-            CliRootCommand rootCommand = new("dotnet-template-authoring");
+            RootCommand rootCommand = new("dotnet-template-authoring");
             rootCommand.Subcommands.Add(new LocalizeCommand());
             rootCommand.Subcommands.Add(new VerifyCommand());
             rootCommand.Subcommands.Add(new ValidateCommand());
 
-            return GetCommandLineConfiguration(rootCommand).InvokeAsync(args);
-        }
-
-        internal static CliConfiguration GetCommandLineConfiguration(CliCommand command)
-        {
-            return new CliConfiguration(command)
-            {
-                EnablePosixBundling = false
-            };
+            return rootCommand.Parse(args, new() { EnablePosixBundling = false }).InvokeAsync();
         }
     }
 }

@@ -134,7 +134,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 string postActionId = postActionParts.Key;
                 string? description = postActionParts.SingleOrDefault(p => p.NameParts.Skip(1).FirstOrDefault() == "description").LocalizedString;
                 var instructions = LoadManualInstructionModels(postActionParts
-                    .Where(s => s.NameParts.Skip(1).FirstOrDefault().StartsWith("manualInstructions"))
+                    .Where(s => s.NameParts.Skip(1).FirstOrDefault()?.StartsWith("manualInstructions") == true)
                     .Select(s => (s.NameParts.Skip(2), s.LocalizedString)));
 
                 results[postActionId] = new PostActionLocalizationModel()

@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             var foundTemplates = await bootstrapper.GetTemplatesAsync(default);
             Assert.Single(foundTemplates);
 
-            (LogLevel level, string message) = Assert.Single(loggedMessages.Where(m => m.Level == LogLevel.Warning));
+            (LogLevel level, string message) = Assert.Single(loggedMessages, m => m.Level == LogLevel.Warning);
             Assert.Contains("Failed to read or parse localization file", message);
             Assert.Contains("localize/templatestrings.de-DE.json", message);
         }
