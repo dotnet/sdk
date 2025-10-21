@@ -20,6 +20,7 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
     private readonly string? _installPath = result.GetValue(SdkInstallCommandParser.InstallPathOption);
     private readonly bool? _setDefaultInstall = result.GetValue(SdkInstallCommandParser.SetDefaultInstallOption);
     private readonly bool? _updateGlobalJson = result.GetValue(SdkInstallCommandParser.UpdateGlobalJsonOption);
+    private readonly string? _manifestPath = result.GetValue(SdkInstallCommandParser.ManifestPathOption);
     private readonly bool _interactive = result.GetValue(SdkInstallCommandParser.InteractiveOption);
     private readonly bool _noProgress = result.GetValue(SdkInstallCommandParser.NoProgressOption);
 
@@ -178,7 +179,10 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
             new DotnetInstallRoot(resolvedInstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
             new UpdateChannel(resolvedChannel),
             InstallComponent.SDK,
-            new InstallRequestOptions());
+            new InstallRequestOptions
+            {
+                ManifestPath = _manifestPath
+            });
 
         var resolvedVersion = _channelVersionResolver.Resolve(installRequest);
 
@@ -229,7 +233,10 @@ internal class SdkInstallCommand(ParseResult result) : CommandBase(result)
                 new DotnetInstallRoot(resolvedInstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
                 new UpdateChannel(additionalVersion),
                 InstallComponent.SDK,
-                new InstallRequestOptions());
+                new InstallRequestOptions
+                {
+                    ManifestPath = _manifestPath
+                });
 
             // Install the additional version with the same progress settings as the main installation
             DotnetInstall? additionalInstall = InstallerOrchestratorSingleton.Instance.Install(additionalRequest);
