@@ -191,13 +191,13 @@ public class ConcurrentInstallationTests
         var resolver = new ManifestChannelVersionResolver();
         ReleaseVersion? firstResolved = resolver.Resolve(
             new DotnetInstallRequest(
-                new DotnetInstallRoot(testEnv.InstallPath, DnupUtilities.GetDefaultInstallArchitecture()),
+                new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
                 new UpdateChannel(firstChannel),
                 InstallComponent.SDK,
                 new InstallRequestOptions()));
         ReleaseVersion? secondResolved = resolver.Resolve(
             new DotnetInstallRequest(
-                new DotnetInstallRoot(testEnv.InstallPath, DnupUtilities.GetDefaultInstallArchitecture()),
+                new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
                 new UpdateChannel(secondChannel),
                 InstallComponent.SDK,
                 new InstallRequestOptions()));
