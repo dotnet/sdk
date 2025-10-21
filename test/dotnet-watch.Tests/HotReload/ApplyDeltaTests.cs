@@ -755,7 +755,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 App.DotnetWatchArgs.Clear();
             }
 
-            App.Start(testAsset, [], testFlags: TestFlags.ElevateWaitingForChangesMessageSeverity);
+            App.Start(testAsset, []);
 
             await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
 

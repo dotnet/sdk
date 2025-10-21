@@ -3606,6 +3606,37 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
     /// <summary>
     /// See <see cref="CscOnly_AfterMSBuild"/>.
+    /// If hard links are enabled, the <c>bin/app.dll</c> and <c>obj/app.dll</c> files are going to be the same,
+    /// so our "copy obj to bin" logic must account for that.
+    /// </summary>
+    [Fact]
+    public void CscOnly_AfterMSBuild_HardLinks()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+
+        var code = $"""
+            #:property CreateHardLinksForCopyFilesToOutputDirectoryIfPossible=true
+            #:property CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible=true
+            {s_program}
+            """;
+
+        File.WriteAllText(programPath, code);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All);
+
+        code = code.Replace("Hello", "Hi");
+        File.WriteAllText(programPath, code);
+
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "Hi from Program");
+    }
+
+    /// <summary>
+    /// See <see cref="CscOnly_AfterMSBuild"/>.
     /// This optimization currently does not support <c>#:project</c> references and hence is disabled if those are present.
     /// </summary>
     [Fact]
