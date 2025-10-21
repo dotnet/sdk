@@ -27,5 +27,6 @@ public record DotnetInstallRequest(
 
 public record InstallRequestOptions()
 {
-    // Include things such as the custom feed here.
+    // Include options such as the custom feed, manifest path, etc.
+    public string? ManifestPath { get; init; }
 }

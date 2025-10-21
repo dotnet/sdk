@@ -12,10 +12,11 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 internal class DnupSharedManifest : IDnupManifest
 {
-    private static string ManifestPath => GetManifestPath();
+    private string ManifestPath => GetManifestPath();
 
-    public DnupSharedManifest()
+    public DnupSharedManifest(string? manifestPath = null)
     {
+        _customManifestPath = manifestPath;
         EnsureManifestExists();
     }
 
@@ -28,14 +29,24 @@ internal class DnupSharedManifest : IDnupManifest
         }
     }
 
-    private static string GetManifestPath()
+    private string? _customManifestPath;
+
+    private string GetManifestPath()
     {
+        // Use explicitly provided path first (constructor argument)
+        if (!string.IsNullOrEmpty(_customManifestPath))
+        {
+            return _customManifestPath;
+        }
+
+        // Fall back to environment variable override
         var overridePath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_MANIFEST_PATH");
         if (!string.IsNullOrEmpty(overridePath))
         {
             return overridePath;
         }
 
+        // Default location
         return Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             "dnup",
@@ -44,13 +55,13 @@ internal class DnupSharedManifest : IDnupManifest
 
     private void AssertHasFinalizationMutex()
     {
-        var mutex = Mutex.OpenExisting(Constants.MutexNames.ModifyInstallationStates);
-        if (!mutex.WaitOne(0))
+        // Instead of attempting to reacquire the named mutex (which can create race conditions
+        // or accidentally succeed when we *don't* hold it), rely on the thread-local tracking
+        // implemented in ScopedMutex. This ensures we only assert based on a lock we actually obtained.
+        if (!ScopedMutex.CurrentThreadHoldsMutex)
         {
-            throw new InvalidOperationException("The dnup manifest was accessed while not holding the mutex.");
+            throw new InvalidOperationException("The dnup manifest was accessed without holding the installation state mutex.");
         }
-        mutex.ReleaseMutex();
-        mutex.Dispose();
     }
 
     public IEnumerable<DotnetInstall> GetInstalledVersions(IInstallationValidator? validator = null)

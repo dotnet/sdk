@@ -1,17 +1,17 @@
-# Pipeline: https://dev.azure.com/dnceng-public/public/
+# Pipeline: https://dev.azure.com/dnceng-public/public/_build?definitionId=323
 
 trigger: none
 
 pr:
   branches:
     include:
-      - dnup
+    - dnup
   paths:
     include:
-      - src/Installer/dnup/
-      - test/dnup.Tests/
-      - global.json
-      - .vsts-dnup-tests.yml
+    - src/Installer/dnup/
+    - test/dnup.Tests/
+    - global.json
+    - .vsts-dnup-tests.yml
 
 parameters:
 - name: enableArm64Job
@@ -23,12 +23,10 @@ variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
   # Variables used: DncEngPublicBuildPool
 - template: /eng/common/templates/variables/pool-providers.yml
-  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
-  DOTNET_CLI_TELEMETRY_OPTOUT: 1
 
 stages:
 - stage: dnup
-  displayName: 🔎 dnup tests
+  displayName: 🏰 dnup tests
   jobs:
   ############### WINDOWS ###############
   - template: /eng/pipelines/templates/jobs/dnup-tests.yml@self
@@ -37,34 +35,38 @@ stages:
         name: $(DncEngPublicBuildPool)
         demands: ImageOverride -equals windows.vs2022.amd64.open
         os: windows
+        emoji: 🪟
+      helixTargetQueue: windows.amd64.vs2022.pre.open
 
   ############### LINUX ###############
   - template: /eng/pipelines/templates/jobs/dnup-tests.yml@self
     parameters:
-      os: linux
       pool:
         name: $(DncEngPublicBuildPool)
         demands: ImageOverride -equals build.ubuntu.2204.amd64.open
+        os: linux
+        emoji: 🐧
+      helixTargetQueue: ubuntu.2204.amd64.open
 
   ############### MACOS ###############
   - template: /eng/pipelines/templates/jobs/dnup-tests.yml@self
     parameters:
-      os: macOS
       pool:
         name: Azure Pipelines
         vmImage: macOS-latest
+        os: macOS
+        emoji: 🍎
+      helixTargetQueue: osx.15.amd64.open
 
   ### ARM64 ###
-    - ${{ if eq(parameters.enableArm64Job, true) }}:
-    - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
+  - ${{ if eq(parameters.enableArm64Job, true) }}:
+    - template: /eng/pipelines/templates/jobs/dnup-tests.yml@self
       parameters:
         pool:
           name: Azure Pipelines
           vmImage: macOS-latest
           os: macOS
+          emoji: 💪
         helixTargetQueue: osx.13.arm64.open
-        macOSJobParameterSets:
-        - categoryName: TestBuild
-          targetArchitecture: arm64
-          runtimeIdentifier: osx-arm64
+
 
