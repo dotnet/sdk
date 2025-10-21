@@ -7,7 +7,7 @@ stages:
     displayName: Tag & Scan
     pool:
       name: $(DncEngInternalBuildPool)
-      image: 1es-ubuntu-2004
+      image: 1es-ubuntu-2204
       os: linux
 
     steps:
