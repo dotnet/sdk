@@ -62,8 +62,9 @@ public class InstallEndToEndTests
         // Execute the command with explicit manifest path as a separate process
         var args = DnupTestUtilities.BuildArguments(channel, testEnv.InstallPath, testEnv.ManifestPath);
 
-        (int exitCode, string output) = DnupTestUtilities.RunDnupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
-        exitCode.Should().Be(0, $"dnup exited with code {exitCode}. Output:\n{output}");
+        DnupProcessResult result = DnupTestUtilities.RunDnupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        result.ExitCode.Should().Be(0,
+            $"dnup exited with code {result.ExitCode}. Output:\n{DnupTestUtilities.FormatOutputForAssertions(result)}");
 
         Directory.Exists(testEnv.InstallPath).Should().BeTrue();
         Directory.Exists(Path.GetDirectoryName(testEnv.ManifestPath)).Should().BeTrue();
@@ -125,8 +126,9 @@ public class ReuseEndToEndTests
 
         // Execute dnup to install the SDK the first time with explicit manifest path as a separate process
         Console.WriteLine($"First installation of {channel}");
-        (int exitCode, string firstInstallOutput) = DnupTestUtilities.RunDnupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
-        exitCode.Should().Be(0, $"First installation failed with exit code {exitCode}. Output:\n{firstInstallOutput}");
+        DnupProcessResult firstInstall = DnupTestUtilities.RunDnupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        firstInstall.ExitCode.Should().Be(0,
+            $"First installation failed with exit code {firstInstall.ExitCode}. Output:\n{DnupTestUtilities.FormatOutputForAssertions(firstInstall)}");
 
         List<DotnetInstall> firstDnupInstalls = new();
         // Verify the installation was successful
@@ -142,16 +144,18 @@ public class ReuseEndToEndTests
 
         // Now install the same SDK again and capture the console output
         Console.WriteLine($"Installing .NET SDK {channel} again (should be skipped)");
-        (exitCode, string output) = DnupTestUtilities.RunDnupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
-        exitCode.Should().Be(0, $"Second installation failed with exit code {exitCode}. Output:\n{output}");
+        DnupProcessResult secondInstall = DnupTestUtilities.RunDnupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
+        secondInstall.ExitCode.Should().Be(0,
+            $"Second installation failed with exit code {secondInstall.ExitCode}. Output:\n{DnupTestUtilities.FormatOutputForAssertions(secondInstall)}");
 
-        // Verify the output contains a message indicating the SDK is already installed
-        output.Should().Contain("is already installed, skipping installation",
-            "dnup should detect that the SDK is already installed and skip the installation");
+        DnupTestUtilities.AssertOutput(secondInstall, output =>
+        {
+            output.Should().Contain("is already installed, skipping installation",
+                "dnup should detect that the SDK is already installed and skip the installation");
 
-        // The output should not contain download progress
-        output.Should().NotContain("Downloading .NET SDK",
-            "dnup should not attempt to download the SDK again");
+            output.Should().NotContain("Downloading .NET SDK",
+                "dnup should not attempt to download the SDK again");
+        });
 
         List<DotnetInstall> matchingInstalls = new();
         // Verify the installation record in the manifest hasn't changed
@@ -217,12 +221,12 @@ public class ConcurrentInstallationTests
         var installTask1 = Task.Run(() => DnupTestUtilities.RunDnupProcess(args1, captureOutput: true, workingDirectory: testEnv.TempRoot));
         var installTask2 = Task.Run(() => DnupTestUtilities.RunDnupProcess(args2, captureOutput: true, workingDirectory: testEnv.TempRoot));
 
-        var results = await Task.WhenAll(installTask1, installTask2);
+        DnupProcessResult[] results = await Task.WhenAll(installTask1, installTask2);
 
-        results[0].exitCode.Should().Be(0,
-            $"First concurrent install failed with exit code {results[0].exitCode}. Output:\n{results[0].output}");
-        results[1].exitCode.Should().Be(0,
-            $"Second concurrent install failed with exit code {results[1].exitCode}. Output:\n{results[1].output}");
+        results[0].ExitCode.Should().Be(0,
+            $"First concurrent install failed with exit code {results[0].ExitCode}. Output:\n{DnupTestUtilities.FormatOutputForAssertions(results[0])}");
+        results[1].ExitCode.Should().Be(0,
+            $"Second concurrent install failed with exit code {results[1].ExitCode}. Output:\n{DnupTestUtilities.FormatOutputForAssertions(results[1])}");
 
         using (var finalizeLock = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {

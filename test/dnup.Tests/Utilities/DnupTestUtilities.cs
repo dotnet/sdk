@@ -50,8 +50,10 @@ internal static class DnupTestUtilities
 
         args.Add("--install-path");
         args.Add(installPath);
-        args.Add("--interactive");
-        args.Add("false");
+#if !DEBUG
+            args.Add("--interactive");
+            args.Add("false");
+#endif
 
         // Add manifest path option if specified for test isolation
         if (!string.IsNullOrEmpty(manifestPath))
@@ -70,12 +72,12 @@ internal static class DnupTestUtilities
     }
 
     /// <summary>
-    /// Runs the dnup executable as a separate process
+    /// Runs the dnup executable as a separate process.
     /// </summary>
-    /// <param name="args">Command line arguments for dnup</param>
-    /// <param name="captureOutput">Whether to capture and return the output</param>
-    /// <returns>A tuple with exit code and captured output (if requested)</returns>
-    public static (int exitCode, string output) RunDnupProcess(string[] args, bool captureOutput = false, string? workingDirectory = null)
+    /// <param name="args">Command line arguments for dnup.</param>
+    /// <param name="captureOutput">Whether to capture and return the output.</param>
+    /// <returns>Process result including exit code and output (if captured).</returns>
+    public static DnupProcessResult RunDnupProcess(string[] args, bool captureOutput = false, string? workingDirectory = null)
     {
         // In DEBUG builds, automatically add --debug flag for easier debugging
 #if DEBUG
@@ -92,23 +94,29 @@ internal static class DnupTestUtilities
         string repoDotnet = Path.Combine(repoRoot, ".dotnet", DnupUtilities.GetDotnetExeName());
         process.StartInfo.FileName = File.Exists(repoDotnet) ? repoDotnet : DnupUtilities.GetDotnetExeName();
         process.StartInfo.Arguments = $"\"{dnupPath}\" {string.Join(" ", args.Select(a => $"\"{a}\""))}";
-        process.StartInfo.UseShellExecute = false;
-        process.StartInfo.CreateNoWindow = !args.Contains("--debug");
-        process.StartInfo.RedirectStandardOutput = captureOutput;
-        process.StartInfo.RedirectStandardError = captureOutput;
+
+        bool isDebugMode = args.Any(a => string.Equals(a, "--debug", StringComparison.OrdinalIgnoreCase));
+        bool useShellExecute = isDebugMode && OperatingSystem.IsWindows();
+
+        process.StartInfo.UseShellExecute = useShellExecute;
+        process.StartInfo.CreateNoWindow = !useShellExecute;
         process.StartInfo.WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory;
 
+        bool shouldCaptureOutput = captureOutput && !useShellExecute;
+
         StringBuilder outputBuilder = new();
-        if (captureOutput)
+        if (shouldCaptureOutput)
         {
-            process.OutputDataReceived += (sender, e) =>
+            process.StartInfo.RedirectStandardOutput = shouldCaptureOutput;
+            process.StartInfo.RedirectStandardError = shouldCaptureOutput;
+            process.OutputDataReceived += (_, e) =>
             {
                 if (e.Data != null)
                 {
                     outputBuilder.AppendLine(e.Data);
                 }
             };
-            process.ErrorDataReceived += (sender, e) =>
+            process.ErrorDataReceived += (_, e) =>
             {
                 if (e.Data != null)
                 {
@@ -119,38 +127,46 @@ internal static class DnupTestUtilities
 
         process.Start();
 
-        if (captureOutput)
+        if (shouldCaptureOutput)
         {
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
         }
 
+        if (isDebugMode)
+        {
+            Console.WriteLine($"Started dnup process with PID: {process.Id}");
+            Console.WriteLine(useShellExecute
+                ? "Interactive console window launched for debugger attachment."
+                : "Process is sharing the current console for debugger attachment.");
+            Console.WriteLine("To attach debugger: Debug -> Attach to Process -> Select the dotnet.exe process");
+        }
+
         process.WaitForExit();
-        return (process.ExitCode, outputBuilder.ToString());
+
+        string output = shouldCaptureOutput ? outputBuilder.ToString() : string.Empty;
+        return new DnupProcessResult(process.ExitCode, output, shouldCaptureOutput);
     }
 
     /// <summary>
-    /// Runs dnup process with debugging support - waits for debugger attachment
-    /// Note: This only works in DEBUG builds of dnup
+    /// Executes output assertions only when dnup output was captured.
     /// </summary>
-    /// <param name="args">Command line arguments for dnup</param>
-    /// <param name="captureOutput">Whether to capture and return the output</param>
-    /// <param name="workingDirectory">Working directory for the process</param>
-    /// <returns>A tuple with exit code and captured output (if requested)</returns>
-    public static (int exitCode, string output) RunDnupProcessWithDebugger(string[] args, bool captureOutput = false, string? workingDirectory = null)
+    public static void AssertOutput(DnupProcessResult result, Action<string> assertion)
     {
-        // Add --debug flag to enable debugger waiting (only works in DEBUG builds)
-        var debugArgs = new[] { "--debug" }.Concat(args).ToArray();
+        if (!result.OutputCaptured)
+        {
+            Console.WriteLine("Skipping output assertions because dnup output was not captured (debug mode with ShellExecute).");
+            return;
+        }
 
-        Console.WriteLine("Starting dnup process in debug mode...");
-        Console.WriteLine("Note: --debug flag only works in DEBUG builds of dnup");
-        Console.WriteLine("To attach debugger:");
-        Console.WriteLine("1. In Visual Studio: Debug -> Attach to Process");
-        Console.WriteLine("2. Find the dotnet.exe process running dnup");
-        Console.WriteLine("3. Attach to it, then press Enter in the console");
-
-        return RunDnupProcess(debugArgs, captureOutput, workingDirectory);
+        assertion(result.Output);
     }
+
+    /// <summary>
+    /// Formats dnup output for inclusion in assertion messages.
+    /// </summary>
+    public static string FormatOutputForAssertions(DnupProcessResult result) =>
+        result.OutputCaptured ? result.Output : "[dnup output not captured; run without --debug to capture output]";
 
     private static string GetRepositoryRoot()
     {
@@ -230,4 +246,20 @@ internal static class DnupTestUtilities
     /// </summary>
     public static InstallArchitecture MapArchitecture(Architecture architecture) =>
         InstallerUtilities.GetInstallArchitecture(architecture);
+}
+
+internal readonly record struct DnupProcessResult(int ExitCode, string Output, bool OutputCaptured)
+{
+    public void Deconstruct(out int exitCode, out string output)
+    {
+        exitCode = ExitCode;
+        output = Output;
+    }
+
+    public void Deconstruct(out int exitCode, out string output, out bool outputCaptured)
+    {
+        exitCode = ExitCode;
+        output = Output;
+        outputCaptured = OutputCaptured;
+    }
 }
