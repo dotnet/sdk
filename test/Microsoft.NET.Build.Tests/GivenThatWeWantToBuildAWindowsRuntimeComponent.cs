@@ -197,7 +197,7 @@ class Program
                 .HaveStdOut("(0, 0)");
         }
 
-        [FullMSBuildOnlyFact]
+        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/51361")]
         public void WinMDInteropProjectCanBeReferenced()
         {
 
