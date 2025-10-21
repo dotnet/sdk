@@ -76,26 +76,17 @@ internal static class DnupTestUtilities
     public static (int exitCode, string output) RunDnupProcess(string[] args, bool captureOutput = false, string? workingDirectory = null)
     {
         string repoRoot = GetRepositoryRoot();
-        string dnupPath = Path.Combine(
-            repoRoot,
-            "artifacts", "bin", "dnup", "Debug", "net10.0", "dnup.dll");
+        string dnupPath = LocateDnupAssembly(repoRoot);
 
-        // Ensure path is normalized and exists
-        dnupPath = Path.GetFullPath(dnupPath);
-        if (!File.Exists(dnupPath))
-        {
-            throw new FileNotFoundException($"dnup executable not found at: {dnupPath}");
-        }
-
-    using var process = new Process();
-    string repoDotnet = Path.Combine(repoRoot, ".dotnet", DnupUtilities.GetDotnetExeName());
-    process.StartInfo.FileName = File.Exists(repoDotnet) ? repoDotnet : DnupUtilities.GetDotnetExeName();
+        using var process = new Process();
+        string repoDotnet = Path.Combine(repoRoot, ".dotnet", DnupUtilities.GetDotnetExeName());
+        process.StartInfo.FileName = File.Exists(repoDotnet) ? repoDotnet : DnupUtilities.GetDotnetExeName();
         process.StartInfo.Arguments = $"\"{dnupPath}\" {string.Join(" ", args.Select(a => $"\"{a}\""))}";
         process.StartInfo.UseShellExecute = false;
         process.StartInfo.CreateNoWindow = true;
         process.StartInfo.RedirectStandardOutput = captureOutput;
         process.StartInfo.RedirectStandardError = captureOutput;
-    process.StartInfo.WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory;
+        process.StartInfo.WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory;
 
         StringBuilder outputBuilder = new();
         if (captureOutput)
@@ -142,6 +133,39 @@ internal static class DnupTestUtilities
         }
 
         throw new InvalidOperationException($"Unable to locate repository root from base directory '{AppContext.BaseDirectory}'.");
+    }
+
+    private static string LocateDnupAssembly(string repoRoot)
+    {
+        string artifactsRoot = Path.Combine(repoRoot, "artifacts", "bin", "dnup");
+        if (!Directory.Exists(artifactsRoot))
+        {
+            throw new FileNotFoundException($"dnup build output not found. Expected directory: {artifactsRoot}");
+        }
+
+        var testAssemblyDirectory = new DirectoryInfo(AppContext.BaseDirectory);
+        string? tfm = testAssemblyDirectory.Name;
+        string? configuration = testAssemblyDirectory.Parent?.Name;
+
+        if (!string.IsNullOrEmpty(configuration) && !string.IsNullOrEmpty(tfm))
+        {
+            string candidate = Path.Combine(artifactsRoot, configuration, tfm, "dnup.dll");
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+        }
+
+        string? fallback = Directory.EnumerateFiles(artifactsRoot, "dnup.dll", SearchOption.AllDirectories)
+            .OrderByDescending(File.GetLastWriteTimeUtc)
+            .FirstOrDefault();
+
+        if (fallback != null)
+        {
+            return fallback;
+        }
+
+        throw new FileNotFoundException($"dnup executable not found under {artifactsRoot}. Ensure the dnup project is built before running tests.");
     }
 
     /// <summary>
