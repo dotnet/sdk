@@ -33,7 +33,7 @@ internal class BooleanEnvironmentRule : EnvironmentDetectionRule
 
     public override bool IsMatch()
     {
-        return _variables.Any(variable => 
+        return _variables.Any(variable =>
             bool.TryParse(Environment.GetEnvironmentVariable(variable), out bool value) && value);
     }
 }
@@ -96,8 +96,8 @@ internal class EnvironmentDetectionRuleWithResult<T> where T : class
     /// <returns>The result value if the rule matches; otherwise, null.</returns>
     public T? GetResult()
     {
-        return _variables.Any(variable => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable(variable))) 
-            ? _result 
+        return _variables.Any(variable => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable(variable)))
+            ? _result
             : null;
     }
 }
