@@ -73,7 +73,7 @@ internal static class DnupTestUtilities
     /// <param name="args">Command line arguments for dnup</param>
     /// <param name="captureOutput">Whether to capture and return the output</param>
     /// <returns>A tuple with exit code and captured output (if requested)</returns>
-    public static (int exitCode, string output) RunDnupProcess(string[] args, bool captureOutput = false)
+    public static (int exitCode, string output) RunDnupProcess(string[] args, bool captureOutput = false, string? workingDirectory = null)
     {
         string repoRoot = GetRepositoryRoot();
         string dnupPath = Path.Combine(
@@ -95,6 +95,7 @@ internal static class DnupTestUtilities
         process.StartInfo.CreateNoWindow = true;
         process.StartInfo.RedirectStandardOutput = captureOutput;
         process.StartInfo.RedirectStandardError = captureOutput;
+    process.StartInfo.WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory;
 
         StringBuilder outputBuilder = new();
         if (captureOutput)
