@@ -93,7 +93,7 @@ internal static class DnupTestUtilities
         process.StartInfo.FileName = File.Exists(repoDotnet) ? repoDotnet : DnupUtilities.GetDotnetExeName();
         process.StartInfo.Arguments = $"\"{dnupPath}\" {string.Join(" ", args.Select(a => $"\"{a}\""))}";
         process.StartInfo.UseShellExecute = false;
-        process.StartInfo.CreateNoWindow = true;
+        process.StartInfo.CreateNoWindow = !args.Contains("--debug");
         process.StartInfo.RedirectStandardOutput = captureOutput;
         process.StartInfo.RedirectStandardError = captureOutput;
         process.StartInfo.WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory;
