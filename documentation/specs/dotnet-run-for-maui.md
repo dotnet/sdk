@@ -48,10 +48,10 @@ to make extensible for .NET MAUI (and future) scenarios.
   * Once a `$(TargetFramework)` is selected, either from previous
     steps or `-f`...
 
-    * If a `ComputeAvailableDevices` target is available, provided by
+    * If a `ComputeAvailableDevices` MSBuild target is available, provided by
       the iOS or Android workload, etc. ...
 
-    * Call the target, which returns a list of `@(Devices)` items...
+    * Call the MSBuild target, which returns a list of `@(Devices)` items...
 
 ```xml
 <ItemGroup>
@@ -88,7 +88,7 @@ devices`, or `xcrun devicectl list devices`._
   * If a `DeployToDevice` MSBuild target is available, provided by the
     iOS or Android workload, etc.
 
-  * Call the target, passing in the identifier for the selected
+  * Call the MSBuild target, passing in the identifier for the selected
     `-p:Device` global MSBuild property.
 
   * This step needs to run, even with `--no-build`, as you may have
@@ -131,7 +131,7 @@ Android, iOS, etc. will prompt for device selection.
 
 A new `--device` switch will:
 
-* bypass the target-selection portion of the `run` workflow described above
+* bypass the device-selection portion of the `run` workflow described above
 
 * Pass in the `-p:Device` global MSBuild property to all build,
   deploy, `ComputeRunArguments`, or run steps.
