@@ -5,6 +5,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsAotCompatible>true</IsAotCompatible>
+
+    <!-- Strong naming not needed on .NET Core -->
+    <NoWarn>$(NoWarn);CS8002</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,5 +15,5 @@
     <!-- TODO: Create logging / progress abstraction and remove this dipendency from the library -->
     <PackageReference Include="Spectre.Console" />
   </ItemGroup>
-  
+
 </Project>
