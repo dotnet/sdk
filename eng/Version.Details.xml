@@ -56,15 +56,15 @@
       <Sha>9e37ff5ebf5f464d80bdae6ad9d24e7a01ee11f8</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Build" Version="17.8.43">
-      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/DotNet-msbuild-Trusted</Uri>
       <Sha>f0cbb13971c30ad15a3f252a8d0171898a01ec11</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.8.43-servicing-25517-04">
-      <Uri>https://github.com/dotnet/msbuild</Uri>
+    <Dependency Name="Microsoft.Build.Localization" Version="17.8.43-servicing-25466-03">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/DotNet-msbuild-Trusted</Uri>
       <Sha>f0cbb13971c30ad15a3f252a8d0171898a01ec11</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.8.43-servicing-25517-04">
-      <Uri>https://github.com/dotnet/msbuild</Uri>
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.8.43-servicing-25466-03">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/DotNet-msbuild-Trusted</Uri>
       <Sha>f0cbb13971c30ad15a3f252a8d0171898a01ec11</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
