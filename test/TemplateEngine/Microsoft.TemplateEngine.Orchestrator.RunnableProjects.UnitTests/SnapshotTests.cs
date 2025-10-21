@@ -273,6 +273,35 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             VerificationEngine engine = new VerificationEngine(_log);
             return engine.Execute(options);
         }
+
+        [Fact]
+        public Task TestSelectionForMultiChoicesWhenThereAreMultiplePartialMatchesAndOnePreciseMatch()
+        {
+            string templateLocation = GetTestTemplateLocation("TemplateWithMultipleChoicesAndPartialMatches");
+            var templateParams = new Dictionary<string, string?>()
+            {
+                // There are multiple choices for the parameter that overlap: "aab", "aac", "aa".
+                // We want to ensure that "aa" can be selected, because it is a precise match,
+                // even if there are more than one choices that start with "aa", and even if "aa",
+                // is not listed first in the list of choices.
+                { "tests", "aa" }
+            };
+            string workingDir = TestUtils.CreateTemporaryFolder();
+
+            TemplateVerifierOptions options =
+                new TemplateVerifierOptions(templateName: "TestAssets.TemplateWithMultipleChoicesAndPartialMatches")
+                {
+                    TemplatePath = templateLocation,
+                    OutputDirectory = workingDir,
+                    DoNotAppendTemplateArgsToScenarioName = true,
+                    DoNotPrependTemplateNameToScenarioName = true,
+                    SnapshotsDirectory = "Approvals"
+                }
+                .WithInstantiationThroughTemplateCreatorApi(templateParams);
+
+            VerificationEngine engine = new VerificationEngine(_log);
+            return engine.Execute(options);
+        }
     }
 }
 
