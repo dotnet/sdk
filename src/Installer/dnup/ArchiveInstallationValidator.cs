@@ -142,12 +142,4 @@ internal class ArchiveInstallationValidator : IInstallationValidator
             .OrderByDescending(File.GetLastWriteTimeUtc)
             .FirstOrDefault();
     }
-
-    private static void TraceValidation(string message)
-    {
-        if (string.Equals(Environment.GetEnvironmentVariable("DNUP_VALIDATOR_TRACE"), "1", StringComparison.Ordinal))
-        {
-            Console.WriteLine($"[ArchiveInstallationValidator] {message}");
-        }
-    }
 }
