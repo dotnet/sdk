@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
 
@@ -45,9 +44,9 @@ namespace Microsoft.TemplateEngine.Core
 
         public IToken ToToken(Encoding encoding)
         {
-            byte[] pre = string.IsNullOrEmpty(After) ? Array.Empty<byte>() : encoding.GetBytes(After);
-            byte[] post = string.IsNullOrEmpty(Before) ? Array.Empty<byte>() : encoding.GetBytes(Before);
-            byte[] core = string.IsNullOrEmpty(Value) ? Array.Empty<byte>() : encoding.GetBytes(Value);
+            byte[] pre = string.IsNullOrEmpty(After) ? [] : encoding.GetBytes(After);
+            byte[] post = string.IsNullOrEmpty(Before) ? [] : encoding.GetBytes(Before);
+            byte[] core = string.IsNullOrEmpty(Value) ? [] : encoding.GetBytes(Value);
 
             byte[] buffer = new byte[pre.Length + core.Length + post.Length];
 

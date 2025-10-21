@@ -10,7 +10,6 @@ using Xunit.Abstractions;
 
 namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
 {
-    [UsesVerify]
     public class VerifyCommandTests : TestBase
     {
         private readonly ITestOutputHelper _log;
@@ -132,7 +131,6 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             string templateOutputDir = templateShortName;
 
             //get the template location
-            string executingAssemblyPath = GetType().Assembly.Location;
             string templateLocation = Path.Combine(TestTemplatesLocation, "TestTemplate");
 
             var cmd = new BasicCommand(

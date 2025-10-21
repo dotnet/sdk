@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         [InlineData(",", false)]
         [InlineData("", false)]
         [InlineData(null, false)]
-        public void TestJoinConstantAndReferenceSymbolConfig(string separator, bool removeEmptyValues)
+        public void TestJoinConstantAndReferenceSymbolConfig(string? separator, bool removeEmptyValues)
         {
             string variableName = "joinedParameter";
             string referenceSymbolName = "referenceSymbol";

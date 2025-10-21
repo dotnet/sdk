@@ -60,11 +60,11 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
             bool isHidden = false)
         {
             SymbolInfo = symbolInfo;
-            UsageExamples = usageExamples?.ToArray() ?? Array.Empty<string>();
+            UsageExamples = usageExamples?.ToArray() ?? [];
             IsHidden = isHidden;
         }
 
-        public IReadOnlyList<string> UsageExamples { get; } = Array.Empty<string>();
+        public IReadOnlyList<string> UsageExamples { get; } = [];
 
         public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> SymbolInfo { get; }
 

@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
     internal class ParameterSymbolJsonConverter : JsonConverter<ParameterSymbol>
     {
         //falls back to default de-serializer if not implemented
-        public override ParameterSymbol? ReadJson(JsonReader reader, Type objectType, ParameterSymbol? existingValue, bool hasExistingValue, JsonSerializer serializer) => throw new NotImplementedException();
+        public override ParameterSymbol ReadJson(JsonReader reader, Type objectType, ParameterSymbol? existingValue, bool hasExistingValue, JsonSerializer serializer) => throw new NotImplementedException();
 
         public override void WriteJson(JsonWriter writer, ParameterSymbol? value, JsonSerializer serializer)
         {

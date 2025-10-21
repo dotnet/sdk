@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using Microsoft.TemplateEngine.Core.Util;
 using Xunit;
 
@@ -48,30 +46,6 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             for (int i = requestedCount; i < 2 * 1024 * 1024; i++)
             {
                 Assert.Equal(0, read[i]);
-            }
-        }
-
-        private class ChunkMemoryStream : MemoryStream
-        {
-            private readonly int _chunkSize;
-
-            internal ChunkMemoryStream(int chunkSize) : base()
-            {
-                _chunkSize = chunkSize;
-            }
-
-            internal ChunkMemoryStream(byte[] buffer, int chunkSize) : base(buffer)
-            {
-                _chunkSize = chunkSize;
-            }
-
-            public override int Read(byte[] buffer, int offset, int count)
-            {
-                if (count > _chunkSize)
-                {
-                    count = _chunkSize;
-                }
-                return base.Read(buffer, offset, count);
             }
         }
     }

@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
@@ -27,7 +26,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             string originalValue = @"lead stuff
 //#if (true)
     true stuff
-//#else 
+//#else
     false stuff
 //#endif
 Entering Conditional processing = off
@@ -36,7 +35,7 @@ Entering Conditional processing = off
 //#if (true)
     in-conditional true (IF) stuff
 //#else
-    in-conditional ELSE stuff               
+    in-conditional ELSE stuff
 //#endif
 ...about to exit
 //+:cnd
@@ -56,7 +55,7 @@ Entering Conditional processing = off
 //#if (true)
     in-conditional true (IF) stuff
 //#else
-    in-conditional ELSE stuff               
+    in-conditional ELSE stuff
 //#endif
 ...about to exit
 //+:cnd
@@ -85,7 +84,7 @@ Final stuff";
             string originalValue = @"lead stuff
 //#if (true)
     true stuff
-//#else 
+//#else
     false stuff
 //#endif
 Entering Conditional processing = off
@@ -94,7 +93,7 @@ Entering Conditional processing = off
 //#if (true)
     in-conditional true (IF) stuff
 //#else
-    in-conditional ELSE stuff               
+    in-conditional ELSE stuff
 //#endif
 ...about to exit
 //+:cnd:noEmit
@@ -113,7 +112,7 @@ Entering Conditional processing = off
 //#if (true)
     in-conditional true (IF) stuff
 //#else
-    in-conditional ELSE stuff               
+    in-conditional ELSE stuff
 //#endif
 ...about to exit
 After Conditional processing = off
@@ -171,12 +170,10 @@ End";
         {
             string originalValue = @"//-:cnd:noEmit
 #if DEBUG
-using System;
 #endif
 //+:cnd:noEmit";
 
             string expectedValue = @"#if DEBUG
-using System;
 #endif
 ";
 

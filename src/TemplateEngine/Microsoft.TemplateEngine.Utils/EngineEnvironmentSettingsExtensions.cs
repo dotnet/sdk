@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Utils
     public static class EngineEnvironmentSettingsExtensions
     {
         /// <summary>
-        /// Tries to mount a <see cref="IMountPoint"/> from specified <see cref="System.Uri"/>.
+        /// Tries to mount a <see cref="IMountPoint"/> from specified <see cref="Uri"/>.
         /// Using all <see cref="IMountPointFactory"/> in <see cref="IEngineEnvironmentSettings.Components"/>.
         /// </summary>
         /// <param name="engineEnvironment"></param>

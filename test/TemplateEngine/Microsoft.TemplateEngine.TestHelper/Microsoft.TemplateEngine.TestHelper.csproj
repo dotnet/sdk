@@ -1,10 +1,10 @@
-<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Don't set IsTestUtilityProject=true because this project is referenced by tools and would otherwise be filtered out. -->
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">$(NETFullTargetFramework);$(NETCoreTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(NetCurrent);$(NetFrameworkCurrent)</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
-    <IsTestProject>false</IsTestProject>
     <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
@@ -17,10 +17,11 @@
 
   <ItemGroup>
     <PackageReference Include="NuGet.Protocol" />
-    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.extensibility.execution" />
     <PackageReference Include="xunit.abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="FluentAssertions" />
   </ItemGroup>
+
 </Project>

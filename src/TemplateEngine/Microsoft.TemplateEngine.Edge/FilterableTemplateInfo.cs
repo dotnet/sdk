@@ -3,8 +3,6 @@
 
 #nullable disable
 
-using System;
-using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.Parameters;
@@ -76,9 +74,9 @@ namespace Microsoft.TemplateEngine.Edge
 
         public IReadOnlyDictionary<string, string> TagsCollection { get; private set; }
 
-        IReadOnlyList<Guid> ITemplateMetadata.PostActions => _source?.PostActions ?? Array.Empty<Guid>();
+        IReadOnlyList<Guid> ITemplateMetadata.PostActions => _source?.PostActions ?? [];
 
-        IReadOnlyList<TemplateConstraintInfo> ITemplateMetadata.Constraints => _source?.Constraints ?? Array.Empty<TemplateConstraintInfo>();
+        IReadOnlyList<TemplateConstraintInfo> ITemplateMetadata.Constraints => _source?.Constraints ?? [];
 
         public static FilterableTemplateInfo FromITemplateInfo(ITemplateInfo source)
         {

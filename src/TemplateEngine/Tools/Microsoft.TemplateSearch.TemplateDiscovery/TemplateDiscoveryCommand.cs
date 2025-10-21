@@ -116,7 +116,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                     DontFilterOnTemplateJson = parseResult.GetValue(_noTemplateJsonFilterOption),
                     Verbose = parseResult.GetValue(_verboseOption),
                     TestEnabled = parseResult.GetValue(_testOption),
-                    Queries = parseResult.GetValue(_queriesOption) ?? Array.Empty<SupportedQueries>(),
+                    Queries = parseResult.GetValue(_queriesOption) ?? [],
                     DiffMode = parseResult.GetValue(_diffOption),
                     DiffOverrideSearchCacheLocation = parseResult.GetValue(_diffOverrideCacheOption),
                     DiffOverrideKnownPackagesLocation = parseResult.GetValue(_diffOverrideNonPackagesOption),
