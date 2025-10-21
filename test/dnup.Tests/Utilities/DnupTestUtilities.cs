@@ -45,15 +45,16 @@ internal static class DnupTestUtilities
         {
             "sdk",
             "install",
-            channel
+            channel,
+            "--install-path",
+            installPath
         };
 
-        args.Add("--install-path");
-        args.Add(installPath);
-#if !DEBUG
+        if (!ShouldForceDebug())
+        {
             args.Add("--interactive");
             args.Add("false");
-#endif
+        }
 
         // Add manifest path option if specified for test isolation
         if (!string.IsNullOrEmpty(manifestPath))
@@ -79,13 +80,10 @@ internal static class DnupTestUtilities
     /// <returns>Process result including exit code and output (if captured).</returns>
     public static DnupProcessResult RunDnupProcess(string[] args, bool captureOutput = false, string? workingDirectory = null)
     {
-        // In DEBUG builds, automatically add --debug flag for easier debugging
-#if DEBUG
-        if (!args.Contains("--debug"))
+        if (ShouldForceDebug())
         {
-            args = new[] { "--debug" }.Concat(args).ToArray();
+            args = EnsureDebugFlag(args);
         }
-#endif
 
         string repoRoot = GetRepositoryRoot();
         string dnupPath = LocateDnupAssembly(repoRoot);
@@ -95,9 +93,7 @@ internal static class DnupTestUtilities
         process.StartInfo.FileName = File.Exists(repoDotnet) ? repoDotnet : DnupUtilities.GetDotnetExeName();
         process.StartInfo.Arguments = $"\"{dnupPath}\" {string.Join(" ", args.Select(a => $"\"{a}\""))}";
 
-        bool isDebugMode = args.Any(a => string.Equals(a, "--debug", StringComparison.OrdinalIgnoreCase));
-        bool useShellExecute = isDebugMode && OperatingSystem.IsWindows();
-
+        bool useShellExecute = ShouldForceDebug();
         process.StartInfo.UseShellExecute = useShellExecute;
         process.StartInfo.CreateNoWindow = !useShellExecute;
         process.StartInfo.WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory;
@@ -133,7 +129,7 @@ internal static class DnupTestUtilities
             process.BeginErrorReadLine();
         }
 
-        if (isDebugMode)
+        if (ShouldForceDebug())
         {
             Console.WriteLine($"Started dnup process with PID: {process.Id}");
             Console.WriteLine(useShellExecute
@@ -146,6 +142,31 @@ internal static class DnupTestUtilities
 
         string output = shouldCaptureOutput ? outputBuilder.ToString() : string.Empty;
         return new DnupProcessResult(process.ExitCode, output, shouldCaptureOutput);
+    }
+
+    private static string[] EnsureDebugFlag(string[] args)
+    {
+        if (args.Any(a => string.Equals(a, "--debug", StringComparison.OrdinalIgnoreCase)))
+        {
+            return args;
+        }
+
+        string[] updated = new string[args.Length + 1];
+        updated[0] = "--debug";
+        Array.Copy(args, 0, updated, 1, args.Length);
+        return updated;
+    }
+
+    private static bool ShouldForceDebug()
+    {
+        string? value = Environment.GetEnvironmentVariable("DNUP_TEST_DEBUG");
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        return value.Equals("1", StringComparison.OrdinalIgnoreCase)
+            || value.Equals("true", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -235,8 +256,15 @@ internal static class DnupTestUtilities
             candidates.Add(configuration);
         }
 
-        candidates.Add("Debug");
-        candidates.Add("Release");
+        if (!candidates.Contains("Release", StringComparer.OrdinalIgnoreCase))
+        {
+            candidates.Insert(0, "Release");
+        }
+
+        if (!candidates.Contains("Debug", StringComparer.OrdinalIgnoreCase))
+        {
+            candidates.Add("Debug");
+        }
 
         return candidates.Distinct(StringComparer.OrdinalIgnoreCase);
     }

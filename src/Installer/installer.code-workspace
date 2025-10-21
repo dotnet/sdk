@@ -46,6 +46,7 @@
                 "preLaunchTask": "build",
                 "program": "dotnet",
                 "args": [
+                "args": [
                     "test",
                     "${workspaceFolder:dnup.Tests}/dnup.Tests.csproj",
                     "--no-build",
